@@ -17,8 +17,8 @@ import { Route as MissionLiveRouteImport } from './routes/mission.live'
 import { Route as MissionOfflineRouteImport } from './routes/mission.offline'
 import { Route as MissionReadinessRouteImport } from './routes/mission.readiness'
 import { Route as MissionSimulationRouteImport } from './routes/mission.simulation'
-import { Route as MissionValidationRouteImport } from './routes/mission.validation'
 import { Route as MissionSubmissionRouteImport } from './routes/mission.submission'
+import { Route as MissionValidationRouteImport } from './routes/mission.validation'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -60,14 +60,14 @@ const MissionSimulationRoute = MissionSimulationRouteImport.update({
   path: '/mission/simulation',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MissionValidationRoute = MissionValidationRouteImport.update({
-  id: '/mission/validation',
-  path: '/mission/validation',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MissionSubmissionRoute = MissionSubmissionRouteImport.update({
   id: '/mission/submission',
   path: '/mission/submission',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionValidationRoute = MissionValidationRouteImport.update({
+  id: '/mission/validation',
+  path: '/mission/validation',
   getParentRoute: () => rootRouteImport,
 } as any)
 
