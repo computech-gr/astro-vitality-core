@@ -50,7 +50,7 @@ export function ReadinessAssessment() {
   const [sleepiness, setSleepiness] = useState("4");
   const [stress, setStress] = useState(3);
   const [recentSleep, setRecentSleep] = useState("7.5");
-  const [workRestState, setWorkRestState] = useState<DailyBehavioralCheckIn["schedule"]["workRestState"]>("routine_work");
+  const [workRestState, setWorkRestState] = useState<NonNullable<DailyBehavioralCheckIn["schedule"]["workRestState"]>>("routine_work");
   const [taskRunning, setTaskRunning] = useState(false);
   const [workloadTaskLabel, setWorkloadTaskLabel] = useState("");
   const [tlx, setTlx] = useState<NasaTlxRawRatings>({ mental_demand: 50, physical_demand: 20, temporal_demand: 50, performance: 50, effort: 50, frustration: 20 });
