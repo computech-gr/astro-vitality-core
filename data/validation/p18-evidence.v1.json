@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-09-19T00:00:00Z",
+  "note": "Automated entries are backed by repository gates. Manual browser/hardware entries must be updated only after real validation; do not convert pending evidence to pass by assumption.",
+  "evidence": [
+    {"criterionId":"SCI-001","status":"pass","checkedAt":"2026-09-19T00:00:00Z","evidence":"Biomarker Matrix v1.1 is recorded as the reviewed implementation baseline in docs/SCIENTIFIC_GOVERNANCE.md and docs/SCIENTIFIC_BASELINE_V1_1.md."},
+    {"criterionId":"SCN-001","status":"pass","checkedAt":"2026-09-19T00:00:00Z","evidence":"P17 deterministic replay and no-imputation tests pass in the repository test suite."},
+    {"criterionId":"SCN-002","status":"pending_human","evidence":"Requires browser review of the Mission Day 127 critical story."},
+    {"criterionId":"A11Y-001","status":"pending_human","evidence":"Requires keyboard-only browser review on critical routes."},
+    {"criterionId":"A11Y-002","status":"pending_human","evidence":"Requires responsive/touch browser review on critical routes."},
+    {"criterionId":"COG-001","status":"pass","checkedAt":"2026-09-19T00:00:00Z","evidence":"P11 automated test verifies the required daily demo assessment completes in under 180 seconds."},
+    {"criterionId":"LAT-001","status":"pending_human","evidence":"Requires measured browser observation of the local sample-to-visible-update path; no cloud round-trip should be involved."},
+    {"criterionId":"BAT-001","status":"known_limitation","checkedAt":"2026-09-19T00:00:00Z","evidence":"Target-hardware battery drain cannot be truthfully measured without selected wearable hardware; limitation is documented for final evidence collection."},
+    {"criterionId":"WF-001","status":"pass","checkedAt":"2026-09-19T00:00:00Z","evidence":"P14 encrypted offline queue/reconnect tests and P15 authenticated transport gates pass."},
+    {"criterionId":"WF-002","status":"pass","checkedAt":"2026-09-19T00:00:00Z","evidence":"P15/P16 role-separation, RLS and research export security gates pass."},
+    {"criterionId":"WF-003","status":"pass","checkedAt":"2026-09-19T00:00:00Z","evidence":"P17 artifact/dropout tests preserve poor/missing quality states without silent imputation."}
+  ]
+}

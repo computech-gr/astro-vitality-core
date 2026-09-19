@@ -78,3 +78,8 @@ Offline operation does not relax scientific or safety governance. Cached P13 pro
 ## P17 synthetic-data governance
 
 P17 scenarios are demonstration/test fixtures, not new scientific evidence. Values are intentionally synthetic and must not be interpreted as clinical reference ranges, operational limits, expected astronaut responses or proof of causality. CO2/cognition remains explicitly contextual/non-causal, radiation scenarios do not produce biological risk scores, and sensor artifact/missing-data cases remain visible rather than silently imputed. The v1.1 scientific baseline continues to govern which canonical metrics may be represented.
+
+
+## P18 validation governance
+
+The team-biologist review of Biomarker Matrix v1.1 is scientific implementation governance, not clinical validation. P18 may validate software workflows, usability, accessibility and engineering performance, but it must not relabel those checks as medical-device validation. Hardware battery evidence and environment-specific latency measurements are recorded honestly; missing hardware evidence remains a known limitation rather than a fabricated pass.

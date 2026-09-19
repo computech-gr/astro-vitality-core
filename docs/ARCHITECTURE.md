@@ -121,3 +121,8 @@ The connected mission path is now explicitly threat-modeled from sensor/browser 
 ## P17 simulation boundary
 
 P17 adds a deterministic synthetic-data boundary above the canonical model. Scenario generators emit only reviewed canonical metric codes and pass every observation through P4 ingestion/unit/quality validation. Synthetic fixtures are explicitly classified and tagged, never replace real device adapters, and never introduce clinical thresholds or causal medical claims. Mission Day 127 also provides deterministic connectivity control events so P14/P15 offline/sync behavior can be replayed without moving cloud services into the sensor-to-astronaut critical path.
+
+
+## P18 validation boundary
+
+P18 validates the integrated product against the roadmap without turning engineering evidence into clinical validation. Automated gates cover deterministic scenarios, offline/sync, security, data-quality and the <3-minute P11 flow. Keyboard/touch and local latency observations require real browser evidence; target-hardware battery drain remains an explicit limitation until hardware is available.

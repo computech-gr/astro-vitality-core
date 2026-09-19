@@ -73,6 +73,9 @@ jobs:
       - name: Verify P17 simulation and synthetic mission dataset
         run: bun run verify:p17
 
+      - name: Verify P18 validation and usability
+        run: bun run verify:p18
+
       - name: Security boundary audit
         run: bun run security:audit
 
