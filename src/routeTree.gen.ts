@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MissionLiveRouteImport } from './routes/mission.live'
 import { Route as MissionReadinessRouteImport } from './routes/mission.readiness'
+import { Route as MissionIntelligenceRouteImport } from './routes/mission.intelligence'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const MissionReadinessRoute = MissionReadinessRouteImport.update({
   path: '/mission/readiness',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissionIntelligenceRoute = MissionIntelligenceRouteImport.update({
+  id: '/mission/intelligence',
+  path: '/mission/intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/readiness': typeof MissionReadinessRoute
+  '/mission/intelligence': typeof MissionIntelligenceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/readiness': typeof MissionReadinessRoute
+  '/mission/intelligence': typeof MissionIntelligenceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/readiness': typeof MissionReadinessRoute
+  '/mission/intelligence': typeof MissionIntelligenceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mission/live' | '/mission/readiness'
+  fullPaths: '/' | '/mission/live' | '/mission/readiness' | '/mission/intelligence'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mission/live' | '/mission/readiness'
-  id: '__root__' | '/' | '/mission/live' | '/mission/readiness'
+  to: '/' | '/mission/live' | '/mission/readiness' | '/mission/intelligence'
+  id: '__root__' | '/' | '/mission/live' | '/mission/readiness' | '/mission/intelligence'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MissionLiveRoute: typeof MissionLiveRoute
   MissionReadinessRoute: typeof MissionReadinessRoute
+  MissionIntelligenceRoute: typeof MissionIntelligenceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionReadinessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mission/intelligence': {
+      id: '/mission/intelligence'
+      path: '/mission/intelligence'
+      fullPath: '/mission/intelligence'
+      preLoaderRoute: typeof MissionIntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MissionLiveRoute: MissionLiveRoute,
   MissionReadinessRoute: MissionReadinessRoute,
+  MissionIntelligenceRoute: MissionIntelligenceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

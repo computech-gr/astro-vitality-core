@@ -55,6 +55,9 @@ jobs:
       - name: Verify P11 cognitive and behavioral module
         run: bun run verify:p11
 
+      - name: Verify P12 Health Intelligence v1
+        run: bun run verify:p12
+
       - name: Domain and integration tests
         run: bun run test
 

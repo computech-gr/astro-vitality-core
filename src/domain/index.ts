@@ -9,3 +9,4 @@ export * from "./catalog/reviewed-mvp-v1.1";
 export * from "./baseline";
 
 export * from "./cognitive-behavioral";
+export * from "./health-intelligence";

@@ -160,3 +160,7 @@ The current foundation includes a versioned personal-baseline engine for numeric
 ## P11 — Cognitive & Behavioral Module
 
 The current foundation includes `/mission/readiness`, a private, session-only cognitive/behavioral assessment flow aligned to scientific baseline v1.1. It captures schedule context, fatigue, KSS sleepiness, state stress and a brief vigilance measurement path without generating a psychiatric diagnosis, fitness-for-duty label, readiness score, alert or treatment recommendation. The 60-second vigilance task is explicitly a software demo protocol; operational use requires a governed validated protocol. Task-linked NASA-TLX raw subscales are available as optional context outside the required <3-minute daily demo flow.
+
+### P12 — Health Intelligence v1
+
+The repository now contains a non-diagnostic, evidence-weighted Health Intelligence layer with caller-governed trend policies, reviewed multi-signal pattern definitions, explicit confidence decomposition and explainable findings. The `/mission/intelligence` surface shows the reviewed pattern catalogue and does not invent health data. Protocol/action guidance remains P13 scope.

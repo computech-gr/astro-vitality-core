@@ -97,3 +97,7 @@ The canonical observation layer now feeds a separate personal-baseline engine. B
 ## P11 cognitive & behavioral boundary
 
 P11 adds a privacy-sensitive assessment boundary for fatigue, KSS sleepiness, state stress, task-linked workload, and cognitive task results. Assessment outputs enter the P4 canonical observation model with scientific-baseline v1.1 provenance. The module does not produce psychiatric diagnoses, fitness-for-duty labels, autonomous readiness scores, or protocol actions. Practice effects, protocol version and device/input latency are explicit measurement context. The `/mission/readiness` demo is session-only; persistence remains deferred to P14.
+
+## P12 — Health Intelligence v1
+
+P12 adds an explainable domain boundary above canonical observations, personal baselines and cognitive/environmental context. Governed trend policies feed evidence into reviewed v1.1 multi-signal definitions. The engine exposes confidence decomposition, missing context, confounders and uncertainty and does not provide diagnosis, treatment or protocol action. P13 remains the action/protocol boundary.

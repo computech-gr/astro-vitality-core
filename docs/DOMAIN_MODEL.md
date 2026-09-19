@@ -71,3 +71,7 @@ A personal baseline is a versioned distribution, not a single reading. It record
 ## P11 cognitive/behavioral measurement
 
 Cognitive/behavioral data is modeled as private longitudinal measurement, not as a diagnosis. P11 introduces task protocols, reaction-time and working-memory trials, fatigue/sleepiness/stress check-ins, task-linked NASA-TLX subscales and schedule context. PVT lapse counting is conditional on an externally governed protocol threshold. Mood/affect is catalogued for future governed collection but is not collected by the demo until a validated item set is selected.
+
+## P12 health-intelligence contracts
+
+`src/domain/health-intelligence/` defines governed trend evidence, reviewed pattern roles, confidence breakdown and `HealthIntelligenceFinding`. Findings preserve contributing observation/source IDs, missing roles/context, confounders, uncertainty, scientific source IDs and interpretation guardrails. `confidence.score` is evidence-completeness confidence, not medical probability or readiness.

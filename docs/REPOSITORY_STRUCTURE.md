@@ -89,3 +89,12 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/routes/mission.readiness.tsx` — `/mission/readiness` route.
 - `tests/domain/p11-cognitive-behavioral.test.ts` — scientific/safety/flow gates.
 - `docs/COGNITIVE_BEHAVIORAL_MODULE.md` — P11 implementation boundary.
+
+### P12 Health Intelligence v1
+
+- `src/domain/health-intelligence/` — governed trend detection, reviewed multi-signal patterns, confidence decomposition and explainable findings.
+- `src/components/health-intelligence.tsx` — P12 explainability/safety surface; never fabricates session evidence.
+- `src/routes/mission.intelligence.tsx` — `/mission/intelligence` route.
+- `tests/domain/p12-health-intelligence.test.ts` — deterministic P12 safety and explainability tests.
+- `scripts/verify-p12.mjs` — structural/scope P12 gate.
+- `docs/HEALTH_INTELLIGENCE_V1.md` — P12 scientific and software boundary.
