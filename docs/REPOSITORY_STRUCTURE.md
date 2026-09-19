@@ -56,3 +56,7 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `docs/WEARABLES_INTEGRATION.md` — P6 source classes, bridge boundaries and safety constraints.
 - `scripts/verify-p6.mjs` — P6 structural/safety verifier.
 - `tests/integrations/p6-wearables-integration.test.ts` — BLE, Health Connect, HealthKit and vendor-cloud conformance tests.
+
+- `src/integrations/medical-lab/` — P7 FHIR/CSV/manual biomarker and medical-device ingestion boundary.
+- `tests/integrations/p7-medical-lab-integration.test.ts` — P7 provenance, fail-closed mapping and medical-device canonicalization tests.
+- `docs/MEDICAL_LAB_INTEGRATION.md` — P7 integration and safety contract.

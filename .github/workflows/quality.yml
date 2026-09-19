@@ -41,6 +41,9 @@ jobs:
       - name: Verify P6 wearables integration
         run: bun run verify:p6
 
+      - name: Verify P7 medical and lab integration
+        run: bun run verify:p7
+
       - name: Domain and integration tests
         run: bun run test
 

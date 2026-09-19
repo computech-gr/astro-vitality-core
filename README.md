@@ -140,3 +140,7 @@ The repository now includes the vendor-neutral Universal Device Adapter SDK and 
 ### P6 wearables integration pack
 
 P6 adds direct Web Bluetooth heart-rate ingestion, host-provided Android Health Connect and Apple HealthKit bridge adapters, and a credential-free vendor-cloud adapter boundary. Three distinct source classes are tested through the same P4 canonical metric path. See `docs/WEARABLES_INTEGRATION.md`.
+
+### P7 — Medical & laboratory integration
+
+The repository now includes governed CSV/FHIR laboratory import, a manual biomarker-entry fallback, and medical-device normalization for SpO2 and blood pressure. All P7 inputs remain constrained by the reviewed v1.1 canonical metric catalogue and preserve provenance; P7 does not introduce clinical thresholds, diagnosis, database migrations, or persistence claims.

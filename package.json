@@ -13,12 +13,13 @@
     "format:check": "prettier --check \"*.md\" \"docs/**/*.md\" \".github/**/*.yml\" \"package.json\"",
     "typecheck": "tsc --noEmit",
     "verify:foundation": "node scripts/verify-foundation.mjs",
-    "check": "bun run verify:foundation && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run test && bun run typecheck && bun run lint && bun run format:check && bun run build",
+    "check": "bun run verify:foundation && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run verify:p7 && bun run test && bun run typecheck && bun run lint && bun run format:check && bun run build",
     "test": "bun test",
     "verify:p3": "node scripts/verify-p3.mjs",
     "verify:p4": "node scripts/verify-p4.mjs",
     "verify:p5": "node scripts/verify-p5.mjs",
-    "verify:p6": "node scripts/verify-p6.mjs"
+    "verify:p6": "node scripts/verify-p6.mjs",
+    "verify:p7": "node scripts/verify-p7.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
