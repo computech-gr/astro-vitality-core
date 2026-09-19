@@ -8,6 +8,7 @@ const required = [
   "src/domain/validation.ts",
   "src/domain/index.ts",
   "tests/domain/contracts.test.ts",
+  "tests/domain/mission-crew.test.ts",
   "docs/DOMAIN_MODEL.md",
   "docs/SCIENTIFIC_GOVERNANCE.md",
 ];
@@ -20,7 +21,7 @@ const contracts = readFileSync(join(root, "src/domain/contracts.ts"), "utf8");
 for (const domain of ["biological", "cognitive", "behavioral", "psychological", "environmental", "radiation"]) {
   if (!contracts.includes(`\"${domain}\"`)) failures.push(`Health-signal taxonomy is missing required domain: ${domain}`);
 }
-for (const field of ["quality", "provenance", "classification", "nonDiagnostic"]) {
+for (const field of ["quality", "provenance", "classification", "nonDiagnostic", "CrewMember", "Mission", "CrewAssignment"]) {
   if (!contracts.includes(field)) failures.push(`P3 contracts are missing required safety/provenance field: ${field}`);
 }
 
@@ -51,7 +52,7 @@ if (!String(packageJson.scripts?.check ?? "").includes("verify:p3")) failures.pu
 if (!String(packageJson.scripts?.check ?? "").includes("bun run test")) failures.push("The full check command must include domain tests");
 
 const readme = readFileSync(join(root, "README.md"), "utf8");
-if (!readme.includes("P3 — Canonical Health Domain & Scientific Governance")) {
+if (!readme.includes("P3 — Identity, Mission, Crew & Canonical Health Domain")) {
   failures.push("README current status must identify P3");
 }
 
@@ -59,6 +60,10 @@ const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
   if (sql.length > 0) failures.push(`P3 must not introduce Supabase migrations: ${sql.join(", ")}`);
+}
+
+for (const validator of ["validateCrewMember", "validateMission", "validateCrewAssignment"]) {
+  if (!validation.includes(validator)) failures.push(`P3 validator is missing identity/mission invariant: ${validator}`);
 }
 
 if (failures.length) {

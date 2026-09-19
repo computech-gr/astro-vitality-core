@@ -48,3 +48,7 @@ P3 does not add:
 
 Those capabilities, if ever implemented, require evidence, explicit risk controls,
 traceable versions, qualified review, and human-in-the-loop operation.
+
+## Biomarker matrix review state
+
+`SPACE_APPS_2026_Astronaut_Biomarker_Matrix_v1.0.xlsx` is a working scientific input, not an operational rule set. The biology review that will produce v1.1 remains an explicit scientific gate. Until that review is accepted, no biomarker row, reference interval, correlation, directionality, cadence, or proposed action from the workbook may be promoted into hard-coded clinical thresholds or autonomous health decisions.
