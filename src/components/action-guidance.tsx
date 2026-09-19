@@ -59,7 +59,7 @@ export function ActionGuidancePage() {
           </Card>
           <Card>
             <CardHeader><CheckCircle2 className="text-primary" /><CardTitle className="text-sm">Acknowledgement</CardTitle></CardHeader>
-            <CardContent><p className="font-mono text-sm">REQUIRED FOR ACTION CARDS</p><p className="mt-3 text-sm text-muted-foreground">Acknowledgement records preserve actor, time, finding, protocol version and state. Persistence is deferred to P14/P15.</p></CardContent>
+            <CardContent><p className="font-mono text-sm">REQUIRED FOR ACTION CARDS</p><p className="mt-3 text-sm text-muted-foreground">Acknowledgement records preserve actor, time, finding, protocol version and state. P14 provides encrypted local persistence; P15 adds the ground audit workflow.</p></CardContent>
           </Card>
           <Card>
             <CardHeader><Stethoscope className="text-primary" /><CardTitle className="text-sm">Medical escalation</CardTitle></CardHeader>

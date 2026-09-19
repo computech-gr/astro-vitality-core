@@ -96,7 +96,7 @@ The canonical observation layer now feeds a separate personal-baseline engine. B
 
 ## P11 cognitive & behavioral boundary
 
-P11 adds a privacy-sensitive assessment boundary for fatigue, KSS sleepiness, state stress, task-linked workload, and cognitive task results. Assessment outputs enter the P4 canonical observation model with scientific-baseline v1.1 provenance. The module does not produce psychiatric diagnoses, fitness-for-duty labels, autonomous readiness scores, or protocol actions. Practice effects, protocol version and device/input latency are explicit measurement context. The `/mission/readiness` demo is session-only; persistence remains deferred to P14.
+P11 adds a privacy-sensitive assessment boundary for fatigue, KSS sleepiness, state stress, task-linked workload, and cognitive task results. Assessment outputs enter the P4 canonical observation model with scientific-baseline v1.1 provenance. The module does not produce psychiatric diagnoses, fitness-for-duty labels, autonomous readiness scores, or protocol actions. Practice effects, protocol version and device/input latency are explicit measurement context. The `/mission/readiness` demo now crosses the P14 encrypted local persistence boundary for accepted check-ins/results and queues them for governed synchronization.
 
 ## P12 — Health Intelligence v1
 
@@ -104,4 +104,8 @@ P12 adds an explainable domain boundary above canonical observations, personal b
 
 ## P13 — Action & Protocol Guidance
 
-P13 adds the governed `ACT` boundary above P12 findings. `src/domain/action-guidance/` maps reviewed, non-diagnostic findings to versioned action/protocol categories while preserving finding evidence, uncertainty, confounders and protocol provenance. Research-only findings cannot generate operational actions; data-quality states route to repeat/quality checks. Medical escalation cannot be inferred from a pattern and requires a separately governed trigger carrying authority, version and reason code. Acknowledgement is a versioned domain record; durable local persistence and synchronization are P14 scope.
+P13 adds the governed `ACT` boundary above P12 findings. `src/domain/action-guidance/` maps reviewed, non-diagnostic findings to versioned action/protocol categories while preserving finding evidence, uncertainty, confounders and protocol provenance. Research-only findings cannot generate operational actions; data-quality states route to repeat/quality checks. Medical escalation cannot be inferred from a pattern and requires a separately governed trigger carrying authority, version and reason code. Acknowledgement is a versioned domain record; P14 provides its encrypted local persistence/sync boundary while ground audit durability remains part of the authorized backend/ground work.
+
+## P14 offline mission runtime
+
+The local edge runtime now includes an encrypted IndexedDB event store, versioned protocol cache, sync queue and deterministic conflict resolver. Live BLE observations, P9 self-checks and P11 readiness records can cross the encrypted local persistence boundary. P12/P13 remain local deterministic modules. A public-shell service worker supports disconnected navigation without caching health API responses. Remote persistence remains behind a transport contract until the authorized backend/RLS boundary is introduced.

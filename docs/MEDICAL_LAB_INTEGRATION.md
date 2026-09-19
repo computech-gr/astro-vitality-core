@@ -25,4 +25,4 @@ A periodic biomarker result carries source system, import format, observation ti
 
 ## Persistence boundary
 
-P7 defines ingestion and provenance contracts only. Database persistence is intentionally not introduced by this patch. Online persistence, mission isolation/RLS, local offline persistence and later synchronization are separate governed capabilities. Live wearable/medical values can already normalize into the canonical model; the P9 dashboard will consume live streams, while P14 provides resilient local persistence and store-and-forward synchronization.
+P7 defines ingestion and provenance contracts only. Database persistence is intentionally not introduced by this patch. Online cloud persistence and mission isolation/RLS remain separate governed backend capabilities. P14 now provides resilient encrypted local persistence and store-and-forward queue semantics; a secure remote persistence target is connected later rather than granting unsafe browser writes.

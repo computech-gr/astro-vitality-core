@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ingestAdapterItem } from "@/integrations/device-adapters";
 import { WebBluetoothHeartRateAdapter } from "@/integrations/wearables";
+import { persistOfflineMissionEvent } from "@/infrastructure/offline";
 
 const LIVE_METRICS = [
   ["phys.heart_rate", "Heart rate", HeartPulse],
@@ -152,7 +153,20 @@ export function LiveDashboard() {
           for await (const item of adapter.stream({ sourceId: source!.sourceId, signal: controller.signal })) {
             const result = ingestAdapterItem(adapter, item, { ...MISSION_CONTEXT, ingestionId: `p9-live-${Date.now()}-${sequence++}` });
             if (result.ok && result.kind === "observation") {
-              setState((current) => ingestDashboardObservation(current, result.value, new Date().toISOString()));
+              setState((current) =>
+                ingestDashboardObservation(current, result.value, new Date().toISOString()),
+              );
+              void persistOfflineMissionEvent({
+                kind: "observation",
+                id: result.value.observation.id,
+                mission: result.value.observation.mission,
+                eventTimestamp: result.value.observation.observedAt,
+                sourceId: result.value.observation.source.sourceId,
+                sourceVersion: result.value.observation.source.adapterVersion ?? "1.0.0",
+                sourcePriority: 80,
+                classification: result.value.observation.classification,
+                payload: result.value,
+              }).catch((error) => console.warn("Offline observation persistence failed", error));
             }
           }
         } catch (error) {
@@ -182,7 +196,24 @@ export function LiveDashboard() {
 
   function submitSelfCheck() {
     const recordedAt = new Date().toISOString();
-    setState((current) => recordDashboardSelfCheck(current, { id: `self-${Date.now()}`, recordedAt, state: selfCheckState, ...(selfCheckNote.trim() ? { note: selfCheckNote.trim() } : {}) }));
+    const selfCheck = {
+      id: `self-${Date.now()}`,
+      recordedAt,
+      state: selfCheckState,
+      ...(selfCheckNote.trim() ? { note: selfCheckNote.trim() } : {}),
+    };
+    setState((current) => recordDashboardSelfCheck(current, selfCheck));
+    void persistOfflineMissionEvent({
+      kind: "self_check",
+      id: selfCheck.id,
+      mission: MISSION_CONTEXT,
+      eventTimestamp: recordedAt,
+      sourceId: "p9-live-self-check",
+      sourceVersion: "1.0.0",
+      sourcePriority: 60,
+      classification: "medical_sensitive",
+      payload: selfCheck,
+    }).catch((error) => console.warn("Offline self-check persistence failed", error));
     setSelfCheckNote("");
   }
 
@@ -217,7 +248,7 @@ export function LiveDashboard() {
           <Card className="border-border bg-card/70"><CardHeader><CardTitle className="flex items-center gap-2"><RefreshCw className="text-primary" />Mission timeline</CardTitle></CardHeader><CardContent><div className="max-h-80 space-y-4 overflow-y-auto pr-2">{state.timeline.length ? state.timeline.map((event) => <div key={event.id} className="grid grid-cols-[5.5rem_1fr] gap-3 border-l border-border pl-4"><span className="font-mono text-xs text-muted-foreground">{formatTime(event.occurredAt)}</span><div><strong className="text-sm font-medium">{event.label}</strong>{event.detail && <p className="mt-1 text-xs text-muted-foreground">{event.detail}</p>}</div></div>) : <p className="text-sm text-muted-foreground">Connection, measurement and self-check events will appear here.</p>}</div></CardContent></Card>
         </section>
 
-        <section className="mt-8"><Card className="border-border bg-card/70"><CardHeader><CardTitle>Simple self-check</CardTitle><p className="text-sm text-muted-foreground">Low-burden mission check-in only. This is not a validated psychological assessment; P11 owns governed cognitive/behavioral measures.</p></CardHeader><CardContent><div className="grid gap-4 md:grid-cols-[14rem_1fr_auto] md:items-end"><div><Label htmlFor="self-check-state">Current state</Label><Select value={selfCheckState} onValueChange={(value) => setSelfCheckState(value as typeof selfCheckState)}><SelectTrigger id="self-check-state" className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nominal">Nominal</SelectItem><SelectItem value="monitor">Monitor / not at best</SelectItem><SelectItem value="request_support">Request support</SelectItem></SelectContent></Select></div><div><Label htmlFor="self-check-note">Optional note</Label><Input id="self-check-note" className="mt-2" value={selfCheckNote} onChange={(event) => setSelfCheckNote(event.target.value)} placeholder="Context only — no diagnosis" maxLength={240} /></div><Button onClick={submitSelfCheck}>Record check-in</Button></div>{state.selfChecks[0] && <p className="mt-4 text-xs text-muted-foreground">Last recorded at {formatTime(state.selfChecks[0].recordedAt)} — kept in memory for this P9 session only.</p>}</CardContent></Card></section>
+        <section className="mt-8"><Card className="border-border bg-card/70"><CardHeader><CardTitle>Simple self-check</CardTitle><p className="text-sm text-muted-foreground">Low-burden mission check-in only. This is not a validated psychological assessment; P11 owns governed cognitive/behavioral measures.</p></CardHeader><CardContent><div className="grid gap-4 md:grid-cols-[14rem_1fr_auto] md:items-end"><div><Label htmlFor="self-check-state">Current state</Label><Select value={selfCheckState} onValueChange={(value) => setSelfCheckState(value as typeof selfCheckState)}><SelectTrigger id="self-check-state" className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nominal">Nominal</SelectItem><SelectItem value="monitor">Monitor / not at best</SelectItem><SelectItem value="request_support">Request support</SelectItem></SelectContent></Select></div><div><Label htmlFor="self-check-note">Optional note</Label><Input id="self-check-note" className="mt-2" value={selfCheckNote} onChange={(event) => setSelfCheckNote(event.target.value)} placeholder="Context only — no diagnosis" maxLength={240} /></div><Button onClick={submitSelfCheck}>Record check-in</Button></div>{state.selfChecks[0] && <p className="mt-4 text-xs text-muted-foreground">Last recorded at {formatTime(state.selfChecks[0].recordedAt)} — encrypted locally for offline continuity and queued for governed sync.</p>}</CardContent></Card></section>
 
         <p className="mt-6 text-xs leading-5 text-muted-foreground">P10 boundary: the dashboard can display a governed personal-baseline delta when a validated baseline profile is available. It does not create medical alerts, diagnoses or protocol actions. Database persistence, encrypted local store-and-forward and conflict resolution remain deferred to later governed phases.</p>
       </main>

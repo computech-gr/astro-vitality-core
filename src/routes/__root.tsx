@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { initializeOfflineMissionRuntime, registerOfflineServiceWorker } from "@/infrastructure/offline";
 
 function NotFoundComponent() {
   return (
@@ -114,6 +115,13 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    void registerOfflineServiceWorker();
+    void initializeOfflineMissionRuntime().catch((error) => {
+      console.warn("Offline mission runtime initialization failed", error);
+    });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

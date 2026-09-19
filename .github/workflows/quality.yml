@@ -61,6 +61,9 @@ jobs:
       - name: Verify P13 Action and Protocol Guidance
         run: bun run verify:p13
 
+      - name: Verify P14 Offline Mission Mode
+        run: bun run verify:p14
+
       - name: Domain and integration tests
         run: bun run test
 

@@ -159,7 +159,7 @@ The current foundation includes a versioned personal-baseline engine for numeric
 
 ## P11 — Cognitive & Behavioral Module
 
-The current foundation includes `/mission/readiness`, a private, session-only cognitive/behavioral assessment flow aligned to scientific baseline v1.1. It captures schedule context, fatigue, KSS sleepiness, state stress and a brief vigilance measurement path without generating a psychiatric diagnosis, fitness-for-duty label, readiness score, alert or treatment recommendation. The 60-second vigilance task is explicitly a software demo protocol; operational use requires a governed validated protocol. Task-linked NASA-TLX raw subscales are available as optional context outside the required <3-minute daily demo flow.
+The current foundation includes `/mission/readiness`, a private cognitive/behavioral assessment flow aligned to scientific baseline v1.1. P14 encrypts accepted readiness records locally and queues them for governed store-and-forward synchronization. It captures schedule context, fatigue, KSS sleepiness, state stress and a brief vigilance measurement path without generating a psychiatric diagnosis, fitness-for-duty label, readiness score, alert or treatment recommendation. The 60-second vigilance task is explicitly a software demo protocol; operational use requires a governed validated protocol. Task-linked NASA-TLX raw subscales are available as optional context outside the required <3-minute daily demo flow.
 
 ### P12 — Health Intelligence v1
 
@@ -167,4 +167,11 @@ The repository now contains a non-diagnostic, evidence-weighted Health Intellige
 
 ### P13 — Action & Protocol Guidance
 
-P13 adds a versioned, non-diagnostic protocol library and action-card engine above P12 findings. Reviewed findings may map to bounded repeat/quality, recovery/workload, hydration/nutrition, exercise-countermeasure or environmental-review categories. Research-only findings are blocked from operational action, data-quality findings route to re-measurement, and medical escalation requires a separately governed authority/versioned trigger. `/mission/guidance` exposes the library without fabricating session evidence. Durable offline persistence remains P14 scope. See `docs/ACTION_PROTOCOL_GUIDANCE.md`.
+P13 adds a versioned, non-diagnostic protocol library and action-card engine above P12 findings. Reviewed findings may map to bounded repeat/quality, recovery/workload, hydration/nutrition, exercise-countermeasure or environmental-review categories. Research-only findings are blocked from operational action, data-quality findings route to re-measurement, and medical escalation requires a separately governed authority/versioned trigger. `/mission/guidance` exposes the library without fabricating session evidence. P14 now provides encrypted local persistence and queue semantics for future action/acknowledgement records; ground audit persistence remains part of the authorized backend/ground work. See `docs/ACTION_PROTOCOL_GUIDANCE.md`.
+
+### P14 — Offline Mission Mode
+
+P14 adds AES-GCM encrypted IndexedDB persistence, an append-only mission event log, locally cached/versioned P13 protocols, a store-and-forward queue, deterministic conflict semantics, and an offline application shell. The cloud remains outside the critical sensor-to-astronaut path. Production Supabase synchronization is intentionally not claimed until the mission/crew-authorized backend boundary is connected.
+
+- Mission UI: `/mission/offline`
+- Design: [`docs/OFFLINE_MISSION_MODE.md`](docs/OFFLINE_MISSION_MODE.md)

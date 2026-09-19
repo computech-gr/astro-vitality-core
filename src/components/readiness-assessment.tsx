@@ -36,6 +36,7 @@ import {
   recordVigilanceResult,
   recordTaskLinkedWorkload,
 } from "@/app/readiness-assessment";
+import { persistOfflineMissionEvent } from "@/infrastructure/offline";
 
 const MISSION = { missionId: "local-p11-session", crewMemberId: "local-crew" };
 const DEMO_PROTOCOL = {
@@ -122,6 +123,17 @@ export function ReadinessAssessment() {
       return;
     }
     setState((current) => recordDailyCheckIn({ ...current, issues: [] }, checkIn));
+    void persistOfflineMissionEvent({
+      kind: "readiness_assessment",
+      id: checkIn.id,
+      mission: MISSION,
+      eventTimestamp: checkIn.recordedAt,
+      sourceId: "p11-daily-check-in",
+      sourceVersion: "1.0.0",
+      sourcePriority: 70,
+      classification: "medical_sensitive",
+      payload: checkIn,
+    }).catch((error) => console.warn("Offline readiness check-in persistence failed", error));
   }
 
   function scheduleStimulus() {
@@ -151,6 +163,17 @@ export function ReadinessAssessment() {
       tags: ["protocol-status:demo-only"],
     });
     setState((current) => recordVigilanceResult({ ...current, issues: batch.issues }, result));
+    void persistOfflineMissionEvent({
+      kind: "readiness_assessment",
+      id: `p11-pvt-result-${Date.now()}`,
+      mission: MISSION,
+      eventTimestamp: new Date().toISOString(),
+      sourceId: DEMO_PROTOCOL.id,
+      sourceVersion: DEMO_PROTOCOL.version,
+      sourcePriority: 70,
+      classification: "medical_sensitive",
+      payload: result,
+    }).catch((error) => console.warn("Offline vigilance-result persistence failed", error));
   }
 
   function startVigilance() {
@@ -218,6 +241,17 @@ export function ReadinessAssessment() {
       return;
     }
     setState((current) => recordTaskLinkedWorkload({ ...current, issues: [] }, workload));
+    void persistOfflineMissionEvent({
+      kind: "readiness_assessment",
+      id: workload.id,
+      mission: MISSION,
+      eventTimestamp: workload.recordedAt,
+      sourceId: "p11-task-linked-workload",
+      sourceVersion: "1.0.0",
+      sourcePriority: 70,
+      classification: "medical_sensitive",
+      payload: workload,
+    }).catch((error) => console.warn("Offline workload persistence failed", error));
   }
 
   function complete() {
@@ -295,7 +329,7 @@ export function ReadinessAssessment() {
               <p>Personal baseline and repeated measures matter more than a single score.</p>
               <p>Mood/psychiatric diagnosis is intentionally not inferred from this flow.</p>
               <p>
-                P11 data remains session-only here; encrypted offline persistence arrives in P14.
+                P11 records are encrypted locally by P14 and queued for governed store-and-forward synchronization.
               </p>
             </CardContent>
           </Card>
