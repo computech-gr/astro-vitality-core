@@ -19,6 +19,7 @@ import {
   RadioTower,
   ShieldCheck,
   Sparkles,
+  type LucideIcon,
 } from "lucide-react";
 
 import astronautEarthrise from "@/assets/astronaut-earthrise.jpg";
@@ -44,7 +45,13 @@ import {
 const NASA_URL = "https://www.spaceappschallenge.org/2026/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
 
-const navigation = [
+type NavigationEntry = {
+  label: string;
+  href: string;
+  items?: readonly string[];
+};
+
+const navigation: readonly NavigationEntry[] = [
   { label: "Home", href: "#home" },
   {
     label: "Mission",
@@ -76,7 +83,7 @@ const navigation = [
     href: "#about",
     items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Resources & References"],
   },
-] as const;
+];
 
 function itemHref(label: string, fallback: string) {
   if (label === "GitHub Repository") return GITHUB_URL;
@@ -194,7 +201,7 @@ const flow = [
   ["07", "Learn", "Preserve provenance and improve mission knowledge over time."],
 ];
 
-const capabilities = [
+const capabilities: ReadonlyArray<readonly [LucideIcon, string, string]> = [
   [Activity, "Monitoring", "A unified view across diverse mission-health signals and their provenance."],
   [Fingerprint, "Personal baseline", "Contextual interpretation centered on individual change—not generic norms alone."],
   [CircleGauge, "Trend & pattern detection", "Longitudinal patterns designed to become visible before isolated readings dominate."],
@@ -244,7 +251,7 @@ export function AppShell() {
           <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
             <p className="section-kicker">Mission capabilities</p><h2 id="capabilities-title" className="section-title max-w-3xl">Intelligence designed around the human.</h2>
             <div className="mt-12 grid border-l border-t border-border sm:grid-cols-2 lg:grid-cols-4">
-              {capabilities.map(([Icon, title, copy]) => <article key={title as string} className="min-h-64 border-b border-r border-border p-6 transition-colors hover:bg-surface"><Icon aria-hidden="true" className="size-6 text-primary" /><h3 className="mt-10 font-display text-xl font-semibold">{title as string}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{copy as string}</p></article>)}
+              {capabilities.map(([Icon, title, copy]) => <article key={title} className="min-h-64 border-b border-r border-border p-6 transition-colors hover:bg-surface"><Icon aria-hidden="true" className="size-6 text-primary" /><h3 className="mt-10 font-display text-xl font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{copy}</p></article>)}
             </div>
             <p className="mt-6 max-w-3xl border-l-2 border-signal pl-5 text-sm leading-6 text-muted-foreground">The Mitochondria is conceived as human decision support—not an autonomous doctor. It does not diagnose and does not replace qualified medical judgment.</p>
           </div>
