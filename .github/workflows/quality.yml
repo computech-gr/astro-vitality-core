@@ -70,6 +70,9 @@ jobs:
       - name: Verify P16 security and safety hardening
         run: bun run verify:p16
 
+      - name: Verify P17 simulation and synthetic mission dataset
+        run: bun run verify:p17
+
       - name: Security boundary audit
         run: bun run security:audit
 

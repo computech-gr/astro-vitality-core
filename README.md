@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository is in **P8 — Environmental & Radiation Telemetry**. P3 established vendor-neutral crew/mission identity and canonical observation contracts. The reviewed `Astronaut_Biomarker_Matrix_v1.1` now closes the P1 team-biologist review dependency and seeds P4 with a traceable metric catalogue, governed unit normalization, scalar and raw-series ingestion paths, explicit context/provenance, and deterministic serialization round-trip tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, authentication workflows, and database persistence remain intentionally **not yet implemented**. P5 defines the vendor-neutral adapter SDK, P6 adds wearable source classes, P7 adds medical/laboratory ingestion, and P8 adds governed spacecraft-environment and personal-radiation telemetry boundaries.
+The repository has completed **P16 — Security & Safety Hardening** and now adds **P17 — Simulation & Synthetic Mission Dataset**. The controlled stack includes canonical mission-health data, device/wearable/lab/environment integration, live astronaut monitoring, personal baselines, cognitive/behavioral assessment, explainable health intelligence, bounded protocol guidance, encrypted offline operation, authenticated Ground/Research persistence and security hardening. P17 adds deterministic synthetic mission scenarios for repeatable demos and regression testing; synthetic records remain explicitly classified and cannot be confused with real crew medical data.
 
 ## Architecture principles
 
@@ -183,3 +183,6 @@ Ground/research role boundaries, authenticated store-and-forward persistence, au
 ### P16 — Security & Safety Hardening
 
 P16 adds the project threat model, misuse-case regression set, SSR security headers, secret/server-boundary audit, RLS/RPC hardening, replay-conflict protection and safer pseudonymized research export. It does not add clinical authority or change the scientific baseline.
+### P17 — Simulation & Synthetic Mission Dataset
+
+P17 adds deterministic synthetic mission scenarios for reproducible challenge demos and regression testing. `Mission → Mission Scenario` opens `/mission/simulation`, where the controlled Mission Day 127 scenario and focused artifact/CO2/radiation cases can be generated repeatedly from fixed seeds, inspected and exported as synthetic JSON. Generated observations pass through the P4 canonical ingestion boundary and are always classified/tagged as synthetic. The generator includes explicit artifact, missing-data, CO2 non-causality, radiation-no-risk-score and offline/reconnect guardrails. See [`docs/SIMULATION_SYNTHETIC_DATASET.md`](docs/SIMULATION_SYNTHETIC_DATASET.md).

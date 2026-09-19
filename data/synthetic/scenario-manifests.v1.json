@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "classification": "synthetic",
+  "scientificBaselineVersion": "1.1",
+  "scenarios": [
+    {
+      "id": "mission_day_127_fatigue_recovery",
+      "seed": 1272026,
+      "purpose": "End-to-end challenge demo with fatigue/recovery, data-quality artifact, missing SpO2, CO2 and radiation context, periodic lab data, offline operation and reconnect."
+    },
+    {
+      "id": "sensor_artifact_dropout",
+      "seed": 17001,
+      "purpose": "Demonstrate that artifact and missing data are visible and are not interpreted as health deterioration."
+    },
+    {
+      "id": "co2_context_event",
+      "seed": 17002,
+      "purpose": "Shared environmental/cognitive timeline with an explicit non-causal CO2 guardrail."
+    },
+    {
+      "id": "radiation_context_event",
+      "seed": 17003,
+      "purpose": "Radiation dose-rate context with detector provenance and no biological risk score."
+    }
+  ]
+}
