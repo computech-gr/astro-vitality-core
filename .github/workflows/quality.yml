@@ -52,6 +52,9 @@ jobs:
       - name: Verify P10 personal baseline engine
         run: bun run verify:p10
 
+      - name: Verify P11 cognitive and behavioral module
+        run: bun run verify:p11
+
       - name: Domain and integration tests
         run: bun run test
 

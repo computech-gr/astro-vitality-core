@@ -80,3 +80,12 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `tests/domain/p10-personal-baseline.test.ts` — minimum-data, rolling-window, phase-selection, context and dashboard-delta tests.
 - `scripts/verify-p10.mjs` — P10 structural/safety gate.
 - `docs/PERSONAL_BASELINE_ENGINE.md` — scientific and implementation boundary for personal baselines.
+
+### P11 cognitive & behavioral module
+
+- `src/domain/cognitive-behavioral/` — governed assessment contracts, scoring and canonical ingestion.
+- `src/app/readiness-assessment/` — session-only assessment workflow state.
+- `src/components/readiness-assessment.tsx` — astronaut-facing <3-minute demo flow plus optional task-linked workload capture.
+- `src/routes/mission.readiness.tsx` — `/mission/readiness` route.
+- `tests/domain/p11-cognitive-behavioral.test.ts` — scientific/safety/flow gates.
+- `docs/COGNITIVE_BEHAVIORAL_MODULE.md` — P11 implementation boundary.
