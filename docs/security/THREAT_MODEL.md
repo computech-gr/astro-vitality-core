@@ -27,20 +27,20 @@ P16 threat-models the first complete connected mission loop: device/lab/environm
 
 ## Threats and controls
 
-| Threat | Primary controls | Residual risk / next work |
-| --- | --- | --- |
-| Cross-mission or cross-crew read | forced RLS, membership checks, role matrix, negative tests | Requires live policy regression tests after every schema change |
-| Mission operator reads/ingests medical data | no identified-medical SELECT path; P16 limits operator ingestion to non-medical operational events | Future administrative workflows require separate governed capability |
-| Researcher re-identification | no direct event SELECT; mission-specific pseudonyms; recursive identifier/free-text stripping; audited export | Pseudonymization is not anonymization; small cohorts and quasi-identifiers remain re-identification risks |
-| Replay/idempotency abuse | unique idempotency key, payload hash, conflict response on mismatched replay | Endpoint rate limiting remains deployment/platform responsibility |
-| Oversized/malformed event payload | P16 field, type, length, timestamp, kind, classification and 256 KiB payload validation | Clinical schema-specific validation expands with future event contracts |
-| Service-role key exposure | server-only client, repository secret audit, no browser import | Provider/workspace secret-management controls remain external |
-| XSS / browser exfiltration | CSP, frame denial, no-referrer, nosniff, restrictive permissions policy | Current hydration requires `unsafe-inline`; nonce/hash CSP is a release hardening target |
-| Offline-device theft | AES-GCM encrypted local records, non-extractable device key | A compromised unlocked browser profile may still access plaintext while the app is running |
-| Device spoofing / false provenance | adapter capability contracts and source provenance | Hardware attestation/device identity is not yet implemented |
-| Experimental pattern treated as diagnosis | research-only fail-closed path, explicit uncertainty, action-governance separation | Requires continued human review and validation in P18 |
-| Network loss | offline local runtime, cached protocols, sync queue | Extended storage exhaustion and device loss remain operational risks |
-| Audit tampering | no browser INSERT/UPDATE/DELETE, audit writes inside trusted RPCs | Privileged database operators remain inside infrastructure trust boundary |
+| Threat                                      | Primary controls                                                                                              | Residual risk / next work                                                                                 |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Cross-mission or cross-crew read            | forced RLS, membership checks, role matrix, negative tests                                                    | Requires live policy regression tests after every schema change                                           |
+| Mission operator reads/ingests medical data | no identified-medical SELECT path; P16 limits operator ingestion to non-medical operational events            | Future administrative workflows require separate governed capability                                      |
+| Researcher re-identification                | no direct event SELECT; mission-specific pseudonyms; recursive identifier/free-text stripping; audited export | Pseudonymization is not anonymization; small cohorts and quasi-identifiers remain re-identification risks |
+| Replay/idempotency abuse                    | unique idempotency key, payload hash, conflict response on mismatched replay                                  | Endpoint rate limiting remains deployment/platform responsibility                                         |
+| Oversized/malformed event payload           | P16 field, type, length, timestamp, kind, classification and 256 KiB payload validation                       | Clinical schema-specific validation expands with future event contracts                                   |
+| Service-role key exposure                   | server-only client, repository secret audit, no browser import                                                | Provider/workspace secret-management controls remain external                                             |
+| XSS / browser exfiltration                  | CSP, frame denial, no-referrer, nosniff, restrictive permissions policy                                       | Current hydration requires `unsafe-inline`; nonce/hash CSP is a release hardening target                  |
+| Offline-device theft                        | AES-GCM encrypted local records, non-extractable device key                                                   | A compromised unlocked browser profile may still access plaintext while the app is running                |
+| Device spoofing / false provenance          | adapter capability contracts and source provenance                                                            | Hardware attestation/device identity is not yet implemented                                               |
+| Experimental pattern treated as diagnosis   | research-only fail-closed path, explicit uncertainty, action-governance separation                            | Requires continued human review and validation in P18                                                     |
+| Network loss                                | offline local runtime, cached protocols, sync queue                                                           | Extended storage exhaustion and device loss remain operational risks                                      |
+| Audit tampering                             | no browser INSERT/UPDATE/DELETE, audit writes inside trusted RPCs                                             | Privileged database operators remain inside infrastructure trust boundary                                 |
 
 ## Safety principle
 
