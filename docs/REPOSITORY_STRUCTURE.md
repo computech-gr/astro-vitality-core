@@ -121,7 +121,8 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/domain/ground-research/` — roles, capabilities and de-identification contracts.
 - `src/infrastructure/ground-research/` — authorized cloud sync transport.
 - `src/routes/mission.ground.tsx` — ground/research console route.
-- `supabase/migrations/*p15_ground_research_console.sql` — mission persistence, RLS, RPCs and audit trail.
+- `supabase/migrations/20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql` — applied P15 mission persistence, RLS, RPCs and audit trail.
+- `supabase/migrations/20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql` — applied P15 helper-privilege hardening correction.
 
 ### P16 security hardening
 
@@ -129,7 +130,8 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `docs/security/` — threat model, misuse cases and hardening record.
 - `scripts/security-audit.mjs` — deterministic repository/security-boundary checks.
 - `scripts/migration-policy.mjs` — shared governed-migration allowlist logic.
-- `supabase/migrations/20260919210000_p16_security_safety_hardening.sql` — P16 RLS/RPC/export hardening.
+- `supabase/migrations/20260919170410_cfadc7d4-72db-42ad-a76e-4181cc0c70f4.sql` — applied P16 RLS/RPC/export hardening.
+- `supabase/migrations/20260919170720_1329f21c-6181-4172-a04d-ced64437d340.sql` — applied P16 pgcrypto/search-path correction.
 - `.github/workflows/security.yml` — vulnerability and secret scan.
 
 ### P17 Simulation & Synthetic Mission Dataset
@@ -159,3 +161,5 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `docs/LOCAL_REPRODUCIBILITY.md`, `docs/RELEASE_CANDIDATE.md`, `docs/RELEASE_CHECKLIST.md`, `docs/API_ADAPTER_REFERENCE.md` — release documentation.
 - `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` — public contribution intake.
 - `.github/workflows/release-candidate.yml` — source/build/Docker release-candidate verification.
+
+- `scripts/serve-dist.mjs` — Node self-host adapter for the emitted `dist/server` fetch handler and `dist/client` assets.

@@ -12,20 +12,37 @@ permissions:
 jobs:
   reproduce:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
       - run: bun install --frozen-lockfile
       - run: bun run check
       - run: bun run sample:release
-      - name: Build self-hosted application image
+      - name: Reproduce local Supabase from repository state
+        run: bun run setup:local
+      - name: Build and boot self-hosted application image
         run: |
-          docker build \
-            --build-arg VITE_SUPABASE_PROJECT_ID=local \
-            --build-arg VITE_SUPABASE_URL=http://127.0.0.1:54321 \
-            --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=local-release-candidate-placeholder \
-            --build-arg VITE_SITE_ORIGIN=http://localhost:3000 \
-            -t mitochondria-release-candidate:${GITHUB_SHA} .
+          docker compose --env-file .env.local up -d --build
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/tmp/mitochondria-home.html; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs app
+          exit 1
+      - name: Verify self-hosted HTTP response
+        run: |
+          grep -qi "Mitochondria" /tmp/mitochondria-home.html
+          curl --fail --silent --show-error http://127.0.0.1:3000/mission/simulation >/dev/null
+      - name: Stop local release-candidate stack
+        if: always()
+        run: |
+          docker compose down || true
+          supabase stop || true
