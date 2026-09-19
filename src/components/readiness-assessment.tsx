@@ -55,7 +55,7 @@ export function ReadinessAssessment() {
   const [workloadTaskLabel, setWorkloadTaskLabel] = useState("");
   const [tlx, setTlx] = useState<NasaTlxRawRatings>({ mental_demand: 50, physical_demand: 20, temporal_demand: 50, performance: 50, effort: 50, frustration: 20 });
   const [stimulusVisible, setStimulusVisible] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState(DEMO_PROTOCOL.durationSeconds);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(DEMO_PROTOCOL.durationSeconds);
   const stimulusAtRef = useRef<number | null>(null);
   const taskStartRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
