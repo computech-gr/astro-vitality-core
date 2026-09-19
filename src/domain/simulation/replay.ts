@@ -8,7 +8,9 @@ export function replaySyntheticMission(
   const start = Math.max(0, options.fromIndex ?? 0);
   const end = Math.min(dataset.events.length, options.untilIndex ?? dataset.events.length);
   for (let index = start; index < end; index += 1) {
-    visitor({ index, total: dataset.events.length, event: dataset.events[index] });
+    const event = dataset.events[index];
+    if (!event) continue;
+    visitor({ index, total: dataset.events.length, event });
   }
 }
 
