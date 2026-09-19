@@ -13,7 +13,7 @@ src/
   app/                        application-layer boundary
   assets/                     visual assets
   components/                 public shell and reusable UI
-  domain/                     future vendor-neutral domain model
+  domain/                     P3 canonical health/science contracts + tests
   hooks/                      reusable React hooks
   infrastructure/             runtime/infrastructure configuration
   integrations/
@@ -24,8 +24,10 @@ src/
   server.ts                   server entry/wrapper
   start.ts                    application start integration
   styles.css                  global design system/styles
+tests/
+  domain/                     P3 synthetic domain-contract tests
 supabase/
-  config.toml                 Supabase project configuration; no P2 schema migrations
+  config.toml                 Supabase project configuration; no P3 schema migrations
 AGENTS.md                      Lovable/Git collaboration constraints
 CODE_OF_CONDUCT.md             contributor conduct
 CONTRIBUTING.md                contribution rules

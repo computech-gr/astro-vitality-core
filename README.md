@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository is in **P2 — Repository & Open-Source Foundation**. The public mission shell, layered application structure, PWA manifest, canonical-origin safeguards, and Supabase client scaffolding exist. Health monitoring, clinical logic, sensor adapters, mission data models, authentication workflows, and database schema are intentionally **not yet implemented**.
+The repository is in **P3 — Canonical Health Domain & Scientific Governance**. P2 established the public mission shell, repository/open-source foundation, canonical-origin safeguards, and Supabase client scaffolding. P3 adds vendor-neutral mission-health contracts, provenance and data-quality invariants, scientific evidence/review metadata, an explicit non-diagnostic boundary, and executable synthetic contract tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, device adapters, authentication workflows, and database schema remain intentionally **not yet implemented**.
 
 ## Architecture principles
 
@@ -37,14 +37,14 @@ The repository is in **P2 — Repository & Open-Source Foundation**. The public 
 src/
   app/              application-layer boundary
   components/       reusable UI and public application shell
-  domain/           future vendor-neutral domain model
+  domain/           P3 vendor-neutral health/science contracts
   infrastructure/   runtime configuration and infrastructure concerns
   integrations/     external-system adapters, including Supabase
   routes/           TanStack Start routes
   lib/              shared technical utilities
 public/              static public assets and PWA manifest
-supabase/            Supabase project configuration; no P2 schema migrations
-docs/                architecture, development, open-source, and security docs
+supabase/            Supabase project configuration; no P3 schema migrations
+docs/                architecture, domain/science governance, development, open-source, security
 .github/workflows/    CI quality gates
 ```
 
@@ -79,19 +79,20 @@ cp .env.example .env
 
 Never commit `.env`, service-role keys, database passwords, access tokens, JWT secrets, or other server-only credentials.
 
-Current browser configuration names are documented in [`.env.example`](.env.example). Server-only Supabase credentials are intentionally not required by the P2 public shell.
+Current browser configuration names are documented in [`.env.example`](.env.example). Server-only Supabase credentials are intentionally not required by the current public shell or P3 domain-contract tests.
 
 ## Development commands
 
 ```bash
 bun run dev           # local development server
+bun run test          # P3 domain contract tests
 bun run typecheck     # TypeScript validation, no emit
 bun run lint          # ESLint
 bun run format        # apply Prettier formatting
 bun run format:check  # verify formatting
 bun run build         # production build
 bun run preview       # preview production build
-bun run check         # foundation verification + typecheck + lint + format:check + build
+bun run check         # foundation + P3 verification + tests + typecheck + lint + format + build
 ```
 
 ## Quality gate
@@ -104,6 +105,10 @@ bun run check
 ```
 
 CI runs the same core gates on pull requests and pushes to `main`.
+
+## P3 domain and scientific-governance foundation
+
+The canonical domain contracts live in `src/domain/`. See [`docs/DOMAIN_MODEL.md`](docs/DOMAIN_MODEL.md) and [`docs/SCIENTIFIC_GOVERNANCE.md`](docs/SCIENTIFIC_GOVERNANCE.md). P3 deliberately models psychological and behavioral signals as explicit health context without treating them as diagnoses or inferring mental-health conditions.
 
 ## Scientific and medical boundary
 

@@ -13,7 +13,9 @@
     "format:check": "prettier --check \"*.md\" \"docs/**/*.md\" \".github/**/*.yml\" \"package.json\"",
     "typecheck": "tsc --noEmit",
     "verify:foundation": "node scripts/verify-foundation.mjs",
-    "check": "bun run verify:foundation && bun run typecheck && bun run lint && bun run format:check && bun run build"
+    "check": "bun run verify:foundation && bun run verify:p3 && bun run test && bun run typecheck && bun run lint && bun run format:check && bun run build",
+    "test": "bun test",
+    "verify:p3": "node scripts/verify-p3.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
