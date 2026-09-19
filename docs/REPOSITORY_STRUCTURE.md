@@ -84,7 +84,7 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 ### P11 cognitive & behavioral module
 
 - `src/domain/cognitive-behavioral/` — governed assessment contracts, scoring and canonical ingestion.
-- `src/app/readiness-assessment/` — session-only assessment workflow state.
+- `src/app/readiness-assessment/` — readiness workflow state; accepted P11 records can cross the P14 encrypted local persistence boundary.
 - `src/components/readiness-assessment.tsx` — astronaut-facing <3-minute demo flow plus optional task-linked workload capture.
 - `src/routes/mission.readiness.tsx` — `/mission/readiness` route.
 - `tests/domain/p11-cognitive-behavioral.test.ts` — scientific/safety/flow gates.
@@ -107,3 +107,11 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `tests/domain/p13-action-protocol-guidance.test.ts` — P13 safety, mapping, escalation and acknowledgement tests.
 - `scripts/verify-p13.mjs` — P13 structural/scope gate.
 - `docs/ACTION_PROTOCOL_GUIDANCE.md` — P13 source alignment and non-diagnostic action boundary.
+
+### P14 offline mission mode
+
+- `src/domain/offline-mission/` — offline event, conflict and protocol-cache contracts.
+- `src/infrastructure/offline/` — AES-GCM, IndexedDB store, sync queue/runtime and service-worker registration.
+- `src/components/offline-mission.tsx` / `src/routes/mission.offline.tsx` — offline readiness/status surface.
+- `public/sw.js` — public shell/assets offline cache; no health API caching.
+- `tests/offline/p14-offline-mission.test.ts` — encryption, append-only, reconnect, conflict and protocol-cache gates.

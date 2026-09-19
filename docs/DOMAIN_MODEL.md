@@ -79,3 +79,7 @@ Cognitive/behavioral data is modeled as private longitudinal measurement, not as
 ## P13 action and protocol contracts
 
 P13 introduces `ProtocolDefinition`, `ActionCard`, `ActionGuidancePlan`, `GovernedEscalationTrigger` and `ActionAcknowledgement`. The governed operational action classes follow Biomarker Matrix v1.1: none, repeat/quality check, recovery/workload review, hydration/nutrition review, exercise review, environmental review and medical escalation. Severity remains separate from diagnosis: `info`, `watch`, `action`, `escalate`, and `data_quality`. Medical escalation requires explicit external governance rather than pattern inference.
+
+## P14 offline mission records
+
+`OfflineEventRecord` is an append-only local envelope for sensitive mission events. Health payloads are encrypted before IndexedDB storage. Sync metadata is separate from encrypted payload content. `SyncComparableRecord` and `resolveSyncConflict()` preserve source version, event timestamp and source priority, failing closed to manual review for unresolved ties.

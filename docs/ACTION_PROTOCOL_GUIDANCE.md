@@ -57,7 +57,7 @@ Every operational action card requires acknowledgement. The acknowledgement cont
 - protocol ID and version;
 - optional governed reason code.
 
-P13 acknowledgement is domain/session state only. Durable local persistence, encrypted offline storage and synchronization are P14 scope; ground audit workflow is P15 scope.
+P14 now provides the encrypted local persistence and synchronization boundary for action/acknowledgement records. The ground audit workflow remains P15 scope.
 
 ## UI
 
@@ -73,5 +73,5 @@ P13 does not add:
 - universal clinical thresholds;
 - automatic medical escalation from a pattern;
 - persistence/database migrations;
-- offline protocol cache or sync queue (P14);
+- production cloud sync transport and ground audit persistence (P15/P16);
 - ground/medical console workflow (P15).

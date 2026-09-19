@@ -69,4 +69,8 @@ Health Intelligence v1 implements only relationships explicitly represented in t
 
 ## P13 protocol/action governance
 
-Biomarker Matrix v1.1 review item 11 allows bounded action categories: repeat measurement/quality check, workload/recovery review, hydration/nutrition review, exercise-countermeasure review, environmental correction/review and medical escalation. P13 encodes these as versioned protocol categories, not treatments. A reviewed P12 pattern can select only the approved non-diagnostic category mapping. Research-only findings remain non-operational. Medical escalation requires a separately governed authority/versioned trigger and cannot be inferred from a pattern alone. Action acknowledgements preserve protocol provenance for later P14/P15 persistence/audit work.
+Biomarker Matrix v1.1 review item 11 allows bounded action categories: repeat measurement/quality check, workload/recovery review, hydration/nutrition review, exercise-countermeasure review, environmental correction/review and medical escalation. P13 encodes these as versioned protocol categories, not treatments. A reviewed P12 pattern can select only the approved non-diagnostic category mapping. Research-only findings remain non-operational. Medical escalation requires a separately governed authority/versioned trigger and cannot be inferred from a pattern alone. Action acknowledgements preserve protocol provenance; P14 supplies the encrypted local persistence boundary and P15 supplies the ground/audit workflow.
+
+## P14 offline governance
+
+Offline operation does not relax scientific or safety governance. Cached P13 protocols preserve authority/version/source provenance. P12 findings and P13 guidance remain subject to the same research-only, uncertainty and non-diagnostic rules when disconnected. P14 does not create new thresholds or infer escalation because connectivity is absent.

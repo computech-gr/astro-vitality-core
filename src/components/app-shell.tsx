@@ -91,6 +91,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Health Intelligence" || label === "Explainable Alerts") return "/mission/intelligence";
   if (label === "Action Guidance") return "/mission/guidance";
+  if (label === "Offline Mission Mode") return "/mission/offline";
   if (label === "Cognitive & Behavioral Health") return "/mission/readiness";
   return fallback;
 }

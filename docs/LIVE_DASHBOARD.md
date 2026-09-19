@@ -26,7 +26,7 @@ The P9 self-check is also intentionally non-diagnostic. P11 owns governed cognit
 
 ## Persistence boundary
 
-P9 is session-local. It does not claim database or offline persistence. The controlled architecture places encrypted local persistence, store-and-forward synchronization and conflict handling in the later Offline Mission Mode work. Until those phases land, the UI explicitly labels its state as session-only.
+P9 originally shipped session-local. P14 now connects accepted live observations and the simple self-check to the encrypted local event store and sync queue. Cloud/database durability is still not claimed until an authorized remote sync transport is connected.
 
 ## Real-device path
 
