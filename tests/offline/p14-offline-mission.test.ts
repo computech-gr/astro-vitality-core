@@ -48,9 +48,9 @@ describe("P14 Offline Mission Mode", () => {
   test("append-only storage rejects conflicting reuse of the same event id", async () => {
     const store = new InMemoryOfflineMissionStore();
     await store.append(event());
-    await expect(store.append(event({ payload: { metricCode: "phys.heart_rate", value: 99 } }))).rejects.toThrow(
-      "Append-only record",
-    );
+    await expect(
+      store.append(event({ payload: { metricCode: "phys.heart_rate", value: 99 } })),
+    ).rejects.toThrow("Append-only record");
   });
 
   test("queue survives disconnect semantics and flushes idempotently on reconnect", async () => {
@@ -92,9 +92,10 @@ describe("P14 Offline Mission Mode", () => {
       eventTimestamp: "2026-09-19T12:00:00.000Z",
       payloadHash: "local",
     };
-    expect(resolveSyncConflict({ ...base, sourceVersion: "2.0.0" }, { ...base, payloadHash: "remote" }).decision).toBe(
-      "local",
-    );
+    expect(
+      resolveSyncConflict({ ...base, sourceVersion: "2.0.0" }, { ...base, payloadHash: "remote" })
+        .decision,
+    ).toBe("local");
     expect(
       resolveSyncConflict(
         { ...base, eventTimestamp: "2026-09-19T12:01:00.000Z" },
@@ -107,7 +108,9 @@ describe("P14 Offline Mission Mode", () => {
         { ...base, payloadHash: "remote", sourcePriority: 10 },
       ).decision,
     ).toBe("local");
-    expect(resolveSyncConflict(base, { ...base, payloadHash: "remote" }).decision).toBe("manual_review");
+    expect(resolveSyncConflict(base, { ...base, payloadHash: "remote" }).decision).toBe(
+      "manual_review",
+    );
   });
 
   test("protocol cache preserves authority, version and integrity digest", async () => {
@@ -116,6 +119,8 @@ describe("P14 Offline Mission Mode", () => {
       "2026-09-19T12:00:00.000Z",
     );
     expect(cached.length).toBe(PROTOCOL_LIBRARY_V1_1.length);
-    expect(cached.every((entry) => entry.version && entry.authority && entry.digestSha256.length === 64)).toBe(true);
+    expect(
+      cached.every((entry) => entry.version && entry.authority && entry.digestSha256.length === 64),
+    ).toBe(true);
   });
 });
