@@ -93,3 +93,7 @@ The astronaut live UI consumes accepted canonical observations after the adapter
 ## P10 personal baseline layer
 
 The canonical observation layer now feeds a separate personal-baseline engine. Baseline profiles are versioned distributions scoped to one crew member, mission, canonical metric, context policy and adaptation phase. Pre-flight profiles remain immutable; launch/transition continues to use the pre-flight comparator; stable mission may use an explicitly governed rolling baseline after minimum-data gates. Baseline deltas remain separate from clinical reference intervals and mission operational limits and do not themselves create alerts.
+
+## P11 cognitive & behavioral boundary
+
+P11 adds a privacy-sensitive assessment boundary for fatigue, KSS sleepiness, state stress, task-linked workload, and cognitive task results. Assessment outputs enter the P4 canonical observation model with scientific-baseline v1.1 provenance. The module does not produce psychiatric diagnoses, fitness-for-duty labels, autonomous readiness scores, or protocol actions. Practice effects, protocol version and device/input latency are explicit measurement context. The `/mission/readiness` demo is session-only; persistence remains deferred to P14.

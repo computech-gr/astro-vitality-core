@@ -67,3 +67,7 @@ P4 also introduces an `ObservationInterpretation` contract that keeps personal b
 ## Personal baseline profiles (P10)
 
 A personal baseline is a versioned distribution, not a single reading. It records mission/crew identity, canonical metric, phase, time window, accepted observations, quality/status policies, required context tags, algorithm provenance and summary statistics. Pre-flight profiles are immutable. Launch/transition cannot create a replacement profile. Stable-mission rolling baselines are permitted only when explicitly configured and when minimum-data/coverage gates pass. Comparison results expose longitudinal deltas only; clinical intervals and mission operational limits remain separate governed layers.
+
+## P11 cognitive/behavioral measurement
+
+Cognitive/behavioral data is modeled as private longitudinal measurement, not as a diagnosis. P11 introduces task protocols, reaction-time and working-memory trials, fatigue/sleepiness/stress check-ins, task-linked NASA-TLX subscales and schedule context. PVT lapse counting is conditional on an externally governed protocol threshold. Mood/affect is catalogued for future governed collection but is not collected by the demo until a validated item set is selected.

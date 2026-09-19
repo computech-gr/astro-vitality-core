@@ -58,3 +58,7 @@ The review does **not** authorize clinical thresholds, diagnosis, treatment, or 
 ## P10 baseline governance
 
 P10 implements the v1.1 principle that personal longitudinal change is primary while clinical/reference intervals and mission operational limits remain separate. The baseline engine may compute descriptive personalized deltas only for reviewed baseline-enabled metrics and only after explicit data-quality, coverage and context gates. It does not convert delta magnitude into a diagnosis, risk class or action. Circadian-sensitive comparisons require governed upstream context tagging rather than inferred time-of-day assumptions.
+
+## P11 behavioral-health safeguards
+
+The v1.1 matrix governs P11. Repeated named tasks, practice effects, device/input latency, privacy and personal-baseline interpretation are required. Fatigue, KSS sleepiness and state stress are contextual longitudinal measures. NASA-TLX remains task-linked and keeps its six dimensions. Mood/affect collection requires a selected governed instrument. No cognitive or behavioral measure may be converted into a psychiatric diagnosis, personality inference, readiness classification, or autonomous escalation in P11.

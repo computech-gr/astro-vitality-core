@@ -7,3 +7,5 @@ export * from "./serialization";
 export * from "./series";
 export * from "./catalog/reviewed-mvp-v1.1";
 export * from "./baseline";
+
+export * from "./cognitive-behavioral";

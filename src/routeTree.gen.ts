@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MissionLiveRouteImport } from './routes/mission.live'
+import { Route as MissionReadinessRouteImport } from './routes/mission.readiness'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const MissionLiveRoute = MissionLiveRouteImport.update({
   path: '/mission/live',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissionReadinessRoute = MissionReadinessRouteImport.update({
+  id: '/mission/readiness',
+  path: '/mission/readiness',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mission/live': typeof MissionLiveRoute
+  '/mission/readiness': typeof MissionReadinessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mission/live': typeof MissionLiveRoute
+  '/mission/readiness': typeof MissionReadinessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mission/live': typeof MissionLiveRoute
+  '/mission/readiness': typeof MissionReadinessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mission/live'
+  fullPaths: '/' | '/mission/live' | '/mission/readiness'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mission/live'
-  id: '__root__' | '/' | '/mission/live'
+  to: '/' | '/mission/live' | '/mission/readiness'
+  id: '__root__' | '/' | '/mission/live' | '/mission/readiness'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MissionLiveRoute: typeof MissionLiveRoute
+  MissionReadinessRoute: typeof MissionReadinessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionLiveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mission/readiness': {
+      id: '/mission/readiness'
+      path: '/mission/readiness'
+      fullPath: '/mission/readiness'
+      preLoaderRoute: typeof MissionReadinessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MissionLiveRoute: MissionLiveRoute,
+  MissionReadinessRoute: MissionReadinessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

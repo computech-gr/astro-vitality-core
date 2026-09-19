@@ -156,3 +156,7 @@ The `/mission/live` route now provides the first astronaut-facing live console. 
 ## P10 — Personal Baseline Engine
 
 The current foundation includes a versioned personal-baseline engine for numeric canonical metrics reviewed for longitudinal baselining. It preserves immutable pre-flight references, phase-aware comparator selection, explicit quality/context gates and personalized deltas. The live dashboard can display a baseline delta only when a validated profile is supplied; it does not invent a baseline, clinical threshold, alert or diagnosis. See `docs/PERSONAL_BASELINE_ENGINE.md`.
+
+## P11 — Cognitive & Behavioral Module
+
+The current foundation includes `/mission/readiness`, a private, session-only cognitive/behavioral assessment flow aligned to scientific baseline v1.1. It captures schedule context, fatigue, KSS sleepiness, state stress and a brief vigilance measurement path without generating a psychiatric diagnosis, fitness-for-duty label, readiness score, alert or treatment recommendation. The 60-second vigilance task is explicitly a software demo protocol; operational use requires a governed validated protocol. Task-linked NASA-TLX raw subscales are available as optional context outside the required <3-minute daily demo flow.
