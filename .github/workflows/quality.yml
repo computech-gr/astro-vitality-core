@@ -58,6 +58,9 @@ jobs:
       - name: Verify P12 Health Intelligence v1
         run: bun run verify:p12
 
+      - name: Verify P13 Action and Protocol Guidance
+        run: bun run verify:p13
+
       - name: Domain and integration tests
         run: bun run test
 

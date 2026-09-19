@@ -75,3 +75,7 @@ Cognitive/behavioral data is modeled as private longitudinal measurement, not as
 ## P12 health-intelligence contracts
 
 `src/domain/health-intelligence/` defines governed trend evidence, reviewed pattern roles, confidence breakdown and `HealthIntelligenceFinding`. Findings preserve contributing observation/source IDs, missing roles/context, confounders, uncertainty, scientific source IDs and interpretation guardrails. `confidence.score` is evidence-completeness confidence, not medical probability or readiness.
+
+## P13 action and protocol contracts
+
+P13 introduces `ProtocolDefinition`, `ActionCard`, `ActionGuidancePlan`, `GovernedEscalationTrigger` and `ActionAcknowledgement`. The governed operational action classes follow Biomarker Matrix v1.1: none, repeat/quality check, recovery/workload review, hydration/nutrition review, exercise review, environmental review and medical escalation. Severity remains separate from diagnosis: `info`, `watch`, `action`, `escalate`, and `data_quality`. Medical escalation requires explicit external governance rather than pattern inference.

@@ -10,3 +10,5 @@ export * from "./baseline";
 
 export * from "./cognitive-behavioral";
 export * from "./health-intelligence";
+
+export * from "./action-guidance";

@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   BrainCircuit,
   CheckCircle2,
   DatabaseZap,
@@ -55,7 +56,7 @@ export function HealthIntelligencePage() {
         <section className="mt-10 grid gap-4 md:grid-cols-3" aria-label="Health Intelligence state">
           <Card><CardHeader><DatabaseZap className="text-primary" /><CardTitle className="text-sm">Evidence</CardTitle></CardHeader><CardContent><p className="font-mono text-sm">NO SESSION EVIDENCE</p><p className="mt-3 text-sm text-muted-foreground">This page generates no synthetic health values. Findings appear only when real or explicitly synthetic mission evidence is supplied to the engine.</p></CardContent></Card>
           <Card><CardHeader><BrainCircuit className="text-primary" /><CardTitle className="text-sm">Reviewed patterns</CardTitle></CardHeader><CardContent><p className="font-mono text-sm">{REVIEWED_INTELLIGENCE_PATTERNS_V1_1.length} DEFINITIONS</p><p className="mt-3 text-sm text-muted-foreground">Required evidence roles, scientific sources and interpretation guardrails are preserved per pattern.</p></CardContent></Card>
-          <Card><CardHeader><AlertTriangle className="text-primary" /><CardTitle className="text-sm">Action guidance</CardTitle></CardHeader><CardContent><p className="font-mono text-sm">NOT ENABLED IN P12</p><p className="mt-3 text-sm text-muted-foreground">No treatment, protocol recommendation, medical escalation or flight-rule modification is produced in this phase.</p></CardContent></Card>
+          <Card><CardHeader><AlertTriangle className="text-primary" /><CardTitle className="text-sm">Action guidance</CardTitle></CardHeader><CardContent><p className="font-mono text-sm">P13 PROTOCOL BOUNDARY AVAILABLE</p><p className="mt-3 text-sm text-muted-foreground">Reviewed findings may map to bounded protocol categories; medical escalation remains separately governed.</p><Button asChild variant="outline" className="mt-4"><a href="/mission/guidance">Open guidance <ArrowRight /></a></Button></CardContent></Card>
         </section>
 
         <section className="mt-12 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">

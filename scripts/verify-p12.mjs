@@ -39,7 +39,7 @@ for (const token of ["missingData", "confounders", "uncertainty", "interpretatio
 if (/diagnos(?:e|is)|treat(?:ment)?/i.test(engine)) failures.push("P12 engine must not encode diagnosis or treatment logic");
 
 const component = readFileSync(join(root, "src/components/health-intelligence.tsx"), "utf8");
-for (const token of ["NO SESSION EVIDENCE", "NOT ENABLED IN P12", "Every finding preserves evidence", "Scientific baseline v1.1"]) {
+for (const token of ["NO SESSION EVIDENCE", "Every finding preserves evidence", "Scientific baseline v1.1"]) {
   if (!component.includes(token)) failures.push(`P12 UI safeguard missing: ${token}`);
 }
 

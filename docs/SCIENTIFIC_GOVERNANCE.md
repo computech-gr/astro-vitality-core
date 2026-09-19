@@ -66,3 +66,7 @@ The v1.1 matrix governs P11. Repeated named tasks, practice effects, device/inpu
 ## P12 reviewed relationship governance
 
 Health Intelligence v1 implements only relationships explicitly represented in the reviewed v1.1 scientific baseline. Cross-domain corroboration may increase evidence confidence, while shared artifacts, missing context, confounders and research-only status reduce it. CO2/cognition remains contextual rather than causal; microbiome/immune remains Research Only; no single HRV/EDA/cortisol or urine-specific-gravity value is converted into a diagnosis. New thresholds or causal relationships require claim-specific evidence and scientific/medical governance.
+
+## P13 protocol/action governance
+
+Biomarker Matrix v1.1 review item 11 allows bounded action categories: repeat measurement/quality check, workload/recovery review, hydration/nutrition review, exercise-countermeasure review, environmental correction/review and medical escalation. P13 encodes these as versioned protocol categories, not treatments. A reviewed P12 pattern can select only the approved non-diagnostic category mapping. Research-only findings remain non-operational. Medical escalation requires a separately governed authority/versioned trigger and cannot be inferred from a pattern alone. Action acknowledgements preserve protocol provenance for later P14/P15 persistence/audit work.
