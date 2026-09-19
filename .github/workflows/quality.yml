@@ -35,7 +35,10 @@ jobs:
       - name: Verify P4 canonical health data
         run: bun run verify:p4
 
-      - name: Domain contract tests
+      - name: Verify P5 device adapter SDK
+        run: bun run verify:p5
+
+      - name: Domain and integration tests
         run: bun run test
 
       - name: Typecheck

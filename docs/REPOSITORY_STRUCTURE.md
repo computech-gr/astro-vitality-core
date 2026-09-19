@@ -17,6 +17,7 @@ src/
   hooks/                      reusable React hooks
   infrastructure/             runtime/infrastructure configuration
   integrations/
+    device-adapters/          P5 vendor-neutral adapter SDK + reference fixture
     supabase/                 generated/current Supabase client boundary
   lib/                        shared technical utilities
   routes/                     TanStack Start routes
@@ -46,3 +47,7 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `docs/SCIENTIFIC_BASELINE_V1_1.md` — reviewed biologist baseline decisions and traceability hash.
 - `scripts/verify-p4.mjs` — P4 structural/safety verifier.
 - `tests/domain/p4-canonical-data.test.ts` — canonical registry, unit, round-trip, series and safety tests.
+
+- `docs/DEVICE_ADAPTER_SDK.md` — P5 adapter lifecycle, safety and normalization boundary.
+- `scripts/verify-p5.mjs` — P5 structural/safety verifier.
+- `tests/integrations/p5-device-adapter-sdk.test.ts` — adapter lifecycle and P4 normalization tests.
