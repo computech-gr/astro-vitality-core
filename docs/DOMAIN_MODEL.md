@@ -83,3 +83,7 @@ P13 introduces `ProtocolDefinition`, `ActionCard`, `ActionGuidancePlan`, `Govern
 ## P14 offline mission records
 
 `OfflineEventRecord` is an append-only local envelope for sensitive mission events. Health payloads are encrypted before IndexedDB storage. Sync metadata is separate from encrypted payload content. `SyncComparableRecord` and `resolveSyncConflict()` preserve source version, event timestamp and source priority, failing closed to manual review for unresolved ties.
+
+## P17 synthetic mission contracts
+
+`SyntheticScenarioManifest`, `SyntheticMissionDataset` and `SyntheticMissionEvent` model reproducible demo data separately from real mission records while reusing the canonical observation envelope. Fixed seeds and timestamps make replay deterministic. Observation events retain canonical provenance and `classification: synthetic`; annotation/connectivity events document scenario context without masquerading as health observations.

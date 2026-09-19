@@ -117,3 +117,7 @@ P15 adds mission-scoped cloud persistence, forced-RLS role separation, append-on
 ## P16 security boundary
 
 The connected mission path is now explicitly threat-modeled from sensor/browser collection through encrypted local storage, authenticated synchronization, forced-RLS mission persistence, Ground Medical access and pseudonymized research export. Security failures must fail closed and must never be translated into medical conclusions. See `docs/security/THREAT_MODEL.md` and `docs/security/MISUSE_CASES.md`.
+
+## P17 simulation boundary
+
+P17 adds a deterministic synthetic-data boundary above the canonical model. Scenario generators emit only reviewed canonical metric codes and pass every observation through P4 ingestion/unit/quality validation. Synthetic fixtures are explicitly classified and tagged, never replace real device adapters, and never introduce clinical thresholds or causal medical claims. Mission Day 127 also provides deterministic connectivity control events so P14/P15 offline/sync behavior can be replayed without moving cloud services into the sensor-to-astronaut critical path.

@@ -15,3 +15,5 @@ export * from "./action-guidance";
 
 export * from "./offline-mission";
 export * from "./ground-research";
+
+export * from "./simulation";

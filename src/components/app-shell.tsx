@@ -88,6 +88,7 @@ const navigation: readonly NavigationEntry[] = [
 function itemHref(label: string, fallback: string) {
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "NASA Space Apps 2026") return NASA_URL;
+  if (label === "Mission Scenario") return "/mission/simulation";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Health Intelligence" || label === "Explainable Alerts") return "/mission/intelligence";
   if (label === "Action Guidance") return "/mission/guidance";

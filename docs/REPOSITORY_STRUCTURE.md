@@ -131,3 +131,12 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `scripts/migration-policy.mjs` — shared governed-migration allowlist logic.
 - `supabase/migrations/20260919210000_p16_security_safety_hardening.sql` — P16 RLS/RPC/export hardening.
 - `.github/workflows/security.yml` — vulnerability and secret scan.
+
+### P17 Simulation & Synthetic Mission Dataset
+
+- `src/domain/simulation/` — deterministic scenario manifests, seeded generator, replay and fingerprinting.
+- `src/components/synthetic-mission.tsx` / `src/routes/mission.simulation.tsx` — scenario inspection/export UI at `/mission/simulation`.
+- `data/synthetic/scenario-manifests.v1.json` — public-safe scenario manifest catalogue.
+- `tests/simulation/p17-synthetic-mission.test.ts` — determinism, quality/missingness and scientific guardrail tests.
+- `scripts/verify-p17.mjs` — P17 structural/scope verifier.
+- `docs/SIMULATION_SYNTHETIC_DATASET.md` — source alignment and synthetic-data safety boundary.

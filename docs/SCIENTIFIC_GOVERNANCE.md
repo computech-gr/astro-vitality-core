@@ -74,3 +74,7 @@ Biomarker Matrix v1.1 review item 11 allows bounded action categories: repeat me
 ## P14 offline governance
 
 Offline operation does not relax scientific or safety governance. Cached P13 protocols preserve authority/version/source provenance. P12 findings and P13 guidance remain subject to the same research-only, uncertainty and non-diagnostic rules when disconnected. P14 does not create new thresholds or infer escalation because connectivity is absent.
+
+## P17 synthetic-data governance
+
+P17 scenarios are demonstration/test fixtures, not new scientific evidence. Values are intentionally synthetic and must not be interpreted as clinical reference ranges, operational limits, expected astronaut responses or proof of causality. CO2/cognition remains explicitly contextual/non-causal, radiation scenarios do not produce biological risk scores, and sensor artifact/missing-data cases remain visible rather than silently imputed. The v1.1 scientific baseline continues to govern which canonical metrics may be represented.
