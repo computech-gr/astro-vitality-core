@@ -12,15 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MissionLiveRouteImport } from './routes/mission.live'
 
-const MissionLiveRoute = MissionLiveRouteImport.update({
-  id: '/mission/live',
-  path: '/mission/live',
-  getParentRoute: () => rootRouteImport,
-} as any)
-
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionLiveRoute = MissionLiveRouteImport.update({
+  id: '/mission/live',
+  path: '/mission/live',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -52,18 +51,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/mission/live': {
-      id: '/mission/live'
-      path: '/mission/live'
-      fullPath: '/mission/live'
-      preLoaderRoute: typeof MissionLiveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/live': {
+      id: '/mission/live'
+      path: '/mission/live'
+      fullPath: '/mission/live'
+      preLoaderRoute: typeof MissionLiveRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
