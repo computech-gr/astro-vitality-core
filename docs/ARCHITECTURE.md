@@ -1,6 +1,6 @@
 # Architecture
 
-## Current P2 architecture
+## Current P3 architecture
 
 The repository establishes boundaries before health-domain functionality is implemented.
 
@@ -30,9 +30,9 @@ Presentation code may display domain outputs in later phases, but must not becom
 
 ## Domain layer
 
-`src/domain/` is reserved for vendor-neutral health, mission, observation, baseline, quality, alert, and protocol concepts introduced in governed later phases.
+`src/domain/` now contains the P3 vendor-neutral contracts for mission context, observations, health-signal taxonomy, data quality, provenance, scientific signal definitions, and personal-baseline definitions, plus deterministic validation and synthetic tests.
 
-The domain must remain independent from Apple, Garmin, Fitbit, Supabase, MQTT, or any other concrete provider.
+The domain must remain independent from Apple, Garmin, Fitbit, Supabase, MQTT, persistence schemas, or any other concrete provider. P3 does not yet implement alert reasoning, clinical thresholds, diagnosis, or treatment logic.
 
 ## Integrations
 
@@ -48,9 +48,9 @@ Future device adapters are expected to expose a common contract covering discove
 
 Device-specific representations must be normalized before core health-domain analysis.
 
-## Future canonical health model
+## Canonical health model
 
-Later phases will introduce a canonical observation model with explicit:
+P3 introduces a canonical observation model with explicit:
 
 - subject and mission context;
 - device/source provenance;
@@ -60,8 +60,8 @@ Later phases will introduce a canonical observation model with explicit:
 - raw-versus-derived distinction;
 - synchronization state.
 
-FHIR-compatible semantics may be used for clinical interchange while high-frequency signals retain an efficient time-series representation.
+The metric contract can carry optional external coding-system metadata so later FHIR-compatible interchange can be added without making FHIR the internal domain model. High-frequency persistence strategy remains a later-phase concern.
 
 ## Safety boundary
 
-The architecture distinguishes deterministic reviewed safety rules from experimental analytics. No autonomous diagnosis is part of P2 or implied by the public shell.
+The architecture distinguishes deterministic reviewed safety rules from experimental analytics. No autonomous diagnosis is part of P3 or implied by the public shell or domain contracts.

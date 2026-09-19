@@ -34,13 +34,14 @@ The canonical production origin remains `https://mitochondria.edocinfo.com`. Loc
 ## Quality checks
 
 ```bash
+bun run test
 bun run typecheck
 bun run lint
 bun run format:check
 bun run build
 ```
 
-Or run the complete P2 foundation and quality gate:
+Or run the complete P3 foundation, domain-contract, test, and quality gate:
 
 ```bash
 bun run check

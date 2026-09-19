@@ -1,0 +1,112 @@
+import type {
+  CanonicalObservation,
+  DomainValidationIssue,
+  DomainValidationResult,
+  ObservationValue,
+  ObservationValueKind,
+  PersonalBaselineDefinition,
+  ScientificSignalDefinition,
+} from "./contracts";
+
+function isIsoInstant(value: string): boolean {
+  if (!value || Number.isNaN(Date.parse(value))) return false;
+  return /(?:Z|[+-]\d{2}:\d{2})$/.test(value);
+}
+
+function countPopulatedValueFields(value: ObservationValue): number {
+  return [value.number, value.boolean, value.text, value.category].filter((entry) => entry !== undefined).length;
+}
+
+function valueMatchesKind(value: ObservationValue, kind: ObservationValueKind): boolean {
+  if (countPopulatedValueFields(value) !== 1) return false;
+  switch (kind) {
+    case "number":
+      return typeof value.number === "number" && Number.isFinite(value.number);
+    case "boolean":
+      return typeof value.boolean === "boolean";
+    case "text":
+      return typeof value.text === "string" && value.text.trim().length > 0;
+    case "category":
+      return typeof value.category === "string" && value.category.trim().length > 0;
+  }
+}
+
+export function validateCanonicalObservation(observation: CanonicalObservation): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+
+  if (!observation.id.trim()) issues.push({ path: "id", message: "Observation id is required" });
+  if (!observation.mission.missionId.trim()) issues.push({ path: "mission.missionId", message: "Mission id is required" });
+  if (!observation.mission.crewMemberId.trim()) issues.push({ path: "mission.crewMemberId", message: "Crew member id is required" });
+  if (!observation.source.sourceId.trim()) issues.push({ path: "source.sourceId", message: "Source id is required" });
+  if (!observation.metric.code.trim()) issues.push({ path: "metric.code", message: "Metric code is required" });
+  if (!observation.metric.displayName.trim()) issues.push({ path: "metric.displayName", message: "Metric display name is required" });
+  if (!valueMatchesKind(observation.value, observation.metric.valueKind)) {
+    issues.push({ path: "value", message: `Observation value must contain exactly one ${observation.metric.valueKind} value` });
+  }
+  if (observation.metric.valueKind === "number" && !observation.metric.unit?.trim()) {
+    issues.push({ path: "metric.unit", message: "Numeric observations require an explicit unit" });
+  }
+  if (!isIsoInstant(observation.observedAt)) {
+    issues.push({ path: "observedAt", message: "Observed time must be an ISO-8601 instant with timezone" });
+  }
+  if (!isIsoInstant(observation.provenance.capturedAt)) {
+    issues.push({ path: "provenance.capturedAt", message: "Capture time must be an ISO-8601 instant with timezone" });
+  }
+  if (observation.quality.score !== undefined && (observation.quality.score < 0 || observation.quality.score > 1)) {
+    issues.push({ path: "quality.score", message: "Quality score must be between 0 and 1" });
+  }
+  if (!observation.provenance.ingestionId.trim()) {
+    issues.push({ path: "provenance.ingestionId", message: "Ingestion id is required" });
+  }
+  if (observation.provenance.kind === "derived") {
+    if (!observation.provenance.derivationMethod?.trim()) {
+      issues.push({ path: "provenance.derivationMethod", message: "Derived observations require a derivation method" });
+    }
+    if (observation.provenance.inputObservationIds.length === 0) {
+      issues.push({ path: "provenance.inputObservationIds", message: "Derived observations require input observation ids" });
+    }
+  } else if (observation.provenance.inputObservationIds.length > 0) {
+    issues.push({ path: "provenance.inputObservationIds", message: "Only derived observations may reference input observations" });
+  }
+
+  return { valid: issues.length === 0, issues };
+}
+
+export function validateScientificSignalDefinition(definition: ScientificSignalDefinition): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+  if (!definition.id.trim()) issues.push({ path: "id", message: "Signal definition id is required" });
+  if (!definition.description.trim()) issues.push({ path: "description", message: "Description is required" });
+  if (!definition.intendedUse.trim()) issues.push({ path: "intendedUse", message: "Intended use is required" });
+  if (!definition.version.trim()) issues.push({ path: "version", message: "Version is required" });
+  if (definition.nonDiagnostic !== true) issues.push({ path: "nonDiagnostic", message: "P3 signal definitions must remain explicitly non-diagnostic" });
+  if (definition.evidence.length === 0) issues.push({ path: "evidence", message: "At least one evidence reference is required" });
+  for (const [index, evidence] of definition.evidence.entries()) {
+    if (!evidence.citationId.trim()) issues.push({ path: `evidence[${index}].citationId`, message: "Citation id is required" });
+    if (!/^https:\/\//.test(evidence.url)) issues.push({ path: `evidence[${index}].url`, message: "Evidence URL must use HTTPS" });
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+export function validatePersonalBaselineDefinition(definition: PersonalBaselineDefinition): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+  if (definition.strategy !== "individual_longitudinal") {
+    issues.push({ path: "strategy", message: "P3 baselines must be individual longitudinal baselines" });
+  }
+  if (definition.minimumObservations < 1 || !Number.isInteger(definition.minimumObservations)) {
+    issues.push({ path: "minimumObservations", message: "Minimum observations must be a positive integer" });
+  }
+  if (!(definition.minimumCoverageHours > 0)) {
+    issues.push({ path: "minimumCoverageHours", message: "Minimum coverage hours must be positive" });
+  }
+  for (const [path, value] of [
+    ["id", definition.id],
+    ["metricCode", definition.metricCode],
+    ["algorithmId", definition.algorithmId],
+    ["algorithmVersion", definition.algorithmVersion],
+    ["qualityPolicyId", definition.qualityPolicyId],
+    ["version", definition.version],
+  ] as const) {
+    if (!value.trim()) issues.push({ path, message: `${path} is required` });
+  }
+  return { valid: issues.length === 0, issues };
+}

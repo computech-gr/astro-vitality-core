@@ -29,6 +29,12 @@ jobs:
       - name: Verify foundation
         run: bun run verify:foundation
 
+      - name: Verify P3 domain contracts
+        run: bun run verify:p3
+
+      - name: Domain contract tests
+        run: bun run test
+
       - name: Typecheck
         run: bun run typecheck
 
