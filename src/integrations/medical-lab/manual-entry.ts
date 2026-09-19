@@ -14,12 +14,32 @@ export interface ManualBiomarkerEntry {
   notes?: string;
 }
 
-export function createManualBiomarkerResult(entry: ManualBiomarkerEntry): LabImportResult<LabResultInput> {
+export function createManualBiomarkerResult(
+  entry: ManualBiomarkerEntry,
+): LabImportResult<LabResultInput> {
   const metric = getCanonicalMetric(entry.metricCode);
-  if (!metric) return { ok: false, issues: [{ path: "metricCode", message: `Unknown canonical metric: ${entry.metricCode}` }] };
-  if (!metric.sourceTypes.includes("laboratory")) return { ok: false, issues: [{ path: "metricCode", message: `${entry.metricCode} is not reviewed as a laboratory metric` }] };
-  if (!Number.isFinite(entry.value)) return { ok: false, issues: [{ path: "value", message: "Value must be finite" }] };
-  if (!entry.sourceLabel.trim()) return { ok: false, issues: [{ path: "sourceLabel", message: "Original laboratory/source label is required" }] };
+  if (!metric)
+    return {
+      ok: false,
+      issues: [{ path: "metricCode", message: `Unknown canonical metric: ${entry.metricCode}` }],
+    };
+  if (!metric.sourceTypes.includes("laboratory"))
+    return {
+      ok: false,
+      issues: [
+        {
+          path: "metricCode",
+          message: `${entry.metricCode} is not reviewed as a laboratory metric`,
+        },
+      ],
+    };
+  if (!Number.isFinite(entry.value))
+    return { ok: false, issues: [{ path: "value", message: "Value must be finite" }] };
+  if (!entry.sourceLabel.trim())
+    return {
+      ok: false,
+      issues: [{ path: "sourceLabel", message: "Original laboratory/source label is required" }],
+    };
   return {
     ok: true,
     value: {
@@ -31,8 +51,13 @@ export function createManualBiomarkerResult(entry: ManualBiomarkerEntry): LabImp
       sourceSystem: `manual:${entry.sourceLabel}`,
       importFormat: "manual",
       ...(entry.assayMethod ? { assayMethod: entry.assayMethod } : {}),
-      ...((entry.specimenType || entry.collectedAt)
-        ? { specimen: { ...(entry.specimenType ? { specimenType: entry.specimenType } : {}), ...(entry.collectedAt ? { collectedAt: entry.collectedAt } : {}) } }
+      ...(entry.specimenType || entry.collectedAt
+        ? {
+            specimen: {
+              ...(entry.specimenType ? { specimenType: entry.specimenType } : {}),
+              ...(entry.collectedAt ? { collectedAt: entry.collectedAt } : {}),
+            },
+          }
         : {}),
       ...(entry.notes ? { notes: entry.notes } : {}),
     },

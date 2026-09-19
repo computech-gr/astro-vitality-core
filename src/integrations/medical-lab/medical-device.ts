@@ -27,10 +27,17 @@ export function medicalDeviceReadingToDraft(
 ): LabImportResult<CanonicalObservationDraft> {
   const issues: LabImportIssue[] = [];
   const metric = getCanonicalMetric(reading.metricCode);
-  if (!metric || !metric.sourceTypes.includes("device")) issues.push({ path: "metricCode", message: `${reading.metricCode} is not an approved device metric` });
-  if (!Number.isFinite(reading.value)) issues.push({ path: "value", message: "Medical-device value must be finite" });
-  if (!reading.unit.trim()) issues.push({ path: "unit", message: "Medical-device unit is required" });
-  if (!Number.isFinite(Date.parse(reading.observedAt))) issues.push({ path: "observedAt", message: "observedAt must be ISO-8601 compatible" });
+  if (!metric || !metric.sourceTypes.includes("device"))
+    issues.push({
+      path: "metricCode",
+      message: `${reading.metricCode} is not an approved device metric`,
+    });
+  if (!Number.isFinite(reading.value))
+    issues.push({ path: "value", message: "Medical-device value must be finite" });
+  if (!reading.unit.trim())
+    issues.push({ path: "unit", message: "Medical-device unit is required" });
+  if (!Number.isFinite(Date.parse(reading.observedAt)))
+    issues.push({ path: "observedAt", message: "observedAt must be ISO-8601 compatible" });
   if (issues.length) return { ok: false, issues };
   return {
     ok: true,

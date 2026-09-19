@@ -1,6 +1,10 @@
 import type { LabImportIssue, LabImportResult, LabResultInput } from "./contracts";
 
-interface FhirCoding { system?: string; code?: string; display?: string }
+interface FhirCoding {
+  system?: string;
+  code?: string;
+  display?: string;
+}
 interface FhirObservation {
   resourceType?: string;
   id?: string;
@@ -11,9 +15,16 @@ interface FhirObservation {
   issued?: string;
   specimen?: { reference?: string; display?: string };
   method?: { text?: string; coding?: FhirCoding[] };
-  referenceRange?: { low?: { value?: number; unit?: string }; high?: { value?: number; unit?: string }; text?: string }[];
+  referenceRange?: {
+    low?: { value?: number; unit?: string };
+    high?: { value?: number; unit?: string };
+    text?: string;
+  }[];
 }
-interface FhirBundle { resourceType?: string; entry?: { resource?: FhirObservation }[] }
+interface FhirBundle {
+  resourceType?: string;
+  entry?: { resource?: FhirObservation }[];
+}
 
 export type FhirMetricMap = Record<string, string>;
 
@@ -29,15 +40,41 @@ function parseObservation(
 ): LabImportResult<LabResultInput> {
   const issues: LabImportIssue[] = [];
   const codings = observation.code?.coding ?? [];
-  const mapped = codings.map(mappingKey).filter((key): key is string => Boolean(key)).find((key) => metricMap[key]);
+  const mapped = codings
+    .map(mappingKey)
+    .filter((key): key is string => Boolean(key))
+    .find((key) => metricMap[key]);
   const metricCode = mapped ? metricMap[mapped] : undefined;
-  if (!metricCode) issues.push({ path: `fhir.${index}.code`, message: "FHIR Observation code is not mapped to a reviewed canonical metric" });
-  if (typeof observation.valueQuantity?.value !== "number") issues.push({ path: `fhir.${index}.valueQuantity.value`, message: "Numeric valueQuantity is required" });
+  if (!metricCode)
+    issues.push({
+      path: `fhir.${index}.code`,
+      message: "FHIR Observation code is not mapped to a reviewed canonical metric",
+    });
+  if (typeof observation.valueQuantity?.value !== "number")
+    issues.push({
+      path: `fhir.${index}.valueQuantity.value`,
+      message: "Numeric valueQuantity is required",
+    });
   const unit = observation.valueQuantity?.code ?? observation.valueQuantity?.unit;
-  if (!unit) issues.push({ path: `fhir.${index}.valueQuantity.unit`, message: "FHIR quantity unit/code is required" });
+  if (!unit)
+    issues.push({
+      path: `fhir.${index}.valueQuantity.unit`,
+      message: "FHIR quantity unit/code is required",
+    });
   const observedAt = observation.effectiveDateTime ?? observation.issued;
-  if (!observedAt) issues.push({ path: `fhir.${index}.effectiveDateTime`, message: "FHIR observation time is required" });
-  if (issues.length || !metricCode || typeof observation.valueQuantity?.value !== "number" || !unit || !observedAt) return { ok: false, issues };
+  if (!observedAt)
+    issues.push({
+      path: `fhir.${index}.effectiveDateTime`,
+      message: "FHIR observation time is required",
+    });
+  if (
+    issues.length ||
+    !metricCode ||
+    typeof observation.valueQuantity?.value !== "number" ||
+    !unit ||
+    !observedAt
+  )
+    return { ok: false, issues };
   const range = observation.referenceRange?.[0];
   const rangeUnit = range?.low?.unit ?? range?.high?.unit;
   return {
@@ -51,7 +88,16 @@ function parseObservation(
       sourceSystem,
       importFormat: "fhir",
       ...(observation.specimen
-        ? { specimen: { ...(observation.specimen.reference ? { specimenId: observation.specimen.reference } : {}), ...(observation.specimen.display ? { specimenType: observation.specimen.display } : {}) } }
+        ? {
+            specimen: {
+              ...(observation.specimen.reference
+                ? { specimenId: observation.specimen.reference }
+                : {}),
+              ...(observation.specimen.display
+                ? { specimenType: observation.specimen.display }
+                : {}),
+            },
+          }
         : {}),
       ...(observation.method?.text ? { assayMethod: observation.method.text } : {}),
       ...(range
@@ -73,12 +119,24 @@ export function parseFhirLabResource(
   sourceSystem: string,
   metricMap: FhirMetricMap,
 ): LabImportResult<LabResultInput[]> {
-  const observations: FhirObservation[] = resource.resourceType === "Bundle"
-    ? ((resource as FhirBundle).entry ?? []).map((entry) => entry.resource).filter((item): item is FhirObservation => item?.resourceType === "Observation")
-    : resource.resourceType === "Observation"
-      ? [resource as FhirObservation]
-      : [];
-  if (!observations.length) return { ok: false, issues: [{ path: "fhir.resourceType", message: "Expected a FHIR Observation or Bundle containing Observations" }] };
+  const observations: FhirObservation[] =
+    resource.resourceType === "Bundle"
+      ? ((resource as FhirBundle).entry ?? [])
+          .map((entry) => entry.resource)
+          .filter((item): item is FhirObservation => item?.resourceType === "Observation")
+      : resource.resourceType === "Observation"
+        ? [resource as FhirObservation]
+        : [];
+  if (!observations.length)
+    return {
+      ok: false,
+      issues: [
+        {
+          path: "fhir.resourceType",
+          message: "Expected a FHIR Observation or Bundle containing Observations",
+        },
+      ],
+    };
   const output: LabResultInput[] = [];
   const issues: LabImportIssue[] = [];
   observations.forEach((observation, index) => {

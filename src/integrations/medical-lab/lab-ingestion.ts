@@ -17,14 +17,21 @@ const GOOD_LAB_QUALITY = { level: "good" as const, score: 1, artifactFlags: [] a
 function validateLabInput(input: LabResultInput): LabImportIssue[] {
   const issues: LabImportIssue[] = [];
   const metric = getCanonicalMetric(input.metricCode);
-  if (!metric) return [{ path: "metricCode", message: `Unknown canonical metric: ${input.metricCode}` }];
+  if (!metric)
+    return [{ path: "metricCode", message: `Unknown canonical metric: ${input.metricCode}` }];
   if (!metric.sourceTypes.includes("laboratory")) {
-    issues.push({ path: "metricCode", message: `${input.metricCode} is not approved for laboratory provenance` });
+    issues.push({
+      path: "metricCode",
+      message: `${input.metricCode} is not approved for laboratory provenance`,
+    });
   }
-  if (!Number.isFinite(input.value)) issues.push({ path: "value", message: "Laboratory value must be finite" });
+  if (!Number.isFinite(input.value))
+    issues.push({ path: "value", message: "Laboratory value must be finite" });
   if (!input.unit.trim()) issues.push({ path: "unit", message: "Laboratory unit is required" });
-  if (!Number.isFinite(Date.parse(input.observedAt))) issues.push({ path: "observedAt", message: "observedAt must be ISO-8601 compatible" });
-  if (!input.sourceSystem.trim()) issues.push({ path: "sourceSystem", message: "sourceSystem is required for provenance" });
+  if (!Number.isFinite(Date.parse(input.observedAt)))
+    issues.push({ path: "observedAt", message: "observedAt must be ISO-8601 compatible" });
+  if (!input.sourceSystem.trim())
+    issues.push({ path: "sourceSystem", message: "sourceSystem is required for provenance" });
   return issues;
 }
 
@@ -68,9 +75,15 @@ export function ingestLabResult(
         ...(input.specimen?.specimenId ? [`specimen-id:${input.specimen.specimenId}`] : []),
         ...(input.specimen?.fasting === true ? ["fasting:true"] : []),
         ...(input.specimen?.fasting === false ? ["fasting:false"] : []),
-        ...(input.specimen?.collectedAt ? [`specimen-collected-at:${input.specimen.collectedAt}`] : []),
-        ...(input.referenceInterval?.text ? [`reference-interval:${input.referenceInterval.text}`] : []),
-        ...(input.referenceInterval?.source ? [`reference-source:${input.referenceInterval.source}`] : []),
+        ...(input.specimen?.collectedAt
+          ? [`specimen-collected-at:${input.specimen.collectedAt}`]
+          : []),
+        ...(input.referenceInterval?.text
+          ? [`reference-interval:${input.referenceInterval.text}`]
+          : []),
+        ...(input.referenceInterval?.source
+          ? [`reference-source:${input.referenceInterval.source}`]
+          : []),
         ...(input.notes ? [`note:${input.notes}`] : []),
       ],
     },
@@ -79,12 +92,19 @@ export function ingestLabResult(
   const ingested = ingestCanonicalObservation(draft);
   return ingested.ok
     ? { ok: true, value: ingested.envelope }
-    : { ok: false, issues: ingested.issues.map((issue) => ({ path: issue.path, message: issue.message })) };
+    : {
+        ok: false,
+        issues: ingested.issues.map((issue) => ({ path: issue.path, message: issue.message })),
+      };
 }
 
 export function labResultViewModel(input: LabResultInput): LabImportResult<LabResultViewModel> {
   const metric = getCanonicalMetric(input.metricCode);
-  if (!metric) return { ok: false, issues: [{ path: "metricCode", message: `Unknown canonical metric: ${input.metricCode}` }] };
+  if (!metric)
+    return {
+      ok: false,
+      issues: [{ path: "metricCode", message: `Unknown canonical metric: ${input.metricCode}` }],
+    };
   const issues = validateLabInput(input);
   if (issues.length) return { ok: false, issues };
   return {

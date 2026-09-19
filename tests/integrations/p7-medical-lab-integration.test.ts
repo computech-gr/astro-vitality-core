@@ -77,9 +77,30 @@ describe("P7 medical and laboratory integration", () => {
 
   test("SpO2 and blood-pressure medical-device readings normalize through the same canonical model", () => {
     const readings = [
-      { readingId: "spo2-1", metricCode: "phys.spo2" as const, value: 98, unit: "%", observedAt: "2026-09-19T08:00:00Z", deviceId: "medical:spo2-1" },
-      { readingId: "bp-s-1", metricCode: "phys.bp_systolic" as const, value: 118, unit: "mmHg", observedAt: "2026-09-19T08:01:00Z", deviceId: "medical:bp-1" },
-      { readingId: "bp-d-1", metricCode: "phys.bp_diastolic" as const, value: 76, unit: "mmHg", observedAt: "2026-09-19T08:01:00Z", deviceId: "medical:bp-1" },
+      {
+        readingId: "spo2-1",
+        metricCode: "phys.spo2" as const,
+        value: 98,
+        unit: "%",
+        observedAt: "2026-09-19T08:00:00Z",
+        deviceId: "medical:spo2-1",
+      },
+      {
+        readingId: "bp-s-1",
+        metricCode: "phys.bp_systolic" as const,
+        value: 118,
+        unit: "mmHg",
+        observedAt: "2026-09-19T08:01:00Z",
+        deviceId: "medical:bp-1",
+      },
+      {
+        readingId: "bp-d-1",
+        metricCode: "phys.bp_diastolic" as const,
+        value: 76,
+        unit: "mmHg",
+        observedAt: "2026-09-19T08:01:00Z",
+        deviceId: "medical:bp-1",
+      },
     ];
     const results = readings.map((reading) => medicalDeviceReadingToDraft(reading, context));
     for (const result of results) {
