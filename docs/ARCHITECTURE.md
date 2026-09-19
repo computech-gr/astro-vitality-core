@@ -1,6 +1,6 @@
 # Architecture
 
-## Current P4 architecture
+## Current P5 architecture
 
 The repository establishes boundaries before health-domain functionality is implemented.
 
@@ -42,11 +42,11 @@ The domain remains independent from Apple, Garmin, Fitbit, Supabase, MQTT, persi
 
 `src/infrastructure/` contains runtime/configuration concerns. `config.ts` owns the canonical-origin rule and prevents Lovable preview hosts from becoming canonical production URLs.
 
-## Future device adapter boundary
+## Universal device adapter boundary
 
-Future device adapters are expected to expose a common contract covering discovery/connection where relevant, capabilities, streaming/import, data quality, normalization, resume cursors, and device/adapter health.
+P5 implements the common device-adapter SDK under `src/integrations/device-adapters/`. Adapters expose discovery, connection, capabilities, streaming/import, quality, normalization, resume cursors, clock metadata, health and disconnect semantics.
 
-Device-specific representations must be normalized before core health-domain analysis.
+Vendor representations must pass through the governed P4 canonical metric registry and ingestion/series validation before core health-domain analysis. Unknown vendor metrics fail closed. The included reference adapter is a deterministic conformance fixture, not a real-device integration or product simulator.
 
 ## Canonical health model
 

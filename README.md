@@ -132,3 +132,8 @@ The canonical domain contracts live in `src/domain/`. See [`docs/DOMAIN_MODEL.md
 Challenge site: https://www.spaceappschallenge.org/2026/
 
 The project may reference NASA public resources and challenge materials. Such references do not imply NASA endorsement. Sources used by the project are tracked in [`CITATIONS.md`](CITATIONS.md).
+
+
+### P5 device adapter SDK
+
+The repository now includes the vendor-neutral Universal Device Adapter SDK and a deterministic conformance fixture. No real wearable integration is claimed in P5; adapters must normalize through the reviewed P4 canonical health-data boundary. See `docs/DEVICE_ADAPTER_SDK.md`.
