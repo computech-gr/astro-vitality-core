@@ -44,6 +44,9 @@ jobs:
       - name: Verify P7 medical and lab integration
         run: bun run verify:p7
 
+      - name: Verify P8 environmental and radiation telemetry
+        run: bun run verify:p8
+
       - name: Domain and integration tests
         run: bun run test
 

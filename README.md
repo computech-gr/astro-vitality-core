@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository is in **P6 — Wearables Integration Pack**. P3 established vendor-neutral crew/mission identity and canonical observation contracts. The reviewed `Astronaut_Biomarker_Matrix_v1.1` now closes the P1 team-biologist review dependency and seeds P4 with a traceable metric catalogue, governed unit normalization, scalar and raw-series ingestion paths, explicit context/provenance, and deterministic serialization round-trip tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, authentication workflows, and database persistence remain intentionally **not yet implemented**. P5 defines the vendor-neutral adapter SDK and P6 adds concrete wearable source classes for direct BLE, native Health Connect/HealthKit bridges, and vendor-cloud imports.
+The repository is in **P8 — Environmental & Radiation Telemetry**. P3 established vendor-neutral crew/mission identity and canonical observation contracts. The reviewed `Astronaut_Biomarker_Matrix_v1.1` now closes the P1 team-biologist review dependency and seeds P4 with a traceable metric catalogue, governed unit normalization, scalar and raw-series ingestion paths, explicit context/provenance, and deterministic serialization round-trip tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, authentication workflows, and database persistence remain intentionally **not yet implemented**. P5 defines the vendor-neutral adapter SDK, P6 adds wearable source classes, P7 adds medical/laboratory ingestion, and P8 adds governed spacecraft-environment and personal-radiation telemetry boundaries.
 
 ## Architecture principles
 
@@ -92,7 +92,7 @@ bun run format        # apply Prettier formatting
 bun run format:check  # verify formatting
 bun run build         # production build
 bun run preview       # preview production build
-bun run check         # foundation + P3/P4/P5/P6 verification + tests + typecheck + lint + format + build
+bun run check         # foundation + P3/P4/P5/P6/P7/P8 verification + tests + typecheck + lint + format + build
 ```
 
 ## Quality gate
@@ -144,3 +144,7 @@ P6 adds direct Web Bluetooth heart-rate ingestion, host-provided Android Health 
 ### P7 — Medical & laboratory integration
 
 The repository now includes governed CSV/FHIR laboratory import, a manual biomarker-entry fallback, and medical-device normalization for SpO2 and blood pressure. All P7 inputs remain constrained by the reviewed v1.1 canonical metric catalogue and preserve provenance; P7 does not introduce clinical thresholds, diagnosis, database migrations, or persistence claims.
+
+### P8 — Environmental & radiation telemetry
+
+P8 adds governed habitat/environment telemetry and personal-radiation dosimetry adapters. Reviewed CO2, O2, pressure, thermal, humidity, noise, light, CO, and radiation quantities converge on the same P4 canonical observation model while unreviewed vendor metrics fail closed. P8 does not add habitat thresholds, biological radiation-risk scoring, database persistence, or credentials. See `docs/ENVIRONMENTAL_RADIATION_TELEMETRY.md`.

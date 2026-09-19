@@ -19,6 +19,8 @@ src/
   integrations/
     device-adapters/          P5 vendor-neutral adapter SDK + reference fixture
     wearables/                P6 BLE/mobile-health/vendor-cloud adapters
+    medical-lab/              P7 FHIR/CSV/manual/medical-device ingestion
+    environmental-telemetry/  P8 habitat/environment + radiation adapters
     supabase/                 generated/current Supabase client boundary
   lib/                        shared technical utilities
   routes/                     TanStack Start routes
@@ -60,3 +62,8 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/integrations/medical-lab/` — P7 FHIR/CSV/manual biomarker and medical-device ingestion boundary.
 - `tests/integrations/p7-medical-lab-integration.test.ts` — P7 provenance, fail-closed mapping and medical-device canonicalization tests.
 - `docs/MEDICAL_LAB_INTEGRATION.md` — P7 integration and safety contract.
+
+- `src/integrations/environmental-telemetry/` — P8 habitat/environment and personal-radiation telemetry boundaries.
+- `tests/integrations/p8-environmental-radiation.test.ts` — P8 canonicalization, context, fail-closed and Gy/Sv separation tests.
+- `docs/ENVIRONMENTAL_RADIATION_TELEMETRY.md` — P8 integration and safety contract.
+- `scripts/verify-p8.mjs` — P8 structural/safety verifier.
