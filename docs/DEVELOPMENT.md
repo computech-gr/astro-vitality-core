@@ -40,7 +40,7 @@ bun run format:check
 bun run build
 ```
 
-Or run all gates:
+Or run the complete P2 foundation and quality gate:
 
 ```bash
 bun run check
