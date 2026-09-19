@@ -22,7 +22,7 @@ export function isLovablePreviewOrigin(origin: string): boolean {
  * preview host as canonical.
  */
 export function getSiteOrigin(): string {
-  const override = import.meta.env.VITE_SITE_ORIGIN as string | undefined;
+  const override = import.meta.env["VITE_SITE_ORIGIN"] as string | undefined;
   if (override && !isLovablePreviewOrigin(override)) return override;
 
   if (typeof window !== "undefined") {
