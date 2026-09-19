@@ -1,0 +1,37 @@
+name: Scientific change request
+description: Propose a biomarker, relationship, threshold, protocol, or interpretation change.
+title: "[Science]: "
+labels: ["science-review"]
+body:
+  - type: markdown
+    attributes:
+      value: Scientific changes are evidence-governed. Do not include private health data.
+  - type: textarea
+    id: claim
+    attributes:
+      label: Proposed scientific change
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and citations
+      description: Provide traceable references and distinguish evidence from hypothesis.
+    validations:
+      required: true
+  - type: dropdown
+    id: operational
+    attributes:
+      label: Intended classification
+      options:
+        - Research only
+        - Context only
+        - Candidate operational logic requiring review
+    validations:
+      required: true
+  - type: textarea
+    id: guardrails
+    attributes:
+      label: Confounders, uncertainty, and safety guardrails
+    validations:
+      required: true

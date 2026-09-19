@@ -76,6 +76,9 @@ jobs:
       - name: Verify P18 validation and usability
         run: bun run verify:p18
 
+      - name: Verify P19 open-source release candidate
+        run: bun run verify:p19
+
       - name: Security boundary audit
         run: bun run security:audit
 

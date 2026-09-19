@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository has completed **P17 — Simulation & Synthetic Mission Dataset** and now adds **P18 — Validation & Usability**. The controlled stack includes canonical mission-health data, device/wearable/lab/environment integration, live astronaut monitoring, personal baselines, cognitive/behavioral assessment, explainable health intelligence, bounded protocol guidance, encrypted offline operation, authenticated Ground/Research persistence and security hardening. P18 adds a fail-closed validation evidence ledger, critical workflow review, accessibility/cognitive-load checks, engineering latency evidence and an explicit known-limitations register. It does not claim clinical validation.
+The repository has completed **P18 — Validation & Usability** and now adds **P19 — Open-Source Release Candidate**. The controlled stack includes canonical mission-health data, device/wearable/lab/environment integration, live astronaut monitoring, personal baselines, cognitive/behavioral assessment, explainable health intelligence, bounded protocol guidance, encrypted offline operation, authenticated Ground/Research persistence and security hardening. P19 packages the validated prototype for independent reproduction with Docker, local Supabase, deterministic synthetic sample generation, release documentation, and contribution templates. It remains a non-clinically-validated challenge prototype.
 
 ## Architecture principles
 
@@ -43,7 +43,7 @@ src/
   routes/           TanStack Start routes
   lib/              shared technical utilities
 public/              static public assets and PWA manifest
-supabase/            Supabase project configuration; no P4 schema migrations
+supabase/            Local Supabase config, governed migrations, and synthetic-only seed data
 docs/                architecture, domain/science governance, development, open-source, security
 .github/workflows/    CI quality gates
 ```
@@ -92,7 +92,7 @@ bun run format        # apply Prettier formatting
 bun run format:check  # verify formatting
 bun run build         # production build
 bun run preview       # preview production build
-bun run check         # foundation + P3/P4/P5/P6/P7/P8 verification + tests + typecheck + lint + format + build
+bun run check         # P2-P19 verification + security audit + tests + typecheck + lint + format + build
 ```
 
 ## Quality gate
@@ -191,3 +191,22 @@ P17 adds deterministic synthetic mission scenarios for reproducible challenge de
 ### P18 — Validation & Usability
 
 P18 adds `/mission/validation`, a controlled validation evidence ledger, critical workflow review, accessibility and cognitive-load checks, engineering latency evidence, and explicit known limitations. Critical manual criteria cannot pass without recorded evidence; target-hardware battery characterization remains a documented limitation until real hardware is available. See `docs/VALIDATION_USABILITY.md` and `docs/KNOWN_LIMITATIONS.md`.
+
+### P19 — Open-Source Release Candidate
+
+P19 adds the independent-machine release path required by the roadmap: Docker packaging, local Supabase bootstrap/reset, synthetic-only seed data, deterministic Mission Day 127 sample generation, API/adapter reference documentation, release checklists, and GitHub issue/PR templates. Lovable is not required to reproduce the release candidate from source. See `docs/RELEASE_CANDIDATE.md` and `docs/LOCAL_REPRODUCIBILITY.md`.
+
+Quick local reproduction:
+
+```bash
+bun install --frozen-lockfile
+bun run setup:local
+bun run check
+bun run dev
+```
+
+Docker application path after `setup:local`:
+
+```bash
+bun run docker:up
+```

@@ -22,3 +22,7 @@ A fresh clone must be able to install dependencies from the committed lockfile, 
 ## Self-hosting direction
 
 Later release phases will document local/self-hosted backend deployment and sample data. P2 establishes repository and environment discipline but does not claim a complete self-hosted mission backend yet.
+
+## P19 release-candidate packaging
+
+The open-source release candidate includes Docker packaging, local Supabase bootstrap/reset, synthetic-only seed/sample data, API/adapter documentation, issue templates and a reproducibility checklist. The canonical source remains GitHub; no proprietary builder state is required to reproduce the current prototype. Challenge-development tags remain `v0.x` until final release criteria are met.
