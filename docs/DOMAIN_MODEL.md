@@ -56,7 +56,6 @@ independent of any specific interchange format.
 
 P3 also defines vendor-neutral `CrewMember`, `Mission`, and `CrewAssignment` contracts. These establish stable identifiers and mission membership without coupling the domain to Supabase Auth or any identity provider. Assignment intervals are explicitly validated so later observation ingestion can prove that a subject belongs to the referenced mission context. Authentication, authorization, persistence, and RLS remain implementation concerns for later infrastructure work.
 
-
 ## P4 reviewed metric catalogue and ingestion
 
 P4 promotes a reviewed MVP/near-term subset of `SPACE_APPS_2026_Astronaut_Biomarker_Matrix_v1.1.xlsx` into stable canonical metric definitions. Every promoted metric retains its matrix sheet/row, evidence source IDs, review disposition, priority, cadence, interpretation tier, source types, and scientific-baseline version. Rows marked `REMOVE` are excluded.
