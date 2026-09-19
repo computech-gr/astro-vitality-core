@@ -25,7 +25,10 @@ describe("P16 Security & Safety Hardening", () => {
 
   test("hardening migration fails closed on misuse-sensitive paths", () => {
     const sql = readFileSync(
-      join(process.cwd(), "supabase/migrations/20260919210000_p16_security_safety_hardening.sql"),
+      join(
+        process.cwd(),
+        "supabase/migrations/20260919170410_cfadc7d4-72db-42ad-a76e-4181cc0c70f4.sql",
+      ),
       "utf8",
     ).toLowerCase();
     for (const required of [
