@@ -1,0 +1,17 @@
+{
+  "name": "Mitochondria",
+  "short_name": "Mitochondria",
+  "description": "Open-source, offline-first astronaut health intelligence platform.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0f14",
+  "theme_color": "#0b0f14",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
