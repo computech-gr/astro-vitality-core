@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { findUnexpectedMigrations } from "./migration-policy.mjs";
 const root = process.cwd();
 const failures = [];
 const required = [
@@ -42,19 +43,9 @@ if (!String(pkg.scripts?.check ?? "").includes("verify:p5"))
   failures.push("Full check must include verify:p5");
 const workflow = readFileSync(join(root, ".github/workflows/quality.yml"), "utf8");
 if (!workflow.includes("bun run verify:p5")) failures.push("CI must run the P5 verifier");
-const migrationsDir = join(root, "supabase", "migrations");
-if (existsSync(migrationsDir)) {
-  const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  const unexpected = sql.filter(
-    (name) =>
-      ![
-        "20260919190000_p15_ground_research_console.sql",
-        "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
-        "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
-      ].includes(name),
-  );
-  if (unexpected.length)
-    failures.push(`P5 SDK must not add database migrations: ${unexpected.join(", ")}`);
+const unexpectedMigrations = findUnexpectedMigrations(root);
+if (unexpectedMigrations.length) {
+  failures.push(`Unexpected Supabase migrations: ${unexpectedMigrations.join(", ")}`);
 }
 if (failures.length) {
   console.error("P5 device adapter SDK verification FAILED:\n- " + failures.join("\n- "));

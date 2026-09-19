@@ -64,6 +64,15 @@ jobs:
       - name: Verify P14 Offline Mission Mode
         run: bun run verify:p14
 
+      - name: Verify P15 Ground / Research Console
+        run: bun run verify:p15
+
+      - name: Verify P16 security and safety hardening
+        run: bun run verify:p16
+
+      - name: Security boundary audit
+        run: bun run security:audit
+
       - name: Domain and integration tests
         run: bun run test
 

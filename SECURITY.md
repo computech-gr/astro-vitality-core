@@ -45,3 +45,7 @@ Security review includes conventional application threats and health/safety fail
 - presentation of experimental intelligence as clinical diagnosis.
 
 Operational safety controls will be implemented only in governed later phases. The P2 repository foundation does not claim clinical validation.
+
+## P16 automated security gates
+
+The repository runs `bun run security:audit` as part of the main quality gate. It checks tracked-secret patterns, browser references to server-only Supabase privilege boundaries, `SECURITY DEFINER` search-path pinning and public/anonymous execute grants. A separate GitHub security workflow performs scheduled and change-triggered filesystem vulnerability/secret scanning.
