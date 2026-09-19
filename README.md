@@ -183,6 +183,7 @@ Ground/research role boundaries, authenticated store-and-forward persistence, au
 ### P16 — Security & Safety Hardening
 
 P16 adds the project threat model, misuse-case regression set, SSR security headers, secret/server-boundary audit, RLS/RPC hardening, replay-conflict protection and safer pseudonymized research export. It does not add clinical authority or change the scientific baseline.
+
 ### P17 — Simulation & Synthetic Mission Dataset
 
 P17 adds deterministic synthetic mission scenarios for reproducible challenge demos and regression testing. `Mission → Mission Scenario` opens `/mission/simulation`, where the controlled Mission Day 127 scenario and focused artifact/CO2/radiation cases can be generated repeatedly from fixed seeds, inspected and exported as synthetic JSON. Generated observations pass through the P4 canonical ingestion boundary and are always classified/tagged as synthetic. The generator includes explicit artifact, missing-data, CO2 non-causality, radiation-no-risk-score and offline/reconnect guardrails. See [`docs/SIMULATION_SYNTHETIC_DATASET.md`](docs/SIMULATION_SYNTHETIC_DATASET.md).
