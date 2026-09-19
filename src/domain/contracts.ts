@@ -52,6 +52,48 @@ export const DATA_CLASSIFICATIONS = [
 ] as const;
 export type DataClassification = (typeof DATA_CLASSIFICATIONS)[number];
 
+
+export const MISSION_STATUSES = ["planning", "active", "completed", "aborted"] as const;
+export type MissionStatus = (typeof MISSION_STATUSES)[number];
+
+export const CREW_MEMBER_STATUSES = ["candidate", "active", "inactive"] as const;
+export type CrewMemberStatus = (typeof CREW_MEMBER_STATUSES)[number];
+
+export const CREW_ASSIGNMENT_ROLES = ["crew", "commander", "medical_officer", "researcher"] as const;
+export type CrewAssignmentRole = (typeof CREW_ASSIGNMENT_ROLES)[number];
+
+/** Stable, non-clinical identity for a person represented inside a mission context. */
+export interface CrewMember {
+  id: string;
+  externalRef?: string;
+  displayName: string;
+  status: CrewMemberStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Mission identity and temporal envelope. No health or clinical state belongs here. */
+export interface Mission {
+  id: string;
+  code: string;
+  name: string;
+  status: MissionStatus;
+  startsAt?: string;
+  endsAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Versionable relationship between a crew member and a mission. */
+export interface CrewAssignment {
+  id: string;
+  missionId: string;
+  crewMemberId: string;
+  role: CrewAssignmentRole;
+  activeFrom: string;
+  activeUntil?: string;
+}
+
 export interface MissionContextRef {
   missionId: string;
   crewMemberId: string;

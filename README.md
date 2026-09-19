@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository is in **P3 — Canonical Health Domain & Scientific Governance**. P2 established the public mission shell, repository/open-source foundation, canonical-origin safeguards, and Supabase client scaffolding. P3 adds vendor-neutral mission-health contracts, provenance and data-quality invariants, scientific evidence/review metadata, an explicit non-diagnostic boundary, and executable synthetic contract tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, device adapters, authentication workflows, and database schema remain intentionally **not yet implemented**.
+The repository is in **P3 — Identity, Mission, Crew & Canonical Health Domain**. P2 established the public mission shell, repository/open-source foundation, canonical-origin safeguards, and Supabase client scaffolding. P3 adds vendor-neutral crew identity, mission and crew-assignment contracts together with mission-health observations, provenance and data-quality invariants, scientific evidence/review metadata, an explicit non-diagnostic boundary, and executable synthetic contract tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, device adapters, authentication workflows, and database schema remain intentionally **not yet implemented**.
 
 ## Architecture principles
 

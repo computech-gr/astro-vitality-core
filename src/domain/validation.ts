@@ -1,7 +1,10 @@
 import type {
   CanonicalObservation,
+  CrewAssignment,
+  CrewMember,
   DomainValidationIssue,
   DomainValidationResult,
+  Mission,
   ObservationValue,
   ObservationValueKind,
   PersonalBaselineDefinition,
@@ -107,6 +110,44 @@ export function validatePersonalBaselineDefinition(definition: PersonalBaselineD
     ["version", definition.version],
   ] as const) {
     if (!value.trim()) issues.push({ path, message: `${path} is required` });
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+
+export function validateCrewMember(member: CrewMember): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+  if (!member.id.trim()) issues.push({ path: "id", message: "Crew member id is required" });
+  if (!member.displayName.trim()) issues.push({ path: "displayName", message: "Crew member display name is required" });
+  if (!isIsoInstant(member.createdAt)) issues.push({ path: "createdAt", message: "Crew member createdAt must be an ISO-8601 instant with timezone" });
+  if (!isIsoInstant(member.updatedAt)) issues.push({ path: "updatedAt", message: "Crew member updatedAt must be an ISO-8601 instant with timezone" });
+  return { valid: issues.length === 0, issues };
+}
+
+export function validateMission(mission: Mission): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+  if (!mission.id.trim()) issues.push({ path: "id", message: "Mission id is required" });
+  if (!mission.code.trim()) issues.push({ path: "code", message: "Mission code is required" });
+  if (!mission.name.trim()) issues.push({ path: "name", message: "Mission name is required" });
+  if (!isIsoInstant(mission.createdAt)) issues.push({ path: "createdAt", message: "Mission createdAt must be an ISO-8601 instant with timezone" });
+  if (!isIsoInstant(mission.updatedAt)) issues.push({ path: "updatedAt", message: "Mission updatedAt must be an ISO-8601 instant with timezone" });
+  if (mission.startsAt && !isIsoInstant(mission.startsAt)) issues.push({ path: "startsAt", message: "Mission startsAt must be an ISO-8601 instant with timezone" });
+  if (mission.endsAt && !isIsoInstant(mission.endsAt)) issues.push({ path: "endsAt", message: "Mission endsAt must be an ISO-8601 instant with timezone" });
+  if (mission.startsAt && mission.endsAt && Date.parse(mission.endsAt) < Date.parse(mission.startsAt)) {
+    issues.push({ path: "endsAt", message: "Mission end cannot precede mission start" });
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+export function validateCrewAssignment(assignment: CrewAssignment): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+  for (const [path, value] of [["id", assignment.id], ["missionId", assignment.missionId], ["crewMemberId", assignment.crewMemberId]] as const) {
+    if (!value.trim()) issues.push({ path, message: `${path} is required` });
+  }
+  if (!isIsoInstant(assignment.activeFrom)) issues.push({ path: "activeFrom", message: "Assignment activeFrom must be an ISO-8601 instant with timezone" });
+  if (assignment.activeUntil && !isIsoInstant(assignment.activeUntil)) issues.push({ path: "activeUntil", message: "Assignment activeUntil must be an ISO-8601 instant with timezone" });
+  if (assignment.activeUntil && Date.parse(assignment.activeUntil) < Date.parse(assignment.activeFrom)) {
+    issues.push({ path: "activeUntil", message: "Assignment end cannot precede assignment start" });
   }
   return { valid: issues.length === 0, issues };
 }

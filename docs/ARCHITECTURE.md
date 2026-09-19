@@ -30,7 +30,7 @@ Presentation code may display domain outputs in later phases, but must not becom
 
 ## Domain layer
 
-`src/domain/` now contains the P3 vendor-neutral contracts for mission context, observations, health-signal taxonomy, data quality, provenance, scientific signal definitions, and personal-baseline definitions, plus deterministic validation and synthetic tests.
+`src/domain/` now contains the P3 vendor-neutral contracts for crew identity, missions, crew assignments, mission context, observations, health-signal taxonomy, data quality, provenance, scientific signal definitions, and personal-baseline definitions, plus deterministic validation and synthetic tests.
 
 The domain must remain independent from Apple, Garmin, Fitbit, Supabase, MQTT, persistence schemas, or any other concrete provider. P3 does not yet implement alert reasoning, clinical thresholds, diagnosis, or treatment logic.
 

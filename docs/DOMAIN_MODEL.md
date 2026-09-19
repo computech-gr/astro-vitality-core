@@ -1,4 +1,4 @@
-# P3 Canonical Health Domain Model
+# P3 Identity, Mission, Crew & Canonical Health Domain Model
 
 P3 introduces the first executable, vendor-neutral health-data contracts for The
 Mitochondria. The purpose is to create a stable language for later device,
@@ -51,3 +51,7 @@ validation independently from the data contract.
 Metric contracts can carry an optional external coding system/code pair. This
 allows later alignment with standards such as HL7 FHIR while keeping the domain
 independent of any specific interchange format.
+
+## Identity, mission, and crew closure
+
+P3 also defines vendor-neutral `CrewMember`, `Mission`, and `CrewAssignment` contracts. These establish stable identifiers and mission membership without coupling the domain to Supabase Auth or any identity provider. Assignment intervals are explicitly validated so later observation ingestion can prove that a subject belongs to the referenced mission context. Authentication, authorization, persistence, and RLS remain implementation concerns for later infrastructure work.
