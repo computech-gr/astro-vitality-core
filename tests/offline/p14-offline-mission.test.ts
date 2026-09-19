@@ -35,8 +35,13 @@ describe("P14 Offline Mission Mode", () => {
     await store.append(record);
     const encrypted = store.encryptedSnapshot()[0];
     expect(encrypted).toBeDefined();
-    expect(encrypted!.ciphertext).not.toContain("phys.heart_rate");
-    expect(encrypted!.ciphertext).not.toContain("72");
+    // Inspect the decoded ciphertext bytes: a base64 string can coincidentally
+    // contain short plaintext fragments, which would make this check flaky.
+    const rawCiphertext = new TextDecoder().decode(
+      Uint8Array.from(atob(encrypted!.ciphertext), (character) => character.charCodeAt(0)),
+    );
+    expect(rawCiphertext).not.toContain("phys.heart_rate");
+    expect(rawCiphertext).not.toContain('"value":72');
     expect(await store.get(record.id)).toEqual(record);
   });
 
