@@ -85,3 +85,7 @@ The architecture distinguishes deterministic reviewed safety rules from experime
 ## P8 environmental and radiation boundary
 
 `src/integrations/environmental-telemetry/` adds habitat/environment telemetry and personal dosimetry above the P5 adapter lifecycle. MQTT, WebSocket and REST transport clients are injected by the host runtime, while credentials remain outside the adapter. Environmental observations preserve compartment/location context; dosimetry preserves detector/radiation-field context. All accepted values still pass through the reviewed P4 registry and unit-normalization boundary. P8 explicitly keeps absorbed dose and dose-equivalent quantities separate and introduces no operational thresholds or biological-risk model.
+
+## P9 astronaut live dashboard
+
+The astronaut live UI consumes accepted canonical observations after the adapter/ingestion boundary. It may update directly from a local device stream without a cloud round-trip. Technical freshness, source connection and data quality are always visible. Missing streams are never silently imputed. P9 does not own baseline interpretation, alerts, database persistence or offline synchronization.

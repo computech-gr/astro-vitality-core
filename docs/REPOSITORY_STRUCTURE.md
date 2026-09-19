@@ -67,3 +67,9 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `tests/integrations/p8-environmental-radiation.test.ts` — P8 canonicalization, context, fail-closed and Gy/Sv separation tests.
 - `docs/ENVIRONMENTAL_RADIATION_TELEMETRY.md` — P8 integration and safety contract.
 - `scripts/verify-p8.mjs` — P8 structural/safety verifier.
+
+- `src/app/live-dashboard/` — P9 mission-local dashboard state, freshness and timeline contracts.
+- `src/components/live-dashboard.tsx` — astronaut-facing live console and direct BLE heart-rate connection UI.
+- `src/routes/mission.live.tsx` — `/mission/live` route and canonical metadata.
+- `tests/app/p9-live-dashboard.test.ts` — deterministic live/stale/disconnected, trend and self-check tests.
+- `docs/LIVE_DASHBOARD.md` — P9 scope, source alignment and persistence/safety boundaries.

@@ -1,0 +1,218 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Activity,
+  ArrowLeft,
+  Bluetooth,
+  CircleGauge,
+  CloudOff,
+  HeartPulse,
+  RadioTower,
+  RefreshCw,
+  ShieldCheck,
+  Thermometer,
+  Unplug,
+  Waves,
+  Wind,
+  Zap,
+} from "lucide-react";
+
+import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
+import {
+  createLiveDashboardState,
+  deriveDashboardMetricView,
+  ingestDashboardObservation,
+  recordDashboardSelfCheck,
+  setDashboardSourceState,
+  type DashboardMetricView,
+  type LiveDashboardState,
+} from "@/app/live-dashboard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ingestAdapterItem } from "@/integrations/device-adapters";
+import { WebBluetoothHeartRateAdapter } from "@/integrations/wearables";
+
+const LIVE_METRICS = [
+  ["phys.heart_rate", "Heart rate", HeartPulse],
+  ["phys.respiratory_rate", "Respiratory rate", Waves],
+  ["phys.spo2", "SpO₂", Activity],
+  ["environment.co2", "Cabin CO₂", Wind],
+  ["environment.oxygen_fraction", "Cabin O₂", RadioTower],
+  ["environment.cabin_pressure", "Cabin pressure", CircleGauge],
+  ["environment.temperature", "Cabin temperature", Thermometer],
+  ["radiation.dose_rate", "Radiation dose rate", Zap],
+] as const;
+
+const MISSION_CONTEXT = {
+  missionId: "mission-local-p9",
+  crewMemberId: "crew-local-p9",
+  classification: "synthetic" as const,
+};
+
+function formatTime(value?: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function StatusBadge({ state }: { state: DashboardMetricView["state"] }) {
+  const className =
+    state === "live"
+      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+      : state === "stale"
+        ? "border-amber-400/30 bg-amber-400/10 text-amber-300"
+        : "border-border bg-muted/40 text-muted-foreground";
+  return <Badge variant="outline" className={className}>{state.toUpperCase()}</Badge>;
+}
+
+function Sparkline({ values }: { values: number[] }) {
+  if (values.length < 2) return <div className="h-12 border-b border-dashed border-border/70" aria-hidden="true" />;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const spread = max - min || 1;
+  const points = values.map((value, index) => `${(index / (values.length - 1)) * 100},${44 - ((value - min) / spread) * 36}`).join(" ");
+  return (
+    <svg viewBox="0 0 100 48" preserveAspectRatio="none" className="h-12 w-full" role="img" aria-label="Recent numeric trend">
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2" vectorEffect="non-scaling-stroke" className="text-primary" />
+    </svg>
+  );
+}
+
+function MetricCard({ view, Icon }: { view: DashboardMetricView; Icon: typeof HeartPulse }) {
+  return (
+    <Card className="border-border/80 bg-card/70">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+        <div><CardTitle className="text-sm font-medium text-muted-foreground">{view.label}</CardTitle><p className="mt-1 font-mono text-[0.65rem] uppercase tracking-widest text-muted-foreground/70">{view.metricCode}</p></div>
+        <Icon className="size-5 text-primary" aria-hidden="true" />
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-end justify-between gap-4">
+          <div><div className="font-display text-3xl font-semibold">{view.value ?? "—"}</div><div className="mt-1 text-xs text-muted-foreground">{view.unit ?? "Awaiting source"}</div></div>
+          <StatusBadge state={view.state} />
+        </div>
+        <div className="mt-4"><Sparkline values={view.history} /></div>
+        <div className="mt-3 flex items-center justify-between text-[0.7rem] text-muted-foreground"><span>Quality: {view.quality?.level ?? "unknown"}</span><span>{formatTime(view.observedAt)}</span></div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function LiveDashboard() {
+  const [state, setState] = useState<LiveDashboardState>(() => createLiveDashboardState());
+  const [now, setNow] = useState(() => new Date().toISOString());
+  const [busy, setBusy] = useState(false);
+  const [selfCheckState, setSelfCheckState] = useState<"nominal" | "monitor" | "request_support">("nominal");
+  const [selfCheckNote, setSelfCheckNote] = useState("");
+  const adapterRef = useRef<WebBluetoothHeartRateAdapter | null>(null);
+  const streamAbortRef = useRef<AbortController | null>(null);
+  const connectedSourceRef = useRef<{ sourceId: string; displayName: string } | null>(null);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date().toISOString()), 10_000);
+    return () => {
+      window.clearInterval(timer);
+      streamAbortRef.current?.abort();
+    };
+  }, []);
+
+  const views = useMemo(
+    () => LIVE_METRICS.map(([code, label, Icon]) => ({ view: deriveDashboardMetricView(state, code, label, now), Icon })),
+    [state, now],
+  );
+
+  async function connectHeartRate() {
+    setBusy(true);
+    const adapter = new WebBluetoothHeartRateAdapter();
+    adapterRef.current = adapter;
+    try {
+      let source: { sourceId: string; displayName: string } | undefined;
+      for await (const discovered of adapter.discover()) { source = discovered; break; }
+      if (!source) throw new Error("No compatible Bluetooth heart-rate source was selected");
+      connectedSourceRef.current = source;
+      const timestamp = new Date().toISOString();
+      setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport: "ble", connection: "connecting" }, timestamp));
+      await adapter.connect({ sourceId: source.sourceId });
+      setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport: "ble", connection: "connected" }, new Date().toISOString()));
+      const controller = new AbortController();
+      streamAbortRef.current = controller;
+      void (async () => {
+        try {
+          let sequence = 0;
+          for await (const item of adapter.stream({ sourceId: source!.sourceId, signal: controller.signal })) {
+            const result = ingestAdapterItem(adapter, item, { ...MISSION_CONTEXT, ingestionId: `p9-live-${Date.now()}-${sequence++}` });
+            if (result.ok && result.kind === "observation") {
+              setState((current) => ingestDashboardObservation(current, result.value, new Date().toISOString()));
+            }
+          }
+        } catch (error) {
+          if (!controller.signal.aborted) {
+            setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport: "ble", connection: "error", message: error instanceof Error ? error.message : "Heart-rate stream failed" }, new Date().toISOString()));
+          }
+        }
+      })();
+    } catch (error) {
+      const source = connectedSourceRef.current;
+      if (source) {
+        setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: "ble", connection: "error", message: error instanceof Error ? error.message : "Connection failed" }, new Date().toISOString()));
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function disconnectHeartRate() {
+    const source = connectedSourceRef.current;
+    streamAbortRef.current?.abort();
+    if (source && adapterRef.current) await adapterRef.current.disconnect(source.sourceId).catch(() => undefined);
+    if (source) setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: "ble", connection: "disconnected" }, new Date().toISOString()));
+    streamAbortRef.current = null;
+    adapterRef.current = null;
+  }
+
+  function submitSelfCheck() {
+    const recordedAt = new Date().toISOString();
+    setState((current) => recordDashboardSelfCheck(current, { id: `self-${Date.now()}`, recordedAt, state: selfCheckState, ...(selfCheckNote.trim() ? { note: selfCheckNote.trim() } : {}) }));
+    setSelfCheckNote("");
+  }
+
+  const connectedSource = connectedSourceRef.current ? state.sources[connectedSourceRef.current.sourceId] : undefined;
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-20 max-w-[96rem] items-center justify-between gap-4 px-5 lg:px-8">
+          <div className="flex items-center gap-4"><a href="/" className="rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Back to public site"><img src={logoAsset.url} alt="" className="h-10 w-auto" /></a><div><p className="font-display text-lg font-semibold">Astronaut Live Dashboard</p><p className="font-mono text-[0.68rem] uppercase tracking-widest text-muted-foreground">P9 mission-local view</p></div></div>
+          <Button asChild variant="outline" className="border-border"><a href="/"><ArrowLeft />Public site</a></Button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[96rem] px-5 py-8 lg:px-8">
+        <section className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div><p className="section-kicker">Live mission health</p><h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">What is happening <span className="text-primary">right now?</span></h1><p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Live physiological and spacecraft signals share one timeline. Data quality, freshness and connection state stay visible; no missing value is silently invented.</p></div>
+          <div className="flex flex-wrap gap-3"><Button onClick={connectHeartRate} disabled={busy || connectedSource?.connection === "connected"}><Bluetooth />{busy ? "Connecting…" : "Connect BLE heart rate"}</Button><Button variant="outline" onClick={disconnectHeartRate} disabled={!connectedSource}><Unplug />Disconnect</Button></div>
+        </section>
+
+        <div className="mt-6 grid gap-3 rounded-lg border border-border bg-surface/70 p-4 md:grid-cols-3">
+          <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Mission context</span><strong className="mt-1 block font-mono text-sm">LOCAL P9 SESSION</strong></div>
+          <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Persistence</span><strong className="mt-1 block font-mono text-sm text-amber-300">SESSION ONLY</strong></div>
+          <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health interpretation</span><strong className="mt-1 block font-mono text-sm">NONE — DISPLAY / QUALITY ONLY</strong></div>
+        </div>
+
+        <section aria-labelledby="vitals-title" className="mt-8"><div className="flex items-center justify-between gap-4"><div><p className="section-kicker">Vitals & environment</p><h2 id="vitals-title" className="mt-2 font-display text-2xl font-semibold">Live signal board</h2></div><p className="hidden max-w-lg text-right text-xs leading-5 text-muted-foreground md:block">Freshness states are technical recency indicators, not medical thresholds.</p></div><div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{views.map(({ view, Icon }) => <MetricCard key={view.metricCode} view={view} Icon={Icon} />)}</div></section>
+
+        <section className="mt-8 grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+          <Card className="border-border bg-card/70"><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary" />Device & source status</CardTitle></CardHeader><CardContent><div className="space-y-3">{Object.values(state.sources).length ? Object.values(state.sources).map((source) => <div key={source.sourceId} className="grid gap-2 rounded-md border border-border p-4 sm:grid-cols-[1fr_auto]"><div><strong className="text-sm">{source.displayName}</strong><p className="mt-1 font-mono text-xs text-muted-foreground">{source.sourceId}</p><p className="mt-2 text-xs text-muted-foreground">Last sample: {formatTime(source.lastSampleAt)}</p></div><Badge variant="outline" className="h-fit uppercase">{source.connection}</Badge></div>) : <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground"><CloudOff className="mb-3 size-6" />No live source connected. Supported P6 adapters remain available; this view does not fabricate telemetry.</div>}</div></CardContent></Card>
+
+          <Card className="border-border bg-card/70"><CardHeader><CardTitle className="flex items-center gap-2"><RefreshCw className="text-primary" />Mission timeline</CardTitle></CardHeader><CardContent><div className="max-h-80 space-y-4 overflow-y-auto pr-2">{state.timeline.length ? state.timeline.map((event) => <div key={event.id} className="grid grid-cols-[5.5rem_1fr] gap-3 border-l border-border pl-4"><span className="font-mono text-xs text-muted-foreground">{formatTime(event.occurredAt)}</span><div><strong className="text-sm font-medium">{event.label}</strong>{event.detail && <p className="mt-1 text-xs text-muted-foreground">{event.detail}</p>}</div></div>) : <p className="text-sm text-muted-foreground">Connection, measurement and self-check events will appear here.</p>}</div></CardContent></Card>
+        </section>
+
+        <section className="mt-8"><Card className="border-border bg-card/70"><CardHeader><CardTitle>Simple self-check</CardTitle><p className="text-sm text-muted-foreground">Low-burden mission check-in only. This is not a validated psychological assessment; P11 owns governed cognitive/behavioral measures.</p></CardHeader><CardContent><div className="grid gap-4 md:grid-cols-[14rem_1fr_auto] md:items-end"><div><Label htmlFor="self-check-state">Current state</Label><Select value={selfCheckState} onValueChange={(value) => setSelfCheckState(value as typeof selfCheckState)}><SelectTrigger id="self-check-state" className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nominal">Nominal</SelectItem><SelectItem value="monitor">Monitor / not at best</SelectItem><SelectItem value="request_support">Request support</SelectItem></SelectContent></Select></div><div><Label htmlFor="self-check-note">Optional note</Label><Input id="self-check-note" className="mt-2" value={selfCheckNote} onChange={(event) => setSelfCheckNote(event.target.value)} placeholder="Context only — no diagnosis" maxLength={240} /></div><Button onClick={submitSelfCheck}>Record check-in</Button></div>{state.selfChecks[0] && <p className="mt-4 text-xs text-muted-foreground">Last recorded at {formatTime(state.selfChecks[0].recordedAt)} — kept in memory for this P9 session only.</p>}</CardContent></Card></section>
+
+        <p className="mt-6 text-xs leading-5 text-muted-foreground">P9 boundary: the dashboard can consume real adapter streams and shows technical freshness/quality. Database persistence, encrypted local store-and-forward and conflict resolution are intentionally deferred to later governed phases.</p>
+      </main>
+    </div>
+  );
+}

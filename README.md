@@ -148,3 +148,7 @@ The repository now includes governed CSV/FHIR laboratory import, a manual biomar
 ### P8 — Environmental & radiation telemetry
 
 P8 adds governed habitat/environment telemetry and personal-radiation dosimetry adapters. Reviewed CO2, O2, pressure, thermal, humidity, noise, light, CO, and radiation quantities converge on the same P4 canonical observation model while unreviewed vendor metrics fail closed. P8 does not add habitat thresholds, biological radiation-risk scoring, database persistence, or credentials. See `docs/ENVIRONMENTAL_RADIATION_TELEMETRY.md`.
+
+### P9 — Astronaut Live Dashboard
+
+The `/mission/live` route now provides the first astronaut-facing live console. It can consume the real P6 browser BLE heart-rate path, presents canonical observation quality/freshness and source state, and keeps missing feeds explicitly disconnected/waiting. P9 remains session-local: database persistence, personal-baseline interpretation and offline store-and-forward are not claimed here.
