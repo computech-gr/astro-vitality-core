@@ -73,3 +73,10 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/routes/mission.live.tsx` — `/mission/live` route and canonical metadata.
 - `tests/app/p9-live-dashboard.test.ts` — deterministic live/stale/disconnected, trend and self-check tests.
 - `docs/LIVE_DASHBOARD.md` — P9 scope, source alignment and persistence/safety boundaries.
+
+### P10 personal baseline
+
+- `src/domain/baseline/` — phase-aware baseline contracts, profile construction and personalized comparison.
+- `tests/domain/p10-personal-baseline.test.ts` — minimum-data, rolling-window, phase-selection, context and dashboard-delta tests.
+- `scripts/verify-p10.mjs` — P10 structural/safety gate.
+- `docs/PERSONAL_BASELINE_ENGINE.md` — scientific and implementation boundary for personal baselines.

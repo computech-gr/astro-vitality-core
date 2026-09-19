@@ -152,3 +152,7 @@ P8 adds governed habitat/environment telemetry and personal-radiation dosimetry 
 ### P9 — Astronaut Live Dashboard
 
 The `/mission/live` route now provides the first astronaut-facing live console. It can consume the real P6 browser BLE heart-rate path, presents canonical observation quality/freshness and source state, and keeps missing feeds explicitly disconnected/waiting. P9 remains session-local: database persistence, personal-baseline interpretation and offline store-and-forward are not claimed here.
+
+## P10 — Personal Baseline Engine
+
+The current foundation includes a versioned personal-baseline engine for numeric canonical metrics reviewed for longitudinal baselining. It preserves immutable pre-flight references, phase-aware comparator selection, explicit quality/context gates and personalized deltas. The live dashboard can display a baseline delta only when a validated profile is supplied; it does not invent a baseline, clinical threshold, alert or diagnosis. See `docs/PERSONAL_BASELINE_ENGINE.md`.

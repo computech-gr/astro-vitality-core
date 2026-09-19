@@ -1,4 +1,4 @@
-import type { DataQuality, ObservationEnvelope } from "../../domain";
+import type { DataQuality, ObservationEnvelope, PersonalBaselineComparison, PersonalBaselineProfile } from "../../domain";
 
 export const DASHBOARD_DATA_STATES = ["live", "stale", "disconnected", "waiting"] as const;
 export type DashboardDataState = (typeof DASHBOARD_DATA_STATES)[number];
@@ -49,6 +49,7 @@ export interface LiveDashboardState {
   sources: Record<string, DashboardSourceState>;
   timeline: DashboardTimelineEvent[];
   selfChecks: DashboardSelfCheck[];
+  baselines: Record<string, PersonalBaselineProfile>;
 }
 
 export interface DashboardMetricView {
@@ -61,4 +62,6 @@ export interface DashboardMetricView {
   observedAt?: string;
   sourceId?: string;
   history: number[];
+  baseline?: PersonalBaselineComparison;
+  baselineStatus: "available" | "not_established" | "context_mismatch" | "not_applicable";
 }
