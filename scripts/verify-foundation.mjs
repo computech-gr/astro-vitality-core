@@ -40,11 +40,20 @@ if (/ignores\s*:\s*\[[^\]]*["\']src\/integrations\/supabase\/\*\*[^\]]*\]/s.test
 }
 
 const migrationsDir = join(root, "supabase", "migrations");
+// P15 introduces the first governed cloud persistence boundary. The Lovable migration
+// system records each applied migration under its own generated filename, so the P15
+// ground/research console migration and its execute-hardening follow-up are expected.
+const EXPECTED_MIGRATIONS = new Set([
+  "20260919190000_p15_ground_research_console.sql",
+  "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
+  "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
+]);
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  const unexpected = sql.filter((name) => name !== "20260919190000_p15_ground_research_console.sql");
-  if (unexpected.length) failures.push(`P2 must not introduce Supabase migrations: ${unexpected.join(", ")}`);
+  const unexpected = sql.filter((name) => !EXPECTED_MIGRATIONS.has(name));
+  if (unexpected.length) failures.push(`Unexpected Supabase migrations: ${unexpected.join(", ")}`);
 }
+
 
 function walk(dir) {
   const out = [];
