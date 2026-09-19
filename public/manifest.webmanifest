@@ -1,17 +1,17 @@
 {
-  "name": "Mitochondria",
+  "name": "The Mitochondria",
   "short_name": "Mitochondria",
-  "description": "Open-source, offline-first astronaut health intelligence platform.",
+  "description": "Open-source, offline-first astronaut health intelligence for long-duration human spaceflight, built for NASA Space Apps Challenge 2026.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0b0f14",
-  "theme_color": "#0b0f14",
+  "background_color": "#08121d",
+  "theme_color": "#08121d",
   "icons": [
     {
-      "src": "/favicon.ico",
+      "src": "/favicon.png",
       "sizes": "64x64",
-      "type": "image/x-icon"
+      "type": "image/png"
     }
   ]
 }
