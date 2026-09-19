@@ -1,6 +1,6 @@
 # Architecture
 
-## Current P5 architecture
+## Current P6 architecture
 
 The repository establishes boundaries before health-domain functionality is implemented.
 
@@ -47,6 +47,17 @@ The domain remains independent from Apple, Garmin, Fitbit, Supabase, MQTT, persi
 P5 implements the common device-adapter SDK under `src/integrations/device-adapters/`. Adapters expose discovery, connection, capabilities, streaming/import, quality, normalization, resume cursors, clock metadata, health and disconnect semantics.
 
 Vendor representations must pass through the governed P4 canonical metric registry and ingestion/series validation before core health-domain analysis. Unknown vendor metrics fail closed. The included reference adapter is a deterministic conformance fixture, not a real-device integration or product simulator.
+
+
+## Wearables integration pack
+
+P6 adds concrete source-class implementations above the P5 SDK:
+
+- standard Web Bluetooth Heart Rate Service ingestion;
+- host/native bridges for Android Health Connect and Apple HealthKit;
+- vendor-cloud history import through an injected authorized client.
+
+All three paths remain outside the domain layer and normalize through P5 into the reviewed P4 canonical registry. Browser code does not pretend to have direct access to native Health Connect or HealthKit APIs, and vendor credentials/OAuth tokens are deliberately owned outside the adapter.
 
 ## Canonical health model
 

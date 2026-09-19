@@ -18,6 +18,7 @@ src/
   infrastructure/             runtime/infrastructure configuration
   integrations/
     device-adapters/          P5 vendor-neutral adapter SDK + reference fixture
+    wearables/                P6 BLE/mobile-health/vendor-cloud adapters
     supabase/                 generated/current Supabase client boundary
   lib/                        shared technical utilities
   routes/                     TanStack Start routes
@@ -51,3 +52,7 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `docs/DEVICE_ADAPTER_SDK.md` — P5 adapter lifecycle, safety and normalization boundary.
 - `scripts/verify-p5.mjs` — P5 structural/safety verifier.
 - `tests/integrations/p5-device-adapter-sdk.test.ts` — adapter lifecycle and P4 normalization tests.
+
+- `docs/WEARABLES_INTEGRATION.md` — P6 source classes, bridge boundaries and safety constraints.
+- `scripts/verify-p6.mjs` — P6 structural/safety verifier.
+- `tests/integrations/p6-wearables-integration.test.ts` — BLE, Health Connect, HealthKit and vendor-cloud conformance tests.
