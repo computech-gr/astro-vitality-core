@@ -42,7 +42,8 @@ if (/ignores\s*:\s*\[[^\]]*["\']src\/integrations\/supabase\/\*\*[^\]]*\]/s.test
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length > 0) failures.push(`P2 must not introduce Supabase migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter((name) => name !== "20260919190000_p15_ground_research_console.sql");
+  if (unexpected.length) failures.push(`P2 must not introduce Supabase migrations: ${unexpected.join(", ")}`);
 }
 
 function walk(dir) {

@@ -39,3 +39,7 @@ The later security model must cover:
 ## Safety separation
 
 Experimental analytics must not silently become safety-critical alarms. Reviewed deterministic rules, model-derived insights, data-quality warnings, and human escalation must remain distinguishable in code and UI.
+
+## P15 mission/ground boundary
+
+P15 introduces forced-RLS mission persistence and role-separated capabilities. Researchers do not receive direct `mission_events` access; de-identified exports are produced by an audited server-side RPC using a mission-scoped pseudonymization key that is not granted to browser roles. Mission operators receive operational summary/audit capability without general identified-medical event access. P16 will threat-model and adversarially audit this boundary.

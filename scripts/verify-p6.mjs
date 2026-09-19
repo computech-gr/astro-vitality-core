@@ -39,7 +39,8 @@ if (!workflow.includes("bun run verify:p6")) failures.push("CI must run the P6 v
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length) failures.push(`P6 must not add database migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter((name) => name !== "20260919190000_p15_ground_research_console.sql");
+  if (unexpected.length) failures.push(`P6 must not add database migrations: ${unexpected.join(", ")}`);
 }
 
 if (failures.length) {

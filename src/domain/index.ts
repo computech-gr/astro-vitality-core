@@ -14,3 +14,4 @@ export * from "./health-intelligence";
 export * from "./action-guidance";
 
 export * from "./offline-mission";
+export * from "./ground-research";

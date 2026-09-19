@@ -75,7 +75,8 @@ if (!workflow.includes("bun run verify:p14")) failures.push("CI must run P14 ver
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length) failures.push(`P14 must not add unsafe database migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter((name) => name !== "20260919190000_p15_ground_research_console.sql");
+  if (unexpected.length) failures.push(`P14 must not add unsafe database migrations: ${unexpected.join(", ")}`);
 }
 
 if (failures.length) {

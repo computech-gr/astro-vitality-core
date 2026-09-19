@@ -51,7 +51,8 @@ if (!workflow.includes("bun run verify:p4")) failures.push("CI must run the P4 v
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length) failures.push(`This P4 canonical-domain patch must not add database migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter((name) => name !== "20260919190000_p15_ground_research_console.sql");
+  if (unexpected.length) failures.push(`This P4 canonical-domain patch must not add database migrations: ${unexpected.join(", ")}`);
 }
 
 if (failures.length) {

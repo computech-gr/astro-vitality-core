@@ -115,3 +115,10 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/components/offline-mission.tsx` / `src/routes/mission.offline.tsx` — offline readiness/status surface.
 - `public/sw.js` — public shell/assets offline cache; no health API caching.
 - `tests/offline/p14-offline-mission.test.ts` — encryption, append-only, reconnect, conflict and protocol-cache gates.
+
+### P15 Ground / Research Console
+
+- `src/domain/ground-research/` — roles, capabilities and de-identification contracts.
+- `src/infrastructure/ground-research/` — authorized cloud sync transport.
+- `src/routes/mission.ground.tsx` — ground/research console route.
+- `supabase/migrations/*p15_ground_research_console.sql` — mission persistence, RLS, RPCs and audit trail.
