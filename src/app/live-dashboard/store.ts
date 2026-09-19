@@ -1,4 +1,4 @@
-import type { ObservationEnvelope } from "../../domain";
+import { compareObservationToBaseline, type ObservationEnvelope, type PersonalBaselineProfile } from "../../domain";
 import type {
   DashboardConnectionState,
   DashboardMetricView,
@@ -28,7 +28,7 @@ export const DASHBOARD_FRESHNESS_MS: Readonly<Record<string, number>> = {
 };
 
 export function createLiveDashboardState(): LiveDashboardState {
-  return { observations: {}, sources: {}, timeline: [], selfChecks: [] };
+  return { observations: {}, sources: {}, timeline: [], selfChecks: [], baselines: {} };
 }
 
 function pushTimeline(
@@ -106,6 +106,17 @@ export function recordDashboardSelfCheck(
   };
 }
 
+
+export function setDashboardBaselineProfile(
+  state: LiveDashboardState,
+  profile: PersonalBaselineProfile,
+): LiveDashboardState {
+  return {
+    ...state,
+    baselines: { ...state.baselines, [profile.metricCode]: profile },
+  };
+}
+
 function scalarValue(envelope?: ObservationEnvelope): number | string | boolean | undefined {
   if (!envelope) return undefined;
   const value = envelope.observation.value;
@@ -137,6 +148,17 @@ export function deriveDashboardMetricView(
     .filter((value): value is number => typeof value === "number");
 
   const value = scalarValue(latest);
+  const baselineProfile = state.baselines[metricCode];
+  const baselineResult = latest && baselineProfile ? compareObservationToBaseline(latest, baselineProfile) : undefined;
+  const baselineStatus: DashboardMetricView["baselineStatus"] = !baselineProfile
+    ? "not_established"
+    : !latest
+      ? "not_established"
+      : baselineResult?.ok
+        ? "available"
+        : baselineResult?.reason === "context_mismatch"
+          ? "context_mismatch"
+          : "not_applicable";
 
   return {
     metricCode,
@@ -146,5 +168,7 @@ export function deriveDashboardMetricView(
     state: dataState,
     ...(latest ? { quality: latest.observation.quality, observedAt: latest.observation.observedAt, sourceId: latest.observation.source.sourceId } : {}),
     history,
+    ...(baselineResult?.ok ? { baseline: baselineResult.comparison } : {}),
+    baselineStatus,
   };
 }

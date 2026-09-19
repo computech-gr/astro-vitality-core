@@ -63,3 +63,7 @@ P4 promotes a reviewed MVP/near-term subset of `SPACE_APPS_2026_Astronaut_Biomar
 Scalar/event observations enter through `ingestCanonicalObservation()`. Series/vector signals such as ECG waveform and tri-axial acceleration use `RawSignalChunk`. Unit normalization is fail-closed: only explicitly governed aliases/conversions are accepted, and source unit/value are retained in provenance.
 
 P4 also introduces an `ObservationInterpretation` contract that keeps personal baseline, clinical/laboratory reference interval, and mission operational limit as separate structures. Research-only interpretations cannot emit an operational action class.
+
+## Personal baseline profiles (P10)
+
+A personal baseline is a versioned distribution, not a single reading. It records mission/crew identity, canonical metric, phase, time window, accepted observations, quality/status policies, required context tags, algorithm provenance and summary statistics. Pre-flight profiles are immutable. Launch/transition cannot create a replacement profile. Stable-mission rolling baselines are permitted only when explicitly configured and when minimum-data/coverage gates pass. Comparison results expose longitudinal deltas only; clinical intervals and mission operational limits remain separate governed layers.

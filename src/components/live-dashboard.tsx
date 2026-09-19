@@ -95,6 +95,13 @@ function MetricCard({ view, Icon }: { view: DashboardMetricView; Icon: typeof He
         </div>
         <div className="mt-4"><Sparkline values={view.history} /></div>
         <div className="mt-3 flex items-center justify-between text-[0.7rem] text-muted-foreground"><span>Quality: {view.quality?.level ?? "unknown"}</span><span>{formatTime(view.observedAt)}</span></div>
+        <div className="mt-2 border-t border-border/70 pt-2 text-[0.7rem] text-muted-foreground">
+          {view.baseline ? (
+            <span>Personal baseline Δ: {view.baseline.delta !== undefined ? `${view.baseline.delta >= 0 ? "+" : ""}${view.baseline.delta.toFixed(1)}${view.unit ? ` ${view.unit}` : ""}` : "—"}{view.baseline.percentDelta !== undefined ? ` (${view.baseline.percentDelta >= 0 ? "+" : ""}${view.baseline.percentDelta.toFixed(1)}%)` : ""}</span>
+          ) : (
+            <span>Personal baseline: {view.baselineStatus === "context_mismatch" ? "context mismatch" : "not established"}</span>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -184,7 +191,7 @@ export function LiveDashboard() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-[96rem] items-center justify-between gap-4 px-5 lg:px-8">
-          <div className="flex items-center gap-4"><a href="/" className="rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Back to public site"><img src={logoAsset.url} alt="" className="h-10 w-auto" /></a><div><p className="font-display text-lg font-semibold">Astronaut Live Dashboard</p><p className="font-mono text-[0.68rem] uppercase tracking-widest text-muted-foreground">P9 mission-local view</p></div></div>
+          <div className="flex items-center gap-4"><a href="/" className="rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Back to public site"><img src={logoAsset.url} alt="" className="h-10 w-auto" /></a><div><p className="font-display text-lg font-semibold">Astronaut Live Dashboard</p><p className="font-mono text-[0.68rem] uppercase tracking-widest text-muted-foreground">P10 baseline-aware mission view</p></div></div>
           <Button asChild variant="outline" className="border-border"><a href="/"><ArrowLeft />Public site</a></Button>
         </div>
       </header>
@@ -198,7 +205,7 @@ export function LiveDashboard() {
         <div className="mt-6 grid gap-3 rounded-lg border border-border bg-surface/70 p-4 md:grid-cols-3">
           <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Mission context</span><strong className="mt-1 block font-mono text-sm">LOCAL P9 SESSION</strong></div>
           <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Persistence</span><strong className="mt-1 block font-mono text-sm text-amber-300">SESSION ONLY</strong></div>
-          <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health interpretation</span><strong className="mt-1 block font-mono text-sm">NONE — DISPLAY / QUALITY ONLY</strong></div>
+          <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health interpretation</span><strong className="mt-1 block font-mono text-sm">BASELINE DELTAS ONLY — NO ALERTS / DIAGNOSIS</strong></div>
         </div>
 
         <section aria-labelledby="vitals-title" className="mt-8"><div className="flex items-center justify-between gap-4"><div><p className="section-kicker">Vitals & environment</p><h2 id="vitals-title" className="mt-2 font-display text-2xl font-semibold">Live signal board</h2></div><p className="hidden max-w-lg text-right text-xs leading-5 text-muted-foreground md:block">Freshness states are technical recency indicators, not medical thresholds.</p></div><div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{views.map(({ view, Icon }) => <MetricCard key={view.metricCode} view={view} Icon={Icon} />)}</div></section>
@@ -211,7 +218,7 @@ export function LiveDashboard() {
 
         <section className="mt-8"><Card className="border-border bg-card/70"><CardHeader><CardTitle>Simple self-check</CardTitle><p className="text-sm text-muted-foreground">Low-burden mission check-in only. This is not a validated psychological assessment; P11 owns governed cognitive/behavioral measures.</p></CardHeader><CardContent><div className="grid gap-4 md:grid-cols-[14rem_1fr_auto] md:items-end"><div><Label htmlFor="self-check-state">Current state</Label><Select value={selfCheckState} onValueChange={(value) => setSelfCheckState(value as typeof selfCheckState)}><SelectTrigger id="self-check-state" className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nominal">Nominal</SelectItem><SelectItem value="monitor">Monitor / not at best</SelectItem><SelectItem value="request_support">Request support</SelectItem></SelectContent></Select></div><div><Label htmlFor="self-check-note">Optional note</Label><Input id="self-check-note" className="mt-2" value={selfCheckNote} onChange={(event) => setSelfCheckNote(event.target.value)} placeholder="Context only — no diagnosis" maxLength={240} /></div><Button onClick={submitSelfCheck}>Record check-in</Button></div>{state.selfChecks[0] && <p className="mt-4 text-xs text-muted-foreground">Last recorded at {formatTime(state.selfChecks[0].recordedAt)} — kept in memory for this P9 session only.</p>}</CardContent></Card></section>
 
-        <p className="mt-6 text-xs leading-5 text-muted-foreground">P9 boundary: the dashboard can consume real adapter streams and shows technical freshness/quality. Database persistence, encrypted local store-and-forward and conflict resolution are intentionally deferred to later governed phases.</p>
+        <p className="mt-6 text-xs leading-5 text-muted-foreground">P10 boundary: the dashboard can display a governed personal-baseline delta when a validated baseline profile is available. It does not create medical alerts, diagnoses or protocol actions. Database persistence, encrypted local store-and-forward and conflict resolution remain deferred to later governed phases.</p>
       </main>
     </div>
   );

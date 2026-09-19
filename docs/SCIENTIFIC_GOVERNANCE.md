@@ -54,3 +54,7 @@ traceable versions, qualified review, and human-in-the-loop operation.
 `SPACE_APPS_2026_Astronaut_Biomarker_Matrix_v1.1.xlsx` is the reviewed scientific implementation baseline (review completed 2026-09-19; SHA-256 `ffed3a7f3afb844963900bd53cbb9edd74588f613c925d323fd58ded0cce7273`). The review closes the P1 team-biologist dependency and explicitly separates operational candidates, medical-context signals, research-only measures, and removed duplicates/low-value rows.
 
 The review does **not** authorize clinical thresholds, diagnosis, treatment, or autonomous flight rules. Personal baseline, clinical/reference interval, and mission operational limit remain separate governed layers. Evidence-weighted relationships must expose context, confounders, quality, uncertainty, and non-causal wording where appropriate.
+
+## P10 baseline governance
+
+P10 implements the v1.1 principle that personal longitudinal change is primary while clinical/reference intervals and mission operational limits remain separate. The baseline engine may compute descriptive personalized deltas only for reviewed baseline-enabled metrics and only after explicit data-quality, coverage and context gates. It does not convert delta magnitude into a diagnosis, risk class or action. Circadian-sensitive comparisons require governed upstream context tagging rather than inferred time-of-day assumptions.

@@ -89,3 +89,7 @@ The architecture distinguishes deterministic reviewed safety rules from experime
 ## P9 astronaut live dashboard
 
 The astronaut live UI consumes accepted canonical observations after the adapter/ingestion boundary. It may update directly from a local device stream without a cloud round-trip. Technical freshness, source connection and data quality are always visible. Missing streams are never silently imputed. P9 does not own baseline interpretation, alerts, database persistence or offline synchronization.
+
+## P10 personal baseline layer
+
+The canonical observation layer now feeds a separate personal-baseline engine. Baseline profiles are versioned distributions scoped to one crew member, mission, canonical metric, context policy and adaptation phase. Pre-flight profiles remain immutable; launch/transition continues to use the pre-flight comparator; stable mission may use an explicitly governed rolling baseline after minimum-data gates. Baseline deltas remain separate from clinical reference intervals and mission operational limits and do not themselves create alerts.
