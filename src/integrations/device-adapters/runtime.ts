@@ -22,7 +22,7 @@ export function ingestAdapterItem(adapter: DeviceAdapter, item: AdapterStreamIte
     return { ok: true, kind: "series", value: normalized as RawSignalChunk, ...(cursor ? { cursor } : {}) };
   }
 
-  const result = ingestCanonicalObservation(normalized);
+  const result = ingestCanonicalObservation(normalized as Parameters<typeof ingestCanonicalObservation>[0]);
   if (!result.ok) return { ok: false, issues: result.issues, ...(cursor ? { cursor } : {}) };
   return { ok: true, kind: "observation", value: result.envelope, ...(cursor ? { cursor } : {}) };
 }
