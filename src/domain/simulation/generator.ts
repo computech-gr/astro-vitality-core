@@ -92,11 +92,10 @@ function observation(
     status: "final",
     quality: sampleQuality,
     provenance: {
-      kind: "derived",
+      kind: "raw",
       capturedAt: observedAt,
       ingestionId: `synthetic-ingest:${manifest.id}:${index}`,
       inputObservationIds: [],
-      derivationMethod: "deterministic synthetic mission generator",
       algorithmVersion: "p17.1.0",
     },
     classification: "synthetic",
