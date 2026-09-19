@@ -51,7 +51,7 @@ export function medicalDeviceReadingToDraft(
       observedAt: reading.observedAt,
       status: "final",
       quality: {
-        level: reading.qualityFlags?.length ? "questionable" : "good",
+        level: reading.qualityFlags?.length ? "degraded" : "good",
         artifactFlags: reading.qualityFlags ?? [],
       },
       provenance: {

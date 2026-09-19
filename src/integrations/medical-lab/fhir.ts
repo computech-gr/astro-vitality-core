@@ -39,6 +39,7 @@ function parseObservation(
   if (!observedAt) issues.push({ path: `fhir.${index}.effectiveDateTime`, message: "FHIR observation time is required" });
   if (issues.length || !metricCode || typeof observation.valueQuantity?.value !== "number" || !unit || !observedAt) return { ok: false, issues };
   const range = observation.referenceRange?.[0];
+  const rangeUnit = range?.low?.unit ?? range?.high?.unit;
   return {
     ok: true,
     value: {

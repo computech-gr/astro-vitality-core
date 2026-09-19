@@ -38,7 +38,7 @@ export interface LabImportContext {
   missionId: string;
   crewMemberId: string;
   ingestionId: string;
-  classification: "synthetic" | "research" | "operational";
+  classification: "synthetic" | "deidentified" | "mission_sensitive" | "medical_sensitive";
 }
 
 export interface LabImportIssue {
