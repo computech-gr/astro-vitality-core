@@ -136,11 +136,13 @@ export function deriveDashboardMetricView(
     .map((item) => item.observation.value.number)
     .filter((value): value is number => typeof value === "number");
 
+  const value = scalarValue(latest);
+
   return {
     metricCode,
     label,
     ...(latest?.observation.metric.unit ? { unit: latest.observation.metric.unit } : {}),
-    ...(scalarValue(latest) !== undefined ? { value: scalarValue(latest) } : {}),
+    ...(value !== undefined ? { value } : {}),
     state: dataState,
     ...(latest ? { quality: latest.observation.quality, observedAt: latest.observation.observedAt, sourceId: latest.observation.source.sourceId } : {}),
     history,
