@@ -62,3 +62,7 @@ P10 implements the v1.1 principle that personal longitudinal change is primary w
 ## P11 behavioral-health safeguards
 
 The v1.1 matrix governs P11. Repeated named tasks, practice effects, device/input latency, privacy and personal-baseline interpretation are required. Fatigue, KSS sleepiness and state stress are contextual longitudinal measures. NASA-TLX remains task-linked and keeps its six dimensions. Mood/affect collection requires a selected governed instrument. No cognitive or behavioral measure may be converted into a psychiatric diagnosis, personality inference, readiness classification, or autonomous escalation in P11.
+
+## P12 reviewed relationship governance
+
+Health Intelligence v1 implements only relationships explicitly represented in the reviewed v1.1 scientific baseline. Cross-domain corroboration may increase evidence confidence, while shared artifacts, missing context, confounders and research-only status reduce it. CO2/cognition remains contextual rather than causal; microbiome/immune remains Research Only; no single HRV/EDA/cortisol or urine-specific-gravity value is converted into a diagnosis. New thresholds or causal relationships require claim-specific evidence and scientific/medical governance.
