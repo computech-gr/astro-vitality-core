@@ -44,7 +44,7 @@ export function applySecurityHeaders(request: Request, response: Response): Resp
   headers.set("X-DNS-Prefetch-Control", "off");
 
   const requestUrl = new URL(request.url);
-  const canonicalHost = new URL(canonicalUrl).host;
+  const canonicalHost = new URL(CANONICAL_ORIGIN).host;
   if (requestUrl.protocol === "https:" && requestUrl.host === canonicalHost) {
     headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   }
