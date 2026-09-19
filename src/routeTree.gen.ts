@@ -19,6 +19,7 @@ import { Route as MissionReadinessRouteImport } from './routes/mission.readiness
 import { Route as MissionSimulationRouteImport } from './routes/mission.simulation'
 import { Route as MissionSubmissionRouteImport } from './routes/mission.submission'
 import { Route as MissionValidationRouteImport } from './routes/mission.validation'
+import { Route as ProjectGuideRouteImport } from './routes/project.guide'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const MissionValidationRoute = MissionValidationRouteImport.update({
   path: '/mission/validation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectGuideRoute = ProjectGuideRouteImport.update({
+  id: '/project/guide',
+  path: '/project/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/mission/simulation': typeof MissionSimulationRoute
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
+  '/project/guide': typeof ProjectGuideRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/mission/simulation': typeof MissionSimulationRoute
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
+  '/project/guide': typeof ProjectGuideRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/mission/simulation': typeof MissionSimulationRoute
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
+  '/project/guide': typeof ProjectGuideRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/mission/simulation'
     | '/mission/submission'
     | '/mission/validation'
+    | '/project/guide'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/mission/simulation'
     | '/mission/submission'
     | '/mission/validation'
+    | '/project/guide'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/mission/simulation'
     | '/mission/submission'
     | '/mission/validation'
+    | '/project/guide'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   MissionSimulationRoute: typeof MissionSimulationRoute
   MissionSubmissionRoute: typeof MissionSubmissionRoute
   MissionValidationRoute: typeof MissionValidationRoute
+  ProjectGuideRoute: typeof ProjectGuideRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionValidationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/guide': {
+      id: '/project/guide'
+      path: '/project/guide'
+      fullPath: '/project/guide'
+      preLoaderRoute: typeof ProjectGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionSimulationRoute: MissionSimulationRoute,
   MissionSubmissionRoute: MissionSubmissionRoute,
   MissionValidationRoute: MissionValidationRoute,
+  ProjectGuideRoute: ProjectGuideRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -86,6 +86,45 @@ const navigation: readonly NavigationEntry[] = [
   },
 ];
 
+function guideHref(anchor: string) {
+  return `/project/guide#${anchor}`;
+}
+
+const guideDestinations: Readonly<Record<string, string>> = {
+  "Our Mission": guideHref("our-mission"),
+  "Why Autonomous Health": guideHref("why-autonomous-health"),
+  "Long-Duration Spaceflight": guideHref("long-duration-spaceflight"),
+  "Scientific Foundation": guideHref("scientific-foundation"),
+  "Spaceflight Health Risks": guideHref("spaceflight-health-risks"),
+  "Biomarkers & Signals": guideHref("biomarkers-signals"),
+  "Personal Baselines": guideHref("personal-baselines"),
+  "Environment & Radiation": guideHref("environment-radiation"),
+  "Scientific Safety Boundaries": guideHref("scientific-safety-boundaries"),
+  "Platform Overview": guideHref("platform-overview"),
+  "Astronaut Health Twin": guideHref("astronaut-health-twin"),
+  Personalization: guideHref("personalization"),
+  "System Architecture": guideHref("system-architecture"),
+  "Device Integration": guideHref("device-integration"),
+  Wearables: guideHref("wearables"),
+  "Medical & Laboratory Data": guideHref("medical-laboratory-data"),
+  "Environmental Telemetry": guideHref("environmental-telemetry"),
+  "Canonical Health Data Model": guideHref("canonical-health-data-model"),
+  "Offline-First Architecture": guideHref("offline-first-architecture"),
+  "Security & Privacy": guideHref("security-privacy"),
+  "Open-Source Mission": guideHref("open-source-mission"),
+  Documentation: guideHref("documentation"),
+  "Device Adapter SDK": guideHref("device-adapter-sdk"),
+  "Data & Interoperability": guideHref("data-interoperability"),
+  Contributing: guideHref("contributing"),
+  "Security Policy": guideHref("security-policy"),
+  License: guideHref("license"),
+  "The Mitochondria": guideHref("the-mitochondria"),
+  Team: guideHref("team"),
+  "Scientific Approach": guideHref("scientific-approach"),
+  Roadmap: guideHref("roadmap"),
+  "Resources & References": guideHref("resources-references"),
+};
+
 function itemHref(label: string, fallback: string) {
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "NASA Space Apps 2026") return NASA_URL;
@@ -99,8 +138,9 @@ function itemHref(label: string, fallback: string) {
   if (label === "Cognitive & Behavioral Health") return "/mission/readiness";
   if (label === "Validation & Limitations") return "/mission/validation";
   if (label === "Challenge Submission") return "/mission/submission";
-  return fallback;
+  return guideDestinations[label] ?? fallback;
 }
+
 
 function isExternal(href: string) {
   return href.startsWith("https://");
@@ -319,7 +359,7 @@ export function AppShell() {
 function Footer() {
   const columns = [
     ["Explore", [["Mission", "#mission"], ["Science", "#science"], ["Platform", "#platform"], ["Technology", "#technology"]]],
-    ["Project", [["Open Source", "#open-source"], ["Roadmap", "#open-source"], ["Resources & References", "#science"], ["Team", "#about"]]],
+    ["Project", [["Open Source", "#open-source"], ["Roadmap", "/project/guide#roadmap"], ["Resources & References", "/project/guide#resources-references"], ["Team", "/project/guide#team"]]],
     ["External", [["NASA Space Apps 2026", NASA_URL], ["GitHub", GITHUB_URL]]],
   ] as const;
   return (
