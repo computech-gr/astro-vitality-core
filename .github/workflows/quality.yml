@@ -79,6 +79,9 @@ jobs:
       - name: Verify P19 open-source release candidate
         run: bun run verify:p19
 
+      - name: Verify P20 challenge submission structure
+        run: bun run verify:p20
+
       - name: Security boundary audit
         run: bun run security:audit
 

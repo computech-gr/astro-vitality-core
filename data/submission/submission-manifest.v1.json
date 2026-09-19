@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "generatedFrom": "repository-controlled P20 inputs",
+  "files": [
+    {
+      "file": "docs/CHALLENGE_DEMO_SCRIPT.md",
+      "sha256": "b793555ad3d7411864ab6ff598100389347bee1e375d263e24be5cc210dd4c1c",
+      "bytes": 2570
+    },
+    {
+      "file": "docs/VIDEO_STORYBOARD.md",
+      "sha256": "b5002e19bb0dfe97352e199a834f7bc0bf1dbd8b36bc61bcbad37ca3596c3311",
+      "bytes": 1205
+    },
+    {
+      "file": "docs/DEMO_FALLBACK_RUNBOOK.md",
+      "sha256": "5633ba39903ceb0ff4f84f6a601cdf35ef7b02a06e4fe42eb1555352109c802c",
+      "bytes": 1065
+    },
+    {
+      "file": "docs/POSTER_ARCHITECTURE.md",
+      "sha256": "bf891a0cf982f2b3dfa4ca77d127660b3b64827e018589eaa04a7c8341d6a37c",
+      "bytes": 1435
+    },
+    {
+      "file": "docs/NASA_RESOURCE_ATTRIBUTION.md",
+      "sha256": "40b081cdb1d236600e6d677538fb7945beb33772f216f99e81fc235396ffec88",
+      "bytes": 1494
+    },
+    {
+      "file": "docs/SUBMISSION_PACKAGE.md",
+      "sha256": "a176400728db04a7cebe3905e7e4d02c68820f1f1db4d181c5f1589b3e7b77d4",
+      "bytes": 1509
+    },
+    {
+      "file": "docs/JUDGING_ALIGNMENT.md",
+      "sha256": "3114a80f232b98be9c183a387c19d5941ce6beb8fcfca079383211e9adc99570",
+      "bytes": 1452
+    },
+    {
+      "file": "docs/KNOWN_LIMITATIONS.md",
+      "sha256": "0dcec10ce8fd0bb65eebccf4527c87b66df68d8db8d21ee354cd2768eda1c2ed",
+      "bytes": 2268
+    },
+    {
+      "file": "CITATIONS.md",
+      "sha256": "c7ecf5fbabf45357f10395ff024d6c108d135fb9f752a01a004bcb9a812edc38",
+      "bytes": 2206
+    },
+    {
+      "file": "data/submission/p20-evidence.v1.json",
+      "sha256": "a8758fd82f9f9a30ce42a0b166e5782a38e1d9e5bd3cb787a3409950f462c423",
+      "bytes": 2986
+    },
+    {
+      "file": "data/release/mission-day-127.synthetic.json",
+      "sha256": "6997feae355887f1e1e56b5f0c533f5d365a67b5f89e765b1006c22d6153df8c",
+      "bytes": 868801
+    }
+  ]
+}

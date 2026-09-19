@@ -19,3 +19,4 @@ export * from "./ground-research";
 export * from "./simulation";
 
 export * from "./validation-usability";
+export * from "./challenge-submission";

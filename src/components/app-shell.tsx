@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/sheet";
 
 const NASA_URL = "https://www.spaceappschallenge.org/2026/";
+const CHALLENGE_URL = "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
 
 type NavigationEntry = {
@@ -81,13 +82,14 @@ const navigation: readonly NavigationEntry[] = [
   {
     label: "About",
     href: "#about",
-    items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Resources & References"],
+    items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Challenge Submission", "Resources & References"],
   },
 ];
 
 function itemHref(label: string, fallback: string) {
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "NASA Space Apps 2026") return NASA_URL;
+  if (label === "The Challenge") return CHALLENGE_URL;
   if (label === "Mission Scenario") return "/mission/simulation";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Health Intelligence" || label === "Explainable Alerts") return "/mission/intelligence";
@@ -96,6 +98,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Ground & Research Console") return "/mission/ground";
   if (label === "Cognitive & Behavioral Health") return "/mission/readiness";
   if (label === "Validation & Limitations") return "/mission/validation";
+  if (label === "Challenge Submission") return "/mission/submission";
   return fallback;
 }
 

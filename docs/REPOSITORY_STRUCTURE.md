@@ -163,3 +163,10 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `.github/workflows/release-candidate.yml` — source/build/Docker release-candidate verification.
 
 - `scripts/serve-dist.mjs` — Node self-host adapter for the emitted `dist/server` fetch handler and `dist/client` assets.
+
+### P20 submission package
+
+- `data/submission/` — controlled submission evidence and generated manifest.
+- `src/domain/challenge-submission/` — demo timing, official challenge links and evidence summary logic.
+- `src/routes/mission.submission.tsx` — judge-facing demo/submission route.
+- `docs/CHALLENGE_DEMO_SCRIPT.md`, `VIDEO_STORYBOARD.md`, `DEMO_FALLBACK_RUNBOOK.md`, `POSTER_ARCHITECTURE.md`, `NASA_RESOURCE_ATTRIBUTION.md`, `SUBMISSION_PACKAGE.md`, `JUDGING_ALIGNMENT.md` — presentation and submission controls.
