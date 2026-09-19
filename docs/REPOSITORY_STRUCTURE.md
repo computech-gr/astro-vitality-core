@@ -149,3 +149,13 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `tests/validation/p18-validation-usability.test.ts` — fail-closed closure-governance tests.
 - `scripts/verify-p18.mjs` — P18 evidence and structure gate.
 - `docs/VALIDATION_USABILITY.md` / `docs/KNOWN_LIMITATIONS.md` — validation method and explicit product limitations.
+
+## P19 release-candidate additions
+
+- `Dockerfile`, `docker-compose.yml`, `.dockerignore` — self-hosted application packaging.
+- `scripts/setup-local.mjs` — local Supabase bootstrap/reset and browser-safe environment generation.
+- `supabase/seed.sql` — synthetic-only local mission/crew fixture.
+- `scripts/generate-release-sample.ts`, `data/release/` — deterministic P17 sample export path.
+- `docs/LOCAL_REPRODUCIBILITY.md`, `docs/RELEASE_CANDIDATE.md`, `docs/RELEASE_CHECKLIST.md`, `docs/API_ADAPTER_REFERENCE.md` — release documentation.
+- `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` — public contribution intake.
+- `.github/workflows/release-candidate.yml` — source/build/Docker release-candidate verification.

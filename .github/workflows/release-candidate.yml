@@ -1,0 +1,31 @@
+name: Release Candidate
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v0.*"
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run sample:release
+      - name: Build self-hosted application image
+        run: |
+          docker build \
+            --build-arg VITE_SUPABASE_PROJECT_ID=local \
+            --build-arg VITE_SUPABASE_URL=http://127.0.0.1:54321 \
+            --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=local-release-candidate-placeholder \
+            --build-arg VITE_SITE_ORIGIN=http://localhost:3000 \
+            -t mitochondria-release-candidate:${GITHUB_SHA} .

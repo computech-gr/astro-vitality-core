@@ -35,3 +35,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Deterministic release samples are generated locally from P17.
+data/release/*.synthetic.json

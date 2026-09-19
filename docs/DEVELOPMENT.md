@@ -70,3 +70,16 @@ Do not generate a second package-manager lockfile unless the project deliberatel
 - If lint fails on formatting, run `bun run format`, review the diff, then rerun `bun run check`.
 - If Supabase code reports missing configuration, confirm `.env` contains the browser-safe values described in `.env.example`.
 - Do not solve local configuration failures by committing secrets.
+
+## P19 independent-machine reproduction
+
+For a full release-candidate setup on a fresh machine, install Git, Bun, Docker and the Supabase CLI, then run:
+
+```bash
+bun install --frozen-lockfile
+bun run setup:local
+bun run check
+bun run dev
+```
+
+Generate deterministic public sample data with `bun run sample:release`. Build/run the application container with `bun run docker:up` after local Supabase is ready. See `docs/LOCAL_REPRODUCIBILITY.md`.

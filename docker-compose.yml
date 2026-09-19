@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID:-local}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-http://127.0.0.1:54321}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_SITE_ORIGIN: ${VITE_SITE_ORIGIN:-http://localhost:3000}
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      SUPABASE_PROJECT_ID: ${SUPABASE_PROJECT_ID:-local}
+      SUPABASE_URL: http://host.docker.internal:54321
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

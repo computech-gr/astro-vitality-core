@@ -125,3 +125,9 @@ P17 adds a deterministic synthetic-data boundary above the canonical model. Scen
 ## P18 validation boundary
 
 P18 validates the integrated product against the roadmap without turning engineering evidence into clinical validation. Automated gates cover deterministic scenarios, offline/sync, security, data-quality and the <3-minute P11 flow. Keyboard/touch and local latency observations require real browser evidence; target-hardware battery drain remains an explicit limitation until hardware is available.
+
+## P19 open-source release boundary
+
+P19 adds a reproducible packaging layer around the existing architecture. Docker packages the application runtime, while local Supabase remains driven by the repository `supabase/config.toml`, forward-only migrations, and synthetic-only seed. Lovable is an editor/accelerator, not a runtime dependency or the only copy of project behavior.
+
+The local release path does not weaken P15/P16 authorization: application containers use only browser-safe/publishable Supabase credentials, never the service-role key.
