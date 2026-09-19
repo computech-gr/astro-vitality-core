@@ -34,6 +34,11 @@ if (!config.includes('https://mitochondria.edocinfo.com')) {
   failures.push("Canonical production origin is missing from infrastructure config");
 }
 
+const eslintConfig = readFileSync(join(root, "eslint.config.js"), "utf8");
+if (/ignores\s*:\s*\[[^\]]*["\']src\/integrations\/supabase\/\*\*[^\]]*\]/s.test(eslintConfig)) {
+  failures.push("Generated Supabase integration files must not be blanket-excluded from linting");
+}
+
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
