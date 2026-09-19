@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository is in **P4 — Canonical Health Data Platform**. P3 established vendor-neutral crew/mission identity and canonical observation contracts. The reviewed `Astronaut_Biomarker_Matrix_v1.1` now closes the P1 team-biologist review dependency and seeds P4 with a traceable metric catalogue, governed unit normalization, scalar and raw-series ingestion paths, explicit context/provenance, and deterministic serialization round-trip tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, device adapters, authentication workflows, and database persistence remain intentionally **not yet implemented**.
+The repository is in **P6 — Wearables Integration Pack**. P3 established vendor-neutral crew/mission identity and canonical observation contracts. The reviewed `Astronaut_Biomarker_Matrix_v1.1` now closes the P1 team-biologist review dependency and seeds P4 with a traceable metric catalogue, governed unit normalization, scalar and raw-series ingestion paths, explicit context/provenance, and deterministic serialization round-trip tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, authentication workflows, and database persistence remain intentionally **not yet implemented**. P5 defines the vendor-neutral adapter SDK and P6 adds concrete wearable source classes for direct BLE, native Health Connect/HealthKit bridges, and vendor-cloud imports.
 
 ## Architecture principles
 
@@ -92,7 +92,7 @@ bun run format        # apply Prettier formatting
 bun run format:check  # verify formatting
 bun run build         # production build
 bun run preview       # preview production build
-bun run check         # foundation + P3/P4 verification + tests + typecheck + lint + format + build
+bun run check         # foundation + P3/P4/P5/P6 verification + tests + typecheck + lint + format + build
 ```
 
 ## Quality gate
@@ -136,3 +136,7 @@ The project may reference NASA public resources and challenge materials. Such re
 ### P5 device adapter SDK
 
 The repository now includes the vendor-neutral Universal Device Adapter SDK and a deterministic conformance fixture. No real wearable integration is claimed in P5; adapters must normalize through the reviewed P4 canonical health-data boundary. See `docs/DEVICE_ADAPTER_SDK.md`.
+
+### P6 wearables integration pack
+
+P6 adds direct Web Bluetooth heart-rate ingestion, host-provided Android Health Connect and Apple HealthKit bridge adapters, and a credential-free vendor-cloud adapter boundary. Three distinct source classes are tested through the same P4 canonical metric path. See `docs/WEARABLES_INTEGRATION.md`.
