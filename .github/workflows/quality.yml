@@ -32,6 +32,9 @@ jobs:
       - name: Verify P3 domain contracts
         run: bun run verify:p3
 
+      - name: Verify P4 canonical health data
+        run: bun run verify:p4
+
       - name: Domain contract tests
         run: bun run test
 

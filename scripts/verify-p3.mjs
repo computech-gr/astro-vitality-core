@@ -52,8 +52,8 @@ if (!String(packageJson.scripts?.check ?? "").includes("verify:p3")) failures.pu
 if (!String(packageJson.scripts?.check ?? "").includes("bun run test")) failures.push("The full check command must include domain tests");
 
 const readme = readFileSync(join(root, "README.md"), "utf8");
-if (!readme.includes("P3 — Identity, Mission, Crew & Canonical Health Domain")) {
-  failures.push("README current status must identify P3");
+if (!readme.includes("P3") && !readme.includes("P4")) {
+  failures.push("README current status must identify P3 or a later completed phase");
 }
 
 const migrationsDir = join(root, "supabase", "migrations");

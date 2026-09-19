@@ -9,6 +9,8 @@ import type {
   ObservationValueKind,
   PersonalBaselineDefinition,
   ScientificSignalDefinition,
+  ObservationEnvelope,
+  ObservationInterpretation,
 } from "./contracts";
 
 function isIsoInstant(value: string): boolean {
@@ -148,6 +150,37 @@ export function validateCrewAssignment(assignment: CrewAssignment): DomainValida
   if (assignment.activeUntil && !isIsoInstant(assignment.activeUntil)) issues.push({ path: "activeUntil", message: "Assignment activeUntil must be an ISO-8601 instant with timezone" });
   if (assignment.activeUntil && Date.parse(assignment.activeUntil) < Date.parse(assignment.activeFrom)) {
     issues.push({ path: "activeUntil", message: "Assignment end cannot precede assignment start" });
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+
+export function validateObservationEnvelope(envelope: ObservationEnvelope): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+  if (!envelope.metricDefinitionVersion.trim()) issues.push({ path: "metricDefinitionVersion", message: "Metric definition version is required" });
+  if (envelope.context.completeness !== undefined && (envelope.context.completeness < 0 || envelope.context.completeness > 1)) {
+    issues.push({ path: "context.completeness", message: "Context completeness must be between 0 and 1" });
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+export function validateObservationInterpretation(interpretation: ObservationInterpretation): DomainValidationResult {
+  const issues: DomainValidationIssue[] = [];
+  if (!interpretation.observationId.trim()) issues.push({ path: "observationId", message: "Observation id is required" });
+  if (!interpretation.metricCode.trim()) issues.push({ path: "metricCode", message: "Metric code is required" });
+  if (interpretation.interpretationTier === "research_only" && interpretation.actionClass !== "none") {
+    issues.push({ path: "actionClass", message: "Research-only metrics cannot produce an operational action class" });
+  }
+  if (interpretation.operationalLimit) {
+    if (!interpretation.operationalLimit.authority.trim()) issues.push({ path: "operationalLimit.authority", message: "Operational limits require an authority" });
+    if (!interpretation.operationalLimit.sourceId.trim()) issues.push({ path: "operationalLimit.sourceId", message: "Operational limits require a source id" });
+    if (!interpretation.operationalLimit.version.trim()) issues.push({ path: "operationalLimit.version", message: "Operational limits require a version" });
+  }
+  if (interpretation.referenceInterval && !interpretation.referenceInterval.sourceId.trim()) {
+    issues.push({ path: "referenceInterval.sourceId", message: "Reference intervals require a source id" });
+  }
+  if (interpretation.uncertainty?.modelConfidence !== undefined && (interpretation.uncertainty.modelConfidence < 0 || interpretation.uncertainty.modelConfidence > 1)) {
+    issues.push({ path: "uncertainty.modelConfidence", message: "Model confidence must be between 0 and 1" });
   }
   return { valid: issues.length === 0, issues };
 }
