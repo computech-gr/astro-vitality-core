@@ -36,14 +36,14 @@ const MissionLiveRoute = MissionLiveRouteImport.update({
   path: '/mission/live',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MissionReadinessRoute = MissionReadinessRouteImport.update({
-  id: '/mission/readiness',
-  path: '/mission/readiness',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MissionOfflineRoute = MissionOfflineRouteImport.update({
   id: '/mission/offline',
   path: '/mission/offline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionReadinessRoute = MissionReadinessRouteImport.update({
+  id: '/mission/readiness',
+  path: '/mission/readiness',
   getParentRoute: () => rootRouteImport,
 } as any)
 
