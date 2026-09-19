@@ -7,6 +7,7 @@ This release-candidate reference points contributors to the stable integration b
 All health/environment inputs converge on the canonical contracts in `src/domain/` before analytics. Vendor payloads must not bypass normalization, provenance, unit, timestamp, quality, classification or review-state checks.
 
 See:
+
 - `docs/CANONICAL_HEALTH_DATA.md`
 - `docs/DOMAIN_MODEL.md`
 
@@ -29,6 +30,7 @@ See the corresponding documentation files in `docs/`.
 Authenticated store-and-forward persistence uses the governed Supabase RPC boundary introduced in P15 and hardened in P16. Browser code must not bypass mission membership/RLS rules or use a service-role credential.
 
 Important RPCs include:
+
 - `ingest_mission_event(jsonb, text)`
 - `get_ground_mission_snapshot(text)`
 - `export_research_mission(text)`
