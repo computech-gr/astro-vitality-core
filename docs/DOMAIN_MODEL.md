@@ -1,4 +1,4 @@
-# P3 Identity, Mission, Crew & Canonical Health Domain Model
+# P3/P4 Identity, Mission, Crew & Canonical Health Domain Model
 
 P3 introduces the first executable, vendor-neutral health-data contracts for The
 Mitochondria. The purpose is to create a stable language for later device,
@@ -55,3 +55,12 @@ independent of any specific interchange format.
 ## Identity, mission, and crew closure
 
 P3 also defines vendor-neutral `CrewMember`, `Mission`, and `CrewAssignment` contracts. These establish stable identifiers and mission membership without coupling the domain to Supabase Auth or any identity provider. Assignment intervals are explicitly validated so later observation ingestion can prove that a subject belongs to the referenced mission context. Authentication, authorization, persistence, and RLS remain implementation concerns for later infrastructure work.
+
+
+## P4 reviewed metric catalogue and ingestion
+
+P4 promotes a reviewed MVP/near-term subset of `SPACE_APPS_2026_Astronaut_Biomarker_Matrix_v1.1.xlsx` into stable canonical metric definitions. Every promoted metric retains its matrix sheet/row, evidence source IDs, review disposition, priority, cadence, interpretation tier, source types, and scientific-baseline version. Rows marked `REMOVE` are excluded.
+
+Scalar/event observations enter through `ingestCanonicalObservation()`. Series/vector signals such as ECG waveform and tri-axial acceleration use `RawSignalChunk`. Unit normalization is fail-closed: only explicitly governed aliases/conversions are accepted, and source unit/value are retained in provenance.
+
+P4 also introduces an `ObservationInterpretation` contract that keeps personal baseline, clinical/laboratory reference interval, and mission operational limit as separate structures. Research-only interpretations cannot emit an operational action class.

@@ -41,3 +41,8 @@ package.json                   scripts and dependencies
 ```
 
 Generated files such as `src/routeTree.gen.ts` should not be manually edited unless the framework specifically requires it.
+
+- `docs/CANONICAL_HEALTH_DATA.md` — P4 canonical metric/ingestion/round-trip contract.
+- `docs/SCIENTIFIC_BASELINE_V1_1.md` — reviewed biologist baseline decisions and traceability hash.
+- `scripts/verify-p4.mjs` — P4 structural/safety verifier.
+- `tests/domain/p4-canonical-data.test.ts` — canonical registry, unit, round-trip, series and safety tests.

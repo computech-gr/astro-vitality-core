@@ -1,6 +1,6 @@
 # Architecture
 
-## Current P3 architecture
+## Current P4 architecture
 
 The repository establishes boundaries before health-domain functionality is implemented.
 
@@ -30,9 +30,9 @@ Presentation code may display domain outputs in later phases, but must not becom
 
 ## Domain layer
 
-`src/domain/` now contains the P3 vendor-neutral contracts for crew identity, missions, crew assignments, mission context, observations, health-signal taxonomy, data quality, provenance, scientific signal definitions, and personal-baseline definitions, plus deterministic validation and synthetic tests.
+`src/domain/` contains the P3 vendor-neutral crew/mission and observation contracts plus the P4 reviewed metric registry, governed unit-normalization boundary, scalar-ingestion pipeline, raw-series contracts, interpretation-layer separation, serialization round-trip, deterministic validation, and synthetic tests.
 
-The domain must remain independent from Apple, Garmin, Fitbit, Supabase, MQTT, persistence schemas, or any other concrete provider. P3 does not yet implement alert reasoning, clinical thresholds, diagnosis, or treatment logic.
+The domain remains independent from Apple, Garmin, Fitbit, Supabase, MQTT, persistence schemas, or any other concrete provider. P4 does not implement alert reasoning, clinical thresholds, diagnosis, treatment logic, or database persistence.
 
 ## Integrations
 
@@ -50,7 +50,7 @@ Device-specific representations must be normalized before core health-domain ana
 
 ## Canonical health model
 
-P3 introduces a canonical observation model with explicit:
+P3 introduced the observation envelope; P4 adds a reviewed metric catalogue and explicit ingestion/serialization behavior with:
 
 - subject and mission context;
 - device/source provenance;
@@ -60,8 +60,10 @@ P3 introduces a canonical observation model with explicit:
 - raw-versus-derived distinction;
 - synchronization state.
 
-The metric contract can carry optional external coding-system metadata so later FHIR-compatible interchange can be added without making FHIR the internal domain model. High-frequency persistence strategy remains a later-phase concern.
+The metric contract can carry optional external coding-system metadata so later FHIR-compatible interchange can be added without making FHIR the internal domain model. High-frequency persistence strategy remains a later-phase concern. ECG/vector data use a separate raw-series chunk contract instead of being forced through scalar observation ingestion.
+
+The reviewed scientific source is `SPACE_APPS_2026_Astronaut_Biomarker_Matrix_v1.1.xlsx`; see `SCIENTIFIC_BASELINE_V1_1.md` and `CANONICAL_HEALTH_DATA.md`.
 
 ## Safety boundary
 
-The architecture distinguishes deterministic reviewed safety rules from experimental analytics. No autonomous diagnosis is part of P3 or implied by the public shell or domain contracts.
+The architecture distinguishes deterministic reviewed safety rules from experimental analytics. No autonomous diagnosis is part of P4 or implied by the public shell or domain contracts.

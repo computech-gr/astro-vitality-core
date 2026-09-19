@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository is in **P3 — Identity, Mission, Crew & Canonical Health Domain**. P2 established the public mission shell, repository/open-source foundation, canonical-origin safeguards, and Supabase client scaffolding. P3 adds vendor-neutral crew identity, mission and crew-assignment contracts together with mission-health observations, provenance and data-quality invariants, scientific evidence/review metadata, an explicit non-diagnostic boundary, and executable synthetic contract tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, device adapters, authentication workflows, and database schema remain intentionally **not yet implemented**.
+The repository is in **P4 — Canonical Health Data Platform**. P3 established vendor-neutral crew/mission identity and canonical observation contracts. The reviewed `Astronaut_Biomarker_Matrix_v1.1` now closes the P1 team-biologist review dependency and seeds P4 with a traceable metric catalogue, governed unit normalization, scalar and raw-series ingestion paths, explicit context/provenance, and deterministic serialization round-trip tests. Clinical thresholds, diagnosis, treatment guidance, autonomous alerts, device adapters, authentication workflows, and database persistence remain intentionally **not yet implemented**.
 
 ## Architecture principles
 
@@ -37,13 +37,13 @@ The repository is in **P3 — Identity, Mission, Crew & Canonical Health Domain*
 src/
   app/              application-layer boundary
   components/       reusable UI and public application shell
-  domain/           P3 vendor-neutral health/science contracts
+  domain/           P3/P4 mission-health contracts, reviewed metric registry, ingestion and serialization
   infrastructure/   runtime configuration and infrastructure concerns
   integrations/     external-system adapters, including Supabase
   routes/           TanStack Start routes
   lib/              shared technical utilities
 public/              static public assets and PWA manifest
-supabase/            Supabase project configuration; no P3 schema migrations
+supabase/            Supabase project configuration; no P4 schema migrations
 docs/                architecture, domain/science governance, development, open-source, security
 .github/workflows/    CI quality gates
 ```
@@ -85,14 +85,14 @@ Current browser configuration names are documented in [`.env.example`](.env.exam
 
 ```bash
 bun run dev           # local development server
-bun run test          # P3 domain contract tests
+bun run test          # P3/P4 domain and canonical-data tests
 bun run typecheck     # TypeScript validation, no emit
 bun run lint          # ESLint
 bun run format        # apply Prettier formatting
 bun run format:check  # verify formatting
 bun run build         # production build
 bun run preview       # preview production build
-bun run check         # foundation + P3 verification + tests + typecheck + lint + format + build
+bun run check         # foundation + P3/P4 verification + tests + typecheck + lint + format + build
 ```
 
 ## Quality gate
@@ -106,9 +106,9 @@ bun run check
 
 CI runs the same core gates on pull requests and pushes to `main`.
 
-## P3 domain and scientific-governance foundation
+## P4 canonical health-data foundation
 
-The canonical domain contracts live in `src/domain/`. See [`docs/DOMAIN_MODEL.md`](docs/DOMAIN_MODEL.md) and [`docs/SCIENTIFIC_GOVERNANCE.md`](docs/SCIENTIFIC_GOVERNANCE.md). P3 deliberately models psychological and behavioral signals as explicit health context without treating them as diagnoses or inferring mental-health conditions.
+The canonical domain contracts live in `src/domain/`. See [`docs/DOMAIN_MODEL.md`](docs/DOMAIN_MODEL.md), [`docs/CANONICAL_HEALTH_DATA.md`](docs/CANONICAL_HEALTH_DATA.md), [`docs/SCIENTIFIC_GOVERNANCE.md`](docs/SCIENTIFIC_GOVERNANCE.md), and [`docs/SCIENTIFIC_BASELINE_V1_1.md`](docs/SCIENTIFIC_BASELINE_V1_1.md). P4 uses the reviewed v1.1 scientific baseline without turning research-only markers or contextual associations into diagnosis or autonomous medical logic.
 
 ## Scientific and medical boundary
 
