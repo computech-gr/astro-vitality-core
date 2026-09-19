@@ -1,0 +1,166 @@
+import { ExternalLink } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
+const NASA_URL = "https://www.spaceappschallenge.org/2026/";
+const CHALLENGE_URL =
+  "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
+const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
+
+type GuideItem = {
+  id: string;
+  title: string;
+  summary: string;
+  href?: string;
+  hrefLabel?: string;
+  external?: boolean;
+};
+
+type GuideGroup = {
+  id: string;
+  title: string;
+  intro: string;
+  items: readonly GuideItem[];
+};
+
+const groups: readonly GuideGroup[] = [
+  {
+    id: "mission-guide",
+    title: "Mission",
+    intro: "Why autonomous, context-aware health support matters during long-duration human spaceflight.",
+    items: [
+      { id: "our-mission", title: "Our Mission", summary: "Support astronaut autonomy with explainable, human-in-the-loop health intelligence that continues to function when Earth connectivity is delayed or absent." },
+      { id: "why-autonomous-health", title: "Why Autonomous Health", summary: "The astronaut-side health loop must remain useful without a cloud round trip: local sensing, local interpretation, local protocols, and later synchronization." },
+      { id: "long-duration-spaceflight", title: "Long-Duration Spaceflight", summary: "The system treats physiology, cognition, workload, habitat conditions, radiation and mission phase as one longitudinal context rather than isolated measurements." },
+      { id: "mission-scenario", title: "Mission Scenario", summary: "Mission Day 127 is the deterministic synthetic challenge story used to exercise missing data, artifacts, CO₂ context, radiation context, fatigue and reconnect behavior.", href: "/mission/simulation", hrefLabel: "Open Mission Scenario" },
+      { id: "challenge", title: "The Challenge", summary: "The Mitochondria is an independent open-source response to the 2026 NASA Space Apps astronaut health-monitoring challenge.", href: CHALLENGE_URL, hrefLabel: "Official challenge page", external: true },
+    ],
+  },
+  {
+    id: "science-guide",
+    title: "Science",
+    intro: "Scientific governance is explicit: personal baselines, data quality, provenance, uncertainty and reviewed evidence remain distinct from diagnosis.",
+    items: [
+      { id: "scientific-foundation", title: "Scientific Foundation", summary: "The reviewed v1.1 biomarker matrix is the controlled scientific baseline for metric meaning, confounders, evidence and operational-vs-research classification." },
+      { id: "spaceflight-health-risks", title: "Spaceflight Health Risks", summary: "The model spans cardiovascular, musculoskeletal, immune/inflammatory, metabolic/hydration, cognitive/behavioral, environmental and radiation-related context." },
+      { id: "biomarkers-signals", title: "Biomarkers & Signals", summary: "Canonical observations preserve units, timestamps, source provenance, quality, uncertainty and context instead of reducing health to a single score." },
+      { id: "personal-baselines", title: "Personal Baselines", summary: "Preflight and mission-phase baselines are versioned distributions. Clinical reference intervals and mission operational limits remain separate concepts.", href: "/mission/live", hrefLabel: "View baseline-aware live console" },
+      { id: "cognitive-behavioral-health", title: "Cognitive & Behavioral Health", summary: "Short cognitive tasks, fatigue, sleepiness, stress and workload are treated longitudinally and privately, without psychiatric diagnosis.", href: "/mission/readiness", hrefLabel: "Open Readiness Assessment" },
+      { id: "environment-radiation", title: "Environment & Radiation", summary: "CO₂, O₂, pressure, temperature, humidity, light, noise and radiation share the mission timeline while causal claims remain evidence-governed." },
+      { id: "scientific-safety-boundaries", title: "Scientific Safety Boundaries", summary: "Research-only findings cannot become operational alerts; missing context lowers confidence; medical escalation requires governed authority and explicit protocol logic.", href: "/mission/validation", hrefLabel: "Review validation & limitations" },
+    ],
+  },
+  {
+    id: "platform-guide",
+    title: "Platform",
+    intro: "Operational surfaces expose the implemented health loop without inventing values when a feed is absent.",
+    items: [
+      { id: "platform-overview", title: "Platform Overview", summary: "The platform combines device ingestion, canonical data, personal baselines, explainable intelligence, protocol guidance, offline operation and ground/research review." },
+      { id: "astronaut-health-twin", title: "Astronaut Health Twin", summary: "The health twin is a longitudinal mission context assembled from validated observations, baselines, environment and mission state; it is not a diagnostic digital clone." },
+      { id: "live-monitoring", title: "Live Monitoring", summary: "Live sensor values update locally with explicit LIVE, STALE, DISCONNECTED and WAITING states.", href: "/mission/live", hrefLabel: "Open Live Monitoring" },
+      { id: "personalization", title: "Personalization", summary: "Interpretation is anchored to validated crew-specific baseline profiles and mission phase rather than universal one-size-fits-all thresholds.", href: "/mission/live", hrefLabel: "View personalized deltas" },
+      { id: "health-intelligence", title: "Health Intelligence", summary: "Reviewed trends and multi-signal patterns expose contributing evidence, confidence, uncertainty, confounders and missing context.", href: "/mission/intelligence", hrefLabel: "Open Health Intelligence" },
+      { id: "explainable-alerts", title: "Explainable Alerts", summary: "Operational findings are evidence-bearing and fail closed when data quality or scientific classification does not support an operational conclusion.", href: "/mission/intelligence", hrefLabel: "Review explainable findings" },
+      { id: "action-guidance", title: "Action Guidance", summary: "Versioned protocol guidance supports repeat measurement, quality review, recovery/workload review, environmental review and governed escalation.", href: "/mission/guidance", hrefLabel: "Open Action Guidance" },
+      { id: "offline-mission-mode", title: "Offline Mission Mode", summary: "Encrypted local persistence, append-only events, protocol cache and an idempotent sync queue keep the astronaut-side loop operating during network loss.", href: "/mission/offline", hrefLabel: "Open Offline Mission Mode" },
+      { id: "ground-research-console", title: "Ground & Research Console", summary: "Mission-scoped roles separate identified medical oversight from de-identified research exports, with audit logging and RLS-backed authorization.", href: "/mission/ground", hrefLabel: "Open Ground Console" },
+    ],
+  },
+  {
+    id: "technology-guide",
+    title: "Technology",
+    intro: "The architecture is adapter-based, canonical-data-first, offline-first and intentionally vendor-neutral.",
+    items: [
+      { id: "system-architecture", title: "System Architecture", summary: "Presentation, application, domain, integrations and infrastructure boundaries keep health meaning independent from vendor APIs and UI concerns." },
+      { id: "device-integration", title: "Device Integration", summary: "The adapter lifecycle covers discovery, connection, capabilities, streaming, quality, normalization, sync cursors, health and disconnect." },
+      { id: "wearables", title: "Wearables", summary: "Web Bluetooth, Android Health Connect, Apple HealthKit bridge contracts and vendor-cloud adapters converge on the same canonical metric model.", href: "/mission/live", hrefLabel: "Open device-aware live console" },
+      { id: "medical-laboratory-data", title: "Medical & Laboratory Data", summary: "FHIR, CSV, manual entry and medical-device inputs retain specimen, assay/method and reference-context provenance while unmapped codes fail closed." },
+      { id: "environmental-telemetry", title: "Environmental Telemetry", summary: "Habitat and radiation adapters preserve location, detector/source metadata, units and quality on the same mission timeline." },
+      { id: "canonical-health-data-model", title: "Canonical Health Data Model", summary: "Metrics are normalized through a reviewed registry with deterministic serialization, unit safety, provenance and explicit research/operational classification." },
+      { id: "offline-first-architecture", title: "Offline-First Architecture", summary: "The critical sensor-to-astronaut path does not depend on cloud availability; synchronization is store-and-forward and conflict-aware.", href: "/mission/offline", hrefLabel: "Inspect offline runtime" },
+      { id: "security-privacy", title: "Security & Privacy", summary: "Forced RLS, mission-scoped roles, restricted pseudonymization keys, authenticated SECURITY DEFINER RPCs with internal authorization, audit trails and encrypted local storage form the current security boundary.", href: "/mission/ground", hrefLabel: "Open governed ground surface" },
+    ],
+  },
+  {
+    id: "open-source-guide",
+    title: "Open Source",
+    intro: "The release candidate is designed to be inspectable, reproducible and self-hostable rather than dependent on one proprietary builder.",
+    items: [
+      { id: "open-source-mission", title: "Open-Source Mission", summary: "Apache-2.0 licensing, reproducible science, transparent decisions and vendor-neutral adapters are first-class project requirements." },
+      { id: "github-repository", title: "GitHub Repository", summary: "Source, migrations, tests, documentation, synthetic data and release tooling are version controlled.", href: GITHUB_URL, hrefLabel: "Open GitHub repository", external: true },
+      { id: "documentation", title: "Documentation", summary: "The repository contains architecture, scientific governance, data model, device, offline, security, validation, release and submission documentation.", href: GITHUB_URL + "/tree/main/docs", hrefLabel: "Browse repository docs", external: true },
+      { id: "device-adapter-sdk", title: "Device Adapter SDK", summary: "A common adapter contract lets new sensors and platforms integrate without changing canonical health meaning." },
+      { id: "data-interoperability", title: "Data & Interoperability", summary: "FHIR/lab ingestion, canonical metric identifiers, unit normalization and explicit provenance provide the interoperability boundary." },
+      { id: "contributing", title: "Contributing", summary: "Contributions are governed by evidence traceability, no-real-medical-data rules, tests and security requirements.", href: GITHUB_URL + "/blob/main/CONTRIBUTING.md", hrefLabel: "Read contributing guide", external: true },
+      { id: "security-policy", title: "Security Policy", summary: "Security issues follow responsible disclosure and must not be reported with real astronaut or medical data.", href: GITHUB_URL + "/blob/main/SECURITY.md", hrefLabel: "Read security policy", external: true },
+      { id: "license", title: "License", summary: "The project is released under Apache License 2.0.", href: GITHUB_URL + "/blob/main/LICENSE", hrefLabel: "Read license", external: true },
+    ],
+  },
+  {
+    id: "about-guide",
+    title: "About",
+    intro: "Challenge context, scientific governance, validation evidence and submission materials are kept explicit and traceable.",
+    items: [
+      { id: "the-mitochondria", title: "The Mitochondria", summary: "An independent open-source astronaut health-intelligence project built by the team for NASA Space Apps Challenge 2026." },
+      { id: "nasa-space-apps-2026", title: "NASA Space Apps 2026", summary: "The project participates in the 2026 NASA International Space Apps Challenge and does not imply NASA endorsement.", href: NASA_URL, hrefLabel: "Visit NASA Space Apps 2026", external: true },
+      { id: "team", title: "Team", summary: "The project combines software engineering and biological/scientific review; role details belong in the final submission package rather than being invented in the application." },
+      { id: "scientific-approach", title: "Scientific Approach", summary: "Biological review, controlled evidence, uncertainty, personal baselines, context and human oversight are built into the software architecture." },
+      { id: "roadmap", title: "Roadmap", summary: "The phased roadmap progressed from challenge thesis and scientific foundation through adapters, live monitoring, intelligence, offline mode, ground/research security, validation and release readiness." },
+      { id: "validation-limitations", title: "Validation & Limitations", summary: "Engineering and usability evidence is separated from clinical validation claims; known limitations remain visible.", href: "/mission/validation", hrefLabel: "Open validation evidence" },
+      { id: "challenge-submission", title: "Challenge Submission", summary: "The submission surface tracks the 3-minute story, evidence gates, attribution and final challenge materials without marking human/external gates ready by assumption.", href: "/mission/submission", hrefLabel: "Open submission status" },
+      { id: "resources-references", title: "Resources & References", summary: "NASA, standards and scientific resources are maintained in the repository citation and attribution documents.", href: GITHUB_URL + "/blob/main/CITATIONS.md", hrefLabel: "Open citations", external: true },
+    ],
+  },
+];
+
+export function ProjectGuidePage() {
+  return (
+    <main className="min-h-screen bg-background pt-[var(--header-offset)] text-foreground">
+      <div className="mx-auto max-w-[94rem] px-5 py-14 lg:px-8 lg:py-20">
+        <p className="section-kicker">Project guide</p>
+        <h1 className="mt-3 max-w-5xl font-display text-4xl font-semibold leading-tight sm:text-6xl">Every navigation item now has a meaningful destination.</h1>
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-muted-foreground">
+          This guide separates public project explanations from the operational mission consoles. It does not invent unimplemented functionality; where a working console exists, the relevant section links directly to it.
+        </p>
+
+        <nav aria-label="Project guide sections" className="mt-10 flex flex-wrap gap-2">
+          {groups.map((group) => (
+            <a key={group.id} href={`#${group.id}`} className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+              {group.title}
+            </a>
+          ))}
+        </nav>
+
+        <div className="mt-16 space-y-20">
+          {groups.map((group) => (
+            <section key={group.id} id={group.id} aria-labelledby={`${group.id}-title`} className="scroll-mt-28">
+              <div className="grid gap-7 lg:grid-cols-[0.32fr_0.68fr]">
+                <div>
+                  <p className="section-kicker">{group.title}</p>
+                  <h2 id={`${group.id}-title`} className="mt-3 font-display text-3xl font-semibold sm:text-4xl">{group.title}</h2>
+                  <p className="mt-4 leading-7 text-muted-foreground">{group.intro}</p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {group.items.map((item) => (
+                    <article key={item.id} id={item.id} className="scroll-mt-28 border border-border bg-surface p-5 sm:p-6">
+                      <h3 className="text-lg font-semibold">{item.title}</h3>
+                      <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>
+                      {item.href && (
+                        <Button asChild variant="outline" size="sm" className="mt-5">
+                          <a href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener noreferrer" : undefined}>
+                            {item.hrefLabel ?? "Open"}
+                            {item.external && <ExternalLink aria-hidden="true" className="size-3.5" />}
+                          </a>
+                        </Button>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
