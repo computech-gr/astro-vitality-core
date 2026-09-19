@@ -1,6 +1,6 @@
 # Architecture
 
-## Current P6 architecture
+## Current P8 architecture
 
 The repository establishes boundaries before health-domain functionality is implemented.
 
@@ -36,7 +36,7 @@ The domain remains independent from Apple, Garmin, Fitbit, Supabase, MQTT, persi
 
 ## Integrations
 
-`src/integrations/` contains external-system boundaries. The repository currently contains generated Supabase integration scaffolding. Future adapters may include BLE, Health Connect, HealthKit bridges, laboratory imports, and environmental telemetry.
+`src/integrations/` contains external-system boundaries. The repository currently contains generated Supabase integration scaffolding. Implemented integration boundaries now include the P5 device SDK, P6 wearables, P7 medical/laboratory inputs, and P8 environmental/radiation telemetry. Future concrete vendor/mission transports remain outside the domain layer.
 
 ## Infrastructure
 
@@ -81,3 +81,7 @@ The architecture distinguishes deterministic reviewed safety rules from experime
 ## P7 medical and laboratory boundary
 
 `src/integrations/medical-lab/` handles periodic biomarker and medical-device inputs. CSV, explicitly mapped FHIR Observations, manual transcription fallback, SpO2 and blood-pressure readings all converge on the P4 canonical ingestion boundary. Imported reference intervals remain contextual metadata and are never promoted automatically to personal baselines or mission operational limits.
+
+## P8 environmental and radiation boundary
+
+`src/integrations/environmental-telemetry/` adds habitat/environment telemetry and personal dosimetry above the P5 adapter lifecycle. MQTT, WebSocket and REST transport clients are injected by the host runtime, while credentials remain outside the adapter. Environmental observations preserve compartment/location context; dosimetry preserves detector/radiation-field context. All accepted values still pass through the reviewed P4 registry and unit-normalization boundary. P8 explicitly keeps absorbed dose and dose-equivalent quantities separate and introduces no operational thresholds or biological-risk model.
