@@ -137,7 +137,6 @@ The project may reference NASA public resources and challenge materials. Such re
 
 The repository now includes the vendor-neutral Universal Device Adapter SDK and a deterministic conformance fixture. No real wearable integration is claimed in P5; adapters must normalize through the reviewed P4 canonical health-data boundary. See `docs/DEVICE_ADAPTER_SDK.md`.
 
-
 ### P6 wearables integration pack
 
 P6 adds direct Web Bluetooth heart-rate ingestion, host-provided Android Health Connect and Apple HealthKit bridge adapters, and a credential-free vendor-cloud adapter boundary. Three distinct source classes are tested through the same P4 canonical metric path. See `docs/WEARABLES_INTEGRATION.md`.

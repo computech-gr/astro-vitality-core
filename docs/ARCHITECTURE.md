@@ -48,7 +48,6 @@ P5 implements the common device-adapter SDK under `src/integrations/device-adapt
 
 Vendor representations must pass through the governed P4 canonical metric registry and ingestion/series validation before core health-domain analysis. Unknown vendor metrics fail closed. The included reference adapter is a deterministic conformance fixture, not a real-device integration or product simulator.
 
-
 ## Wearables integration pack
 
 P6 adds concrete source-class implementations above the P5 SDK:
