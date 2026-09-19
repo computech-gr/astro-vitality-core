@@ -4,7 +4,7 @@ import type { MissionContextRef } from "../contracts";
 export const ACTION_SEVERITIES = ["info", "watch", "action", "escalate", "data_quality"] as const;
 export type ActionSeverity = (typeof ACTION_SEVERITIES)[number];
 
-export const OPERATIONAL_ACTION_CLASSES = [
+export const GUIDANCE_ACTION_CLASSES = [
   "none",
   "repeat-quality-check",
   "recovery-workload-review",
@@ -13,7 +13,7 @@ export const OPERATIONAL_ACTION_CLASSES = [
   "environmental-review",
   "medical-escalation",
 ] as const;
-export type OperationalActionClass = (typeof OPERATIONAL_ACTION_CLASSES)[number];
+export type GuidanceActionClass = (typeof GUIDANCE_ACTION_CLASSES)[number];
 
 export interface ProtocolStep {
   id: string;
@@ -26,7 +26,7 @@ export interface ProtocolDefinition {
   id: string;
   version: string;
   title: string;
-  actionClass: OperationalActionClass;
+  actionClass: GuidanceActionClass;
   purpose: string;
   steps: readonly ProtocolStep[];
   requiresAcknowledgement: boolean;
@@ -45,7 +45,7 @@ export interface ActionCard {
   protocolId: string;
   protocolVersion: string;
   severity: ActionSeverity;
-  actionClass: OperationalActionClass;
+  actionClass: GuidanceActionClass;
   title: string;
   rationale: string[];
   steps: ProtocolStep[];

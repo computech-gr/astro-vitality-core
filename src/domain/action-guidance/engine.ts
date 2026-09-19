@@ -7,11 +7,11 @@ import type {
   ActionSeverity,
   AcknowledgementState,
   GovernedEscalationTrigger,
-  OperationalActionClass,
+  GuidanceActionClass,
 } from "./contracts";
 import { getProtocolByActionClass } from "./protocols";
 
-const PATTERN_ACTIONS: Readonly<Record<string, readonly OperationalActionClass[]>> = {
+const PATTERN_ACTIONS: Readonly<Record<string, readonly GuidanceActionClass[]>> = {
   "sleep-fatigue-cognition-v1": ["repeat-quality-check", "recovery-workload-review"],
   "workload-recovery-autonomic-v1": ["repeat-quality-check", "recovery-workload-review"],
   "hydration-volume-orthostatic-v1": ["repeat-quality-check", "hydration-nutrition-review"],
@@ -33,7 +33,7 @@ function severityForFinding(finding: HealthIntelligenceFinding, pattern?: Intell
 
 function buildActionCard(input: {
   finding: HealthIntelligenceFinding;
-  actionClass: OperationalActionClass;
+  actionClass: GuidanceActionClass;
   severity: ActionSeverity;
   generatedAt: string;
 }): ActionCard | undefined {
@@ -78,7 +78,7 @@ export function createActionGuidancePlan(input: {
     blockedReasons.push("Information-only findings do not require an operational action.");
   }
 
-  let actionClasses: readonly OperationalActionClass[] = [];
+  let actionClasses: readonly GuidanceActionClass[] = [];
   if (input.finding.attention === "data_quality") {
     actionClasses = ["repeat-quality-check"];
   } else if (blockedReasons.length === 0) {
