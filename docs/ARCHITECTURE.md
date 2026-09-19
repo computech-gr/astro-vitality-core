@@ -131,3 +131,7 @@ P18 validates the integrated product against the roadmap without turning enginee
 P19 adds a reproducible packaging layer around the existing architecture. Docker packages the application runtime, while local Supabase remains driven by the repository `supabase/config.toml`, forward-only migrations, and synthetic-only seed. Lovable is an editor/accelerator, not a runtime dependency or the only copy of project behavior.
 
 The local release path does not weaken P15/P16 authorization: application containers use only browser-safe/publishable Supabase credentials, never the service-role key.
+
+## P20 challenge presentation boundary
+
+P20 adds no health logic. It composes the already-governed P6–P19 capabilities into a judge-facing route and repository-controlled submission evidence. The final gate remains fail-closed until real-device, external reproducibility and final-video evidence are explicitly recorded.

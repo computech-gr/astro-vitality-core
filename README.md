@@ -210,3 +210,7 @@ Docker application path after `setup:local`:
 ```bash
 bun run docker:up
 ```
+
+### P20 — Challenge Demo & Submission
+
+P20 adds the controlled three-minute judge narrative, `/mission/submission`, video/storyboard and fallback runbooks, poster/architecture content, NASA/Space Apps attribution, and a strict evidence ledger. The structural P20 verifier is part of `bun run check`; the separate `bun run submission:gate` intentionally fails until the team records the required real-device session, independent P19 reproduction evidence, and final original video. Pending evidence must never be promoted to PASS by assumption. See `docs/SUBMISSION_PACKAGE.md`.

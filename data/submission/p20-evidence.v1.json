@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-09-20T00:00:00Z",
+  "evidence": [
+    {
+      "id": "P20-HW-001",
+      "title": "Real live device path",
+      "critical": true,
+      "status": "pending_human",
+      "evidence": "P6 provides the real Web Bluetooth heart-rate path, but final-submission evidence still requires a real physical device session recorded by the team."
+    },
+    {
+      "id": "P20-DEMO-001",
+      "title": "Mission Day 127 detect-evaluate-act narrative",
+      "critical": true,
+      "status": "ready",
+      "evidence": "P17 deterministic Mission Day 127 scenario plus P10-P15 runtime surfaces provide the scripted software path."
+    },
+    {
+      "id": "P20-DQ-001",
+      "title": "Data-quality case separated from medical event",
+      "critical": true,
+      "status": "ready",
+      "evidence": "P17 artifact/dropout scenario and P13 DATA QUALITY routing preserve missing/poor data without silent imputation."
+    },
+    {
+      "id": "P20-OFFLINE-001",
+      "title": "Offline operation and later synchronization",
+      "critical": true,
+      "status": "ready",
+      "evidence": "P14 encrypted local queue plus P15 authenticated store-and-forward path are implemented and validated."
+    },
+    {
+      "id": "P20-GROUND-001",
+      "title": "Ground/research synchronized history",
+      "critical": true,
+      "status": "ready",
+      "evidence": "P15 Ground & Research Console and governed backend boundary are implemented."
+    },
+    {
+      "id": "P20-LAB-001",
+      "title": "Visible lab/biomarker provenance",
+      "critical": true,
+      "status": "ready",
+      "evidence": "P7 laboratory ingestion preserves source, specimen, method and reference-context provenance."
+    },
+    {
+      "id": "P20-RC-001",
+      "title": "Independent release-candidate reproduction",
+      "critical": true,
+      "status": "pending_external",
+      "evidence": "P19 code path is prepared; final evidence requires the release-candidate workflow or an independent machine with Docker + Supabase CLI to pass the clean reproduction gate."
+    },
+    {
+      "id": "P20-VIDEO-001",
+      "title": "Final challenge video",
+      "critical": true,
+      "status": "pending_human",
+      "evidence": "Storyboard and exact 3-minute narrative are repository-controlled; the final original video must be recorded, hosted publicly and linked before submission."
+    },
+    {
+      "id": "P20-ATTR-001",
+      "title": "NASA/Space Apps resources and attribution",
+      "critical": true,
+      "status": "ready",
+      "evidence": "Repository citation and attribution registers identify the challenge and NASA resources without implying endorsement."
+    },
+    {
+      "id": "P20-LIMIT-001",
+      "title": "Known limitations visible",
+      "critical": true,
+      "status": "ready",
+      "evidence": "P18 validation and known-limitations records explicitly state that the prototype is not clinically validated and document hardware limitations."
+    }
+  ]
+}
