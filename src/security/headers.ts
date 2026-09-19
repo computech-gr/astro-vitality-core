@@ -1,4 +1,4 @@
-import { canonicalUrl } from "@/infrastructure/config";
+import { CANONICAL_ORIGIN } from "@/infrastructure/config";
 
 function supabaseConnectSources(): string[] {
   const value = typeof process !== "undefined" ? process.env?.["SUPABASE_URL"] : undefined;
