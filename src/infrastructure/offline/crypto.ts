@@ -15,11 +15,10 @@ function base64ToBytes(value: string): Uint8Array<ArrayBuffer> {
 }
 
 export async function generateDeviceLocalKey(): Promise<CryptoKey> {
-  return globalThis.crypto.subtle.generateKey(
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"],
-  );
+  return globalThis.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, [
+    "encrypt",
+    "decrypt",
+  ]);
 }
 
 export async function encryptOfflineRecord(
