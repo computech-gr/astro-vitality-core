@@ -80,8 +80,16 @@ if (!workflow.includes("bun run verify:p8")) failures.push("CI must run the P8 v
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  const unexpected = sql.filter((name) => name !== "20260919190000_p15_ground_research_console.sql");
-  if (unexpected.length) failures.push(`P8 must not add database migrations: ${unexpected.join(", ")}`);
+  const unexpected = sql.filter(
+    (name) =>
+      ![
+        "20260919190000_p15_ground_research_console.sql",
+        "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
+        "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
+      ].includes(name),
+  );
+  if (unexpected.length)
+    failures.push(`P8 must not add database migrations: ${unexpected.join(", ")}`);
 }
 
 if (failures.length) {

@@ -26,11 +26,12 @@ for (const file of required) {
 
 const gitignore = readFileSync(join(root, ".gitignore"), "utf8");
 for (const rule of [".env", ".env.*", "!.env.example"]) {
-  if (!gitignore.split(/\r?\n/).includes(rule)) failures.push(`.gitignore is missing exact rule: ${rule}`);
+  if (!gitignore.split(/\r?\n/).includes(rule))
+    failures.push(`.gitignore is missing exact rule: ${rule}`);
 }
 
 const config = readFileSync(join(root, "src/infrastructure/config.ts"), "utf8");
-if (!config.includes('https://mitochondria.edocinfo.com')) {
+if (!config.includes("https://mitochondria.edocinfo.com")) {
   failures.push("Canonical production origin is missing from infrastructure config");
 }
 
@@ -54,11 +55,13 @@ if (existsSync(migrationsDir)) {
   if (unexpected.length) failures.push(`Unexpected Supabase migrations: ${unexpected.join(", ")}`);
 }
 
-
 function walk(dir) {
   const out = [];
   for (const entry of readdirSync(dir)) {
-    if (["node_modules", ".git", "dist", ".output", ".vinxi", ".tanstack", ".nitro"].includes(entry)) continue;
+    if (
+      ["node_modules", ".git", "dist", ".output", ".vinxi", ".tanstack", ".nitro"].includes(entry)
+    )
+      continue;
     const full = join(dir, entry);
     const stat = statSync(full);
     if (stat.isDirectory()) out.push(...walk(full));
@@ -70,7 +73,11 @@ function walk(dir) {
 let trackedFiles;
 let gitAvailable = true;
 try {
-  trackedFiles = execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+  trackedFiles = execFileSync("git", ["ls-files"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  })
     .split(/\r?\n/)
     .filter(Boolean)
     .map((file) => join(root, file));
@@ -105,7 +112,8 @@ for (const file of trackedFiles) {
     continue;
   }
   for (const pattern of secretPatterns) {
-    if (pattern.test(text)) failures.push(`Possible private credential assignment found in tracked file: ${rel}`);
+    if (pattern.test(text))
+      failures.push(`Possible private credential assignment found in tracked file: ${rel}`);
   }
 }
 
