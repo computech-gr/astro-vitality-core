@@ -175,3 +175,7 @@ P14 adds AES-GCM encrypted IndexedDB persistence, an append-only mission event l
 
 - Mission UI: `/mission/offline`
 - Design: [`docs/OFFLINE_MISSION_MODE.md`](docs/OFFLINE_MISSION_MODE.md)
+
+### P15 status
+
+Ground/research role boundaries, authenticated store-and-forward persistence, audit events and de-identified research export are now represented in the repository. P16 remains responsible for full security/threat-model hardening.

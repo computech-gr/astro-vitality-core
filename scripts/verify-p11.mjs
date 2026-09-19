@@ -27,12 +27,15 @@ for (const token of [
   '"behavior.workload_tlx_mental_demand"',
   '"behavior.workload_tlx_frustration"',
 ]) {
-  if (!catalog.includes(token)) failures.push(`P11 scientific catalogue extension missing ${token}`);
+  if (!catalog.includes(token))
+    failures.push(`P11 scientific catalogue extension missing ${token}`);
 }
 
 const scoring = readFileSync(join(root, "src/domain/cognitive-behavioral/scoring.ts"), "utf8");
-if (!scoring.includes("typeof input.lapseThresholdMs")) failures.push("P11 must not invent a PVT lapse threshold");
-if (!scoring.includes("deviceInputLatencyMs")) failures.push("P11 scoring must preserve input-latency awareness");
+if (!scoring.includes("typeof input.lapseThresholdMs"))
+  failures.push("P11 must not invent a PVT lapse threshold");
+if (!scoring.includes("deviceInputLatencyMs"))
+  failures.push("P11 scoring must preserve input-latency awareness");
 
 const component = readFileSync(join(root, "src/components/readiness-assessment.tsx"), "utf8");
 for (const token of ["&lt; 3 MINUTES", "demo-only", "No readiness score", "KSS"]) {
@@ -55,8 +58,10 @@ for (const token of [
 }
 
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-if (packageJson.scripts?.["verify:p11"] !== "node scripts/verify-p11.mjs") failures.push("package.json must expose verify:p11");
-if (!String(packageJson.scripts?.check ?? "").includes("verify:p11")) failures.push("Full check must include verify:p11");
+if (packageJson.scripts?.["verify:p11"] !== "node scripts/verify-p11.mjs")
+  failures.push("package.json must expose verify:p11");
+if (!String(packageJson.scripts?.check ?? "").includes("verify:p11"))
+  failures.push("Full check must include verify:p11");
 
 const workflow = readFileSync(join(root, ".github/workflows/quality.yml"), "utf8");
 if (!workflow.includes("bun run verify:p11")) failures.push("CI must run the P11 verifier");
@@ -64,7 +69,16 @@ if (!workflow.includes("bun run verify:p11")) failures.push("CI must run the P11
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length) failures.push(`P11 must not add database migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter(
+    (name) =>
+      ![
+        "20260919190000_p15_ground_research_console.sql",
+        "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
+        "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
+      ].includes(name),
+  );
+  if (unexpected.length)
+    failures.push(`P11 must not add database migrations: ${unexpected.join(", ")}`);
 }
 
 if (failures.length) {

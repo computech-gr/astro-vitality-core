@@ -10,22 +10,54 @@ const required = [
   "tests/integrations/p5-device-adapter-sdk.test.ts",
   "docs/DEVICE_ADAPTER_SDK.md",
 ];
-for (const file of required) if (!existsSync(join(root, file))) failures.push(`Missing required P5 file: ${file}`);
+for (const file of required)
+  if (!existsSync(join(root, file))) failures.push(`Missing required P5 file: ${file}`);
 const contracts = readFileSync(join(root, "src/integrations/device-adapters/contracts.ts"), "utf8");
-for (const token of ["discover(", "connect(", "capabilities(", "stream(", "quality(", "normalize(", "disconnect(", "syncCursor(", "health(", "AdapterClockMetadata"]) if (!contracts.includes(token)) failures.push(`Adapter contract missing ${token}`);
+for (const token of [
+  "discover(",
+  "connect(",
+  "capabilities(",
+  "stream(",
+  "quality(",
+  "normalize(",
+  "disconnect(",
+  "syncCursor(",
+  "health(",
+  "AdapterClockMetadata",
+])
+  if (!contracts.includes(token)) failures.push(`Adapter contract missing ${token}`);
 const runtime = readFileSync(join(root, "src/integrations/device-adapters/runtime.ts"), "utf8");
-for (const token of ["getCanonicalMetric", "ingestCanonicalObservation", "validateRawSignalChunk"]) if (!runtime.includes(token)) failures.push(`P5 runtime must reuse P4 boundary: ${token}`);
-const reference = readFileSync(join(root, "src/integrations/device-adapters/reference-adapter.ts"), "utf8");
-if (!reference.includes("not a product simulator")) failures.push("Reference adapter must explicitly remain a conformance fixture");
+for (const token of ["getCanonicalMetric", "ingestCanonicalObservation", "validateRawSignalChunk"])
+  if (!runtime.includes(token)) failures.push(`P5 runtime must reuse P4 boundary: ${token}`);
+const reference = readFileSync(
+  join(root, "src/integrations/device-adapters/reference-adapter.ts"),
+  "utf8",
+);
+if (!reference.includes("not a product simulator"))
+  failures.push("Reference adapter must explicitly remain a conformance fixture");
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-if (pkg.scripts?.["verify:p5"] !== "node scripts/verify-p5.mjs") failures.push("package.json must expose verify:p5");
-if (!String(pkg.scripts?.check ?? "").includes("verify:p5")) failures.push("Full check must include verify:p5");
+if (pkg.scripts?.["verify:p5"] !== "node scripts/verify-p5.mjs")
+  failures.push("package.json must expose verify:p5");
+if (!String(pkg.scripts?.check ?? "").includes("verify:p5"))
+  failures.push("Full check must include verify:p5");
 const workflow = readFileSync(join(root, ".github/workflows/quality.yml"), "utf8");
 if (!workflow.includes("bun run verify:p5")) failures.push("CI must run the P5 verifier");
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length) failures.push(`P5 SDK must not add database migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter(
+    (name) =>
+      ![
+        "20260919190000_p15_ground_research_console.sql",
+        "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
+        "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
+      ].includes(name),
+  );
+  if (unexpected.length)
+    failures.push(`P5 SDK must not add database migrations: ${unexpected.join(", ")}`);
 }
-if (failures.length) { console.error("P5 device adapter SDK verification FAILED:\n- " + failures.join("\n- ")); process.exit(1); }
+if (failures.length) {
+  console.error("P5 device adapter SDK verification FAILED:\n- " + failures.join("\n- "));
+  process.exit(1);
+}
 console.log("P5 device adapter SDK verification PASS");

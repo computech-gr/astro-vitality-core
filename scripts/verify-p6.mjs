@@ -11,35 +11,67 @@ const required = [
   "tests/integrations/p6-wearables-integration.test.ts",
   "docs/WEARABLES_INTEGRATION.md",
 ];
-for (const file of required) if (!existsSync(join(root, file))) failures.push(`Missing required P6 file: ${file}`);
+for (const file of required)
+  if (!existsSync(join(root, file))) failures.push(`Missing required P6 file: ${file}`);
 
-const ble = readFileSync(join(root, "src/integrations/wearables/web-bluetooth-heart-rate.ts"), "utf8");
-for (const token of ["heart_rate", "heart_rate_measurement", "parseHeartRateMeasurement", "phys.heart_rate"])
+const ble = readFileSync(
+  join(root, "src/integrations/wearables/web-bluetooth-heart-rate.ts"),
+  "utf8",
+);
+for (const token of [
+  "heart_rate",
+  "heart_rate_measurement",
+  "parseHeartRateMeasurement",
+  "phys.heart_rate",
+])
   if (!ble.includes(token)) failures.push(`BLE adapter missing ${token}`);
 
-const mobile = readFileSync(join(root, "src/integrations/wearables/mobile-health-bridge.ts"), "utf8");
+const mobile = readFileSync(
+  join(root, "src/integrations/wearables/mobile-health-bridge.ts"),
+  "utf8",
+);
 for (const token of ["createHealthConnectAdapter", "createHealthKitAdapter", "getCanonicalMetric"])
   if (!mobile.includes(token)) failures.push(`Mobile health bridge missing ${token}`);
 
 const vendor = readFileSync(join(root, "src/integrations/wearables/vendor-cloud.ts"), "utf8");
 if (!vendor.includes("OAuth/token acquisition remains outside this adapter"))
   failures.push("Vendor adapter must keep OAuth/token acquisition outside the adapter");
-if (!vendor.includes("getCanonicalMetric")) failures.push("Vendor adapter must fail closed through canonical registry");
+if (!vendor.includes("getCanonicalMetric"))
+  failures.push("Vendor adapter must fail closed through canonical registry");
 
-const tests = readFileSync(join(root, "tests/integrations/p6-wearables-integration.test.ts"), "utf8");
-for (const token of ["WebBluetoothHeartRateAdapter", "createHealthConnectAdapter", "VendorCloudWearableAdapter", "same P4 canonical metric"])
+const tests = readFileSync(
+  join(root, "tests/integrations/p6-wearables-integration.test.ts"),
+  "utf8",
+);
+for (const token of [
+  "WebBluetoothHeartRateAdapter",
+  "createHealthConnectAdapter",
+  "VendorCloudWearableAdapter",
+  "same P4 canonical metric",
+])
   if (!tests.includes(token)) failures.push(`P6 test coverage missing ${token}`);
 
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-if (pkg.scripts?.["verify:p6"] !== "node scripts/verify-p6.mjs") failures.push("package.json must expose verify:p6");
-if (!String(pkg.scripts?.check ?? "").includes("verify:p6")) failures.push("Full check must include verify:p6");
+if (pkg.scripts?.["verify:p6"] !== "node scripts/verify-p6.mjs")
+  failures.push("package.json must expose verify:p6");
+if (!String(pkg.scripts?.check ?? "").includes("verify:p6"))
+  failures.push("Full check must include verify:p6");
 const workflow = readFileSync(join(root, ".github/workflows/quality.yml"), "utf8");
 if (!workflow.includes("bun run verify:p6")) failures.push("CI must run the P6 verifier");
 
 const migrationsDir = join(root, "supabase", "migrations");
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length) failures.push(`P6 must not add database migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter(
+    (name) =>
+      ![
+        "20260919190000_p15_ground_research_console.sql",
+        "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
+        "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
+      ].includes(name),
+  );
+  if (unexpected.length)
+    failures.push(`P6 must not add database migrations: ${unexpected.join(", ")}`);
 }
 
 if (failures.length) {

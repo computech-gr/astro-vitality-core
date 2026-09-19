@@ -26,11 +26,12 @@ for (const file of required) {
 
 const gitignore = readFileSync(join(root, ".gitignore"), "utf8");
 for (const rule of [".env", ".env.*", "!.env.example"]) {
-  if (!gitignore.split(/\r?\n/).includes(rule)) failures.push(`.gitignore is missing exact rule: ${rule}`);
+  if (!gitignore.split(/\r?\n/).includes(rule))
+    failures.push(`.gitignore is missing exact rule: ${rule}`);
 }
 
 const config = readFileSync(join(root, "src/infrastructure/config.ts"), "utf8");
-if (!config.includes('https://mitochondria.edocinfo.com')) {
+if (!config.includes("https://mitochondria.edocinfo.com")) {
   failures.push("Canonical production origin is missing from infrastructure config");
 }
 
@@ -40,15 +41,27 @@ if (/ignores\s*:\s*\[[^\]]*["\']src\/integrations\/supabase\/\*\*[^\]]*\]/s.test
 }
 
 const migrationsDir = join(root, "supabase", "migrations");
+// P15 introduces the first governed cloud persistence boundary. The Lovable migration
+// system records each applied migration under its own generated filename, so the P15
+// ground/research console migration and its execute-hardening follow-up are expected.
+const EXPECTED_MIGRATIONS = new Set([
+  "20260919190000_p15_ground_research_console.sql",
+  "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
+  "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
+]);
 if (existsSync(migrationsDir)) {
   const sql = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"));
-  if (sql.length > 0) failures.push(`P2 must not introduce Supabase migrations: ${sql.join(", ")}`);
+  const unexpected = sql.filter((name) => !EXPECTED_MIGRATIONS.has(name));
+  if (unexpected.length) failures.push(`Unexpected Supabase migrations: ${unexpected.join(", ")}`);
 }
 
 function walk(dir) {
   const out = [];
   for (const entry of readdirSync(dir)) {
-    if (["node_modules", ".git", "dist", ".output", ".vinxi", ".tanstack", ".nitro"].includes(entry)) continue;
+    if (
+      ["node_modules", ".git", "dist", ".output", ".vinxi", ".tanstack", ".nitro"].includes(entry)
+    )
+      continue;
     const full = join(dir, entry);
     const stat = statSync(full);
     if (stat.isDirectory()) out.push(...walk(full));
@@ -60,7 +73,11 @@ function walk(dir) {
 let trackedFiles;
 let gitAvailable = true;
 try {
-  trackedFiles = execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+  trackedFiles = execFileSync("git", ["ls-files"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  })
     .split(/\r?\n/)
     .filter(Boolean)
     .map((file) => join(root, file));
@@ -95,7 +112,8 @@ for (const file of trackedFiles) {
     continue;
   }
   for (const pattern of secretPatterns) {
-    if (pattern.test(text)) failures.push(`Possible private credential assignment found in tracked file: ${rel}`);
+    if (pattern.test(text))
+      failures.push(`Possible private credential assignment found in tracked file: ${rel}`);
   }
 }
 

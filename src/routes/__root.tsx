@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { initializeOfflineMissionRuntime, registerOfflineServiceWorker } from "@/infrastructure/offline";
+import { initializeGroundSyncRuntime } from "@/infrastructure/ground-research";
 
 function NotFoundComponent() {
   return (
@@ -121,6 +122,8 @@ function RootComponent() {
     void initializeOfflineMissionRuntime().catch((error) => {
       console.warn("Offline mission runtime initialization failed", error);
     });
+    const stopGroundSync = initializeGroundSyncRuntime();
+    return stopGroundSync;
   }, []);
 
   return (

@@ -109,3 +109,7 @@ P13 adds the governed `ACT` boundary above P12 findings. `src/domain/action-guid
 ## P14 offline mission runtime
 
 The local edge runtime now includes an encrypted IndexedDB event store, versioned protocol cache, sync queue and deterministic conflict resolver. Live BLE observations, P9 self-checks and P11 readiness records can cross the encrypted local persistence boundary. P12/P13 remain local deterministic modules. A public-shell service worker supports disconnected navigation without caching health API responses. Remote persistence remains behind a transport contract until the authorized backend/RLS boundary is introduced.
+
+## P15 ground/research boundary
+
+P15 adds mission-scoped cloud persistence, forced-RLS role separation, append-only audit events, an authenticated store-and-forward RPC and a de-identified research export RPC. The ground console is not anonymous and does not move cloud services into the sensor-to-astronaut critical path.

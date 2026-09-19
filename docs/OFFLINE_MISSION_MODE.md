@@ -49,3 +49,7 @@ The service worker caches only same-origin public shell resources (`document`, `
 The P14 automated tests verify encrypted-at-rest payloads, append-only behavior, disconnect/reconnect queue behavior, idempotent sync semantics, deterministic conflict resolution and protocol-cache integrity.
 
 Production cloud persistence is **not** falsely claimed by P14; it requires the authorized backend boundary introduced with the ground/backend work.
+
+## P15 authorized cloud transport
+
+P15 binds the existing queue transport contract to an authenticated Supabase RPC. Local operation remains independent; failed or unauthorized remote sync leaves records queued locally. Mission membership and idempotency are enforced server-side.
