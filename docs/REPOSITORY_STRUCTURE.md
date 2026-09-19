@@ -122,3 +122,12 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/infrastructure/ground-research/` — authorized cloud sync transport.
 - `src/routes/mission.ground.tsx` — ground/research console route.
 - `supabase/migrations/*p15_ground_research_console.sql` — mission persistence, RLS, RPCs and audit trail.
+
+### P16 security hardening
+
+- `src/security/` — HTTP security-header policy.
+- `docs/security/` — threat model, misuse cases and hardening record.
+- `scripts/security-audit.mjs` — deterministic repository/security-boundary checks.
+- `scripts/migration-policy.mjs` — shared governed-migration allowlist logic.
+- `supabase/migrations/20260919210000_p16_security_safety_hardening.sql` — P16 RLS/RPC/export hardening.
+- `.github/workflows/security.yml` — vulnerability and secret scan.

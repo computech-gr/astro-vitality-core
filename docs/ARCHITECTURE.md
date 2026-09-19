@@ -113,3 +113,7 @@ The local edge runtime now includes an encrypted IndexedDB event store, versione
 ## P15 ground/research boundary
 
 P15 adds mission-scoped cloud persistence, forced-RLS role separation, append-only audit events, an authenticated store-and-forward RPC and a de-identified research export RPC. The ground console is not anonymous and does not move cloud services into the sensor-to-astronaut critical path.
+
+## P16 security boundary
+
+The connected mission path is now explicitly threat-modeled from sensor/browser collection through encrypted local storage, authenticated synchronization, forced-RLS mission persistence, Ground Medical access and pseudonymized research export. Security failures must fail closed and must never be translated into medical conclusions. See `docs/security/THREAT_MODEL.md` and `docs/security/MISUSE_CASES.md`.

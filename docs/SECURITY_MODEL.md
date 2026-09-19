@@ -43,3 +43,7 @@ Experimental analytics must not silently become safety-critical alarms. Reviewed
 ## P15 mission/ground boundary
 
 P15 introduces forced-RLS mission persistence and role-separated capabilities. Researchers do not receive direct `mission_events` access; de-identified exports are produced by an audited server-side RPC using a mission-scoped pseudonymization key that is not granted to browser roles. Mission operators receive operational summary/audit capability without general identified-medical event access. P16 will threat-model and adversarially audit this boundary.
+
+## P16 security & safety hardening
+
+P16 adds the formal threat model, misuse-case register, browser/server privilege audit, SSR security headers, a governed database hardening migration, replay-conflict handling, mission-operator ingestion restrictions and recursive research-export identifier stripping. Research export remains **pseudonymized, not anonymous**. Current CSP still permits required inline hydration/style execution; that residual risk is explicitly tracked for release-candidate hardening.

@@ -179,3 +179,7 @@ P14 adds AES-GCM encrypted IndexedDB persistence, an append-only mission event l
 ### P15 status
 
 Ground/research role boundaries, authenticated store-and-forward persistence, audit events and de-identified research export are now represented in the repository. P16 remains responsible for full security/threat-model hardening.
+
+### P16 — Security & Safety Hardening
+
+P16 adds the project threat model, misuse-case regression set, SSR security headers, secret/server-boundary audit, RLS/RPC hardening, replay-conflict protection and safer pseudonymized research export. It does not add clinical authority or change the scientific baseline.

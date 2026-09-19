@@ -260,6 +260,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deidentify_research_jsonb: { Args: { p_value: Json }; Returns: Json }
       export_research_mission: {
         Args: { p_mission_id: string }
         Returns: Json[]
