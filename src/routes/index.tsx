@@ -1,24 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { AppShell } from "@/components/app-shell";
+import { canonicalUrl } from "@/infrastructure/config";
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Mitochondria — Astronaut Health Intelligence" },
+      {
+        name: "description",
+        content:
+          "Open-source, offline-first astronaut health intelligence platform. Foundation build for NASA Space Apps Challenge 2026.",
+      },
+      { property: "og:title", content: "Mitochondria — Astronaut Health Intelligence" },
+      {
+        property: "og:description",
+        content:
+          "Open-source, offline-first astronaut health intelligence platform. Foundation build for NASA Space Apps Challenge 2026.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+    links: [{ rel: "canonical", href: canonicalUrl("/") }],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <AppShell>
+      <h1 className="text-2xl font-semibold tracking-tight">Mitochondria</h1>
+      <p className="mt-3 max-w-prose text-sm text-muted-foreground">
+        Open-source, offline-first astronaut health intelligence platform for
+        NASA Space Apps Challenge 2026. This is the foundation build: project
+        architecture and application shell only. Health features are not part
+        of this phase.
+      </p>
+    </AppShell>
   );
 }
