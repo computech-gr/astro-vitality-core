@@ -14,13 +14,268 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_events: {
+        Row: {
+          action: string
+          actor_user_id: string
+          id: string
+          metadata: Json
+          mission_id: string
+          occurred_at: string
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          id?: string
+          metadata?: Json
+          mission_id: string
+          occurred_at?: string
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          id?: string
+          metadata?: Json
+          mission_id?: string
+          occurred_at?: string
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_members: {
+        Row: {
+          created_at: string
+          display_name: string
+          external_ref: string | null
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          external_ref?: string | null
+          id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          external_ref?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mission_events: {
+        Row: {
+          classification: string
+          created_at: string
+          crew_member_id: string
+          event_timestamp: string
+          id: string
+          idempotency_key: string
+          ingested_at: string
+          ingested_by: string
+          kind: string
+          mission_id: string
+          payload: Json
+          payload_hash: string
+          source_id: string
+          source_priority: number
+          source_version: string
+        }
+        Insert: {
+          classification: string
+          created_at: string
+          crew_member_id: string
+          event_timestamp: string
+          id: string
+          idempotency_key: string
+          ingested_at?: string
+          ingested_by: string
+          kind: string
+          mission_id: string
+          payload: Json
+          payload_hash: string
+          source_id: string
+          source_priority: number
+          source_version: string
+        }
+        Update: {
+          classification?: string
+          created_at?: string
+          crew_member_id?: string
+          event_timestamp?: string
+          id?: string
+          idempotency_key?: string
+          ingested_at?: string
+          ingested_by?: string
+          kind?: string
+          mission_id?: string
+          payload?: Json
+          payload_hash?: string
+          source_id?: string
+          source_priority?: number
+          source_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_events_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_memberships: {
+        Row: {
+          active: boolean
+          created_at: string
+          crew_member_id: string | null
+          id: string
+          mission_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          crew_member_id?: string | null
+          id?: string
+          mission_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          crew_member_id?: string | null
+          id?: string
+          mission_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_memberships_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_memberships_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_research_keys: {
+        Row: {
+          created_at: string
+          mission_id: string
+          pseudonym_salt: string
+        }
+        Insert: {
+          created_at?: string
+          mission_id: string
+          pseudonym_salt?: string
+        }
+        Update: {
+          created_at?: string
+          mission_id?: string
+          pseudonym_salt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_research_keys_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: true
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          code: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          name: string
+          starts_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          ends_at?: string | null
+          id: string
+          name: string
+          starts_at?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          name?: string
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      export_research_mission: {
+        Args: { p_mission_id: string }
+        Returns: Json[]
+      }
+      get_ground_mission_snapshot: {
+        Args: { p_mission_id: string }
+        Returns: Json
+      }
+      has_mission_role: {
+        Args: { p_mission_id: string; p_roles: string[] }
+        Returns: boolean
+      }
+      ingest_mission_event: {
+        Args: { p_event: Json; p_idempotency_key: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
