@@ -98,3 +98,12 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `tests/domain/p12-health-intelligence.test.ts` — deterministic P12 safety and explainability tests.
 - `scripts/verify-p12.mjs` — structural/scope P12 gate.
 - `docs/HEALTH_INTELLIGENCE_V1.md` — P12 scientific and software boundary.
+
+### P13 Action & Protocol Guidance
+
+- `src/domain/action-guidance/` — bounded protocol library, finding-to-action mapping, governed escalation and acknowledgement contracts.
+- `src/components/action-guidance.tsx` — astronaut-facing protocol-library/safety surface; does not fabricate active findings.
+- `src/routes/mission.guidance.tsx` — `/mission/guidance` route.
+- `tests/domain/p13-action-protocol-guidance.test.ts` — P13 safety, mapping, escalation and acknowledgement tests.
+- `scripts/verify-p13.mjs` — P13 structural/scope gate.
+- `docs/ACTION_PROTOCOL_GUIDANCE.md` — P13 source alignment and non-diagnostic action boundary.

@@ -1,0 +1,122 @@
+import type { ProtocolDefinition } from "./contracts";
+
+const COMMON_SAFETY = [
+  "Decision support only; this protocol does not diagnose disease.",
+  "Do not infer treatment or modify flight rules from this software action card alone.",
+  "Preserve the finding evidence, uncertainty, data quality and confounders during review.",
+] as const;
+
+export const PROTOCOL_LIBRARY_V1_1: readonly ProtocolDefinition[] = [
+  {
+    id: "protocol.repeat-quality-check.v1",
+    version: "1.0.0",
+    title: "Repeat measurement / quality check",
+    actionClass: "repeat-quality-check",
+    purpose: "Verify sensor contact, source quality and repeat the relevant measurement before health interpretation is escalated.",
+    steps: [
+      { id: "verify-source", label: "Verify source", instruction: "Check sensor contact, device state, calibration/status and source freshness.", category: "verify" },
+      { id: "repeat-measurement", label: "Repeat measurement", instruction: "Repeat the affected measurement under the same governed context when feasible.", category: "repeat" },
+      { id: "compare-quality", label: "Compare quality", instruction: "Confirm whether the repeated sample resolves the quality or missing-context concern.", category: "review" },
+    ],
+    requiresAcknowledgement: true,
+    authority: "SPACE_APPS_2026 scientific baseline v1.1",
+    sourceIds: ["SRC-12", "SRC-13"],
+    scientificBaselineVersion: "1.1",
+    status: "reviewed_category",
+    safetyWording: COMMON_SAFETY,
+  },
+  {
+    id: "protocol.recovery-workload-review.v1",
+    version: "1.0.0",
+    title: "Recovery / workload review",
+    actionClass: "recovery-workload-review",
+    purpose: "Review sleep, workload, schedule, recent exercise and recovery context when a reviewed fatigue/recovery pattern warrants attention.",
+    steps: [
+      { id: "review-sleep", label: "Review recovery context", instruction: "Review recent sleep, schedule, workload and exercise context alongside the finding evidence.", category: "review" },
+      { id: "repeat-readiness", label: "Repeat brief assessment", instruction: "Repeat the governed short readiness/cognitive assessment at the protocol-defined interval if appropriate.", category: "repeat" },
+      { id: "countermeasure-review", label: "Review countermeasures", instruction: "Review the approved mission recovery/workload countermeasure protocol; do not invent treatment steps.", category: "countermeasure_review" },
+    ],
+    requiresAcknowledgement: true,
+    authority: "SPACE_APPS_2026 scientific baseline v1.1",
+    sourceIds: ["SRC-12", "SRC-13", "SRC-23"],
+    scientificBaselineVersion: "1.1",
+    status: "reviewed_category",
+    safetyWording: COMMON_SAFETY,
+  },
+  {
+    id: "protocol.hydration-nutrition-review.v1",
+    version: "1.0.0",
+    title: "Hydration / nutrition review",
+    actionClass: "hydration-nutrition-review",
+    purpose: "Review fluid, nutrition, body-mass, urine and orthostatic context without treating a single indicator as diagnostic.",
+    steps: [
+      { id: "review-intake", label: "Review intake", instruction: "Review logged fluid and nutrition intake completeness and recent mission context.", category: "review" },
+      { id: "repeat-hydration", label: "Repeat relevant measures", instruction: "Repeat governed hydration/volume measurements when indicated by the protocol and data quality allows.", category: "repeat" },
+      { id: "countermeasure-hydration", label: "Review approved countermeasure", instruction: "Review the approved hydration/nutrition countermeasure pathway; do not prescribe treatment autonomously.", category: "countermeasure_review" },
+    ],
+    requiresAcknowledgement: true,
+    authority: "SPACE_APPS_2026 scientific baseline v1.1",
+    sourceIds: ["SRC-12", "SRC-13", "SRC-21", "SRC-22"],
+    scientificBaselineVersion: "1.1",
+    status: "reviewed_category",
+    safetyWording: COMMON_SAFETY,
+  },
+  {
+    id: "protocol.exercise-countermeasure-review.v1",
+    version: "1.0.0",
+    title: "Exercise countermeasure review",
+    actionClass: "exercise-review",
+    purpose: "Review exercise exposure and approved musculoskeletal countermeasure context when the evidence pattern warrants review.",
+    steps: [
+      { id: "review-exercise", label: "Review exercise exposure", instruction: "Review recent resistance/aerobic countermeasure adherence and measurement context.", category: "review" },
+      { id: "review-musculoskeletal", label: "Review related evidence", instruction: "Review body-mass, bone-turnover, renal-stone and nutrition context together rather than in isolation.", category: "review" },
+      { id: "countermeasure-exercise", label: "Review approved protocol", instruction: "Review the mission-approved exercise countermeasure protocol; software does not autonomously change prescriptions.", category: "countermeasure_review" },
+    ],
+    requiresAcknowledgement: true,
+    authority: "SPACE_APPS_2026 scientific baseline v1.1",
+    sourceIds: ["SRC-12", "SRC-13", "SRC-21", "SRC-22"],
+    scientificBaselineVersion: "1.1",
+    status: "reviewed_category",
+    safetyWording: COMMON_SAFETY,
+  },
+  {
+    id: "protocol.environmental-review.v1",
+    version: "1.0.0",
+    title: "Environmental telemetry review",
+    actionClass: "environmental-review",
+    purpose: "Verify habitat telemetry and review the governed environmental-response pathway without asserting causality from contextual associations.",
+    steps: [
+      { id: "verify-telemetry", label: "Verify telemetry", instruction: "Check environmental sensor quality, calibration/status, compartment and timestamp alignment.", category: "verify" },
+      { id: "repeat-vitals", label: "Repeat relevant health measures", instruction: "Repeat the relevant governed vital/cognitive measures when appropriate.", category: "repeat" },
+      { id: "environment-response", label: "Review environmental protocol", instruction: "Review the approved habitat/environment response protocol; do not infer that context caused the health change.", category: "countermeasure_review" },
+    ],
+    requiresAcknowledgement: true,
+    authority: "SPACE_APPS_2026 scientific baseline v1.1",
+    sourceIds: ["SRC-12", "SRC-13", "SRC-35", "SRC-36"],
+    scientificBaselineVersion: "1.1",
+    status: "reviewed_category",
+    safetyWording: [...COMMON_SAFETY, "Environmental association is contextual unless a separately governed safety rule establishes an operational trigger."],
+  },
+  {
+    id: "protocol.medical-escalation.v1",
+    version: "1.0.0",
+    title: "Medical / mission escalation",
+    actionClass: "medical-escalation",
+    purpose: "Route a finding to qualified medical/mission review only when a separately governed trigger has been activated.",
+    steps: [
+      { id: "preserve-evidence", label: "Preserve evidence", instruction: "Preserve the finding, source observations, quality, uncertainty, protocol version and trigger provenance.", category: "review" },
+      { id: "route-review", label: "Route for review", instruction: "Route to the mission-authorized medical/support role identified by the governing protocol.", category: "escalate" },
+      { id: "acknowledge-escalation", label: "Acknowledge handoff", instruction: "Record acknowledgement of the escalation handoff; do not infer diagnosis or treatment from the escalation itself.", category: "escalate" },
+    ],
+    requiresAcknowledgement: true,
+    authority: "External governed medical/mission trigger required",
+    sourceIds: ["SRC-12", "SRC-13"],
+    scientificBaselineVersion: "1.1",
+    status: "governed_trigger_required",
+    safetyWording: COMMON_SAFETY,
+  },
+] as const;
+
+export function getProtocolByActionClass(actionClass: ProtocolDefinition["actionClass"]) {
+  return PROTOCOL_LIBRARY_V1_1.find((protocol) => protocol.actionClass === actionClass);
+}

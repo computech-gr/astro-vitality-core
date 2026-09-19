@@ -164,3 +164,7 @@ The current foundation includes `/mission/readiness`, a private, session-only co
 ### P12 — Health Intelligence v1
 
 The repository now contains a non-diagnostic, evidence-weighted Health Intelligence layer with caller-governed trend policies, reviewed multi-signal pattern definitions, explicit confidence decomposition and explainable findings. The `/mission/intelligence` surface shows the reviewed pattern catalogue and does not invent health data. Protocol/action guidance remains P13 scope.
+
+### P13 — Action & Protocol Guidance
+
+P13 adds a versioned, non-diagnostic protocol library and action-card engine above P12 findings. Reviewed findings may map to bounded repeat/quality, recovery/workload, hydration/nutrition, exercise-countermeasure or environmental-review categories. Research-only findings are blocked from operational action, data-quality findings route to re-measurement, and medical escalation requires a separately governed authority/versioned trigger. `/mission/guidance` exposes the library without fabricating session evidence. Durable offline persistence remains P14 scope. See `docs/ACTION_PROTOCOL_GUIDANCE.md`.

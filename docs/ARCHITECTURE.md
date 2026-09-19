@@ -101,3 +101,7 @@ P11 adds a privacy-sensitive assessment boundary for fatigue, KSS sleepiness, st
 ## P12 — Health Intelligence v1
 
 P12 adds an explainable domain boundary above canonical observations, personal baselines and cognitive/environmental context. Governed trend policies feed evidence into reviewed v1.1 multi-signal definitions. The engine exposes confidence decomposition, missing context, confounders and uncertainty and does not provide diagnosis, treatment or protocol action. P13 remains the action/protocol boundary.
+
+## P13 — Action & Protocol Guidance
+
+P13 adds the governed `ACT` boundary above P12 findings. `src/domain/action-guidance/` maps reviewed, non-diagnostic findings to versioned action/protocol categories while preserving finding evidence, uncertainty, confounders and protocol provenance. Research-only findings cannot generate operational actions; data-quality states route to repeat/quality checks. Medical escalation cannot be inferred from a pattern and requires a separately governed trigger carrying authority, version and reason code. Acknowledgement is a versioned domain record; durable local persistence and synchronization are P14 scope.
