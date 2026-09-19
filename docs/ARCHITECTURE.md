@@ -77,3 +77,7 @@ The reviewed scientific source is `SPACE_APPS_2026_Astronaut_Biomarker_Matrix_v1
 ## Safety boundary
 
 The architecture distinguishes deterministic reviewed safety rules from experimental analytics. No autonomous diagnosis is part of P4 or implied by the public shell or domain contracts.
+
+## P7 medical and laboratory boundary
+
+`src/integrations/medical-lab/` handles periodic biomarker and medical-device inputs. CSV, explicitly mapped FHIR Observations, manual transcription fallback, SpO2 and blood-pressure readings all converge on the P4 canonical ingestion boundary. Imported reference intervals remain contextual metadata and are never promoted automatically to personal baselines or mission operational limits.
