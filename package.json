@@ -9,7 +9,11 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write \"*.md\" \"docs/**/*.md\" \".github/**/*.yml\" \"package.json\"",
+    "format:check": "prettier --check \"*.md\" \"docs/**/*.md\" \".github/**/*.yml\" \"package.json\"",
+    "typecheck": "tsc --noEmit",
+    "verify:foundation": "node scripts/verify-foundation.mjs",
+    "check": "bun run verify:foundation && bun run typecheck && bun run lint && bun run format:check && bun run build"
   },
   "overrides": {
     "rolldown": "1.2.1"
