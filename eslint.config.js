@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi", ".tanstack", ".nitro", "src/routeTree.gen.ts", "src/integrations/supabase/**"] },
+  { ignores: ["dist", ".output", ".vinxi", ".tanstack", ".nitro", "src/routeTree.gen.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -35,4 +35,13 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: ["src/integrations/supabase/**/*.{ts,tsx}"],
+    rules: {
+      // Lovable/Supabase generates these files. Keep them inside the lint surface,
+      // but do not fail the build on generator-owned prefer-const style output.
+      "prefer-const": "off",
+    },
+  },
+
 );

@@ -91,7 +91,7 @@ bun run format        # apply Prettier formatting
 bun run format:check  # verify formatting
 bun run build         # production build
 bun run preview       # preview production build
-bun run check         # typecheck + lint + format:check + build
+bun run check         # foundation verification + typecheck + lint + format:check + build
 ```
 
 ## Quality gate
