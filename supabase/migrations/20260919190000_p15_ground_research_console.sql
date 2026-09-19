@@ -63,7 +63,7 @@ grant execute on function public.has_mission_role(text,text[]) to authenticated;
 
 create policy missions_member_select on public.missions for select to authenticated using (public.has_mission_role(id, array['crew_self','ground_medical','mission_operator','researcher']));
 create policy memberships_self_or_ground_select on public.mission_memberships for select to authenticated using (user_id=auth.uid() or public.has_mission_role(mission_id,array['ground_medical','mission_operator']));
-create policy crew_member_ground_select on public.crew_members for select to authenticated using (exists(select 1 from public.mission_memberships mm where mm.crew_member_id=id and (mm.user_id=auth.uid() or public.has_mission_role(mm.mission_id,array['ground_medical','mission_operator']))));
+create policy crew_member_ground_select on public.crew_members for select to authenticated using (exists(select 1 from public.mission_memberships mm where mm.crew_member_id=crew_members.id and (mm.user_id=auth.uid() or public.has_mission_role(mm.mission_id,array['ground_medical','mission_operator']))));
 create policy mission_events_scoped_select on public.mission_events for select to authenticated using (
   public.has_mission_role(mission_id,array['ground_medical']) or
   exists(select 1 from public.mission_memberships mm where mm.mission_id=mission_events.mission_id and mm.user_id=auth.uid() and mm.role='crew_self' and mm.crew_member_id=mission_events.crew_member_id)
