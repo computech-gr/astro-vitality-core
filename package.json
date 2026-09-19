@@ -36,7 +36,8 @@
     "sample:release": "bun scripts/generate-release-sample.ts",
     "docker:up": "docker compose --env-file .env.local up --build",
     "docker:down": "docker compose down",
-    "verify:p19": "node scripts/verify-p19.mjs"
+    "verify:p19": "node scripts/verify-p19.mjs",
+    "serve:selfhost": "node scripts/serve-dist.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"

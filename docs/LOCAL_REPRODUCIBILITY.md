@@ -26,6 +26,17 @@ bun run dev
 
 The setup script never writes the local service-role key into application environment files.
 
+## Canonical migration chain
+
+The fresh-clone database path uses the four migrations that were actually applied to the governed Supabase project, in timestamp order:
+
+1. P15 Ground / Research Console base migration.
+2. P15 helper-privilege hardening correction.
+3. P16 Security & Safety Hardening base migration.
+4. P16 pgcrypto/search-path correction.
+
+The earlier semantic-name copies were exact duplicates of the applied base migrations and are intentionally removed. P19 verification rejects duplicate migration content so `supabase db reset --local` remains reproducible.
+
 ## Docker application path
 
 Start Supabase first:
@@ -41,6 +52,8 @@ docker compose --env-file .env.local up --build
 ```
 
 Open `http://localhost:3000`.
+
+The normal Lovable production build emits the application server handler at `dist/server/index.mjs` and browser assets under `dist/client`. The container therefore runs the repository-owned `scripts/serve-dist.mjs` adapter rather than assuming an unused `.output/server/index.mjs` Nitro artifact. The same application code and security-header boundary are preserved.
 
 The browser-visible Supabase URL remains `http://127.0.0.1:54321`; the server container reaches the local Supabase gateway through `host.docker.internal`.
 
@@ -65,6 +78,10 @@ supabase stop
 ## Sample data
 
 `bun run sample:release` writes a deterministic Mission Day 127 JSON dataset to `data/release/mission-day-127.synthetic.json`. The generator is P17 and all generated health observations remain explicitly classified/tagged synthetic.
+
+## Release-candidate CI reproduction
+
+The `Release Candidate` workflow installs the Supabase CLI, runs the full quality/security gate, starts/reset local Supabase from repository migrations and seed, builds the Docker image, boots it, and performs HTTP smoke checks against both `/` and `/mission/simulation`.
 
 ## Reproducibility boundary
 

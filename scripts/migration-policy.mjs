@@ -2,14 +2,11 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const P15_MIGRATIONS = new Set([
-  "20260919190000_p15_ground_research_console.sql",
   "20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
   "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
 ]);
 
-const GOVERNED_MIGRATION_MARKERS = [
-  "-- P16 Security & Safety Hardening",
-];
+const GOVERNED_MIGRATION_MARKERS = ["-- P16 Security & Safety Hardening"];
 
 export function isGovernedMigration(root, name) {
   if (P15_MIGRATIONS.has(name)) return true;

@@ -26,10 +26,15 @@ An independent machine should be able to:
 1. clone the repository;
 2. install dependencies from `bun.lock`;
 3. start/reset local Supabase through Docker;
-4. obtain browser-safe local environment configuration without exposing service-role credentials;
-5. run the full quality/security gate;
-6. start the application locally or build/run the Docker image;
-7. generate deterministic synthetic sample data.
+4. apply the exact four-migration chain plus synthetic seed from repository state;
+5. obtain browser-safe local environment configuration without exposing service-role credentials;
+6. run the full quality/security gate;
+7. start the application locally or build/run the Docker image;
+8. generate deterministic synthetic sample data.
+
+The migration directory intentionally contains one copy of each applied change. Duplicate semantic-name copies are prohibited because they break clean `supabase db reset` replay.
+
+The Docker runtime serves the actual `dist/server/index.mjs` build output through the repository-owned self-host adapter and serves `dist/client` assets directly, so it does not depend on Lovable hosting or a non-existent `.output` artifact.
 
 See `docs/LOCAL_REPRODUCIBILITY.md`.
 

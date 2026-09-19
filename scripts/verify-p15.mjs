@@ -13,11 +13,12 @@ const required = [
   "src/routes/mission.ground.tsx",
   "tests/ground-research/p15-ground-research.test.ts",
   "docs/GROUND_RESEARCH_CONSOLE.md",
-  "supabase/migrations/20260919190000_p15_ground_research_console.sql",
+  "supabase/migrations/20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql",
+  "supabase/migrations/20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
 ];
 for (const f of required) if (!existsSync(join(root, f))) failures.push(`missing ${f}`);
 const sql = readFileSync(
-  join(root, "supabase/migrations/20260919190000_p15_ground_research_console.sql"),
+  join(root, "supabase/migrations/20260919164826_c7dfa3eb-b9a5-4bce-9ae7-aa4b712120d9.sql"),
   "utf8",
 );
 for (const t of [

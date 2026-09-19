@@ -11,12 +11,13 @@ const required = [
   "src/security/headers.ts",
   "scripts/security-audit.mjs",
   "tests/security/p16-security-hardening.test.ts",
-  "supabase/migrations/20260919210000_p16_security_safety_hardening.sql",
+  "supabase/migrations/20260919170410_cfadc7d4-72db-42ad-a76e-4181cc0c70f4.sql",
+  "supabase/migrations/20260919170720_1329f21c-6181-4172-a04d-ced64437d340.sql",
   ".github/workflows/security.yml",
 ];
 for (const file of required) if (!existsSync(join(root, file))) failures.push(`missing ${file}`);
 
-const migration = readFileSync(join(root, "supabase/migrations/20260919210000_p16_security_safety_hardening.sql"), "utf8").toLowerCase();
+const migration = readFileSync(join(root, "supabase/migrations/20260919170410_cfadc7d4-72db-42ad-a76e-4181cc0c70f4.sql"), "utf8").toLowerCase();
 for (const token of [
   "-- p16 security & safety hardening",
   "mission operator event scope denied",
@@ -41,6 +42,13 @@ if (!workflow.includes("bun run security:audit")) failures.push("quality CI miss
 
 const unexpected = findUnexpectedMigrations(root);
 if (unexpected.length) failures.push(`unexpected migrations: ${unexpected.join(", ")}`);
+
+const corrective = readFileSync(
+  join(root, "supabase/migrations/20260919170720_1329f21c-6181-4172-a04d-ced64437d340.sql"),
+  "utf8",
+).toLowerCase();
+for (const token of ["extensions", "ingest_mission_event", "export_research_mission"])
+  if (!corrective.includes(token)) failures.push(`P16 corrective migration missing ${token}`);
 
 if (failures.length) {
   console.error("P16 Security & Safety Hardening verification FAILED:\n- " + failures.join("\n- "));
