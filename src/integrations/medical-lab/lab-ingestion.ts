@@ -68,13 +68,11 @@ export function ingestLabResult(
         ...(input.specimen?.specimenId ? [`specimen-id:${input.specimen.specimenId}`] : []),
         ...(input.specimen?.fasting === true ? ["fasting:true"] : []),
         ...(input.specimen?.fasting === false ? ["fasting:false"] : []),
-      ],
-      notes: [
         ...(input.specimen?.collectedAt ? [`specimen-collected-at:${input.specimen.collectedAt}`] : []),
         ...(input.referenceInterval?.text ? [`reference-interval:${input.referenceInterval.text}`] : []),
         ...(input.referenceInterval?.source ? [`reference-source:${input.referenceInterval.source}`] : []),
-        ...(input.notes ? [input.notes] : []),
-      ].join(" | ") || undefined,
+        ...(input.notes ? [`note:${input.notes}`] : []),
+      ],
     },
   };
 

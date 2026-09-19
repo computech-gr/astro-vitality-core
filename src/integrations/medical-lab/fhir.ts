@@ -59,7 +59,7 @@ function parseObservation(
             referenceInterval: {
               ...(typeof range.low?.value === "number" ? { low: range.low.value } : {}),
               ...(typeof range.high?.value === "number" ? { high: range.high.value } : {}),
-              ...(range.low?.unit || range.high?.unit ? { unit: range.low?.unit ?? range.high?.unit } : {}),
+              ...(rangeUnit ? { unit: rangeUnit } : {}),
               ...(range.text ? { text: range.text } : {}),
             },
           }
