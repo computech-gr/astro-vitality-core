@@ -10,7 +10,7 @@ Production: **https://mitochondria.edocinfo.com**
 
 ## Current status
 
-The repository has completed **P16 — Security & Safety Hardening** and now adds **P17 — Simulation & Synthetic Mission Dataset**. The controlled stack includes canonical mission-health data, device/wearable/lab/environment integration, live astronaut monitoring, personal baselines, cognitive/behavioral assessment, explainable health intelligence, bounded protocol guidance, encrypted offline operation, authenticated Ground/Research persistence and security hardening. P17 adds deterministic synthetic mission scenarios for repeatable demos and regression testing; synthetic records remain explicitly classified and cannot be confused with real crew medical data.
+The repository has completed **P17 — Simulation & Synthetic Mission Dataset** and now adds **P18 — Validation & Usability**. The controlled stack includes canonical mission-health data, device/wearable/lab/environment integration, live astronaut monitoring, personal baselines, cognitive/behavioral assessment, explainable health intelligence, bounded protocol guidance, encrypted offline operation, authenticated Ground/Research persistence and security hardening. P18 adds a fail-closed validation evidence ledger, critical workflow review, accessibility/cognitive-load checks, engineering latency evidence and an explicit known-limitations register. It does not claim clinical validation.
 
 ## Architecture principles
 
@@ -187,3 +187,7 @@ P16 adds the project threat model, misuse-case regression set, SSR security head
 ### P17 — Simulation & Synthetic Mission Dataset
 
 P17 adds deterministic synthetic mission scenarios for reproducible challenge demos and regression testing. `Mission → Mission Scenario` opens `/mission/simulation`, where the controlled Mission Day 127 scenario and focused artifact/CO2/radiation cases can be generated repeatedly from fixed seeds, inspected and exported as synthetic JSON. Generated observations pass through the P4 canonical ingestion boundary and are always classified/tagged as synthetic. The generator includes explicit artifact, missing-data, CO2 non-causality, radiation-no-risk-score and offline/reconnect guardrails. See [`docs/SIMULATION_SYNTHETIC_DATASET.md`](docs/SIMULATION_SYNTHETIC_DATASET.md).
+
+### P18 — Validation & Usability
+
+P18 adds `/mission/validation`, a controlled validation evidence ledger, critical workflow review, accessibility and cognitive-load checks, engineering latency evidence, and explicit known limitations. Critical manual criteria cannot pass without recorded evidence; target-hardware battery characterization remains a documented limitation until real hardware is available. See `docs/VALIDATION_USABILITY.md` and `docs/KNOWN_LIMITATIONS.md`.

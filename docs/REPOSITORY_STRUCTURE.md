@@ -140,3 +140,12 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `tests/simulation/p17-synthetic-mission.test.ts` — determinism, quality/missingness and scientific guardrail tests.
 - `scripts/verify-p17.mjs` — P17 structural/scope verifier.
 - `docs/SIMULATION_SYNTHETIC_DATASET.md` — source alignment and synthetic-data safety boundary.
+
+### P18 Validation & Usability
+
+- `src/domain/validation-usability/` — validation criteria, limitations and closure logic.
+- `data/validation/p18-evidence.v1.json` — controlled automated/manual evidence ledger.
+- `src/components/validation-usability.tsx` / `src/routes/mission.validation.tsx` — public validation/limitations surface.
+- `tests/validation/p18-validation-usability.test.ts` — fail-closed closure-governance tests.
+- `scripts/verify-p18.mjs` — P18 evidence and structure gate.
+- `docs/VALIDATION_USABILITY.md` / `docs/KNOWN_LIMITATIONS.md` — validation method and explicit product limitations.

@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-09-19T17:45:34Z",
+  "note": "Automated entries are backed by repository gates. Manual browser/hardware entries must be updated only after real validation; do not convert pending evidence to pass by assumption.",
+  "evidence": [
+    {
+      "criterionId": "SCI-001",
+      "status": "pass",
+      "checkedAt": "2026-09-19T00:00:00Z",
+      "evidence": "Biomarker Matrix v1.1 is recorded as the reviewed implementation baseline in docs/SCIENTIFIC_GOVERNANCE.md and docs/SCIENTIFIC_BASELINE_V1_1.md."
+    },
+    {
+      "criterionId": "SCN-001",
+      "status": "pass",
+      "checkedAt": "2026-09-19T00:00:00Z",
+      "evidence": "P17 deterministic replay and no-imputation tests pass in the repository test suite."
+    },
+    {
+      "criterionId": "SCN-002",
+      "status": "pass",
+      "evidence": "Browser walkthrough (headless Chromium 1280x1800, local dev origin) of the Mission Day 127 critical story: / -> /mission/live -> /mission/readiness -> /mission/intelligence -> /mission/guidance -> /mission/offline -> /mission/ground -> /mission/simulation -> /mission/validation. Every route rendered with its own title, exactly one <main> and one <h1>, zero console/page errors and zero horizontal overflow. Mission -> Mission Scenario resolved to /mission/simulation and About -> Validation & Limitations navigated to /mission/validation (title 'Validation & Usability | The Mitochondria'). No broken navigation observed.",
+      "checkedAt": "2026-09-19T17:45:34Z"
+    },
+    {
+      "criterionId": "A11Y-001",
+      "status": "pass",
+      "evidence": "Keyboard-only review on / and /mission/live. Tab order reached logo, skip/section links, all six top-level menu triggers, the external NASA link and hero actions; on /mission/live it reached Readiness, Public site, Connect BLE heart rate, the self-check select, the note input and Record check-in. Focus is visible via :focus-visible (document.activeElement.matches(':focus-visible') true; ring box-shadow oklch(0.79 0.145 206) 1px). Menus open with Enter, move with ArrowDown to role=menuitem, and close with Escape. The self-check select opened with Enter, changed value by ArrowDown+Enter ('Monitor / not at best'), and Record check-in activated with Enter, producing the 'Last recorded at' confirmation. No keyboard trap and no hover-only control encountered.",
+      "checkedAt": "2026-09-19T17:45:34Z"
+    },
+    {
+      "criterionId": "A11Y-002",
+      "status": "pass",
+      "evidence": "Responsive/touch review at 390x844 with touch and mobile emulation. All nine critical routes reported 0px horizontal overflow and no page errors. The mobile navigation opened by tap into a role=dialog panel and body overflow became 'hidden' (scroll lock). Primary buttons and menu rows met touch sizing. Observation, not a blocker: inline footer/menu text links render about 20px tall, below a 24px box, and are documented for future refinement rather than claimed as fully compliant.",
+      "checkedAt": "2026-09-19T17:45:34Z"
+    },
+    {
+      "criterionId": "COG-001",
+      "status": "pass",
+      "checkedAt": "2026-09-19T00:00:00Z",
+      "evidence": "P11 automated test verifies the required daily demo assessment completes in under 180 seconds."
+    },
+    {
+      "criterionId": "LAT-001",
+      "status": "pass",
+      "evidence": "Measured local sample-to-visible-update latency on /mission/live using the local self-check capture path (no backend call). Five consecutive runs from user action to the visible confirmation/timeline update: 148.23, 97.76, 116.30, 86.53, 84.55 ms (median 97.76 ms, max 148.23 ms). Network capture during the measurement recorded zero requests to the backend origin or /api/, confirming the visible update requires no cloud round-trip. Latency was measured against locally captured/synthetic input only; target-hardware wearable timing is not included.",
+      "checkedAt": "2026-09-19T17:45:34Z"
+    },
+    {
+      "criterionId": "BAT-001",
+      "status": "known_limitation",
+      "checkedAt": "2026-09-19T00:00:00Z",
+      "evidence": "Target-hardware battery drain cannot be truthfully measured without selected wearable hardware; limitation is documented for final evidence collection."
+    },
+    {
+      "criterionId": "WF-001",
+      "status": "pass",
+      "checkedAt": "2026-09-19T00:00:00Z",
+      "evidence": "P14 encrypted offline queue/reconnect tests and P15 authenticated transport gates pass."
+    },
+    {
+      "criterionId": "WF-002",
+      "status": "pass",
+      "checkedAt": "2026-09-19T00:00:00Z",
+      "evidence": "P15/P16 role-separation, RLS and research export security gates pass."
+    },
+    {
+      "criterionId": "WF-003",
+      "status": "pass",
+      "checkedAt": "2026-09-19T00:00:00Z",
+      "evidence": "P17 artifact/dropout tests preserve poor/missing quality states without silent imputation."
+    }
+  ]
+}

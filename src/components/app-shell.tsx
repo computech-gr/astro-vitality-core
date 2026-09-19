@@ -81,7 +81,7 @@ const navigation: readonly NavigationEntry[] = [
   {
     label: "About",
     href: "#about",
-    items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Resources & References"],
+    items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Resources & References"],
   },
 ];
 
@@ -95,6 +95,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Offline Mission Mode") return "/mission/offline";
   if (label === "Ground & Research Console") return "/mission/ground";
   if (label === "Cognitive & Behavioral Health") return "/mission/readiness";
+  if (label === "Validation & Limitations") return "/mission/validation";
   return fallback;
 }
 
