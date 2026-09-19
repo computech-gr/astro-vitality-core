@@ -146,7 +146,14 @@ function Header() {
               <DropdownMenuContent align="start" className="w-72 border-border bg-popover/95 p-2 backdrop-blur-xl">
                 {entry.items.map((item) => {
                   const href = itemHref(item, entry.href);
-                  return <DropdownMenuItem key={item} asChild className="min-h-10 cursor-pointer px-3"><NavLink href={href}>{item}</NavLink></DropdownMenuItem>;
+                  const external = isExternal(href);
+                  return (
+                    <DropdownMenuItem key={item} asChild className="min-h-10 cursor-pointer px-3">
+                      <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="flex items-center gap-1.5">
+                        {item}{external && <ExternalLink aria-hidden="true" className="size-3.5" />}
+                      </a>
+                    </DropdownMenuItem>
+                  );
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
