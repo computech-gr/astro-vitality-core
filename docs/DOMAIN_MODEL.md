@@ -88,7 +88,6 @@ P13 introduces `ProtocolDefinition`, `ActionCard`, `ActionGuidancePlan`, `Govern
 
 `SyntheticScenarioManifest`, `SyntheticMissionDataset` and `SyntheticMissionEvent` model reproducible demo data separately from real mission records while reusing the canonical observation envelope. Fixed seeds and timestamps make replay deterministic. Observation events retain canonical provenance and `classification: synthetic`; annotation/connectivity events document scenario context without masquerading as health observations.
 
-
 ## P18 validation evidence
 
 `src/domain/validation-usability/` defines validation criteria, evidence states and closure summarization. A critical criterion must be `pass` with timestamped evidence. Noncritical hardware gaps may be `known_limitation`; missing or pending critical evidence fails closed.

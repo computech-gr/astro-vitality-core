@@ -141,7 +141,6 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `scripts/verify-p17.mjs` — P17 structural/scope verifier.
 - `docs/SIMULATION_SYNTHETIC_DATASET.md` — source alignment and synthetic-data safety boundary.
 
-
 ### P18 Validation & Usability
 
 - `src/domain/validation-usability/` — validation criteria, limitations and closure logic.
