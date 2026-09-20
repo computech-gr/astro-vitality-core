@@ -132,7 +132,6 @@ P19 adds a reproducible packaging layer around the existing architecture. Docker
 
 The local release path does not weaken P15/P16 authorization: application containers use only browser-safe/publishable Supabase credentials, never the service-role key.
 
-
 ### P20 zero-install browser sources
 
 The challenge demo no longer depends on an APK or vendor-specific mobile workflow. Browser-native source adapters add rear-camera PPG for pulse estimation and DeviceMotion tri-axial acceleration, while P6 Web Bluetooth remains the direct BLE Heart Rate Service path. `/mission/devices` performs runtime capability detection so Android/iPhone/browser differences are surfaced honestly rather than hidden. Optional Health Connect, HealthKit and vendor-cloud bridges remain adapter extensions outside the domain layer.
