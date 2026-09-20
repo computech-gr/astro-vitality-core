@@ -173,3 +173,9 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/domain/challenge-submission/` — demo timing, official challenge links and evidence summary logic.
 - `src/routes/mission.submission.tsx` — judge-facing demo/submission route.
 - `docs/CHALLENGE_DEMO_SCRIPT.md`, `VIDEO_STORYBOARD.md`, `DEMO_FALLBACK_RUNBOOK.md`, `POSTER_ARCHITECTURE.md`, `NASA_RESOURCE_ATTRIBUTION.md`, `SUBMISSION_PACKAGE.md`, `JUDGING_ALIGNMENT.md` — presentation and submission controls.
+
+### Recorded mission data
+
+- `src/components/recorded-mission-data.tsx` — local/cloud mission history console.
+- `src/infrastructure/mission-records.ts` — local decrypted projection, RLS-authorized Supabase history and governed sync trigger.
+- `src/routes/mission.records.tsx` — operational `/mission/records` route.
