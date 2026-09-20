@@ -219,7 +219,6 @@ P20 adds the controlled three-minute judge narrative, `/mission/submission`, vid
 
 `/mission/records` shows encrypted local mission records and, for authenticated mission members, the RLS-authorized Supabase copy. `/mission/offline` exposes local readiness, queue state and governed manual synchronization without enabling anonymous medical-data writes.
 
-
 ### P20 hardware evidence
 
 - P20-HW-001 real zero-install device evidence: READY (Samsung Galaxy S24, Chrome on Android; Camera PPG + phone motion).

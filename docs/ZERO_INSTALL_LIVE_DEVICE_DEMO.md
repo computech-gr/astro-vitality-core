@@ -50,7 +50,6 @@ The production response header explicitly allows same-origin camera, acceleromet
 
 Camera acquisition is staged so failures are attributable: policy/secure-context preflight, basic `getUserMedia({ video: true })`, rear-camera selection, then PPG capture. The live diagnostics panel reports the active acquisition stage and the effective document camera Permissions Policy state.
 
-
 ## Recorded physical evidence
 
 The first production zero-install physical session is recorded in `docs/P20_REAL_DEVICE_EVIDENCE.md`. P20-HW-001 is now READY; BLE hardware remains an optional additional interoperability demonstration rather than a prerequisite for closure.
