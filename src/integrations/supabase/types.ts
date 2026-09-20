@@ -82,6 +82,41 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_bootstrap_control: {
+        Row: {
+          armed_at: string
+          consumed_at: string | null
+          consumed_by: string | null
+          mission_id: string | null
+          secret_hash: string
+          singleton: boolean
+        }
+        Insert: {
+          armed_at?: string
+          consumed_at?: string | null
+          consumed_by?: string | null
+          mission_id?: string | null
+          secret_hash: string
+          singleton?: boolean
+        }
+        Update: {
+          armed_at?: string
+          consumed_at?: string | null
+          consumed_by?: string | null
+          mission_id?: string | null
+          secret_hash?: string
+          singleton?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_bootstrap_control_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_crew_assignments: {
         Row: {
           created_at: string
@@ -360,7 +395,20 @@ export type Database = {
     }
     Functions: {
       accept_mission_invite: { Args: { p_code: string }; Returns: Json }
+      bootstrap_first_mission: {
+        Args: {
+          p_bootstrap_secret: string
+          p_code: string
+          p_name: string
+          p_starts_at?: string
+        }
+        Returns: Json
+      }
       can_create_mission: { Args: never; Returns: boolean }
+      configure_mission_bootstrap: {
+        Args: { p_secret_hash: string }
+        Returns: Json
+      }
       create_mission_crew_member: {
         Args: {
           p_display_name: string
@@ -392,6 +440,7 @@ export type Database = {
         Args: { p_mission_id: string }
         Returns: Json
       }
+      get_mission_bootstrap_status: { Args: never; Returns: Json }
       get_mission_operations_workspace: {
         Args: { p_mission_id: string }
         Returns: Json
