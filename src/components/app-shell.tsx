@@ -53,35 +53,35 @@ type NavigationEntry = {
 };
 
 const navigation: readonly NavigationEntry[] = [
-  { label: "Home", href: "#home" },
+  { label: "Home", href: "/#home" },
   {
     label: "Mission",
-    href: "#mission",
+    href: "/#mission",
     items: ["The Challenge", "Our Mission", "Mission Scenario", "Why Autonomous Health", "Long-Duration Spaceflight"],
   },
   {
     label: "Science",
-    href: "#science",
+    href: "/#science",
     items: ["Scientific Foundation", "Spaceflight Health Risks", "Biomarkers & Signals", "Personal Baselines", "Cognitive & Behavioral Health", "Environment & Radiation", "Scientific Safety Boundaries"],
   },
   {
     label: "Platform",
-    href: "#platform",
+    href: "/#platform",
     items: ["Platform Overview", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Personalization", "Health Intelligence", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
   },
   {
     label: "Technology",
-    href: "#technology",
+    href: "/#technology",
     items: ["System Architecture", "Device Integration", "Wearables", "Medical & Laboratory Data", "Environmental Telemetry", "Canonical Health Data Model", "Offline-First Architecture", "Security & Privacy"],
   },
   {
     label: "Open Source",
-    href: "#open-source",
+    href: "/#open-source",
     items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License"],
   },
   {
     label: "About",
-    href: "#about",
+    href: "/#about",
     items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Challenge Submission", "Resources & References"],
   },
 ];
@@ -150,7 +150,7 @@ function isExternal(href: string) {
 
 function Brand() {
   return (
-    <a href="#home" aria-label="The Mitochondria home" className="flex min-w-0 items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    <a href="/#home" aria-label="The Mitochondria home" className="flex min-w-0 items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
       <img src={logoAsset.url} alt="" width={920} height={520} className="h-11 w-auto shrink-0 object-contain object-left" />
       <span className="hidden text-[0.68rem] font-bold uppercase leading-tight text-foreground sm:block">
         <span className="block font-medium text-muted-foreground">The</span>
@@ -176,16 +176,16 @@ function NavLink({ href, children, mobile = false }: { href: string; children: R
   return mobile ? <SheetClose asChild>{link}</SheetClose> : link;
 }
 
-function Header() {
+export function SiteHeader() {
   useEffect(() => {
-    const update = () => document.documentElement.style.setProperty("--header-offset", `${document.querySelector("header")?.clientHeight ?? 76}px`);
+    const update = () => document.documentElement.style.setProperty("--header-offset", `${document.querySelector("[data-site-header]")?.clientHeight ?? 76}px`);
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl">
+    <header data-site-header className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto grid h-[4.75rem] w-full max-w-[94rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:px-8">
         <Brand />
         <nav aria-label="Primary navigation" className="hidden items-center justify-center gap-1 lg:flex">
@@ -229,7 +229,7 @@ function Header() {
               <SheetDescription>The Mitochondria project sections</SheetDescription>
             </SheetHeader>
             <nav aria-label="Mobile navigation" className="mt-5">
-              <SheetClose asChild><a href="#home" className="flex min-h-11 items-center border-b border-border py-3 font-medium">Home</a></SheetClose>
+              <SheetClose asChild><a href="/#home" className="flex min-h-11 items-center border-b border-border py-3 font-medium">Home</a></SheetClose>
               <Accordion type="multiple">
                 {navigation.filter((entry) => entry.items).map((entry) => (
                   <AccordionItem value={entry.label} key={entry.label}>
@@ -275,9 +275,8 @@ const capabilities: ReadonlyArray<readonly [LucideIcon, string, string]> = [
 export function AppShell() {
   return (
     <div className="min-h-dvh overflow-x-clip bg-background text-foreground">
-      <Header />
       <main>
-        <section id="home" aria-labelledby="hero-title" className="relative flex min-h-[min(56rem,92dvh)] items-end overflow-hidden pt-[var(--header-offset)]">
+        <section id="home" aria-labelledby="hero-title" className="relative flex min-h-[min(56rem,92dvh)] items-end overflow-hidden">
           <img src={astronautEarthrise} alt="Astronaut looking across Earth’s illuminated horizon from orbit" width={1920} height={1080} fetchPriority="high" className="absolute inset-0 size-full object-cover object-[68%_center]" />
           <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,var(--hero-overlay)_0%,var(--hero-overlay)_34%,transparent_76%),linear-gradient(0deg,var(--background)_0%,transparent_36%)]" />
           <div className="relative mx-auto w-full max-w-[94rem] px-5 pb-16 pt-28 sm:pb-20 lg:px-8 lg:pb-24">

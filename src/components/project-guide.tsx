@@ -115,7 +115,7 @@ const groups: readonly GuideGroup[] = [
 
 export function ProjectGuidePage() {
   return (
-    <main className="min-h-screen bg-background pt-[var(--header-offset)] text-foreground">
+    <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-[94rem] px-5 py-14 lg:px-8 lg:py-20">
         <p className="section-kicker">Project guide</p>
         <h1 className="mt-3 max-w-5xl font-display text-4xl font-semibold leading-tight sm:text-6xl">Every navigation item now has a meaningful destination.</h1>
