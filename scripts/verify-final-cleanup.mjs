@@ -10,6 +10,16 @@ const p15 = readFileSync(join(root, "supabase/migrations/20260919164826_c7dfa3eb
 const p16 = readFileSync(join(root, "supabase/migrations/20260919170410_cfadc7d4-72db-42ad-a76e-4181cc0c70f4.sql"), "utf8").toLowerCase();
 
 for (const token of [
+  'if (label === "Health Intelligence") return "/mission/intelligence"',
+  'if (label === "Explainable Alerts") return "/mission/alerts"',
+]) {
+  if (!shell.includes(token)) failures.push(`navigation cleanup missing ${token}`);
+}
+if (shell.includes('label === "Health Intelligence" || label === "Explainable Alerts"')) {
+  failures.push("Health Intelligence and Explainable Alerts must not share one route mapping");
+}
+
+for (const token of [
   '/project/guide#roadmap',
   '/project/guide#resources-references',
   '/project/guide#team',

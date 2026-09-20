@@ -95,6 +95,7 @@ describe("v20.2 SEO & indexability policy", () => {
       "live-dashboard",
       "readiness-assessment",
       "health-intelligence",
+      "explainable-alerts",
       "action-guidance",
       "offline-mission",
       "ground-research-console",

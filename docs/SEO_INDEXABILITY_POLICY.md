@@ -42,6 +42,7 @@ Marked `noindex, nofollow` and absent from `sitemap.xml`:
 | `/mission/live`         | Live operational telemetry console; no stable public content |
 | `/mission/readiness`    | Personal cognitive/behavioral assessment surface             |
 | `/mission/intelligence` | Operational health-intelligence console                      |
+| `/mission/alerts`       | Operational explainable-alert review surface                 |
 | `/mission/guidance`     | Operational action/protocol guidance console                 |
 | `/mission/offline`      | Local device/offline state surface                           |
 | `/mission/ground`       | Ground oversight and research-export console                 |

@@ -15,6 +15,8 @@ describe("final public navigation", () => {
 
   test("implemented operational surfaces keep direct mission routes", () => {
     expect(shell).toContain('if (label === "Live Monitoring") return "/mission/live"');
+    expect(shell).toContain('if (label === "Health Intelligence") return "/mission/intelligence"');
+    expect(shell).toContain('if (label === "Explainable Alerts") return "/mission/alerts"');
     expect(shell).toContain('if (label === "Action Guidance") return "/mission/guidance"');
     expect(shell).toContain('if (label === "Challenge Submission") return "/mission/submission"');
   });

@@ -131,7 +131,8 @@ function itemHref(label: string, fallback: string) {
   if (label === "The Challenge") return CHALLENGE_URL;
   if (label === "Mission Scenario") return "/mission/simulation";
   if (label === "Live Monitoring") return "/mission/live";
-  if (label === "Health Intelligence" || label === "Explainable Alerts") return "/mission/intelligence";
+  if (label === "Health Intelligence") return "/mission/intelligence";
+  if (label === "Explainable Alerts") return "/mission/alerts";
   if (label === "Action Guidance") return "/mission/guidance";
   if (label === "Offline Mission Mode") return "/mission/offline";
   if (label === "Ground & Research Console") return "/mission/ground";
