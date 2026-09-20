@@ -75,3 +75,7 @@ placed in browser-visible variables.
 
 The offline route uses the global site header only. It does not mount a second
 page-local brand header.
+
+## Recorded-value projection
+
+`/mission/records` projects both persisted `ObservationEnvelope` scalar observations and direct raw/vector series into human-readable history rows. The projection is read-only: encrypted append-only records are not rewritten. Camera PPG history therefore exposes its canonical metric, value, UCUM unit and data-quality level when the encrypted record is decrypted in the originating browser.

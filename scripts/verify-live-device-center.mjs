@@ -61,6 +61,8 @@ if (existsSync(join(root, "docs/P20_SAMSUNG_HEALTH_CONNECT_TEST.md"))) failures.
 
 const evidence = JSON.parse(read("data/submission/p20-evidence.v1.json"));
 const hw = evidence.evidence.find((item) => item.id === "P20-HW-001");
+const realDeviceEvidenceDocPath = join(root, "docs/P20_REAL_DEVICE_EVIDENCE.md");
+if (!existsSync(realDeviceEvidenceDocPath)) failures.push("missing P20 real-device evidence narrative");
 const realDeviceEvidencePath = join(root, "data/submission/p20-real-device-evidence.v1.json");
 if (!existsSync(realDeviceEvidencePath)) failures.push("missing controlled P20 real-device evidence artifact");
 else {

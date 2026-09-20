@@ -114,8 +114,10 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           // Publishable-only cloud configuration for the browser; never a service-role key.
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: supabaseBrowserConfigScript() }}
         />
+
         <HeadContent />
       </head>
       <body>

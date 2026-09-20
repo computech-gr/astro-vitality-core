@@ -54,8 +54,13 @@ function asNumber(value: unknown): number | undefined {
 }
 
 function summarizePayload(payload: unknown): Pick<RecordedMissionRow, "metricCode" | "metricLabel" | "value" | "unit" | "quality"> {
-  const root = asObject(payload);
-  if (!root) return {};
+  const envelope = asObject(payload);
+  if (!envelope) return {};
+
+  // Live scalar observations are persisted as ObservationEnvelope objects, while
+  // raw/vector series are persisted directly as RawSignalChunk objects. Project
+  // both shapes without rewriting the append-only encrypted record itself.
+  const root = asObject(envelope["observation"]) ?? envelope;
   const metric = asObject(root["metric"]);
   const observationValue = asObject(root["value"]);
   const quality = asObject(root["quality"]);

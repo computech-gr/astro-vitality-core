@@ -32,6 +32,51 @@ describe("P20 recorded mission data", () => {
     expect(row.syncState).toBe("pending");
   });
 
+
+  test("projects the actual ObservationEnvelope persisted by the live dashboard", () => {
+    const row = localRecordedRow({
+      ...observation,
+      id: "obs-camera-envelope-1",
+      payload: {
+        observation: {
+          id: "obs-camera-envelope-1",
+          mission: observation.mission,
+          source: {
+            sourceId: "camera:ppg:browser",
+            sourceType: "wearable",
+            adapterId: "browser-camera-ppg",
+            adapterVersion: "1.0.0",
+          },
+          metric: {
+            code: "phys.heart_rate",
+            displayName: "Heart rate",
+            domain: "physiology",
+            valueKind: "number",
+            unit: "{beats}/min",
+            unitSystem: "UCUM",
+          },
+          value: { number: 63 },
+          observedAt: observation.eventTimestamp,
+          status: "final",
+          quality: { level: "poor", artifactFlags: ["camera_ppg_low_quality"] },
+          provenance: { ingestionId: "p20-test", transformations: [] },
+          classification: "medical_sensitive",
+          tags: ["camera-ppg"],
+        },
+        metricDefinitionVersion: "1.1",
+        interpretationTier: "operational",
+        reviewStatus: "raw",
+        context: { tags: [] },
+      },
+    }, "pending");
+
+    expect(row.metricCode).toBe("phys.heart_rate");
+    expect(row.metricLabel).toBe("Heart rate");
+    expect(row.value).toBe("63");
+    expect(row.unit).toBe("{beats}/min");
+    expect(row.quality).toBe("poor");
+  });
+
   test("never changes medical-sensitive classification while presenting local history", () => {
     expect(localRecordedRow(observation).classification).toBe("medical_sensitive");
   });

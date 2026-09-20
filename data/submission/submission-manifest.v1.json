@@ -53,6 +53,16 @@
       "bytes": 3268
     },
     {
+      "file": "data/submission/p20-real-device-evidence.v1.json",
+      "sha256": "1dd5521b20b5aff86e629424700f5b023611f92ed4d16f76f619cfa8552c1aa8",
+      "bytes": 1466
+    },
+    {
+      "file": "docs/P20_REAL_DEVICE_EVIDENCE.md",
+      "sha256": "2ba717f36be35d5c1f6ef7ae83ded6409711793e854d4b4445ab4f6f1e3fbac8",
+      "bytes": 1312
+    },
+    {
       "file": "data/release/mission-day-127.synthetic.json",
       "sha256": "6997feae355887f1e1e56b5f0c533f5d365a67b5f89e765b1006c22d6153df8c",
       "bytes": 868801
