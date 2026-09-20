@@ -15,8 +15,13 @@ export interface SupabaseBrowserConfigStatus {
   missing: string[];
 }
 
-function readEnv(viteKey: string, serverKey: string): string | undefined {
-  const viteValue = import.meta.env[viteKey as keyof ImportMetaEnv];
+/**
+ * Static `import.meta.env.VITE_*` member reads are required: Vite only inlines
+ * literal accesses into the client bundle. A computed lookup such as
+ * `import.meta.env[key]` is never statically replaced and therefore resolves to
+ * `undefined` in the published browser bundle.
+ */
+function pick(viteValue: unknown, serverKey: string): string | undefined {
   if (typeof viteValue === 'string' && viteValue.trim()) return viteValue.trim();
 
   const processEnv =
@@ -27,8 +32,11 @@ function readEnv(viteKey: string, serverKey: string): string | undefined {
 }
 
 export function getSupabaseBrowserConfigStatus(): SupabaseBrowserConfigStatus {
-  const url = readEnv('VITE_SUPABASE_URL', 'SUPABASE_URL');
-  const publishableKey = readEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_PUBLISHABLE_KEY');
+  const url = pick(import.meta.env['VITE_SUPABASE_URL'], 'SUPABASE_URL');
+  const publishableKey = pick(
+    import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'],
+    'SUPABASE_PUBLISHABLE_KEY',
+  );
 
   const missing = [
     ...(url ? [] : ['VITE_SUPABASE_URL']),
