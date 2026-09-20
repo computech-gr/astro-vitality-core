@@ -17,6 +17,7 @@ const required = [
   "docs/API_ADAPTER_REFERENCE.md",
   "docs/RELEASE_CANDIDATE.md",
   "docs/RELEASE_CHECKLIST.md",
+  "docs/P19_INDEPENDENT_REPRODUCTION_GATE.md",
   "data/release/README.md",
   ".github/ISSUE_TEMPLATE/bug_report.yml",
   ".github/ISSUE_TEMPLATE/feature_request.yml",
@@ -95,9 +96,45 @@ for (const token of ["independent machine", "docker", "local supabase", "not cli
   if (!releaseDoc.includes(token)) failures.push(`release candidate docs missing ${token}`);
 }
 
+const independentGateDoc = readFileSync(join(root, "docs/P19_INDEPENDENT_REPRODUCTION_GATE.md"), "utf8").toLowerCase();
+for (const token of ["clean environment", "git rev-parse head", "bun run verify:p19", "bun run check", "bun run setup:local", "supabase db reset --local", "docker compose", "/mission/simulation", "exact git commit sha"]) {
+  if (!independentGateDoc.includes(token)) failures.push(`independent reproduction gate docs missing ${token}`);
+}
+
+const releaseChecklist = readFileSync(join(root, "docs/RELEASE_CHECKLIST.md"), "utf8").toLowerCase();
+if (!releaseChecklist.includes("exactly the seven governed migrations")) {
+  failures.push("release checklist must describe the current seven-migration governed chain");
+}
+if (releaseChecklist.includes("exactly the five governed")) {
+  failures.push("release checklist contains stale five-migration wording");
+}
+
+const infrastructureReadme = readFileSync(join(root, "src/infrastructure/README.md"), "utf8").toLowerCase();
+for (const token of ["p14 offline mission storage is implemented", "encrypted local persistence", "append-only critical records", "sync queue"]) {
+  if (!infrastructureReadme.includes(token)) failures.push(`infrastructure docs missing current offline-runtime statement: ${token}`);
+}
+if (infrastructureReadme.includes("offline health-data storage is intentionally not implemented yet")) {
+  failures.push("infrastructure docs contain stale pre-P14 offline-storage wording");
+}
+
 const localDoc = readFileSync(join(root, "docs/LOCAL_REPRODUCIBILITY.md"), "utf8").toLowerCase();
-for (const token of ["fresh-clone", "supabase cli", "docker", "bun run setup:local", "bun run check", "sample:release", "dist/server/index.mjs"]) {
+for (const token of [
+  "fresh-clone",
+  "supabase cli",
+  "docker",
+  "bun run setup:local",
+  "bun run check",
+  "sample:release",
+  "dist/server/index.mjs",
+  "exactly the seven governed migrations",
+  "p20 mission identity & invites",
+  "p20 mission & crew operations",
+  "p20 secure bootstrap & auth readiness",
+]) {
   if (!localDoc.includes(token)) failures.push(`local reproducibility docs missing ${token}`);
+}
+if (localDoc.includes("uses the four migrations") || localDoc.includes("uses the five migrations") || localDoc.includes("uses the six migrations")) {
+  failures.push("local reproducibility docs contain a stale migration-count statement");
 }
 
 const unexpectedMigrations = findUnexpectedMigrations(root);

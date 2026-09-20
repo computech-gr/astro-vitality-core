@@ -28,14 +28,17 @@ The setup script never writes the local service-role key into application enviro
 
 ## Canonical migration chain
 
-The fresh-clone database path uses the four migrations that were actually applied to the governed Supabase project, in timestamp order:
+The fresh-clone database path uses exactly the seven governed migrations currently retained in the repository, in timestamp order:
 
 1. P15 Ground / Research Console base migration.
 2. P15 helper-privilege hardening correction.
 3. P16 Security & Safety Hardening base migration.
 4. P16 pgcrypto/search-path correction.
+5. P20 Mission Identity & Invites.
+6. P20 Mission & Crew Operations.
+7. P20 Secure Bootstrap & Auth Readiness.
 
-The earlier semantic-name copies were exact duplicates of the applied base migrations and are intentionally removed. P19 verification rejects duplicate migration content so `supabase db reset --local` remains reproducible.
+Platform-generated or earlier semantic-name copies that duplicated governed migration content are intentionally removed. P19 verification requires this exact seven-migration chain and rejects duplicate SQL content so `supabase db reset --local` remains reproducible.
 
 ## Docker application path
 
