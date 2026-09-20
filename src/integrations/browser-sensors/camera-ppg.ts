@@ -16,6 +16,26 @@ import { estimatePpgHeartRate, normalizePpgWaveform, type TimedPpgSample } from 
 
 export type CameraPpgPhase = "idle" | "requesting_permission" | "acquiring" | "measuring" | "error";
 
+export type CameraPermissionState = "granted" | "denied" | "prompt" | "unsupported" | "unknown";
+export type RearCameraState = "available" | "not_detected" | "unknown_until_permission" | "unknown";
+
+export interface CameraPpgDiagnostics {
+  checkedAt: string;
+  errorName?: string | undefined;
+  errorMessage?: string | undefined;
+  permissionState: CameraPermissionState;
+  secureContext: boolean;
+  topLevelContext: boolean;
+  visibilityState: DocumentVisibilityState | "unknown";
+  cameraApiAvailable: boolean;
+  enumerateDevicesAvailable: boolean;
+  videoInputCount?: number | undefined;
+  rearCameraState: RearCameraState;
+  selectedFacingMode?: string | undefined;
+  cameraBusyLikely: boolean;
+  likelyCause: string;
+}
+
 export interface CameraPpgPreviewState {
   phase: CameraPpgPhase;
   waveform: number[];
@@ -23,6 +43,7 @@ export interface CameraPpgPreviewState {
   contactQuality: number;
   bpm?: number;
   message?: string;
+  diagnostics?: CameraPpgDiagnostics;
 }
 
 export interface CameraPpgAdapterOptions {
@@ -64,6 +85,132 @@ function stopMediaStream(stream?: MediaStream) {
   stream?.getTracks().forEach((track) => track.stop());
 }
 
+function cameraErrorName(error: unknown): string | undefined {
+  if (typeof DOMException !== "undefined" && error instanceof DOMException) return error.name;
+  if (error instanceof Error && "name" in error) return error.name;
+  return undefined;
+}
+
+function cameraErrorMessage(error: unknown): string | undefined {
+  return error instanceof Error ? error.message : undefined;
+}
+
+export function classifyCameraAccessError(
+  errorName: string | undefined,
+  permissionState: CameraPermissionState,
+): { cameraBusyLikely: boolean; likelyCause: string } {
+  switch (errorName) {
+    case "NotAllowedError":
+      return {
+        cameraBusyLikely: false,
+        likelyCause:
+          permissionState === "denied"
+            ? "Browser/site camera permission is denied."
+            : permissionState === "granted"
+              ? "Camera permission appears granted, but capture was blocked by the browser, operating system, or device privacy policy."
+              : "Camera access was not granted. The permission prompt may have been dismissed or blocked by browser/device policy.",
+      };
+    case "NotFoundError":
+      return { cameraBusyLikely: false, likelyCause: "No usable video-input camera was found for this browser session." };
+    case "NotReadableError":
+      return {
+        cameraBusyLikely: true,
+        likelyCause:
+          "A camera exists, but the browser could not read it. Another app may be using the camera, or the operating system/driver may be blocking access.",
+      };
+    case "OverconstrainedError":
+      return { cameraBusyLikely: false, likelyCause: "The requested camera constraints could not be satisfied by the available camera hardware." };
+    case "SecurityError":
+      return { cameraBusyLikely: false, likelyCause: "Camera access was blocked by browser security policy or document context." };
+    case "AbortError":
+      return { cameraBusyLikely: false, likelyCause: "Camera startup was interrupted before capture became available." };
+    case "TypeError":
+      return { cameraBusyLikely: false, likelyCause: "Camera capture is unavailable in this document context or the media constraints were rejected." };
+    default:
+      return {
+        cameraBusyLikely: false,
+        likelyCause: errorName
+          ? `Camera startup failed with ${errorName}. Review the detailed browser/device diagnostics below.`
+          : "Camera startup failed for an unknown browser/device reason.",
+      };
+  }
+}
+
+async function queryCameraPermissionState(): Promise<CameraPermissionState> {
+  if (typeof navigator === "undefined" || !navigator.permissions?.query) return "unsupported";
+  try {
+    const result = await navigator.permissions.query({ name: "camera" as PermissionName });
+    return result.state;
+  } catch {
+    return "unsupported";
+  }
+}
+
+async function inspectVideoInputs(permissionState: CameraPermissionState): Promise<{
+  enumerateDevicesAvailable: boolean;
+  videoInputCount?: number | undefined;
+  rearCameraState: RearCameraState;
+}> {
+  if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) {
+    return { enumerateDevicesAvailable: false, rearCameraState: "unknown" };
+  }
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoInputs = devices.filter((device) => device.kind === "videoinput");
+    const labelledRearCamera = videoInputs.some((device) => /rear|back|environment/i.test(device.label));
+    return {
+      enumerateDevicesAvailable: true,
+      videoInputCount: videoInputs.length,
+      rearCameraState:
+        videoInputs.length === 0
+          ? "not_detected"
+          : labelledRearCamera
+            ? "available"
+            : permissionState === "granted"
+              ? "unknown"
+              : "unknown_until_permission",
+    };
+  } catch {
+    return { enumerateDevicesAvailable: true, rearCameraState: "unknown" };
+  }
+}
+
+export async function collectCameraPpgDiagnostics(
+  error?: unknown,
+  selectedFacingMode?: string,
+): Promise<CameraPpgDiagnostics> {
+  const permissionState = await queryCameraPermissionState();
+  const inputs = await inspectVideoInputs(permissionState);
+  const errorName = cameraErrorName(error);
+  const classified = classifyCameraAccessError(errorName, permissionState);
+  const secureContext = typeof window !== "undefined" ? window.isSecureContext : false;
+  const topLevelContext = typeof window !== "undefined" ? window.top === window.self : false;
+  const visibilityState = typeof document !== "undefined" ? document.visibilityState : "unknown";
+
+  let likelyCause = classified.likelyCause;
+  if (!secureContext) likelyCause = "Camera APIs require a secure HTTPS context; this page is not running in one.";
+  else if (!topLevelContext) likelyCause = "Camera access may be restricted because the console is running inside an embedded frame.";
+  else if (!isCameraPpgSupported()) likelyCause = "This browser does not expose navigator.mediaDevices.getUserMedia().";
+  else if (inputs.videoInputCount === 0) likelyCause = "No video-input camera is visible to the browser.";
+
+  return {
+    checkedAt: new Date().toISOString(),
+    ...(errorName ? { errorName } : {}),
+    ...(cameraErrorMessage(error) ? { errorMessage: cameraErrorMessage(error) } : {}),
+    permissionState,
+    secureContext,
+    topLevelContext,
+    visibilityState,
+    cameraApiAvailable: isCameraPpgSupported(),
+    enumerateDevicesAvailable: inputs.enumerateDevicesAvailable,
+    ...(inputs.videoInputCount !== undefined ? { videoInputCount: inputs.videoInputCount } : {}),
+    rearCameraState: selectedFacingMode === "environment" ? "available" : inputs.rearCameraState,
+    ...(selectedFacingMode ? { selectedFacingMode } : {}),
+    cameraBusyLikely: classified.cameraBusyLikely,
+    likelyCause,
+  };
+}
+
 export function isCameraPpgSupported(): boolean {
   return typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
 }
@@ -96,7 +243,15 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
   async connect(options: AdapterConnectOptions): Promise<void> {
     if (options.sourceId !== SOURCE.sourceId) throw new Error("Unknown camera PPG source");
     if (!isCameraPpgSupported()) throw new Error("Camera access is not supported by this browser");
-    this.onPreview?.({ phase: "requesting_permission", waveform: [], signalQuality: 0, contactQuality: 0 });
+    const preflightDiagnostics = await collectCameraPpgDiagnostics();
+    this.onPreview?.({
+      phase: "requesting_permission",
+      waveform: [],
+      signalQuality: 0,
+      contactQuality: 0,
+      message: "Requesting camera access from the browser…",
+      diagnostics: preflightDiagnostics,
+    });
     try {
       this.media = await navigator.mediaDevices.getUserMedia({
         audio: false,
@@ -107,6 +262,7 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
         },
       });
       const videoTrack = this.media.getVideoTracks()[0];
+      const selectedFacingMode = videoTrack?.getSettings?.().facingMode;
       if (videoTrack) {
         const capabilities = videoTrack.getCapabilities?.() as MediaTrackCapabilities & { torch?: boolean };
         if (capabilities?.torch) {
@@ -153,12 +309,14 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
       canvas.height = 40;
       this.canvas = canvas;
       this.connected = true;
+      const diagnostics = await collectCameraPpgDiagnostics(undefined, selectedFacingMode);
       this.onPreview?.({
         phase: "acquiring",
         waveform: [],
         signalQuality: 0,
         contactQuality: 0,
         message: "Cover the rear camera with a fingertip and keep still for several seconds.",
+        diagnostics,
       });
     } catch (error) {
       stopMediaStream(this.media);
@@ -168,8 +326,16 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
       this.video = undefined;
       this.connected = false;
       const message = error instanceof Error ? error.message : "Camera permission or camera start failed";
-      this.onPreview?.({ phase: "error", waveform: [], signalQuality: 0, contactQuality: 0, message });
-      throw new Error(`Camera PPG unavailable: ${message}`);
+      const diagnostics = await collectCameraPpgDiagnostics(error);
+      this.onPreview?.({
+        phase: "error",
+        waveform: [],
+        signalQuality: 0,
+        contactQuality: 0,
+        message,
+        diagnostics,
+      });
+      throw new Error(`Camera PPG unavailable: ${diagnostics.errorName ?? "UnknownError"}: ${message}`);
     }
   }
 

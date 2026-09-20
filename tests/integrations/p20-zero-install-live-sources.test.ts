@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { estimatePpgHeartRate } from "../../src/integrations/browser-sensors/ppg-algorithm";
+import { classifyCameraAccessError } from "../../src/integrations/browser-sensors/camera-ppg";
 import { BrowserDeviceMotionAdapter } from "../../src/integrations/browser-sensors/device-motion";
 
 const root = process.cwd();
@@ -69,4 +70,22 @@ describe("P20 zero-install cross-platform live sources", () => {
     expect(existsSync(join(root, "android-companion"))).toBe(false);
     expect(existsSync(join(root, ".github/workflows/android-companion.yml"))).toBe(false);
   });
+  test("camera diagnostics distinguish browser permission, missing camera and likely camera-busy failures", () => {
+    expect(classifyCameraAccessError("NotAllowedError", "denied").likelyCause).toContain("permission is denied");
+    expect(classifyCameraAccessError("NotFoundError", "granted").likelyCause).toContain("No usable video-input camera");
+    const busy = classifyCameraAccessError("NotReadableError", "granted");
+    expect(busy.cameraBusyLikely).toBe(true);
+    expect(busy.likelyCause).toContain("Another app may be using the camera");
+  });
+
+  test("live dashboard exposes concrete camera permission and runtime diagnostics", () => {
+    const live = readFileSync(join(root, "src/components/live-dashboard.tsx"), "utf8");
+    expect(live).toContain("Camera diagnostics");
+    expect(live).toContain("Permission state");
+    expect(live).toContain("Secure HTTPS context");
+    expect(live).toContain("Rear camera");
+    expect(live).toContain("Camera busy / OS lock");
+    expect(live).toContain("Likely cause:");
+  });
+
 });

@@ -39,3 +39,7 @@ The console detects capability at runtime and never presents an unsupported path
 - Motion data are context/artifact signals, not a diagnosis or a generic wellness score.
 - Missing or poor-quality inputs remain missing/poor; the system must not silently impute values for demo appearance.
 - Other health domains remain visible through their correct source classes: wearable/device, environmental/radiation, cognitive/behavioral assessment, sleep/history, and laboratory/medical ingestion.
+
+## Camera diagnostics
+
+The Camera PPG path exposes browser/device diagnostics instead of collapsing failures into a generic permission message. It reports the browser DOMException name (including `NotAllowedError`, `NotFoundError`, and `NotReadableError`), the Permissions API camera state when available, HTTPS/top-level context, visible video-input count, rear-camera detection state, page visibility, and whether a camera-busy/OS-lock condition is plausible. A `NotReadableError` can indicate that another application owns the camera, but the browser cannot prove that condition uniquely, so the console labels it as possible rather than certain.
