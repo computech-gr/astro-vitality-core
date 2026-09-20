@@ -51,14 +51,20 @@ export function GroundResearchConsolePage() {
     <p className="section-kicker">P15 · Ground / Research Console</p>
     <h1 className="section-title">Mission oversight without collapsing privacy boundaries.</h1>
     <p className="mt-5 max-w-3xl text-muted-foreground">Identified medical access, operational oversight and research export are separate mission-scoped capabilities. Anonymous access fails closed.</p>
-    <div className="mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row"><Input value={missionId} onChange={(event)=>setMissionId(event.target.value)} placeholder="Mission ID" aria-label="Mission ID"/><Button disabled={loading||!missionId.trim()} onClick={loadSnapshot}>Load ground snapshot</Button><Button disabled={loading||!missionId.trim()} variant="outline" onClick={exportResearch}><Download/> Research export</Button></div>
-    <p className="mt-3 text-sm text-muted-foreground" role="status">{status}</p>
-    {snapshot && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <Card><CardHeader><CardTitle>Total events</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.total_events}</CardContent></Card>
-      <Card><CardHeader><CardTitle>Crew represented</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.crew_count}</CardContent></Card>
-      <Card><CardHeader><CardTitle>Findings</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.finding_count}</CardContent></Card>
-      <Card><CardHeader><CardTitle>Pending actions context</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.action_count}</CardContent></Card>
-    </div>}
-    <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{capabilityCards.map(([Icon,title,copy])=><Card key={title}><CardHeader><Icon className="size-5 text-primary"/><CardTitle>{title}</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{copy}</CardContent></Card>)}</div>
+    <section aria-labelledby="ground-access-heading" className="mt-10">
+      <h2 id="ground-access-heading" className="font-display text-2xl font-semibold">Mission-scoped access</h2>
+      <div className="mt-5 flex max-w-2xl flex-col gap-3 sm:flex-row"><Input value={missionId} onChange={(event)=>setMissionId(event.target.value)} placeholder="Mission ID" aria-label="Mission ID"/><Button disabled={loading||!missionId.trim()} onClick={loadSnapshot}>Load ground snapshot</Button><Button disabled={loading||!missionId.trim()} variant="outline" onClick={exportResearch}><Download/> Research export</Button></div>
+      <p className="mt-3 text-sm text-muted-foreground" role="status">{status}</p>
+      {snapshot && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card><CardHeader><CardTitle>Total events</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.total_events}</CardContent></Card>
+        <Card><CardHeader><CardTitle>Crew represented</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.crew_count}</CardContent></Card>
+        <Card><CardHeader><CardTitle>Findings</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.finding_count}</CardContent></Card>
+        <Card><CardHeader><CardTitle>Pending actions context</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{snapshot.action_count}</CardContent></Card>
+      </div>}
+    </section>
+    <section aria-labelledby="ground-boundaries-heading" className="mt-12">
+      <h2 id="ground-boundaries-heading" className="font-display text-2xl font-semibold">Privacy and governance boundaries</h2>
+      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{capabilityCards.map(([Icon,title,copy])=><Card key={title}><CardHeader><Icon className="size-5 text-primary"/><CardTitle>{title}</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{copy}</CardContent></Card>)}</div>
+    </section>
   </div></main>;
 }

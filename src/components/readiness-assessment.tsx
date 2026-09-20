@@ -315,9 +315,12 @@ export function ReadinessAssessment() {
           </div>
         </section>
 
-        <Progress className="mt-6" value={progress} aria-label="Assessment progress" />
+        <h2 id="readiness-flow-heading" className="mt-10 font-display text-2xl font-semibold">
+          Daily check-in steps
+        </h2>
+        <Progress className="mt-5" value={progress} aria-label="Assessment progress" />
 
-        <div className="mt-6 grid gap-5">
+        <div aria-labelledby="readiness-flow-heading" className="mt-6 grid gap-5">
           <Card className="border-border bg-card/70">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

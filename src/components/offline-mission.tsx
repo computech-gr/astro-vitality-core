@@ -106,7 +106,8 @@ export function OfflineMissionPage() {
           </Button>
         </section>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <h2 id="offline-state-heading" className="mt-10 font-display text-2xl font-semibold">Local mission state</h2>
+        <section aria-labelledby="offline-state-heading" className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><LockKeyhole className="text-primary" />Encrypted local store</CardTitle></CardHeader>
             <CardContent><p className="font-mono text-xl">{status.encryptedStoreReady ? "READY" : "NOT READY"}</p><p className="mt-2 text-xs text-muted-foreground">AES-GCM encrypted records; non-extractable device-local key held by the browser origin.</p></CardContent>
@@ -125,7 +126,8 @@ export function OfflineMissionPage() {
           </Card>
         </section>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <h2 id="offline-readiness-heading" className="mt-12 font-display text-2xl font-semibold">Offline readiness and autonomy</h2>
+        <section aria-labelledby="offline-readiness-heading" className="mt-5 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <Card className="bg-card/70">
             <CardHeader><CardTitle>Offline readiness</CardTitle></CardHeader>
             <CardContent className="grid gap-3">

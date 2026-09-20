@@ -13,7 +13,7 @@
     "format:check": "prettier --check \"*.md\" \"docs/**/*.md\" \".github/**/*.yml\" \"package.json\"",
     "typecheck": "tsc --noEmit",
     "verify:foundation": "node scripts/verify-foundation.mjs",
-    "check": "bun run verify:foundation && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run verify:p7 && bun run verify:p8 && bun run verify:p9 && bun run verify:p10 && bun run verify:p11 && bun run verify:p12 && bun run verify:p13 && bun run verify:p14 && bun run verify:p15 && bun run verify:p16 && bun run verify:p17 && bun run verify:p18 && bun run verify:p19 && bun run verify:p20 && bun run verify:final-cleanup && bun run security:audit && bun run test && bun run typecheck && bun run lint && bun run format:check && bun run build",
+    "check": "bun run verify:foundation && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run verify:p7 && bun run verify:p8 && bun run verify:p9 && bun run verify:p10 && bun run verify:p11 && bun run verify:p12 && bun run verify:p13 && bun run verify:p14 && bun run verify:p15 && bun run verify:p16 && bun run verify:p17 && bun run verify:p18 && bun run verify:p19 && bun run verify:p20 && bun run verify:final-cleanup && bun run verify:seo && bun run security:audit && bun run test && bun run typecheck && bun run lint && bun run format:check && bun run build",
     "test": "bun test",
     "verify:p3": "node scripts/verify-p3.mjs",
     "verify:p4": "node scripts/verify-p4.mjs",
@@ -41,7 +41,8 @@
     "verify:p20": "node scripts/verify-p20.mjs",
     "submission:manifest": "node scripts/generate-submission-manifest.mjs",
     "submission:gate": "node scripts/verify-submission-gate.mjs",
-    "verify:final-cleanup": "node scripts/verify-final-cleanup.mjs"
+    "verify:final-cleanup": "node scripts/verify-final-cleanup.mjs",
+    "verify:seo": "node scripts/verify-seo.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
