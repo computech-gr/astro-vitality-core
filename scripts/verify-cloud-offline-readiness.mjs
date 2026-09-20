@@ -42,10 +42,11 @@ if (!ground.includes("configuration_required")) {
 }
 
 const offline = read("src/components/offline-mission.tsx");
-for (const token of ["configuration_required", "CONFIGURATION REQUIRED".toLowerCase()]) {
-  if (!offline.toLowerCase().includes(token.toLowerCase())) {
-    failures.push(`Offline Mission Mode UI missing ${token}`);
-  }
+if (!offline.includes("configuration_required")) {
+  failures.push("Offline Mission Mode UI missing the configuration_required state");
+}
+if (!offline.includes('replaceAll("_", " ").toUpperCase()')) {
+  failures.push("Offline Mission Mode UI must render the cloud state as CONFIGURATION REQUIRED");
 }
 if (offline.includes("mitochondria-logo")) {
   failures.push("Offline Mission Mode must not render a duplicate page-local header logo");
