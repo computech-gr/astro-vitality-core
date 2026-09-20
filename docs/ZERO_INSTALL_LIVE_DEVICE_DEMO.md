@@ -43,3 +43,9 @@ The console detects capability at runtime and never presents an unsupported path
 ## Camera diagnostics
 
 The Camera PPG path exposes browser/device diagnostics instead of collapsing failures into a generic permission message. It reports the browser DOMException name (including `NotAllowedError`, `NotFoundError`, and `NotReadableError`), the Permissions API camera state when available, HTTPS/top-level context, visible video-input count, rear-camera detection state, page visibility, and whether a camera-busy/OS-lock condition is plausible. A `NotReadableError` can indicate that another application owns the camera, but the browser cannot prove that condition uniquely, so the console labels it as possible rather than certain.
+
+## Browser authority for zero-install sensors
+
+The production response header explicitly allows same-origin camera, accelerometer, gyroscope, and magnetometer access while continuing to deny microphone and other unrelated browser capabilities. Camera capture remains user-mediated: the browser permission prompt is still mandatory.
+
+Camera acquisition is staged so failures are attributable: policy/secure-context preflight, basic `getUserMedia({ video: true })`, rear-camera selection, then PPG capture. The live diagnostics panel reports the active acquisition stage and the effective document camera Permissions Policy state.
