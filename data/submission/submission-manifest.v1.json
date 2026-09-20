@@ -4,18 +4,18 @@
   "files": [
     {
       "file": "docs/CHALLENGE_DEMO_SCRIPT.md",
-      "sha256": "b793555ad3d7411864ab6ff598100389347bee1e375d263e24be5cc210dd4c1c",
-      "bytes": 2570
+      "sha256": "eaeed6f6595e6cbd9ac6b07e34fa5751f296874b3113f38aa3f8bb41eb595285",
+      "bytes": 2757
     },
     {
       "file": "docs/VIDEO_STORYBOARD.md",
-      "sha256": "b5002e19bb0dfe97352e199a834f7bc0bf1dbd8b36bc61bcbad37ca3596c3311",
-      "bytes": 1205
+      "sha256": "c985b8cbbddc30d243e535d2144a0695c63636044f3c41fffea214a4d2a8deb7",
+      "bytes": 1572
     },
     {
       "file": "docs/DEMO_FALLBACK_RUNBOOK.md",
-      "sha256": "5633ba39903ceb0ff4f84f6a601cdf35ef7b02a06e4fe42eb1555352109c802c",
-      "bytes": 1065
+      "sha256": "344b3b78b59046ad6524770aa07d58cd0c5c85604149033c0229cf6f6a7f7867",
+      "bytes": 1187
     },
     {
       "file": "docs/POSTER_ARCHITECTURE.md",
@@ -29,18 +29,18 @@
     },
     {
       "file": "docs/SUBMISSION_PACKAGE.md",
-      "sha256": "a176400728db04a7cebe3905e7e4d02c68820f1f1db4d181c5f1589b3e7b77d4",
-      "bytes": 1509
+      "sha256": "d472fdc1da7921f0f13a3fdaa47a198f9da6c45b871daf62608a50023d82ba03",
+      "bytes": 1671
     },
     {
       "file": "docs/JUDGING_ALIGNMENT.md",
-      "sha256": "3114a80f232b98be9c183a387c19d5941ce6beb8fcfca079383211e9adc99570",
-      "bytes": 1452
+      "sha256": "1ce4e66bc4b7966a9dae513d4431107b7edc46b6d06071aeb828e3c67e77cbfa",
+      "bytes": 1718
     },
     {
       "file": "docs/KNOWN_LIMITATIONS.md",
-      "sha256": "0dcec10ce8fd0bb65eebccf4527c87b66df68d8db8d21ee354cd2768eda1c2ed",
-      "bytes": 2268
+      "sha256": "be465a2893e4e0f0e152959712d6caba4baaaec3ed2006f858dd42ac6a6c3e1d",
+      "bytes": 2599
     },
     {
       "file": "CITATIONS.md",
@@ -49,8 +49,8 @@
     },
     {
       "file": "data/submission/p20-evidence.v1.json",
-      "sha256": "a8758fd82f9f9a30ce42a0b166e5782a38e1d9e5bd3cb787a3409950f462c423",
-      "bytes": 2986
+      "sha256": "ca94944493e9501f58b858dee4aba4d8887d42e91c26abc929fabe34024191ea",
+      "bytes": 3268
     },
     {
       "file": "data/release/mission-day-127.synthetic.json",
