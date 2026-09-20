@@ -23,6 +23,7 @@ import { Route as MissionSimulationRouteImport } from './routes/mission.simulati
 import { Route as MissionSubmissionRouteImport } from './routes/mission.submission'
 import { Route as MissionValidationRouteImport } from './routes/mission.validation'
 import { Route as ProjectGuideRouteImport } from './routes/project.guide'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,6 +95,11 @@ const ProjectGuideRoute = ProjectGuideRouteImport.update({
   path: '/project/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
   '/project/guide': typeof ProjectGuideRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
   '/project/guide': typeof ProjectGuideRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
   '/project/guide': typeof ProjectGuideRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/mission/submission'
     | '/mission/validation'
     | '/project/guide'
+    | '/.lovable/oauth/consent'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/mission/submission'
     | '/mission/validation'
     | '/project/guide'
+    | '/.lovable/oauth/consent'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/mission/submission'
     | '/mission/validation'
     | '/project/guide'
+    | '/.lovable/oauth/consent'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -210,6 +222,7 @@ export interface RootRouteChildren {
   MissionSubmissionRoute: typeof MissionSubmissionRoute
   MissionValidationRoute: typeof MissionValidationRoute
   ProjectGuideRoute: typeof ProjectGuideRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionSubmissionRoute: MissionSubmissionRoute,
   MissionValidationRoute: MissionValidationRoute,
   ProjectGuideRoute: ProjectGuideRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
