@@ -22,18 +22,18 @@ export function parseMissionAuthSettings(payload: unknown): Pick<MissionAuthRead
   const root = asRecord(payload);
   if (!root) return {};
 
-  const external = asRecord(root.external);
-  const email = asRecord(root.email);
+  const external = asRecord(root["external"]);
+  const email = asRecord(root["email"]);
   const explicitEmail =
-    typeof external?.email === "boolean"
-      ? external.email
-      : typeof email?.enabled === "boolean"
-        ? email.enabled
-        : typeof root.email === "boolean"
-          ? root.email
+    typeof external?.["email"] === "boolean"
+      ? (external["email"] as boolean)
+      : typeof email?.["enabled"] === "boolean"
+        ? (email["enabled"] as boolean)
+        : typeof root["email"] === "boolean"
+          ? (root["email"] as boolean)
           : undefined;
 
-  const signupAllowed = typeof root.disable_signup === "boolean" ? !root.disable_signup : undefined;
+  const signupAllowed = typeof root["disable_signup"] === "boolean" ? !root["disable_signup"] : undefined;
   return {
     ...(typeof explicitEmail === "boolean" ? { emailProviderEnabled: explicitEmail } : {}),
     ...(typeof signupAllowed === "boolean" ? { signupAllowed } : {}),
