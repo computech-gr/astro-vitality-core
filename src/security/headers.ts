@@ -40,7 +40,10 @@ export function applySecurityHeaders(request: Request, response: Response): Resp
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "DENY");
   headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=()");
+  headers.set(
+    "Permissions-Policy",
+    "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), accelerometer=(self), gyroscope=(self), magnetometer=(self)",
+  );
   headers.set("X-DNS-Prefetch-Control", "off");
 
   const requestUrl = new URL(request.url);

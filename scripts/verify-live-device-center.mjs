@@ -32,9 +32,15 @@ for (const forbidden of ["Connect Health Connect", "ANDROID COMPANION REQUIRED"]
 }
 
 const camera = read("src/integrations/browser-sensors/camera-ppg.ts");
-for (const token of ["getUserMedia", "facingMode", "estimatePpgHeartRate", "not-ecg", "phys.heart_rate"]) {
+for (const token of ["getUserMedia", "video: true", "permissionsPolicyCamera", "facingMode", "estimatePpgHeartRate", "not-ecg", "phys.heart_rate"]) {
   if (!camera.includes(token)) failures.push(`camera PPG adapter missing ${token}`);
 }
+
+const securityHeaders = read("src/security/headers.ts");
+for (const token of ["camera=(self)", "accelerometer=(self)", "gyroscope=(self)", "microphone=()"] ) {
+  if (!securityHeaders.includes(token)) failures.push(`security Permissions-Policy missing ${token}`);
+}
+if (securityHeaders.includes("camera=()")) failures.push("security Permissions-Policy must not globally deny camera");
 
 const motion = read("src/integrations/browser-sensors/device-motion.ts");
 for (const token of ["DeviceMotionEvent", "requestPermission", "activity.acceleration_3axis", 'channelNames: ["x", "y", "z"]']) {

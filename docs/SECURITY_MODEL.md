@@ -47,3 +47,7 @@ P15 introduces forced-RLS mission persistence and role-separated capabilities. R
 ## P16 security & safety hardening
 
 P16 adds the formal threat model, misuse-case register, browser/server privilege audit, SSR security headers, a governed database hardening migration, replay-conflict handling, mission-operator ingestion restrictions and recursive research-export identifier stripping. Research export remains **pseudonymized, not anonymous**. Current CSP still permits required inline hydration/style execution; that residual risk is explicitly tracked for release-candidate hardening.
+
+### Zero-install sensor browser authority
+
+The public mission console permits `camera=(self)`, `accelerometer=(self)`, `gyroscope=(self)`, and `magnetometer=(self)` through `Permissions-Policy` only for the same production origin. Microphone, geolocation, payment, USB, serial, and HID remain disabled by policy. Camera access still requires an explicit browser user permission and is used only by the governed Camera PPG adapter.

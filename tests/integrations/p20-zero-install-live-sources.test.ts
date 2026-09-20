@@ -78,6 +78,13 @@ describe("P20 zero-install cross-platform live sources", () => {
     expect(busy.likelyCause).toContain("Another app may be using the camera");
   });
 
+  test("security policy allows same-origin camera capture while keeping microphone denied", () => {
+    const headers = readFileSync(join(root, "src/security/headers.ts"), "utf8");
+    expect(headers).toContain("camera=(self)");
+    expect(headers).toContain("microphone=()");
+    expect(headers).not.toContain("camera=()");
+  });
+
   test("live dashboard exposes concrete camera permission and runtime diagnostics", () => {
     const live = readFileSync(join(root, "src/components/live-dashboard.tsx"), "utf8");
     expect(live).toContain("Camera diagnostics");
@@ -85,6 +92,8 @@ describe("P20 zero-install cross-platform live sources", () => {
     expect(live).toContain("Secure HTTPS context");
     expect(live).toContain("Rear camera");
     expect(live).toContain("Camera busy / OS lock");
+    expect(live).toContain("Permissions Policy (camera)");
+    expect(live).toContain("Acquisition stage");
     expect(live).toContain("Likely cause:");
   });
 

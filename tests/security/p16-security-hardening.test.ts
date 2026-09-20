@@ -11,7 +11,12 @@ describe("P16 Security & Safety Hardening", () => {
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("strict-transport-security")).toContain("max-age=31536000");
-    expect(response.headers.get("permissions-policy")).toContain("camera=()");
+    const permissionsPolicy = response.headers.get("permissions-policy") ?? "";
+    expect(permissionsPolicy).toContain("camera=(self)");
+    expect(permissionsPolicy).toContain("accelerometer=(self)");
+    expect(permissionsPolicy).toContain("gyroscope=(self)");
+    expect(permissionsPolicy).toContain("microphone=()");
+    expect(permissionsPolicy).not.toContain("camera=()");
     expect(buildContentSecurityPolicy()).toContain("frame-ancestors 'none'");
   });
 
