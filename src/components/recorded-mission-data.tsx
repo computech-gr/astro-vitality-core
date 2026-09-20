@@ -15,7 +15,7 @@ import {
 const emptyDataset: RecordedMissionDataset = {
   local: [],
   cloud: [],
-  cloudContext: { signedIn: false, memberships: [] },
+  cloudContext: { signedIn: false, memberships: [], configuration: "configured" },
   queue: [],
 };
 
@@ -110,7 +110,9 @@ export function RecordedMissionDataPage() {
           ? "Governed Supabase synchronization completed."
           : result === "anonymous"
             ? "Cloud sync is locked until a signed-in user has an active mission membership. Local encrypted capture remains available."
-            : "Cloud sync is unavailable while this device is offline.",
+            : result === "configuration_required"
+              ? "Cloud sync is not configured for this published deployment. Local encrypted records remain available."
+              : "Cloud sync is unavailable while this device is offline.",
       );
       await refresh();
     } catch (error) {
@@ -158,7 +160,9 @@ export function RecordedMissionDataPage() {
         ) : null}
         {dataset.cloudContext.error ? (
           <div className="mt-3 rounded-md border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-200">
-            Cloud status: {dataset.cloudContext.error}
+            {dataset.cloudContext.configuration === "missing"
+              ? dataset.cloudContext.error
+              : `Cloud status: ${dataset.cloudContext.error}`}
           </div>
         ) : null}
 

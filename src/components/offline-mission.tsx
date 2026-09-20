@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  ArrowLeft,
   CheckCircle2,
   Cloud,
   CloudOff,
@@ -10,7 +9,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -51,7 +49,7 @@ export function OfflineMissionPage() {
   const [status, setStatus] = useState<OfflineMissionStatus>(emptyStatus);
   const [busy, setBusy] = useState(true);
   const [syncBusy, setSyncBusy] = useState(false);
-  const [cloudState, setCloudState] = useState<"checking" | "local_only" | "authenticated" | "error">("checking");
+  const [cloudState, setCloudState] = useState<"checking" | "configuration_required" | "local_only" | "authenticated" | "error">("checking");
   const [cloudDetail, setCloudDetail] = useState("Checking governed Supabase access…");
 
   const refresh = useCallback(async () => {
@@ -60,7 +58,12 @@ export function OfflineMissionPage() {
       await initializeOfflineMissionRuntime();
       setStatus(await getOfflineMissionStatus());
       const cloud = await getCloudMissionContext();
-      if (cloud.error) {
+      if (cloud.configuration === "missing") {
+        setCloudState("configuration_required");
+        setCloudDetail(
+          "Cloud synchronization is not configured for this published deployment. Encrypted local capture and review remain available.",
+        );
+      } else if (cloud.error) {
         setCloudState("error");
         setCloudDetail(cloud.error);
       } else if (!cloud.signedIn) {
@@ -70,6 +73,9 @@ export function OfflineMissionPage() {
         setCloudState("authenticated");
         setCloudDetail(`${cloud.memberships.length} active mission membership(s) available for governed cloud access.`);
       }
+    } catch (error) {
+      setCloudState("error");
+      setCloudDetail(error instanceof Error ? error.message : "Cloud status check failed.");
     } finally {
       setBusy(false);
     }
@@ -80,7 +86,12 @@ export function OfflineMissionPage() {
     setSyncBusy(true);
     try {
       const result = await syncRecordedMissionQueue();
-      if (result === "anonymous") {
+      if (result === "configuration_required") {
+        setCloudState("configuration_required");
+        setCloudDetail(
+          "Cloud synchronization is not configured for this published deployment. Local encrypted capture is unaffected.",
+        );
+      } else if (result === "anonymous") {
         setCloudState("local_only");
         setCloudDetail("Cloud sync requires a signed-in user with an active mission membership. Local encrypted capture is unaffected.");
       } else if (result === "unavailable") {
@@ -112,27 +123,11 @@ export function OfflineMissionPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-[96rem] items-center justify-between gap-4 px-5 lg:px-8">
-          <div className="flex items-center gap-4">
-            <a href="/" className="rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Back to public site">
-              <img src={logoAsset.url} alt="" className="h-10 w-auto" />
-            </a>
-            <div>
-              <p className="font-display text-lg font-semibold">Offline Mission Mode</p>
-              <p className="font-mono text-[0.68rem] uppercase tracking-widest text-muted-foreground">P14 · local autonomy & store-and-forward</p>
-            </div>
-          </div>
-          <Button asChild variant="outline">
-            <a href="/mission/live"><ArrowLeft />Live dashboard</a>
-          </Button>
-        </div>
-      </header>
 
       <main className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
         <section className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="section-kicker">Mission autonomy</p>
+            <p className="section-kicker">Offline Mission Mode · mission autonomy</p>
             <h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">
               Earth can disappear. <span className="text-primary">The health loop must not.</span>
             </h1>

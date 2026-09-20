@@ -1,13 +1,13 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-09-20T00:00:00Z",
+  "updatedAt": "2026-09-20T17:46:44Z",
   "evidence": [
     {
       "id": "P20-HW-001",
       "title": "Real live device path",
       "critical": true,
-      "status": "pending_human",
-      "evidence": "The published console now supports zero-install physical paths through Phone Camera PPG, phone motion sensors and direct BLE where supported. Status remains pending_human until the team records a real physical session; code readiness is not accepted as evidence."
+      "status": "ready",
+      "evidence": "Real zero-install physical session recorded on the published console using a Samsung Galaxy S24 with Chrome: Phone Camera PPG connected and produced live physical heart-rate observations that reached the live card/timeline and encrypted local persistence; phone motion also produced physical samples and encrypted writes. The controlled evidence artifact contains no raw health values. See data/submission/p20-real-device-evidence.v1.json."
     },
     {
       "id": "P20-DEMO-001",

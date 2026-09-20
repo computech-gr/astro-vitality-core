@@ -13,7 +13,7 @@ describe("P20 challenge submission", () => {
   test("final gate fails closed while real-device, reproduction or video evidence is pending", () => {
     const summary = summarizeSubmissionEvidence(evidenceLedger.evidence as SubmissionEvidence[]);
     expect(summary.finalSubmissionReady).toBe(false);
-    expect(summary.pendingHuman).toBeGreaterThanOrEqual(2);
+    expect(summary.pendingHuman).toBeGreaterThanOrEqual(1);
     expect(summary.pendingExternal).toBeGreaterThanOrEqual(1);
   });
 

@@ -218,3 +218,15 @@ P20 adds the controlled three-minute judge narrative, `/mission/submission`, vid
 ### Mission history
 
 `/mission/records` shows encrypted local mission records and, for authenticated mission members, the RLS-authorized Supabase copy. `/mission/offline` exposes local readiness, queue state and governed manual synchronization without enabling anonymous medical-data writes.
+
+### P20 hardware evidence
+
+- P20-HW-001 real zero-install device evidence: READY (Samsung Galaxy S24, Chrome on Android; Camera PPG + phone motion).
+- Controlled artifact: `data/submission/p20-real-device-evidence.v1.json` (no raw health values).
+
+### Published offline and mission history behavior
+
+Offline Mission Mode and Recorded Mission Data now fail closed without losing
+local evidence: missing cloud configuration is reported as configuration
+required rather than leaving the UI in a permanent checking state. The offline
+page uses the single global navigation header.

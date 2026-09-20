@@ -179,3 +179,10 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `src/components/recorded-mission-data.tsx` — local/cloud mission history console.
 - `src/infrastructure/mission-records.ts` — local decrypted projection, RLS-authorized Supabase history and governed sync trigger.
 - `src/routes/mission.records.tsx` — operational `/mission/records` route.
+
+### Cloud/offline deployment readiness
+
+`src/integrations/supabase/config.ts` performs the browser-safe Supabase
+configuration preflight used by mission history and offline synchronization.
+`/mission/offline` and `/mission/records` keep local encrypted data usable when
+cloud configuration or authenticated mission membership is unavailable.
