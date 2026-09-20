@@ -69,7 +69,10 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `scripts/verify-p8.mjs` — P8 structural/safety verifier.
 
 - `src/app/live-dashboard/` — P9 mission-local dashboard state, freshness and timeline contracts.
-- `src/components/live-dashboard.tsx` — astronaut-facing live console with direct BLE and Android Health Connect companion heart-rate paths.
+- `src/components/live-dashboard.tsx` — astronaut-facing live console with zero-install camera PPG, phone motion and direct BLE source paths.
+- `src/components/device-integration-center.tsx` / `src/routes/mission.devices.tsx` — capability-aware zero-install source discovery and judge-facing integration overview.
+- `src/integrations/browser-sensors/` — browser camera PPG, phone motion, capability detection and deterministic PPG estimation utilities.
+- `docs/ZERO_INSTALL_LIVE_DEVICE_DEMO.md` — controlled cross-platform live hardware demo runbook.
 - `src/routes/mission.live.tsx` — `/mission/live` route and canonical metadata.
 - `tests/app/p9-live-dashboard.test.ts` — deterministic live/stale/disconnected, trend and self-check tests.
 - `docs/LIVE_DASHBOARD.md` — P9 scope, source alignment and persistence/safety boundaries.

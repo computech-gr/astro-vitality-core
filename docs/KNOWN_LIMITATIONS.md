@@ -8,7 +8,7 @@ The Mitochondria is **not clinically validated**, is not a certified medical dev
 
 ## Hardware coverage
 
-The browser Web Bluetooth heart-rate path is implemented. A read-only Android Health Connect companion is also present for P20 Samsung/Galaxy Watch heart-rate evidence, but Samsung Health/Health Connect synchronization latency is device/platform controlled and is not guaranteed to be second-by-second. HealthKit, vendor-cloud, environmental and radiation integrations may still require native hosts, credentials or target hardware. Synthetic P17 scenarios must remain visibly synthetic and are not evidence of hardware performance.
+The zero-install browser baseline provides Phone Camera PPG, phone motion context and direct Web Bluetooth where supported. Camera PPG is a pulse estimate rather than ECG or a clinically validated measurement, and it depends on camera exposure, fingertip contact, motion and device optics. Direct Web Bluetooth is browser-dependent and is not available in every platform/browser. Health Connect, HealthKit, vendor-cloud, environmental and radiation integrations remain optional adapter extensions that may require native hosts, credentials or target hardware. Synthetic P17 scenarios must remain visibly synthetic and are not evidence of hardware performance.
 
 ## Battery
 

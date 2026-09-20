@@ -2,7 +2,7 @@
 
 ## Primary
 
-Use the real physical heart-rate path on `/mission/live` (direct BLE or the Samsung Health/Health Connect companion), then continue through the controlled three-minute route sequence.
+Use the zero-install physical path on `/mission/live`: Phone Camera PPG first, phone motion as context, and direct BLE when a compatible Heart Rate Service sensor is available. Then continue through the controlled three-minute route sequence.
 
 ## Fallback A — deterministic software replay
 

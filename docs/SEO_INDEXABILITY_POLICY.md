@@ -40,6 +40,7 @@ Marked `noindex, nofollow` and absent from `sitemap.xml`:
 | Route                   | Reason                                                       |
 | ----------------------- | ------------------------------------------------------------ |
 | `/mission/live`         | Live operational telemetry console; no stable public content |
+| `/mission/devices`      | Runtime device-capability/integration console                |
 | `/mission/readiness`    | Personal cognitive/behavioral assessment surface             |
 | `/mission/intelligence` | Operational health-intelligence console                      |
 | `/mission/alerts`       | Operational explainable-alert review surface                 |

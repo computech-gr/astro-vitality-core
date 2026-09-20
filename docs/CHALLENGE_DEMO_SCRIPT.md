@@ -8,7 +8,7 @@ This script is the controlled demo narrative for the 2026 NASA Space Apps Challe
 
 ## 0:25–0:50 — Real live device path
 
-Open `/mission/live` and connect the team’s real physical heart-rate path: direct BLE when the device exposes the standard Heart Rate Service, or the Samsung/Galaxy Watch → Samsung Health → Health Connect companion path. State the exact device and transport used. If physical hardware is unavailable during judging, say so explicitly and move to the deterministic fallback; do not present synthetic data as live hardware.
+Open `/mission/devices` to show capability detection, then `/mission/live#live-sources`. Use the zero-install Phone Camera PPG path as the universal live physiological proof; optionally add phone motion and a standard BLE Heart Rate Service sensor when available. State the exact source and transport used. If a real physical path cannot run, say so explicitly and move to the deterministic fallback; never present synthetic data as live hardware.
 
 ## 0:50–1:20 — Mission Day 127
 
