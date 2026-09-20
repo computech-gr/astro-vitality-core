@@ -23,3 +23,7 @@ A `crew_self` invitation requires a pre-existing crew member identifier. This pr
 ## First operator bootstrap
 
 The very first mission operator must still be provisioned through an authorized administrative path (for example, the Supabase dashboard/service administration). The product intentionally does not create a public self-elevation path.
+
+## Mission operations
+
+Mission operators use `/mission/operations` for governed mission lifecycle, mission-scoped crew registration, role-bound invite issuance, and non-destructive membership activation/deactivation. See `docs/MISSION_CREW_OPERATIONS.md`.

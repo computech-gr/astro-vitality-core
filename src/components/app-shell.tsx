@@ -57,7 +57,7 @@ const navigation: readonly NavigationEntry[] = [
   {
     label: "Mission",
     href: "/#mission",
-    items: ["The Challenge", "Our Mission", "Mission Scenario", "Mission Identity & Sign-in", "Why Autonomous Health", "Long-Duration Spaceflight"],
+    items: ["The Challenge", "Our Mission", "Mission Scenario", "Mission Identity & Sign-in", "Mission & Crew Operations", "Why Autonomous Health", "Long-Duration Spaceflight"],
   },
   {
     label: "Science",
@@ -131,6 +131,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "The Challenge") return CHALLENGE_URL;
   if (label === "Mission Scenario") return "/mission/simulation";
   if (label === "Mission Identity & Sign-in") return "/mission/identity";
+  if (label === "Mission & Crew Operations") return "/mission/operations";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
