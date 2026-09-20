@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.computech.mitochondria"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.computech.mitochondria"
