@@ -6,7 +6,7 @@ const P15_MIGRATIONS = new Set([
   "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
 ]);
 
-const GOVERNED_MIGRATION_MARKERS = ["-- P16 Security & Safety Hardening"];
+const GOVERNED_MIGRATION_MARKERS = ["-- P16 Security & Safety Hardening", "-- P20 Mission Identity & Sign-in"];
 
 export function isGovernedMigration(root, name) {
   if (P15_MIGRATIONS.has(name)) return true;

@@ -186,3 +186,10 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 configuration preflight used by mission history and offline synchronization.
 `/mission/offline` and `/mission/records` keep local encrypted data usable when
 cloud configuration or authenticated mission membership is unavailable.
+
+### Mission identity
+
+- `src/components/mission-identity.tsx` — sign-in, membership selection, invite redemption and operator invite issuance.
+- `src/infrastructure/mission-identity.ts` — Supabase Auth/session handling, active mission context and one-time invite RPC client.
+- `src/routes/mission.identity.tsx` — noindex operational identity route.
+- `supabase/migrations/20260920233000_p20_mission_identity_invites.sql` — hashed one-time mission invitations with audited SECURITY DEFINER RPCs.

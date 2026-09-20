@@ -16,6 +16,7 @@ import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
 import { Route as MissionDevicesRouteImport } from './routes/mission.devices'
 import { Route as MissionGroundRouteImport } from './routes/mission.ground'
 import { Route as MissionGuidanceRouteImport } from './routes/mission.guidance'
+import { Route as MissionIdentityRouteImport } from './routes/mission.identity'
 import { Route as MissionIntelligenceRouteImport } from './routes/mission.intelligence'
 import { Route as MissionLiveRouteImport } from './routes/mission.live'
 import { Route as MissionOfflineRouteImport } from './routes/mission.offline'
@@ -61,6 +62,11 @@ const MissionGroundRoute = MissionGroundRouteImport.update({
 const MissionGuidanceRoute = MissionGuidanceRouteImport.update({
   id: '/mission/guidance',
   path: '/mission/guidance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionIdentityRoute = MissionIdentityRouteImport.update({
+  id: '/mission/identity',
+  path: '/mission/identity',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionIntelligenceRoute = MissionIntelligenceRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
+  '/mission/identity': typeof MissionIdentityRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/offline': typeof MissionOfflineRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
+  '/mission/identity': typeof MissionIdentityRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/offline': typeof MissionOfflineRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
+  '/mission/identity': typeof MissionIdentityRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/offline': typeof MissionOfflineRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
+    | '/mission/identity'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/offline'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
+    | '/mission/identity'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/offline'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
+    | '/mission/identity'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/offline'
@@ -240,6 +252,7 @@ export interface RootRouteChildren {
   MissionDevicesRoute: typeof MissionDevicesRoute
   MissionGroundRoute: typeof MissionGroundRoute
   MissionGuidanceRoute: typeof MissionGuidanceRoute
+  MissionIdentityRoute: typeof MissionIdentityRoute
   MissionIntelligenceRoute: typeof MissionIntelligenceRoute
   MissionLiveRoute: typeof MissionLiveRoute
   MissionOfflineRoute: typeof MissionOfflineRoute
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       path: '/mission/guidance'
       fullPath: '/mission/guidance'
       preLoaderRoute: typeof MissionGuidanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/identity': {
+      id: '/mission/identity'
+      path: '/mission/identity'
+      fullPath: '/mission/identity'
+      preLoaderRoute: typeof MissionIdentityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/intelligence': {
@@ -385,6 +405,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionDevicesRoute: MissionDevicesRoute,
   MissionGroundRoute: MissionGroundRoute,
   MissionGuidanceRoute: MissionGuidanceRoute,
+  MissionIdentityRoute: MissionIdentityRoute,
   MissionIntelligenceRoute: MissionIntelligenceRoute,
   MissionLiveRoute: MissionLiveRoute,
   MissionOfflineRoute: MissionOfflineRoute,

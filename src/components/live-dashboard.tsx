@@ -48,6 +48,7 @@ import {
   type MotionPreviewState,
 } from "@/integrations/browser-sensors";
 import { persistOfflineMissionEvent } from "@/infrastructure/offline";
+import { activeLiveMissionContext } from "@/infrastructure/mission-identity";
 
 const LIVE_METRICS = [
   ["phys.heart_rate", "Heart rate", HeartPulse],
@@ -60,11 +61,6 @@ const LIVE_METRICS = [
   ["radiation.dose_rate", "Radiation dose rate", Zap],
 ] as const;
 
-const LIVE_DEVICE_CONTEXT = {
-  missionId: "mission-local-p9",
-  crewMemberId: "crew-local-p9",
-  classification: "medical_sensitive" as const,
-};
 
 interface HardwareEvidenceReceipt {
   schemaVersion: "1.0";
@@ -153,6 +149,8 @@ export function LiveDashboard() {
   const [cameraPreview, setCameraPreview] = useState<CameraPpgPreviewState>({ phase: "idle", waveform: [], signalQuality: 0, contactQuality: 0 });
   const [motionPreview, setMotionPreview] = useState<MotionPreviewState | null>(null);
   const [liveSourceError, setLiveSourceError] = useState<string | null>(null);
+  const liveMissionContextRef = useRef({ missionId: "mission-local-p9", crewMemberId: "crew-local-p9", classification: "medical_sensitive" as const, source: "local_fallback" as const });
+  const [missionContextSource, setMissionContextSource] = useState<"authenticated_membership" | "local_fallback">("local_fallback");
 
   useEffect(() => {
     setBrowserCapabilities(detectBrowserLiveCapabilities());
@@ -173,6 +171,9 @@ export function LiveDashboard() {
     setLiveSourceError(null);
     adapterRef.current = adapter;
     try {
+      const missionContext = await activeLiveMissionContext();
+      liveMissionContextRef.current = missionContext;
+      setMissionContextSource(missionContext.source);
       let source: { sourceId: string; displayName: string } | undefined;
       for await (const discovered of adapter.discover()) { source = discovered; break; }
       if (!source) throw new Error("No compatible wearable source was discovered");
@@ -203,7 +204,7 @@ export function LiveDashboard() {
         try {
           let sequence = 0;
           for await (const item of adapter.stream({ sourceId: source!.sourceId, signal: controller.signal })) {
-            const result = ingestAdapterItem(adapter, item, { ...LIVE_DEVICE_CONTEXT, ingestionId: `p20-hw-live-${Date.now()}-${sequence++}` });
+            const result = ingestAdapterItem(adapter, item, { ...liveMissionContextRef.current, ingestionId: `p20-hw-live-${Date.now()}-${sequence++}` });
             if (result.ok && result.kind === "observation") {
               setState((current) => ingestDashboardObservation(current, result.value, new Date().toISOString()));
               setHardwareEvidence((current) => {
@@ -318,7 +319,10 @@ export function LiveDashboard() {
     connectedSourceRef.current = null;
   }
 
-  function submitSelfCheck() {
+  async function submitSelfCheck() {
+    const context = await activeLiveMissionContext();
+    liveMissionContextRef.current = context;
+    setMissionContextSource(context.source);
     const recordedAt = new Date().toISOString();
     const selfCheck = {
       id: `self-${Date.now()}`,
@@ -330,7 +334,7 @@ export function LiveDashboard() {
     void persistOfflineMissionEvent({
       kind: "self_check",
       id: selfCheck.id,
-      mission: { missionId: LIVE_DEVICE_CONTEXT.missionId, crewMemberId: LIVE_DEVICE_CONTEXT.crewMemberId },
+      mission: { missionId: liveMissionContextRef.current.missionId, crewMemberId: liveMissionContextRef.current.crewMemberId },
       eventTimestamp: recordedAt,
       sourceId: "p9-live-self-check",
       sourceVersion: "1.0.0",
@@ -394,11 +398,12 @@ export function LiveDashboard() {
             </div>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-4">
+          <div className="mt-4 grid gap-3 sm:grid-cols-5">
             <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Current source</span><strong className="mt-1 block text-sm">{connectedSource?.displayName ?? "NONE"}</strong></div>
             <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Physical samples</span><strong className="mt-1 block font-mono text-sm">{hardwareEvidence?.sampleCount ?? 0}</strong></div>
             <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Encrypted writes</span><strong className="mt-1 block font-mono text-sm">{hardwareEvidence?.persistedSampleCount ?? 0}</strong></div>
             <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Evidence rule</span><strong className="mt-1 block text-sm">NO RAW HEALTH VALUES EXPORTED</strong></div>
+            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Mission identity</span><strong className="mt-1 block text-sm">{missionContextSource === "authenticated_membership" ? "MISSION-BOUND" : "LOCAL FALLBACK"}</strong></div>
           </div>
 
           {(cameraPreview.phase !== "idle" || motionPreview) && <div className="mt-4 grid gap-3 md:grid-cols-2">

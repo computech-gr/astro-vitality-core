@@ -29,3 +29,9 @@ A SECURITY DEFINER function being callable by authenticated users is not by itse
 ## Auto-fix policy
 
 Do **not** use a global "fix all" action for these findings. Security changes must preserve the P15/P16 role model, forced RLS, RPC-only write boundary, audit behavior and research-key isolation.
+
+## Mission identity invite boundary (P20)
+
+`mission_invites` intentionally has forced RLS with no direct browser table policy and no `authenticated` table grant. Invite hashes are server-side implementation data and are reachable only through governed RPCs.
+
+`create_mission_invite(...)` and `accept_mission_invite(...)` are `SECURITY DEFINER` functions callable by authenticated users, but neither trusts caller-supplied authorization. Both reject anonymous callers internally; creation additionally requires an existing `mission_operator` membership through `has_mission_role`, while acceptance requires a valid unexpired one-time code whose plaintext is never stored. Both pin `search_path` and write audit evidence. This is an intentional RPC authorization boundary, not a broad privilege grant.
