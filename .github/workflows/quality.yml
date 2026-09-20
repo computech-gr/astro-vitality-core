@@ -82,6 +82,9 @@ jobs:
       - name: Verify P20 challenge submission structure
         run: bun run verify:p20
 
+      - name: Verify secure bootstrap and auth readiness
+        run: bun run verify:bootstrap-auth-readiness
+
       - name: Security boundary audit
         run: bun run security:audit
 

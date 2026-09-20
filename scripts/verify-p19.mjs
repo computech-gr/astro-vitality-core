@@ -76,6 +76,7 @@ const expectedMigrations = [
   "20260919170720_1329f21c-6181-4172-a04d-ced64437d340.sql",
   "20260920233000_p20_mission_identity_invites.sql",
   "20260920235600_p20_mission_crew_operations.sql",
+  "20260921002000_p20_secure_bootstrap_auth_readiness.sql",
 ];
 if (JSON.stringify(migrationNames) !== JSON.stringify(expectedMigrations)) {
   failures.push(`P19 fresh-clone migration chain must contain the governed applied migrations; found: ${migrationNames.join(", ")}`);
@@ -90,7 +91,7 @@ for (const name of migrationNames) {
 }
 
 const releaseDoc = readFileSync(join(root, "docs/RELEASE_CANDIDATE.md"), "utf8").toLowerCase();
-for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "six-migration chain"]) {
+for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "seven-migration chain"]) {
   if (!releaseDoc.includes(token)) failures.push(`release candidate docs missing ${token}`);
 }
 

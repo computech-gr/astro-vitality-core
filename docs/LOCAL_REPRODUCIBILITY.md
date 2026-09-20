@@ -86,3 +86,7 @@ The `Release Candidate` workflow installs the Supabase CLI, runs the full qualit
 ## Reproducibility boundary
 
 The P19 exit gate demonstrates source, migration, synthetic-data and application reproducibility. It does not claim target-wearable battery characterization, clinical validation, or production infrastructure parity with the challenge deployment.
+
+## Local Auth contract
+
+`supabase/config.toml` versions the local Email Auth contract, local Site URL and mission identity redirect. `bun run setup:local` therefore reproduces the authentication provider needed by `/mission/identity` without dashboard-only local state. Production Auth configuration is intentionally separate from local config and must be verified through the authorized project-management surface.

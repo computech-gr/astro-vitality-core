@@ -10,6 +10,7 @@ const GOVERNED_MIGRATION_MARKERS = [
   "-- P16 Security & Safety Hardening",
   "-- P20 Mission Identity & Sign-in",
   "-- P20 Mission & Crew Operations",
+  "-- P20 Secure Bootstrap & Auth Readiness",
 ];
 
 export function isGovernedMigration(root, name) {

@@ -234,3 +234,7 @@ page uses the single global navigation header.
 ### Mission Identity & Sign-in
 
 The production console includes `/mission/identity` for Supabase Auth, active mission membership selection and governed one-time mission invitations, plus `/mission/operations` for operator-only mission lifecycle, mission-scoped crew registry and non-destructive membership administration. Authentication does not bypass RLS; cloud synchronization remains locked until an active mission membership exists. New live physiological observations use the selected `crew_self` mission context when available, otherwise they remain in the encrypted local fallback context.
+
+### First production mission operator
+
+A clean deployment uses `bun run bootstrap:first-operator` from a trusted terminal after the intended operator account is confirmed. The bootstrap secret is generated in memory, only its hash is armed with server privilege, and the actual first mission/operator assignment is performed as the authenticated user. See `docs/SECURE_BOOTSTRAP_AUTH_READINESS.md`.

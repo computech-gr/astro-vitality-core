@@ -27,3 +27,7 @@ The very first mission operator must still be provisioned through an authorized 
 ## Mission operations
 
 Mission operators use `/mission/operations` for governed mission lifecycle, mission-scoped crew registration, role-bound invite issuance, and non-destructive membership activation/deactivation. See `docs/MISSION_CREW_OPERATIONS.md`.
+
+## Auth provider readiness
+
+v20.12.0 adds a browser-safe Auth settings probe. An explicitly disabled Supabase Email provider is surfaced before sign-in as `CONFIGURATION REQUIRED`; signup is also disabled when project settings explicitly prohibit new accounts. The probe does not expose or guess the production redirect allowlist. Production Site URL and redirect configuration are deployment controls documented in `SECURE_BOOTSTRAP_AUTH_READINESS.md`.
