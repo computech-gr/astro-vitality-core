@@ -8,6 +8,7 @@ import {
   ReferenceMemorySyncTransport,
   enqueueOfflineRecord,
   flushOfflineSyncQueue,
+  initializeOfflineMissionRuntime,
 } from "@/infrastructure/offline";
 
 const mission = { missionId: "mission-p14-test", crewMemberId: "crew-p14-test" };
@@ -111,6 +112,59 @@ describe("P14 Offline Mission Mode", () => {
     expect(resolveSyncConflict(base, { ...base, payloadHash: "remote" }).decision).toBe(
       "manual_review",
     );
+  });
+
+
+  test("protocol cache initialization is single-flight on a clean store", async () => {
+    const store = new InMemoryOfflineMissionStore();
+    const originalWindow = globalThis.window;
+    Object.defineProperty(globalThis, "window", { value: {}, configurable: true });
+    try {
+      await Promise.all([
+        initializeOfflineMissionRuntime(store),
+        initializeOfflineMissionRuntime(store),
+        initializeOfflineMissionRuntime(store),
+      ]);
+      const records = await store.list();
+      expect(records.filter((record) => record.kind === "protocol_snapshot")).toHaveLength(1);
+      expect(await store.getMeta("protocol_cache_digest")).toBeTruthy();
+    } finally {
+      if (originalWindow === undefined) delete (globalThis as { window?: unknown }).window;
+      else Object.defineProperty(globalThis, "window", { value: originalWindow, configurable: true });
+    }
+  });
+
+  test("protocol cache initialization recovers metadata after an interrupted first commit", async () => {
+    const store = new InMemoryOfflineMissionStore();
+    const cachedAt = "2026-09-20T20:30:00.000Z";
+    const entries = await createProtocolCacheEntries(PROTOCOL_LIBRARY_V1_1, cachedAt);
+    const id = `protocol-cache:${PROTOCOL_LIBRARY_V1_1.map((item) => `${item.id}@${item.version}`).join("|")}`;
+    await store.append({
+      id,
+      kind: "protocol_snapshot",
+      mission: { missionId: "mission-local-p14", crewMemberId: "crew-local-p14" },
+      eventTimestamp: cachedAt,
+      createdAt: cachedAt,
+      sourceId: "protocol-library-v1.1",
+      sourceVersion: "1.1",
+      sourcePriority: 100,
+      classification: "medical_sensitive",
+      payload: entries,
+    });
+
+    const originalWindow = globalThis.window;
+    Object.defineProperty(globalThis, "window", { value: {}, configurable: true });
+    try {
+      await initializeOfflineMissionRuntime(store);
+      expect(await store.getMeta("protocol_cache_digest")).toBe(
+        entries.map((entry) => entry.digestSha256).join(":"),
+      );
+      expect(await store.getMeta("protocol_cache_at")).toBe(cachedAt);
+      expect(await store.countRecords()).toBe(1);
+    } finally {
+      if (originalWindow === undefined) delete (globalThis as { window?: unknown }).window;
+      else Object.defineProperty(globalThis, "window", { value: originalWindow, configurable: true });
+    }
   });
 
   test("protocol cache preserves authority, version and integrity digest", async () => {
