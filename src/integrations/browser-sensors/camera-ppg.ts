@@ -69,11 +69,11 @@ export function isCameraPpgSupported(): boolean {
 }
 
 export class BrowserCameraPpgAdapter implements DeviceAdapter {
-  private readonly onPreview?: (state: CameraPpgPreviewState) => void;
+  private readonly onPreview?: ((state: CameraPpgPreviewState) => void) | undefined;
   private readonly now: () => number;
-  private media?: MediaStream;
-  private video?: HTMLVideoElement;
-  private canvas?: HTMLCanvasElement;
+  private media?: MediaStream | undefined;
+  private video?: HTMLVideoElement | undefined;
+  private canvas?: HTMLCanvasElement | undefined;
   private connected = false;
   private cursor?: AdapterSyncCursor;
   private lastDataAt?: string;
