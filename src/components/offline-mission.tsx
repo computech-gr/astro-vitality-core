@@ -126,7 +126,8 @@ export function OfflineMissionPage() {
           </Card>
         </section>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <h2 id="offline-readiness-heading" className="mt-12 font-display text-2xl font-semibold">Offline readiness and autonomy</h2>
+        <section aria-labelledby="offline-readiness-heading" className="mt-5 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <Card className="bg-card/70">
             <CardHeader><CardTitle>Offline readiness</CardTitle></CardHeader>
             <CardContent className="grid gap-3">
