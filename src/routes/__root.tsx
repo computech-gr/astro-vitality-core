@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { initializeOfflineMissionRuntime, registerOfflineServiceWorker } from "@/infrastructure/offline";
 import { initializeGroundSyncRuntime } from "@/infrastructure/ground-research";
 import { SiteHeader } from "@/components/app-shell";
+import { supabaseBrowserConfigScript } from "@/integrations/supabase/config";
 
 function NotFoundComponent() {
   return (
