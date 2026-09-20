@@ -69,7 +69,7 @@ function qualityForMotion(hasAcceleration: boolean): DataQuality {
 }
 
 export class BrowserDeviceMotionAdapter implements DeviceAdapter {
-  private readonly onPreview?: (state: MotionPreviewState) => void;
+  private readonly onPreview?: ((state: MotionPreviewState) => void) | undefined;
   private readonly now: () => number;
   private connected = false;
   private cursor?: AdapterSyncCursor;
