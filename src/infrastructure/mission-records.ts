@@ -2,6 +2,7 @@ import type { OfflineEventRecord, OfflineSyncQueueItem } from "@/domain/offline-
 import { synchronizeGroundQueueIfAuthenticated } from "@/infrastructure/ground-research";
 import { getOfflineMissionStore } from "@/infrastructure/offline";
 import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseBrowserConfigStatus, supabaseConfigurationMessage } from "@/integrations/supabase/config";
 
 export type RecordedDataLocation = "local" | "cloud";
 
@@ -27,6 +28,7 @@ export interface CloudMissionContext {
   signedIn: boolean;
   userId?: string;
   memberships: Array<{ missionId: string; crewMemberId?: string; role: string }>;
+  configuration: "configured" | "missing";
   error?: string;
 }
 
@@ -145,22 +147,40 @@ function cloudRow(record: CloudEventShape): RecordedMissionRow {
 }
 
 export async function getCloudMissionContext(): Promise<CloudMissionContext> {
-  if (typeof window === "undefined") return { signedIn: false, memberships: [] };
+  if (typeof window === "undefined") return { signedIn: false, memberships: [], configuration: "configured" };
+  const config = getSupabaseBrowserConfigStatus();
+  if (!config.configured) {
+    return {
+      signedIn: false,
+      memberships: [],
+      configuration: "missing",
+      error: supabaseConfigurationMessage(),
+    };
+  }
+
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError) return { signedIn: false, memberships: [], error: sessionError.message };
+  if (sessionError) {
+    return {
+      signedIn: false,
+      memberships: [],
+      configuration: "configured",
+      error: sessionError.message,
+    };
+  }
   const session = sessionData.session;
-  if (!session) return { signedIn: false, memberships: [] };
+  if (!session) return { signedIn: false, memberships: [], configuration: "configured" };
 
   const { data, error } = await supabase
     .from("mission_memberships")
     .select("mission_id, crew_member_id, role, active")
     .eq("user_id", session.user.id)
     .eq("active", true);
-  if (error) return { signedIn: true, userId: session.user.id, memberships: [], error: error.message };
+  if (error) return { signedIn: true, userId: session.user.id, memberships: [], configuration: "configured", error: error.message };
 
   return {
     signedIn: true,
     userId: session.user.id,
+    configuration: "configured",
     memberships: (data ?? []).map((membership) => ({
       missionId: membership.mission_id,
       ...(membership.crew_member_id ? { crewMemberId: membership.crew_member_id } : {}),
@@ -204,6 +224,6 @@ export async function loadRecordedMissionData(limit = 300): Promise<RecordedMiss
   };
 }
 
-export async function syncRecordedMissionQueue(): Promise<"synced" | "anonymous" | "unavailable"> {
+export async function syncRecordedMissionQueue(): Promise<"synced" | "anonymous" | "unavailable" | "configuration_required"> {
   return synchronizeGroundQueueIfAuthenticated();
 }

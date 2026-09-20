@@ -59,3 +59,19 @@ P15 binds the existing queue transport contract to an authenticated Supabase RPC
 The offline runtime is the local system of record while connectivity or authenticated mission access is unavailable. The `/mission/records` console decrypts records only inside the same browser origin and shows their source, metric/value summary, quality, timestamp and queue state.
 
 When the browser has an authenticated Supabase session with an active mission membership, the existing P15/P16 `ingest_mission_event` RPC is used for idempotent store-and-forward synchronization. Anonymous writes remain denied. Cloud history is read only through the existing mission RLS boundary; local records remain available even if the remote transport is unavailable.
+
+## Published cloud configuration state
+
+The offline runtime must never remain indefinitely in a `CHECKING` state when the
+published browser bundle does not have Supabase configuration. Missing
+browser-safe Supabase configuration is surfaced as `CONFIGURATION REQUIRED`;
+encrypted local capture, review, protocol cache, and queue semantics continue to
+operate.
+
+The published browser deployment requires `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY`. Server-side helpers use the corresponding
+`SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Service-role credentials are never
+placed in browser-visible variables.
+
+The offline route uses the global site header only. It does not mount a second
+page-local brand header.

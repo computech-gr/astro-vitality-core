@@ -61,7 +61,17 @@ if (existsSync(join(root, "docs/P20_SAMSUNG_HEALTH_CONNECT_TEST.md"))) failures.
 
 const evidence = JSON.parse(read("data/submission/p20-evidence.v1.json"));
 const hw = evidence.evidence.find((item) => item.id === "P20-HW-001");
-if (!hw || hw.status !== "pending_human") failures.push("P20-HW-001 must remain pending_human until a real zero-install physical session is captured");
+const realDeviceEvidencePath = join(root, "data/submission/p20-real-device-evidence.v1.json");
+if (!existsSync(realDeviceEvidencePath)) failures.push("missing controlled P20 real-device evidence artifact");
+else {
+  const realDeviceEvidence = JSON.parse(readFileSync(realDeviceEvidencePath, "utf8"));
+  if (realDeviceEvidence.evidenceId !== "P20-HW-001") failures.push("real-device evidence artifact has wrong evidenceId");
+  if (realDeviceEvidence.privacy?.containsRawHealthValues !== false) failures.push("real-device evidence artifact must not contain raw health values");
+  const passed = new Set((realDeviceEvidence.observedPaths ?? []).filter((item) => item.status === "pass").map((item) => item.source));
+  if (!passed.has("Phone Camera PPG")) failures.push("real-device evidence must include a passed Phone Camera PPG session");
+  if (!passed.has("Phone Motion Sensors")) failures.push("real-device evidence must include a passed Phone Motion Sensors session");
+}
+if (!hw || hw.status !== "ready") failures.push("P20-HW-001 must be ready only after the controlled real-device evidence artifact is recorded");
 
 if (failures.length) {
   console.error("P20 live device center verification FAILED:\n- " + failures.join("\n- "));
