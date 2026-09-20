@@ -10,6 +10,8 @@ import {
   RadioTower,
   RefreshCw,
   ShieldCheck,
+  Smartphone,
+  Download,
   Thermometer,
   Unplug,
   Waves,
@@ -33,8 +35,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ingestAdapterItem } from "@/integrations/device-adapters";
-import { WebBluetoothHeartRateAdapter } from "@/integrations/wearables";
+import { ingestAdapterItem, type DeviceAdapter } from "@/integrations/device-adapters";
+import {
+  WebBluetoothHeartRateAdapter,
+  createAndroidHealthConnectJsBridge,
+  createHealthConnectAdapter,
+  isAndroidHealthConnectBridgeAvailable,
+} from "@/integrations/wearables";
 import { persistOfflineMissionEvent } from "@/infrastructure/offline";
 
 const LIVE_METRICS = [
@@ -48,11 +55,29 @@ const LIVE_METRICS = [
   ["radiation.dose_rate", "Radiation dose rate", Zap],
 ] as const;
 
-const MISSION_CONTEXT = {
+const LIVE_DEVICE_CONTEXT = {
   missionId: "mission-local-p9",
   crewMemberId: "crew-local-p9",
-  classification: "synthetic" as const,
+  classification: "medical_sensitive" as const,
 };
+
+interface HardwareEvidenceReceipt {
+  schemaVersion: "1.0";
+  evidenceId: "P20-HW-001";
+  generatedAt: string;
+  adapterId: string;
+  adapterVersion: string;
+  transport: string;
+  sourceId: string;
+  sourceDisplayName: string;
+  metricCodes: string[];
+  sampleCount: number;
+  firstSampleAt?: string;
+  lastSampleAt?: string;
+  persistedSampleCount: number;
+  containsRawHealthValues: false;
+  note: string;
+}
 
 function formatTime(value?: string) {
   if (!value) return "—";
@@ -115,9 +140,11 @@ export function LiveDashboard() {
   const [busy, setBusy] = useState(false);
   const [selfCheckState, setSelfCheckState] = useState<"nominal" | "monitor" | "request_support">("nominal");
   const [selfCheckNote, setSelfCheckNote] = useState("");
-  const adapterRef = useRef<WebBluetoothHeartRateAdapter | null>(null);
+  const adapterRef = useRef<DeviceAdapter | null>(null);
   const streamAbortRef = useRef<AbortController | null>(null);
-  const connectedSourceRef = useRef<{ sourceId: string; displayName: string } | null>(null);
+  const connectedSourceRef = useRef<{ sourceId: string; displayName: string; transport: string } | null>(null);
+  const [hardwareEvidence, setHardwareEvidence] = useState<HardwareEvidenceReceipt | null>(null);
+  const healthConnectAvailable = isAndroidHealthConnectBridgeAvailable();
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date().toISOString()), 10_000);
@@ -132,30 +159,55 @@ export function LiveDashboard() {
     [state, now],
   );
 
-  async function connectHeartRate() {
+  async function connectAdapter(adapter: DeviceAdapter, transport: string) {
     setBusy(true);
-    const adapter = new WebBluetoothHeartRateAdapter();
     adapterRef.current = adapter;
     try {
       let source: { sourceId: string; displayName: string } | undefined;
       for await (const discovered of adapter.discover()) { source = discovered; break; }
-      if (!source) throw new Error("No compatible Bluetooth heart-rate source was selected");
-      connectedSourceRef.current = source;
+      if (!source) throw new Error("No compatible wearable source was discovered");
+      connectedSourceRef.current = { ...source, transport };
+      const descriptor = adapter.descriptor();
+      setHardwareEvidence({
+        schemaVersion: "1.0",
+        evidenceId: "P20-HW-001",
+        generatedAt: new Date().toISOString(),
+        adapterId: descriptor.id,
+        adapterVersion: descriptor.version,
+        transport,
+        sourceId: source.sourceId,
+        sourceDisplayName: source.displayName,
+        metricCodes: [],
+        sampleCount: 0,
+        persistedSampleCount: 0,
+        containsRawHealthValues: false,
+        note: "Non-value evidence receipt. Raw physiological values are intentionally excluded from the repository evidence path.",
+      });
       const timestamp = new Date().toISOString();
-      setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport: "ble", connection: "connecting" }, timestamp));
+      setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport, connection: "connecting" }, timestamp));
       await adapter.connect({ sourceId: source.sourceId });
-      setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport: "ble", connection: "connected" }, new Date().toISOString()));
+      setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport, connection: "connected" }, new Date().toISOString()));
       const controller = new AbortController();
       streamAbortRef.current = controller;
       void (async () => {
         try {
           let sequence = 0;
           for await (const item of adapter.stream({ sourceId: source!.sourceId, signal: controller.signal })) {
-            const result = ingestAdapterItem(adapter, item, { ...MISSION_CONTEXT, ingestionId: `p9-live-${Date.now()}-${sequence++}` });
+            const result = ingestAdapterItem(adapter, item, { ...LIVE_DEVICE_CONTEXT, ingestionId: `p20-hw-live-${Date.now()}-${sequence++}` });
             if (result.ok && result.kind === "observation") {
-              setState((current) =>
-                ingestDashboardObservation(current, result.value, new Date().toISOString()),
-              );
+              setState((current) => ingestDashboardObservation(current, result.value, new Date().toISOString()));
+              setHardwareEvidence((current) => {
+                if (!current) return current;
+                const metricCode = result.value.observation.metric.code;
+                return {
+                  ...current,
+                  generatedAt: new Date().toISOString(),
+                  metricCodes: current.metricCodes.includes(metricCode) ? current.metricCodes : [...current.metricCodes, metricCode],
+                  sampleCount: current.sampleCount + 1,
+                  firstSampleAt: current.firstSampleAt ?? result.value.observation.observedAt,
+                  lastSampleAt: result.value.observation.observedAt,
+                };
+              });
               void persistOfflineMissionEvent({
                 kind: "observation",
                 id: result.value.observation.id,
@@ -166,30 +218,54 @@ export function LiveDashboard() {
                 sourcePriority: 80,
                 classification: result.value.observation.classification,
                 payload: result.value,
-              }).catch((error) => console.warn("Offline observation persistence failed", error));
+              })
+                .then(() => setHardwareEvidence((current) => current ? { ...current, persistedSampleCount: current.persistedSampleCount + 1 } : current))
+                .catch((error) => console.warn("Offline observation persistence failed", error));
             }
           }
         } catch (error) {
           if (!controller.signal.aborted) {
-            setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport: "ble", connection: "error", message: error instanceof Error ? error.message : "Heart-rate stream failed" }, new Date().toISOString()));
+            setState((current) => setDashboardSourceState(current, { sourceId: source!.sourceId, displayName: source!.displayName, transport, connection: "error", message: error instanceof Error ? error.message : "Wearable stream failed" }, new Date().toISOString()));
           }
         }
       })();
     } catch (error) {
       const source = connectedSourceRef.current;
       if (source) {
-        setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: "ble", connection: "error", message: error instanceof Error ? error.message : "Connection failed" }, new Date().toISOString()));
+        setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: source.transport, connection: "error", message: error instanceof Error ? error.message : "Connection failed" }, new Date().toISOString()));
+      } else {
+        console.warn(error);
       }
     } finally {
       setBusy(false);
     }
   }
 
+  async function connectHeartRate() {
+    await connectAdapter(new WebBluetoothHeartRateAdapter(), "ble");
+  }
+
+  async function connectHealthConnect() {
+    if (!healthConnectAvailable) return;
+    await connectAdapter(createHealthConnectAdapter(createAndroidHealthConnectJsBridge()), "health_connect");
+  }
+
+  function downloadHardwareEvidence() {
+    if (!hardwareEvidence || hardwareEvidence.sampleCount < 1) return;
+    const blob = new Blob([JSON.stringify(hardwareEvidence, null, 2)], { type: "application/json" });
+    const href = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = href;
+    anchor.download = `P20-HW-001_${hardwareEvidence.transport}_${Date.now()}.json`;
+    anchor.click();
+    URL.revokeObjectURL(href);
+  }
+
   async function disconnectHeartRate() {
     const source = connectedSourceRef.current;
     streamAbortRef.current?.abort();
     if (source && adapterRef.current) await adapterRef.current.disconnect(source.sourceId).catch(() => undefined);
-    if (source) setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: "ble", connection: "disconnected" }, new Date().toISOString()));
+    if (source) setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: source.transport, connection: "disconnected" }, new Date().toISOString()));
     streamAbortRef.current = null;
     adapterRef.current = null;
   }
@@ -206,7 +282,7 @@ export function LiveDashboard() {
     void persistOfflineMissionEvent({
       kind: "self_check",
       id: selfCheck.id,
-      mission: MISSION_CONTEXT,
+      mission: { missionId: LIVE_DEVICE_CONTEXT.missionId, crewMemberId: LIVE_DEVICE_CONTEXT.crewMemberId },
       eventTimestamp: recordedAt,
       sourceId: "p9-live-self-check",
       sourceVersion: "1.0.0",
@@ -231,14 +307,31 @@ export function LiveDashboard() {
       <main className="mx-auto max-w-[96rem] px-5 py-8 lg:px-8">
         <section className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
           <div><p className="section-kicker">Live mission health</p><h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">What is happening <span className="text-primary">right now?</span></h1><p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Live physiological and spacecraft signals share one timeline. Data quality, freshness and connection state stay visible; no missing value is silently invented.</p></div>
-          <div className="flex flex-wrap gap-3"><Button onClick={connectHeartRate} disabled={busy || connectedSource?.connection === "connected"}><Bluetooth />{busy ? "Connecting…" : "Connect BLE heart rate"}</Button><Button variant="outline" onClick={disconnectHeartRate} disabled={!connectedSource}><Unplug />Disconnect</Button></div>
+          <div className="flex flex-wrap gap-3"><Button onClick={connectHeartRate} disabled={busy || connectedSource?.connection === "connected"}><Bluetooth />{busy ? "Connecting…" : "Connect BLE heart rate"}</Button><Button variant="outline" onClick={connectHealthConnect} disabled={busy || connectedSource?.connection === "connected" || !healthConnectAvailable}><Smartphone />Connect Health Connect</Button><Button variant="outline" onClick={disconnectHeartRate} disabled={!connectedSource}><Unplug />Disconnect</Button></div>
         </section>
 
         <div className="mt-6 grid gap-3 rounded-lg border border-border bg-surface/70 p-4 md:grid-cols-3">
           <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Mission context</span><strong className="mt-1 block font-mono text-sm">LOCAL P9 SESSION</strong></div>
-          <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Persistence</span><strong className="mt-1 block font-mono text-sm text-amber-300">SESSION ONLY</strong></div>
+          <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Persistence</span><strong className="mt-1 block font-mono text-sm text-amber-300">ENCRYPTED LOCAL + GOVERNED SYNC QUEUE</strong></div>
           <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health interpretation</span><strong className="mt-1 block font-mono text-sm">BASELINE DELTAS ONLY — NO ALERTS / DIAGNOSIS</strong></div>
         </div>
+
+        <section className="mt-6 rounded-lg border border-border bg-surface/70 p-4" aria-labelledby="hardware-path-title">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="section-kicker">P20 real-device evidence</p>
+              <h2 id="hardware-path-title" className="mt-2 font-display text-xl font-semibold">Physical wearable path</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Direct BLE is used when the device exposes the standard Heart Rate Service. Samsung/Galaxy Watch data can enter through the Android companion and Health Connect; sync latency is controlled by Samsung Health and is not represented as second-by-second BLE streaming.</p>
+            </div>
+            <Button variant="outline" onClick={downloadHardwareEvidence} disabled={!hardwareEvidence || hardwareEvidence.sampleCount < 1}><Download />Download non-value evidence receipt</Button>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-4">
+            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health Connect bridge</span><strong className="mt-1 block text-sm">{healthConnectAvailable ? "AVAILABLE" : "ANDROID COMPANION REQUIRED"}</strong></div>
+            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Physical samples</span><strong className="mt-1 block font-mono text-sm">{hardwareEvidence?.sampleCount ?? 0}</strong></div>
+            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Encrypted writes</span><strong className="mt-1 block font-mono text-sm">{hardwareEvidence?.persistedSampleCount ?? 0}</strong></div>
+            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Evidence rule</span><strong className="mt-1 block text-sm">NO RAW VALUES EXPORTED</strong></div>
+          </div>
+        </section>
 
         <section aria-labelledby="vitals-title" className="mt-8"><div className="flex items-center justify-between gap-4"><div><p className="section-kicker">Vitals & environment</p><h2 id="vitals-title" className="mt-2 font-display text-2xl font-semibold">Live signal board</h2></div><p className="hidden max-w-lg text-right text-xs leading-5 text-muted-foreground md:block">Freshness states are technical recency indicators, not medical thresholds.</p></div><div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{views.map(({ view, Icon }) => <MetricCard key={view.metricCode} view={view} Icon={Icon} />)}</div></section>
 
@@ -250,7 +343,7 @@ export function LiveDashboard() {
 
         <section className="mt-8"><Card className="border-border bg-card/70"><CardHeader><CardTitle>Simple self-check</CardTitle><p className="text-sm text-muted-foreground">Low-burden mission check-in only. This is not a validated psychological assessment; P11 owns governed cognitive/behavioral measures.</p></CardHeader><CardContent><div className="grid gap-4 md:grid-cols-[14rem_1fr_auto] md:items-end"><div><Label htmlFor="self-check-state">Current state</Label><Select value={selfCheckState} onValueChange={(value) => setSelfCheckState(value as typeof selfCheckState)}><SelectTrigger id="self-check-state" className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nominal">Nominal</SelectItem><SelectItem value="monitor">Monitor / not at best</SelectItem><SelectItem value="request_support">Request support</SelectItem></SelectContent></Select></div><div><Label htmlFor="self-check-note">Optional note</Label><Input id="self-check-note" className="mt-2" value={selfCheckNote} onChange={(event) => setSelfCheckNote(event.target.value)} placeholder="Context only — no diagnosis" maxLength={240} /></div><Button onClick={submitSelfCheck}>Record check-in</Button></div>{state.selfChecks[0] && <p className="mt-4 text-xs text-muted-foreground">Last recorded at {formatTime(state.selfChecks[0].recordedAt)} — encrypted locally for offline continuity and queued for governed sync.</p>}</CardContent></Card></section>
 
-        <p className="mt-6 text-xs leading-5 text-muted-foreground">P10 boundary: the dashboard can display a governed personal-baseline delta when a validated baseline profile is available. It does not create medical alerts, diagnoses or protocol actions. Database persistence, encrypted local store-and-forward and conflict resolution remain deferred to later governed phases.</p>
+        <p className="mt-6 text-xs leading-5 text-muted-foreground">P10 boundary: the dashboard can display a governed personal-baseline delta when a validated baseline profile is available. It does not create medical alerts, diagnoses or protocol actions. Encrypted local persistence and governed store-and-forward are active; this view does not create medical alerts, diagnoses or protocol actions.</p>
       </main>
     </div>
   );

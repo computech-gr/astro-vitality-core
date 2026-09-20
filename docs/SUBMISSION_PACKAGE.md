@@ -22,7 +22,7 @@
 
 ## Final human/external evidence required before submission
 
-1. Record at least one real physical live-device session and identify the device used.
+1. Record at least one real physical live-device session and identify the device used. For the Samsung path, follow `docs/P20_SAMSUNG_HEALTH_CONNECT_TEST.md`; code readiness alone is not evidence.
 2. Obtain a passing independent-machine/release-candidate reproduction result from a machine or CI runner with Docker and Supabase CLI.
 3. Record and publish the final original challenge video; store the public URL in the evidence ledger.
 4. Re-check the official 2026 submission/judging instructions at hackathon time because the controlled P0 baseline explicitly marks them as subject to verification.

@@ -14,7 +14,7 @@ The dashboard shows:
 - a mission-local event timeline;
 - a deliberately simple self-check placeholder for P9.
 
-The first direct hardware path exposed in the browser is the P6 Web Bluetooth Heart Rate Service adapter. Other cards stay disconnected/waiting unless their governed adapters actually supply observations. The UI must never fabricate a value to look complete.
+The direct browser hardware path is the P6 Web Bluetooth Heart Rate Service adapter. P20 also adds a read-only Android companion that exposes Samsung Health/Health Connect heart-rate records through the existing P6 bridge contract. Other cards stay disconnected/waiting unless their governed adapters actually supply observations. The UI must never fabricate a value to look complete.
 
 ## Scientific and safety boundary
 
