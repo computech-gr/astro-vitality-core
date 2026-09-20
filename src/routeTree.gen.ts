@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
 import { Route as MissionDevicesRouteImport } from './routes/mission.devices'
 import { Route as MissionGroundRouteImport } from './routes/mission.ground'
@@ -30,6 +32,17 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MissionAlertsRoute = MissionAlertsRouteImport.update({
   id: '/mission/alerts',
   path: '/mission/alerts',
@@ -103,6 +116,8 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mcp': typeof McpRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
@@ -120,6 +135,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mcp': typeof McpRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
@@ -138,6 +155,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mcp': typeof McpRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
@@ -157,6 +176,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/mcp'
+    | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
     | '/mission/devices'
     | '/mission/ground'
@@ -174,6 +195,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/mcp'
+    | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
     | '/mission/devices'
     | '/mission/ground'
@@ -191,6 +214,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/mcp'
+    | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
     | '/mission/devices'
     | '/mission/ground'
@@ -209,6 +234,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  McpRoute: typeof McpRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
   MissionDevicesRoute: typeof MissionDevicesRoute
   MissionGroundRoute: typeof MissionGroundRoute
@@ -232,6 +259,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/alerts': {
@@ -337,6 +378,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  McpRoute: McpRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   MissionAlertsRoute: MissionAlertsRoute,
   MissionDevicesRoute: MissionDevicesRoute,
   MissionGroundRoute: MissionGroundRoute,
