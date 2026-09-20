@@ -149,7 +149,7 @@ export function LiveDashboard() {
   const [cameraPreview, setCameraPreview] = useState<CameraPpgPreviewState>({ phase: "idle", waveform: [], signalQuality: 0, contactQuality: 0 });
   const [motionPreview, setMotionPreview] = useState<MotionPreviewState | null>(null);
   const [liveSourceError, setLiveSourceError] = useState<string | null>(null);
-  const liveMissionContextRef = useRef({ missionId: "mission-local-p9", crewMemberId: "crew-local-p9", classification: "medical_sensitive" as const, source: "local_fallback" as const });
+  const liveMissionContextRef = useRef<Awaited<ReturnType<typeof activeLiveMissionContext>>>({ missionId: "mission-local-p9", crewMemberId: "crew-local-p9", classification: "medical_sensitive", source: "local_fallback" });
   const [missionContextSource, setMissionContextSource] = useState<"authenticated_membership" | "local_fallback">("local_fallback");
 
   useEffect(() => {
