@@ -82,6 +82,48 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_crew_assignments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          crew_member_id: string
+          mission_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          crew_member_id: string
+          mission_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          crew_member_id?: string
+          mission_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_crew_assignments_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_crew_assignments_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_events: {
         Row: {
           classification: string
@@ -318,6 +360,16 @@ export type Database = {
     }
     Functions: {
       accept_mission_invite: { Args: { p_code: string }; Returns: Json }
+      can_create_mission: { Args: never; Returns: boolean }
+      create_mission_crew_member: {
+        Args: {
+          p_display_name: string
+          p_external_ref?: string
+          p_mission_id: string
+          p_status?: string
+        }
+        Returns: Json
+      }
       create_mission_invite: {
         Args: {
           p_crew_member_id?: string
@@ -325,6 +377,10 @@ export type Database = {
           p_mission_id: string
           p_role: string
         }
+        Returns: Json
+      }
+      create_mission_operation: {
+        Args: { p_code: string; p_name: string; p_starts_at?: string }
         Returns: Json
       }
       deidentify_research_jsonb: { Args: { p_value: Json }; Returns: Json }
@@ -336,12 +392,44 @@ export type Database = {
         Args: { p_mission_id: string }
         Returns: Json
       }
+      get_mission_operations_workspace: {
+        Args: { p_mission_id: string }
+        Returns: Json
+      }
       has_mission_role: {
         Args: { p_mission_id: string; p_roles: string[] }
         Returns: boolean
       }
       ingest_mission_event: {
         Args: { p_event: Json; p_idempotency_key: string }
+        Returns: Json
+      }
+      set_mission_membership_active: {
+        Args: {
+          p_active: boolean
+          p_membership_id: string
+          p_mission_id: string
+        }
+        Returns: Json
+      }
+      update_mission_crew_member: {
+        Args: {
+          p_crew_member_id: string
+          p_display_name?: string
+          p_external_ref?: string
+          p_mission_id: string
+          p_status?: string
+        }
+        Returns: Json
+      }
+      update_mission_operation: {
+        Args: {
+          p_ends_at?: string
+          p_mission_id: string
+          p_name?: string
+          p_starts_at?: string
+          p_status?: string
+        }
         Returns: Json
       }
     }
