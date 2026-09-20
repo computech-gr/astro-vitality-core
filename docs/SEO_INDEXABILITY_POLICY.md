@@ -37,15 +37,15 @@ title, description, `robots: index, follow`, Open Graph set (`og:title`,
 
 Marked `noindex, nofollow` and absent from `sitemap.xml`:
 
-| Route                   | Reason                                                     |
-| ----------------------- | ---------------------------------------------------------- |
+| Route                   | Reason                                                       |
+| ----------------------- | ------------------------------------------------------------ |
 | `/mission/live`         | Live operational telemetry console; no stable public content |
-| `/mission/readiness`    | Personal cognitive/behavioral assessment surface           |
-| `/mission/intelligence` | Operational health-intelligence console                    |
-| `/mission/guidance`     | Operational action/protocol guidance console               |
-| `/mission/offline`      | Local device/offline state surface                         |
-| `/mission/ground`       | Ground oversight and research-export console               |
-| `/mission/simulation`   | Interactive synthetic generator; output is not content     |
+| `/mission/readiness`    | Personal cognitive/behavioral assessment surface             |
+| `/mission/intelligence` | Operational health-intelligence console                      |
+| `/mission/guidance`     | Operational action/protocol guidance console                 |
+| `/mission/offline`      | Local device/offline state surface                           |
+| `/mission/ground`       | Ground oversight and research-export console                 |
+| `/mission/simulation`   | Interactive synthetic generator; output is not content       |
 
 These pages stay publicly reachable for demo and judging. Excluding them
 avoids advertising operational, personal or research-governance surfaces to
