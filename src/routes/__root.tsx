@@ -105,6 +105,10 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script
+          // Publishable-only cloud configuration for the browser; never a service-role key.
+          dangerouslySetInnerHTML={{ __html: supabaseBrowserConfigScript() }}
+        />
         <HeadContent />
       </head>
       <body>
