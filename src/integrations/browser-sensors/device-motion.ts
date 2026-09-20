@@ -122,12 +122,13 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
     if (!this.connected || options.sourceId !== SOURCE.sourceId) throw new Error("Motion sensor source is not connected");
     const queue: AdapterStreamItem[] = [];
     let wake: (() => void) | undefined;
-    let lastAcceptedAt = 0;
+    let lastPreviewAt = 0;
+    let lastEmittedAt = 0;
 
     const listener = (event: DeviceMotionEvent) => {
       const nowMs = this.now();
-      if (nowMs - lastAcceptedAt < 90) return;
-      lastAcceptedAt = nowMs;
+      if (nowMs - lastPreviewAt < 90) return;
+      lastPreviewAt = nowMs;
       const primary = event.acceleration;
       const primaryHasValues = [primary?.x, primary?.y, primary?.z].some(
         (value) => typeof value === "number" && Number.isFinite(value),
@@ -148,6 +149,10 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
         observedAt,
         quality: quality.level === "good" ? "good" : "degraded",
       });
+      // Keep the on-screen motion preview responsive (~10 Hz) without writing
+      // a medical-sensitive offline record on every browser sensor event.
+      if (nowMs - lastEmittedAt < 450) return;
+      lastEmittedAt = nowMs;
       const cursorValue = `${nowMs}:${x.toFixed(4)}:${y.toFixed(4)}:${z.toFixed(4)}`;
       this.cursor = { sourceId: SOURCE.sourceId, value: cursorValue, capturedAt: observedAt };
       this.lastDataAt = observedAt;

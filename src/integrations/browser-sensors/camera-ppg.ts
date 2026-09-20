@@ -73,6 +73,7 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
   private readonly now: () => number;
   private media?: MediaStream | undefined;
   private video?: HTMLVideoElement | undefined;
+  private videoHost?: HTMLDivElement | undefined;
   private canvas?: HTMLCanvasElement | undefined;
   private connected = false;
   private cursor?: AdapterSyncCursor;
@@ -118,7 +119,33 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
       video.muted = true;
       video.playsInline = true;
       video.autoplay = true;
+      video.setAttribute("playsinline", "true");
+      video.setAttribute("muted", "true");
       video.srcObject = this.media;
+
+      // WebKit/iOS is more reliable when the capture element participates in the DOM.
+      // Keep it visually hidden; the dashboard renders only derived signal quality/waveform.
+      const host = document.createElement("div");
+      host.setAttribute("data-mitochondria-camera-ppg", "capture-host");
+      host.style.position = "fixed";
+      host.style.width = "1px";
+      host.style.height = "1px";
+      host.style.opacity = "0";
+      host.style.pointerEvents = "none";
+      host.style.overflow = "hidden";
+      host.style.left = "-10px";
+      host.style.bottom = "0";
+      host.appendChild(video);
+      document.body.appendChild(host);
+      this.videoHost = host;
+
+      if (video.readyState < HTMLMediaElement.HAVE_METADATA) {
+        await new Promise<void>((resolve, reject) => {
+          const timeout = window.setTimeout(() => reject(new Error("Camera started but did not become ready")), 8000);
+          video.addEventListener("loadedmetadata", () => { window.clearTimeout(timeout); resolve(); }, { once: true });
+          video.addEventListener("error", () => { window.clearTimeout(timeout); reject(new Error("Camera video stream failed to initialize")); }, { once: true });
+        });
+      }
       await video.play();
       this.video = video;
       const canvas = document.createElement("canvas");
@@ -136,6 +163,9 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
     } catch (error) {
       stopMediaStream(this.media);
       this.media = undefined;
+      this.videoHost?.remove();
+      this.videoHost = undefined;
+      this.video = undefined;
       this.connected = false;
       const message = error instanceof Error ? error.message : "Camera permission or camera start failed";
       this.onPreview?.({ phase: "error", waveform: [], signalQuality: 0, contactQuality: 0, message });
@@ -273,6 +303,8 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
     if (sourceId !== SOURCE.sourceId) throw new Error("Unknown camera PPG source");
     stopMediaStream(this.media);
     this.media = undefined;
+    this.videoHost?.remove();
+    this.videoHost = undefined;
     this.video = undefined;
     this.canvas = undefined;
     this.connected = false;

@@ -152,6 +152,7 @@ export function LiveDashboard() {
   const [browserCapabilities, setBrowserCapabilities] = useState<BrowserLiveCapabilities | null>(null);
   const [cameraPreview, setCameraPreview] = useState<CameraPpgPreviewState>({ phase: "idle", waveform: [], signalQuality: 0, contactQuality: 0 });
   const [motionPreview, setMotionPreview] = useState<MotionPreviewState | null>(null);
+  const [liveSourceError, setLiveSourceError] = useState<string | null>(null);
 
   useEffect(() => {
     setBrowserCapabilities(detectBrowserLiveCapabilities());
@@ -169,6 +170,7 @@ export function LiveDashboard() {
 
   async function connectAdapter(adapter: DeviceAdapter, transport: string) {
     setBusy(true);
+    setLiveSourceError(null);
     adapterRef.current = adapter;
     try {
       let source: { sourceId: string; displayName: string } | undefined;
@@ -274,6 +276,7 @@ export function LiveDashboard() {
       } else {
         console.warn(error);
       }
+      setLiveSourceError(error instanceof Error ? error.message : "Live source connection failed");
     } finally {
       setBusy(false);
     }
@@ -308,6 +311,8 @@ export function LiveDashboard() {
     if (source && adapterRef.current) await adapterRef.current.disconnect(source.sourceId).catch(() => undefined);
     if (source) setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: source.transport, connection: "disconnected" }, new Date().toISOString()));
     if (source?.transport === "device_sensor") setMotionPreview(null);
+    if (source?.transport === "camera_ppg") setCameraPreview({ phase: "idle", waveform: [], signalQuality: 0, contactQuality: 0 });
+    setLiveSourceError(null);
     streamAbortRef.current = null;
     adapterRef.current = null;
     connectedSourceRef.current = null;
@@ -368,6 +373,8 @@ export function LiveDashboard() {
             </div>
             <Button variant="outline" onClick={downloadHardwareEvidence} disabled={!hardwareEvidence || hardwareEvidence.sampleCount < 1}><Download />Download non-value evidence receipt</Button>
           </div>
+
+          {liveSourceError && <div role="alert" className="mt-4 rounded-md border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-200"><strong>Live source could not start.</strong><span className="ml-2">{liveSourceError}</span></div>}
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
             <div className="rounded-md border border-border bg-background/35 p-4">
