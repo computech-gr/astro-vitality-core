@@ -127,7 +127,7 @@ export function OfflineMissionPage() {
       <main className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
         <section className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="section-kicker">Mission autonomy</p>
+            <p className="section-kicker">Offline Mission Mode · mission autonomy</p>
             <h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">
               Earth can disappear. <span className="text-primary">The health loop must not.</span>
             </h1>
