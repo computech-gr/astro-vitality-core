@@ -21,7 +21,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/.output ./.output
 COPY --from=build /app/scripts/serve-dist.mjs ./scripts/serve-dist.mjs
 EXPOSE 3000
 CMD ["node", "scripts/serve-dist.mjs"]

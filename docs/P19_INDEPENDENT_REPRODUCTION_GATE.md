@@ -30,6 +30,8 @@ bun run sample:release
 docker compose --env-file .env.local up -d --build
 ```
 
+The image build must package the actual Nitro output tree (`.output/server/index.mjs` + `.output/public`). Any failure caused by stale `dist/` assumptions is a P19 reproduction failure, not an acceptable environment deviation.
+
 Verify the self-hosted application:
 
 ```bash

@@ -42,14 +42,17 @@ for (const token of ["supabase/setup-cli", "bun run setup:local", "docker compos
 }
 
 const dockerfile = readFileSync(join(root, "Dockerfile"), "utf8");
-for (const token of ["bun install --frozen-lockfile", "bun run build", "/app/dist", "scripts/serve-dist.mjs"]) {
+for (const token of ["bun install --frozen-lockfile", "bun run build", "/app/.output", "scripts/serve-dist.mjs"]) {
   if (!dockerfile.includes(token)) failures.push(`Dockerfile missing ${token}`);
 }
-if (dockerfile.includes(".output/server/index.mjs")) failures.push("Dockerfile must not depend on the unused .output Nitro path");
+if (dockerfile.includes("/app/dist")) failures.push("Dockerfile contains stale dist packaging path");
 
 const selfHostServer = readFileSync(join(root, "scripts/serve-dist.mjs"), "utf8");
-for (const token of ["dist/server/index.mjs", "dist/client", "handler.fetch", "server.listen"]) {
+for (const token of [".output/server/index.mjs", ".output/public", "handler.fetch", "server.listen"]) {
   if (!selfHostServer.includes(token)) failures.push(`self-host runtime missing ${token}`);
+}
+for (const staleToken of ["dist/server/index.mjs", "dist/client"]) {
+  if (selfHostServer.includes(staleToken)) failures.push(`self-host runtime contains stale packaging path ${staleToken}`);
 }
 
 const compose = readFileSync(join(root, "docker-compose.yml"), "utf8");
@@ -92,7 +95,7 @@ for (const name of migrationNames) {
 }
 
 const releaseDoc = readFileSync(join(root, "docs/RELEASE_CANDIDATE.md"), "utf8").toLowerCase();
-for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "seven-migration chain"]) {
+for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "seven-migration chain", ".output/server/index.mjs", ".output/public"]) {
   if (!releaseDoc.includes(token)) failures.push(`release candidate docs missing ${token}`);
 }
 
@@ -117,6 +120,14 @@ if (infrastructureReadme.includes("offline health-data storage is intentionally 
   failures.push("infrastructure docs contain stale pre-P14 offline-storage wording");
 }
 
+const repositoryStructureDoc = readFileSync(join(root, "docs/REPOSITORY_STRUCTURE.md"), "utf8").toLowerCase();
+for (const token of [".output/server/index.mjs", ".output/public"]) {
+  if (!repositoryStructureDoc.includes(token)) failures.push(`repository structure docs missing ${token}`);
+}
+if (repositoryStructureDoc.includes("dist/server") || repositoryStructureDoc.includes("dist/client")) {
+  failures.push("repository structure docs contain stale dist packaging paths");
+}
+
 const localDoc = readFileSync(join(root, "docs/LOCAL_REPRODUCIBILITY.md"), "utf8").toLowerCase();
 for (const token of [
   "fresh-clone",
@@ -125,7 +136,8 @@ for (const token of [
   "bun run setup:local",
   "bun run check",
   "sample:release",
-  "dist/server/index.mjs",
+  ".output/server/index.mjs",
+  ".output/public",
   "exactly the seven governed migrations",
   "p20 mission identity & invites",
   "p20 mission & crew operations",
