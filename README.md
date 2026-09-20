@@ -233,4 +233,4 @@ page uses the single global navigation header.
 
 ### Mission Identity & Sign-in
 
-The production console includes `/mission/identity` for Supabase Auth, active mission membership selection and governed one-time mission invitations. Authentication does not bypass RLS; cloud synchronization remains locked until an active mission membership exists. New live physiological observations use the selected `crew_self` mission context when available, otherwise they remain in the encrypted local fallback context.
+The production console includes `/mission/identity` for Supabase Auth, active mission membership selection and governed one-time mission invitations, plus `/mission/operations` for operator-only mission lifecycle, mission-scoped crew registry and non-destructive membership administration. Authentication does not bypass RLS; cloud synchronization remains locked until an active mission membership exists. New live physiological observations use the selected `crew_self` mission context when available, otherwise they remain in the encrypted local fallback context.

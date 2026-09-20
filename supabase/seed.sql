@@ -29,6 +29,12 @@ on conflict (id) do update set
   status = excluded.status,
   updated_at = now();
 
+insert into public.mission_crew_assignments (mission_id, crew_member_id, status, created_by)
+values ('synthetic-mission-127', 'synthetic-crew-01', 'active', null)
+on conflict (mission_id, crew_member_id) do update set
+  status = excluded.status,
+  updated_at = now();
+
 -- Auth users and mission memberships are intentionally not hard-coded in seed.sql.
 -- Create local users through Supabase Auth, then assign mission membership through
 -- an authorized development/admin path. This prevents shipping reusable passwords.
