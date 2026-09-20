@@ -6,6 +6,7 @@ import {
   Database,
   LockKeyhole,
   RefreshCw,
+  LogIn,
   ShieldCheck,
 } from "lucide-react";
 
@@ -139,6 +140,7 @@ export function OfflineMissionPage() {
             <Button asChild variant="outline"><a href="/mission/records"><Database />Recorded data</a></Button>
             <Button onClick={() => void syncNow()} disabled={syncBusy || status.connectivity !== "online"}><Cloud className={syncBusy ? "animate-pulse" : ""} />Sync now</Button>
             <Button onClick={() => void refresh()} disabled={busy} variant="secondary"><RefreshCw className={busy ? "animate-spin" : ""} />Refresh status</Button>
+            {cloudState === "local_only" ? <Button asChild variant="outline"><a href="/mission/identity"><LogIn />Mission sign-in</a></Button> : null}
           </div>
         </section>
 

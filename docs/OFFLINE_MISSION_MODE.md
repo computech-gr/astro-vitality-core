@@ -79,3 +79,7 @@ page-local brand header.
 ## Recorded-value projection
 
 `/mission/records` projects both persisted `ObservationEnvelope` scalar observations and direct raw/vector series into human-readable history rows. The projection is read-only: encrypted append-only records are not rewritten. Camera PPG history therefore exposes its canonical metric, value, UCUM unit and data-quality level when the encrypted record is decrypted in the originating browser.
+
+## Mission Identity & Sign-in
+
+`/mission/identity` provides the governed transition from local-only operation to authenticated cloud synchronization. Signing in alone is insufficient: the user must hold an active mission membership. Existing encrypted local records keep their original append-only provenance; mission identity is applied only to new live physiological capture when the selected membership is `crew_self` and includes a crew member identifier.

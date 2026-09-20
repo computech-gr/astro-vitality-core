@@ -151,6 +151,63 @@ export type Database = {
           },
         ]
       }
+      mission_invites: {
+        Row: {
+          active: boolean
+          claimed_at: string | null
+          claimed_by: string | null
+          code_hash: string
+          created_at: string
+          created_by: string
+          crew_member_id: string | null
+          expires_at: string
+          id: string
+          mission_id: string
+          role: string
+        }
+        Insert: {
+          active?: boolean
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code_hash: string
+          created_at?: string
+          created_by: string
+          crew_member_id?: string | null
+          expires_at: string
+          id?: string
+          mission_id: string
+          role: string
+        }
+        Update: {
+          active?: boolean
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code_hash?: string
+          created_at?: string
+          created_by?: string
+          crew_member_id?: string | null
+          expires_at?: string
+          id?: string
+          mission_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_invites_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_invites_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_memberships: {
         Row: {
           active: boolean
@@ -260,6 +317,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_mission_invite: { Args: { p_code: string }; Returns: Json }
+      create_mission_invite: {
+        Args: {
+          p_crew_member_id?: string
+          p_expires_in_hours?: number
+          p_mission_id: string
+          p_role: string
+        }
+        Returns: Json
+      }
       deidentify_research_jsonb: { Args: { p_value: Json }; Returns: Json }
       export_research_mission: {
         Args: { p_mission_id: string }

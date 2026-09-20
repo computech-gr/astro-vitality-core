@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Cloud, Database, Filter, RefreshCw, RotateCw, Search, ShieldCheck } from "lucide-react";
+import { Cloud, Database, Filter, LogIn, RefreshCw, RotateCw, Search, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -150,6 +150,7 @@ export function RecordedMissionDataPage() {
               <RotateCw className={syncing ? "animate-spin" : ""} />
               Sync now
             </Button>
+            {!dataset.cloudContext.signedIn ? <Button asChild variant="secondary"><a href="/mission/identity"><LogIn />Mission sign-in</a></Button> : null}
           </div>
         </section>
 

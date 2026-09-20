@@ -74,9 +74,10 @@ const expectedMigrations = [
   "20260919164849_0a37122b-370c-4662-9148-8a0b58f146c5.sql",
   "20260919170410_cfadc7d4-72db-42ad-a76e-4181cc0c70f4.sql",
   "20260919170720_1329f21c-6181-4172-a04d-ced64437d340.sql",
+  "20260920233000_p20_mission_identity_invites.sql",
 ];
 if (JSON.stringify(migrationNames) !== JSON.stringify(expectedMigrations)) {
-  failures.push(`P19 fresh-clone migration chain must contain exactly the four applied migrations; found: ${migrationNames.join(", ")}`);
+  failures.push(`P19 fresh-clone migration chain must contain the governed applied migrations; found: ${migrationNames.join(", ")}`);
 }
 const hashes = new Map();
 for (const name of migrationNames) {
@@ -88,7 +89,7 @@ for (const name of migrationNames) {
 }
 
 const releaseDoc = readFileSync(join(root, "docs/RELEASE_CANDIDATE.md"), "utf8").toLowerCase();
-for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "four-migration chain"]) {
+for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "five-migration chain"]) {
   if (!releaseDoc.includes(token)) failures.push(`release candidate docs missing ${token}`);
 }
 

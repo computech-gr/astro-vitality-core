@@ -39,6 +39,7 @@ Marked `noindex, nofollow` and absent from `sitemap.xml`:
 
 | Route                   | Reason                                                       |
 | ----------------------- | ------------------------------------------------------------ |
+| `/mission/identity`     | Authentication and mission-membership operational surface    |
 | `/mission/live`         | Live operational telemetry console; no stable public content |
 | `/mission/devices`      | Runtime device-capability/integration console                |
 | `/mission/readiness`    | Personal cognitive/behavioral assessment surface             |
@@ -46,6 +47,7 @@ Marked `noindex, nofollow` and absent from `sitemap.xml`:
 | `/mission/alerts`       | Operational explainable-alert review surface                 |
 | `/mission/guidance`     | Operational action/protocol guidance console                 |
 | `/mission/offline`      | Local device/offline state surface                           |
+| `/mission/records`      | Medical-sensitive mission history and synchronization status |
 | `/mission/ground`       | Ground oversight and research-export console                 |
 | `/mission/simulation`   | Interactive synthetic generator; output is not content       |
 

@@ -51,3 +51,9 @@ P16 adds the formal threat model, misuse-case register, browser/server privilege
 ### Zero-install sensor browser authority
 
 The public mission console permits `camera=(self)`, `accelerometer=(self)`, `gyroscope=(self)`, and `magnetometer=(self)` through `Permissions-Policy` only for the same production origin. Microphone, geolocation, payment, USB, serial, and HID remain disabled by policy. Camera access still requires an explicit browser user permission and is used only by the governed Camera PPG adapter.
+
+## Mission identity and one-time membership invitations
+
+Mission authentication is intentionally separate from mission authorization. A Supabase Auth session does not grant mission access: cloud reads and writes continue to require an active `mission_memberships` row and the existing RLS / ingestion RPC checks.
+
+Mission operators may create short-lived, one-time membership invitations only for missions they already govern. The plaintext invite code is returned only at creation time; the database stores only a SHA-256 hash. The invite table has forced RLS and no direct browser grants. Invite redemption requires an authenticated user and is audited. There is no public self-elevation path and no browser service-role credential.
