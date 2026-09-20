@@ -39,7 +39,7 @@ Marked `noindex, nofollow` and absent from `sitemap.xml`:
 
 | Route                   | Reason                                                       |
 | ----------------------- | ------------------------------------------------------------ |
-| `/mission/identity`     | Authentication and mission-membership operational surface     |
+| `/mission/identity`     | Authentication and mission-membership operational surface    |
 | `/mission/live`         | Live operational telemetry console; no stable public content |
 | `/mission/devices`      | Runtime device-capability/integration console                |
 | `/mission/readiness`    | Personal cognitive/behavioral assessment surface             |
