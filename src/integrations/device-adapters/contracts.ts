@@ -3,7 +3,7 @@ import type { CanonicalObservationDraft, DataQuality, ObservationContext, Observ
 export const ADAPTER_CONNECTION_STATES = ["disconnected", "discovering", "connecting", "connected", "degraded", "error"] as const;
 export type AdapterConnectionState = (typeof ADAPTER_CONNECTION_STATES)[number];
 
-export const ADAPTER_TRANSPORTS = ["ble", "health_connect", "healthkit", "vendor_api", "file_import", "mqtt", "websocket", "rest", "synthetic"] as const;
+export const ADAPTER_TRANSPORTS = ["ble", "camera_ppg", "device_sensor", "health_connect", "healthkit", "vendor_api", "file_import", "mqtt", "websocket", "rest", "synthetic"] as const;
 export type AdapterTransport = (typeof ADAPTER_TRANSPORTS)[number];
 
 export const ADAPTER_DATA_MODES = ["stream", "snapshot", "history", "series"] as const;

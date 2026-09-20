@@ -20,6 +20,7 @@ const INDEXABLE = {
 
 const OPERATIONAL = {
   "/mission/live": "src/routes/mission.live.tsx",
+  "/mission/devices": "src/routes/mission.devices.tsx",
   "/mission/readiness": "src/routes/mission.readiness.tsx",
   "/mission/intelligence": "src/routes/mission.intelligence.tsx",
   "/mission/alerts": "src/routes/mission.alerts.tsx",
@@ -113,6 +114,7 @@ const PAGE_COMPONENTS = [
   "src/components/validation-usability.tsx",
   "src/components/challenge-submission.tsx",
   "src/components/live-dashboard.tsx",
+  "src/components/device-integration-center.tsx",
   "src/components/readiness-assessment.tsx",
   "src/components/health-intelligence.tsx",
   "src/components/explainable-alerts.tsx",

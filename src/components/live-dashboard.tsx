@@ -3,6 +3,7 @@ import {
   Activity,
   ArrowLeft,
   Bluetooth,
+  Camera,
   BrainCircuit,
   CircleGauge,
   CloudOff,
@@ -11,6 +12,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Smartphone,
+  Move3d,
   Download,
   Thermometer,
   Unplug,
@@ -36,12 +38,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ingestAdapterItem, type DeviceAdapter } from "@/integrations/device-adapters";
+import { WebBluetoothHeartRateAdapter } from "@/integrations/wearables";
 import {
-  WebBluetoothHeartRateAdapter,
-  createAndroidHealthConnectJsBridge,
-  createHealthConnectAdapter,
-  isAndroidHealthConnectBridgeAvailable,
-} from "@/integrations/wearables";
+  BrowserCameraPpgAdapter,
+  BrowserDeviceMotionAdapter,
+  detectBrowserLiveCapabilities,
+  type BrowserLiveCapabilities,
+  type CameraPpgPreviewState,
+  type MotionPreviewState,
+} from "@/integrations/browser-sensors";
 import { persistOfflineMissionEvent } from "@/infrastructure/offline";
 
 const LIVE_METRICS = [
@@ -144,9 +149,12 @@ export function LiveDashboard() {
   const streamAbortRef = useRef<AbortController | null>(null);
   const connectedSourceRef = useRef<{ sourceId: string; displayName: string; transport: string } | null>(null);
   const [hardwareEvidence, setHardwareEvidence] = useState<HardwareEvidenceReceipt | null>(null);
-  const healthConnectAvailable = isAndroidHealthConnectBridgeAvailable();
+  const [browserCapabilities, setBrowserCapabilities] = useState<BrowserLiveCapabilities | null>(null);
+  const [cameraPreview, setCameraPreview] = useState<CameraPpgPreviewState>({ phase: "idle", waveform: [], signalQuality: 0, contactQuality: 0 });
+  const [motionPreview, setMotionPreview] = useState<MotionPreviewState | null>(null);
 
   useEffect(() => {
+    setBrowserCapabilities(detectBrowserLiveCapabilities());
     const timer = window.setInterval(() => setNow(new Date().toISOString()), 10_000);
     return () => {
       window.clearInterval(timer);
@@ -221,6 +229,36 @@ export function LiveDashboard() {
               })
                 .then(() => setHardwareEvidence((current) => current ? { ...current, persistedSampleCount: current.persistedSampleCount + 1 } : current))
                 .catch((error) => console.warn("Offline observation persistence failed", error));
+            } else if (result.ok && result.kind === "series") {
+              const metricCode = result.value.metricCode;
+              setHardwareEvidence((current) => current ? {
+                ...current,
+                generatedAt: new Date().toISOString(),
+                metricCodes: current.metricCodes.includes(metricCode) ? current.metricCodes : [...current.metricCodes, metricCode],
+                sampleCount: current.sampleCount + result.value.samples.length,
+                firstSampleAt: current.firstSampleAt ?? result.value.startedAt,
+                lastSampleAt: result.value.endedAt,
+              } : current);
+              setState((current) => setDashboardSourceState(current, {
+                sourceId: source!.sourceId,
+                displayName: source!.displayName,
+                transport,
+                connection: "connected",
+                lastSampleAt: result.value.endedAt,
+              }, new Date().toISOString()));
+              void persistOfflineMissionEvent({
+                kind: "observation",
+                id: result.value.id,
+                mission: result.value.mission,
+                eventTimestamp: result.value.endedAt,
+                sourceId: result.value.source.sourceId,
+                sourceVersion: result.value.source.adapterVersion ?? "1.0.0",
+                sourcePriority: 70,
+                classification: result.value.classification,
+                payload: result.value,
+              })
+                .then(() => setHardwareEvidence((current) => current ? { ...current, persistedSampleCount: current.persistedSampleCount + 1 } : current))
+                .catch((error) => console.warn("Offline motion persistence failed", error));
             }
           }
         } catch (error) {
@@ -245,9 +283,12 @@ export function LiveDashboard() {
     await connectAdapter(new WebBluetoothHeartRateAdapter(), "ble");
   }
 
-  async function connectHealthConnect() {
-    if (!healthConnectAvailable) return;
-    await connectAdapter(createHealthConnectAdapter(createAndroidHealthConnectJsBridge()), "health_connect");
+  async function connectCameraPpg() {
+    await connectAdapter(new BrowserCameraPpgAdapter({ onPreview: setCameraPreview }), "camera_ppg");
+  }
+
+  async function connectPhoneMotion() {
+    await connectAdapter(new BrowserDeviceMotionAdapter({ onPreview: setMotionPreview }), "device_sensor");
   }
 
   function downloadHardwareEvidence() {
@@ -261,13 +302,15 @@ export function LiveDashboard() {
     URL.revokeObjectURL(href);
   }
 
-  async function disconnectHeartRate() {
+  async function disconnectLiveSource() {
     const source = connectedSourceRef.current;
     streamAbortRef.current?.abort();
     if (source && adapterRef.current) await adapterRef.current.disconnect(source.sourceId).catch(() => undefined);
     if (source) setState((current) => setDashboardSourceState(current, { sourceId: source.sourceId, displayName: source.displayName, transport: source.transport, connection: "disconnected" }, new Date().toISOString()));
+    if (source?.transport === "device_sensor") setMotionPreview(null);
     streamAbortRef.current = null;
     adapterRef.current = null;
+    connectedSourceRef.current = null;
   }
 
   function submitSelfCheck() {
@@ -307,7 +350,7 @@ export function LiveDashboard() {
       <main className="mx-auto max-w-[96rem] px-5 py-8 lg:px-8">
         <section className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
           <div><p className="section-kicker">Live mission health</p><h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">What is happening <span className="text-primary">right now?</span></h1><p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Live physiological and spacecraft signals share one timeline. Data quality, freshness and connection state stay visible; no missing value is silently invented.</p></div>
-          <div className="flex flex-wrap gap-3"><Button onClick={connectHeartRate} disabled={busy || connectedSource?.connection === "connected"}><Bluetooth />{busy ? "Connecting…" : "Connect BLE heart rate"}</Button><Button variant="outline" onClick={connectHealthConnect} disabled={busy || connectedSource?.connection === "connected" || !healthConnectAvailable}><Smartphone />Connect Health Connect</Button><Button variant="outline" onClick={disconnectHeartRate} disabled={!connectedSource}><Unplug />Disconnect</Button></div>
+          <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><a href="/mission/devices">Device Integration Center</a></Button><Button variant="outline" onClick={disconnectLiveSource} disabled={!connectedSource}><Unplug />Disconnect current source</Button></div>
         </section>
 
         <div className="mt-6 grid gap-3 rounded-lg border border-border bg-surface/70 p-4 md:grid-cols-3">
@@ -316,27 +359,51 @@ export function LiveDashboard() {
           <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health interpretation</span><strong className="mt-1 block font-mono text-sm">BASELINE DELTAS ONLY — NO ALERTS / DIAGNOSIS</strong></div>
         </div>
 
-        <section className="mt-6 rounded-lg border border-border bg-surface/70 p-4" aria-labelledby="hardware-path-title">
+        <section id="live-sources" className="mt-6 rounded-lg border border-border bg-surface/70 p-4" aria-labelledby="hardware-path-title">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="section-kicker">P20 real-device evidence</p>
-              <h2 id="hardware-path-title" className="mt-2 font-display text-xl font-semibold">Physical wearable path</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Direct BLE is used when the device exposes the standard Heart Rate Service. Samsung/Galaxy Watch data can enter through the Android companion and Health Connect; sync latency is controlled by Samsung Health and is not represented as second-by-second BLE streaming.</p>
+              <p className="section-kicker">P20 zero-install live evidence</p>
+              <h2 id="hardware-path-title" className="mt-2 font-display text-xl font-semibold">Choose a real live source</h2>
+              <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">Camera PPG and phone motion run directly in the browser after explicit permission. Direct BLE remains available when the browser supports Web Bluetooth and the sensor exposes the standard Heart Rate Service. Unsupported capabilities fail closed; no demo value is generated.</p>
             </div>
             <Button variant="outline" onClick={downloadHardwareEvidence} disabled={!hardwareEvidence || hardwareEvidence.sampleCount < 1}><Download />Download non-value evidence receipt</Button>
           </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+            <div className="rounded-md border border-border bg-background/35 p-4">
+              <div className="flex items-start justify-between gap-3"><div><strong className="text-sm">Phone Camera PPG</strong><p className="mt-1 text-xs leading-5 text-muted-foreground">Universal zero-install pulse demo on browsers that expose camera capture. Pulse estimate only — not ECG.</p></div><Camera className="size-5 text-primary" /></div>
+              <div className="mt-3 flex items-center justify-between text-xs"><span>Capability</span><span className="font-mono">{browserCapabilities?.cameraPpg.availability.replaceAll("_", " ").toUpperCase() ?? "CHECKING"}</span></div>
+              <Button className="mt-3 w-full" onClick={connectCameraPpg} disabled={busy || connectedSource?.connection === "connected" || browserCapabilities?.cameraPpg.availability === "unsupported"}><Camera />Start camera pulse</Button>
+            </div>
+            <div className="rounded-md border border-border bg-background/35 p-4">
+              <div className="flex items-start justify-between gap-3"><div><strong className="text-sm">Phone Motion Sensors</strong><p className="mt-1 text-xs leading-5 text-muted-foreground">Tri-axial acceleration for activity context and motion-artifact awareness.</p></div><Move3d className="size-5 text-primary" /></div>
+              <div className="mt-3 flex items-center justify-between text-xs"><span>Capability</span><span className="font-mono">{browserCapabilities?.deviceMotion.availability.replaceAll("_", " ").toUpperCase() ?? "CHECKING"}</span></div>
+              <Button className="mt-3 w-full" variant="outline" onClick={connectPhoneMotion} disabled={busy || connectedSource?.connection === "connected" || browserCapabilities?.deviceMotion.availability === "unsupported"}><Smartphone />Start phone motion</Button>
+            </div>
+            <div className="rounded-md border border-border bg-background/35 p-4">
+              <div className="flex items-start justify-between gap-3"><div><strong className="text-sm">Direct Bluetooth Sensor</strong><p className="mt-1 text-xs leading-5 text-muted-foreground">Zero-install connection to a user-selected standard BLE Heart Rate Service sensor.</p></div><Bluetooth className="size-5 text-primary" /></div>
+              <div className="mt-3 flex items-center justify-between text-xs"><span>Capability</span><span className="font-mono">{browserCapabilities?.webBluetooth.availability.replaceAll("_", " ").toUpperCase() ?? "CHECKING"}</span></div>
+              <Button className="mt-3 w-full" variant="outline" onClick={connectHeartRate} disabled={busy || connectedSource?.connection === "connected" || browserCapabilities?.webBluetooth.availability === "unsupported"}><Bluetooth />Scan Bluetooth sensor</Button>
+            </div>
+          </div>
+
           <div className="mt-4 grid gap-3 sm:grid-cols-4">
-            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health Connect bridge</span><strong className="mt-1 block text-sm">{healthConnectAvailable ? "AVAILABLE" : "ANDROID COMPANION REQUIRED"}</strong></div>
+            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Current source</span><strong className="mt-1 block text-sm">{connectedSource?.displayName ?? "NONE"}</strong></div>
             <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Physical samples</span><strong className="mt-1 block font-mono text-sm">{hardwareEvidence?.sampleCount ?? 0}</strong></div>
             <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Encrypted writes</span><strong className="mt-1 block font-mono text-sm">{hardwareEvidence?.persistedSampleCount ?? 0}</strong></div>
-            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Evidence rule</span><strong className="mt-1 block text-sm">NO RAW VALUES EXPORTED</strong></div>
+            <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Evidence rule</span><strong className="mt-1 block text-sm">NO RAW HEALTH VALUES EXPORTED</strong></div>
           </div>
+
+          {(cameraPreview.phase !== "idle" || motionPreview) && <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {cameraPreview.phase !== "idle" && <div className="rounded-md border border-border p-4"><div className="flex items-center justify-between"><strong className="text-sm">Camera PPG signal</strong><Badge variant="outline">{cameraPreview.phase.toUpperCase()}</Badge></div><p className="mt-2 text-xs text-muted-foreground">Signal quality {(cameraPreview.signalQuality * 100).toFixed(0)}% · Contact {(cameraPreview.contactQuality * 100).toFixed(0)}%{cameraPreview.bpm ? ` · ${cameraPreview.bpm} bpm` : ""}</p><Sparkline values={cameraPreview.waveform} />{cameraPreview.message && <p className="mt-2 text-xs text-muted-foreground">{cameraPreview.message}</p>}</div>}
+            {motionPreview && <div className="rounded-md border border-border p-4"><div className="flex items-center justify-between"><strong className="text-sm">Phone motion context</strong><Badge variant="outline">{motionPreview.quality.toUpperCase()}</Badge></div><p className="mt-2 font-mono text-xs text-muted-foreground">x {motionPreview.x.toFixed(2)}g · y {motionPreview.y.toFixed(2)}g · z {motionPreview.z.toFixed(2)}g · |a| {motionPreview.magnitude.toFixed(2)}g</p><p className="mt-2 text-xs text-muted-foreground">{formatTime(motionPreview.observedAt)}</p></div>}
+          </div>}
         </section>
 
         <section aria-labelledby="vitals-title" className="mt-8"><div className="flex items-center justify-between gap-4"><div><p className="section-kicker">Vitals & environment</p><h2 id="vitals-title" className="mt-2 font-display text-2xl font-semibold">Live signal board</h2></div><p className="hidden max-w-lg text-right text-xs leading-5 text-muted-foreground md:block">Freshness states are technical recency indicators, not medical thresholds.</p></div><div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{views.map(({ view, Icon }) => <MetricCard key={view.metricCode} view={view} Icon={Icon} />)}</div></section>
 
         <section className="mt-8 grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-          <Card className="border-border bg-card/70"><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary" />Device & source status</CardTitle></CardHeader><CardContent><div className="space-y-3">{Object.values(state.sources).length ? Object.values(state.sources).map((source) => <div key={source.sourceId} className="grid gap-2 rounded-md border border-border p-4 sm:grid-cols-[1fr_auto]"><div><strong className="text-sm">{source.displayName}</strong><p className="mt-1 font-mono text-xs text-muted-foreground">{source.sourceId}</p><p className="mt-2 text-xs text-muted-foreground">Last sample: {formatTime(source.lastSampleAt)}</p></div><Badge variant="outline" className="h-fit uppercase">{source.connection}</Badge></div>) : <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground"><CloudOff className="mb-3 size-6" />No live source connected. Supported P6 adapters remain available; this view does not fabricate telemetry.</div>}</div></CardContent></Card>
+          <Card className="border-border bg-card/70"><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary" />Device & source status</CardTitle></CardHeader><CardContent><div className="space-y-3">{Object.values(state.sources).length ? Object.values(state.sources).map((source) => <div key={source.sourceId} className="grid gap-2 rounded-md border border-border p-4 sm:grid-cols-[1fr_auto]"><div><strong className="text-sm">{source.displayName}</strong><p className="mt-1 font-mono text-xs text-muted-foreground">{source.sourceId}</p><p className="mt-2 text-xs text-muted-foreground">Last sample: {formatTime(source.lastSampleAt)}</p>{source.message && <p className="mt-2 text-xs text-amber-300">{source.message}</p>}</div><Badge variant="outline" className="h-fit uppercase">{source.connection}</Badge></div>) : <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground"><CloudOff className="mb-3 size-6" />No live source connected. Supported P6 adapters remain available; this view does not fabricate telemetry.</div>}</div></CardContent></Card>
 
           <Card className="border-border bg-card/70"><CardHeader><CardTitle className="flex items-center gap-2"><RefreshCw className="text-primary" />Mission timeline</CardTitle></CardHeader><CardContent><div className="max-h-80 space-y-4 overflow-y-auto pr-2">{state.timeline.length ? state.timeline.map((event) => <div key={event.id} className="grid grid-cols-[5.5rem_1fr] gap-3 border-l border-border pl-4"><span className="font-mono text-xs text-muted-foreground">{formatTime(event.occurredAt)}</span><div><strong className="text-sm font-medium">{event.label}</strong>{event.detail && <p className="mt-1 text-xs text-muted-foreground">{event.detail}</p>}</div></div>) : <p className="text-sm text-muted-foreground">Connection, measurement and self-check events will appear here.</p>}</div></CardContent></Card>
         </section>

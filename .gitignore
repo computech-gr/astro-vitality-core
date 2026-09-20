@@ -38,8 +38,3 @@ dist-ssr
 
 # Deterministic release samples are generated locally from P17.
 data/release/*.synthetic.json
-
-# Android Health Connect companion build/local files
-android-companion/.gradle/
-android-companion/local.properties
-android-companion/**/build/

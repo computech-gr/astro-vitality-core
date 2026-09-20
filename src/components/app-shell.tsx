@@ -67,7 +67,7 @@ const navigation: readonly NavigationEntry[] = [
   {
     label: "Platform",
     href: "#platform",
-    items: ["Platform Overview", "Astronaut Health Twin", "Live Monitoring", "Personalization", "Health Intelligence", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
+    items: ["Platform Overview", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Personalization", "Health Intelligence", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
   },
   {
     label: "Technology",
@@ -131,6 +131,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "The Challenge") return CHALLENGE_URL;
   if (label === "Mission Scenario") return "/mission/simulation";
   if (label === "Live Monitoring") return "/mission/live";
+  if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Health Intelligence") return "/mission/intelligence";
   if (label === "Explainable Alerts") return "/mission/alerts";
   if (label === "Action Guidance") return "/mission/guidance";
