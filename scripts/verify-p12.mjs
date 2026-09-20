@@ -60,8 +60,10 @@ for (const token of [
 }
 
 const shell = readFileSync(join(root, "src/components/app-shell.tsx"), "utf8");
-if (!shell.includes('label === "Health Intelligence" || label === "Explainable Alerts"'))
-  failures.push("Platform Health Intelligence / Explainable Alerts must activate P12 route");
+if (!shell.includes('label === "Health Intelligence"'))
+  failures.push("Platform Health Intelligence must activate P12 route");
+if (!shell.includes('label === "Explainable Alerts"'))
+  failures.push("Explainable Alerts must activate its dedicated route");
 if (!shell.includes('return "/mission/intelligence"'))
   failures.push("P12 navigation route missing");
 

@@ -46,6 +46,11 @@ export function HealthIntelligencePage() {
             <p className="mt-5 max-w-3xl text-base leading-7 text-muted-foreground">
               Governed trends and reviewed cross-domain relationships can be evaluated against personal context without turning correlations into diagnoses.
             </p>
+            <Button asChild variant="outline" className="mt-5">
+              <a href="/mission/alerts">
+                Open explainable alerts <ArrowRight />
+              </a>
+            </Button>
           </div>
           <Card className="border-border bg-surface">
             <CardHeader><CardTitle className="flex items-center gap-3 text-base"><ShieldCheck className="text-signal" />Scientific baseline v1.1</CardTitle></CardHeader>

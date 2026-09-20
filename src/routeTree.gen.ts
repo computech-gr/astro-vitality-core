@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
 import { Route as MissionGroundRouteImport } from './routes/mission.ground'
 import { Route as MissionGuidanceRouteImport } from './routes/mission.guidance'
 import { Route as MissionIntelligenceRouteImport } from './routes/mission.intelligence'
@@ -24,6 +25,11 @@ import { Route as ProjectGuideRouteImport } from './routes/project.guide'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionAlertsRoute = MissionAlertsRouteImport.update({
+  id: '/mission/alerts',
+  path: '/mission/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionGroundRoute = MissionGroundRouteImport.update({
@@ -79,6 +85,7 @@ const ProjectGuideRoute = ProjectGuideRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mission/alerts': typeof MissionAlertsRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mission/alerts': typeof MissionAlertsRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mission/alerts': typeof MissionAlertsRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/mission/alerts'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/intelligence'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/mission/alerts'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/intelligence'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/mission/alerts'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/intelligence'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MissionAlertsRoute: typeof MissionAlertsRoute
   MissionGroundRoute: typeof MissionGroundRoute
   MissionGuidanceRoute: typeof MissionGuidanceRoute
   MissionIntelligenceRoute: typeof MissionIntelligenceRoute
@@ -180,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/alerts': {
+      id: '/mission/alerts'
+      path: '/mission/alerts'
+      fullPath: '/mission/alerts'
+      preLoaderRoute: typeof MissionAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/ground': {
@@ -257,6 +277,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MissionAlertsRoute: MissionAlertsRoute,
   MissionGroundRoute: MissionGroundRoute,
   MissionGuidanceRoute: MissionGuidanceRoute,
   MissionIntelligenceRoute: MissionIntelligenceRoute,
