@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "evidenceId": "P20-HW-001",
+  "recordedAt": "2026-09-20T17:46:44Z",
+  "environment": {
+    "deployment": "https://mitochondria.edocinfo.com",
+    "deviceClass": "Samsung Galaxy S24",
+    "browser": "Chrome on Android",
+    "zeroInstall": true
+  },
+  "observedPaths": [
+    {
+      "source": "Phone Camera PPG",
+      "status": "pass",
+      "evidence": [
+        "browser camera connected",
+        "physical heart-rate observations reached the live dashboard and mission timeline",
+        "encrypted local persistence recorded the observations"
+      ]
+    },
+    {
+      "source": "Phone Motion Sensors",
+      "status": "pass",
+      "evidence": [
+        "physical motion samples reached the live UI",
+        "encrypted local persistence recorded motion observations"
+      ]
+    },
+    {
+      "source": "Direct Bluetooth Sensor",
+      "status": "not_hardware_tested",
+      "evidence": [
+        "browser BLE chooser opened",
+        "no compatible standard Heart Rate Service sensor was available"
+      ]
+    }
+  ],
+  "privacy": {
+    "containsRawHealthValues": false,
+    "containsPersonalIdentifiers": false,
+    "containsVideoFrames": false
+  },
+  "limitations": [
+    "Camera PPG is a pulse/heart-rate estimate and is not ECG.",
+    "This evidence demonstrates physical integration and persistence, not clinical validation.",
+    "BLE hardware interoperability remains unverified until a compatible sensor is available."
+  ]
+}

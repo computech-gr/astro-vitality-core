@@ -23,6 +23,7 @@ const checks = [
   [records.includes("Recorded Mission Data") && records.includes("SUPABASE") && records.includes("LOCAL"), "history UI distinguishes local and Supabase storage"],
   [infra.includes('.from("mission_events")') && infra.includes('.from("mission_memberships")'), "cloud history is mission/RLS scoped"],
   [infra.includes("synchronizeGroundQueueIfAuthenticated"), "existing governed Supabase sync transport is reused"],
+  [infra.includes('asObject(envelope["observation"]) ?? envelope'), "recorded history unwraps persisted ObservationEnvelope payloads"],
   [seo.includes('"/mission/records"'), "recorded data route stays noindex as an operational console"],
   [!records.includes("service_role") && !infra.includes("service_role"), "no privileged browser credential path was introduced"],
 ];

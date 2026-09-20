@@ -14,6 +14,8 @@ const files = [
   "docs/KNOWN_LIMITATIONS.md",
   "CITATIONS.md",
   "data/submission/p20-evidence.v1.json",
+  "data/submission/p20-real-device-evidence.v1.json",
+  "docs/P20_REAL_DEVICE_EVIDENCE.md",
   "data/release/mission-day-127.synthetic.json",
 ];
 const entries = files.map((file) => {
