@@ -21,21 +21,64 @@ export interface SupabaseBrowserConfigStatus {
  * `import.meta.env[key]` is never statically replaced and therefore resolves to
  * `undefined` in the published browser bundle.
  */
-function pick(viteValue: unknown, serverKey: string): string | undefined {
+const RUNTIME_GLOBAL = "__SUPABASE_BROWSER_CONFIG__";
+
+interface InjectedBrowserConfig {
+  url?: string;
+  publishableKey?: string;
+}
+
+function injected(): InjectedBrowserConfig {
+  const scope = globalThis as Record<string, unknown>;
+  const value = scope[RUNTIME_GLOBAL];
+  return value && typeof value === "object" ? (value as InjectedBrowserConfig) : {};
+}
+
+function pick(viteValue: unknown, serverKey: string, runtimeValue: unknown): string | undefined {
   if (typeof viteValue === "string" && viteValue.trim()) return viteValue.trim();
 
   const processEnv =
     typeof process !== "undefined" && process.env ? process.env[serverKey] : undefined;
   if (typeof processEnv === "string" && processEnv.trim()) return processEnv.trim();
 
+  if (typeof runtimeValue === "string" && runtimeValue.trim()) return runtimeValue.trim();
+
   return undefined;
 }
 
+/**
+ * Server-rendered inline script that hands the browser the publishable (never
+ * secret) configuration when the client build did not receive
+ * `VITE_SUPABASE_*` at build time. Only publishable values are serialized.
+ */
+export function supabaseBrowserConfigScript(): string {
+  const url =
+    typeof process !== "undefined" && process.env ? process.env["SUPABASE_URL"] : undefined;
+  const publishableKey =
+    typeof process !== "undefined" && process.env
+      ? process.env["SUPABASE_PUBLISHABLE_KEY"]
+      : undefined;
+
+  const payload: InjectedBrowserConfig = {
+    ...(typeof url === "string" && url.trim() ? { url: url.trim() } : {}),
+    ...(typeof publishableKey === "string" &&
+    publishableKey.trim() &&
+    !publishableKey.startsWith("sb_secret_")
+      ? { publishableKey: publishableKey.trim() }
+      : {}),
+  };
+
+  const json = JSON.stringify(payload).replace(/</g, "\\u003c");
+  return `window.${RUNTIME_GLOBAL}=Object.assign(window.${RUNTIME_GLOBAL}||{},${json});`;
+}
+
 export function getSupabaseBrowserConfigStatus(): SupabaseBrowserConfigStatus {
-  const url = pick(import.meta.env["VITE_SUPABASE_URL"], "SUPABASE_URL");
+  const runtime = injected();
+  const url = pick(import.meta.env["VITE_SUPABASE_URL"], "SUPABASE_URL", runtime.url);
   const publishableKey = pick(
     import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"],
     "SUPABASE_PUBLISHABLE_KEY",
+    runtime.publishableKey,
   );
 
   const missing = [

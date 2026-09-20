@@ -11,9 +11,13 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { initializeOfflineMissionRuntime, registerOfflineServiceWorker } from "@/infrastructure/offline";
+import {
+  initializeOfflineMissionRuntime,
+  registerOfflineServiceWorker,
+} from "@/infrastructure/offline";
 import { initializeGroundSyncRuntime } from "@/infrastructure/ground-research";
 import { SiteHeader } from "@/components/app-shell";
+import { supabaseBrowserConfigScript } from "@/integrations/supabase/config";
 
 function NotFoundComponent() {
   return (
@@ -90,7 +94,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap",
+      },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
@@ -105,6 +112,10 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script
+          // Publishable-only cloud configuration for the browser; never a service-role key.
+          dangerouslySetInnerHTML={{ __html: supabaseBrowserConfigScript() }}
+        />
         <HeadContent />
       </head>
       <body>
