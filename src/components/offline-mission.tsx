@@ -106,7 +106,11 @@ export function OfflineMissionPage() {
           </Button>
         </section>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section aria-labelledby="offline-state-heading" className="mt-10">
+          <h2 id="offline-state-heading" className="font-display text-2xl font-semibold">Local mission state</h2>
+        </section>
+
+        <section className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><LockKeyhole className="text-primary" />Encrypted local store</CardTitle></CardHeader>
             <CardContent><p className="font-mono text-xl">{status.encryptedStoreReady ? "READY" : "NOT READY"}</p><p className="mt-2 text-xs text-muted-foreground">AES-GCM encrypted records; non-extractable device-local key held by the browser origin.</p></CardContent>
