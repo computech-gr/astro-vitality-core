@@ -26,7 +26,7 @@ An independent machine should be able to:
 1. clone the repository;
 2. install dependencies from `bun.lock`;
 3. start/reset local Supabase through Docker;
-4. apply the exact six-migration chain plus synthetic seed from repository state;
+4. apply the exact seven-migration chain plus synthetic seed from repository state;
 5. obtain browser-safe local environment configuration without exposing service-role credentials;
 6. run the full quality/security gate;
 7. start the application locally or build/run the Docker image;
@@ -45,3 +45,7 @@ Challenge-development releases remain `v0.x`. Do not label this repository `v1.0
 ## Safety statement
 
 This release candidate is a software prototype and is not clinically validated. It does not diagnose, prescribe treatment, replace medical/flight-medicine authority, or establish operational NASA flight rules.
+
+## Secure first-operator bootstrap
+
+The release candidate includes a one-shot trusted-terminal bootstrap for a clean backend. It does not make the first signed-in browser user an administrator. The script uses server privilege only to arm an ephemeral secret hash, then signs in the intended normal user and consumes the bootstrap transactionally. See `docs/SECURE_BOOTSTRAP_AUTH_READINESS.md`.

@@ -1,1 +1,14 @@
 project_id = "cifbkafjelizzgyvmbzp"
+
+# Version-controlled local Auth contract. Production Auth settings remain an
+# explicit deployment control and are verified separately.
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/mission/identity", "http://127.0.0.1:3000/mission/identity"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false

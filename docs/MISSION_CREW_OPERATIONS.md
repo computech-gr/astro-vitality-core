@@ -31,3 +31,7 @@ Crew registry entries are mission-scoped and use `candidate`, `active`, or `inac
 ## Bootstrap boundary
 
 The first production mission operator is still a controlled provisioning responsibility outside the public browser flow. The application does not implement a "first signed-in user becomes admin" shortcut. Once one governed operator exists, that operator can create subsequent missions and the system atomically grants the creator operator membership on the new mission.
+
+## v20.12.0 first-operator transition
+
+The previous controlled-provisioning caveat is now implemented as the Secure Bootstrap & Auth Readiness flow. A clean deployment still never promotes the first browser user automatically. Instead, a trusted one-shot provisioning command arms a hash with server privilege and consumes it as the intended authenticated user to create the first planning mission and first `mission_operator` membership. See `docs/SECURE_BOOTSTRAP_AUTH_READINESS.md`.

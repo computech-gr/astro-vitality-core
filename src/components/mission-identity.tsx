@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { loadMissionAuthReadiness, type MissionAuthReadiness } from "@/infrastructure/mission-auth-readiness";
 import {
   acceptMissionInvite,
   createMissionInvite,
@@ -41,6 +42,7 @@ function roleLabel(role: MissionRole) {
 
 export function MissionIdentity() {
   const [snapshot, setSnapshot] = useState<MissionIdentitySnapshot>(EMPTY);
+  const [authReadiness, setAuthReadiness] = useState<MissionAuthReadiness | null>(null);
   const [busy, setBusy] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -53,7 +55,9 @@ export function MissionIdentity() {
   async function refresh() {
     setBusy(true);
     try {
-      setSnapshot(await loadMissionIdentity());
+      const [identity, readiness] = await Promise.all([loadMissionIdentity(), loadMissionAuthReadiness()]);
+      setSnapshot(identity);
+      setAuthReadiness(readiness);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Mission identity refresh failed.");
     } finally {
@@ -144,6 +148,11 @@ export function MissionIdentity() {
 
         {message ? <div className="mt-6 rounded-md border border-border bg-card/70 p-3 text-sm text-muted-foreground">{message}</div> : null}
         {snapshot.error ? <div className="mt-3 rounded-md border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-200">{snapshot.error}</div> : null}
+        {authReadiness ? (
+          <div className={`mt-3 rounded-md border p-3 text-sm ${authReadiness.state === "configuration_required" ? "border-rose-400/40 bg-rose-400/10 text-rose-200" : authReadiness.state === "unknown" ? "border-amber-400/40 bg-amber-400/10 text-amber-200" : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"}`}>
+            <strong>{authReadiness.state === "configuration_required" ? "CONFIGURATION REQUIRED" : authReadiness.state === "unknown" ? "AUTH READINESS UNKNOWN" : "AUTH READY"}</strong> — {authReadiness.message}
+          </div>
+        ) : null}
 
         <h2 className="mt-10 font-display text-2xl font-semibold">Mission access</h2>
         {!snapshot.signedIn ? (
@@ -155,9 +164,9 @@ export function MissionIdentity() {
                   <div><Label htmlFor="mission-email">Email</Label><Input id="mission-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="astronaut@example.org" className="mt-2" /></div>
                   <div><Label htmlFor="mission-password">Password</Label><Input id="mission-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2" /></div>
                   <div className="flex flex-wrap gap-2">
-                    <Button disabled={busy || !email.trim() || !password} onClick={() => void run(() => signInMissionIdentity(email, password))}><LogIn /> Sign in</Button>
-                    <Button variant="outline" disabled={busy || !email.trim() || password.length < 8} onClick={() => void signUp()}><UserRoundCheck /> Create account</Button>
-                    <Button variant="ghost" disabled={busy || !email.trim()} onClick={() => void run(() => requestMissionMagicLink(email), "Magic sign-in link sent. Check your email.")}><Mail /> Email magic link</Button>
+                    <Button disabled={busy || authReadiness?.state === "configuration_required" || !email.trim() || !password} onClick={() => void run(() => signInMissionIdentity(email, password))}><LogIn /> Sign in</Button>
+                    <Button variant="outline" disabled={busy || authReadiness?.state === "configuration_required" || authReadiness?.signupAllowed === false || !email.trim() || password.length < 8} onClick={() => void signUp()}><UserRoundCheck /> Create account</Button>
+                    <Button variant="ghost" disabled={busy || authReadiness?.state === "configuration_required" || !email.trim()} onClick={() => void run(() => requestMissionMagicLink(email), "Magic sign-in link sent. Check your email.")}><Mail /> Email magic link</Button>
                   </div>
                 </div>
               </CardContent>
