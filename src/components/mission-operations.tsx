@@ -116,7 +116,11 @@ export function MissionOperations() {
   async function issueInvite() {
     if (!missionId) return;
     await run(async () => {
-      const code = await createMissionInvite({ missionId, role: inviteRole, crewMemberId: inviteRole === "crew_self" ? inviteCrewId : undefined });
+      const code = await createMissionInvite({
+        missionId,
+        role: inviteRole,
+        ...(inviteRole === "crew_self" && inviteCrewId ? { crewMemberId: inviteCrewId } : {}),
+      });
       setCreatedInvite(code);
       await refreshWorkspace();
     }, "One-time mission invite created. Copy it now and share through an approved channel.");
