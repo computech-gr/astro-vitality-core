@@ -17,6 +17,7 @@ import {
   getOfflineMissionStatus,
   initializeOfflineMissionRuntime,
 } from "@/infrastructure/offline";
+import { getCloudMissionContext, syncRecordedMissionQueue } from "@/infrastructure/mission-records";
 import type { OfflineMissionStatus } from "@/domain/offline-mission";
 
 const emptyStatus: OfflineMissionStatus = {
@@ -49,14 +50,52 @@ function StatusLine({ ok, label, detail }: { ok: boolean; label: string; detail:
 export function OfflineMissionPage() {
   const [status, setStatus] = useState<OfflineMissionStatus>(emptyStatus);
   const [busy, setBusy] = useState(true);
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [cloudState, setCloudState] = useState<"checking" | "local_only" | "authenticated" | "error">("checking");
+  const [cloudDetail, setCloudDetail] = useState("Checking governed Supabase access…");
 
   const refresh = useCallback(async () => {
     setBusy(true);
     try {
       await initializeOfflineMissionRuntime();
       setStatus(await getOfflineMissionStatus());
+      const cloud = await getCloudMissionContext();
+      if (cloud.error) {
+        setCloudState("error");
+        setCloudDetail(cloud.error);
+      } else if (!cloud.signedIn) {
+        setCloudState("local_only");
+        setCloudDetail("No signed-in mission identity. Encrypted local capture continues; Supabase sync remains locked.");
+      } else {
+        setCloudState("authenticated");
+        setCloudDetail(`${cloud.memberships.length} active mission membership(s) available for governed cloud access.`);
+      }
     } finally {
       setBusy(false);
+    }
+  }, []);
+
+
+  const syncNow = useCallback(async () => {
+    setSyncBusy(true);
+    try {
+      const result = await syncRecordedMissionQueue();
+      if (result === "anonymous") {
+        setCloudState("local_only");
+        setCloudDetail("Cloud sync requires a signed-in user with an active mission membership. Local encrypted capture is unaffected.");
+      } else if (result === "unavailable") {
+        setCloudDetail("Cloud sync is unavailable while this device is offline.");
+      } else {
+        setCloudState("authenticated");
+        setCloudDetail("Governed Supabase synchronization completed.");
+      }
+      setStatus(await getOfflineMissionStatus());
+    } catch (error) {
+      setCloudState("error");
+      setCloudDetail(error instanceof Error ? error.message : "Cloud synchronization failed");
+      setStatus(await getOfflineMissionStatus());
+    } finally {
+      setSyncBusy(false);
     }
   }, []);
 
@@ -101,9 +140,11 @@ export function OfflineMissionPage() {
               P14 keeps mission health data encrypted locally, preserves reviewed protocol content, and queues records for deterministic store-and-forward synchronization. The cloud is not in the critical sensor-to-astronaut path.
             </p>
           </div>
-          <Button onClick={() => void refresh()} disabled={busy} variant="secondary">
-            <RefreshCw className={busy ? "animate-spin" : ""} />Refresh status
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline"><a href="/mission/records"><Database />Recorded data</a></Button>
+            <Button onClick={() => void syncNow()} disabled={syncBusy || status.connectivity !== "online"}><Cloud className={syncBusy ? "animate-pulse" : ""} />Sync now</Button>
+            <Button onClick={() => void refresh()} disabled={busy} variant="secondary"><RefreshCw className={busy ? "animate-spin" : ""} />Refresh status</Button>
+          </div>
         </section>
 
         <h2 id="offline-state-heading" className="mt-10 font-display text-2xl font-semibold">Local mission state</h2>
@@ -124,6 +165,17 @@ export function OfflineMissionPage() {
             <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><ShieldCheck className="text-primary" />Protocol cache</CardTitle></CardHeader>
             <CardContent><p className="font-mono text-xl">{status.protocolCacheReady ? "READY" : "NOT READY"}</p><p className="mt-2 text-xs text-muted-foreground">Versioned P13 protocol definitions are cached locally with SHA-256 integrity metadata.</p></CardContent>
           </Card>
+        </section>
+
+        <section className="mt-8 rounded-lg border border-border bg-card/60 p-4" aria-label="Governed cloud synchronization status">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">Supabase synchronization boundary</p>
+              <p className="mt-1 text-sm text-muted-foreground">{cloudDetail}</p>
+            </div>
+            <span className={`rounded-md border px-3 py-1 font-mono text-xs ${cloudState === "authenticated" ? "border-emerald-400/40 text-emerald-300" : cloudState === "error" ? "border-rose-400/40 text-rose-300" : "border-amber-400/40 text-amber-300"}`}>{cloudState.replaceAll("_", " ").toUpperCase()}</span>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">Mission events are never written anonymously. When authenticated mission membership is unavailable, records remain encrypted on this device and queued for later idempotent synchronization.</p>
         </section>
 
         <h2 id="offline-readiness-heading" className="mt-12 font-display text-2xl font-semibold">Offline readiness and autonomy</h2>

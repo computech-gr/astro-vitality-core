@@ -53,3 +53,10 @@ Production cloud persistence is **not** falsely claimed by P14; it requires the 
 ## P15 authorized cloud transport
 
 P15 binds the existing queue transport contract to an authenticated Supabase RPC. Local operation remains independent; failed or unauthorized remote sync leaves records queued locally. Mission membership and idempotency are enforced server-side.
+
+
+## Recorded mission data and governed Supabase sync
+
+The offline runtime is the local system of record while connectivity or authenticated mission access is unavailable. The `/mission/records` console decrypts records only inside the same browser origin and shows their source, metric/value summary, quality, timestamp and queue state.
+
+When the browser has an authenticated Supabase session with an active mission membership, the existing P15/P16 `ingest_mission_event` RPC is used for idempotent store-and-forward synchronization. Anonymous writes remain denied. Cloud history is read only through the existing mission RLS boundary; local records remain available even if the remote transport is unavailable.

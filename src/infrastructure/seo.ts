@@ -35,6 +35,7 @@ export const NON_INDEXABLE_ROUTES = [
   "/mission/alerts",
   "/mission/guidance",
   "/mission/offline",
+  "/mission/records",
   "/mission/ground",
   "/mission/simulation",
 ] as const;
