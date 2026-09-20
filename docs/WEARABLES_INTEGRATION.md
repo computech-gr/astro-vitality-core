@@ -42,7 +42,6 @@ This is an integration-contract milestone, not a claim that named commercial ven
 
 Later phases may add pulse oximetry, blood pressure, smart garments, sleep/activity details, environmental sensors, radiation dosimetry, and production mobile/native bridges. Those additions must implement the same P5 lifecycle and normalize through P4.
 
-
 ## P20 physical Samsung/Android path
 
 The repository now includes a thin `android-companion/` wrapper for final physical-device evidence. It provides the host bridge required by `createHealthConnectAdapter()` without pretending that Health Connect is a browser API. The companion is read-only for heart rate and loads the canonical published Mitochondria console. See `docs/P20_SAMSUNG_HEALTH_CONNECT_TEST.md`.
