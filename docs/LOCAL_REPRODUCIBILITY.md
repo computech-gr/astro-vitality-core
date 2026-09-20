@@ -56,7 +56,7 @@ docker compose --env-file .env.local up --build
 
 Open `http://localhost:3000`.
 
-The normal Lovable production build emits the application server handler at `dist/server/index.mjs` and browser assets under `dist/client`. The container therefore runs the repository-owned `scripts/serve-dist.mjs` adapter rather than assuming an unused `.output/server/index.mjs` Nitro artifact. The same application code and security-header boundary are preserved.
+The production build emits the Nitro application server handler at `.output/server/index.mjs` and browser assets under `.output/public`. The Docker image copies that exact `.output` tree and the repository-owned `scripts/serve-dist.mjs` adapter serves static assets from `.output/public` while dispatching application requests through the Nitro `fetch` handler. The same application code and security-header boundary are preserved.
 
 The browser-visible Supabase URL remains `http://127.0.0.1:54321`; the server container reaches the local Supabase gateway through `host.docker.internal`.
 

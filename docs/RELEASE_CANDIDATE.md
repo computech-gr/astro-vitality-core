@@ -34,7 +34,7 @@ An independent machine should be able to:
 
 The migration directory intentionally contains one copy of each applied change. Duplicate semantic-name copies are prohibited because they break clean `supabase db reset` replay.
 
-The Docker runtime serves the actual `dist/server/index.mjs` build output through the repository-owned self-host adapter and serves `dist/client` assets directly, so it does not depend on Lovable hosting or a non-existent `.output` artifact.
+The Docker runtime packages the actual Nitro `.output` build tree, dispatches application requests through `.output/server/index.mjs`, and serves browser assets from `.output/public` through the repository-owned self-host adapter, so it does not depend on Lovable hosting or stale `dist/` assumptions.
 
 See `docs/LOCAL_REPRODUCIBILITY.md`.
 

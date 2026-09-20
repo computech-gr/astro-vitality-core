@@ -7,18 +7,15 @@ import { Readable } from "node:stream";
 const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 3000);
 const root = process.cwd();
-const clientRoot = resolve(root, "dist/client");
-const serverCandidates = [
-  resolve(root, "dist/server/index.mjs"),
-  resolve(root, "dist/server/index.js"),
-  resolve(root, "dist/server/server.js"),
-];
-const serverEntryPath = serverCandidates.find((candidate) => existsSync(candidate));
+const clientRoot = resolve(root, ".output/public");
+const serverEntryPath = resolve(root, ".output/server/index.mjs");
 
-if (!serverEntryPath) {
-  throw new Error(
-    `No self-host server bundle found. Expected one of: ${serverCandidates.join(", ")}`,
-  );
+if (!existsSync(clientRoot)) {
+  throw new Error(`No self-host public assets found at ${clientRoot}`);
+}
+
+if (!existsSync(serverEntryPath)) {
+  throw new Error(`No self-host Nitro server bundle found at ${serverEntryPath}`);
 }
 
 const serverModule = await import(pathToFileURL(serverEntryPath).href);

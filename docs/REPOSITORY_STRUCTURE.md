@@ -165,7 +165,7 @@ Generated files such as `src/routeTree.gen.ts` should not be manually edited unl
 - `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` — public contribution intake.
 - `.github/workflows/release-candidate.yml` — source/build/Docker release-candidate verification.
 
-- `scripts/serve-dist.mjs` — Node self-host adapter for the emitted `dist/server` fetch handler and `dist/client` assets.
+- `scripts/serve-dist.mjs` — Node self-host adapter for the emitted Nitro `.output/server/index.mjs` fetch handler and `.output/public` assets.
 
 ### P20 submission package
 
