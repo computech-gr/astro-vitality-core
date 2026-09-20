@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { initializeOfflineMissionRuntime, registerOfflineServiceWorker } from "@/infrastructure/offline";
 import { initializeGroundSyncRuntime } from "@/infrastructure/ground-research";
+import { SiteHeader } from "@/components/app-shell";
 
 function NotFoundComponent() {
   return (
@@ -128,8 +129,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <SiteHeader />
+      <div className="pt-[var(--header-offset,76px)]">
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </div>
     </QueryClientProvider>
   );
 }
