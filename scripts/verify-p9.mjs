@@ -15,7 +15,7 @@ for (const file of required) {
 const component = readFileSync("src/components/live-dashboard.tsx", "utf8");
 for (const token of [
   "Connect BLE heart rate",
-  "SESSION ONLY",
+  "ENCRYPTED LOCAL + GOVERNED SYNC QUEUE",
   "technical recency indicators",
   "Simple self-check",
 ]) {

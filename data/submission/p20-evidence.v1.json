@@ -7,7 +7,7 @@
       "title": "Real live device path",
       "critical": true,
       "status": "pending_human",
-      "evidence": "P6 provides the real Web Bluetooth heart-rate path, but final-submission evidence still requires a real physical device session recorded by the team."
+      "evidence": "P6 supports direct BLE and the repository now includes the read-only Android Health Connect companion path for Samsung/Galaxy Watch evidence. Status remains pending_human until the team records a real physical session; code readiness is not accepted as evidence."
     },
     {
       "id": "P20-DEMO-001",

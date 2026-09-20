@@ -8,7 +8,7 @@ The Mitochondria is **not clinically validated**, is not a certified medical dev
 
 ## Hardware coverage
 
-The browser Web Bluetooth heart-rate path is implemented. Health Connect, HealthKit, vendor-cloud, environmental and radiation integrations are adapter/bridge targets and may require native hosts, credentials or target hardware. Synthetic P17 scenarios must remain visibly synthetic and are not evidence of hardware performance.
+The browser Web Bluetooth heart-rate path is implemented. A read-only Android Health Connect companion is also present for P20 Samsung/Galaxy Watch heart-rate evidence, but Samsung Health/Health Connect synchronization latency is device/platform controlled and is not guaranteed to be second-by-second. HealthKit, vendor-cloud, environmental and radiation integrations may still require native hosts, credentials or target hardware. Synthetic P17 scenarios must remain visibly synthetic and are not evidence of hardware performance.
 
 ## Battery
 

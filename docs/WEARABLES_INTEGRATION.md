@@ -12,7 +12,7 @@ Web Bluetooth availability is browser/platform dependent. P6 does not claim comp
 
 ### Android Health Connect bridge
 
-`createHealthConnectAdapter()` wraps a host-provided native/mobile bridge. The web application does not pretend that browsers can call Android Health Connect directly. A future Android host must supply permission handling and record access through the bridge contract.
+`createHealthConnectAdapter()` wraps a host-provided native/mobile bridge. The web application does not pretend that browsers can call Android Health Connect directly. For P20 physical-device evidence the repository now includes a thin read-only Android companion that supplies this bridge for heart-rate records; broader production mobile-host support remains future work.
 
 Only metric codes present in the reviewed P4 canonical registry are advertised or emitted. Unknown app/vendor scores fail closed.
 
@@ -41,3 +41,7 @@ This is an integration-contract milestone, not a claim that named commercial ven
 ## Next integration work
 
 Later phases may add pulse oximetry, blood pressure, smart garments, sleep/activity details, environmental sensors, radiation dosimetry, and production mobile/native bridges. Those additions must implement the same P5 lifecycle and normalize through P4.
+
+## P20 physical Samsung/Android path
+
+The repository now includes a thin `android-companion/` wrapper for final physical-device evidence. It provides the host bridge required by `createHealthConnectAdapter()` without pretending that Health Connect is a browser API. The companion is read-only for heart rate and loads the canonical published Mitochondria console. See `docs/P20_SAMSUNG_HEALTH_CONNECT_TEST.md`.
