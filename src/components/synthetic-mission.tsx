@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
-  ArrowLeft,
   CloudOff,
   Download,
   FlaskConical,
@@ -12,7 +11,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,20 +50,6 @@ export function SyntheticMissionPage() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <header className="border-b border-border bg-deep/80 backdrop-blur">
-        <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
-          <a href="/" className="flex items-center gap-3" aria-label="Back to The Mitochondria home">
-            <img src={logoAsset.url} alt="" className="h-10 w-auto" />
-            <span className="text-sm font-semibold uppercase tracking-wider">The Mitochondria</span>
-          </a>
-          <Button variant="outline" asChild>
-            <a href="/mission/live">
-              <ArrowLeft /> Live dashboard
-            </a>
-          </Button>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div>
@@ -77,6 +61,9 @@ export function SyntheticMissionPage() {
               Deterministic synthetic scenarios exercise sensor streams, environmental context, artifacts,
               missing data, connectivity loss and recovery without using real medical records.
             </p>
+            <Button variant="outline" asChild className="mt-5">
+              <a href="/mission/live">Live dashboard</a>
+            </Button>
           </div>
           <Card className="border-signal/30 bg-surface">
             <CardHeader>

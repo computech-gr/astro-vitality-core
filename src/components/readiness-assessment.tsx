@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, BrainCircuit, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
+import { BrainCircuit, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
 
 import {
   ingestDailyBehavioralCheckIn,
@@ -26,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import {
   addVigilanceTrial,
   assessmentElapsedSeconds,
@@ -270,32 +269,6 @@ export function ReadinessAssessment() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-[96rem] items-center justify-between gap-4 px-5 lg:px-8">
-          <div className="flex items-center gap-4">
-            <a
-              href="/"
-              className="rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Back to public site"
-            >
-              <img src={logoAsset.url} alt="" className="h-10 w-auto" />
-            </a>
-            <div>
-              <p className="font-display text-lg font-semibold">Cognitive & Behavioral Readiness</p>
-              <p className="font-mono text-[0.68rem] uppercase tracking-widest text-muted-foreground">
-                P11 · private longitudinal assessment
-              </p>
-            </div>
-          </div>
-          <Button asChild variant="outline">
-            <a href="/mission/live">
-              <ArrowLeft />
-              Live dashboard
-            </a>
-          </Button>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-5xl px-5 py-8 lg:px-8">
         <section className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
@@ -309,9 +282,14 @@ export function ReadinessAssessment() {
               autonomous fitness-for-duty decision.
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-card/70 px-4 py-3 text-right">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Demo target</p>
-            <strong className="font-mono text-sm">&lt; 3 MINUTES</strong>
+          <div className="flex flex-col items-stretch gap-3 sm:items-end">
+            <Button asChild variant="outline">
+              <a href="/mission/live">Live dashboard</a>
+            </Button>
+            <div className="rounded-lg border border-border bg-card/70 px-4 py-3 text-right">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Demo target</p>
+              <strong className="font-mono text-sm">&lt; 3 MINUTES</strong>
+            </div>
           </div>
         </section>
 

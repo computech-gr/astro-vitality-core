@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
-  ArrowLeft,
   Bluetooth,
   Camera,
   BrainCircuit,
@@ -21,7 +20,6 @@ import {
   Zap,
 } from "lucide-react";
 
-import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import {
   createLiveDashboardState,
   deriveDashboardMetricView,
@@ -349,17 +347,10 @@ export function LiveDashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-[96rem] items-center justify-between gap-4 px-5 lg:px-8">
-          <div className="flex items-center gap-4"><a href="/" className="rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Back to public site"><img src={logoAsset.url} alt="" className="h-10 w-auto" /></a><div><p className="font-display text-lg font-semibold">Astronaut Live Dashboard</p><p className="font-mono text-[0.68rem] uppercase tracking-widest text-muted-foreground">P10 baseline-aware mission view</p></div></div>
-          <div className="flex gap-2"><Button asChild variant="outline" className="border-border"><a href="/mission/readiness"><BrainCircuit />Readiness</a></Button><Button asChild variant="outline" className="border-border"><a href="/"><ArrowLeft />Public site</a></Button></div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-[96rem] px-5 py-8 lg:px-8">
         <section className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
           <div><p className="section-kicker">Live mission health</p><h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">What is happening <span className="text-primary">right now?</span></h1><p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Live physiological and spacecraft signals share one timeline. Data quality, freshness and connection state stay visible; no missing value is silently invented.</p></div>
-          <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><a href="/mission/devices">Device Integration Center</a></Button><Button variant="outline" onClick={disconnectLiveSource} disabled={!connectedSource}><Unplug />Disconnect current source</Button></div>
+          <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><a href="/mission/readiness"><BrainCircuit />Readiness</a></Button><Button asChild variant="outline"><a href="/mission/devices">Device Integration Center</a></Button><Button variant="outline" onClick={disconnectLiveSource} disabled={!connectedSource}><Unplug />Disconnect current source</Button></div>
         </section>
 
         <div className="mt-6 grid gap-3 rounded-lg border border-border bg-surface/70 p-4 md:grid-cols-3">

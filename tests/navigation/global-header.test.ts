@@ -7,6 +7,19 @@ const appShell = readFileSync(join(root, "src/components/app-shell.tsx"), "utf8"
 const rootRoute = readFileSync(join(root, "src/routes/__root.tsx"), "utf8");
 const guide = readFileSync(join(root, "src/components/project-guide.tsx"), "utf8");
 
+const operationalPageComponents = [
+  "action-guidance.tsx",
+  "device-integration-center.tsx",
+  "explainable-alerts.tsx",
+  "health-intelligence.tsx",
+  "live-dashboard.tsx",
+  "readiness-assessment.tsx",
+  "synthetic-mission.tsx",
+].map((name) => ({
+  name,
+  source: readFileSync(join(root, "src/components", name), "utf8"),
+}));
+
 describe("global site header", () => {
   test("the primary header is mounted once at the root for every route", () => {
     expect(appShell).toContain("export function SiteHeader()");
@@ -25,5 +38,14 @@ describe("global site header", () => {
       expect(appShell).toContain(`href: "${href}"`);
     }
     expect(appShell).toContain('href="/#home" aria-label="The Mitochondria home"');
+  });
+
+  test("operational pages rely on the single root header instead of rendering framed duplicate mastheads", () => {
+    for (const page of operationalPageComponents) {
+      expect(page.source, `${page.name} must not render its own page header`).not.toContain("<header");
+      expect(page.source, `${page.name} must not render a second brand logo`).not.toContain(
+        "mitochondria-logo.png.asset.json",
+      );
+    }
   });
 });
