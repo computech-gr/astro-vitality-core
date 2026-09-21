@@ -1,6 +1,5 @@
 import {
   AlertTriangle,
-  ArrowLeft,
   ArrowRight,
   BrainCircuit,
   CheckCircle2,
@@ -9,7 +8,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "@/domain";
@@ -26,16 +24,6 @@ const safeguards = [
 export function HealthIntelligencePage() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <header className="border-b border-border bg-deep/80 backdrop-blur">
-        <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
-          <a href="/" className="flex items-center gap-3" aria-label="Back to The Mitochondria home">
-            <img src={logoAsset.url} alt="" className="h-10 w-auto" />
-            <span className="text-sm font-semibold uppercase tracking-wider">The Mitochondria</span>
-          </a>
-          <Button variant="outline" asChild><a href="/mission/live"><ArrowLeft />Live dashboard</a></Button>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>

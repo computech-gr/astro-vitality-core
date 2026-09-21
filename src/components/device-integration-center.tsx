@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  ArrowLeft,
   Bluetooth,
   Camera,
   FlaskConical,
@@ -10,7 +9,6 @@ import {
   Smartphone,
 } from "lucide-react";
 
-import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,21 +57,6 @@ export function DeviceIntegrationCenter() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-[96rem] items-center justify-between gap-4 px-5 lg:px-8">
-          <div className="flex items-center gap-4">
-            <a href="/" className="rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Back to public site">
-              <img src={logoAsset.url} alt="" className="h-10 w-auto" />
-            </a>
-            <div>
-              <p className="font-display text-lg font-semibold">Device Integration Center</p>
-              <p className="font-mono text-[0.68rem] uppercase tracking-widest text-muted-foreground">Capability-aware · zero-install first</p>
-            </div>
-          </div>
-          <Button asChild variant="outline"><a href="/"><ArrowLeft />Public site</a></Button>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-[96rem] px-5 py-8 lg:px-8">
         <section>
           <p className="section-kicker">Live source orchestration</p>
