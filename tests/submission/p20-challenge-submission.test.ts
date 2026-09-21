@@ -10,11 +10,12 @@ describe("P20 challenge submission", () => {
     expect(P20_DEMO_STEPS.at(-1)?.minute).toBe("2:40–3:00");
   });
 
-  test("final gate fails closed while real-device, reproduction or video evidence is pending", () => {
+  test("final gate fails closed while final video or official-rules evidence is pending", () => {
     const summary = summarizeSubmissionEvidence(evidenceLedger.evidence as SubmissionEvidence[]);
     expect(summary.finalSubmissionReady).toBe(false);
     expect(summary.pendingHuman).toBeGreaterThanOrEqual(1);
     expect(summary.pendingExternal).toBeGreaterThanOrEqual(1);
+    expect(evidenceLedger.evidence.find((item) => item.id === "P20-RC-001")?.status).toBe("ready");
   });
 
   test("critical evidence only becomes ready when every critical item is explicitly ready", () => {

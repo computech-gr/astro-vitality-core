@@ -5,6 +5,8 @@ const root = process.cwd();
 const failures = [];
 const required = [
   "data/submission/p20-evidence.v1.json",
+  "data/submission/p19-independent-reproduction.v1.json",
+  "data/submission/p20-final-external-evidence.v1.json",
   "docs/CHALLENGE_DEMO_SCRIPT.md",
   "docs/VIDEO_STORYBOARD.md",
   "docs/DEMO_FALLBACK_RUNBOOK.md",
@@ -20,6 +22,7 @@ const required = [
   "src/components/challenge-submission.tsx",
   "src/routes/mission.submission.tsx",
   "tests/submission/p20-challenge-submission.test.ts",
+  "tests/submission/p20-final-evidence-gate.test.ts",
 ];
 for (const file of required) if (!existsSync(join(root, file))) failures.push(`missing ${file}`);
 
@@ -46,7 +49,7 @@ for (const token of ["independent participant project", "do not imply endorsemen
 
 const ledger = JSON.parse(readFileSync(join(root, "data/submission/p20-evidence.v1.json"), "utf8"));
 const ids = new Set(ledger.evidence.map((item) => item.id));
-for (const id of ["P20-HW-001", "P20-DEMO-001", "P20-DQ-001", "P20-OFFLINE-001", "P20-GROUND-001", "P20-LAB-001", "P20-RC-001", "P20-VIDEO-001", "P20-ATTR-001", "P20-LIMIT-001"]) {
+for (const id of ["P20-HW-001", "P20-DEMO-001", "P20-DQ-001", "P20-OFFLINE-001", "P20-GROUND-001", "P20-LAB-001", "P20-RC-001", "P20-VIDEO-001", "P20-ATTR-001", "P20-LIMIT-001", "P20-RULES-001"]) {
   if (!ids.has(id)) failures.push(`submission evidence missing ${id}`);
 }
 

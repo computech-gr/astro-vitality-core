@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "video": {
+    "status": "pending_human",
+    "publicUrl": null,
+    "originalTeamCreated": null,
+    "rightsAndLicensesConfirmed": null,
+    "requiredLikenessConsentsConfirmed": null,
+    "checkedAt": null
+  },
+  "official2026SubmissionRules": {
+    "status": "pending_external",
+    "officialSourceUrl": null,
+    "submissionFieldsRechecked": null,
+    "judgingInstructionsRechecked": null,
+    "rightsRequirementsRechecked": null,
+    "checkedAt": null
+  },
+  "instruction": "Do not change either status to ready until the corresponding fields are completed from real human/external evidence."
+}
