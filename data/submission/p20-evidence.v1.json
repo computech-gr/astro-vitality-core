@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-09-20T17:46:44Z",
+  "updatedAt": "2026-09-21T09:00:00Z",
   "evidence": [
     {
       "id": "P20-HW-001",
@@ -48,15 +48,15 @@
       "id": "P20-RC-001",
       "title": "Independent release-candidate reproduction",
       "critical": true,
-      "status": "pending_external",
-      "evidence": "P19 code path is prepared; final evidence requires the release-candidate workflow or an independent machine with Docker + Supabase CLI to pass the clean reproduction gate."
+      "status": "ready",
+      "evidence": "Independent Ubuntu/WSL reproduction completed on canonical commit a2be5b2c6c02a96d5f164cc005768f9aa1250bb6: frozen install, verify:p19, full check, local Supabase from scratch with 7 governed migrations, deterministic sample, Docker self-host build, / and /mission/simulation HTTP smoke tests all passed with no tracked repository drift. See data/submission/p19-independent-reproduction.v1.json."
     },
     {
       "id": "P20-VIDEO-001",
       "title": "Final challenge video",
       "critical": true,
       "status": "pending_human",
-      "evidence": "Storyboard and exact 3-minute narrative are repository-controlled; the final original video must be recorded, hosted publicly and linked before submission."
+      "evidence": "Final original challenge video is still human-controlled. Before READY, data/submission/p20-final-external-evidence.v1.json must contain a public URL plus explicit original/rights/licensing and required likeness-consent confirmations."
     },
     {
       "id": "P20-ATTR-001",
@@ -71,6 +71,13 @@
       "critical": true,
       "status": "ready",
       "evidence": "P18 validation and known-limitations records explicitly state that the prototype is not clinically validated and document hardware limitations."
+    },
+    {
+      "id": "P20-RULES-001",
+      "title": "Official 2026 submission/judging instructions re-check",
+      "critical": true,
+      "status": "pending_external",
+      "evidence": "Re-check the official 2026 submission form, judging instructions and rights requirements immediately before final submission and record the official source plus confirmations in data/submission/p20-final-external-evidence.v1.json."
     }
   ]
 }

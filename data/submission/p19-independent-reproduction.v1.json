@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "recordedAt": "2026-09-21",
+  "repository": "https://github.com/computech-gr/astro-vitality-core.git",
+  "commit": "a2be5b2c6c02a96d5f164cc005768f9aa1250bb6",
+  "environment": "Independent Ubuntu/WSL checkout outside the Lovable workspace",
+  "toolchain": {
+    "bun": "1.4.2",
+    "docker": "29.6.2",
+    "dockerCompose": "v5.3.1",
+    "supabaseCli": "2.117.0"
+  },
+  "results": {
+    "frozenInstall": "pass",
+    "verifyP19": "pass",
+    "fullCheck": "pass",
+    "tests": { "passed": 123, "failed": 0, "assertions": 1680 },
+    "localSupabaseFromScratch": "pass",
+    "governedMigrationCount": 7,
+    "deterministicReleaseSample": "pass",
+    "dockerSelfHostBuild": "pass",
+    "homeHttpSmoke": "pass",
+    "missionSimulationHttpSmoke": "pass",
+    "trackedWorktreeClean": true,
+    "trackedIndexClean": true,
+    "manualTrackedCorrectionRequired": false
+  },
+  "notes": [
+    "The first independent attempt exposed the stale Docker dist-path assumption; v20.12.2 corrected the self-host contract to the generated .output tree.",
+    "The final reproduction was rerun on the corrected canonical commit and completed with no tracked repository drift.",
+    "Supabase .branches/ and .temp/ remained untracked local tooling metadata and were not counted as repository drift."
+  ]
+}
