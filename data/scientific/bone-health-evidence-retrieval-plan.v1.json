@@ -1,0 +1,491 @@
+{
+  "schemaVersion": "1.0",
+  "purpose": "Executable evidence collection plan, not a completed literature review",
+  "sourceAppraisal": "data/scientific/bone-health-evidence-appraisal.v1.json",
+  "sourceGraph": "data/scientific/bone-health-interpretation-graph.v1.json",
+  "independentEvidenceRetrieved": false,
+  "independentReviewComplete": false,
+  "operationalActivation": false,
+  "relationships": [
+    {
+      "relationshipId": "bhrel-001",
+      "fromHandbookId": "bone-001",
+      "toHandbookId": "bone-009",
+      "claimUnderReview": "CTX reflects resorption and P1NP formation; interpret paired trajectories, not a validated balance score.",
+      "evidenceSearch": {
+        "query": "(CTX / β-CTX) AND (P1NP / PINP) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-002",
+      "fromHandbookId": "bone-001",
+      "toHandbookId": "bone-043",
+      "claimUnderReview": "CTX is a turnover marker, not a percentage of hip BMD loss.",
+      "evidenceSearch": {
+        "query": "(CTX / β-CTX) AND (Total Hip aBMD) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-003",
+      "fromHandbookId": "bone-009",
+      "toHandbookId": "bone-043",
+      "claimUnderReview": "Formation marker trends do not directly quantify DXA changes.",
+      "evidenceSearch": {
+        "query": "(P1NP / PINP) AND (Total Hip aBMD) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-004",
+      "fromHandbookId": "bone-043",
+      "toHandbookId": "bone-044",
+      "claimUnderReview": "Hip and femoral-neck DXA are distinct anatomical regions; do not pool baselines.",
+      "evidenceSearch": {
+        "query": "(Total Hip aBMD) AND (Femoral Neck aBMD) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-005",
+      "fromHandbookId": "bone-043",
+      "toHandbookId": "bone-046",
+      "claimUnderReview": "DXA areal BMD and QCT volumetric BMD have different units and methods.",
+      "evidenceSearch": {
+        "query": "(Total Hip aBMD) AND (Total vBMD) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-006",
+      "fromHandbookId": "bone-018",
+      "toHandbookId": "bone-013",
+      "claimUnderReview": "PTH and circulating calcium should be interpreted with sampling and endocrine context.",
+      "evidenceSearch": {
+        "query": "(PTH) AND (Serum Total Calcium) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-007",
+      "fromHandbookId": "bone-019",
+      "toHandbookId": "bone-018",
+      "claimUnderReview": "Vitamin D status and PTH may be related; do not infer causality from two measurements.",
+      "evidenceSearch": {
+        "query": "(25(OH) Vitamin D) AND (PTH) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-008",
+      "fromHandbookId": "bone-015",
+      "toHandbookId": "bone-037",
+      "claimUnderReview": "24-hour urinary calcium interpretation depends on urine collection and volume context.",
+      "evidenceSearch": {
+        "query": "(Urinary Calcium 24h) AND (Total Urine Volume) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-009",
+      "fromHandbookId": "bone-028",
+      "toHandbookId": "bone-038",
+      "claimUnderReview": "Citrate may be an input to a validated supersaturation model; no standalone score.",
+      "evidenceSearch": {
+        "query": "(Urinary Citrate) AND (Calcium Oxalate Supersaturation) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-010",
+      "fromHandbookId": "bone-029",
+      "toHandbookId": "bone-038",
+      "claimUnderReview": "Oxalate may contribute to calcium oxalate supersaturation; do not calculate without validated inputs.",
+      "evidenceSearch": {
+        "query": "(Urinary Oxalate) AND (Calcium Oxalate Supersaturation) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-011",
+      "fromHandbookId": "bone-055",
+      "toHandbookId": "bone-056",
+      "claimUnderReview": "Adherence and load are complementary exposure descriptions, not interchangeable.",
+      "evidenceSearch": {
+        "query": "(Resistance Exercise Adherence) AND (Resistance Exercise Load) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-012",
+      "fromHandbookId": "bone-056",
+      "toHandbookId": "bone-043",
+      "claimUnderReview": "Resistance loading is relevant bone-health context; no individual BMD causal attribution.",
+      "evidenceSearch": {
+        "query": "(Resistance Exercise Load) AND (Total Hip aBMD) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-013",
+      "fromHandbookId": "bone-062",
+      "toHandbookId": "bone-063",
+      "claimUnderReview": "Mission duration is not equivalent to measured microgravity exposure.",
+      "evidenceSearch": {
+        "query": "(Mission Duration) AND (Microgravity Exposure) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-014",
+      "fromHandbookId": "bone-063",
+      "toHandbookId": "bone-001",
+      "claimUnderReview": "Microgravity is relevant context for bone turnover; do not infer an individual causal effect.",
+      "evidenceSearch": {
+        "query": "(Microgravity Exposure) AND (CTX / β-CTX) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-015",
+      "fromHandbookId": "bone-061",
+      "toHandbookId": "bone-037",
+      "claimUnderReview": "Fluid intake and urine output are related but not interchangeable observations.",
+      "evidenceSearch": {
+        "query": "(Fluid Intake) AND (Total Urine Volume) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-016",
+      "fromHandbookId": "bone-059",
+      "toHandbookId": "bone-055",
+      "claimUnderReview": "Dietary protein and exercise are separate contextual dimensions.",
+      "evidenceSearch": {
+        "query": "(Dietary Protein Intake) AND (Resistance Exercise Adherence) AND (spaceflight OR astronaut OR bed rest OR bone physiology)",
+        "prioritySources": [
+          "NASA Human Research Program evidence reports",
+          "PubMed indexed primary studies",
+          "peer-reviewed systematic reviews"
+        ],
+        "searchExecuted": false,
+        "retrievalDate": null
+      },
+      "evidenceRecords": [],
+      "minimumReviewChecklist": {
+        "populationAndFlightAnalogTransferability": "pending",
+        "measurementMethodAndUnits": "pending",
+        "studyDesignAndEffectUncertainty": "pending",
+        "confoundingAndTemporalOrdering": "pending",
+        "limitationsAndCounterEvidence": "pending",
+        "independentReviewerIdentity": "pending"
+      },
+      "independentReviewStatus": "not_started",
+      "decision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    }
+  ]
+}
