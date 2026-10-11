@@ -1,6 +1,8 @@
 import { BONE_HEALTH_VARIABLES } from "./catalog";
 import type { BoneImportCandidate } from "./import";
 
+import { getLocalOcrAssets } from "./ocr-readiness";
+
 export type ExtractedDocument = { text: string; pages: number; method: string; warnings: string[] };
 type Detector = { detect(image: ImageBitmap | HTMLCanvasElement): Promise<Array<{rawValue?: string}>> };
 type DetectorConstructor = new () => Detector;
@@ -18,7 +20,17 @@ async function recognize(canvas: HTMLCanvasElement): Promise<string> {
   let worker: Awaited<ReturnType<typeof import("tesseract.js")["createWorker"]>> | undefined;
   try {
     const { createWorker } = await import("tesseract.js");
-    worker = await createWorker("eng", 1);
+    // Use only same-origin, pre-staged OCR resources when a complete offline pack exists.
+    // Otherwise retain the P22.5 fallback, explicitly marked as network-dependent.
+    const local = await getLocalOcrAssets();
+    worker = local
+      ? await createWorker("eng", 1, {
+          workerPath: local.worker,
+          corePath: local.core,
+          langPath: local.languageDirectory,
+          gzip: true,
+        })
+      : await createWorker("eng", 1);
     const result = await worker.recognize(canvas);
     if (!result.data.text.trim()) throw new Error("OCR returned no readable text.");
     return result.data.text;
