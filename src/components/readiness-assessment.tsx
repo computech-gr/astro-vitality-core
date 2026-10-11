@@ -36,8 +36,9 @@ import {
   recordTaskLinkedWorkload,
 } from "@/app/readiness-assessment";
 import { persistOfflineMissionEvent } from "@/infrastructure/offline";
+import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/mission-identity";
 
-const MISSION = { missionId: "local-p11-session", crewMemberId: "local-crew" };
+
 const DEMO_PROTOCOL = {
   id: "p11-brief-vigilance-demo",
   version: "1.0.0",
@@ -51,6 +52,18 @@ function formatSeconds(seconds: number) {
 }
 
 export function ReadinessAssessment() {
+  const [MISSION, setMission] = useState<{ missionId: string; crewMemberId: string } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const refresh = () => { void loadMissionIdentity().then(snapshot => {
+      if (!alive) return;
+      const member = snapshot.active?.role === "crew_self" ? snapshot.active : snapshot.memberships.find(m => m.role === "crew_self" && m.crewMemberId);
+      setMission(member?.crewMemberId ? { missionId: member.missionId, crewMemberId: member.crewMemberId } : null);
+    }).catch(() => { if (alive) setMission(null); }); };
+    refresh();
+    const unsubscribe = subscribeMissionIdentity(refresh);
+  return () => { alive = false; unsubscribe(); };
+  }, []);
   const [state, setState] = useState(() =>
     createReadinessAssessmentState(new Date().toISOString()),
   );
@@ -96,6 +109,7 @@ export function ReadinessAssessment() {
   );
 
   function saveCheckIn() {
+    if (!MISSION) return;
     const now = new Date().toISOString();
     const checkIn: DailyBehavioralCheckIn = {
       id: `p11-check-${Date.now()}`,
@@ -144,6 +158,7 @@ export function ReadinessAssessment() {
   }
 
   function finishVigilance() {
+    if (!MISSION) return;
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     timeoutRef.current = null;
     setStimulusVisible(false);
@@ -176,6 +191,7 @@ export function ReadinessAssessment() {
   }
 
   function startVigilance() {
+    if (!MISSION) return;
     setState((current) => ({ ...current, trials: [], issues: [] }));
     setRemainingSeconds(DEMO_PROTOCOL.durationSeconds);
     setTaskRunning(true);
@@ -224,6 +240,7 @@ export function ReadinessAssessment() {
   }
 
   function saveWorkload() {
+    if (!MISSION) return;
     const recordedAt = new Date().toISOString();
     const workload: TaskLinkedWorkloadCheckIn = {
       id: `p11-tlx-${Date.now()}`,
@@ -267,6 +284,7 @@ export function ReadinessAssessment() {
     }`;
   }, [state.vigilanceResult]);
 
+  if (!MISSION) return <div className="mx-auto max-w-3xl p-6 text-foreground" role="status">Sign in and select an authorized crew mission before recording readiness assessments. No placeholder records will be created.</div>;
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="mx-auto max-w-5xl px-5 py-8 lg:px-8">
