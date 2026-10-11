@@ -1,0 +1,18 @@
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const prep = read('scripts/prepare-first-operator-bootstrap.mjs');
+const activation = read('src/infrastructure/first-operator-activation.ts');
+const sql = read('supabase/migrations/20260921002000_p20_secure_bootstrap_auth_readiness.sql');
+const pkg = JSON.parse(read('package.json'));
+assert.match(prep, /randomBytes\(32\)/);
+assert.match(prep, /createHash\('sha256'\)/);
+assert.match(prep, /configure_mission_bootstrap/);
+assert.doesNotMatch(prep, /supabase\.rpc|execSync|spawnSync/);
+assert.match(activation, /auth\.getUser\(\)/);
+assert.match(activation, /rpc\('bootstrap_first_mission'/);
+assert.match(sql, /revoke all on function public\.configure_mission_bootstrap\(text\) from public, anon, authenticated/i);
+assert.match(sql, /grant execute on function public\.configure_mission_bootstrap\(text\) to service_role/i);
+assert.match(sql, /grant execute on function public\.bootstrap_first_mission\(text,text,text,timestamptz\) to authenticated/i);
+assert.equal(pkg.scripts['verify:p23l'], 'node scripts/verify-p23l.mjs');
+console.log('P23L PASS: local activation contracts checked; live bootstrap and authentication NOT tested.');
