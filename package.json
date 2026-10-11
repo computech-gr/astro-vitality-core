@@ -79,7 +79,8 @@
     "verify:p22:ocr-provenance": "node scripts/verify-p22-ocr-provenance.mjs",
     "verify:p22:ocr-pack": "node scripts/verify-p22-ocr-pack.mjs",
     "verify:p22:activation": "node scripts/verify-p22-8.mjs",
-    "verify:p22:review-handoff": "node scripts/verify-p22-9-ocr-review-handoff.mjs"
+    "verify:p22:review-handoff": "node scripts/verify-p22-9-ocr-review-handoff.mjs",
+    "verify:p23i": "node scripts/verify-p23i.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"

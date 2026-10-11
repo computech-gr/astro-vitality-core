@@ -1,0 +1,12 @@
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+assert.match(read('scripts/prepare-first-operator-bootstrap.mjs'), /randomBytes\(32\)/);
+assert.match(read('scripts/prepare-first-operator-bootstrap.mjs'), /configure_mission_bootstrap/);
+assert.doesNotMatch(read('scripts/prepare-first-operator-bootstrap.mjs'), /SERVICE_ROLE_KEY/);
+assert.match(read('src/infrastructure/first-operator-activation.ts'), /bootstrap_first_mission/);
+assert.match(read('src/infrastructure/first-operator-activation.ts'), /supabase\.auth\.getUser/);
+assert.match(read('src/components/mission-identity.tsx'), /Redeem first-operator activation/);
+assert.match(read('src/components/mission-identity.tsx'), /setBootstrapSecret\(""\)/);
+assert.match(read('docs/P23I_PRIVILEGED_BOOTSTRAP_HANDOFF.md'), /explicit owner approval/);
+console.log('P23I bootstrap handoff verifier PASS');
