@@ -1,0 +1,351 @@
+{
+  "schemaVersion": "1.0",
+  "purpose": "Verified source discovery and preliminary relevance screening only; not completed evidence appraisal",
+  "sourceGraph": "data/scientific/bone-health-interpretation-graph.v1.json",
+  "sourceRetrievalPlan": "data/scientific/bone-health-evidence-retrieval-plan.v1.json",
+  "sourceAppraisal": "data/scientific/bone-health-evidence-appraisal.v1.json",
+  "sourceVerificationMethod": "Public NASA source pages, abstract/metadata and search-visible excerpts; not full systematic review",
+  "sourceDiscoveryPerformed": true,
+  "independentReviewComplete": false,
+  "operationalActivation": false,
+  "sourceRegistry": [
+    {
+      "sourceId": "NASA-NTRS-2024-005190",
+      "issuer": "NASA Human Research Program",
+      "title": "Risk of Bone Fracture due to Spaceflight-induced Changes to Bone",
+      "publicationDate": "2024-06-03",
+      "url": "https://ntrs.nasa.gov/citations/20240005190",
+      "sourceType": "NASA evidence report",
+      "accessScope": "report metadata and abstract",
+      "verifiedAt": "2026-10-11",
+      "screeningNote": "NASA report describes the limits of DXA surveillance for skeletal recovery and distinguishes bone competence from applied loading.",
+      "fullTextCriticalAppraisalComplete": false,
+      "primaryStudyExtractionComplete": false,
+      "independentReviewer": null
+    },
+    {
+      "sourceId": "NASA-STD3001-V1-REVC",
+      "issuer": "NASA",
+      "title": "NASA-STD-3001 Volume 1 Revision C, Section 4.7",
+      "publicationDate": "2023",
+      "url": "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf",
+      "sourceType": "technical standard",
+      "accessScope": "NASA public standards excerpt",
+      "verifiedAt": "2026-10-11",
+      "screeningNote": "Specifies site-specific bone density monitoring and countermeasures; operational NASA standard is not a validated Mitochondria individual risk model.",
+      "fullTextCriticalAppraisalComplete": false,
+      "primaryStudyExtractionComplete": false,
+      "independentReviewer": null
+    },
+    {
+      "sourceId": "NASA-BONE-RISK-2025",
+      "issuer": "NASA Human Research Program",
+      "title": "Risk of Bone Fracture due to Spaceflight-induced Changes to Bone",
+      "publicationDate": "2025-03-11",
+      "url": "https://www.nasa.gov/directorates/esdmd/hhp/risk-of-bone-fracture-due-to-spaceflight-induced-changes-to-bone/",
+      "sourceType": "risk summary",
+      "accessScope": "NASA public summary",
+      "verifiedAt": "2026-10-11",
+      "screeningNote": "Identifies skeletal changes and countermeasure context; not individual biomarker effect estimation.",
+      "fullTextCriticalAppraisalComplete": false,
+      "primaryStudyExtractionComplete": false,
+      "independentReviewer": null
+    },
+    {
+      "sourceId": "NASA-HRP-IRP",
+      "issuer": "NASA Human Research Program",
+      "title": "Human Research Program Integrated Research Plan",
+      "publicationDate": "2015",
+      "url": "https://www.nasa.gov/wp-content/uploads/2015/06/human_research_program_integrated_research_plan.pdf",
+      "sourceType": "research plan",
+      "accessScope": "NASA public plan excerpt",
+      "verifiedAt": "2026-10-11",
+      "screeningNote": "Identifies joint monitoring of density, turnover and bone structure and highlights recovery and fracture-risk evidence gaps.",
+      "fullTextCriticalAppraisalComplete": false,
+      "primaryStudyExtractionComplete": false,
+      "independentReviewer": null
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipId": "bhrel-001",
+      "claimUnderReview": "CTX reflects resorption and P1NP formation; interpret paired trajectories, not a validated balance score.",
+      "candidateSourceIds": [
+        "NASA-HRP-IRP"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-002",
+      "claimUnderReview": "CTX is a turnover marker, not a percentage of hip BMD loss.",
+      "candidateSourceIds": [
+        "NASA-NTRS-2024-005190",
+        "NASA-HRP-IRP"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-003",
+      "claimUnderReview": "Formation marker trends do not directly quantify DXA changes.",
+      "candidateSourceIds": [
+        "NASA-HRP-IRP"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-004",
+      "claimUnderReview": "Hip and femoral-neck DXA are distinct anatomical regions; do not pool baselines.",
+      "candidateSourceIds": [
+        "NASA-STD3001-V1-REVC"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-005",
+      "claimUnderReview": "DXA areal BMD and QCT volumetric BMD have different units and methods.",
+      "candidateSourceIds": [
+        "NASA-NTRS-2024-005190"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-006",
+      "claimUnderReview": "PTH and circulating calcium should be interpreted with sampling and endocrine context.",
+      "candidateSourceIds": [],
+      "screeningStatus": "requires_targeted_primary_literature",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-007",
+      "claimUnderReview": "Vitamin D status and PTH may be related; do not infer causality from two measurements.",
+      "candidateSourceIds": [],
+      "screeningStatus": "requires_targeted_primary_literature",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-008",
+      "claimUnderReview": "24-hour urinary calcium interpretation depends on urine collection and volume context.",
+      "candidateSourceIds": [
+        "NASA-STD3001-V1-REVC"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-009",
+      "claimUnderReview": "Citrate may be an input to a validated supersaturation model; no standalone score.",
+      "candidateSourceIds": [],
+      "screeningStatus": "requires_targeted_primary_literature",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-010",
+      "claimUnderReview": "Oxalate may contribute to calcium oxalate supersaturation; do not calculate without validated inputs.",
+      "candidateSourceIds": [],
+      "screeningStatus": "requires_targeted_primary_literature",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-011",
+      "claimUnderReview": "Adherence and load are complementary exposure descriptions, not interchangeable.",
+      "candidateSourceIds": [
+        "NASA-BONE-RISK-2025"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-012",
+      "claimUnderReview": "Resistance loading is relevant bone-health context; no individual BMD causal attribution.",
+      "candidateSourceIds": [
+        "NASA-BONE-RISK-2025"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-013",
+      "claimUnderReview": "Mission duration is not equivalent to measured microgravity exposure.",
+      "candidateSourceIds": [
+        "NASA-HRP-IRP"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-014",
+      "claimUnderReview": "Microgravity is relevant context for bone turnover; do not infer an individual causal effect.",
+      "candidateSourceIds": [
+        "NASA-NTRS-2024-005190",
+        "NASA-BONE-RISK-2025"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-015",
+      "claimUnderReview": "Fluid intake and urine output are related but not interchangeable observations.",
+      "candidateSourceIds": [],
+      "screeningStatus": "requires_targeted_primary_literature",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "relationshipId": "bhrel-016",
+      "claimUnderReview": "Dietary protein and exercise are separate contextual dimensions.",
+      "candidateSourceIds": [
+        "NASA-BONE-RISK-2025"
+      ],
+      "screeningStatus": "candidate_sources_identified",
+      "sourceSupportForExactClaim": "not_assessed",
+      "primaryStudyDataExtracted": false,
+      "conflictingEvidenceAssessed": false,
+      "populationTransferabilityAssessed": false,
+      "assayAndUnitCompatibilityAssessed": false,
+      "independentReviewer": null,
+      "reviewDecision": "defer",
+      "approvedForDisplay": false,
+      "approvedForOperationalUse": false,
+      "clinicalRuleAllowed": false
+    }
+  ]
+}
