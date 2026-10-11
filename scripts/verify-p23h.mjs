@@ -1,0 +1,12 @@
+import { readFileSync } from "node:fs";
+import assert from "node:assert/strict";
+const identity = readFileSync("src/components/mission-identity.tsx", "utf8");
+const bootstrap = readFileSync("scripts/bootstrap-first-operator.mjs", "utf8");
+const guide = readFileSync("docs/P23H_FIRST_MISSION_ACTIVATION.md", "utf8");
+assert(identity.includes("First mission activation"));
+assert(identity.includes("!snapshot.signedIn"));
+assert(identity.includes("SECURE_BOOTSTRAP_AUTH_READINESS.md"));
+assert(bootstrap.includes('admin.rpc("configure_mission_bootstrap"'));
+assert(bootstrap.includes('user.rpc("bootstrap_first_mission"'));
+assert(guide.includes("ground-medical"));
+console.log("P23H first mission activation static checks: PASS");
