@@ -18,7 +18,8 @@ export async function extractBoneDocument(file: File): Promise<ExtractedDocument
     const pdfjs = await import("pdfjs-dist");
     const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
     pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-    const document = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false }).promise;
+    const loadParams = { data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false };
+    const document = await pdfjs.getDocument(loadParams).promise;
     try {
       if (document.numPages > 12) throw new Error("PDF exceeds 12-page limit.");
       const sections: string[] = [];
