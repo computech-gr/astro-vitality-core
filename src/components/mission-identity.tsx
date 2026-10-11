@@ -207,6 +207,16 @@ export function MissionIdentity() {
                 <CardHeader><CardTitle>Redeem first-operator activation</CardTitle></CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
                   <p>Only use this after an authorized deployment administrator has armed the one-time bootstrap hash through a privileged database console. This form never arms bootstrap or grants access without the server-side secret.</p>
+                  <div className="rounded-md border border-border bg-muted/30 p-3 text-xs leading-6">
+                    <p className="font-semibold text-foreground">Activation prerequisites</p>
+                    <ol className="list-decimal pl-5">
+                      <li>Confirm this account's email and sign in.</li>
+                      <li>Generate the secret and hash on your trusted computer with <code>node scripts/prepare-first-operator-bootstrap.mjs</code>.</li>
+                      <li>Approve the hash-only SQL statement for an authorized Lovable Cloud database administrator. Never send the secret.</li>
+                      <li>After the administrator confirms the hash was armed, enter the private secret below once.</li>
+                    </ol>
+                    <p className="mt-2">If privileged execution is unavailable, stop here. This page cannot bypass database permissions.</p>
+                  </div>
                   <div><Label htmlFor="bootstrap-code">First mission code</Label><Input id="bootstrap-code" value={bootstrapCode} onChange={(event) => setBootstrapCode(event.target.value)} autoComplete="off" placeholder="MISSION_TEST" className="mt-2" /></div>
                   <div><Label htmlFor="bootstrap-name">First mission name</Label><Input id="bootstrap-name" value={bootstrapName} onChange={(event) => setBootstrapName(event.target.value)} autoComplete="off" placeholder="Mitochondria validation mission" className="mt-2" /></div>
                   <div><Label htmlFor="bootstrap-secret">One-time bootstrap secret</Label><Input id="bootstrap-secret" type="password" autoComplete="off" value={bootstrapSecret} onChange={(event) => setBootstrapSecret(event.target.value)} className="mt-2" /></div>
