@@ -26,6 +26,7 @@ const emptyStatus: OfflineMissionStatus = {
   serviceWorkerState: "not_registered",
   connectivity: "unknown",
   pendingSyncItems: 0,
+  reviewSyncItems: 0,
   conflictItems: 0,
   storedRecords: 0,
 };
@@ -156,7 +157,7 @@ export function OfflineMissionPage() {
           </Card>
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><Cloud className="text-primary" />Sync queue</CardTitle></CardHeader>
-            <CardContent><p className="font-mono text-2xl">{status.pendingSyncItems}</p><p className="mt-2 text-xs text-muted-foreground">Pending/failed records remain queued until a governed remote transport is available.</p></CardContent>
+            <CardContent><p className="font-mono text-2xl">{status.pendingSyncItems}</p><p className="mt-2 text-xs text-muted-foreground">Pending and retryable failures only. Records requiring review are excluded.</p></CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><ShieldCheck className="text-primary" />Protocol cache</CardTitle></CardHeader>
@@ -164,6 +165,10 @@ export function OfflineMissionPage() {
           </Card>
         </section>
 
+        <section className="mt-6 rounded-lg border border-amber-400/30 bg-card/60 p-4" aria-label="Sync records requiring review">
+          <p className="text-sm font-semibold">Records requiring review: {status.reviewSyncItems ?? 0}</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">These encrypted records were definitively rejected by the cloud and are not retried automatically. They remain on this device. Do not reassign old placeholder records to a real astronaut automatically. Contact an authorized mission administrator for reviewed remediation; no automatic reset or deletion is available.</p>
+        </section>
         <section className="mt-8 rounded-lg border border-border bg-card/60 p-4" aria-label="Governed cloud synchronization status">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>

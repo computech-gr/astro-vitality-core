@@ -14,6 +14,14 @@ function rpcClient(): RpcCapableClient {
   return supabase as unknown as RpcCapableClient;
 }
 
+/** Fail closed only for known deterministic input/auth failures; unknown errors remain retryable. */
+export function classifyMissionSyncError(message: string): "rejected" | "retryable" {
+  const normalized = message.toLowerCase();
+  if (/\b(network|timeout|timed out|connection|fetch failed|rate limit|temporarily unavailable|service unavailable|gateway|deadlock|lock timeout)\b/i.test(normalized)) return "retryable";
+  if (/mission access denied|authentication required|invalid (mission|crew)|permission denied|violates .*constraint|structured payload required|payload too large|unsupported event kind|invalid source provenance|event identifiers? too long|invalid idempotency key|invalid event (kind|identifier)|invalid source (id|version)/i.test(normalized)) return "rejected";
+  return "retryable";
+}
+
 export class SupabaseMissionSyncTransport implements OfflineSyncTransport {
   readonly id = "supabase-mission-sync-v1";
 
@@ -28,8 +36,7 @@ export class SupabaseMissionSyncTransport implements OfflineSyncTransport {
           remote?: SyncComparableRecord;
         }>("ingest_mission_event", { p_event: record, p_idempotency_key: idempotencyKey });
         if (error) {
-          const definitive = /mission access denied|authentication required|invalid (mission|crew)|permission denied|violates .*constraint|structured payload required|payload too large/i.test(error.message);
-          return { recordId: record.id, status: definitive ? "rejected" : "retryable", message: error.message };
+          return { recordId: record.id, status: classifyMissionSyncError(error.message), message: error.message };
         }
         if (!data) return { recordId: record.id, status: "retryable", message: "Mission sync returned no result" };
         if (data.record_id !== record.id) return { recordId: record.id, status: "rejected", message: "Sync response record ID mismatch" };

@@ -1,0 +1,14 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+const read = (p) => fs.readFileSync(p, "utf8");
+const transport = read("src/infrastructure/ground-research/supabase-transport.ts");
+const runtime = read("src/infrastructure/offline/runtime.ts");
+const ui = read("src/components/offline-mission.tsx");
+const sync = read("src/infrastructure/offline/sync.ts");
+for (const phrase of ["unsupported event kind", "invalid source provenance", "invalid idempotency key", "event identifiers? too long"]) assert.ok(transport.includes(phrase), phrase);
+assert.ok(transport.includes('return "retryable"'));
+assert.ok(runtime.includes('reviewSyncItems: queue.filter'));
+assert.ok(!runtime.includes('item.state === "failed" || item.state === "needs_review"'));
+assert.ok(ui.includes('Records requiring review:'));
+assert.ok(sync.includes('item.state === "pending" || item.state === "failed" || item.state === "conflict"'));
+console.log("P23E static verifier PASS (device/cloud tests not performed)");
