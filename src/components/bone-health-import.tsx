@@ -1,3 +1,4 @@
+import { BoneHealthDocumentImport } from "./bone-health-document-import";
 import { useState } from "react";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
 import { BONE_IMPORT_CSV_TEMPLATE, parseBoneImport, type BoneImportCandidate } from "@/domain/bone-health/import";
@@ -43,7 +44,8 @@ export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImport
     <h2 className="text-xl font-semibold">Import laboratory results</h2>
     <p className="mt-2 text-sm text-muted-foreground">CSV results can be mapped to the 63 research variables and reviewed before encrypted storage. No automatic medical interpretation. The mission, crew and real/synthetic selection above apply to every imported row.</p>
     <p className="mt-2 text-sm text-muted-foreground">CSV headers: <code>{BONE_IMPORT_CSV_TEMPLATE.trim()}</code></p>
-    <label className="mt-4 block">Choose CSV, PDF or scanned image<input className="mt-2 block w-full" type="file" accept=".csv,.pdf,.png,.jpg,.jpeg,.webp,text/csv,application/pdf,image/png,image/jpeg,image/webp" onChange={e=>{const f=e.target.files?.[0];if(f)void load(f);e.currentTarget.value="";}} /></label>
+    <label className="mt-4 block">Choose CSV<input className="mt-2 block w-full" type="file" accept=".csv,text/csv" onChange={e=>{const f=e.target.files?.[0];if(f)void load(f);e.currentTarget.value="";}} /></label>
+    <BoneHealthDocumentImport missionId={missionId} crewMemberId={crewMemberId} dataOrigin={dataOrigin} onImported={onImported} />
     {documentName && <p className="mt-2 text-sm">Selected document: {documentName}. No document bytes are uploaded or stored.</p>}
     {status && <p role="status" className="mt-3 text-sm">{status}</p>}
     {errors.length>0 && <details className="mt-3 text-sm"><summary>Rejected rows ({errors.length})</summary><ul className="list-disc pl-5">{errors.map((e,i)=><li key={i}>{e}</li>)}</ul></details>}

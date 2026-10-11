@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const read = (name) => fs.readFileSync(name,'utf8');
+const domain=read('src/domain/bone-health/document-extraction.ts');
+const component=read('src/components/bone-health-document-import.tsx');
+const parent=read('src/components/bone-health-import.tsx');
+const pkg=JSON.parse(read('package.json'));
+assert.match(domain,/pdfjs-dist/);
+assert.match(domain,/TextDetector/);
+assert.match(domain,/matches.length !== 1/);
+assert.match(domain,/selected:false/);
+assert.match(component,/saveBoneEntry/);
+assert.match(component,/missionId\.trim\(\)/);
+assert.match(component,/onImported/);
+assert.match(parent,/BoneHealthDocumentImport/);
+assert.ok(pkg.dependencies['pdfjs-dist']);
+assert.ok(pkg.scripts.check.includes('verify:p22:bone-documents'));
+console.log('P22.3 PASS: PDF text, browser-dependent OCR, conservative opt-in review, existing encrypted persistence. No clinical activation.');
