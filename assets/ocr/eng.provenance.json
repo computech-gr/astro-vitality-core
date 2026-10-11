@@ -1,12 +1,12 @@
 {
   "schema_version": "p22.7-v1",
-  "status": "pending_review",
+  "status": "approved",
   "source_url": "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/87416418657359cb625c412a48b6e1d6d41c29bd/eng.traineddata",
   "upstream_repository": "https://github.com/tesseract-ocr/tessdata_fast",
   "upstream_revision": "87416418657359cb625c412a48b6e1d6d41c29bd",
   "license": "Apache-2.0",
-  "license_reviewed_by": null,
-  "reviewed_at": null,
+  "license_reviewed_by": "Theodore Silvestros",
+  "reviewed_at": "2026-10-11T19:05:00Z",
   "sha256": "2a66ec904bc0e7657b27e200a874c01e1bc8a58b756cbbaa9afbae736fa50edc",
   "evidence": {
     "collected_at": "2026-10-11T18:54:00Z",
@@ -23,5 +23,5 @@
     "browser_service_worker_test": "not_performed",
     "airplane_mode_device_test": "not_performed"
   },
-  "notes": "Evidence collected automatically. Human license/provenance review is required before status may be set to approved and the candidate moved to assets/ocr/eng.traineddata.gz for staging."
+  "notes": "Human license/provenance review and redistribution approval by Theodore Silvestros on 2026-10-11, conditional on preserving Apache-2.0 license and Tesseract attribution (see THIRD_PARTY_LICENSES.md and third_party/tessdata_fast/LICENSE). Browser service-worker and real-device airplane-mode tests not yet performed."
 }
