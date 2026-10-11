@@ -39,7 +39,7 @@ export function BoneHealthDocumentImport({missionId,crewMemberId,dataOrigin,onIm
   }
   return <section className="mt-6 rounded-xl border border-border p-5">
     <h3 className="font-semibold">PDF & scanned medical report extraction (experimental)</h3>
-    <p className="mt-2 text-sm text-muted-foreground">Runs on this device. Selectable PDF text is supported; scanned PDFs and images require browser TextDetector support. No automatic medical decisions. No original report upload or storage. Always compare results with the report before saving.</p>
+    <p className="mt-2 text-sm text-muted-foreground">Runs on this device. Selectable PDF text is supported; scanned PDFs and images use on-device OCR (browser TextDetector or Tesseract fallback). First use may require downloading OCR language resources; offline availability is not guaranteed until those resources are cached. No automatic medical decisions. No original report upload or storage. Always compare results with the report before saving.</p>
     <input className="mt-3 block w-full" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*" disabled={busy} onChange={e=>{const file=e.target.files?.[0];if(file)void load(file);e.currentTarget.value="";}} />
     <p role="status" className="mt-2 text-sm">{status}</p>
     {text && <div className="mt-3 space-y-2">

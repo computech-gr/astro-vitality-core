@@ -5,10 +5,28 @@ export type ExtractedDocument = { text: string; pages: number; method: string; w
 type Detector = { detect(image: ImageBitmap | HTMLCanvasElement): Promise<Array<{rawValue?: string}>> };
 type DetectorConstructor = new () => Detector;
 
+// All report pixels remain in the browser. Tesseract's default worker/language
+// resources may be downloaded on first use: this is NOT guaranteed offline-ready.
 async function recognize(canvas: HTMLCanvasElement): Promise<string> {
   const detector = (globalThis as typeof globalThis & { TextDetector?: DetectorConstructor }).TextDetector;
-  if (!detector) throw new Error("Local OCR is unavailable in this browser. Use a selectable-text PDF, CSV, or manual entry. No document was uploaded.");
-  return (await new detector().detect(canvas)).map(x => x.rawValue ?? "").join("\n");
+  if (detector) {
+    try {
+      const detected = (await new detector().detect(canvas)).map(x => x.rawValue ?? "").join("\n");
+      if (detected.trim()) return detected;
+    } catch { /* Fall back to WASM OCR; never upload a report. */ }
+  }
+  let worker: Awaited<ReturnType<typeof import("tesseract.js")["createWorker"]>> | undefined;
+  try {
+    const { createWorker } = await import("tesseract.js");
+    worker = await createWorker("eng", 1);
+    const result = await worker.recognize(canvas);
+    if (!result.data.text.trim()) throw new Error("OCR returned no readable text.");
+    return result.data.text;
+  } catch (error) {
+    throw new Error(`On-device OCR unavailable: ${error instanceof Error ? error.message : "unknown failure"}. First use may require a network connection to fetch OCR language resources. Use CSV or manual entry if unavailable.`);
+  } finally {
+    if (worker) await worker.terminate();
+  }
 }
 
 export async function extractBoneDocument(file: File): Promise<ExtractedDocument> {
@@ -35,11 +53,11 @@ export async function extractBoneDocument(file: File): Promise<ExtractedDocument
           if (!context) throw new Error("Canvas rendering is unavailable.");
           await page.render({canvas,canvasContext:context,viewport}).promise;
           text = await recognize(canvas);
-          warnings.push(`Page ${index}: browser OCR used; check every character and decimal separator.`);
+          warnings.push(`Page ${index}: on-device OCR used; check every character and decimal separator.`);
         }
         sections.push(text);
       }
-      return {text:sections.join("\n"),pages:document.numPages,method:warnings.length?"PDF text + browser OCR":"PDF selectable text",warnings};
+      return {text:sections.join("\n"),pages:document.numPages,method:warnings.length?"PDF text + on-device OCR":"PDF selectable text",warnings};
     } finally { await document.destroy(); }
   }
   if (/\.(png|jpe?g|webp)$/i.test(file.name)) {
@@ -50,7 +68,7 @@ export async function extractBoneDocument(file: File): Promise<ExtractedDocument
       canvas.width=bitmap.width; canvas.height=bitmap.height;
       const ctx=canvas.getContext("2d"); if(!ctx) throw new Error("Canvas unavailable.");
       ctx.drawImage(bitmap,0,0);
-      return {text:await recognize(canvas),pages:1,method:"browser OCR",warnings:["OCR can misread numbers and units. Verify against the original report."]};
+      return {text:await recognize(canvas),pages:1,method:"on-device OCR",warnings:["OCR can misread numbers and units. Verify against the original report."]};
     } finally {bitmap.close();}
   }
   throw new Error("Only PDF, PNG, JPEG and WebP documents are supported.");
