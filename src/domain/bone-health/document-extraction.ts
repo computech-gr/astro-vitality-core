@@ -57,19 +57,37 @@ export async function extractBoneDocument(file: File): Promise<ExtractedDocument
 }
 
 export type DocumentMatch = BoneImportCandidate & { rawLine: string; reviewRequired: true };
+
+// Only exact catalog names or their explicitly written slash-separated variants.
+// Do not infer clinical synonyms, ranges, inequalities, or missing units.
+function normalizedLabel(value: string): string {
+  return value.normalize("NFKC").toLocaleLowerCase("en-US").replace(/\s+/g, " ").trim();
+}
+function catalogLabels(name: string): string[] {
+  return [name, ...name.split(/\s+\/\s+/)].map(normalizedLabel).filter(x => x.length >= 3);
+}
+const resultPattern = /^\s*(?:[:=]|[-–—]|\s)+\s*([+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;|]+)(?:\s|$)/;
+
 export function suggestBoneDocumentMatches(text: string, source: string): DocumentMatch[] {
-  const lines = text.split(/\r?\n/).slice(0,1000);
+  const lines = text.split(/\r?\n/).slice(0, 1000);
   const found: DocumentMatch[] = [];
   for (const line of lines) {
-    const normalized = line.toLocaleLowerCase().replace(/\s+/g," ").trim();
-    const matches = BONE_HEALTH_VARIABLES.filter(v => v.name.length>=4 && normalized.startsWith(v.name.toLocaleLowerCase()));
-    if(matches.length !== 1) continue;
-    const remainder=line.slice(matches[0]!.name.length).trim();
-    const parsed = remainder.match(/^[:\s-]*([+-]?\d+(?:[.,]\d+)?)\s+([^\s]+)(?:\s|$)/);
-    if(!parsed) continue;
-    const value = Number(parsed[1]!.replace(",","."));
-    if(!Number.isFinite(value)) continue;
-    found.push({variableId:matches[0]!.id,value,unit:parsed[2]!,observedAt:"",sourceLabel:source,specimen:"",assayMethod:"",notes:"Extracted from document; human verified.",selected:false,rawLine:line,reviewRequired:true});
+    // Refuse report lines with comparison symbols, reference intervals or multi-result layouts.
+    if (/[<>≤≥]/.test(line) || /\b(?:reference range|reference interval|normal range)\b/i.test(line)) continue;
+    const normalized = normalizedLabel(line);
+    const candidates = BONE_HEALTH_VARIABLES.flatMap(v => catalogLabels(v.name).map(label => ({v, label})))
+      .filter(({label}) => normalized.startsWith(label) && /[\s:=–—-]/.test(normalized.charAt(label.length)));
+    const ids = new Set(candidates.map(c => c.v.id));
+    if (ids.size !== 1) continue; // matches.length !== 1 is equivalent here // Ambiguous labels are never auto-mapped.
+    const chosen = candidates.sort((a,b) => b.label.length - a.label.length)[0]!;
+    // Match against original line using the same Unicode-normalized label length.
+    const original = line.normalize("NFKC").trim();
+    const remainder = original.slice(chosen.label.length);
+    const parsed = remainder.match(resultPattern);
+    if (!parsed) continue;
+    const value = Number(parsed[1]!.replace(",", "."));
+    if (!Number.isFinite(value)) continue;
+    found.push({variableId:chosen.v.id,value,unit:parsed[2]!,observedAt:"",sourceLabel:source,specimen:"",assayMethod:"",notes:"Extracted from document; human verified.",selected:false,rawLine:line,reviewRequired:true});
   }
   return found.slice(0,100);
 }
