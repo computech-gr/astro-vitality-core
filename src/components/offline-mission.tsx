@@ -53,7 +53,7 @@ export function OfflineMissionPage() {
   const [syncBusy, setSyncBusy] = useState(false);
   const [cloudState, setCloudState] = useState<"checking" | "configuration_required" | "local_only" | "authenticated" | "error">("checking");
   const [reviewItems, setReviewItems] = useState<OfflineSyncQueueItem[]>([]);
-  const [evidence, setEvidence] = useState<{ matched: number; missing: number; checked: number; cloudError?: string } | null>(null);
+  const [evidence, setEvidence] = useState<{ matched: number; missing: number; checked: number; cloudError?: string; limited?: boolean } | null>(null);
   const [evidenceBusy, setEvidenceBusy] = useState(false);
   const [cloudDetail, setCloudDetail] = useState("Checking governed Supabase access…");
 
@@ -127,12 +127,17 @@ export function OfflineMissionPage() {
         setEvidence({ matched: 0, missing: 0, checked: 0, cloudError: dataset.cloudContext.error ?? "Sign in with an authorized mission membership to verify cloud evidence." });
         return;
       }
+      if (dataset.cloudContext.error) {
+        setEvidence({ matched: 0, missing: 0, checked: 0, cloudError: dataset.cloudContext.error });
+        return;
+      }
       const cloudIds = new Set(dataset.cloud.map((row) => row.id));
       const synced = dataset.local.filter((row) => row.syncState === "synced");
       setEvidence({
         checked: synced.length,
         matched: synced.filter((row) => cloudIds.has(row.id)).length,
         missing: synced.filter((row) => !cloudIds.has(row.id)).length,
+        limited: dataset.cloud.length >= 300 || dataset.local.length >= 300,
       });
     } catch (error) {
       setEvidence({ matched: 0, missing: 0, checked: 0, cloudError: error instanceof Error ? error.message : "Evidence check failed" });
@@ -218,8 +223,20 @@ export function OfflineMissionPage() {
             <div><h3 className="text-sm font-semibold">Cloud persistence evidence</h3><p className="mt-1 text-xs text-muted-foreground">Read-only comparison of locally synced event IDs with cloud event IDs visible to your authorized account (up to 300 records per side).</p></div>
             <Button variant="outline" disabled={evidenceBusy || cloudState !== "authenticated"} onClick={() => void verifyCloudEvidence()}>{evidenceBusy ? "Checking…" : "Verify cloud records"}</Button>
           </div>
-          {evidence ? <p role="status" className="mt-3 text-sm">{evidence.cloudError ?? `Matched ${evidence.matched} of ${evidence.checked} locally synced records; ${evidence.missing} not found in the limited cloud query.`}</p> : null}
+          {evidence ? <p role="status" className="mt-3 text-sm">{evidence.cloudError ?? `Matched ${evidence.matched} of ${evidence.checked} locally synced records; ${evidence.missing} not found in the limited cloud query.${evidence.limited ? " Results reached the 300-record limit; unmatched entries are inconclusive." : ""}`}</p> : null}
           <p className="mt-2 text-xs text-muted-foreground">A match is useful evidence, not a real-device end-to-end certification. Missing matches can also reflect query limits or access policy. No test data is created and no records are changed.</p>
+        </section>
+        <section className="mt-4 rounded-lg border border-border bg-card/60 p-4" aria-label="Authenticated persistence validation guide">
+          <h3 className="text-sm font-semibold">Authenticated persistence validation</h3>
+          <p className="mt-1 text-xs text-muted-foreground">Manual research-only test protocol. This panel does not create records, change memberships or simulate a sign-in.</p>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-xs leading-5 text-muted-foreground">
+            <li>Sign in through <a className="underline text-primary" href="/mission/identity">Mission identity</a> with a provisioned crew-self membership; select the correct active mission.</li>
+            <li>Confirm Bone Health mission and crew selectors display only authorized choices. Use clearly labelled synthetic values, never real patient data.</li>
+            <li>Record a synthetic measurement in the supported capture flow, then return here and select Sync now while online.</li>
+            <li>Select Verify cloud records. Inspect mission_events and crew_health_record_index under the same authorized mission and crew; confirm event ID, metric and idempotency.</li>
+            <li>Repeat offline capture and online reconnection on a real device; separately test ground medical visibility and crew isolation with approved test accounts.</li>
+          </ol>
+          <p className="mt-3 text-xs text-muted-foreground">Current access: {cloudState === "authenticated" ? "signed in; confirm active crew membership before capture" : "authentication or cloud configuration required"}. A cloud match alone does not prove camera or offline-device validation.</p>
         </section>
         <section className="mt-8 rounded-lg border border-border bg-card/60 p-4" aria-label="Governed cloud synchronization status">
           <div className="flex flex-wrap items-center justify-between gap-3">
