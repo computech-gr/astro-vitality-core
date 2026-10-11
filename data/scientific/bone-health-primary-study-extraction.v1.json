@@ -1,0 +1,316 @@
+{
+  "schemaVersion": "1.0",
+  "purpose": "P21.9 real PubMed study identification and abstract-level extraction; not full-text evidence appraisal or clinical validation",
+  "extractionScope": "PubMed bibliographic metadata and abstract-level findings only",
+  "sourceScreening": "data/scientific/bone-health-literature-screening.v1.json",
+  "sourceGraph": "data/scientific/bone-health-interpretation-graph.v1.json",
+  "independentReviewComplete": false,
+  "operationalActivation": false,
+  "studies": [
+    {
+      "studyId": "PMID-24470067",
+      "title": "Men and women in space: bone loss and kidney stone risk after long-duration spaceflight",
+      "pmid": "24470067",
+      "doi": "10.1002/jbmr.2185",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/24470067/",
+      "sourceAccess": "pubmed_abstract_and_metadata_only",
+      "studyDesign": "primary_observational",
+      "population": "ISS astronauts",
+      "sampleSizeAsReportedInAbstract": "42 (33 men, 9 women)",
+      "exposureDurationAsReportedInAbstract": "49-215 days",
+      "measurementsAsReportedInAbstract": "DXA, blood/urine bone turnover markers, urinary supersaturation",
+      "abstractLevelFinding": "The abstract reports comparable bone responses by sex; typical postflight BMD decline was not observed in advanced resistance-device group.",
+      "limitationsAndTransferability": "Observational comparisons; exercise-device grouping and sex imbalance; no exact CTX/P1NP assay effect size extracted.",
+      "linkedRelationshipIds": [
+        "bhrel-001",
+        "bhrel-002",
+        "bhrel-008",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015",
+        "bhrel-016"
+      ],
+      "quantitativeEffectSize": null,
+      "confidenceInterval": null,
+      "exactAssayAndUnits": null,
+      "fullTextVerified": false,
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false
+    },
+    {
+      "studyId": "PMID-23334732",
+      "title": "Bisphosphonates as a supplement to exercise to protect bone during long-duration spaceflight",
+      "pmid": "23334732",
+      "doi": "10.1007/s00198-012-2243-z",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/23334732/",
+      "sourceAccess": "pubmed_abstract_and_metadata_only",
+      "studyDesign": "intervention_nonrandomized",
+      "population": "ISS astronauts",
+      "sampleSizeAsReportedInAbstract": "7 treated; 18 iRED and 11 ARED historical comparisons",
+      "exposureDurationAsReportedInAbstract": "mean 5.5 months",
+      "measurementsAsReportedInAbstract": "DXA, QCT, bone turnover biomarkers, urinary calcium",
+      "abstractLevelFinding": "Study abstract describes alendronate plus exercise and comparison with other ISS exercise cohorts; cannot isolate exercise-only effect.",
+      "limitationsAndTransferability": "Small treated cohort; combined drug/exercise exposure; nonrandomized historical comparisons.",
+      "linkedRelationshipIds": [
+        "bhrel-002",
+        "bhrel-005",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015"
+      ],
+      "quantitativeEffectSize": null,
+      "confidenceInterval": null,
+      "exactAssayAndUnits": null,
+      "fullTextVerified": false,
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false
+    },
+    {
+      "studyId": "PMID-22549960",
+      "title": "Benefits for bone from resistance exercise and nutrition in long-duration spaceflight: Evidence from biochemistry and densitometry",
+      "pmid": "22549960",
+      "doi": "10.1002/jbmr.1647",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/22549960/",
+      "sourceAccess": "pubmed_abstract_and_metadata_only",
+      "studyDesign": "observational_countermeasure",
+      "population": "ISS astronauts",
+      "sampleSizeAsReportedInAbstract": null,
+      "exposureDurationAsReportedInAbstract": null,
+      "measurementsAsReportedInAbstract": "Resistive exercise, nutrition, bone biochemistry and densitometry",
+      "abstractLevelFinding": "Abstract identifies differential countermeasure conditions; quantitative extraction and confounding assessment pending full text.",
+      "limitationsAndTransferability": "Exercise and nutritional exposures co-vary; no causal effect size extracted.",
+      "linkedRelationshipIds": [
+        "bhrel-001",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015"
+      ],
+      "quantitativeEffectSize": null,
+      "confidenceInterval": null,
+      "exactAssayAndUnits": null,
+      "fullTextVerified": false,
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false
+    },
+    {
+      "studyId": "PMID-26456109",
+      "title": "Bone metabolism and renal stone risk during International Space Station missions",
+      "pmid": "26456109",
+      "doi": null,
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/26456109/",
+      "sourceAccess": "pubmed_abstract_and_metadata_only",
+      "studyDesign": "observational",
+      "population": "ISS astronauts",
+      "sampleSizeAsReportedInAbstract": null,
+      "exposureDurationAsReportedInAbstract": "4-6 months",
+      "measurementsAsReportedInAbstract": "Bone biochemistry, renal stone risk and resistance exercise device type",
+      "abstractLevelFinding": "Abstract describes concurrent assessment of bone metabolism and renal stone risk during ISS missions.",
+      "limitationsAndTransferability": "Cannot infer individual kidney stone probability or specific assay thresholds from abstract.",
+      "linkedRelationshipIds": [
+        "bhrel-008",
+        "bhrel-009",
+        "bhrel-010",
+        "bhrel-016"
+      ],
+      "quantitativeEffectSize": null,
+      "confidenceInterval": null,
+      "exactAssayAndUnits": null,
+      "fullTextVerified": false,
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false
+    },
+    {
+      "studyId": "PMID-25107989",
+      "title": "Sex-specific responses of bone metabolism and renal stone risk during bed rest",
+      "pmid": "25107989",
+      "doi": "10.14814/phy2.12119",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/25107989/",
+      "sourceAccess": "pubmed_abstract_and_metadata_only",
+      "studyDesign": "analog_observational",
+      "population": "Head-down-tilt bed-rest participants",
+      "sampleSizeAsReportedInAbstract": "74 (50 men, 24 women)",
+      "exposureDurationAsReportedInAbstract": "14-90 days",
+      "measurementsAsReportedInAbstract": "Bone biochemistry, bone loss, renal stone risk",
+      "abstractLevelFinding": "Abstract reports pooled bed-rest control cohorts examining sex-specific response.",
+      "limitationsAndTransferability": "Terrestrial analog, not astronaut flight data; pooled heterogeneous durations.",
+      "linkedRelationshipIds": [
+        "bhrel-001",
+        "bhrel-008",
+        "bhrel-016"
+      ],
+      "quantitativeEffectSize": null,
+      "confidenceInterval": null,
+      "exactAssayAndUnits": null,
+      "fullTextVerified": false,
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false
+    },
+    {
+      "studyId": "PMID-26630194",
+      "title": "Evaluating Bone Loss in ISS Astronauts",
+      "pmid": "26630194",
+      "doi": "10.3357/AMHP.EC06.2015",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/26630194/",
+      "sourceAccess": "pubmed_abstract_and_metadata_only",
+      "studyDesign": "review",
+      "population": "ISS astronaut evidence",
+      "sampleSizeAsReportedInAbstract": null,
+      "exposureDurationAsReportedInAbstract": null,
+      "measurementsAsReportedInAbstract": "DXA and proposed complementary skeletal assessment",
+      "abstractLevelFinding": "Review abstract states DXA BMD alone does not fully characterize skeletal integrity.",
+      "limitationsAndTransferability": "Review, not independent primary study; does not validate individual fracture predictions.",
+      "linkedRelationshipIds": [
+        "bhrel-002",
+        "bhrel-004",
+        "bhrel-005"
+      ],
+      "quantitativeEffectSize": null,
+      "confidenceInterval": null,
+      "exactAssayAndUnits": null,
+      "fullTextVerified": false,
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false
+    }
+  ],
+  "relationshipCoverage": [
+    {
+      "relationshipId": "bhrel-001",
+      "linkedStudyIds": [
+        "PMID-24470067",
+        "PMID-22549960",
+        "PMID-25107989"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-002",
+      "linkedStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-26630194"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-003",
+      "linkedStudyIds": [],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-004",
+      "linkedStudyIds": [
+        "PMID-26630194"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-005",
+      "linkedStudyIds": [
+        "PMID-23334732",
+        "PMID-26630194"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-006",
+      "linkedStudyIds": [],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-007",
+      "linkedStudyIds": [],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-008",
+      "linkedStudyIds": [
+        "PMID-24470067",
+        "PMID-26456109",
+        "PMID-25107989"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-009",
+      "linkedStudyIds": [
+        "PMID-26456109"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-010",
+      "linkedStudyIds": [
+        "PMID-26456109"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-011",
+      "linkedStudyIds": [],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-012",
+      "linkedStudyIds": [],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-013",
+      "linkedStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-22549960"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-014",
+      "linkedStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-22549960"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-015",
+      "linkedStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-22549960"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-016",
+      "linkedStudyIds": [
+        "PMID-24470067",
+        "PMID-26456109",
+        "PMID-25107989"
+      ],
+      "claimSupportVerified": false,
+      "independentReviewStatus": "pending_independent_review"
+    }
+  ]
+}
