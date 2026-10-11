@@ -13,7 +13,7 @@
     "format:check": "prettier --check \"*.md\" \"docs/**/*.md\" \".github/**/*.yml\" \"package.json\"",
     "typecheck": "tsc --noEmit",
     "verify:foundation": "node scripts/verify-foundation.mjs",
-    "check": "bun run verify:foundation && bun run verify:p21:catalog && bun run verify:p21:mapping && bun run verify:p21:review && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run verify:p7 && bun run verify:p8 && bun run verify:p9 && bun run verify:p10 && bun run verify:p11 && bun run verify:p12 && bun run verify:p13 && bun run verify:p14 && bun run verify:p15 && bun run verify:p16 && bun run verify:p17 && bun run verify:p18 && bun run verify:p19 && bun run verify:p20 && bun run verify:final-cleanup && bun run verify:global-header && bun run verify:seo && bun run verify:hardware-evidence && bun run verify:live-device-center && bun run verify:recorded-mission-data && bun run verify:cloud-offline-readiness && bun run verify:mission-identity && bun run verify:mission-operations && bun run verify:bootstrap-auth-readiness && bun run security:audit && bun run test && bun run typecheck && bun run lint && bun run format:check && bun run build",
+    "check": "bun run verify:foundation && bun run verify:p21:catalog && bun run verify:p21:mapping && bun run verify:p21:review && bun run verify:p21:interpretation && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run verify:p7 && bun run verify:p8 && bun run verify:p9 && bun run verify:p10 && bun run verify:p11 && bun run verify:p12 && bun run verify:p13 && bun run verify:p14 && bun run verify:p15 && bun run verify:p16 && bun run verify:p17 && bun run verify:p18 && bun run verify:p19 && bun run verify:p20 && bun run verify:final-cleanup && bun run verify:global-header && bun run verify:seo && bun run verify:hardware-evidence && bun run verify:live-device-center && bun run verify:recorded-mission-data && bun run verify:cloud-offline-readiness && bun run verify:mission-identity && bun run verify:mission-operations && bun run verify:bootstrap-auth-readiness && bun run security:audit && bun run test && bun run typecheck && bun run lint && bun run format:check && bun run build",
     "test": "bun test",
     "verify:p3": "node scripts/verify-p3.mjs",
     "verify:p4": "node scripts/verify-p4.mjs",
@@ -55,7 +55,8 @@
     "verify:auth-remote": "node scripts/verify-remote-auth-config.mjs",
     "verify:p21:catalog": "node scripts/verify-p21-bone-catalog.mjs",
     "verify:p21:mapping": "node scripts/verify-p21-bone-mapping.mjs",
-    "verify:p21:review": "node scripts/verify-p21-scientific-review.mjs"
+    "verify:p21:review": "node scripts/verify-p21-scientific-review.mjs",
+    "verify:p21:interpretation": "node scripts/verify-p21-bone-interpretation.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
