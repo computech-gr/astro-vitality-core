@@ -3,7 +3,7 @@ import type { BoneImportCandidate } from "./import";
 
 export type ExtractedDocument = { text: string; pages: number; method: string; warnings: string[] };
 type Detector = { detect(image: ImageBitmap | HTMLCanvasElement): Promise<Array<{rawValue?: string}>> };
-type DetectorConstructor = new (): Detector;
+type DetectorConstructor = new () => Detector;
 
 async function recognize(canvas: HTMLCanvasElement): Promise<string> {
   const detector = (globalThis as typeof globalThis & { TextDetector?: DetectorConstructor }).TextDetector;
