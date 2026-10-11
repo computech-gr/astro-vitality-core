@@ -16,8 +16,8 @@ import {
   getOfflineMissionStatus,
   initializeOfflineMissionRuntime,
 } from "@/infrastructure/offline";
-import { getCloudMissionContext, syncRecordedMissionQueue } from "@/infrastructure/mission-records";
-import type { OfflineMissionStatus } from "@/domain/offline-mission";
+import { getCloudMissionContext, loadRecordedMissionData, syncRecordedMissionQueue } from "@/infrastructure/mission-records";
+import type { OfflineSyncQueueItem, OfflineMissionStatus } from "@/domain/offline-mission";
 
 const emptyStatus: OfflineMissionStatus = {
   supported: false,
@@ -52,6 +52,9 @@ export function OfflineMissionPage() {
   const [busy, setBusy] = useState(true);
   const [syncBusy, setSyncBusy] = useState(false);
   const [cloudState, setCloudState] = useState<"checking" | "configuration_required" | "local_only" | "authenticated" | "error">("checking");
+  const [reviewItems, setReviewItems] = useState<OfflineSyncQueueItem[]>([]);
+  const [evidence, setEvidence] = useState<{ matched: number; missing: number; checked: number; cloudError?: string } | null>(null);
+  const [evidenceBusy, setEvidenceBusy] = useState(false);
   const [cloudDetail, setCloudDetail] = useState("Checking governed Supabase access…");
 
   const refresh = useCallback(async () => {
@@ -59,6 +62,9 @@ export function OfflineMissionPage() {
     try {
       await initializeOfflineMissionRuntime();
       setStatus(await getOfflineMissionStatus());
+      const { getOfflineMissionStore } = await import("@/infrastructure/offline");
+      const queue = await getOfflineMissionStore().listQueueItems();
+      setReviewItems(queue.filter((item) => item.state === "needs_review"));
       const cloud = await getCloudMissionContext();
       if (cloud.configuration === "missing") {
         setCloudState("configuration_required");
@@ -109,6 +115,29 @@ export function OfflineMissionPage() {
       setStatus(await getOfflineMissionStatus());
     } finally {
       setSyncBusy(false);
+    }
+  }, []);
+
+  const verifyCloudEvidence = useCallback(async () => {
+    setEvidenceBusy(true);
+    setEvidence(null);
+    try {
+      const dataset = await loadRecordedMissionData(300);
+      if (!dataset.cloudContext.signedIn || dataset.cloudContext.error || !dataset.cloudContext.memberships.length) {
+        setEvidence({ matched: 0, missing: 0, checked: 0, cloudError: dataset.cloudContext.error ?? "Sign in with an authorized mission membership to verify cloud evidence." });
+        return;
+      }
+      const cloudIds = new Set(dataset.cloud.map((row) => row.id));
+      const synced = dataset.local.filter((row) => row.syncState === "synced");
+      setEvidence({
+        checked: synced.length,
+        matched: synced.filter((row) => cloudIds.has(row.id)).length,
+        missing: synced.filter((row) => !cloudIds.has(row.id)).length,
+      });
+    } catch (error) {
+      setEvidence({ matched: 0, missing: 0, checked: 0, cloudError: error instanceof Error ? error.message : "Evidence check failed" });
+    } finally {
+      setEvidenceBusy(false);
     }
   }, []);
 
@@ -165,9 +194,32 @@ export function OfflineMissionPage() {
           </Card>
         </section>
 
-        <section className="mt-6 rounded-lg border border-amber-400/30 bg-card/60 p-4" aria-label="Sync records requiring review">
+        <section className="mt-6 rounded-lg border border-border bg-card/60 p-4" aria-label="Sync records requiring review">
           <p className="text-sm font-semibold">Records requiring review: {status.reviewSyncItems ?? 0}</p>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">These encrypted records were definitively rejected by the cloud and are not retried automatically. They remain on this device. Do not reassign old placeholder records to a real astronaut automatically. Contact an authorized mission administrator for reviewed remediation; no automatic reset or deletion is available.</p>
+        </section>
+        <section className="mt-4 rounded-lg border border-border bg-card/60 p-4" aria-label="Read-only rejected record review">
+          <h3 className="text-sm font-semibold">Review queue (read-only)</h3>
+          <p className="mt-1 text-xs text-muted-foreground">Record identifiers and rejection reasons only. No medical payload is displayed or modified. Do not assign placeholder records to an astronaut without independent provenance review.</p>
+          {reviewItems.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No records awaiting review on this device.</p> : (
+            <ul className="mt-3 space-y-2">
+              {reviewItems.slice(0, 20).map((item) => (
+                <li key={item.id} className="rounded-md border border-border/70 p-2 text-xs">
+                  <p className="font-mono break-all">Record: {item.recordId}</p>
+                  <p className="mt-1 text-muted-foreground break-words">Reason: {item.lastError ?? "Unspecified rejection"}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+          {reviewItems.length > 20 ? <p className="mt-2 text-xs text-muted-foreground">Showing the first 20 of {reviewItems.length} records.</p> : null}
+        </section>
+        <section className="mt-4 rounded-lg border border-border bg-card/60 p-4" aria-label="Read-only cloud persistence evidence">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><h3 className="text-sm font-semibold">Cloud persistence evidence</h3><p className="mt-1 text-xs text-muted-foreground">Read-only comparison of locally synced event IDs with cloud event IDs visible to your authorized account (up to 300 records per side).</p></div>
+            <Button variant="outline" disabled={evidenceBusy || cloudState !== "authenticated"} onClick={() => void verifyCloudEvidence()}>{evidenceBusy ? "Checking…" : "Verify cloud records"}</Button>
+          </div>
+          {evidence ? <p role="status" className="mt-3 text-sm">{evidence.cloudError ?? `Matched ${evidence.matched} of ${evidence.checked} locally synced records; ${evidence.missing} not found in the limited cloud query.`}</p> : null}
+          <p className="mt-2 text-xs text-muted-foreground">A match is useful evidence, not a real-device end-to-end certification. Missing matches can also reflect query limits or access policy. No test data is created and no records are changed.</p>
         </section>
         <section className="mt-8 rounded-lg border border-border bg-card/60 p-4" aria-label="Governed cloud synchronization status">
           <div className="flex flex-wrap items-center justify-between gap-3">
