@@ -46,7 +46,7 @@ export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImport
     <h2 className="text-xl font-semibold">Import laboratory results</h2>
     <p className="mt-2 text-sm text-muted-foreground">CSV results can be mapped to the 63 research variables and reviewed before encrypted storage. No automatic medical interpretation. The mission, crew and real/synthetic selection above apply to every imported row.</p>
     <details className="mt-4 rounded-lg border border-border p-4" open>
-      <summary className="cursor-pointer font-semibold">CSV format guide / Οδηγίες μορφής CSV</summary>
+      <summary className="cursor-pointer font-semibold">CSV format guide</summary>
       <p className="mt-3 text-sm">Use a UTF-8 comma-separated <code>.csv</code> file, one measurement per row. The first row must contain the exact English column names below. Do not use semicolons or Excel's localized CSV separator.</p>
       <div className="mt-3 overflow-x-auto"><code className="block whitespace-nowrap text-xs">{BONE_IMPORT_CSV_TEMPLATE.trim()}</code></div>
       <p className="mt-3 text-sm"><strong>Required:</strong> <code>variable</code> (exact catalog ID such as <code>bone-001</code>, or exact catalog name), <code>value</code> (numeric, dot decimal separator), <code>unit</code> (as reported), <code>observed_at</code> (ISO 8601 date/time), <code>source</code> (laboratory or original source).</p>
@@ -54,7 +54,7 @@ export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImport
       <p className="mt-2 text-sm">Example — <strong>synthetic demonstration only</strong>, not a reference range or medical recommendation:</p>
       <pre className="mt-2 overflow-x-auto rounded-md bg-muted p-3 text-xs">{'variable,value,unit,observed_at,source,specimen,assay_method,notes\nbone-001,0.42,ng/mL,2026-10-01T09:00:00Z,Demo Lab,serum,,synthetic example\nbone-009,48,ug/L,2026-10-01T09:00:00Z,Demo Lab,serum,,synthetic example'}</pre>
       <p className="mt-2 text-sm">If a field contains a comma, enclose it in double quotes. Maximum 200 result rows; 2 MB file picker limit. Rows with unknown or ambiguous variables, missing required fields or invalid dates are rejected. All accepted rows remain subject to your review before saving.</p>
-      <button type="button" onClick={downloadTemplate} className="mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted">Download blank CSV template / Λήψη προτύπου CSV</button>
+      <button type="button" onClick={downloadTemplate} className="mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted">Download blank CSV template</button>
     </details>
     <label className="mt-4 block">Choose CSV<input className="mt-2 block w-full" type="file" accept=".csv,text/csv" onChange={e=>{const f=e.target.files?.[0];if(f)void load(f);e.currentTarget.value="";}} /></label>
     <BoneHealthDocumentImport missionId={missionId} crewMemberId={crewMemberId} dataOrigin={dataOrigin} onImported={onImported} />
