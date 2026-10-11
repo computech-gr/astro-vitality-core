@@ -2,5 +2,15 @@
   "schemaVersion": "1.0",
   "baseline": "Astronaut Biomarker Matrix v1.1",
   "operationalActivation": false,
-  "claims": []
+  "claims": [],
+  "sources": [
+    {
+      "id": "bone-handbook-v7",
+      "title": "Astronaut Bone Health Handbook v7 — Biology for Developers (GR)",
+      "sha256": "7c446c479d1e1841c4485dac40d265aab958e804b9f6bc50d98a92872f75afb2",
+      "status": "received_pending_scientific_review",
+      "catalogPath": "data/scientific/bone-health-handbook-v7.catalog.json",
+      "variableCount": 63
+    }
+  ]
 }

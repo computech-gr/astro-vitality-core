@@ -1,0 +1,644 @@
+{
+  "schemaVersion": "1.0",
+  "sourceCatalog": "data/scientific/bone-health-handbook-v7.catalog.json",
+  "canonicalRegistry": "src/domain/catalog/reviewed-mvp-v1.1.ts",
+  "baseline": "Astronaut Biomarker Matrix v1.1",
+  "operationalActivation": false,
+  "statusLegend": {
+    "candidate_exact": "Candidate semantic match, not approved for ingestion or rule use",
+    "related_not_equivalent": "Contextual relationship only; must never alias or automatically merge",
+    "unmapped": "No supported canonical equivalent identified"
+  },
+  "mappings": [
+    {
+      "handbookId": "bone-001",
+      "handbookName": "CTX / β-CTX",
+      "handbookTier": "A",
+      "mappingStatus": "candidate_exact",
+      "canonicalMetricCode": "lab.ctx",
+      "rationale": "Name and broad concept match; unit, specimen, assay, aggregation and temporal semantics still require scientific approval.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-002",
+      "handbookName": "NTX",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-003",
+      "handbookName": "Pyridinoline (PYD)",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-004",
+      "handbookName": "Deoxypyridinoline (DPD)",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-005",
+      "handbookName": "Helical Peptide",
+      "handbookTier": "B",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-006",
+      "handbookName": "Hydroxyproline",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-007",
+      "handbookName": "Hydroxylysine",
+      "handbookTier": "B",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-008",
+      "handbookName": "TRAP5b",
+      "handbookTier": "B",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-009",
+      "handbookName": "P1NP / PINP",
+      "handbookTier": "A",
+      "mappingStatus": "candidate_exact",
+      "canonicalMetricCode": "lab.p1np",
+      "rationale": "Name and broad concept match; unit, specimen, assay, aggregation and temporal semantics still require scientific approval.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-010",
+      "handbookName": "PICP",
+      "handbookTier": "B",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-011",
+      "handbookName": "BSAP / BAP",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-012",
+      "handbookName": "Osteocalcin",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-013",
+      "handbookName": "Serum Total Calcium",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-014",
+      "handbookName": "Ionized Calcium",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-015",
+      "handbookName": "Urinary Calcium 24h",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-016",
+      "handbookName": "Serum Phosphate",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-017",
+      "handbookName": "Urinary Phosphorus",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-018",
+      "handbookName": "PTH",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-019",
+      "handbookName": "25(OH) Vitamin D",
+      "handbookTier": "A",
+      "mappingStatus": "candidate_exact",
+      "canonicalMetricCode": "lab.vitamin_d_25oh",
+      "rationale": "Name and broad concept match; unit, specimen, assay, aggregation and temporal semantics still require scientific approval.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-020",
+      "handbookName": "1,25(OH)₂ Vitamin D",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-021",
+      "handbookName": "FGF23",
+      "handbookTier": "C",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-022",
+      "handbookName": "Sclerostin",
+      "handbookTier": "B",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-023",
+      "handbookName": "RANKL",
+      "handbookTier": "C",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-024",
+      "handbookName": "OPG",
+      "handbookTier": "C",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-025",
+      "handbookName": "DKK1",
+      "handbookTier": "C",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-026",
+      "handbookName": "Stable Ca isotope ratio",
+      "handbookTier": "B",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-027",
+      "handbookName": "Stable Ca tracer kinetics",
+      "handbookTier": "B",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-028",
+      "handbookName": "Urinary Citrate",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-029",
+      "handbookName": "Urinary Oxalate",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-030",
+      "handbookName": "Urinary Magnesium",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-031",
+      "handbookName": "Urinary Sodium",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-032",
+      "handbookName": "Urinary Potassium",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-033",
+      "handbookName": "Urinary Sulfate",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-034",
+      "handbookName": "Urinary Uric Acid",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-035",
+      "handbookName": "Urinary Creatinine",
+      "handbookTier": "A",
+      "mappingStatus": "related_not_equivalent",
+      "canonicalMetricCode": "lab.creatinine",
+      "rationale": "Urinary creatinine is not interchangeable with serum creatinine.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-036",
+      "handbookName": "Urine pH",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-037",
+      "handbookName": "Total Urine Volume",
+      "handbookTier": "A",
+      "mappingStatus": "candidate_exact",
+      "canonicalMetricCode": "renal.urine_volume",
+      "rationale": "Name and broad concept match; unit, specimen, assay, aggregation and temporal semantics still require scientific approval.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-038",
+      "handbookName": "Calcium Oxalate Supersaturation",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-039",
+      "handbookName": "Brushite / Ca Phosphate Supersaturation",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-040",
+      "handbookName": "Uric Acid Supersaturation",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-041",
+      "handbookName": "Sodium Urate Supersaturation",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-042",
+      "handbookName": "Struvite Supersaturation",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-043",
+      "handbookName": "Total Hip aBMD",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-044",
+      "handbookName": "Femoral Neck aBMD",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-045",
+      "handbookName": "Lumbar Spine aBMD",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-046",
+      "handbookName": "Total vBMD",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-047",
+      "handbookName": "Cortical vBMD",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-048",
+      "handbookName": "Trabecular vBMD",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-049",
+      "handbookName": "Trabecular Thickness",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-050",
+      "handbookName": "Trabecular Number",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-051",
+      "handbookName": "Trabecular Separation",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-052",
+      "handbookName": "Cortical Thickness",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-053",
+      "handbookName": "Bone Failure Load",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-054",
+      "handbookName": "Estimated Bone Strength",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-055",
+      "handbookName": "Resistance Exercise Adherence",
+      "handbookTier": "A",
+      "mappingStatus": "related_not_equivalent",
+      "canonicalMetricCode": "activity.exercise_load",
+      "rationale": "Adherence is not equivalent to load; requires separate event definition.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-056",
+      "handbookName": "Resistance Exercise Load",
+      "handbookTier": "A",
+      "mappingStatus": "related_not_equivalent",
+      "canonicalMetricCode": "activity.exercise_load",
+      "rationale": "Resistance-specific load requires modality and dose definition.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-057",
+      "handbookName": "Dietary Calcium Intake",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-058",
+      "handbookName": "Dietary Vitamin D Intake",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-059",
+      "handbookName": "Dietary Protein Intake",
+      "handbookTier": "A",
+      "mappingStatus": "candidate_exact",
+      "canonicalMetricCode": "nutrition.protein_intake",
+      "rationale": "Name and broad concept match; unit, specimen, assay, aggregation and temporal semantics still require scientific approval.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-060",
+      "handbookName": "Dietary Sodium Intake",
+      "handbookTier": "A",
+      "mappingStatus": "unmapped",
+      "canonicalMetricCode": null,
+      "rationale": "No independently confirmed equivalent canonical metric in reviewed MVP v1.1.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-061",
+      "handbookName": "Fluid Intake",
+      "handbookTier": "A",
+      "mappingStatus": "candidate_exact",
+      "canonicalMetricCode": "hydration.fluid_intake",
+      "rationale": "Name and broad concept match; unit, specimen, assay, aggregation and temporal semantics still require scientific approval.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-062",
+      "handbookName": "Mission Duration",
+      "handbookTier": "A",
+      "mappingStatus": "related_not_equivalent",
+      "canonicalMetricCode": "mission.phase",
+      "rationale": "Mission phase is not numeric mission duration.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    },
+    {
+      "handbookId": "bone-063",
+      "handbookName": "Microgravity Exposure",
+      "handbookTier": "A",
+      "mappingStatus": "related_not_equivalent",
+      "canonicalMetricCode": "mission.gravity_regime",
+      "rationale": "Gravity regime is not accumulated microgravity exposure.",
+      "reviewStatus": "pending_independent_review",
+      "operationalActivation": false
+    }
+  ]
+}
