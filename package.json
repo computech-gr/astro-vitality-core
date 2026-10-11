@@ -13,7 +13,7 @@
     "format:check": "prettier --check \"*.md\" \"docs/**/*.md\" \".github/**/*.yml\" \"package.json\"",
     "typecheck": "tsc --noEmit",
     "verify:foundation": "node scripts/verify-foundation.mjs",
-    "check": "bun run verify:foundation && bun run verify:p21:catalog && bun run verify:p21:mapping && bun run verify:p21:review && bun run verify:p21:interpretation && bun run verify:p21:evidence && bun run verify:p21:retrieval && bun run verify:p21:literature && bun run verify:p21:primary-studies && bun run verify:p21:fulltext && bun run verify:p21:fulltext-extraction && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run verify:p7 && bun run verify:p8 && bun run verify:p9 && bun run verify:p10 && bun run verify:p11 && bun run verify:p12 && bun run verify:p13 && bun run verify:p14 && bun run verify:p15 && bun run verify:p16 && bun run verify:p17 && bun run verify:p18 && bun run verify:p19 && bun run verify:p20 && bun run verify:final-cleanup && bun run verify:global-header && bun run verify:seo && bun run verify:hardware-evidence && bun run verify:live-device-center && bun run verify:recorded-mission-data && bun run verify:cloud-offline-readiness && bun run verify:mission-identity && bun run verify:mission-operations && bun run verify:bootstrap-auth-readiness && bun run security:audit && bun run test && bun run verify:p21:handoff && bun run verify:p21:freeze && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run verify:p21:quantitative && bun run verify:p21:decisions && bun run verify:p22:bone-entry && bun run verify:p22:bone-import",
+    "check": "bun run verify:foundation && bun run verify:p21:catalog && bun run verify:p21:mapping && bun run verify:p21:review && bun run verify:p21:interpretation && bun run verify:p21:evidence && bun run verify:p21:retrieval && bun run verify:p21:literature && bun run verify:p21:primary-studies && bun run verify:p21:fulltext && bun run verify:p21:fulltext-extraction && bun run verify:p3 && bun run verify:p4 && bun run verify:p5 && bun run verify:p6 && bun run verify:p7 && bun run verify:p8 && bun run verify:p9 && bun run verify:p10 && bun run verify:p11 && bun run verify:p12 && bun run verify:p13 && bun run verify:p14 && bun run verify:p15 && bun run verify:p16 && bun run verify:p17 && bun run verify:p18 && bun run verify:p19 && bun run verify:p20 && bun run verify:final-cleanup && bun run verify:global-header && bun run verify:seo && bun run verify:hardware-evidence && bun run verify:live-device-center && bun run verify:recorded-mission-data && bun run verify:cloud-offline-readiness && bun run verify:mission-identity && bun run verify:mission-operations && bun run verify:bootstrap-auth-readiness && bun run security:audit && bun run test && bun run verify:p21:handoff && bun run verify:p21:freeze && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run verify:p21:quantitative && bun run verify:p21:decisions && bun run verify:p22:bone-entry && bun run verify:p22:bone-import && bun run verify:p22:bone-documents",
     "test": "bun test",
     "verify:p3": "node scripts/verify-p3.mjs",
     "verify:p4": "node scripts/verify-p4.mjs",
@@ -68,7 +68,8 @@
     "verify:p21:handoff": "node scripts/verify-p21-independent-review-handoff.mjs",
     "verify:p21:freeze": "node scripts/verify-p21-scientific-freeze.mjs",
     "verify:p22:bone-entry": "node scripts/verify-p22-bone-entry.mjs",
-    "verify:p22:bone-import": "node scripts/verify-p22-bone-import.mjs"
+    "verify:p22:bone-import": "node scripts/verify-p22-bone-import.mjs",
+    "verify:p22:bone-documents": "node scripts/verify-p22-bone-documents.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
@@ -116,6 +117,7 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
+    "pdfjs-dist": "^5.4.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
