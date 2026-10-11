@@ -91,6 +91,7 @@ export interface OfflineMissionStatus {
   serviceWorkerState: "unsupported" | "not_registered" | "installing" | "ready" | "error";
   connectivity: "online" | "offline" | "unknown";
   pendingSyncItems: number;
+  reviewSyncItems?: number;
   conflictItems: number;
   storedRecords: number;
   lastSyncAt?: string;
