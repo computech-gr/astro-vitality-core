@@ -1,0 +1,6 @@
+# P23D — Sync quarantine, ground medical roster, bone metric indexing
+
+- Definitive RPC `rejected` responses move queue items to `needs_review`; the encrypted record remains intact. `needs_review` items are not automatically retried. Network/transport exceptions are `retryable` and remain eligible for retry. Never auto-assign legacy placeholder records to a crew identity. A review/reset UI is future work; no silent deletion.
+- Ground medical staff use their active mission membership and a roster of active `crew_self` memberships, queried under existing Supabase RLS. Crew options are limited to those missions. A server-side RPC remains authoritative for writes. No additional broad access is granted.
+- New Bone Health events contain `payload.metricCode` equal to the catalog variable ID. The existing P23A trigger already indexes this field; no schema migration or modification to historic events is necessary. Old index rows without a metric remain null and are not fabricated.
+- Validate authenticated browser dropdowns, transient vs definitive rejection, real signed-in sync, RLS, and new bone metric indexing with synthetic data. Do not claim device/cloud validation based on static checks.

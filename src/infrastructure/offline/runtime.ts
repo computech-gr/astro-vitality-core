@@ -179,7 +179,7 @@ export async function getOfflineMissionStatus(
       protocolCacheReady: Boolean(protocolCache),
       serviceWorkerState,
       connectivity: navigator.onLine ? "online" : "offline",
-      pendingSyncItems: queue.filter((item) => item.state === "pending" || item.state === "failed").length,
+      pendingSyncItems: queue.filter((item) => item.state === "pending" || item.state === "failed" || item.state === "needs_review").length,
       conflictItems: queue.filter((item) => item.state === "conflict").length,
       storedRecords: await store.countRecords(),
       ...(lastSyncAt ? { lastSyncAt } : {}),

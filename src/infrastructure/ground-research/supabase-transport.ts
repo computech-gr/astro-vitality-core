@@ -27,15 +27,18 @@ export class SupabaseMissionSyncTransport implements OfflineSyncTransport {
           record_id: string;
           remote?: SyncComparableRecord;
         }>("ingest_mission_event", { p_event: record, p_idempotency_key: idempotencyKey });
-        if (error) return { recordId: record.id, status: "rejected", message: error.message };
-        if (!data) return { recordId: record.id, status: "rejected", message: "Mission sync returned no result" };
+        if (error) {
+          const definitive = /mission access denied|authentication required|invalid (mission|crew)|permission denied|violates .*constraint|structured payload required|payload too large/i.test(error.message);
+          return { recordId: record.id, status: definitive ? "rejected" : "retryable", message: error.message };
+        }
+        if (!data) return { recordId: record.id, status: "retryable", message: "Mission sync returned no result" };
         if (data.record_id !== record.id) return { recordId: record.id, status: "rejected", message: "Sync response record ID mismatch" };
         if (data.status !== "accepted" && data.status !== "duplicate" && data.status !== "conflict" && data.status !== "rejected") {
           return { recordId: record.id, status: "rejected", message: "Unsupported mission sync status" };
         }
         return { recordId: record.id, status: data.status, ...(data.remote ? { remote: data.remote } : {}) } as SyncTransportResult;
       } catch (error) {
-        return { recordId: record.id, status: "rejected", message: error instanceof Error ? error.message : "Record sync failed" };
+        return { recordId: record.id, status: "retryable", message: error instanceof Error ? error.message : "Record sync failed" };
       }
     }));
   }

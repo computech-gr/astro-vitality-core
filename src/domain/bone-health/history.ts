@@ -36,7 +36,7 @@ export async function saveBoneEntry(entry: BoneHealthEntry): Promise<void> {
     sourceId: SOURCE,
     sourceVersion: "22.1",
     classification: "medical_sensitive",
-    payload: { schemaVersion: "22.1", entry },
+    payload: { schemaVersion: "22.1", metricCode: entry.variableId, entry },
   });
 }
 export async function listBoneEntries(missionId: string, crewMemberId: string): Promise<BoneHealthEntry[]> {
