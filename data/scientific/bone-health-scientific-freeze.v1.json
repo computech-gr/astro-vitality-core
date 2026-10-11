@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0",
+  "stage": "P21.15",
+  "baselineId": "bone-health-research-baseline-v1",
+  "freezeType": "research_reference_only",
+  "scientificReviewComplete": false,
+  "operationalActivation": false,
+  "clinicalRulesAllowed": false,
+  "status": "frozen_with_pending_independent_review",
+  "scope": {
+    "catalogVariables": 63,
+    "relationshipRecords": 16,
+    "studyHandoffs": 6,
+    "approvedVariables": 0,
+    "approvedRelationships": 0
+  },
+  "sourceFileHashes": [
+    {
+      "path": "data/scientific/bone-health-handbook-v7.catalog.json",
+      "sha256": "13cadc0007684958c979645a262a66b28dd71ae1e9cdf24f923a618166b5b413"
+    },
+    {
+      "path": "data/scientific/bone-health-mapping.v1.json",
+      "sha256": "d618df58f0584eae40691480791ab7047ebcea722f91c2e4b892f2587268b36e"
+    },
+    {
+      "path": "data/scientific/bone-health-review-ledger.v1.json",
+      "sha256": "30b73bd26d0ac1355e182e80172acdaa4c85b4859478d852815b17ff9c0a61ca"
+    },
+    {
+      "path": "data/scientific/bone-health-interpretation-graph.v1.json",
+      "sha256": "9ecc7ec532a673295924a85968f8e18a99a07897b77dc2595bd13a601b45ac6c"
+    },
+    {
+      "path": "data/scientific/bone-health-relationship-decision-matrix.v1.json",
+      "sha256": "cafd93c1e7fbba02ff04b6e60495bb0b0178b0ba04f73ffc994705f7721998e0"
+    },
+    {
+      "path": "data/scientific/bone-health-independent-review-handoff.v1.json",
+      "sha256": "c9d8751db84d417595c8bacaf2f66ae1688c900978602e210a15095e7b4fc5c1"
+    },
+    {
+      "path": "data/scientific/bone-health-primary-study-extraction.v1.json",
+      "sha256": "a9819cad8e1edf560368f1d80c54bd933bd1d9838264d223e3449dda76e44d81"
+    },
+    {
+      "path": "data/scientific/bone-health-fulltext-extraction.v1.json",
+      "sha256": "ea9dfa957a114a3a9bbe70631d218b5f146ba477506d157ae3c9080877d4f24e"
+    },
+    {
+      "path": "data/scientific/bone-health-quantitative-evidence.v1.json",
+      "sha256": "049497f1f159a3a3e9ecc4f79a24d8d55846f07424f5ab4b5583862f461b36b1"
+    }
+  ],
+  "releasePolicy": {
+    "mayUseFor": "research traceability, internal review, explicitly labeled demonstration reference",
+    "mustNotUseFor": "medical diagnosis, risk prediction, personalized clinical advice, automated intervention",
+    "changeControl": "Any change to a hashed source requires a new reviewed baseline and refreshed manifest; never silently update this frozen baseline."
+  }
+}
