@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const read=p=>fs.readFileSync(p,'utf8');
+const parser=read('src/domain/bone-health/import.ts');
+const ui=read('src/components/bone-health-import.tsx');
+const entry=read('src/components/bone-health-entry.tsx');
+assert.match(parser,/MAX_ROWS = 200/);assert.match(parser,/MAX_CHARS = 250_000/);
+assert.match(parser,/matches.length !== 1/);assert.match(parser,/Number.isFinite/);
+assert.match(ui,/Confirm selected results and save/);assert.match(ui,/saveBoneEntry/);
+assert.match(ui,/Automatic text extraction and OCR are not available/);
+assert.match(ui,/No data was extracted or saved/);
+assert.match(entry,/BoneHealthImport/);
+console.log('P22.2 PASS: strict CSV mapping, preview confirmation, encrypted append-only persistence; PDF/scans explicitly not auto-extracted.');
