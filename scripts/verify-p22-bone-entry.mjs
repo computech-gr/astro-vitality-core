@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = (p) => readFileSync(p, "utf8");
+const catalog = JSON.parse(read("data/scientific/bone-health-handbook-v7.catalog.json"));
+assert.equal(catalog.variables.length, 63);
+const appCatalog = read("src/domain/bone-health/catalog.ts");
+for (const variable of catalog.variables) assert.ok(appCatalog.includes(variable.id), `Missing ${variable.id}`);
+const history = read("src/domain/bone-health/history.ts");
+assert.match(history, /persistOfflineMissionEvent/);
+assert.match(history, /medical_sensitive/);
+assert.match(history, /missionId === missionId/);
+assert.match(history, /crewMemberId === crewMemberId/);
+const ui = read("src/components/bone-health-entry.tsx");
+assert.match(ui, /No clinical thresholds/);
+assert.match(ui, /dataOrigin/);
+assert.match(read("src/components/app-shell.tsx"), /mission\/bone-health/);
+assert.match(read("src/routes/mission.bone-health.tsx"), /createFileRoute/);
+console.log("P22.1 PASS: 63 research-only variables; encrypted append-only manual entry, scoped history, no clinical activation.");

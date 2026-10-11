@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
+import { Route as MissionBoneHealthRouteImport } from './routes/mission.bone-health'
 import { Route as MissionDevicesRouteImport } from './routes/mission.devices'
 import { Route as MissionGroundRouteImport } from './routes/mission.ground'
 import { Route as MissionGuidanceRouteImport } from './routes/mission.guidance'
@@ -48,6 +49,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
 const MissionAlertsRoute = MissionAlertsRouteImport.update({
   id: '/mission/alerts',
   path: '/mission/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionBoneHealthRoute = MissionBoneHealthRouteImport.update({
+  id: '/mission/bone-health',
+  path: '/mission/bone-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionDevicesRoute = MissionDevicesRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
+  '/mission/bone-health': typeof MissionBoneHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
+  '/mission/bone-health': typeof MissionBoneHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
+  '/mission/bone-health': typeof MissionBoneHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
+    | '/mission/bone-health'
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
+    | '/mission/bone-health'
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
+    | '/mission/bone-health'
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
+  MissionBoneHealthRoute: typeof MissionBoneHealthRoute
   MissionDevicesRoute: typeof MissionDevicesRoute
   MissionGroundRoute: typeof MissionGroundRoute
   MissionGuidanceRoute: typeof MissionGuidanceRoute
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/mission/alerts'
       fullPath: '/mission/alerts'
       preLoaderRoute: typeof MissionAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/bone-health': {
+      id: '/mission/bone-health'
+      path: '/mission/bone-health'
+      fullPath: '/mission/bone-health'
+      preLoaderRoute: typeof MissionBoneHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/devices': {
@@ -422,6 +442,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   MissionAlertsRoute: MissionAlertsRoute,
+  MissionBoneHealthRoute: MissionBoneHealthRoute,
   MissionDevicesRoute: MissionDevicesRoute,
   MissionGroundRoute: MissionGroundRoute,
   MissionGuidanceRoute: MissionGuidanceRoute,
