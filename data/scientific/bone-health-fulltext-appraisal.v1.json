@@ -1,0 +1,382 @@
+{
+  "schemaVersion": "1.0",
+  "purpose": "P21.10 auditable full-text appraisal readiness; no full text retrieved or verified by this patch",
+  "upstream": "data/scientific/bone-health-primary-study-extraction.v1.json",
+  "interpretationGraph": "data/scientific/bone-health-interpretation-graph.v1.json",
+  "fullTextVerifiedCount": 0,
+  "independentApprovals": 0,
+  "operationalActivation": false,
+  "studies": [
+    {
+      "studyId": "PMID-24470067",
+      "pmid": "24470067",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/24470067/",
+      "linkedRelationshipIds": [
+        "bhrel-001",
+        "bhrel-002",
+        "bhrel-008",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015",
+        "bhrel-016"
+      ],
+      "studyClassification": "primary_observational",
+      "fullTextAccess": {
+        "status": "not_verified",
+        "verifiedUrl": null,
+        "licenseOrAccessBasis": null,
+        "accessCheckedBy": null,
+        "accessCheckedAt": null
+      },
+      "extraction": {
+        "fullTextChecked": false,
+        "methodsVerified": false,
+        "populationAndNVerified": false,
+        "assaysSpecimensUnitsVerified": false,
+        "timepointsVerified": false,
+        "effectEstimate": null,
+        "uncertaintyInterval": null,
+        "comparisonGroup": null,
+        "confoundersAssessed": false,
+        "limitationsAssessed": false,
+        "exactLocator": null
+      },
+      "review": {
+        "independentReviewer": null,
+        "reviewDate": null,
+        "decision": "pending_independent_review",
+        "claimSupportVerified": false
+      },
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-23334732",
+      "pmid": "23334732",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/23334732/",
+      "linkedRelationshipIds": [
+        "bhrel-002",
+        "bhrel-005",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015"
+      ],
+      "studyClassification": "intervention_nonrandomized",
+      "fullTextAccess": {
+        "status": "not_verified",
+        "verifiedUrl": null,
+        "licenseOrAccessBasis": null,
+        "accessCheckedBy": null,
+        "accessCheckedAt": null
+      },
+      "extraction": {
+        "fullTextChecked": false,
+        "methodsVerified": false,
+        "populationAndNVerified": false,
+        "assaysSpecimensUnitsVerified": false,
+        "timepointsVerified": false,
+        "effectEstimate": null,
+        "uncertaintyInterval": null,
+        "comparisonGroup": null,
+        "confoundersAssessed": false,
+        "limitationsAssessed": false,
+        "exactLocator": null
+      },
+      "review": {
+        "independentReviewer": null,
+        "reviewDate": null,
+        "decision": "pending_independent_review",
+        "claimSupportVerified": false
+      },
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-22549960",
+      "pmid": "22549960",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/22549960/",
+      "linkedRelationshipIds": [
+        "bhrel-001",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015"
+      ],
+      "studyClassification": "observational_countermeasure",
+      "fullTextAccess": {
+        "status": "not_verified",
+        "verifiedUrl": null,
+        "licenseOrAccessBasis": null,
+        "accessCheckedBy": null,
+        "accessCheckedAt": null
+      },
+      "extraction": {
+        "fullTextChecked": false,
+        "methodsVerified": false,
+        "populationAndNVerified": false,
+        "assaysSpecimensUnitsVerified": false,
+        "timepointsVerified": false,
+        "effectEstimate": null,
+        "uncertaintyInterval": null,
+        "comparisonGroup": null,
+        "confoundersAssessed": false,
+        "limitationsAssessed": false,
+        "exactLocator": null
+      },
+      "review": {
+        "independentReviewer": null,
+        "reviewDate": null,
+        "decision": "pending_independent_review",
+        "claimSupportVerified": false
+      },
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-26456109",
+      "pmid": "26456109",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/26456109/",
+      "linkedRelationshipIds": [
+        "bhrel-008",
+        "bhrel-009",
+        "bhrel-010",
+        "bhrel-016"
+      ],
+      "studyClassification": "observational",
+      "fullTextAccess": {
+        "status": "not_verified",
+        "verifiedUrl": null,
+        "licenseOrAccessBasis": null,
+        "accessCheckedBy": null,
+        "accessCheckedAt": null
+      },
+      "extraction": {
+        "fullTextChecked": false,
+        "methodsVerified": false,
+        "populationAndNVerified": false,
+        "assaysSpecimensUnitsVerified": false,
+        "timepointsVerified": false,
+        "effectEstimate": null,
+        "uncertaintyInterval": null,
+        "comparisonGroup": null,
+        "confoundersAssessed": false,
+        "limitationsAssessed": false,
+        "exactLocator": null
+      },
+      "review": {
+        "independentReviewer": null,
+        "reviewDate": null,
+        "decision": "pending_independent_review",
+        "claimSupportVerified": false
+      },
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-25107989",
+      "pmid": "25107989",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/25107989/",
+      "linkedRelationshipIds": [
+        "bhrel-001",
+        "bhrel-008",
+        "bhrel-016"
+      ],
+      "studyClassification": "analog_observational",
+      "fullTextAccess": {
+        "status": "not_verified",
+        "verifiedUrl": null,
+        "licenseOrAccessBasis": null,
+        "accessCheckedBy": null,
+        "accessCheckedAt": null
+      },
+      "extraction": {
+        "fullTextChecked": false,
+        "methodsVerified": false,
+        "populationAndNVerified": false,
+        "assaysSpecimensUnitsVerified": false,
+        "timepointsVerified": false,
+        "effectEstimate": null,
+        "uncertaintyInterval": null,
+        "comparisonGroup": null,
+        "confoundersAssessed": false,
+        "limitationsAssessed": false,
+        "exactLocator": null
+      },
+      "review": {
+        "independentReviewer": null,
+        "reviewDate": null,
+        "decision": "pending_independent_review",
+        "claimSupportVerified": false
+      },
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-26630194",
+      "pmid": "26630194",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/26630194/",
+      "linkedRelationshipIds": [
+        "bhrel-002",
+        "bhrel-004",
+        "bhrel-005"
+      ],
+      "studyClassification": "review",
+      "fullTextAccess": {
+        "status": "not_verified",
+        "verifiedUrl": null,
+        "licenseOrAccessBasis": null,
+        "accessCheckedBy": null,
+        "accessCheckedAt": null
+      },
+      "extraction": {
+        "fullTextChecked": false,
+        "methodsVerified": false,
+        "populationAndNVerified": false,
+        "assaysSpecimensUnitsVerified": false,
+        "timepointsVerified": false,
+        "effectEstimate": null,
+        "uncertaintyInterval": null,
+        "comparisonGroup": null,
+        "confoundersAssessed": false,
+        "limitationsAssessed": false,
+        "exactLocator": null
+      },
+      "review": {
+        "independentReviewer": null,
+        "reviewDate": null,
+        "decision": "pending_independent_review",
+        "claimSupportVerified": false
+      },
+      "operationalActivation": false
+    }
+  ],
+  "relationshipCoverage": [
+    {
+      "relationshipId": "bhrel-001",
+      "candidateStudyIds": [
+        "PMID-24470067",
+        "PMID-22549960",
+        "PMID-25107989"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-002",
+      "candidateStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-26630194"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-003",
+      "candidateStudyIds": [],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-004",
+      "candidateStudyIds": [
+        "PMID-26630194"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-005",
+      "candidateStudyIds": [
+        "PMID-23334732",
+        "PMID-26630194"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-006",
+      "candidateStudyIds": [],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-007",
+      "candidateStudyIds": [],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-008",
+      "candidateStudyIds": [
+        "PMID-24470067",
+        "PMID-26456109",
+        "PMID-25107989"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-009",
+      "candidateStudyIds": [
+        "PMID-26456109"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-010",
+      "candidateStudyIds": [
+        "PMID-26456109"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-011",
+      "candidateStudyIds": [],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-012",
+      "candidateStudyIds": [],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-013",
+      "candidateStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-22549960"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-014",
+      "candidateStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-22549960"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-015",
+      "candidateStudyIds": [
+        "PMID-24470067",
+        "PMID-23334732",
+        "PMID-22549960"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    },
+    {
+      "relationshipId": "bhrel-016",
+      "candidateStudyIds": [
+        "PMID-24470067",
+        "PMID-26456109",
+        "PMID-25107989"
+      ],
+      "fullTextSupported": false,
+      "independentReviewStatus": "pending_independent_review"
+    }
+  ]
+}
