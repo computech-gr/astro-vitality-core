@@ -81,7 +81,8 @@
     "verify:p22:activation": "node scripts/verify-p22-8.mjs",
     "verify:p22:review-handoff": "node scripts/verify-p22-9-ocr-review-handoff.mjs",
     "verify:p23i": "node scripts/verify-p23i.mjs",
-    "verify:p23j": "node scripts/verify-p23j.mjs"
+    "verify:p23j": "node scripts/verify-p23j.mjs",
+    "verify:p23k": "node scripts/verify-p23k.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
