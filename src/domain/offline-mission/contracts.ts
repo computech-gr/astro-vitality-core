@@ -43,6 +43,7 @@ export const SYNC_ITEM_STATES = [
   "in_flight",
   "synced",
   "failed",
+  "needs_review",
   "conflict",
 ] as const;
 export type SyncItemState = (typeof SYNC_ITEM_STATES)[number];

@@ -9,7 +9,7 @@ import type { OfflineMissionStore } from "./store";
 
 export interface SyncTransportResult {
   recordId: string;
-  status: "accepted" | "duplicate" | "conflict" | "rejected";
+  status: "accepted" | "duplicate" | "conflict" | "rejected" | "retryable";
   remote?: SyncComparableRecord;
   message?: string;
 }
@@ -188,7 +188,7 @@ export async function flushOfflineSyncQueue(
     failed += 1;
     await store.putQueueItem({
       ...item,
-      state: "failed",
+      state: result.status === "rejected" ? "needs_review" : "failed",
       attempts: item.attempts + 1,
       updatedAt: now,
       lastError: result.message ?? "Remote sync rejected the record",

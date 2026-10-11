@@ -1,19 +1,42 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionMembershipContext } from "@/infrastructure/mission-identity";
 import { BoneHealthImport } from "@/components/bone-health-import";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
 import { listBoneEntries, saveBoneEntry, type BoneHealthEntry } from "@/domain/bone-health/history";
 
+async function loadGroundRoster(missionIds: string[]): Promise<{ data: MissionMembershipContext[]; error: boolean }> {
+  const { data: rows, error } = await supabase.from("mission_memberships")
+    .select("mission_id, crew_member_id, role, active")
+    .in("mission_id", missionIds).eq("active", true).eq("role", "crew_self");
+  if (error) return { data: [], error: true };
+  const crewIds = [...new Set((rows ?? []).map(row => row.crew_member_id).filter((id): id is string => Boolean(id)))];
+  if (!crewIds.length) return { data: [], error: false };
+  const { data: crew, error: crewError } = await supabase.from("crew_members").select("id, display_name").in("id", crewIds);
+  if (crewError) return { data: [], error: true };
+  const names = new Map((crew ?? []).map(item => [item.id, item.display_name]));
+  return { data: (rows ?? []).filter(row => row.crew_member_id).map(row => ({
+    missionId: row.mission_id, crewMemberId: row.crew_member_id!, role: "ground_medical" as const,
+    crewDisplayName: names.get(row.crew_member_id!) ?? row.crew_member_id!,
+  })), error: false };
+}
+
 export function BoneHealthEntryPage() {
   const [memberships, setMemberships] = useState<MissionMembershipContext[]>([]);
   const [missionId, setMissionId] = useState("");
+  const [groundRoster, setGroundRoster] = useState<MissionMembershipContext[]>([]);
   const [crewMemberId, setCrewMemberId] = useState("");
   const [identityError, setIdentityError] = useState("Loading authorized mission membership...");
   useEffect(() => {
     let alive = true;
     const refresh = () => { void loadMissionIdentity().then(snapshot => {
       if (!alive) return;
-      const authorized = snapshot.memberships.filter(m => m.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"));
+      const authorized = snapshot.memberships.filter(m => m.role === "crew_self" || m.role === "ground_medical");
+      const medicalMissions = authorized.filter(m => m.role === "ground_medical").map(m => m.missionId);
+      setGroundRoster([]);
+      if (medicalMissions.length) {
+        void loadGroundRoster(medicalMissions).then(result => { if (!alive) return; if (result.error) setIdentityError("Unable to load authorized mission crew roster."); else setGroundRoster(result.data); });
+      }
       setMemberships(authorized);
       setMissionId(previous => authorized.some(m => m.missionId === previous) ? previous : (snapshot.active && authorized.some(m => m.missionId === snapshot.active?.missionId) ? snapshot.active.missionId : authorized[0]?.missionId ?? ""));
       setIdentityError(snapshot.error ?? (authorized.length ? "" : "Sign in with an authorized crew or ground medical mission membership to record measurements."));
@@ -22,11 +45,11 @@ export function BoneHealthEntryPage() {
     const unsubscribe = subscribeMissionIdentity(refresh);
     return () => { alive = false; unsubscribe(); };
   }, []);
-  const crewOptions = memberships.filter(m => m.missionId === missionId && m.crewMemberId);
+  const crewOptions = [...memberships.filter(m => m.missionId === missionId && m.role === "crew_self" && m.crewMemberId), ...groundRoster.filter(m => m.missionId === missionId)];
   useEffect(() => {
     setCrewMemberId(previous => crewOptions.some(m => m.crewMemberId === previous) ? previous : (crewOptions[0]?.crewMemberId ?? ""));
-  }, [missionId, memberships]);
-  const authorizedSelection = memberships.some(m => m.missionId === missionId && m.crewMemberId === crewMemberId);
+  }, [missionId, memberships, groundRoster]);
+  const authorizedSelection = crewOptions.some(m => m.crewMemberId === crewMemberId) && memberships.some(m => m.missionId === missionId && (m.role === "ground_medical" || (m.role === "crew_self" && m.crewMemberId === crewMemberId)));
   const [variableId, setVariableId] = useState<string>(BONE_HEALTH_VARIABLES[0].id);
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
