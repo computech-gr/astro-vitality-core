@@ -18,31 +18,25 @@ export class SupabaseMissionSyncTransport implements OfflineSyncTransport {
   readonly id = "supabase-mission-sync-v1";
 
   async push(records: readonly OfflineEventRecord[]): Promise<SyncTransportResult[]> {
-    return Promise.all(
-      records.map(async (record) => {
+    // Each record is independent: one rejected/failed RPC must not poison the batch.
+    return Promise.all(records.map(async (record): Promise<SyncTransportResult> => {
+      try {
         const idempotencyKey = `${record.id}:${record.sourceVersion}:${await sha256Hex(record.payload)}`;
         const { data, error } = await rpcClient().rpc<{
           status: string;
           record_id: string;
           remote?: SyncComparableRecord;
         }>("ingest_mission_event", { p_event: record, p_idempotency_key: idempotencyKey });
-        if (error) throw new Error(error.message);
-        if (!data) throw new Error("Mission sync returned no result");
-        const status = data.status;
-        if (
-          status !== "accepted" &&
-          status !== "duplicate" &&
-          status !== "conflict" &&
-          status !== "rejected"
-        ) {
-          throw new Error(`Unsupported mission sync status: ${status}`);
+        if (error) return { recordId: record.id, status: "rejected", message: error.message };
+        if (!data) return { recordId: record.id, status: "rejected", message: "Mission sync returned no result" };
+        if (data.record_id !== record.id) return { recordId: record.id, status: "rejected", message: "Sync response record ID mismatch" };
+        if (data.status !== "accepted" && data.status !== "duplicate" && data.status !== "conflict" && data.status !== "rejected") {
+          return { recordId: record.id, status: "rejected", message: "Unsupported mission sync status" };
         }
-        return {
-          recordId: data.record_id,
-          status,
-          ...(data.remote ? { remote: data.remote } : {}),
-        } as SyncTransportResult;
-      }),
-    );
+        return { recordId: record.id, status: data.status, ...(data.remote ? { remote: data.remote } : {}) } as SyncTransportResult;
+      } catch (error) {
+        return { recordId: record.id, status: "rejected", message: error instanceof Error ? error.message : "Record sync failed" };
+      }
+    }));
   }
 }
