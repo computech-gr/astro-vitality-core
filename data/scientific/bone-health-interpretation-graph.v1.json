@@ -1,0 +1,196 @@
+{
+  "schemaVersion": "1.0",
+  "sourceCatalog": "data/scientific/bone-health-handbook-v7.catalog.json",
+  "sourceReviewLedger": "data/scientific/bone-health-review-ledger.v1.json",
+  "purpose": "Educational, non-diagnostic biological relationship explanations pending independent scientific review",
+  "operationalActivation": false,
+  "relationshipEvidenceStatus": "pending_independent_review",
+  "relationships": [
+    {
+      "id": "bhrel-001",
+      "fromHandbookId": "bone-001",
+      "toHandbookId": "bone-009",
+      "relationshipType": "paired_context",
+      "explanation": "CTX reflects resorption and P1NP formation; interpret paired trajectories, not a validated balance score.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-002",
+      "fromHandbookId": "bone-001",
+      "toHandbookId": "bone-043",
+      "relationshipType": "different_timescale",
+      "explanation": "CTX is a turnover marker, not a percentage of hip BMD loss.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-003",
+      "fromHandbookId": "bone-009",
+      "toHandbookId": "bone-043",
+      "relationshipType": "different_timescale",
+      "explanation": "Formation marker trends do not directly quantify DXA changes.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-004",
+      "fromHandbookId": "bone-043",
+      "toHandbookId": "bone-044",
+      "relationshipType": "site_specific",
+      "explanation": "Hip and femoral-neck DXA are distinct anatomical regions; do not pool baselines.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-005",
+      "fromHandbookId": "bone-043",
+      "toHandbookId": "bone-046",
+      "relationshipType": "different_modality",
+      "explanation": "DXA areal BMD and QCT volumetric BMD have different units and methods.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-006",
+      "fromHandbookId": "bone-018",
+      "toHandbookId": "bone-013",
+      "relationshipType": "physiological_context",
+      "explanation": "PTH and circulating calcium should be interpreted with sampling and endocrine context.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-007",
+      "fromHandbookId": "bone-019",
+      "toHandbookId": "bone-018",
+      "relationshipType": "physiological_context",
+      "explanation": "Vitamin D status and PTH may be related; do not infer causality from two measurements.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-008",
+      "fromHandbookId": "bone-015",
+      "toHandbookId": "bone-037",
+      "relationshipType": "collection_context",
+      "explanation": "24-hour urinary calcium interpretation depends on urine collection and volume context.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-009",
+      "fromHandbookId": "bone-028",
+      "toHandbookId": "bone-038",
+      "relationshipType": "model_input_context",
+      "explanation": "Citrate may be an input to a validated supersaturation model; no standalone score.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-010",
+      "fromHandbookId": "bone-029",
+      "toHandbookId": "bone-038",
+      "relationshipType": "model_input_context",
+      "explanation": "Oxalate may contribute to calcium oxalate supersaturation; do not calculate without validated inputs.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-011",
+      "fromHandbookId": "bone-055",
+      "toHandbookId": "bone-056",
+      "relationshipType": "exercise_context",
+      "explanation": "Adherence and load are complementary exposure descriptions, not interchangeable.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-012",
+      "fromHandbookId": "bone-056",
+      "toHandbookId": "bone-043",
+      "relationshipType": "association_not_causation",
+      "explanation": "Resistance loading is relevant bone-health context; no individual BMD causal attribution.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-013",
+      "fromHandbookId": "bone-062",
+      "toHandbookId": "bone-063",
+      "relationshipType": "exposure_context",
+      "explanation": "Mission duration is not equivalent to measured microgravity exposure.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-014",
+      "fromHandbookId": "bone-063",
+      "toHandbookId": "bone-001",
+      "relationshipType": "association_not_causation",
+      "explanation": "Microgravity is relevant context for bone turnover; do not infer an individual causal effect.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-015",
+      "fromHandbookId": "bone-061",
+      "toHandbookId": "bone-037",
+      "relationshipType": "hydration_context",
+      "explanation": "Fluid intake and urine output are related but not interchangeable observations.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    },
+    {
+      "id": "bhrel-016",
+      "fromHandbookId": "bone-059",
+      "toHandbookId": "bone-055",
+      "relationshipType": "context_only",
+      "explanation": "Dietary protein and exercise are separate contextual dimensions.",
+      "evidenceStatus": "pending_independent_review",
+      "operationalActivation": false,
+      "causalInferenceAllowed": false,
+      "clinicalRuleAllowed": false
+    }
+  ],
+  "displayRules": {
+    "referenceOnly": true,
+    "showPendingReviewLabel": true,
+    "prohibitReadinessScoring": true,
+    "prohibitDiagnosis": true,
+    "prohibitClinicalThresholds": true,
+    "prohibitCausalInference": true,
+    "requireComparableSpecimenAssayUnit": true,
+    "requireComparableImagingSiteModality": true
+  }
+}
