@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "1.0",
+  "stage": "P21.11",
+  "purpose": "Traceable limited full-text extraction, not independent scientific approval",
+  "upstream": "data/scientific/bone-health-fulltext-appraisal.v1.json",
+  "sourceMethod": "Public publisher/PMC content inspected on 2026-10-11; record exact section/table locators; no numerical effect sizes inferred",
+  "fullTextsInspected": 1,
+  "fullTextLinksLocatedNotExtracted": 1,
+  "remainingNotVerified": 4,
+  "independentApprovals": 0,
+  "operationalActivation": false,
+  "studies": [
+    {
+      "studyId": "PMID-24470067",
+      "pmid": "24470067",
+      "fullTextAccessStatus": "not_verified",
+      "fullTextUrl": null,
+      "inspectionScope": "none",
+      "population": null,
+      "modelType": null,
+      "exposureDuration": null,
+      "extractions": [],
+      "relationshipIds": [
+        "bhrel-001",
+        "bhrel-002",
+        "bhrel-008",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015",
+        "bhrel-016"
+      ],
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false,
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-23334732",
+      "pmid": "23334732",
+      "fullTextAccessStatus": "not_verified",
+      "fullTextUrl": null,
+      "inspectionScope": "none",
+      "population": null,
+      "modelType": null,
+      "exposureDuration": null,
+      "extractions": [],
+      "relationshipIds": [
+        "bhrel-002",
+        "bhrel-005",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015"
+      ],
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false,
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-22549960",
+      "pmid": "22549960",
+      "fullTextAccessStatus": "full_text_link_located_not_extracted",
+      "fullTextUrl": "https://onlinelibrary.wiley.com/doi/epdf/10.1002/jbmr.1647",
+      "inspectionScope": "link availability only",
+      "population": null,
+      "modelType": null,
+      "exposureDuration": null,
+      "extractions": [],
+      "relationshipIds": [
+        "bhrel-001",
+        "bhrel-013",
+        "bhrel-014",
+        "bhrel-015"
+      ],
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false,
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-26456109",
+      "pmid": "26456109",
+      "fullTextAccessStatus": "not_verified",
+      "fullTextUrl": null,
+      "inspectionScope": "none",
+      "population": null,
+      "modelType": null,
+      "exposureDuration": null,
+      "extractions": [],
+      "relationshipIds": [
+        "bhrel-008",
+        "bhrel-009",
+        "bhrel-010",
+        "bhrel-016"
+      ],
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false,
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-25107989",
+      "pmid": "25107989",
+      "fullTextAccessStatus": "public_full_text_inspected",
+      "fullTextUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4246590/",
+      "inspectionScope": "article results, tables and discussion inspected via accessible PMC text",
+      "population": "pooled control participants in five head-down-tilt bed-rest studies; 50 men and 24 women",
+      "modelType": "terrestrial_bed_rest_analog",
+      "exposureDuration": "14–90 days (heterogeneous)",
+      "extractions": [
+        {
+          "claimId": "p2111-morgan-01",
+          "sourceLocator": "Abstract; Methods: pooled control subjects",
+          "finding": "Pooled data from five bed-rest control cohorts (50 men, 24 women) with durations of 14–90 days.",
+          "measurementContext": "study population, terrestrial analog",
+          "estimate": null,
+          "uncertainty": null,
+          "limitations": "Non-randomized pooled cohorts; heterogeneous durations; not direct spaceflight evidence."
+        },
+        {
+          "claimId": "p2111-morgan-02",
+          "sourceLocator": "Results: bone resorption markers; Table 4",
+          "finding": "Urinary NTX, CTX, HP and PYD excretion increased during bed rest in both sexes; creatinine normalization removed sex differences but not the bed-rest increase.",
+          "measurementContext": "urinary collagen crosslinks; creatinine-normalized results discussed separately",
+          "estimate": null,
+          "uncertainty": null,
+          "limitations": "Do not equate urinary CTX with serum CTX assays or infer percentage bone loss."
+        },
+        {
+          "claimId": "p2111-morgan-03",
+          "sourceLocator": "Results: renal stone risk; urine chemistry discussion",
+          "finding": "Urinary calcium and oxalate excretion increased, while urinary citrate and pH decreased during bed rest; high fluid intake in the study limited observed stone risk.",
+          "measurementContext": "urine chemistry; not observed clinical stone incidence",
+          "estimate": null,
+          "uncertainty": null,
+          "limitations": "Do not calculate individual kidney stone probability; fluid intake and diet confound interpretation."
+        },
+        {
+          "claimId": "p2111-morgan-04",
+          "sourceLocator": "Abstract; Results: bone density and renal stone risk",
+          "finding": "Authors report broadly similar skeletal unloading responses across sexes, with site-specific exceptions in femoral-neck BMD.",
+          "measurementContext": "site-specific DXA; sex-stratified pooled analysis",
+          "estimate": null,
+          "uncertainty": null,
+          "limitations": "Sex-specific exceptions and variable study duration preclude universal sex-independent claims."
+        }
+      ],
+      "relationshipIds": [
+        "bhrel-001",
+        "bhrel-008",
+        "bhrel-016"
+      ],
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false,
+      "operationalActivation": false
+    },
+    {
+      "studyId": "PMID-26630194",
+      "pmid": "26630194",
+      "fullTextAccessStatus": "not_verified",
+      "fullTextUrl": null,
+      "inspectionScope": "none",
+      "population": null,
+      "modelType": null,
+      "exposureDuration": null,
+      "extractions": [],
+      "relationshipIds": [
+        "bhrel-002",
+        "bhrel-004",
+        "bhrel-005"
+      ],
+      "independentReviewer": null,
+      "independentReviewStatus": "pending_independent_review",
+      "approvedForClinicalUse": false,
+      "operationalActivation": false
+    }
+  ],
+  "safety": {
+    "doNotModifyUpstreamAppraisal": true,
+    "doNotEquateUrinaryAndSerumCtx": true,
+    "doNotInferCausality": true,
+    "doNotActivateClinicalRules": true
+  }
+}
