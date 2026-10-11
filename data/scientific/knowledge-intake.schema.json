@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "baseline",
+    "operationalActivation",
+    "claims"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "baseline": {
+      "type": "string"
+    },
+    "operationalActivation": {
+      "const": false
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "claim",
+          "sourceDocument",
+          "evidenceUrls",
+          "reviewState",
+          "proposedImpact"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "sourceDocument": {
+            "type": "string"
+          },
+          "evidenceUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reviewState": {
+            "enum": [
+              "draft",
+              "evidence_review",
+              "approved_for_research",
+              "retired"
+            ]
+          },
+          "proposedImpact": {
+            "enum": [
+              "reference_only",
+              "candidate_metric",
+              "candidate_relationship",
+              "candidate_protocol"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
