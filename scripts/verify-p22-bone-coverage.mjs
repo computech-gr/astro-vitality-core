@@ -28,7 +28,7 @@ const importer=read("src/domain/bone-health/import.ts");
 const document=read("src/domain/bone-health/document-extraction.ts");
 assert.ok(entry.includes("BONE_HEALTH_VARIABLES.map"),"Manual entry must expose full catalog");
 assert.ok(importer.includes("BONE_HEALTH_VARIABLES.filter"),"CSV importer must use catalog");
-assert.ok(document.includes("BONE_HEALTH_VARIABLES.filter"),"Document matching must use catalog");
+assert.ok(document.includes("BONE_HEALTH_VARIABLES.flatMap"),"Document matching must use catalog");
 assert.ok(document.includes("selected:false"),"Document extraction must remain opt-in");
 assert.equal(audit.capabilityBoundaries.clinicalInterpretation,false);
 assert.equal(audit.capabilityBoundaries.independentScientificApproval,false);
