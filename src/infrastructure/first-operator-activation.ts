@@ -13,7 +13,6 @@ export async function activateFirstMission(input: { code: string; name: string; 
     p_code: code,
     p_name: name,
     p_bootstrap_secret: input.secret,
-    p_starts_at: null,
   });
   if (error) throw new Error(error.message);
 }
