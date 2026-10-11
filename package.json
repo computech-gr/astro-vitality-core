@@ -70,7 +70,8 @@
     "verify:p22:bone-entry": "node scripts/verify-p22-bone-entry.mjs",
     "verify:p22:bone-import": "node scripts/verify-p22-bone-import.mjs",
     "verify:p22:bone-documents": "node scripts/verify-p22-bone-documents.mjs",
-    "verify:p22:csv-guide": "node scripts/verify-p22-csv-guide.mjs"
+"verify:p22:csv-guide": "node scripts/verify-p22-csv-guide.mjs",
+    "verify:p22:bone-coverage": "node scripts/verify-p22-bone-coverage.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
