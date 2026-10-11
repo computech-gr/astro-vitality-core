@@ -62,7 +62,6 @@ export function ReadinessAssessment() {
     }).catch(() => { if (alive) setMission(null); }); };
     refresh();
     const unsubscribe = subscribeMissionIdentity(refresh);
-    if (!MISSION) return <div className="mx-auto max-w-3xl p-6 text-foreground" role="status">Sign in and select an authorized crew mission before recording readiness assessments. No placeholder records will be created.</div>;
   return () => { alive = false; unsubscribe(); };
   }, []);
   const [state, setState] = useState(() =>
@@ -285,6 +284,7 @@ export function ReadinessAssessment() {
     }`;
   }, [state.vigilanceResult]);
 
+  if (!MISSION) return <div className="mx-auto max-w-3xl p-6 text-foreground" role="status">Sign in and select an authorized crew mission before recording readiness assessments. No placeholder records will be created.</div>;
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="mx-auto max-w-5xl px-5 py-8 lg:px-8">
