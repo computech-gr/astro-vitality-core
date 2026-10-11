@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { activateFirstMission } from "@/infrastructure/first-operator-activation";
 import { loadMissionAuthReadiness, type MissionAuthReadiness } from "@/infrastructure/mission-auth-readiness";
 import {
   acceptMissionInvite,
@@ -51,6 +52,9 @@ export function MissionIdentity() {
   const [inviteRole, setInviteRole] = useState<MissionRole>("crew_self");
   const [inviteCrewMemberId, setInviteCrewMemberId] = useState("");
   const [createdInvite, setCreatedInvite] = useState<string | null>(null);
+  const [bootstrapCode, setBootstrapCode] = useState("");
+  const [bootstrapName, setBootstrapName] = useState("");
+  const [bootstrapSecret, setBootstrapSecret] = useState("");
 
   async function refresh() {
     setBusy(true);
@@ -198,6 +202,24 @@ export function MissionIdentity() {
           </section>
         ) : (
           <>
+            {snapshot.memberships.length === 0 && (
+              <Card className="mt-8 border-border">
+                <CardHeader><CardTitle>Redeem first-operator activation</CardTitle></CardHeader>
+                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                  <p>Only use this after an authorized deployment administrator has armed the one-time bootstrap hash through a privileged database console. This form never arms bootstrap or grants access without the server-side secret.</p>
+                  <div><Label htmlFor="bootstrap-code">First mission code</Label><Input id="bootstrap-code" value={bootstrapCode} onChange={(event) => setBootstrapCode(event.target.value)} autoComplete="off" placeholder="MISSION_TEST" className="mt-2" /></div>
+                  <div><Label htmlFor="bootstrap-name">First mission name</Label><Input id="bootstrap-name" value={bootstrapName} onChange={(event) => setBootstrapName(event.target.value)} autoComplete="off" placeholder="Mitochondria validation mission" className="mt-2" /></div>
+                  <div><Label htmlFor="bootstrap-secret">One-time bootstrap secret</Label><Input id="bootstrap-secret" type="password" autoComplete="off" value={bootstrapSecret} onChange={(event) => setBootstrapSecret(event.target.value)} className="mt-2" /></div>
+                  <Button disabled={busy || bootstrapSecret.length < 32 || bootstrapCode.trim().length < 3 || bootstrapName.trim().length < 3} onClick={() => void run(async () => {
+                    const secret = bootstrapSecret;
+                    setBootstrapSecret("");
+                    await activateFirstMission({ code: bootstrapCode, name: bootstrapName, secret });
+                  }, "First mission activated. Your operator membership is now available.")}>Activate first mission once</Button>
+                  <p>Never share the secret in chat, logs, screenshots or source control. An already-provisioned operator permanently blocks further bootstrap attempts.</p>
+                </CardContent>
+              </Card>
+            )}
+
             <section className="mt-8 grid gap-4 md:grid-cols-3">
               <Card><CardHeader><CardTitle className="text-sm">Identity</CardTitle></CardHeader><CardContent><p className="font-mono text-sm">AUTHENTICATED</p><p className="mt-2 break-all text-xs text-muted-foreground">{snapshot.email ?? snapshot.userId}</p></CardContent></Card>
               <Card><CardHeader><CardTitle className="text-sm">Active memberships</CardTitle></CardHeader><CardContent><p className="font-mono text-2xl">{snapshot.memberships.length}</p><p className="mt-2 text-xs text-muted-foreground">Only active, RLS-visible mission assignments are shown.</p></CardContent></Card>
