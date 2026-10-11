@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read = p => fs.readFileSync(p,'utf8');
+const readiness=read('src/domain/bone-health/ocr-readiness.ts');
+const domain=read('src/domain/bone-health/document-extraction.ts');
+const ui=read('src/components/bone-health-document-import.tsx');
+const sw=read('public/sw.js');
+const staging=read('scripts/stage-p22-ocr-assets.mjs');
+const pkg=JSON.parse(read('package.json'));
+assert.match(readiness,/offlineOcrCacheReady/);
+assert.match(readiness,/eng\.traineddata\.gz/);
+assert.match(domain,/getLocalOcrAssets/);
+assert.match(domain,/createWorker\("eng", 1/);
+assert.match(ui,/Check offline OCR readiness/);
+assert.match(sw,/MITO_CACHE_OCR_V1/);
+assert.match(staging,/assets\/ocr\/eng\.traineddata\.gz/);
+assert.equal(pkg.scripts['verify:p22:offline-ocr'],'node scripts/verify-p22-offline-ocr.mjs');
+console.log('P22.6 PASS: optional local OCR pack, explicit readiness and fail-closed staging contract. Static checks only; offline runtime NOT proven.');

@@ -47,3 +47,24 @@ self.addEventListener("fetch", (event) => {
       }),
   );
 });
+
+// P22.6: optional same-origin OCR pack; missing assets never break PWA installation.
+const OCR_PACK_V1 = [
+  "/ocr/v1/worker.min.js", "/ocr/v1/tesseract-core.wasm.js",
+  "/ocr/v1/tesseract-core-simd.wasm.js", "/ocr/v1/tesseract-core-lstm.wasm.js",
+  "/ocr/v1/tesseract-core-simd-lstm.wasm.js", "/ocr/v1/eng.traineddata.gz",
+];
+self.addEventListener("message", (event) => {
+  if (event.data?.type !== "MITO_CACHE_OCR_V1") return;
+  event.waitUntil((async () => {
+    const cache = await caches.open(SHELL_CACHE);
+    for (const url of OCR_PACK_V1) {
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (response.ok && !(response.headers.get("content-type") || "").includes("text/html")) {
+          await cache.put(url, response);
+        }
+      } catch { /* Never treat a partial pack as offline-ready. */ }
+    }
+  })());
+});
