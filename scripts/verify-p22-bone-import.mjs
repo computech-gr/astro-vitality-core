@@ -9,6 +9,6 @@ assert.match(parser,/matches.length !== 1/);assert.match(parser,/Number.isFinite
 assert.match(ui,/Confirm selected results and save/);assert.match(ui,/saveBoneEntry/);
 assert.match(ui,/Supported structured import: CSV/);
 const extraction=read('src/domain/bone-health/document-extraction.ts');
-assert.match(extraction,/Local OCR is unavailable in this browser/);
+assert.match(extraction,/On-device OCR unavailable/);
 assert.match(entry,/BoneHealthImport/);
 console.log('P22.2 PASS: strict CSV mapping, preview confirmation, encrypted append-only persistence; PDF/scans explicitly not auto-extracted.');
