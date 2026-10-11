@@ -1,0 +1,30 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const load = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
+const ledger = load('data/scientific/bone-health-review-ledger.v1.json');
+const catalog = load('data/scientific/bone-health-handbook-v7.catalog.json');
+const mapping = load('data/scientific/bone-health-mapping.v1.json');
+assert.equal(ledger.operationalActivation, false);
+assert.equal(ledger.sourceDocumentSha256, catalog.source.sha256);
+assert.equal(ledger.entries.length, 63);
+const byId = new Map(mapping.mappings.map((m) => [m.handbookId, m]));
+assert.equal(byId.size, 63);
+assert.equal(new Set(ledger.entries.map((e) => e.handbookId)).size, 63);
+for (const entry of ledger.entries) {
+  const source = byId.get(entry.handbookId);
+  assert.ok(source, `Missing mapping for ${entry.handbookId}`);
+  const variable = catalog.variables.find((v) => v.id === entry.handbookId);
+  assert.ok(variable, `Missing catalog variable for ${entry.handbookId}`);
+  assert.equal(entry.handbookName, variable.name);
+  assert.equal(entry.authorAssignedTier, variable.handbookEvidenceTier);
+  assert.equal(entry.mappingStatus, source.mappingStatus);
+  assert.equal(entry.candidateCanonicalMetricCode, source.canonicalMetricCode);
+  assert.equal(entry.operationalActivation, false);
+  assert.equal(entry.reviewStatus, 'pending_independent_review');
+  assert.equal(entry.decision, 'defer');
+  assert.equal(entry.reviewer, null);
+  assert.equal(entry.reviewedAt, null);
+  assert.deepEqual(entry.primaryEvidence, []);
+  assert.equal(entry.evidenceAssessment, 'not_independently_verified');
+}
+console.log('P21.4 PASS — 63 traceable review records; all pending; zero operational activation');
