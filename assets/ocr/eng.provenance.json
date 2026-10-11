@@ -1,0 +1,12 @@
+{
+  "schema_version": "p22.7-v1",
+  "status": "pending_review",
+  "source_url": null,
+  "upstream_repository": null,
+  "upstream_revision": null,
+  "license": null,
+  "license_reviewed_by": null,
+  "reviewed_at": null,
+  "sha256": null,
+  "notes": "Do not approve until the actual English traineddata file and license are independently checked."
+}
