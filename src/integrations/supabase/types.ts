@@ -55,6 +55,64 @@ export type Database = {
           },
         ]
       }
+      crew_health_record_index: {
+        Row: {
+          classification: string
+          crew_member_id: string
+          event_id: string
+          indexed_at: string
+          kind: string
+          metric_code: string | null
+          mission_id: string
+          observed_at: string
+          source_id: string
+        }
+        Insert: {
+          classification: string
+          crew_member_id: string
+          event_id: string
+          indexed_at?: string
+          kind: string
+          metric_code?: string | null
+          mission_id: string
+          observed_at: string
+          source_id: string
+        }
+        Update: {
+          classification?: string
+          crew_member_id?: string
+          event_id?: string
+          indexed_at?: string
+          kind?: string
+          metric_code?: string | null
+          mission_id?: string
+          observed_at?: string
+          source_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_health_record_index_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_health_record_index_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "mission_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_health_record_index_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_members: {
         Row: {
           created_at: string
