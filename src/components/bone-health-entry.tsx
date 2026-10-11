@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BoneHealthImport } from "@/components/bone-health-import";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
 import { listBoneEntries, saveBoneEntry, type BoneHealthEntry } from "@/domain/bone-health/history";
 
@@ -53,6 +54,7 @@ export function BoneHealthEntryPage() {
       <button className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 sm:col-span-2" type="submit" disabled={busy}>{busy ? "Saving…" : "Save encrypted record"}</button>
       {message && <p role="status" className="sm:col-span-2">{message}</p>}
     </form>
+    <BoneHealthImport missionId={missionId} crewMemberId={crewMemberId} dataOrigin={dataOrigin} onImported={async()=>setHistory(await listBoneEntries(missionId,crewMemberId))} />
     <section className="mt-10"><h2 className="text-xl font-semibold">Local measurement history</h2><p className="mt-2 text-sm text-muted-foreground">Only records matching the mission and crew IDs above are shown. Different methods or units must not be compared automatically.</p>
       <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b"><th className="p-2">Date</th><th className="p-2">Variable</th><th className="p-2">Result</th><th className="p-2">Source</th><th className="p-2">Origin</th></tr></thead><tbody>{history.map(row=><tr className="border-b" key={row.id}><td className="p-2">{row.observedAt.slice(0,16).replace("T"," ")}</td><td className="p-2">{BONE_HEALTH_VARIABLES.find(v=>v.id===row.variableId)?.name ?? row.variableId}</td><td className="p-2">{row.value} {row.unit}</td><td className="p-2">{row.sourceLabel}</td><td className="p-2">{row.dataOrigin}</td></tr>)}</tbody></table>{history.length===0 && <p className="p-4 text-muted-foreground">No records for this mission and crew.</p>}</div>
     </section>
