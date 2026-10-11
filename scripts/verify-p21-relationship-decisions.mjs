@@ -1,0 +1,32 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const load=(p)=>JSON.parse(fs.readFileSync(p,'utf8'));
+const d=load('data/scientific/bone-health-relationship-decision-matrix.v1.json');
+const g=load('data/scientific/bone-health-interpretation-graph.v1.json');
+const a=load('data/scientific/bone-health-evidence-appraisal.v1.json');
+const q=load('data/scientific/bone-health-quantitative-evidence.v1.json');
+assert.equal(d.operationalActivation,false);
+assert.equal(d.scientificReviewComplete,false);
+assert.equal(d.relationshipDecisions.length,16);
+assert.equal(g.relationships.length,16);
+assert.equal(a.relationships.length,16);
+assert.equal(q.quantitativeClaimsApproved,0);
+const ids=new Set();
+for(const r of d.relationshipDecisions){
+ assert(!ids.has(r.relationshipId));ids.add(r.relationshipId);
+ const source=g.relationships.find(x=>x.id===r.relationshipId);
+ assert(source);assert.equal(r.sourceExplanation,source.explanation);
+ assert.equal(r.fromHandbookId,source.fromHandbookId);
+ assert.equal(r.toHandbookId,source.toHandbookId);
+ assert(a.relationships.some(x=>x.relationshipId===r.relationshipId));
+ assert.equal(r.scientificDisposition,'hold_pending_independent_review');
+ assert.equal(r.displayEligibility,'not_approved');
+ assert.equal(r.actionEligibility,'prohibited');
+ assert.equal(r.educationalApproval,false);
+ assert.equal(r.operationalApproval,false);
+ assert.equal(r.clinicalRuleAllowed,false);
+ assert.equal(r.causalInferenceAllowed,false);
+ assert.equal(r.reviewer,null);assert.equal(r.reviewDecision,null);
+ assert(Object.values(r.reviewChecklist).every(v=>v==='pending'));
+}
+console.log('P21.13 PASS — 16 relationships, all review-held; zero approvals and activation');
