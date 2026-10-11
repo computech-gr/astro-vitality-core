@@ -154,6 +154,22 @@ export function MissionIdentity() {
           </div>
         ) : null}
 
+        {!snapshot.signedIn && (
+          <Card className="mt-6 border-border">
+            <CardHeader><CardTitle>First mission activation</CardTitle></CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>This deployment needs a real first operator before mission invitations can be issued. Creating an account alone does not grant mission access.</p>
+              <ol className="list-decimal space-y-2 pl-5">
+                <li>Create and confirm the intended operator account using the form below.</li>
+                <li>Have an authorized deployment administrator run the existing one-time server-side bootstrap procedure documented in SECURE_BOOTSTRAP_AUTH_READINESS.md. Never paste privileged keys or passwords into this page or a chat.</li>
+                <li>Sign in again, then use Mission &amp; Crew Operations to create active crew members and issue one-time crew-self and ground-medical invites.</li>
+                <li>Have each invited person sign in with their own account and accept their invite here. Only then perform synthetic browser-to-cloud validation.</li>
+              </ol>
+              <p>No automatic user, mission or membership creation occurs on this page.</p>
+            </CardContent>
+          </Card>
+        )}
+
         <h2 className="mt-10 font-display text-2xl font-semibold">Mission access</h2>
         {!snapshot.signedIn ? (
           <section className="mt-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
