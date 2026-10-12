@@ -148,3 +148,16 @@ export async function setMissionMembershipActive(input: { missionId: string; mem
     p_active: input.active,
   });
 }
+
+/** Reuses a global crew identity without copying or transferring any mission health records. */
+export async function assignExistingCrewToMission(input: {
+  sourceMissionId: string;
+  targetMissionId: string;
+  crewMemberId: string;
+}): Promise<{ crew_member_id: string; mission_id: string; status: CrewStatus }> {
+  return rpc("assign_existing_crew_to_mission", {
+    p_source_mission_id: input.sourceMissionId,
+    p_target_mission_id: input.targetMissionId,
+    p_crew_member_id: input.crewMemberId,
+  });
+}

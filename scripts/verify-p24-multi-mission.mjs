@@ -1,0 +1,14 @@
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const sql = read('supabase/migrations/20261012000000_p24_multi_mission_crew_reuse.sql');
+const ui = read('src/components/mission-operations.tsx');
+const api = read('src/infrastructure/mission-operations.ts');
+for (const phrase of ['auth.uid() is null',"array['mission_operator']",'p_source_mission_id = p_target_mission_id','v_target_status not in',"v_assignment_status := 'candidate'",'existing_crew_assigned','revoke all on function','grant execute on function']) assert.ok(sql.includes(phrase), `Missing P24 SQL guard: ${phrase}`);
+assert.ok(!sql.includes('insert into public.crew_members'), 'Never duplicate global crew identities');
+assert.ok(!sql.includes('update public.mission_events'), 'Never reassign historical mission events');
+assert.ok(api.includes('assignExistingCrewToMission'));
+assert.ok(ui.includes('Assign an existing astronaut to this mission'));
+assert.ok(ui.includes('sourceMissionId === missionId'));
+assert.ok(ui.includes('await refreshWorkspace()'));
+console.log('P24 multi-mission static guard checks: PASS');
