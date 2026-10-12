@@ -453,6 +453,14 @@ export type Database = {
     }
     Functions: {
       accept_mission_invite: { Args: { p_code: string }; Returns: Json }
+      assign_existing_crew_to_mission: {
+        Args: {
+          p_crew_member_id: string
+          p_source_mission_id: string
+          p_target_mission_id: string
+        }
+        Returns: Json
+      }
       bootstrap_first_mission: {
         Args: {
           p_bootstrap_secret: string
