@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createMissionInvite, loadMissionIdentity, type MissionMembershipContext, type MissionRole } from "@/infrastructure/mission-identity";
 import {
+  assignExistingCrewToMission,
   canDeactivateMembership,
   createMissionCrewMember,
   createMissionOperation,
@@ -40,6 +41,9 @@ export function MissionOperations() {
   const [inviteRole, setInviteRole] = useState<MissionRole>("crew_self");
   const [inviteCrewId, setInviteCrewId] = useState("");
   const [createdInvite, setCreatedInvite] = useState("");
+  const [sourceMissionId, setSourceMissionId] = useState("");
+  const [sourceCrewId, setSourceCrewId] = useState("");
+  const [sourceCrew, setSourceCrew] = useState<MissionOperationsWorkspace["crew"]>([]);
 
   async function refreshIdentity(preferredMissionId?: string) {
     const identity = await loadMissionIdentity();
@@ -101,6 +105,26 @@ export function MissionOperations() {
       setMissionId(result.mission_id);
       await refreshWorkspace(result.mission_id);
     }, "Mission created and your operator membership was provisioned atomically.");
+  }
+
+  async function selectSourceMission(nextMissionId: string) {
+    setSourceMissionId(nextMissionId);
+    setSourceCrewId("");
+    setSourceCrew([]);
+    if (!nextMissionId) return;
+    await run(async () => {
+      const source = await loadMissionOperationsWorkspace(nextMissionId);
+      setSourceCrew(source.crew);
+    }, "Source mission crew loaded.");
+  }
+
+  async function reuseCrewIdentity() {
+    if (!missionId || !sourceMissionId || !sourceCrewId) return;
+    await run(async () => {
+      await assignExistingCrewToMission({ sourceMissionId, targetMissionId: missionId, crewMemberId: sourceCrewId });
+      setSourceCrewId("");
+      await refreshWorkspace();
+    }, "Existing astronaut linked as a CANDIDATE. Activate the assignment separately before inviting Crew Self.");
   }
 
   async function createCrew() {
@@ -181,6 +205,18 @@ export function MissionOperations() {
                       <div><Label htmlFor="crew-ref">External ref</Label><Input id="crew-ref" value={crewExternalRef} onChange={(event) => setCrewExternalRef(event.target.value)} className="mt-2" placeholder="Optional" /></div>
                       <div><Label>Status</Label><Select value={crewStatus} onValueChange={(value) => setCrewStatus(value as CrewStatus)}><SelectTrigger className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="candidate">CANDIDATE</SelectItem><SelectItem value="active">ACTIVE</SelectItem><SelectItem value="inactive">INACTIVE</SelectItem></SelectContent></Select></div>
                       <div className="sm:col-span-3"><Button disabled={busy || crewName.trim().length < 2 || !["planning","active"].includes(workspace.mission.status)} onClick={() => void createCrew()}><UserPlus /> Add to mission registry</Button></div>
+                    </CardContent>
+                  </Card>
+                </section>
+
+                <section className="mt-8">
+                  <Card>
+                    <CardHeader><CardTitle>Assign an existing astronaut to this mission</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">Reuse the same crew identity across missions you operate. The new assignment starts as CANDIDATE. No health records, crew-self memberships, or permissions are copied.</p>
+                      <div><Label>Source mission</Label><Select value={sourceMissionId} onValueChange={(value) => void selectSourceMission(value)}><SelectTrigger className="mt-2"><SelectValue placeholder="Select another managed mission" /></SelectTrigger><SelectContent>{operators.filter((item) => item.missionId !== missionId).map((item) => <SelectItem key={item.missionId} value={item.missionId}>{item.missionCode ?? item.missionId}</SelectItem>)}</SelectContent></Select></div>
+                      <div><Label>Existing astronaut</Label><Select value={sourceCrewId} onValueChange={setSourceCrewId}><SelectTrigger className="mt-2"><SelectValue placeholder="Select crew identity" /></SelectTrigger><SelectContent>{sourceCrew.filter((crew) => !workspace.crew.some((target) => target.crew_member_id === crew.crew_member_id)).map((crew) => <SelectItem key={crew.crew_member_id} value={crew.crew_member_id}>{crew.display_name} · {crew.crew_member_id.slice(0, 12)}…</SelectItem>)}</SelectContent></Select></div>
+                      <Button disabled={busy || !sourceCrewId || !sourceMissionId || sourceMissionId === missionId || !["planning", "active"].includes(workspace.mission.status)} onClick={() => void reuseCrewIdentity()}>Assign existing astronaut</Button>
                     </CardContent>
                   </Card>
                 </section>
