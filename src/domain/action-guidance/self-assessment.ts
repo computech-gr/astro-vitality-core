@@ -27,15 +27,15 @@ export function reviewSelfAssessment(answers: SelfAssessmentAnswers): SelfAssess
   const suggested: Array<{ actionClass: GuidanceActionClass; reason: string }> = [];
   if (answers.device === "Uncertain" || answers.device === "Known device/quality issue" || answers.device === "No recent measurement") suggested.push({ actionClass: "repeat-quality-check", reason: "Measurement availability or quality needs verification." });
   if (["Somewhat tired", "Very tired"].includes(answers.sleep ?? "") || ["Demanding", "Overwhelming"].includes(answers.workload ?? "")) suggested.push({ actionClass: "recovery-workload-review", reason: "You reported fatigue or workload context for review." });
-  if (["Not yet reviewed", "Logs incomplete"].includes(answers.hydration ?? "")) suggested.push({ actionClass: "hydration-nutrition-review", reason: "Fluid or nutrition logs require review." });
-  if (["Incomplete", "Quality concern"].includes(answers.environment ?? "")) suggested.push({ actionClass: "environmental-review", reason: "Habitat telemetry context requires verification." });
+  if (["Not yet reviewed", "Logs incomplete"].includes(answers["hydration"] ?? "")) suggested.push({ actionClass: "hydration-nutrition-review", reason: "Fluid or nutrition logs require review." });
+  if (["Incomplete", "Quality concern"].includes(answers["environment"] ?? "")) suggested.push({ actionClass: "environmental-review", reason: "Habitat telemetry context requires verification." });
   const suggestions = complete ? suggested.flatMap(item => {
     const protocol = PROTOCOL_LIBRARY_V1_1.find(p => p.actionClass === item.actionClass && p.status === "reviewed_category");
     return protocol ? [{ actionClass: item.actionClass, title: protocol.title, protocolId: protocol.id, version: protocol.version, reason: item.reason, steps: protocol.steps }] : [];
   }) : [];
   return {
     version: SELF_ASSESSMENT_VERSION, complete, answered, total: SELF_ASSESSMENT_QUESTIONS.length,
-    suggestions, medicalContactRequested: complete && answers.concern === "Yes",
+    suggestions, medicalContactRequested: complete && answers["concern"] === "Yes",
     warnings: ["Self-reports are not validated measurements, clinical thresholds or evidence of disease.", "Suggested protocol categories are informational reviews only, not findings, treatment instructions or automated escalation.", "No assessment answers or acknowledgement are saved or sent by this page; results disappear when the page is closed.", "For urgent symptoms, follow your mission's established emergency/medical communication procedure, regardless of this checklist."],
   };
 }
