@@ -81,6 +81,10 @@ const expectedMigrations = [
   "20260920233000_p20_mission_identity_invites.sql",
   "20260920235600_p20_mission_crew_operations.sql",
   "20260921002000_p20_secure_bootstrap_auth_readiness.sql",
+  "20261011000000_p23_unified_mission_record_index.sql",
+  "20261012000000_p24_multi_mission_crew_reuse.sql",
+  "20261013000000_p28_research_export_privacy.sql",
+  "20261014000000_fv01_security_privacy_remediation.sql",
 ];
 if (JSON.stringify(migrationNames) !== JSON.stringify(expectedMigrations)) {
   failures.push(`P19 fresh-clone migration chain must contain the governed applied migrations; found: ${migrationNames.join(", ")}`);
@@ -95,7 +99,7 @@ for (const name of migrationNames) {
 }
 
 const releaseDoc = readFileSync(join(root, "docs/RELEASE_CANDIDATE.md"), "utf8").toLowerCase();
-for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "seven-migration chain", ".output/server/index.mjs", ".output/public"]) {
+for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "eleven-migration chain", ".output/server/index.mjs", ".output/public"]) {
   if (!releaseDoc.includes(token)) failures.push(`release candidate docs missing ${token}`);
 }
 
@@ -105,11 +109,11 @@ for (const token of ["clean environment", "git rev-parse head", "bun run verify:
 }
 
 const releaseChecklist = readFileSync(join(root, "docs/RELEASE_CHECKLIST.md"), "utf8").toLowerCase();
-if (!releaseChecklist.includes("exactly the seven governed migrations")) {
-  failures.push("release checklist must describe the current seven-migration governed chain");
+if (!releaseChecklist.includes("exactly the eleven governed migrations")) {
+  failures.push("release checklist must describe the current eleven-migration governed chain");
 }
-if (releaseChecklist.includes("exactly the five governed")) {
-  failures.push("release checklist contains stale five-migration wording");
+if (/exactly the (five|six|seven) governed/.test(releaseChecklist)) {
+  failures.push("release checklist contains stale pre-FV-01 migration-count wording");
 }
 
 const infrastructureReadme = readFileSync(join(root, "src/infrastructure/README.md"), "utf8").toLowerCase();
@@ -138,14 +142,18 @@ for (const token of [
   "sample:release",
   ".output/server/index.mjs",
   ".output/public",
-  "exactly the seven governed migrations",
+  "exactly the eleven governed migrations",
+  "p23a unified mission record index",
+  "p24 multi-mission crew reuse",
+  "p28 research export privacy",
+  "fv-01 security & privacy remediation",
   "p20 mission identity & invites",
   "p20 mission & crew operations",
   "p20 secure bootstrap & auth readiness",
 ]) {
   if (!localDoc.includes(token)) failures.push(`local reproducibility docs missing ${token}`);
 }
-if (localDoc.includes("uses the four migrations") || localDoc.includes("uses the five migrations") || localDoc.includes("uses the six migrations")) {
+if (localDoc.includes("uses the four migrations") || localDoc.includes("uses the five migrations") || localDoc.includes("uses the six migrations") || localDoc.includes("seven governed migrations") || localDoc.includes("seven-migration")) {
   failures.push("local reproducibility docs contain a stale migration-count statement");
 }
 
