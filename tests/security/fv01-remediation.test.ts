@@ -55,7 +55,7 @@ describe("FV-01 proposed migration (static contract; not live proof)", () => {
   test("FV-01-06 export is frozen, rate limited and fails closed", () => {
     expect(sql).toContain("interval '24 hours'");
     expect(sql).toContain("'reason','mission_not_closed'");
-    expect(sql).toContain("e.ingested_at <= v_ends");
+    expect(fn("export_research_mission")).toContain("from public.mission_research_snapshots");
     expect(sql).toContain("v_crew < 3");
     expect(sql).toContain("v_bucket < 10");
   });
@@ -133,7 +133,7 @@ describe("FV-01.1 pre-migration corrections (static; live verification still req
   test("export cohort no longer depends on mutable assignment status", () => {
     const body = fn("export_research_mission");
     expect(body).not.toContain("a.status");
-    expect(body).toContain("e.ingested_at <= v_ends");
+    expect(fn("update_mission_operation")).not.toContain("a.status");
   });
   test("audit_events is append-only and ends_at immutable after close", () => {
     expect(sql).toContain("before update or delete on public.audit_events");
