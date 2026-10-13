@@ -1,6 +1,6 @@
 # P21.9 — Primary-study discovery and abstract-level extraction
 
-This release records **six real PubMed-indexed publications** (five research reports and one review), using identifiers and information visible in public abstracts. The term *primary-study extraction* here means a preliminary bibliographic/abstract extraction, **not full-text critical appraisal**.
+This release records **six real PubMed-indexed publications** (five research reports and one review), using identifiers and information visible in public abstracts. The term _primary-study extraction_ here means a preliminary bibliographic/abstract extraction, **not full-text critical appraisal**.
 
 - Smith et al. (2014), PMID 24470067, DOI 10.1002/jbmr.2185: 42 ISS astronauts, DXA and blood/urine biochemistry, resistance-exercise comparisons.
 - LeBlanc et al. (2013), PMID 23334732: 7 astronauts on alendronate plus exercise; 18 iRED and 11 ARED historical comparison subjects. Do not infer an exercise-only effect.
