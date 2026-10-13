@@ -14,12 +14,14 @@ function rpcClient(): RpcCapableClient {
 
 export interface GroundSnapshotDto {
   mission_id: string;
+  /** FV-01-04: "operational" snapshots (Mission Operator) carry no identified medical activity. */
+  scope?: "identified_medical" | "operational";
   generated_at: string;
-  total_events: number;
+  total_events: number | null;
   latest_event_at: string | null;
   crew_count: number;
-  finding_count: number;
-  action_count: number;
+  finding_count: number | null;
+  action_count: number | null;
   device_health_event_count: number;
   crew: Array<{ crew_member_id: string; event_count: number; latest_event_at: string | null }>;
 }

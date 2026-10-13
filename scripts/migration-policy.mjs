@@ -14,6 +14,7 @@ const GOVERNED_MIGRATION_MARKERS = [
   "-- P23A: append-only, crew/mission-scoped structured index",
   "-- P24: Explicit, operator-authorized reuse",
   "-- P28: Fail-closed privacy containment",
+  "-- FV-01 Security & Privacy Remediation",
 ];
 
 export function isGovernedMigration(root, name) {
