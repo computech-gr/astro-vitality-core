@@ -161,6 +161,15 @@ export async function signInMissionIdentity(email: string, password: string): Pr
   emitIdentityChanged();
 }
 
+export const MISSION_PASSWORD_MIN_LENGTH = 12;
+
+export function validateMissionSignUpPassword(password: string): string | null {
+  if (password.length < MISSION_PASSWORD_MIN_LENGTH) {
+    return `Password must contain at least ${MISSION_PASSWORD_MIN_LENGTH} characters.`;
+  }
+  return null;
+}
+
 export async function signUpMissionIdentity(email: string, password: string): Promise<{ confirmationRequired: boolean }> {
   const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
   if (error) throw new Error(error.message);
