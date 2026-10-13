@@ -84,11 +84,11 @@ export function buildScientificEvidenceReport(input: {
     const usable = samples.filter((s) => s.quality === "good");
     // Strictly descriptive, not an approved personal baseline. Avoid including latest sample.
     const historical = usable.filter((s) => s.id !== latest.id);
-    const baseline = historical.length >= 3 && Date.parse(historical[historical.length - 1].observedAt) - Date.parse(historical[0].observedAt) >= 86400000
-      ? { mean: historical.reduce((sum, s) => sum + s.value, 0) / historical.length, count: historical.length, start: historical[0].observedAt, end: historical[historical.length - 1].observedAt, status: "descriptive_only" as const }
+    const baseline = historical.length >= 3 && Date.parse(historical[historical.length - 1]!.observedAt) - Date.parse(historical[0]!.observedAt) >= 86400000
+      ? { mean: historical.reduce((sum, s) => sum + s.value, 0) / historical.length, count: historical.length, start: historical[0]!.observedAt, end: historical[historical.length - 1]!.observedAt, status: "descriptive_only" as const }
       : undefined;
     return {
-      metricCode: latest.metricCode, unit: latest.unit, count: samples.length, earliest: samples[0], latest,
+      metricCode: latest.metricCode, unit: latest.unit, count: samples.length, earliest: samples[0]!, latest,
       ...(previous ? { previous, changeFromPrevious: latest.value - previous.value } : {}),
       ...(baseline ? { baseline } : {}),
       status: latest.quality === "poor" || latest.quality === "unknown" ? "quality_blocked" as const : baseline ? "descriptive_only" as const : "insufficient_history" as const,

@@ -38,7 +38,7 @@ export function HealthIntelligencePage() {
       if (cancelled) return;
       const own = context.memberships.filter((m): m is typeof m & {crewMemberId: string} => m.role === "crew_self" && Boolean(m.crewMemberId));
       setMissions(own);
-      setSelection(own.length ? `${own[0].missionId}|${own[0].crewMemberId}` : "");
+      setSelection(own.length ? `${own[0]!.missionId}|${own[0]!.crewMemberId}` : "");
       if (!own.length) setStatus("Private evidence requires an active Crew Self mission membership.");
     }).catch(() => { if (!cancelled) setStatus("Unable to verify mission membership."); });
     return () => { cancelled = true; };
