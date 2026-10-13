@@ -23,7 +23,7 @@ psql(["-c", "alter database fv01_it set search_path = public, extensions"]);
 psql(["-f", "tests/integration-pg/stub.sql"], "fv01_it");
 const migrations = readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort();
 for (const f of migrations) psql(["-f", join("supabase/migrations", f)], "fv01_it");
-psql(["-f", "supabase/proposed/20261014000000_fv01_security_privacy_remediation.sql"], "fv01_it");
+psql(["-f", "supabase/migrations/20261014000000_fv01_security_privacy_remediation.sql"], "fv01_it");
 psql(["-f", "tests/integration-pg/fv01-setup.sql"], "fv01_it");
 const seq = psql(["-t", "-A", "-f", "tests/integration-pg/fv01-sequential.sql"], "fv01_it");
 const seqPasses = seq.split("\n").filter((l) => l.startsWith("PASS"));
