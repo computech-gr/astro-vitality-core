@@ -13,6 +13,7 @@ export function MissionRlsCountProbe({ email, membershipCount }: { email?: strin
   const [results, setResults] = useState<Result[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   if (!email || !TEST_EMAILS.has(email.toLowerCase()) || membershipCount !== 0) return null;
+  const expectedEmail = email.toLowerCase();
 
   async function run() {
     setRunning(true);
@@ -20,7 +21,7 @@ export function MissionRlsCountProbe({ email, membershipCount }: { email?: strin
     setError(null);
     try {
       const { data: userData, error: authError } = await supabase.auth.getUser();
-      if (authError || !userData.user || userData.user.email?.toLowerCase() !== email.toLowerCase()) {
+      if (authError || !userData.user || userData.user.email?.toLowerCase() !== expectedEmail) {
         setError("Authenticated identity changed. No probes executed.");
         return;
       }

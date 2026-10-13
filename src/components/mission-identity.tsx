@@ -277,7 +277,7 @@ export function MissionIdentity() {
               </Card>
             </section>
 
-            <MissionRlsCountProbe email={snapshot.email} membershipCount={snapshot.memberships.length} />
+            <MissionRlsCountProbe {...(snapshot.email ? { email: snapshot.email } : {})} membershipCount={snapshot.memberships.length} />
 
             {operatorMemberships.length ? (
               <section className="mt-8">
