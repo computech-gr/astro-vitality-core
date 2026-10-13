@@ -4,19 +4,19 @@ Date: 2026-10-13 (UTC). Owner: Theodore Silvestros.
 
 ## Evidence matrix
 
-| Step | Scope | Status | Evidence |
-| --- | --- | --- | --- |
-| B1 | Create FV01-TEST-A / FV01-TEST-B (PLANNING) | PASS | Owner screenshots + read-only DB verification |
-| B2 | One synthetic ACTIVE crew per test mission, Crew B rename | PASS | Read-only DB + single update audit entry |
-| B3 | Two single-use Crew Self invitations | PASS | Read-only DB: mission/crew-bound, active, 24 h expiry |
-| B4 | Invitation acceptance in separate sessions | PASS | Read-only DB: one Crew Self membership per account, invites claimed once |
-| B5-A | Screen-level isolation | PARTIAL | Required screenshots not all supplied |
-| B5-B | Count-only RLS (missions, memberships, crew, events, audit) | PASS | Owner-run: 10/10 expected counts; events then inconclusive (0 rows) |
-| B6-A | Synthetic event test page (submission disabled) | PASS | Published, hard-disabled, no events |
-| B6-B | One synthetic event per test account | PASS | Owner: both ACCEPTED; DB: exactly 2 events + 2 index rows |
-| B7 | Cross-mission event RLS isolation | PASS | Owner-run count-only Gate 2 (below) |
-| — | Duplicate production submission test | NOT EXECUTED | — |
-| — | Cross-mission write attempts | NOT EXECUTED | — |
+| Step | Scope                                                       | Status       | Evidence                                                                 |
+| ---- | ----------------------------------------------------------- | ------------ | ------------------------------------------------------------------------ |
+| B1   | Create FV01-TEST-A / FV01-TEST-B (PLANNING)                 | PASS         | Owner screenshots + read-only DB verification                            |
+| B2   | One synthetic ACTIVE crew per test mission, Crew B rename   | PASS         | Read-only DB + single update audit entry                                 |
+| B3   | Two single-use Crew Self invitations                        | PASS         | Read-only DB: mission/crew-bound, active, 24 h expiry                    |
+| B4   | Invitation acceptance in separate sessions                  | PASS         | Read-only DB: one Crew Self membership per account, invites claimed once |
+| B5-A | Screen-level isolation                                      | PARTIAL      | Required screenshots not all supplied                                    |
+| B5-B | Count-only RLS (missions, memberships, crew, events, audit) | PASS         | Owner-run: 10/10 expected counts; events then inconclusive (0 rows)      |
+| B6-A | Synthetic event test page (submission disabled)             | PASS         | Published, hard-disabled, no events                                      |
+| B6-B | One synthetic event per test account                        | PASS         | Owner: both ACCEPTED; DB: exactly 2 events + 2 index rows                |
+| B7   | Cross-mission event RLS isolation                           | PASS         | Owner-run count-only Gate 2 (below)                                      |
+| —    | Duplicate production submission test                        | NOT EXECUTED | —                                                                        |
+| —    | Cross-mission write attempts                                | NOT EXECUTED | —                                                                        |
 
 ## B6-B database verification (read-only)
 
@@ -28,10 +28,10 @@ Date: 2026-10-13 (UTC). Owner: Theodore Silvestros.
 
 ## B7 Gate 2 (owner-run, normal authenticated sessions)
 
-| Account | FV01-TEST-A | FV01-TEST-B | MISSION_TEST | Result |
-| --- | --- | --- | --- | --- |
-| TEST A (Crew Self, FV01-TEST-A) | 1 | 0 | 0 | PASS |
-| TEST B (Crew Self, FV01-TEST-B) | 0 | 1 | 0 | PASS |
+| Account                         | FV01-TEST-A | FV01-TEST-B | MISSION_TEST | Result |
+| ------------------------------- | ----------- | ----------- | ------------ | ------ |
+| TEST A (Crew Self, FV01-TEST-A) | 1           | 0           | 0            | PASS   |
+| TEST B (Crew Self, FV01-TEST-B) | 0           | 1           | 0            | PASS   |
 
 ## Cleanup
 

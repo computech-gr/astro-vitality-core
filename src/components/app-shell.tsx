@@ -67,7 +67,7 @@ const navigation: readonly NavigationEntry[] = [
   {
     label: "Platform",
     href: "/#platform",
-    items: ["Platform Overview", "Mission Workspace", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Personalization", "Health Intelligence", "NASA Scientific Evidence", "Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
+    items: ["Platform Overview", "Mission Workspace", "Daily Readiness Check-in", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Personalization", "Health Intelligence", "NASA Scientific Evidence", "Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
   },
   {
     label: "Technology",
@@ -136,6 +136,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Mission Identity & Sign-in") return "/mission/identity";
   if (label === "Mission & Crew Operations") return "/mission/operations";
   if (label === "Mission Workspace") return "/mission/experience";
+  if (label === "Daily Readiness Check-in") return "/mission/readiness";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
