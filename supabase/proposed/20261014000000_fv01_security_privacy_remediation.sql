@@ -362,7 +362,7 @@ $function$;
 
 -- ---------------------------------------------------------------------------
 -- FV-01.1: audit_events is append-only for every role. Browser roles already lack
--- INSERT/UPDATE/DELETE grants and policies, and no SECURITY DEFINER routine updates
+-- INSERT/UPDATE/DELETE grants and policies, and no definer-rights routine updates
 -- or deletes audit rows; this trigger also blocks privileged/indirect paths.
 -- ---------------------------------------------------------------------------
 revoke maintain on public.audit_events, public.mission_events, public.crew_health_record_index,
