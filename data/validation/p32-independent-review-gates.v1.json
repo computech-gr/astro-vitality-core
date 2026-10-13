@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "p32-review-gates-v1",
+  "scope": "Scientific review readiness only; not clinical certification",
+  "independentApproval": false,
+  "clinicalValidation": false,
+  "gates": [
+    {
+      "id": "P32-SCI-01",
+      "title": "Independent reviewer identity and conflict-of-interest disclosure",
+      "acceptance": "Independent scientific reviewer named, credentials and COI documented",
+      "sourceFile": "docs/P21_14_INDEPENDENT_SCIENTIFIC_REVIEW_HANDOFF.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    },
+    {
+      "id": "P32-SCI-02",
+      "title": "Full-text source appraisal and traceability",
+      "acceptance": "Primary studies and extraction decisions independently appraised",
+      "sourceFile": "docs/P21_11_LIMITED_FULLTEXT_EXTRACTION.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    },
+    {
+      "id": "P32-SCI-03",
+      "title": "Biomarker measurement and context validity",
+      "acceptance": "Units, phase, measurement method, confounders and missingness approved",
+      "sourceFile": "docs/P21_15_SCIENTIFIC_BASELINE_FREEZE.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    },
+    {
+      "id": "P32-SCI-04",
+      "title": "Directional relationships and temporal logic",
+      "acceptance": "Observed directions, time ordering and matched personal baseline validated; never infer inverse unmeasured changes",
+      "sourceFile": "docs/P21_13_RELATIONSHIP_DECISION_MATRIX.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    },
+    {
+      "id": "P32-SCI-05",
+      "title": "Bone, immune, cardiovascular and behavioral domain review",
+      "acceptance": "Independent domain signoff; missing immune scientific mapping stays unapproved",
+      "sourceFile": "docs/P26_FOUR_INTEGRATED_HEALTH_DOMAINS.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    },
+    {
+      "id": "P32-SCI-06",
+      "title": "Synthetic versus real-world external validity",
+      "acceptance": "Independent assessment of transfer limits and simulated-data claims",
+      "sourceFile": "docs/P31_MULTI_ASTRONAUT_MISSION_SIMULATION.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    },
+    {
+      "id": "P32-SCI-07",
+      "title": "Non-diagnostic action and safety review",
+      "acceptance": "No clinical diagnosis, prediction or autonomous medical decisions",
+      "sourceFile": "docs/P27_ASTRONAUT_SELF_ASSESSMENT_ACTION_GUIDANCE.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    },
+    {
+      "id": "P32-SCI-08",
+      "title": "Real-device and authenticated workflow acceptance",
+      "acceptance": "Real Crew Self and Researcher sessions and device evidence independently witnessed",
+      "sourceFile": "docs/P20_REAL_DEVICE_EVIDENCE.md",
+      "status": "pending_independent_review",
+      "reviewer": null,
+      "reviewedAt": null,
+      "signedEvidence": null
+    }
+  ]
+}
