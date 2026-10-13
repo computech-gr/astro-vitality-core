@@ -9,7 +9,9 @@ This is a **traceability freeze**, not a scientific sign-off. The nine hashed sc
 - This baseline does not block development of the NASA challenge's Gather → Evaluate → Act → Follow-up demo, provided it uses approved non-clinical behaviors and clearly distinguishes synthetic from real observations.
 
 ## Verification
+
 Run `node scripts/verify-p21-scientific-freeze.mjs`. The check compares SHA-256 hashes against the frozen source bytes and verifies safety flags and record counts. The main `check` script also invokes it.
 
 ## Next stage
+
 P22: implement a safe, end-to-end Gather → Evaluate → Act → Follow-up workflow, initially with synthetic demonstration data and non-clinical guidance. The frozen P21 catalog is **not** an operational decision engine.

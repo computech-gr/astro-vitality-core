@@ -2,7 +2,7 @@
 
 ## Scope
 
-An authenticated Crew Self member can complete a voluntary six-question session-only checklist from the existing `/mission/guidance` route, choose a mission, and review versioned protocol *categories* for measurement quality, workload/recovery, hydration/nutrition, and environmental context. All categories reuse the existing P13 reviewed protocol library; the questionnaire introduces no clinical threshold, risk score, diagnosis, automatic finding, medical escalation or treatment recommendation.
+An authenticated Crew Self member can complete a voluntary six-question session-only checklist from the existing `/mission/guidance` route, choose a mission, and review versioned protocol _categories_ for measurement quality, workload/recovery, hydration/nutrition, and environmental context. All categories reuse the existing P13 reviewed protocol library; the questionnaire introduces no clinical threshold, risk score, diagnosis, automatic finding, medical escalation or treatment recommendation.
 
 ## Access and privacy
 
