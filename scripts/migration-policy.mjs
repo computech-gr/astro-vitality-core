@@ -12,6 +12,7 @@ const GOVERNED_MIGRATION_MARKERS = [
   "-- P20 Mission & Crew Operations",
   "-- P20 Secure Bootstrap & Auth Readiness",
   "-- P23A: append-only, crew/mission-scoped structured index",
+  "-- P24: Explicit, operator-authorized reuse",
 ];
 
 export function isGovernedMigration(root, name) {
