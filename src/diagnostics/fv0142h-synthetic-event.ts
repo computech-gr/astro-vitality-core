@@ -11,8 +11,8 @@ import { sha256Hex } from "@/domain/offline-mission";
 export const FV0142H_SUBMISSION_ENABLED: boolean = true;
 
 export const FV0142H_ALLOWED = [
-  { missionCode: "FV01-TEST-A", crewDisplayName: "FV01-CREW-A", eventId: "fv01-b6-a-001" },
-  { missionCode: "FV01-TEST-B", crewDisplayName: "FV01-CREW-B", eventId: "fv01-b6-b-001" },
+  { missionCode: "FV01-TEST-A", crewExternalRef: "FV01-CREW-A", eventId: "fv01-b6-a-001" },
+  { missionCode: "FV01-TEST-B", crewExternalRef: "FV01-CREW-B", eventId: "fv01-b6-b-001" },
 ] as const;
 
 export const FV0142H_PAYLOAD = Object.freeze({ fv01Test: "B6", synthetic: true }) as Readonly<{ fv01Test: "B6"; synthetic: true }>;
@@ -25,7 +25,7 @@ export function resolveFv0142hTarget(signedIn: boolean, memberships: readonly Mi
   if (!signedIn) return { ok: false, reason: "not_signed_in" };
   const crewSelf = memberships.filter((m) => m.role === "crew_self" && m.crewMemberId);
   const matches = crewSelf.flatMap((m) => {
-    const allowed = FV0142H_ALLOWED.find((a) => a.missionCode === m.missionCode && a.crewDisplayName === m.crewDisplayName);
+    const allowed = FV0142H_ALLOWED.find((a) => a.missionCode === m.missionCode && a.crewExternalRef === m.crewExternalRef);
     return allowed ? [{ m, allowed }] : [];
   });
   if (matches.length === 0) return { ok: false, reason: "no_eligible_membership" };

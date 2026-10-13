@@ -9,8 +9,8 @@ import {
 } from "@/diagnostics/fv0142h-synthetic-event";
 import type { MissionMembershipContext } from "@/infrastructure/mission-identity";
 
-const A: MissionMembershipContext = { missionId: "m-a", role: "crew_self", crewMemberId: "c-a", missionCode: "FV01-TEST-A", crewDisplayName: "FV01-CREW-A" };
-const B: MissionMembershipContext = { missionId: "m-b", role: "crew_self", crewMemberId: "c-b", missionCode: "FV01-TEST-B", crewDisplayName: "FV01-CREW-B" };
+const A: MissionMembershipContext = { missionId: "m-a", role: "crew_self", crewMemberId: "c-a", missionCode: "FV01-TEST-A", crewDisplayName: "FV01 Test Crew A", crewExternalRef: "FV01-CREW-A" };
+const B: MissionMembershipContext = { missionId: "m-b", role: "crew_self", crewMemberId: "c-b", missionCode: "FV01-TEST-B", crewDisplayName: "FV01 Test Crew B", crewExternalRef: "FV01-CREW-B" };
 const NOW = "2026-10-13T20:00:00.000Z";
 
 function mockClient() {
@@ -33,6 +33,14 @@ describe("FV-01.4.2H B6-A synthetic event test", () => {
     expect(resolveFv0142hTarget(true, [B, { missionId: "m-b", role: "ground_medical", missionCode: "FV01-TEST-B" }])).toEqual({ ok: false, reason: "ambiguous_membership" });
   });
 
+  test("regression: production shape — crew code is the external reference, not the display name", () => {
+    // Production TEST A: display_name "FV01 Test Crew A", external_ref "FV01-CREW-A".
+    expect(resolveFv0142hTarget(true, [A])).toMatchObject({ ok: true, eventId: "fv01-b6-a-001" });
+    // Matching on display name alone must never grant eligibility.
+    expect(resolveFv0142hTarget(true, [{ ...A, crewDisplayName: "FV01-CREW-A", crewExternalRef: undefined } as MissionMembershipContext])).toEqual({ ok: false, reason: "no_eligible_membership" });
+    expect(resolveFv0142hTarget(true, [{ ...A, crewExternalRef: undefined } as MissionMembershipContext])).toEqual({ ok: false, reason: "no_eligible_membership" });
+  });
+
   test("idempotency key is deterministic across reloads (independent of time)", async () => {
     const c1 = mockClient(); const c2 = mockClient();
     const target = resolveFv0142hTarget(true, [A]);
@@ -48,7 +56,7 @@ describe("FV-01.4.2H B6-A synthetic event test", () => {
     expect(resolveFv0142hTarget(false, [A])).toEqual({ ok: false, reason: "not_signed_in" });
     expect(resolveFv0142hTarget(true, [])).toEqual({ ok: false, reason: "no_eligible_membership" });
     expect(resolveFv0142hTarget(true, [{ ...A, missionCode: "MISSION_TEST" }])).toEqual({ ok: false, reason: "no_eligible_membership" });
-    expect(resolveFv0142hTarget(true, [{ ...A, crewDisplayName: "FV01-CREW-B" }])).toEqual({ ok: false, reason: "no_eligible_membership" });
+    expect(resolveFv0142hTarget(true, [{ ...A, crewDisplayName: "FV01 Test Crew B", crewExternalRef: "FV01-CREW-B" }])).toEqual({ ok: false, reason: "no_eligible_membership" });
     expect(resolveFv0142hTarget(true, [{ ...A, role: "mission_operator" }])).toEqual({ ok: false, reason: "no_eligible_membership" });
     expect(resolveFv0142hTarget(true, [A, B])).toEqual({ ok: false, reason: "ambiguous_membership" });
     expect(resolveFv0142hTarget(true, [A, { ...A, missionId: "other", missionCode: "OTHER", crewDisplayName: "X" }])).toEqual({ ok: false, reason: "ambiguous_membership" });
