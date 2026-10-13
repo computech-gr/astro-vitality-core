@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "p34-device-acceptance-v1",
+  "status": "NOT_EXECUTED",
+  "scope": "Human-operated real-device acceptance; no fabricated results",
+  "cases": [
+    {
+      "id": "AUTH-01",
+      "title": "Crew Self sign-in and mission isolation",
+      "role": "Crew Self",
+      "route": "/mission/identity",
+      "procedure": "Authenticate, switch mission, verify no prior-mission measurements appear",
+      "trace": "P23/P24",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "AUTH-02",
+      "title": "Role access denial and expiry",
+      "role": "Operator / Researcher",
+      "route": "/mission/experience",
+      "procedure": "Verify denied role links and server access; expire auth while open",
+      "trace": "P24/P28/P33",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "DEVICE-01",
+      "title": "Real camera PPG capture",
+      "role": "Crew Self",
+      "route": "/mission/devices",
+      "procedure": "Grant camera permission, collect actual sample, inspect quality and provenance",
+      "trace": "P20",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "DEVICE-02",
+      "title": "Permission denied and device interruption",
+      "role": "Crew Self",
+      "route": "/mission/devices",
+      "procedure": "Deny camera; disconnect/reconnect and ensure no fabricated measurement",
+      "trace": "P20",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "OFFLINE-01",
+      "title": "Airplane-mode encrypted capture",
+      "role": "Crew Self",
+      "route": "/mission/offline",
+      "procedure": "Capture offline, refresh and confirm encrypted records retained",
+      "trace": "P14/P23/P29",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "OFFLINE-02",
+      "title": "Reconnect and duplicate prevention",
+      "role": "Crew Self",
+      "route": "/mission/offline",
+      "procedure": "Reconnect and sync twice; confirm idempotency and audit trail",
+      "trace": "P23/P29",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "OFFLINE-03",
+      "title": "Multi-tab contention and conflict review",
+      "role": "Crew Self",
+      "route": "/mission/offline",
+      "procedure": "Open two tabs, attempt concurrent sync and inspect needs_review handling",
+      "trace": "P23/P29",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "GROUND-01",
+      "title": "Ground Medical authorized snapshot",
+      "role": "Ground Medical",
+      "route": "/mission/ground",
+      "procedure": "Authenticate medical role and inspect mission-scoped snapshot",
+      "trace": "P15/P28",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "PRIVACY-01",
+      "title": "Researcher small-cohort suppression",
+      "role": "Researcher",
+      "route": "/mission/ground",
+      "procedure": "Use fewer than 3 contributors or 10 events; verify suppressed RPC and audit",
+      "trace": "P28",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "PRIVACY-02",
+      "title": "Researcher aggregate and direct-read denial",
+      "role": "Researcher",
+      "route": "/mission/ground",
+      "procedure": "Verify coarse aggregate and probe direct table SELECT and snapshot RPC RLS",
+      "trace": "P28",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "SCIENCE-01",
+      "title": "Directional and baseline interpretation",
+      "role": "Crew Self",
+      "route": "/mission/health",
+      "procedure": "Verify only observed directional changes and matched context; no clinical claims",
+      "trace": "P25/P26/P32",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "GUIDANCE-01",
+      "title": "Voluntary self-assessment confidentiality",
+      "role": "Crew Self",
+      "route": "/mission/guidance",
+      "procedure": "Complete checklist, refresh and verify session-only/no upload",
+      "trace": "P27",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "SIM-01",
+      "title": "Synthetic versus live separation",
+      "role": "Operator",
+      "route": "/mission/simulation",
+      "procedure": "Verify four synthetic crew cannot write into real mission records",
+      "trace": "P31",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "UX-01",
+      "title": "Mobile navigation, accessibility and noindex",
+      "role": "All roles",
+      "route": "/mission/experience",
+      "procedure": "Mobile keyboard/screen reader smoke test; operational routes noindex",
+      "trace": "P30/P33",
+      "status": "not_executed",
+      "evidence": null
+    },
+    {
+      "id": "SCIENCE-02",
+      "title": "Independent signoff and source provenance",
+      "role": "Independent reviewer",
+      "route": "/mission/validation",
+      "procedure": "Confirm eight pending gates and unapproved source rules remain inactive",
+      "trace": "P30/P32",
+      "status": "not_executed",
+      "evidence": null
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { RealDeviceAcceptance } from "@/components/real-device-acceptance";
 import { IndependentScientificReview } from "@/components/independent-scientific-review";
 import evidenceLedger from "../../data/validation/p18-evidence.v1.json";
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Gauge, ShieldCheck } from "lucide-react";
@@ -77,6 +78,7 @@ export function ValidationUsabilityPage() {
       </section>
 
       <IndependentScientificReview />
+      <RealDeviceAcceptance />
 
       <section className="mt-10 border border-border bg-surface p-5 text-sm leading-6 text-muted-foreground">
         <div className="flex gap-3"><Gauge className="mt-0.5 size-5 shrink-0 text-signal" /><p>Latency evidence is an engineering observation of the local path, not a medical threshold. Target-hardware battery drain remains a documented limitation until a real instrumented wearable session is available. P18 does not claim clinical validation.</p></div>

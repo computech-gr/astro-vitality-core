@@ -1,0 +1,14 @@
+import { readFileSync } from "node:fs";
+import assert from "node:assert/strict";
+const read = p => readFileSync(p,"utf8");
+const ledger = JSON.parse(read("data/validation/p34-real-device-acceptance.v1.json"));
+assert.equal(ledger.status,"NOT_EXECUTED"); assert.equal(ledger.cases.length,15);
+assert.equal(new Set(ledger.cases.map(c=>c.id)).size,15);
+assert.ok(ledger.cases.every(c=>c.status==="not_executed" && c.evidence===null));
+const domain=read("src/domain/validation/real-device-acceptance.ts");
+assert.match(domain,/readyForClaim: false/); assert.match(domain,/independentlyVerified: false/);
+assert.match(domain,/SELF_REPORTED_UNVERIFIED/); assert.match(domain,/realDeviceAcceptanceApproved: false/);
+const ui=read("src/components/real-device-acceptance.tsx");
+assert.match(ui,/session-only/); assert.match(ui,/NOT VERIFIED/); assert.match(ui,/Export session-only observations/);
+assert.match(read("src/components/validation-usability.tsx"),/<RealDeviceAcceptance \/>/);
+console.log("P34 real-device acceptance verifier: PASS (15 not executed, zero approvals)");
