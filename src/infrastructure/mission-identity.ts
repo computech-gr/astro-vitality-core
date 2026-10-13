@@ -15,6 +15,7 @@ export interface MissionMembershipContext {
   missionName?: string;
   crewMemberId?: string;
   crewDisplayName?: string;
+  crewExternalRef?: string;
   role: MissionRole;
 }
 
@@ -105,7 +106,7 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
       ? supabase.from("missions").select("id, code, name").in("id", missionIds)
       : Promise.resolve({ data: [], error: null }),
     crewIds.length
-      ? supabase.from("crew_members").select("id, display_name").in("id", crewIds)
+      ? supabase.from("crew_members").select("id, display_name, external_ref").in("id", crewIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
 
@@ -133,6 +134,7 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
       ...(mission?.code ? { missionCode: mission.code } : {}),
       ...(mission?.name ? { missionName: mission.name } : {}),
       ...(crew?.display_name ? { crewDisplayName: crew.display_name } : {}),
+      ...(crew?.external_ref ? { crewExternalRef: crew.external_ref } : {}),
     };
   });
 
