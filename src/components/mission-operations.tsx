@@ -11,6 +11,8 @@ import { createMissionInvite, loadMissionIdentity, type MissionMembershipContext
 import {
   assignExistingCrewToMission,
   canDeactivateMembership,
+  canEditCrewDisplayName,
+  crewDisplayNameUpdate,
   createMissionCrewMember,
   createMissionOperation,
   loadMissionOperationsWorkspace,
@@ -22,6 +24,7 @@ import {
   type MissionOperationsWorkspace,
   type MissionStatus,
 } from "@/infrastructure/mission-operations";
+import { CrewDisplayNameEditor } from "@/components/crew-display-name-editor";
 
 function roleLabel(role: MissionRole) {
   return role.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -224,7 +227,7 @@ export function MissionOperations() {
                 <section className="mt-8">
                   <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><UsersRound className="text-primary" /> Mission crew registry</CardTitle></CardHeader>
-                    <CardContent>{workspace.crew.length ? <div className="grid gap-3 lg:grid-cols-2">{workspace.crew.map((crew) => <div key={crew.crew_member_id} className="rounded-md border border-border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><strong>{crew.display_name}</strong>{crew.external_ref ? <p className="mt-1 text-xs text-muted-foreground">{crew.external_ref}</p> : null}</div><Badge variant="outline">{crew.status.toUpperCase()}</Badge></div><p className="mt-3 font-mono text-xs text-muted-foreground">{crew.crew_member_id}</p><div className="mt-4 flex flex-wrap gap-2">{(["candidate","active","inactive"] as const).filter((status) => status !== crew.status).map((status) => <Button key={status} size="sm" variant="outline" disabled={busy} onClick={() => void run(async () => { await updateMissionCrewMember({ missionId, crewMemberId: crew.crew_member_id, status }); await refreshWorkspace(); }, `${crew.display_name} is now ${status}.`)}>{status === "active" ? <BadgeCheck /> : <CircleOff />}{status}</Button>)}</div></div>)}</div> : <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground">No crew members have been registered for this mission.</div>}</CardContent>
+                    <CardContent>{workspace.crew.length ? <div className="grid gap-3 lg:grid-cols-2">{workspace.crew.map((crew) => <div key={crew.crew_member_id} className="rounded-md border border-border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><strong>{crew.display_name}</strong>{crew.external_ref ? <p className="mt-1 text-xs text-muted-foreground">{crew.external_ref}</p> : null}</div><Badge variant="outline">{crew.status.toUpperCase()}</Badge></div><p className="mt-3 font-mono text-xs text-muted-foreground">{crew.crew_member_id}</p>{canEditCrewDisplayName(operators.map((item) => item.missionId), missionId) ? <CrewDisplayNameEditor currentName={crew.display_name} disabled={busy} onSave={(name) => run(async () => { await updateMissionCrewMember(crewDisplayNameUpdate(missionId, crew.crew_member_id, name)); await refreshWorkspace(); }, `Display name updated to ${name.trim()}.`)} /> : null}<div className="mt-4 flex flex-wrap gap-2">{(["candidate","active","inactive"] as const).filter((status) => status !== crew.status).map((status) => <Button key={status} size="sm" variant="outline" disabled={busy} onClick={() => void run(async () => { await updateMissionCrewMember({ missionId, crewMemberId: crew.crew_member_id, status }); await refreshWorkspace(); }, `${crew.display_name} is now ${status}.`)}>{status === "active" ? <BadgeCheck /> : <CircleOff />}{status}</Button>)}</div></div>)}</div> : <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground">No crew members have been registered for this mission.</div>}</CardContent>
                   </Card>
                 </section>
 
