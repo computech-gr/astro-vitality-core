@@ -29,7 +29,7 @@ export function MissionRlsCountProbe({ email, membershipCount }: { email?: strin
       for (const table of TABLES) {
         // HEAD + count only; no rows or mission identifiers are retrieved.
         const { count, error: readError } = await supabase.from(table).select("id", { count: "exact", head: true });
-        next.push({ table, count, error: readError ? `${readError.code ?? "ERROR"}: ${readError.message}` : null });
+        next.push({ table, count, error: readError ? "Read denied or unavailable (details intentionally hidden)" : null });
       }
       setResults(next);
     } catch {
@@ -43,7 +43,7 @@ export function MissionRlsCountProbe({ email, membershipCount }: { email?: strin
     <Card className="mt-8 border-amber-400/40" data-testid="fv0141g-rls-probe">
       <CardHeader><CardTitle>FV-01.4.1G — Temporary read-only RLS verification</CardTitle></CardHeader>
       <CardContent className="space-y-3 text-sm">
-        <p>Owner-operated diagnostic for synthetic accounts only. Counts are computed by the backend under this signed-in session. This is not a substitute for reviewing the RLS policies.</p>
+        <p>TEMPORARY — REMOVE AFTER ACCEPTANCE. Owner-operated diagnostic for synthetic accounts only. Counts are computed by the backend under this signed-in session. This is not a substitute for reviewing the RLS policies.</p>
         <p className="font-mono">Account: {email}</p>
         <Button type="button" variant="outline" disabled={running} onClick={() => void run()}>
           {running ? "Checking read-only counts…" : "Run five read-only RLS counts"}
@@ -54,6 +54,9 @@ export function MissionRlsCountProbe({ email, membershipCount }: { email?: strin
             {results.map(({ table, count, error: readError }) => (
               <p key={table} className="font-mono">{table}: {readError ? `ERROR (${readError})` : `count=${count ?? "UNKNOWN"}`}</p>
             ))}
+            {results.some((result) => result.count !== null && result.count > 0) ? (
+              <p role="alert" className="font-semibold text-destructive">STOP: A nonzero count was returned. Do not share these results publicly. Stop testing and investigate authorization.</p>
+            ) : null}
             <p>Expected: count=0 for both test accounts. An error or unknown count is NOT VERIFIED, not PASS. A zero for mission_events is inconclusive if that table has no records.</p>
           </div>
         ) : null}
