@@ -132,13 +132,46 @@ export async function updateMissionCrewMember(input: {
   externalRef?: string | null;
   status?: CrewStatus;
 }): Promise<void> {
-  await rpc("update_mission_crew_member", {
+  await rpc("update_mission_crew_member", crewMemberUpdateParams(input));
+}
+
+export function crewMemberUpdateParams(input: {
+  missionId: string;
+  crewMemberId: string;
+  displayName?: string;
+  externalRef?: string | null;
+  status?: CrewStatus;
+}) {
+  return {
     p_mission_id: input.missionId,
     p_crew_member_id: input.crewMemberId,
     p_display_name: input.displayName?.trim() || null,
     p_external_ref: input.externalRef === null ? "" : input.externalRef?.trim() || null,
     p_status: input.status ?? null,
-  });
+  };
+}
+
+export const CREW_DISPLAY_NAME_MIN = 2;
+export const CREW_DISPLAY_NAME_MAX = 100;
+
+/** Mirrors the backend rule in update_mission_crew_member (trimmed, 2-100 chars). */
+export function validateCrewDisplayName(value: string, current?: string): string | null {
+  const name = value.trim();
+  if (name.length < CREW_DISPLAY_NAME_MIN || name.length > CREW_DISPLAY_NAME_MAX) {
+    return `Display name must be ${CREW_DISPLAY_NAME_MIN}-${CREW_DISPLAY_NAME_MAX} characters.`;
+  }
+  if (current !== undefined && name === current.trim()) return "Display name is unchanged.";
+  return null;
+}
+
+/** UI gate only; the backend independently requires an active Mission Operator membership. */
+export function canEditCrewDisplayName(operatorMissionIds: readonly string[], missionId: string): boolean {
+  return Boolean(missionId) && operatorMissionIds.includes(missionId);
+}
+
+/** Display-name-only update: external reference and status are omitted so the backend preserves them. */
+export function crewDisplayNameUpdate(missionId: string, crewMemberId: string, displayName: string) {
+  return { missionId, crewMemberId, displayName: displayName.trim() };
 }
 
 export async function setMissionMembershipActive(input: { missionId: string; membershipId: string; active: boolean }): Promise<void> {
