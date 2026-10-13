@@ -100,6 +100,11 @@ export function MissionIdentity() {
   }
 
   async function signUp() {
+    const passwordError = validateMissionSignUpPassword(password);
+    if (passwordError) {
+      setMessage(passwordError);
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
