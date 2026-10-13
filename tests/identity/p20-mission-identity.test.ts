@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import type { MissionMembershipContext } from "@/infrastructure/mission-identity";
+import {
+  MISSION_PASSWORD_MIN_LENGTH,
+  validateMissionSignUpPassword,
+  type MissionMembershipContext,
+} from "@/infrastructure/mission-identity";
 
 function sensorEligible(membership?: MissionMembershipContext) {
   return Boolean(membership?.role === "crew_self" && membership.crewMemberId);
