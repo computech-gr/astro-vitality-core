@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { activateFirstMission } from "@/infrastructure/first-operator-activation";
+import { activateFirstMission, loadFirstOperatorBootstrapStatus, type FirstOperatorBootstrapStatus } from "@/infrastructure/first-operator-activation";
 import { loadMissionAuthReadiness, type MissionAuthReadiness } from "@/infrastructure/mission-auth-readiness";
 import {
   acceptMissionInvite,
@@ -56,6 +56,7 @@ export function MissionIdentity() {
   const [bootstrapCode, setBootstrapCode] = useState("");
   const [bootstrapName, setBootstrapName] = useState("");
   const [bootstrapSecret, setBootstrapSecret] = useState("");
+  const [bootstrapStatus, setBootstrapStatus] = useState<FirstOperatorBootstrapStatus | null>(null);
 
   async function refresh() {
     setBusy(true);
@@ -63,6 +64,8 @@ export function MissionIdentity() {
       const [identity, readiness] = await Promise.all([loadMissionIdentity(), loadMissionAuthReadiness()]);
       setSnapshot(identity);
       setAuthReadiness(readiness);
+      // Fail closed while status is unavailable, including during sign-out.
+      setBootstrapStatus(identity.signedIn ? await loadFirstOperatorBootstrapStatus() : null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Mission identity refresh failed.");
     } finally {
@@ -168,7 +171,7 @@ export function MissionIdentity() {
           <Card className="mt-6 border-border">
             <CardHeader><CardTitle>First mission activation</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>This deployment needs a real first operator before mission invitations can be issued. Creating an account alone does not grant mission access.</p>
+              <p>For a brand-new deployment only: an authorized administrator must provision the first mission operator before invitations can be issued. Existing deployments do not require this step. Creating an account alone does not grant mission access.</p>
               <ol className="list-decimal space-y-2 pl-5">
                 <li>Create and confirm the intended operator account using the form below.</li>
                 <li>Have an authorized deployment administrator run the existing one-time server-side bootstrap procedure documented in SECURE_BOOTSTRAP_AUTH_READINESS.md. Never paste privileged keys or passwords into this page or a chat.</li>
@@ -213,7 +216,7 @@ export function MissionIdentity() {
           </section>
         ) : (
           <>
-            {snapshot.memberships.length === 0 && (
+            {snapshot.memberships.length === 0 && bootstrapStatus?.operatorExists === false && bootstrapStatus.bootstrapArmed && !bootstrapStatus.bootstrapConsumed && (
               <Card className="mt-8 border-border">
                 <CardHeader><CardTitle>Redeem first-operator activation</CardTitle></CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
@@ -231,7 +234,7 @@ export function MissionIdentity() {
                   <div><Label htmlFor="bootstrap-code">First mission code</Label><Input id="bootstrap-code" value={bootstrapCode} onChange={(event) => setBootstrapCode(event.target.value)} autoComplete="off" placeholder="MISSION_TEST" className="mt-2" /></div>
                   <div><Label htmlFor="bootstrap-name">First mission name</Label><Input id="bootstrap-name" value={bootstrapName} onChange={(event) => setBootstrapName(event.target.value)} autoComplete="off" placeholder="Mitochondria validation mission" className="mt-2" /></div>
                   <div><Label htmlFor="bootstrap-secret">One-time bootstrap secret</Label><Input id="bootstrap-secret" type="password" autoComplete="off" value={bootstrapSecret} onChange={(event) => setBootstrapSecret(event.target.value)} className="mt-2" /></div>
-                  <Button disabled={busy || bootstrapSecret.length < 32 || bootstrapCode.trim().length < 3 || bootstrapName.trim().length < 3} onClick={() => void run(async () => {
+                  <Button disabled={busy || bootstrapStatus?.operatorExists !== false || !bootstrapStatus.bootstrapArmed || bootstrapStatus.bootstrapConsumed || bootstrapSecret.length < 32 || bootstrapCode.trim().length < 3 || bootstrapName.trim().length < 3} onClick={() => void run(async () => {
                     const secret = bootstrapSecret;
                     setBootstrapSecret("");
                     await activateFirstMission({ code: bootstrapCode, name: bootstrapName, secret });

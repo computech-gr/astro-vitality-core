@@ -16,3 +16,27 @@ export async function activateFirstMission(input: { code: string; name: string; 
   });
   if (error) throw new Error(error.message);
 }
+
+/** The backend is authoritative; errors must never enable bootstrap UI. */
+export interface FirstOperatorBootstrapStatus {
+  operatorExists: boolean;
+  bootstrapArmed: boolean;
+  bootstrapConsumed: boolean;
+}
+
+export function parseFirstOperatorBootstrapStatus(value: unknown): FirstOperatorBootstrapStatus | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.operator_exists !== 'boolean' || typeof v.bootstrap_armed !== 'boolean' || typeof v.bootstrap_consumed !== 'boolean') return null;
+  return { operatorExists: v.operator_exists, bootstrapArmed: v.bootstrap_armed, bootstrapConsumed: v.bootstrap_consumed };
+}
+
+export async function loadFirstOperatorBootstrapStatus(): Promise<FirstOperatorBootstrapStatus | null> {
+  try {
+    const { data, error } = await supabase.rpc('get_mission_bootstrap_status');
+    if (error) return null;
+    return parseFirstOperatorBootstrapStatus(data);
+  } catch {
+    return null;
+  }
+}
