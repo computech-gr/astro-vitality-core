@@ -1,5 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getSupabaseBrowserConfigStatus } from "@/integrations/supabase/config";
+import {
+  clearActiveSelection,
+  readActiveSelection,
+  shouldClearSelection,
+  writeActiveSelection,
+} from "@/infrastructure/mission-selection-storage";
 
 export type MissionRole = "crew_self" | "ground_medical" | "mission_operator" | "researcher";
 
@@ -22,12 +28,12 @@ export interface MissionIdentitySnapshot {
   error?: string;
 }
 
-const ACTIVE_MEMBERSHIP_KEY = "mitochondria.active-mission-membership.v1";
 const IDENTITY_CHANGED_EVENT = "mitochondria:mission-identity-changed";
+let lastKnownUserId: string | undefined;
 
-function readActiveKey(): string | undefined {
+function readActiveKey(userId: string | undefined): string | undefined {
   if (typeof window === "undefined") return undefined;
-  return window.localStorage.getItem(ACTIVE_MEMBERSHIP_KEY) ?? undefined;
+  return readActiveSelection(window.localStorage, userId);
 }
 
 function membershipKey(value: Pick<MissionMembershipContext, "missionId" | "role" | "crewMemberId">) {
@@ -44,7 +50,12 @@ export function subscribeMissionIdentity(listener: () => void): () => void {
   if (!getSupabaseBrowserConfigStatus().configured) {
     return () => window.removeEventListener(IDENTITY_CHANGED_EVENT, listener);
   }
-  const { data } = supabase.auth.onAuthStateChange(() => listener());
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    const nextUserId = session?.user.id;
+    if (shouldClearSelection(event, lastKnownUserId, nextUserId)) clearActiveSelection(window.localStorage);
+    lastKnownUserId = nextUserId;
+    listener();
+  });
   return () => {
     window.removeEventListener(IDENTITY_CHANGED_EVENT, listener);
     data.subscription.unsubscribe();
@@ -53,8 +64,8 @@ export function subscribeMissionIdentity(listener: () => void): () => void {
 
 export function setActiveMissionMembership(membership?: MissionMembershipContext) {
   if (typeof window === "undefined") return;
-  if (!membership) window.localStorage.removeItem(ACTIVE_MEMBERSHIP_KEY);
-  else window.localStorage.setItem(ACTIVE_MEMBERSHIP_KEY, membershipKey(membership));
+  if (!membership || !lastKnownUserId) clearActiveSelection(window.localStorage);
+  else writeActiveSelection(window.localStorage, lastKnownUserId, membershipKey(membership));
   emitIdentityChanged();
 }
 
