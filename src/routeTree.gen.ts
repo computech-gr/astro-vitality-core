@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as DiagFv0142hSyntheticEventRouteImport } from './routes/diag.fv0142h-synthetic-event'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
 import { Route as MissionBehavioralHealthRouteImport } from './routes/mission.behavioral-health'
 import { Route as MissionBoneHealthRouteImport } from './routes/mission.bone-health'
@@ -49,6 +50,12 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
     path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DiagFv0142hSyntheticEventRoute =
+  DiagFv0142hSyntheticEventRouteImport.update({
+    id: '/diag/fv0142h-synthetic-event',
+    path: '/diag/fv0142h-synthetic-event',
     getParentRoute: () => rootRouteImport,
   } as any)
 const MissionAlertsRoute = MissionAlertsRouteImport.update({
@@ -167,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/diag/fv0142h-synthetic-event': typeof DiagFv0142hSyntheticEventRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -194,6 +202,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/diag/fv0142h-synthetic-event': typeof DiagFv0142hSyntheticEventRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/diag/fv0142h-synthetic-event': typeof DiagFv0142hSyntheticEventRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/diag/fv0142h-synthetic-event'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/diag/fv0142h-synthetic-event'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -305,6 +317,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/diag/fv0142h-synthetic-event'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -333,6 +346,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  DiagFv0142hSyntheticEventRoute: typeof DiagFv0142hSyntheticEventRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
   MissionBehavioralHealthRoute: typeof MissionBehavioralHealthRoute
   MissionBoneHealthRoute: typeof MissionBoneHealthRoute
@@ -378,6 +392,13 @@ declare module '@tanstack/react-router' {
       path: '/.well-known/oauth-protected-resource'
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diag/fv0142h-synthetic-event': {
+      id: '/diag/fv0142h-synthetic-event'
+      path: '/diag/fv0142h-synthetic-event'
+      fullPath: '/diag/fv0142h-synthetic-event'
+      preLoaderRoute: typeof DiagFv0142hSyntheticEventRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/alerts': {
@@ -542,6 +563,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  DiagFv0142hSyntheticEventRoute: DiagFv0142hSyntheticEventRoute,
   MissionAlertsRoute: MissionAlertsRoute,
   MissionBehavioralHealthRoute: MissionBehavioralHealthRoute,
   MissionBoneHealthRoute: MissionBoneHealthRoute,
