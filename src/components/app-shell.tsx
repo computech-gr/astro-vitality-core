@@ -67,7 +67,7 @@ const navigation: readonly NavigationEntry[] = [
   {
     label: "Platform",
     href: "/#platform",
-    items: ["Platform Overview", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Personalization", "Health Intelligence", "Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
+    items: ["Platform Overview", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Personalization", "Health Intelligence", "NASA Scientific Evidence", "Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
   },
   {
     label: "Technology",
@@ -136,6 +136,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
   if (label === "Health Intelligence") return "/mission/intelligence";
+  if (label === "NASA Scientific Evidence") return "/mission/nasa-evidence";
   if (label === "Bone Health") return "/mission/bone-health";
   if (label === "Immune Changes") return "/mission/immune-health";
   if (label === "Cardiovascular Health") return "/mission/cardiovascular-health";

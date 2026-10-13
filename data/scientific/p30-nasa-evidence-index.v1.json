@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0",
+  "indexKind": "repository_public_reference_metadata",
+  "operationalActivation": false,
+  "liveNasaData": false,
+  "generatedFrom": [
+    "data/scientific/bone-health-literature-screening.v1.json",
+    "CITATIONS.md"
+  ],
+  "sources": [
+    {
+      "id": "NASA-NTRS-2024-005190",
+      "title": "Risk of Bone Fracture due to Spaceflight-induced Changes to Bone",
+      "issuer": "NASA Human Research Program",
+      "url": "https://ntrs.nasa.gov/citations/20240005190",
+      "published": "2024-06-03",
+      "accessScope": "report metadata and abstract",
+      "verifiedAt": "2026-10-11",
+      "reviewedFullText": false,
+      "independentlyReviewed": false,
+      "category": "bone_health",
+      "sourceFile": "data/scientific/bone-health-literature-screening.v1.json"
+    },
+    {
+      "id": "NASA-STD3001-V1-REVC",
+      "title": "NASA-STD-3001 Volume 1 Revision C, Section 4.7",
+      "issuer": "NASA",
+      "url": "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf",
+      "published": "2023",
+      "accessScope": "NASA public standards excerpt",
+      "verifiedAt": "2026-10-11",
+      "reviewedFullText": false,
+      "independentlyReviewed": false,
+      "category": "bone_health",
+      "sourceFile": "data/scientific/bone-health-literature-screening.v1.json"
+    },
+    {
+      "id": "NASA-BONE-RISK-2025",
+      "title": "Risk of Bone Fracture due to Spaceflight-induced Changes to Bone",
+      "issuer": "NASA Human Research Program",
+      "url": "https://www.nasa.gov/directorates/esdmd/hhp/risk-of-bone-fracture-due-to-spaceflight-induced-changes-to-bone/",
+      "published": "2025-03-11",
+      "accessScope": "NASA public summary",
+      "verifiedAt": "2026-10-11",
+      "reviewedFullText": false,
+      "independentlyReviewed": false,
+      "category": "bone_health",
+      "sourceFile": "data/scientific/bone-health-literature-screening.v1.json"
+    },
+    {
+      "id": "NASA-HRP-IRP",
+      "title": "Human Research Program Integrated Research Plan",
+      "issuer": "NASA Human Research Program",
+      "url": "https://www.nasa.gov/wp-content/uploads/2015/06/human_research_program_integrated_research_plan.pdf",
+      "published": "2015",
+      "accessScope": "NASA public plan excerpt",
+      "verifiedAt": "2026-10-11",
+      "reviewedFullText": false,
+      "independentlyReviewed": false,
+      "category": "bone_health",
+      "sourceFile": "data/scientific/bone-health-literature-screening.v1.json"
+    },
+    {
+      "id": "NASA-SSM-OVERVIEW",
+      "title": "Spaceflight Standard Measures",
+      "issuer": "NASA",
+      "url": "https://www.nasa.gov/reference/standard-measures/",
+      "published": null,
+      "accessScope": "public reference page; no mission participant data imported",
+      "verifiedAt": null,
+      "reviewedFullText": false,
+      "independentlyReviewed": false,
+      "category": "measurement_framework",
+      "sourceFile": "CITATIONS.md"
+    },
+    {
+      "id": "NASA-HRP-RISKS",
+      "title": "Human Research Program — Human System Risks",
+      "issuer": "NASA",
+      "url": "https://www.nasa.gov/hrp/risks/",
+      "published": null,
+      "accessScope": "public reference page",
+      "verifiedAt": null,
+      "reviewedFullText": false,
+      "independentlyReviewed": false,
+      "category": "human_system_risks",
+      "sourceFile": "CITATIONS.md"
+    },
+    {
+      "id": "NASA-STD3001-V2",
+      "title": "NASA-STD-3001 Volume 2",
+      "issuer": "NASA",
+      "url": "https://www.nasa.gov/reference/nasa-std-3001-volume-2/",
+      "published": null,
+      "accessScope": "public reference page",
+      "verifiedAt": null,
+      "reviewedFullText": false,
+      "independentlyReviewed": false,
+      "category": "environment_human_factors",
+      "sourceFile": "CITATIONS.md"
+    }
+  ]
+}

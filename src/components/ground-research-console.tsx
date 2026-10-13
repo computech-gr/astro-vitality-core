@@ -54,6 +54,7 @@ export function GroundResearchConsolePage() {
     <p className="section-kicker">P28 · Research Privacy Workspace</p>
     <h1 className="section-title">Research access with enforced privacy boundaries.</h1>
     <p className="mt-5 max-w-3xl text-muted-foreground">Researcher access is aggregate-only. No individual events, pseudonyms, exact times, payloads, source IDs or medical records are exported. Small cohorts and low-volume missions are suppressed by the server.</p>
+    <h2 className="sr-only">Research export workspace</h2>
     <Card className="mt-8"><CardHeader><CardTitle>Authorized mission context</CardTitle></CardHeader><CardContent className="space-y-4">
       <label htmlFor="p28-mission" className="block text-sm font-medium">Active research / medical mission</label>
       <select id="p28-mission" className="w-full rounded-md border border-border bg-background p-3 text-foreground" value={missionId} onChange={e => { setMissionId(e.target.value); setSnapshot(undefined); }}>
