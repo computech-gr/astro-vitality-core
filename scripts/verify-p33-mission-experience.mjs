@@ -1,0 +1,16 @@
+import { readFileSync } from "node:fs";
+import assert from "node:assert/strict";
+const read = (p) => readFileSync(p, "utf8");
+const routes = read("src/domain/mission-experience/workflows.ts");
+const ui = read("src/components/mission-experience.tsx");
+const route = read("src/routes/mission.experience.tsx");
+assert.match(routes, /workflowsForRole/);
+assert.match(routes, /role \? MISSION_WORKFLOWS.filter/);
+assert.match(ui, /loadMissionIdentity/);
+assert.match(ui, /subscribeMissionIdentity/);
+assert.match(ui, /identity\?\.signedIn && active/);
+assert.match(ui, /not a live health-status verdict/);
+assert.match(route, /operationalRouteHead/);
+assert.match(read("src/infrastructure/seo.ts"), /"\/mission\/experience"/);
+assert.match(read("src/components/app-shell.tsx"), /Mission Workspace/);
+console.log("P33 mission experience verifier: PASS");

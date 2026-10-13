@@ -17,6 +17,7 @@ import { Route as MissionBehavioralHealthRouteImport } from './routes/mission.be
 import { Route as MissionBoneHealthRouteImport } from './routes/mission.bone-health'
 import { Route as MissionCardiovascularHealthRouteImport } from './routes/mission.cardiovascular-health'
 import { Route as MissionDevicesRouteImport } from './routes/mission.devices'
+import { Route as MissionExperienceRouteImport } from './routes/mission.experience'
 import { Route as MissionGroundRouteImport } from './routes/mission.ground'
 import { Route as MissionGuidanceRouteImport } from './routes/mission.guidance'
 import { Route as MissionIdentityRouteImport } from './routes/mission.identity'
@@ -74,6 +75,11 @@ const MissionCardiovascularHealthRoute =
 const MissionDevicesRoute = MissionDevicesRouteImport.update({
   id: '/mission/devices',
   path: '/mission/devices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionExperienceRoute = MissionExperienceRouteImport.update({
+  id: '/mission/experience',
+  path: '/mission/experience',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionGroundRoute = MissionGroundRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/mission/bone-health': typeof MissionBoneHealthRoute
   '/mission/cardiovascular-health': typeof MissionCardiovascularHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
+  '/mission/experience': typeof MissionExperienceRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/mission/bone-health': typeof MissionBoneHealthRoute
   '/mission/cardiovascular-health': typeof MissionCardiovascularHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
+  '/mission/experience': typeof MissionExperienceRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/mission/bone-health': typeof MissionBoneHealthRoute
   '/mission/cardiovascular-health': typeof MissionCardiovascularHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
+  '/mission/experience': typeof MissionExperienceRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/mission/bone-health'
     | '/mission/cardiovascular-health'
     | '/mission/devices'
+    | '/mission/experience'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/identity'
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/mission/bone-health'
     | '/mission/cardiovascular-health'
     | '/mission/devices'
+    | '/mission/experience'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/identity'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/mission/bone-health'
     | '/mission/cardiovascular-health'
     | '/mission/devices'
+    | '/mission/experience'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/identity'
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   MissionBoneHealthRoute: typeof MissionBoneHealthRoute
   MissionCardiovascularHealthRoute: typeof MissionCardiovascularHealthRoute
   MissionDevicesRoute: typeof MissionDevicesRoute
+  MissionExperienceRoute: typeof MissionExperienceRoute
   MissionGroundRoute: typeof MissionGroundRoute
   MissionGuidanceRoute: typeof MissionGuidanceRoute
   MissionIdentityRoute: typeof MissionIdentityRoute
@@ -400,6 +413,13 @@ declare module '@tanstack/react-router' {
       path: '/mission/devices'
       fullPath: '/mission/devices'
       preLoaderRoute: typeof MissionDevicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/experience': {
+      id: '/mission/experience'
+      path: '/mission/experience'
+      fullPath: '/mission/experience'
+      preLoaderRoute: typeof MissionExperienceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/ground': {
@@ -527,6 +547,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionBoneHealthRoute: MissionBoneHealthRoute,
   MissionCardiovascularHealthRoute: MissionCardiovascularHealthRoute,
   MissionDevicesRoute: MissionDevicesRoute,
+  MissionExperienceRoute: MissionExperienceRoute,
   MissionGroundRoute: MissionGroundRoute,
   MissionGuidanceRoute: MissionGuidanceRoute,
   MissionIdentityRoute: MissionIdentityRoute,

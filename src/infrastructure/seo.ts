@@ -28,6 +28,7 @@ export const INDEXABLE_ROUTES = [
 
 /** Operational application routes that must never be indexed. */
 export const NON_INDEXABLE_ROUTES = [
+  "/mission/experience",
   "/mission/identity",
   "/mission/operations",
   "/mission/live",
