@@ -1,0 +1,10 @@
+import { readFileSync, existsSync } from "node:fs";
+const files = ["src/domain/health-intelligence/live-evidence.ts", "src/infrastructure/scientific-evidence.ts", "src/components/health-intelligence.tsx", "tests/domain/p25-scientific-evidence.test.ts", "docs/P25_UNIFIED_SCIENTIFIC_EVIDENCE.md"];
+for (const file of files) if (!existsSync(file)) throw new Error(`Missing P25 file: ${file}`);
+const engine = readFileSync(files[0], "utf8");
+const gateway = readFileSync(files[1], "utf8");
+const ui = readFileSync(files[2], "utf8");
+for (const token of ["missionId !== mission.missionId", "crewMemberId !== mission.crewMemberId", "descriptive_only", "research_only", "missingRoles", "quality"]) if (!engine.includes(token)) throw new Error(`Missing safeguard ${token}`);
+for (const token of ['m.role === "crew_self"', 'm.crewMemberId === crewMemberId', 'loadRecordedMissionData']) if (!gateway.includes(token)) throw new Error(`Missing authorization ${token}`);
+if (!ui.includes("loadCrewScientificEvidence") || !ui.includes("Mission-scoped scientific evidence")) throw new Error("Missing live UI integration");
+console.log("P25 scientific evidence verifier PASS");
