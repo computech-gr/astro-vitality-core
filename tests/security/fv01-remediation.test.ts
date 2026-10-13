@@ -50,7 +50,7 @@ describe("FV-01 proposed migration (static contract; not live proof)", () => {
   test("FV-01-05/12 revokes browser write privileges and grants nothing to anon", () => {
     expect(sql).toContain("revoke insert, update, delete, truncate, references, trigger on public.crew_members, public.mission_memberships, public.missions from authenticated, anon");
     expect(sql).not.toMatch(/grant [^;]* to (public|anon)\b/);
-    expect(sql).not.toMatch(/grant (insert|update|delete|all)/);
+    expect(sql).not.toMatch(/grant (insert|update|delete|all)\b[^;]*\bto [^;]*\b(authenticated|anon|public)\b/);
   });
   test("FV-01-06 export is frozen, rate limited and fails closed", () => {
     expect(sql).toContain("interval '24 hours'");

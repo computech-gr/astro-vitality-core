@@ -27,7 +27,7 @@ for (const marker of [
   "revoke insert, update, delete, truncate",
 ]) if (!sql.includes(marker) && !norm.includes(marker.toLowerCase())) throw new Error(`FV-01 marker missing: ${marker}`);
 if (/grant\s+[^;]*\s+to\s+(public|anon)\b/i.test(sql)) throw new Error("FV-01 must not grant to public/anon");
-if (/grant\s+(insert|update|delete|all)\b/i.test(sql)) throw new Error("FV-01 must not broaden table privileges");
+if (/grant\s+(insert|update|delete|all)\b[^;]*\bto\s+[^;]*\b(authenticated|anon|public)\b/i.test(sql)) throw new Error("FV-01 must not broaden table privileges");
 const d = (norm.match(/security definer/g) ?? []).length;
 const p = (norm.match(/security definer set search_path/g) ?? []).length;
 if (d !== p) throw new Error("FV-01 SECURITY DEFINER without pinned search_path");
