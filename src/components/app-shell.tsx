@@ -77,7 +77,7 @@ const navigation: readonly NavigationEntry[] = [
   {
     label: "Open Source",
     href: "/#open-source",
-    items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License"],
+    items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License", "Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"],
   },
   {
     label: "About",
@@ -127,6 +127,9 @@ const guideDestinations: Readonly<Record<string, string>> = {
 
 function itemHref(label: string, fallback: string) {
   if (label === "GitHub Repository") return GITHUB_URL;
+  if (label === "Backend Architecture (GitHub)") return `${GITHUB_URL}/blob/main/docs/ARCHITECTURE.md`;
+  if (label === "Database Schema & Migrations (GitHub)") return `${GITHUB_URL}/tree/main/supabase/migrations`;
+  if (label === "Access Rules / RLS (GitHub)") return `${GITHUB_URL}/blob/main/docs/SECURITY_MODEL.md`;
   if (label === "NASA Space Apps 2026") return NASA_URL;
   if (label === "The Challenge") return CHALLENGE_URL;
   if (label === "Mission Scenario") return "/mission/simulation";
@@ -376,7 +379,7 @@ function Footer() {
     <footer className="border-t border-border bg-deep">
       <div className="mx-auto max-w-[94rem] px-5 py-16 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,0.6fr)]"><div><Brand /><p className="mt-5 max-w-sm text-sm leading-6 text-muted-foreground">Open-source, offline-first astronaut health intelligence for long-duration human spaceflight.</p></div>{columns.map(([title, links]) => <div key={title}><h2 className="text-xs font-semibold uppercase text-foreground">{title}</h2><ul className="mt-5 space-y-3">{links.map(([label, href]) => <li key={label}><a href={href} target={isExternal(href) ? "_blank" : undefined} rel={isExternal(href) ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary">{label}{isExternal(href) && <ExternalLink className="size-3" />}</a></li>)}</ul></div>)}</div>
-        <div className="mt-14 grid gap-5 border-t border-border pt-7 text-xs text-muted-foreground sm:grid-cols-2"><div><p>© 2026 The Mitochondria. All rights reserved.</p><p className="mt-2">Built for NASA Space Apps Challenge 2026.</p></div><p className="sm:text-right">Open Source <span className="text-primary">|</span> Offline First <span className="text-primary">|</span> Human-Centered Health Intelligence</p></div>
+        <div className="mt-14 grid gap-5 border-t border-border pt-7 text-xs text-muted-foreground sm:grid-cols-2"><div><p>© 2026 The Mitochondria. Licensed under the Apache License 2.0.</p><p className="mt-2">Built for NASA Space Apps Challenge 2026.</p></div><p className="sm:text-right">Open Source <span className="text-primary">|</span> Offline First <span className="text-primary">|</span> Human-Centered Health Intelligence</p></div>
       </div>
     </footer>
   );
