@@ -19,6 +19,7 @@ import {
   signOutMissionIdentity,
   signUpMissionIdentity,
   subscribeMissionIdentity,
+  validateMissionSignUpPassword,
   type MissionIdentitySnapshot,
   type MissionMembershipContext,
   type MissionRole,
@@ -99,6 +100,11 @@ export function MissionIdentity() {
   }
 
   async function signUp() {
+    const passwordError = validateMissionSignUpPassword(password);
+    if (passwordError) {
+      setMessage(passwordError);
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
@@ -182,10 +188,15 @@ export function MissionIdentity() {
               <CardContent>
                 <div className="grid gap-4">
                   <div><Label htmlFor="mission-email">Email</Label><Input id="mission-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="astronaut@example.org" className="mt-2" /></div>
-                  <div><Label htmlFor="mission-password">Password</Label><Input id="mission-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2" /></div>
+                  <div>
+                    <Label htmlFor="mission-password">Password</Label>
+                    <Input id="mission-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2" aria-describedby="mission-password-note mission-password-error" aria-invalid={Boolean(password && validateMissionSignUpPassword(password))} />
+                    <p id="mission-password-note" className="mt-2 text-xs text-muted-foreground">Password must contain at least 12 characters.</p>
+                    {password && validateMissionSignUpPassword(password) ? <p id="mission-password-error" role="alert" className="mt-1 text-xs text-rose-300">{validateMissionSignUpPassword(password)}</p> : null}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <Button disabled={busy || authReadiness?.state === "configuration_required" || !email.trim() || !password} onClick={() => void run(() => signInMissionIdentity(email, password))}><LogIn /> Sign in</Button>
-                    <Button variant="outline" disabled={busy || authReadiness?.state === "configuration_required" || authReadiness?.signupAllowed === false || !email.trim() || password.length < 8} onClick={() => void signUp()}><UserRoundCheck /> Create account</Button>
+                    <Button variant="outline" disabled={busy || authReadiness?.state === "configuration_required" || authReadiness?.signupAllowed === false || !email.trim() || Boolean(validateMissionSignUpPassword(password))} onClick={() => void signUp()}><UserRoundCheck /> Create account</Button>
                     <Button variant="ghost" disabled={busy || authReadiness?.state === "configuration_required" || !email.trim()} onClick={() => void run(() => requestMissionMagicLink(email), "Magic sign-in link sent. Check your email.")}><Mail /> Email magic link</Button>
                   </div>
                 </div>
