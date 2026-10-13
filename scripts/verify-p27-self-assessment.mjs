@@ -1,0 +1,15 @@
+import { readFileSync } from "node:fs";
+import assert from "node:assert/strict";
+const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const engine = read("src/domain/action-guidance/self-assessment.ts");
+const page = read("src/components/astronaut-self-assessment.tsx");
+const guidance = read("src/components/action-guidance.tsx");
+assert.match(engine, /PROTOCOL_LIBRARY_V1_1/);
+assert.match(engine, /complete \? suggested/);
+assert.doesNotMatch(engine, /medical-escalation.*suggested/);
+assert.match(page, /getCloudMissionContext/);
+assert.match(page, /m\.role === "crew_self"/);
+assert.match(page, /No clinical scoring/);
+assert.match(page, /not persisted/);
+assert.match(guidance, /<AstronautSelfAssessment \/>/);
+console.log("P27 self-assessment and guidance verifier: PASS");

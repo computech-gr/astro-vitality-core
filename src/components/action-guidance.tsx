@@ -3,6 +3,7 @@ import { CheckCircle2, ClipboardCheck, ExternalLink, ShieldAlert, Stethoscope } 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PROTOCOL_LIBRARY_V1_1 } from "@/domain";
+import { AstronautSelfAssessment } from "@/components/astronaut-self-assessment";
 
 const safetyRules = [
   "Action cards are linked to reviewed protocol categories, never free-form medical advice.",
@@ -41,6 +42,8 @@ export function ActionGuidancePage() {
             </CardContent>
           </Card>
         </div>
+
+        <AstronautSelfAssessment />
 
         <section className="mt-10 grid gap-4 md:grid-cols-3" aria-label="Protocol guidance contract">
           <Card>
