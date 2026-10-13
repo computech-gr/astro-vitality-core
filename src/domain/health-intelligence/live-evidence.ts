@@ -79,7 +79,7 @@ export function buildScientificEvidenceReport(input: {
     groups.set(key, [...(groups.get(key) ?? []), item]);
   }
   const metrics: ScientificMetricSummary[] = [...groups.values()].map((samples) => {
-    const latest = samples[samples.length - 1];
+    const latest = samples[samples.length - 1]!; // groups always non-empty
     const previous = samples.length > 1 ? samples[samples.length - 2] : undefined;
     const usable = samples.filter((s) => s.quality === "good");
     // Strictly descriptive, not an approved personal baseline. Avoid including latest sample.
