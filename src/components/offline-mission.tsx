@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { OfflineAutonomy } from "@/components/offline-autonomy";
 import {
   CheckCircle2,
   Cloud,
@@ -178,6 +179,8 @@ export function OfflineMissionPage() {
             {cloudState === "local_only" ? <Button asChild variant="outline"><a href="/mission/identity"><LogIn />Mission sign-in</a></Button> : null}
           </div>
         </section>
+
+        <OfflineAutonomy />
 
         <h2 id="offline-state-heading" className="mt-10 font-display text-2xl font-semibold">Local mission state</h2>
         <section aria-labelledby="offline-state-heading" className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
