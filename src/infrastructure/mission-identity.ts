@@ -80,7 +80,15 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
     return { configured: true, signedIn: false, memberships: [], error: sessionError.message };
   }
   const session = sessionData.session;
-  if (!session) return { configured: true, signedIn: false, memberships: [] };
+  if (!session) {
+    if (typeof window !== "undefined") clearActiveSelection(window.localStorage);
+    lastKnownUserId = undefined;
+    return { configured: true, signedIn: false, memberships: [] };
+  }
+  if (lastKnownUserId && lastKnownUserId !== session.user.id && typeof window !== "undefined") {
+    clearActiveSelection(window.localStorage);
+  }
+  lastKnownUserId = session.user.id;
 
   const { data, error } = await supabase
     .from("mission_memberships")
@@ -128,13 +136,13 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
     };
   });
 
-  const preferred = readActiveKey();
+  const preferred = readActiveKey(session.user.id);
   let active = memberships.find((item) => membershipKey(item) === preferred);
   if (!active && memberships.length === 1) active = memberships[0];
   if (!active) active = memberships.find((item) => item.role === "crew_self" && item.crewMemberId);
 
   if (active && preferred !== membershipKey(active) && typeof window !== "undefined") {
-    window.localStorage.setItem(ACTIVE_MEMBERSHIP_KEY, membershipKey(active));
+    writeActiveSelection(window.localStorage, session.user.id, membershipKey(active));
   }
 
   return {
