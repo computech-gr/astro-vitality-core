@@ -19,6 +19,7 @@ import {
   signOutMissionIdentity,
   signUpMissionIdentity,
   subscribeMissionIdentity,
+  validateMissionSignUpPassword,
   type MissionIdentitySnapshot,
   type MissionMembershipContext,
   type MissionRole,

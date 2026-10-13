@@ -171,6 +171,8 @@ export function validateMissionSignUpPassword(password: string): string | null {
 }
 
 export async function signUpMissionIdentity(email: string, password: string): Promise<{ confirmationRequired: boolean }> {
+  const passwordError = validateMissionSignUpPassword(password);
+  if (passwordError) throw new Error(passwordError);
   const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
   if (error) throw new Error(error.message);
   emitIdentityChanged();
