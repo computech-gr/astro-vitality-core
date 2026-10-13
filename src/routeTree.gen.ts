@@ -13,11 +13,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
+import { Route as MissionBehavioralHealthRouteImport } from './routes/mission.behavioral-health'
 import { Route as MissionBoneHealthRouteImport } from './routes/mission.bone-health'
+import { Route as MissionCardiovascularHealthRouteImport } from './routes/mission.cardiovascular-health'
 import { Route as MissionDevicesRouteImport } from './routes/mission.devices'
 import { Route as MissionGroundRouteImport } from './routes/mission.ground'
 import { Route as MissionGuidanceRouteImport } from './routes/mission.guidance'
 import { Route as MissionIdentityRouteImport } from './routes/mission.identity'
+import { Route as MissionImmuneHealthRouteImport } from './routes/mission.immune-health'
 import { Route as MissionIntelligenceRouteImport } from './routes/mission.intelligence'
 import { Route as MissionLiveRouteImport } from './routes/mission.live'
 import { Route as MissionOfflineRouteImport } from './routes/mission.offline'
@@ -51,11 +54,22 @@ const MissionAlertsRoute = MissionAlertsRouteImport.update({
   path: '/mission/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissionBehavioralHealthRoute = MissionBehavioralHealthRouteImport.update({
+  id: '/mission/behavioral-health',
+  path: '/mission/behavioral-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MissionBoneHealthRoute = MissionBoneHealthRouteImport.update({
   id: '/mission/bone-health',
   path: '/mission/bone-health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissionCardiovascularHealthRoute =
+  MissionCardiovascularHealthRouteImport.update({
+    id: '/mission/cardiovascular-health',
+    path: '/mission/cardiovascular-health',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MissionDevicesRoute = MissionDevicesRouteImport.update({
   id: '/mission/devices',
   path: '/mission/devices',
@@ -74,6 +88,11 @@ const MissionGuidanceRoute = MissionGuidanceRouteImport.update({
 const MissionIdentityRoute = MissionIdentityRouteImport.update({
   id: '/mission/identity',
   path: '/mission/identity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionImmuneHealthRoute = MissionImmuneHealthRouteImport.update({
+  id: '/mission/immune-health',
+  path: '/mission/immune-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionIntelligenceRoute = MissionIntelligenceRouteImport.update({
@@ -137,11 +156,14 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
+  '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
+  '/mission/cardiovascular-health': typeof MissionCardiovascularHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
+  '/mission/immune-health': typeof MissionImmuneHealthRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/offline': typeof MissionOfflineRoute
@@ -159,11 +181,14 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
+  '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
+  '/mission/cardiovascular-health': typeof MissionCardiovascularHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
+  '/mission/immune-health': typeof MissionImmuneHealthRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/offline': typeof MissionOfflineRoute
@@ -182,11 +207,14 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/mission/alerts': typeof MissionAlertsRoute
+  '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
+  '/mission/cardiovascular-health': typeof MissionCardiovascularHealthRoute
   '/mission/devices': typeof MissionDevicesRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
+  '/mission/immune-health': typeof MissionImmuneHealthRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/offline': typeof MissionOfflineRoute
@@ -206,11 +234,14 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
+    | '/mission/behavioral-health'
     | '/mission/bone-health'
+    | '/mission/cardiovascular-health'
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/identity'
+    | '/mission/immune-health'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/offline'
@@ -228,11 +259,14 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
+    | '/mission/behavioral-health'
     | '/mission/bone-health'
+    | '/mission/cardiovascular-health'
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/identity'
+    | '/mission/immune-health'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/offline'
@@ -250,11 +284,14 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/mission/alerts'
+    | '/mission/behavioral-health'
     | '/mission/bone-health'
+    | '/mission/cardiovascular-health'
     | '/mission/devices'
     | '/mission/ground'
     | '/mission/guidance'
     | '/mission/identity'
+    | '/mission/immune-health'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/offline'
@@ -273,11 +310,14 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
+  MissionBehavioralHealthRoute: typeof MissionBehavioralHealthRoute
   MissionBoneHealthRoute: typeof MissionBoneHealthRoute
+  MissionCardiovascularHealthRoute: typeof MissionCardiovascularHealthRoute
   MissionDevicesRoute: typeof MissionDevicesRoute
   MissionGroundRoute: typeof MissionGroundRoute
   MissionGuidanceRoute: typeof MissionGuidanceRoute
   MissionIdentityRoute: typeof MissionIdentityRoute
+  MissionImmuneHealthRoute: typeof MissionImmuneHealthRoute
   MissionIntelligenceRoute: typeof MissionIntelligenceRoute
   MissionLiveRoute: typeof MissionLiveRoute
   MissionOfflineRoute: typeof MissionOfflineRoute
@@ -321,11 +361,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mission/behavioral-health': {
+      id: '/mission/behavioral-health'
+      path: '/mission/behavioral-health'
+      fullPath: '/mission/behavioral-health'
+      preLoaderRoute: typeof MissionBehavioralHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mission/bone-health': {
       id: '/mission/bone-health'
       path: '/mission/bone-health'
       fullPath: '/mission/bone-health'
       preLoaderRoute: typeof MissionBoneHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/cardiovascular-health': {
+      id: '/mission/cardiovascular-health'
+      path: '/mission/cardiovascular-health'
+      fullPath: '/mission/cardiovascular-health'
+      preLoaderRoute: typeof MissionCardiovascularHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/devices': {
@@ -354,6 +408,13 @@ declare module '@tanstack/react-router' {
       path: '/mission/identity'
       fullPath: '/mission/identity'
       preLoaderRoute: typeof MissionIdentityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/immune-health': {
+      id: '/mission/immune-health'
+      path: '/mission/immune-health'
+      fullPath: '/mission/immune-health'
+      preLoaderRoute: typeof MissionImmuneHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/intelligence': {
@@ -442,11 +503,14 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   MissionAlertsRoute: MissionAlertsRoute,
+  MissionBehavioralHealthRoute: MissionBehavioralHealthRoute,
   MissionBoneHealthRoute: MissionBoneHealthRoute,
+  MissionCardiovascularHealthRoute: MissionCardiovascularHealthRoute,
   MissionDevicesRoute: MissionDevicesRoute,
   MissionGroundRoute: MissionGroundRoute,
   MissionGuidanceRoute: MissionGuidanceRoute,
   MissionIdentityRoute: MissionIdentityRoute,
+  MissionImmuneHealthRoute: MissionImmuneHealthRoute,
   MissionIntelligenceRoute: MissionIntelligenceRoute,
   MissionLiveRoute: MissionLiveRoute,
   MissionOfflineRoute: MissionOfflineRoute,
