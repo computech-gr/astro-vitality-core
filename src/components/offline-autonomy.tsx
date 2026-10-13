@@ -23,7 +23,8 @@ export function OfflineAutonomy() {
       const decision = decideForegroundSync({
         online: navigator.onLine, visible: document.visibilityState === 'visible',
         authenticated: cloud.signedIn && !cloud.error && cloud.memberships.length > 0,
-        pending, review, inFlight: false, lastAttemptMs: lastAttempt.current,
+        pending, review, inFlight: false,
+        ...(lastAttempt.current === undefined ? {} : { lastAttemptMs: lastAttempt.current }),
         consecutiveFailures: failures.current, nowMs: Date.now(),
       });
       if (!decision.allowed) {
