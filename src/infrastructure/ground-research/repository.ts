@@ -1,3 +1,4 @@
+import { validateResearchAggregate, type ResearchAggregate } from "@/domain/research/privacy";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RpcResponse<T> {
@@ -32,10 +33,10 @@ export async function loadGroundMissionSnapshot(missionId: string): Promise<Grou
   return data;
 }
 
-export async function loadDeidentifiedResearchExport(missionId: string): Promise<unknown[]> {
+export async function loadDeidentifiedResearchExport(missionId: string): Promise<ResearchAggregate[]> {
   const { data, error } = await rpcClient().rpc<unknown[]>("export_research_mission", {
     p_mission_id: missionId,
   });
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return validateResearchAggregate(data ?? []);
 }
