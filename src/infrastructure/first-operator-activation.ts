@@ -27,8 +27,11 @@ export interface FirstOperatorBootstrapStatus {
 export function parseFirstOperatorBootstrapStatus(value: unknown): FirstOperatorBootstrapStatus | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const v = value as Record<string, unknown>;
-  if (typeof v.operator_exists !== 'boolean' || typeof v.bootstrap_armed !== 'boolean' || typeof v.bootstrap_consumed !== 'boolean') return null;
-  return { operatorExists: v.operator_exists, bootstrapArmed: v.bootstrap_armed, bootstrapConsumed: v.bootstrap_consumed };
+  const operatorExists = v['operator_exists'];
+  const bootstrapArmed = v['bootstrap_armed'];
+  const bootstrapConsumed = v['bootstrap_consumed'];
+  if (typeof operatorExists !== 'boolean' || typeof bootstrapArmed !== 'boolean' || typeof bootstrapConsumed !== 'boolean') return null;
+  return { operatorExists, bootstrapArmed, bootstrapConsumed };
 }
 
 export async function loadFirstOperatorBootstrapStatus(): Promise<FirstOperatorBootstrapStatus | null> {
