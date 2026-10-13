@@ -18,7 +18,7 @@ function rpcClient(): RpcCapableClient {
 export function classifyMissionSyncError(message: string): "rejected" | "retryable" {
   const normalized = message.toLowerCase();
   if (/\b(network|timeout|timed out|connection|fetch failed|rate limit|temporarily unavailable|service unavailable|gateway|deadlock|lock timeout)\b/i.test(normalized)) return "retryable";
-  if (/mission access denied|authentication required|invalid (mission|crew)|permission denied|violates .*constraint|structured payload required|payload too large|unsupported event kind|invalid source provenance|event identifiers? too long|invalid idempotency key|invalid event (kind|identifier)|invalid source (id|version)/i.test(normalized)) return "rejected";
+  if (/mission access denied|authentication required|invalid (mission|crew)|permission denied|violates .*constraint|structured payload required|payload too large|unsupported event kind|invalid source provenance|event identifiers? too long|invalid idempotency key|invalid event (kind|identifier)|invalid source (id|version)|crew assignment inactive|mission closed for new events|mission operator event scope denied/i.test(normalized)) return "rejected";
   return "retryable";
 }
 
