@@ -43,7 +43,7 @@ export function Fv0142hSyntheticEventTest() {
     if (!resolution?.ok || submitting || !FV0142H_SUBMISSION_ENABLED) return;
     setSubmitting(true);
     try {
-      setOutcome(await submitFv0142hEvent(supabase, resolution, new Date().toISOString()));
+      setOutcome(await submitFv0142hEvent(supabase as unknown as Parameters<typeof submitFv0142hEvent>[0], resolution, new Date().toISOString()));
     } finally {
       setSubmitting(false);
     }
