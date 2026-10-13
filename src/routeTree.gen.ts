@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as DiagFv0142gIsolationRouteImport } from './routes/diag.fv0142g-isolation'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
 import { Route as MissionBehavioralHealthRouteImport } from './routes/mission.behavioral-health'
 import { Route as MissionBoneHealthRouteImport } from './routes/mission.bone-health'
@@ -51,6 +52,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DiagFv0142gIsolationRoute = DiagFv0142gIsolationRouteImport.update({
+  id: '/diag/fv0142g-isolation',
+  path: '/diag/fv0142g-isolation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MissionAlertsRoute = MissionAlertsRouteImport.update({
   id: '/mission/alerts',
   path: '/mission/alerts',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/diag/fv0142g-isolation': typeof DiagFv0142gIsolationRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/diag/fv0142g-isolation': typeof DiagFv0142gIsolationRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/diag/fv0142g-isolation': typeof DiagFv0142gIsolationRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/diag/fv0142g-isolation'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/diag/fv0142g-isolation'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/diag/fv0142g-isolation'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  DiagFv0142gIsolationRoute: typeof DiagFv0142gIsolationRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
   MissionBehavioralHealthRoute: typeof MissionBehavioralHealthRoute
   MissionBoneHealthRoute: typeof MissionBoneHealthRoute
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/.well-known/oauth-protected-resource'
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diag/fv0142g-isolation': {
+      id: '/diag/fv0142g-isolation'
+      path: '/diag/fv0142g-isolation'
+      fullPath: '/diag/fv0142g-isolation'
+      preLoaderRoute: typeof DiagFv0142gIsolationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/alerts': {
@@ -542,6 +562,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  DiagFv0142gIsolationRoute: DiagFv0142gIsolationRoute,
   MissionAlertsRoute: MissionAlertsRoute,
   MissionBehavioralHealthRoute: MissionBehavioralHealthRoute,
   MissionBoneHealthRoute: MissionBoneHealthRoute,
