@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { MultiCrewSimulation } from "@/components/multi-crew-simulation";
 import {
   Activity,
   AlertTriangle,
@@ -236,6 +237,8 @@ export function SyntheticMissionPage() {
             </table>
           </div>
         </section>
+
+        <MultiCrewSimulation />
 
         <section className="mt-10 border border-border bg-surface p-5 text-sm leading-6 text-muted-foreground">
           <div className="flex gap-3">

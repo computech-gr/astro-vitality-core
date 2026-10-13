@@ -1,0 +1,14 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+const read = (path) => fs.readFileSync(path, "utf8");
+const domain = read("src/domain/simulation/multi-crew.ts");
+const component = read("src/components/multi-crew-simulation.tsx");
+const integration = read("src/components/synthetic-mission.tsx");
+assert.match(domain, /generateSyntheticMissionDataset/);
+assert.match(domain, /classification|syntheticOnly/);
+assert.match(domain, /crewMemberId: member.id/);
+assert.match(component, /Download synthetic replay JSON/);
+assert.match(component, /No database writes|no database writes/);
+assert.match(integration, /<MultiCrewSimulation \/>/);
+assert.ok(fs.existsSync("tests/simulation/p31-multi-crew.test.ts"));
+console.log("P31 multi-crew simulation verifier: PASS");
