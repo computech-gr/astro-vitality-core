@@ -17,6 +17,9 @@ for (const marker of [
   "research export rate limit",
   "mission_not_closed",
   "existing crew-self binding differs",
+  "crew_self_binding_conflict",
+  "audit_events is append-only",
+  "mission end is immutable after close",
   "revoke insert, update, delete, truncate",
 ]) if (!sql.includes(marker) && !norm.includes(marker.toLowerCase())) throw new Error(`FV-01 marker missing: ${marker}`);
 if (/grant\s+[^;]*\s+to\s+(public|anon)\b/i.test(sql)) throw new Error("FV-01 must not grant to public/anon");

@@ -197,8 +197,10 @@ function rpcClient(): RpcClient {
 export async function acceptMissionInvite(code: string): Promise<void> {
   const normalized = code.trim();
   if (!normalized) throw new Error("Enter a mission invite code.");
-  const { error } = await rpcClient().rpc("accept_mission_invite", { p_code: normalized });
+  const { data, error } = await rpcClient().rpc<{ status?: string; message?: string }>("accept_mission_invite", { p_code: normalized });
   if (error) throw new Error(error.message);
+  // FV-01.1: binding conflicts are returned (not raised) so the audit record persists.
+  if (data?.status === "rejected") throw new Error(data.message ?? "Mission invite rejected; operator review required.");
   emitIdentityChanged();
 }
 
