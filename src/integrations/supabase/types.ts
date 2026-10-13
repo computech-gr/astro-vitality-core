@@ -414,6 +414,38 @@ export type Database = {
           },
         ]
       }
+      mission_research_snapshots: {
+        Row: {
+          crew_count: number
+          event_count: number
+          frozen_at: string
+          mission_id: string
+          policy: string
+        }
+        Insert: {
+          crew_count: number
+          event_count: number
+          frozen_at: string
+          mission_id: string
+          policy?: string
+        }
+        Update: {
+          crew_count?: number
+          event_count?: number
+          frozen_at?: string
+          mission_id?: string
+          policy?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_research_snapshots_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: true
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       missions: {
         Row: {
           code: string
