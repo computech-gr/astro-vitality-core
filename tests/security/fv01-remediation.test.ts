@@ -50,12 +50,12 @@ describe("FV-01 proposed migration (static contract; not live proof)", () => {
   test("FV-01-05/12 revokes browser write privileges and grants nothing to anon", () => {
     expect(sql).toContain("revoke insert, update, delete, truncate, references, trigger on public.crew_members, public.mission_memberships, public.missions from authenticated, anon");
     expect(sql).not.toMatch(/grant [^;]* to (public|anon)\b/);
-    expect(sql).not.toMatch(/grant (insert|update|delete|all)/);
+    expect(sql).not.toMatch(/grant (insert|update|delete|all)\b[^;]*\bto [^;]*\b(authenticated|anon|public)\b/);
   });
   test("FV-01-06 export is frozen, rate limited and fails closed", () => {
     expect(sql).toContain("interval '24 hours'");
     expect(sql).toContain("'reason','mission_not_closed'");
-    expect(sql).toContain("e.ingested_at <= v_ends");
+    expect(fn("export_research_mission")).toContain("from public.mission_research_snapshots");
     expect(sql).toContain("v_crew < 3");
     expect(sql).toContain("v_bucket < 10");
   });
@@ -133,7 +133,7 @@ describe("FV-01.1 pre-migration corrections (static; live verification still req
   test("export cohort no longer depends on mutable assignment status", () => {
     const body = fn("export_research_mission");
     expect(body).not.toContain("a.status");
-    expect(body).toContain("e.ingested_at <= v_ends");
+    expect(fn("update_mission_operation")).not.toContain("a.status");
   });
   test("audit_events is append-only and ends_at immutable after close", () => {
     expect(sql).toContain("before update or delete on public.audit_events");
@@ -143,5 +143,34 @@ describe("FV-01.1 pre-migration corrections (static; live verification still req
   });
   test("no SECURITY DEFINER routine in the migration updates or deletes audit rows", () => {
     expect(sql).not.toMatch(/(update|delete from) public\.audit_events/);
+  });
+});
+
+describe("FV-01.2 frozen research boundary (STATIC source checks — see scripts/verify-fv01-pg-integration.mjs for PostgreSQL integration)", () => {
+  test("snapshot is written in the closing transaction and export reads only the snapshot", () => {
+    const close = fn("update_mission_operation");
+    expect(close).toContain("for update");
+    expect(close).toContain("insert into public.mission_research_snapshots");
+    const exp = fn("export_research_mission");
+    expect(exp).toContain("from public.mission_research_snapshots");
+    expect(exp).not.toContain("from public.mission_events");
+    expect(exp).toContain("'reason','snapshot_unavailable'");
+  });
+  test("closure, assignment and snapshot immutability are trigger-enforced for all roles", () => {
+    expect(sql).toContain("before update or delete on public.missions");
+    expect(sql).toContain("before insert or update or delete on public.mission_crew_assignments");
+    expect(sql).toContain("before update or delete on public.mission_research_snapshots");
+    expect(sql).toContain("before update or delete on public.mission_events");
+    expect(fn("enforce_assignment_closure")).toContain("for share");
+    expect(sql).toContain("revoke all on public.mission_research_snapshots from public, anon, authenticated");
+  });
+  test("ingestion serializes with close; lock order is advisory(id) -> advisory(key) -> mission row", () => {
+    const ing = fn("ingest_mission_event");
+    const a = ing.indexOf("'mitochondria:event-id:'");
+    const b = ing.indexOf("'mitochondria:idem:'");
+    const c = ing.indexOf("from public.missions where id=v_mission for share");
+    expect(a).toBeGreaterThan(0);
+    expect(b).toBeGreaterThan(a);
+    expect(c).toBeGreaterThan(b);
   });
 });

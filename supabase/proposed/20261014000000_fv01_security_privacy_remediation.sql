@@ -145,7 +145,10 @@ begin
 
   -- FV-01-03: lifecycle. Closed missions only accept offline events captured
   -- before the mission end (legitimate store-and-forward retries).
-  select status, ends_at into v_mission_status, v_mission_ends from public.missions where id=v_mission;
+  -- FV-01.2: FOR SHARE serializes with a concurrent close (FOR UPDATE). Lock order is
+  -- always: event-id advisory -> idempotency advisory -> mission row. Close takes only
+  -- the mission row, so no lock cycle exists.
+  select status, ends_at into v_mission_status, v_mission_ends from public.missions where id=v_mission for share;
   if v_mission_status is null then raise exception 'mission access denied'; end if;
   if v_mission_status in ('completed','aborted') then
     if v_mission_ends is null or v_event_ts > v_mission_ends then
@@ -259,16 +262,17 @@ begin
     return;
   end if;
 
-  -- Frozen dataset: events ingested by mission end, from crew ever assigned to the
-  -- mission. Assignment STATUS is deliberately not used: it remains editable after
-  -- close and would let an operator toggle a single crew member in/out (differencing).
-  -- Assignment rows have no delete path; ends_at is immutable after close (below);
-  -- mission_events is append-only. Repeated queries therefore return identical output.
-  select count(distinct e.crew_member_id), count(*) into v_crew, v_events
-  from public.mission_events e
-  where e.mission_id=p_mission_id and e.ingested_at <= v_ends
-    and exists(select 1 from public.mission_crew_assignments a
-               where a.mission_id=e.mission_id and a.crew_member_id=e.crew_member_id);
+  -- FV-01.2: read ONLY the snapshot frozen atomically at close. It is append-only
+  -- (trigger-enforced), so every export of a closed mission returns identical output
+  -- regardless of later ingestion, assignment edits or timestamps.
+  select crew_count, event_count into v_crew, v_events
+  from public.mission_research_snapshots where mission_id=p_mission_id;
+  if not found then
+    insert into public.audit_events(mission_id,actor_user_id,action,target_type,metadata)
+    values(p_mission_id,auth.uid(),'research_export_suppressed','mission',
+      jsonb_build_object('reason','snapshot_unavailable','policy','fv01-v1'));
+    return;
+  end if;
 
   if v_crew < 3 then
     insert into public.audit_events(mission_id,actor_user_id,action,target_type,metadata)
@@ -427,16 +431,31 @@ begin
     raise exception 'mission end is immutable after close';
   end if;
 
+  -- clock_timestamp(): measured AFTER the FOR UPDATE lock above was granted, so it is
+  -- later than every ingestion that committed while holding a FOR SHARE mission lock.
   update public.missions
   set name = v_name,
       status = v_status,
       starts_at = coalesce(p_starts_at, starts_at),
       ends_at = case
         when v_current.status in ('completed','aborted') then v_current.ends_at
-        when v_status in ('completed','aborted') then coalesce(p_ends_at, ends_at, now())
+        when v_status in ('completed','aborted') then coalesce(p_ends_at, ends_at, clock_timestamp())
         else p_ends_at end,
       updated_at = now()
   where id = p_mission_id;
+
+  -- FV-01.2: freeze the research snapshot in the SAME transaction as the close,
+  -- while the mission row is locked. Concurrent ingestions and assignment writes
+  -- hold FOR SHARE on this row, so this statement sees exactly the set committed
+  -- before the close; anything later waits, then observes the closed status.
+  if v_current.status not in ('completed','aborted') and v_status in ('completed','aborted') then
+    insert into public.mission_research_snapshots(mission_id, crew_count, event_count, frozen_at, policy)
+    select p_mission_id, count(distinct e.crew_member_id), count(*), clock_timestamp(), 'fv01-v1'
+    from public.mission_events e
+    where e.mission_id = p_mission_id
+      and exists(select 1 from public.mission_crew_assignments a
+                 where a.mission_id = e.mission_id and a.crew_member_id = e.crew_member_id);
+  end if;
 
   insert into public.audit_events(mission_id, actor_user_id, action, target_type, target_id, metadata)
   values(p_mission_id, auth.uid(), 'mission_updated', 'mission', p_mission_id,
@@ -447,6 +466,116 @@ end;
 $function$;
 revoke all on function public.update_mission_operation(text, text, text, timestamptz, timestamptz) from public, anon;
 grant execute on function public.update_mission_operation(text, text, text, timestamptz, timestamptz) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- FV-01.2: immutable closure boundary, enforced by triggers for EVERY role
+-- (including privileged/service paths), not only by RPC logic.
+-- ---------------------------------------------------------------------------
+
+-- Research snapshot frozen in the same transaction that closes the mission.
+create table if not exists public.mission_research_snapshots (
+  mission_id text primary key references public.missions(id),
+  crew_count integer not null check (crew_count >= 0),
+  event_count bigint not null check (event_count >= 0),
+  frozen_at timestamptz not null,
+  policy text not null default 'fv01-v1'
+);
+revoke all on public.mission_research_snapshots from public, anon, authenticated;
+grant all on public.mission_research_snapshots to service_role;
+alter table public.mission_research_snapshots enable row level security;
+alter table public.mission_research_snapshots force row level security;
+-- No policies: browser roles have neither grants nor policies (deny-by-default).
+
+create or replace function public.reject_immutable_mutation()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $function$
+begin
+  raise exception '% is append-only', tg_table_name;
+end $function$;
+revoke all on function public.reject_immutable_mutation() from public, anon, authenticated;
+
+drop trigger if exists trg_research_snapshots_append_only on public.mission_research_snapshots;
+create trigger trg_research_snapshots_append_only
+  before update or delete on public.mission_research_snapshots
+  for each row execute function public.reject_immutable_mutation();
+drop trigger if exists trg_research_snapshots_no_truncate on public.mission_research_snapshots;
+create trigger trg_research_snapshots_no_truncate
+  before truncate on public.mission_research_snapshots
+  for each statement execute function public.reject_immutable_mutation();
+
+-- mission_events is append-only (no code path updates or deletes it).
+drop trigger if exists trg_mission_events_append_only on public.mission_events;
+create trigger trg_mission_events_append_only
+  before update or delete on public.mission_events
+  for each row execute function public.reject_immutable_mutation();
+drop trigger if exists trg_mission_events_no_truncate on public.mission_events;
+create trigger trg_mission_events_no_truncate
+  before truncate on public.mission_events
+  for each statement execute function public.reject_immutable_mutation();
+
+-- Closed missions cannot be reopened, re-dated or deleted, by any role.
+create or replace function public.enforce_mission_closure()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $function$
+begin
+  if old.status in ('completed','aborted') then
+    if tg_op = 'DELETE' then raise exception 'closed mission cannot be deleted'; end if;
+    if new.status is distinct from old.status then raise exception 'closed mission cannot be reopened'; end if;
+    if new.ends_at is distinct from old.ends_at then raise exception 'mission end is immutable after close'; end if;
+    if new.id is distinct from old.id then raise exception 'closed mission identity is immutable'; end if;
+  end if;
+  return case when tg_op = 'DELETE' then old else new end;
+end $function$;
+revoke all on function public.enforce_mission_closure() from public, anon, authenticated;
+drop trigger if exists trg_missions_closure_immutable on public.missions;
+create trigger trg_missions_closure_immutable
+  before update or delete on public.missions
+  for each row execute function public.enforce_mission_closure();
+
+-- Crew assignments are frozen once their mission is closed. FOR SHARE serializes
+-- with the closing transaction's FOR UPDATE on the mission row, so an assignment
+-- racing a close either commits first (and is captured in the snapshot) or waits
+-- and is then rejected.
+create or replace function public.enforce_assignment_closure()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $function$
+declare v_status text; v_mission text;
+begin
+  v_mission := case when tg_op = 'DELETE' then old.mission_id else new.mission_id end;
+  select status into v_status from public.missions where id = v_mission for share;
+  if v_status in ('completed','aborted') then
+    raise exception 'crew assignments are frozen after mission close';
+  end if;
+  if tg_op = 'UPDATE' and old.mission_id is distinct from new.mission_id then
+    raise exception 'assignment mission is immutable';
+  end if;
+  return case when tg_op = 'DELETE' then old else new end;
+end $function$;
+revoke all on function public.enforce_assignment_closure() from public, anon, authenticated;
+drop trigger if exists trg_assignments_closure_frozen on public.mission_crew_assignments;
+create trigger trg_assignments_closure_frozen
+  before insert or update or delete on public.mission_crew_assignments
+  for each row execute function public.enforce_assignment_closure();
+
+-- Backfill: freeze any mission already closed before this migration (bounded by its end).
+insert into public.mission_research_snapshots(mission_id, crew_count, event_count, frozen_at, policy)
+select m.id,
+  (select count(distinct e.crew_member_id) from public.mission_events e
+     where e.mission_id=m.id and e.ingested_at <= m.ends_at
+       and exists(select 1 from public.mission_crew_assignments a where a.mission_id=e.mission_id and a.crew_member_id=e.crew_member_id)),
+  (select count(*) from public.mission_events e
+     where e.mission_id=m.id and e.ingested_at <= m.ends_at
+       and exists(select 1 from public.mission_crew_assignments a where a.mission_id=e.mission_id and a.crew_member_id=e.crew_member_id)),
+  coalesce(m.ends_at, now()), 'fv01-v1-backfill'
+from public.missions m
+where m.status in ('completed','aborted')
+on conflict (mission_id) do nothing;
 
 -- Re-assert least-privilege execute grants (unchanged audience: authenticated only).
 revoke all on function public.ingest_mission_event(jsonb, text) from public, anon;
