@@ -122,8 +122,8 @@ do $$ begin perform public.update_mission_operation('m1', null, 'active'); raise
 exception when others then if sqlerrm not like '%invalid mission lifecycle%' and sqlerrm not like '%reopened%' then raise; end if; end $$;
 do $$ begin perform public.update_mission_operation('m1', null, null, null, now() + interval '1 day'); raise exception 'FAIL: re-date via RPC';
 exception when others then if sqlerrm not like '%immutable after close%' then raise; end if; end $$;
-do $$ begin perform public.update_mission_crew_member('m1','c1',null,null,'inactive'); raise exception 'FAIL: post-close assignment edit';
-exception when others then if sqlerrm not like '%frozen after mission close%' and sqlerrm not like '%deactivate crew-self%' then raise; end if; end $$;
+do $$ begin perform public.update_mission_crew_member('m1','c1','Renamed Crew',null,null); raise exception 'FAIL: post-close assignment edit';
+exception when others then if sqlerrm not like '%frozen after mission close%' then raise; end if; end $$;
 do $$ begin perform public.create_mission_crew_member('m1','Late Crew'); raise exception 'FAIL: post-close crew create';
 exception when others then if sqlerrm not like '%closed mission%' then raise; end if; end $$;
 reset role;
