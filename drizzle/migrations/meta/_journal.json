@@ -15,6 +15,13 @@
       "when": 1791835688511,
       "tag": "0001_p24_multi_mission_crew_reuse",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791870848770,
+      "tag": "0002_p28_research_export_privacy",
+      "breakpoints": true
     }
   ]
 }
