@@ -101,3 +101,47 @@ describe("FV-01 sync classification", () => {
     expect(classifyMissionSyncError("network timeout")).toBe("retryable");
   });
 });
+
+const fn = (name: string) => {
+  const start = sql.indexOf(`create or replace function public.${name}(`);
+  const end = sql.indexOf("$function$;", start);
+  return sql.slice(start, end);
+};
+
+describe("FV-01.1 pre-migration corrections (static; live verification still required)", () => {
+  test("invite binding conflict persists audit by returning, not raising", () => {
+    const body = fn("accept_mission_invite");
+    const audit = body.indexOf("'mission_invite_binding_conflict'");
+    const ret = body.indexOf("'reason','crew_self_binding_conflict'");
+    expect(audit).toBeGreaterThan(0);
+    expect(ret).toBeGreaterThan(audit);
+    const between = body.slice(audit, ret);
+    expect(between).not.toContain("raise exception");
+    // membership must not be touched on the rejection path
+    expect(between).not.toContain("insert into public.mission_memberships");
+    expect(body.slice(0, ret)).toContain("update public.mission_invites set active=false where id=v_invite.id");
+  });
+  test("concurrent exports: lock precedes the rate-limit read, per user across roles", () => {
+    const body = fn("export_research_mission");
+    const lock = body.indexOf("pg_advisory_xact_lock");
+    const check = body.indexOf("interval '24 hours'");
+    expect(lock).toBeGreaterThan(0);
+    expect(check).toBeGreaterThan(lock);
+    expect(body).toContain("actor_user_id=auth.uid()");
+    expect(body).toContain("action in ('research_export_aggregate','research_export_suppressed')");
+  });
+  test("export cohort no longer depends on mutable assignment status", () => {
+    const body = fn("export_research_mission");
+    expect(body).not.toContain("a.status");
+    expect(body).toContain("e.ingested_at <= v_ends");
+  });
+  test("audit_events is append-only and ends_at immutable after close", () => {
+    expect(sql).toContain("before update or delete on public.audit_events");
+    expect(sql).toContain("before truncate on public.audit_events");
+    expect(sql).toContain("mission end is immutable after close");
+    expect(fn("reject_audit_mutation")).not.toContain("security definer");
+  });
+  test("no SECURITY DEFINER routine in the migration updates or deletes audit rows", () => {
+    expect(sql).not.toMatch(/(update|delete from) public\.audit_events/);
+  });
+});

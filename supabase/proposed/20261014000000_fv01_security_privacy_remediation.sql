@@ -234,6 +234,13 @@ begin
     raise exception 'research export denied';
   end if;
 
+  -- FV-01.1 concurrency: the transaction-scoped lock serializes concurrent exports by
+  -- the same user for the same mission. Under READ COMMITTED (PostgREST default) the
+  -- EXISTS below takes a fresh snapshot after the lock is granted, so it observes the
+  -- audit row committed by the first request and the second request is refused.
+  -- The limit is per user, not per role: a user holding both researcher and
+  -- ground_medical shares one budget. Rate limiting is NOT an anonymity guarantee;
+  -- protection rests on the frozen dataset, cohort minimum and coarse bucketing.
   perform pg_advisory_xact_lock(hashtext('mitochondria:research-export:' || p_mission_id || ':' || auth.uid()::text));
   if exists(
     select 1 from public.audit_events
@@ -252,12 +259,16 @@ begin
     return;
   end if;
 
-  -- Frozen dataset: events ingested by mission end, from crew assigned to the mission.
+  -- Frozen dataset: events ingested by mission end, from crew ever assigned to the
+  -- mission. Assignment STATUS is deliberately not used: it remains editable after
+  -- close and would let an operator toggle a single crew member in/out (differencing).
+  -- Assignment rows have no delete path; ends_at is immutable after close (below);
+  -- mission_events is append-only. Repeated queries therefore return identical output.
   select count(distinct e.crew_member_id), count(*) into v_crew, v_events
   from public.mission_events e
-  join public.mission_crew_assignments a
-    on a.mission_id=e.mission_id and a.crew_member_id=e.crew_member_id and a.status <> 'candidate'
-  where e.mission_id=p_mission_id and e.ingested_at <= v_ends;
+  where e.mission_id=p_mission_id and e.ingested_at <= v_ends
+    and exists(select 1 from public.mission_crew_assignments a
+               where a.mission_id=e.mission_id and a.crew_member_id=e.crew_member_id);
 
   if v_crew < 3 then
     insert into public.audit_events(mission_id,actor_user_id,action,target_type,metadata)
@@ -322,10 +333,16 @@ begin
     where mission_id=v_invite.mission_id and user_id=auth.uid() and role='crew_self'
     for update;
     if found and v_current.crew_member_id is distinct from v_invite.crew_member_id then
+      -- FV-01.1: a RAISE here would roll back the audit row. Instead, fail closed by
+      -- RETURNING a rejection so the audit evidence and invite revocation commit,
+      -- while the membership is left completely untouched.
+      update public.mission_invites set active=false where id=v_invite.id;
       insert into public.audit_events(mission_id,actor_user_id,action,target_type,target_id,metadata)
       values(v_invite.mission_id,auth.uid(),'mission_invite_binding_conflict','mission_invite',v_invite.id::text,
-        jsonb_build_object('existing_crew_member_id',v_current.crew_member_id,'invite_crew_member_id',v_invite.crew_member_id));
-      raise exception 'existing crew-self binding differs; operator review required';
+        jsonb_build_object('existing_crew_member_id',v_current.crew_member_id,'invite_crew_member_id',v_invite.crew_member_id,
+          'existing_active',v_current.active,'invite_revoked',true));
+      return jsonb_build_object('status','rejected','reason','crew_self_binding_conflict',
+        'message','existing crew-self binding differs; operator review required');
     end if;
   end if;
 
@@ -342,6 +359,94 @@ begin
   return jsonb_build_object('mission_id',v_invite.mission_id,'role',v_invite.role,'crew_member_id',v_invite.crew_member_id);
 end;
 $function$;
+
+-- ---------------------------------------------------------------------------
+-- FV-01.1: audit_events is append-only for every role. Browser roles already lack
+-- INSERT/UPDATE/DELETE grants and policies, and no definer-rights routine updates
+-- or deletes audit rows; this trigger also blocks privileged/indirect paths.
+-- ---------------------------------------------------------------------------
+revoke maintain on public.audit_events, public.mission_events, public.crew_health_record_index,
+  public.crew_members, public.mission_memberships, public.missions
+  from authenticated, anon;
+
+create or replace function public.reject_audit_mutation()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $function$
+begin
+  raise exception 'audit_events is append-only';
+end $function$;
+revoke all on function public.reject_audit_mutation() from public, anon, authenticated;
+
+drop trigger if exists trg_audit_events_append_only on public.audit_events;
+create trigger trg_audit_events_append_only
+  before update or delete on public.audit_events
+  for each row execute function public.reject_audit_mutation();
+drop trigger if exists trg_audit_events_no_truncate on public.audit_events;
+create trigger trg_audit_events_no_truncate
+  before truncate on public.audit_events
+  for each statement execute function public.reject_audit_mutation();
+
+-- ---------------------------------------------------------------------------
+-- FV-01.1: ends_at is immutable once a mission is closed, so the research export
+-- window and the offline-retry cut-off cannot be shifted after close.
+-- ---------------------------------------------------------------------------
+create or replace function public.update_mission_operation(p_mission_id text, p_name text default null, p_status text default null, p_starts_at timestamptz default null, p_ends_at timestamptz default null)
+returns jsonb
+language plpgsql
+security definer set search_path = public, pg_temp
+as $function$
+declare
+  v_current public.missions%rowtype;
+  v_name text;
+  v_status text;
+begin
+  if auth.uid() is null then raise exception 'authentication required'; end if;
+  if not public.has_mission_role(p_mission_id, array['mission_operator']) then raise exception 'mission operation denied'; end if;
+
+  select * into v_current from public.missions where id = p_mission_id for update;
+  if not found then raise exception 'mission not found'; end if;
+
+  v_name := coalesce(nullif(btrim(p_name),''), v_current.name);
+  v_status := coalesce(nullif(btrim(p_status),''), v_current.status);
+  if length(v_name) < 3 or length(v_name) > 120 then raise exception 'mission name must be 3-120 characters'; end if;
+  if v_status not in ('planning','active','completed','aborted') then raise exception 'invalid mission status'; end if;
+
+  if v_status <> v_current.status then
+    if not (
+      (v_current.status = 'planning' and v_status in ('active','aborted')) or
+      (v_current.status = 'active' and v_status in ('completed','aborted'))
+    ) then
+      raise exception 'invalid mission lifecycle transition';
+    end if;
+  end if;
+
+  if v_current.status in ('completed','aborted') and p_ends_at is not null
+     and p_ends_at is distinct from v_current.ends_at then
+    raise exception 'mission end is immutable after close';
+  end if;
+
+  update public.missions
+  set name = v_name,
+      status = v_status,
+      starts_at = coalesce(p_starts_at, starts_at),
+      ends_at = case
+        when v_current.status in ('completed','aborted') then v_current.ends_at
+        when v_status in ('completed','aborted') then coalesce(p_ends_at, ends_at, now())
+        else p_ends_at end,
+      updated_at = now()
+  where id = p_mission_id;
+
+  insert into public.audit_events(mission_id, actor_user_id, action, target_type, target_id, metadata)
+  values(p_mission_id, auth.uid(), 'mission_updated', 'mission', p_mission_id,
+    jsonb_build_object('previous_status',v_current.status,'status',v_status,'name',v_name));
+
+  return jsonb_build_object('mission_id',p_mission_id,'name',v_name,'status',v_status);
+end;
+$function$;
+revoke all on function public.update_mission_operation(text, text, text, timestamptz, timestamptz) from public, anon;
+grant execute on function public.update_mission_operation(text, text, text, timestamptz, timestamptz) to authenticated;
 
 -- Re-assert least-privilege execute grants (unchanged audience: authenticated only).
 revoke all on function public.ingest_mission_event(jsonb, text) from public, anon;
