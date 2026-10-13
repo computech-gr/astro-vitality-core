@@ -25,8 +25,8 @@ export function reviewSelfAssessment(answers: SelfAssessmentAnswers): SelfAssess
   const answered = SELF_ASSESSMENT_QUESTIONS.filter(q => q.options.some(option => option === answers[q.id])).length;
   const complete = answered === SELF_ASSESSMENT_QUESTIONS.length;
   const suggested: Array<{ actionClass: GuidanceActionClass; reason: string }> = [];
-  if (answers.device === "Uncertain" || answers.device === "Known device/quality issue" || answers.device === "No recent measurement") suggested.push({ actionClass: "repeat-quality-check", reason: "Measurement availability or quality needs verification." });
-  if (["Somewhat tired", "Very tired"].includes(answers.sleep ?? "") || ["Demanding", "Overwhelming"].includes(answers.workload ?? "")) suggested.push({ actionClass: "recovery-workload-review", reason: "You reported fatigue or workload context for review." });
+  if (answers["device"] === "Uncertain" || answers["device"] === "Known device/quality issue" || answers["device"] === "No recent measurement") suggested.push({ actionClass: "repeat-quality-check", reason: "Measurement availability or quality needs verification." });
+  if (["Somewhat tired", "Very tired"].includes(answers["sleep"] ?? "") || ["Demanding", "Overwhelming"].includes(answers["workload"] ?? "")) suggested.push({ actionClass: "recovery-workload-review", reason: "You reported fatigue or workload context for review." });
   if (["Not yet reviewed", "Logs incomplete"].includes(answers["hydration"] ?? "")) suggested.push({ actionClass: "hydration-nutrition-review", reason: "Fluid or nutrition logs require review." });
   if (["Incomplete", "Quality concern"].includes(answers["environment"] ?? "")) suggested.push({ actionClass: "environmental-review", reason: "Habitat telemetry context requires verification." });
   const suggestions = complete ? suggested.flatMap(item => {
