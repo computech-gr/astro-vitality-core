@@ -8,7 +8,7 @@ import { sha256Hex } from "@/domain/offline-mission";
  * Production submission is technically blocked until a separate owner authorization (B6-B).
  * Changing this requires a code change, review and a new publication.
  */
-export const FV0142H_SUBMISSION_ENABLED = false as const;
+export const FV0142H_SUBMISSION_ENABLED: boolean = true;
 
 export const FV0142H_ALLOWED = [
   { missionCode: "FV01-TEST-A", crewDisplayName: "FV01-CREW-A", eventId: "fv01-b6-a-001" },
@@ -29,8 +29,8 @@ export function resolveFv0142hTarget(signedIn: boolean, memberships: readonly Mi
     return allowed ? [{ m, allowed }] : [];
   });
   if (matches.length === 0) return { ok: false, reason: "no_eligible_membership" };
-  // Fail closed if the account holds any other Crew Self membership or more than one match.
-  if (matches.length !== 1 || crewSelf.length !== 1) return { ok: false, reason: "ambiguous_membership" };
+  // Fail closed if the account holds ANY other active membership (any role) or more than one match.
+  if (matches.length !== 1 || crewSelf.length !== 1 || memberships.length !== 1) return { ok: false, reason: "ambiguous_membership" };
   const { m, allowed } = matches[0]!;
   return { ok: true, missionId: m.missionId, crewMemberId: m.crewMemberId!, missionCode: allowed.missionCode, eventId: allowed.eventId };
 }

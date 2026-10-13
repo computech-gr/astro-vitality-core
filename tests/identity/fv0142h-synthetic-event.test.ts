@@ -19,13 +19,27 @@ function mockClient() {
 }
 
 describe("FV-01.4.2H B6-A synthetic event test", () => {
-  test("production submission is technically disabled", async () => {
-    expect(FV0142H_SUBMISSION_ENABLED).toBe(false);
+  test("B6-B: submission enabled by owner authorization; explicit disable still blocks with zero calls", async () => {
+    expect(FV0142H_SUBMISSION_ENABLED).toBe(true);
     const client = mockClient();
     const target = resolveFv0142hTarget(true, [A]);
     if (!target.ok) throw new Error("expected eligible");
-    expect(await submitFv0142hEvent(client, target, NOW)).toBe("BLOCKED");
+    expect(await submitFv0142hEvent(client, target, NOW, false)).toBe("BLOCKED");
     expect(client.calls).toHaveLength(0);
+  });
+
+  test("rejects accounts with any additional active membership of any role", () => {
+    expect(resolveFv0142hTarget(true, [A, { missionId: "m-x", role: "mission_operator", missionCode: "OTHER" }])).toEqual({ ok: false, reason: "ambiguous_membership" });
+    expect(resolveFv0142hTarget(true, [B, { missionId: "m-b", role: "ground_medical", missionCode: "FV01-TEST-B" }])).toEqual({ ok: false, reason: "ambiguous_membership" });
+  });
+
+  test("idempotency key is deterministic across reloads (independent of time)", async () => {
+    const c1 = mockClient(); const c2 = mockClient();
+    const target = resolveFv0142hTarget(true, [A]);
+    if (!target.ok) throw new Error("expected eligible");
+    await submitFv0142hEvent(c1, target, NOW, true);
+    await submitFv0142hEvent(c2, target, "2026-10-14T01:00:00.000Z", true);
+    expect(c1.calls[0]!.args.p_idempotency_key).toBe(c2.calls[0]!.args.p_idempotency_key);
   });
 
   test("resolves only the authorized mission/crew pairs from membership data", () => {
@@ -69,6 +83,7 @@ describe("FV-01.4.2H B6-A synthetic event test", () => {
       }
     }
     expect(ui).toContain("disabled={!FV0142H_SUBMISSION_ENABLED");
+    expect(ui).toContain("outcome !== null}");
     expect(route).toContain("noindex");
     const files = readdirSync("src/components", { recursive: true }).map(String).filter((f) => /\.tsx?$/.test(f) && !f.includes("diagnostics"));
     for (const file of files) expect(readFileSync(`src/components/${file}`, "utf8")).not.toContain("fv0142h");

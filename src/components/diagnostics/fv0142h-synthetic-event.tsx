@@ -28,7 +28,7 @@ export function Fv0142hSyntheticEventTest() {
 
   async function check() {
     setChecking(true);
-    setOutcome(null);
+    if (outcome !== null) return;
     try {
       const snapshot = await loadMissionIdentity();
       setResolution(resolveFv0142hTarget(snapshot.signedIn, snapshot.memberships));
@@ -40,7 +40,7 @@ export function Fv0142hSyntheticEventTest() {
   }
 
   async function submit() {
-    if (!resolution?.ok || submitting || !FV0142H_SUBMISSION_ENABLED) return;
+    if (!resolution?.ok || submitting || outcome !== null || !FV0142H_SUBMISSION_ENABLED) return;
     setSubmitting(true);
     try {
       setOutcome(await submitFv0142hEvent(supabase as unknown as Parameters<typeof submitFv0142hEvent>[0], resolution, new Date().toISOString()));
@@ -59,7 +59,7 @@ export function Fv0142hSyntheticEventTest() {
         <CardContent className="space-y-4 text-sm">
           <p>Kind: operational_event · Classification: synthetic · Source: fv01-b6-synthetic 1.0.0</p>
           <p className="font-mono text-xs">Payload: {JSON.stringify(FV0142H_PAYLOAD)}</p>
-          <Button variant="secondary" disabled={checking} onClick={() => void check()}>{checking ? "Checking…" : "Check eligibility"}</Button>
+          <Button variant="secondary" disabled={checking || submitting || outcome !== null} onClick={() => void check()}>{checking ? "Checking…" : "Check eligibility"}</Button>
           {resolution ? (
             resolution.ok ? (
               <p>Eligible: {resolution.missionCode} · event {resolution.eventId}</p>
@@ -67,11 +67,12 @@ export function Fv0142hSyntheticEventTest() {
               <p>{REASON[resolution.reason]}</p>
             )
           ) : null}
-          <Button disabled={!FV0142H_SUBMISSION_ENABLED || !resolution?.ok || submitting} onClick={() => void submit()}>
+          <Button disabled={!FV0142H_SUBMISSION_ENABLED || !resolution?.ok || submitting || outcome !== null} onClick={() => void submit()}>
             Submit synthetic event
           </Button>
           {!FV0142H_SUBMISSION_ENABLED ? <p className="text-muted-foreground">Submission is technically disabled pending separate owner authorization (B6-B).</p> : null}
-          {outcome ? <p>Result: {outcome}</p> : null}
+          {submitting ? <p>Submitting… do not reload or click again.</p> : null}
+          {outcome ? <p><strong>Final result: {outcome}</strong> — this page is now locked. Do not retry; report this result.</p> : null}
         </CardContent>
       </Card>
     </main>
