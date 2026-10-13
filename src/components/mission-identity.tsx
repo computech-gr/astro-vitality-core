@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { KeyRound, LogIn, LogOut, Mail, Orbit, RefreshCw, ShieldCheck, UserRoundCheck } from "lucide-react";
 
-import { MissionRlsCountProbe } from "@/components/mission-rls-count-probe";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -277,7 +276,6 @@ export function MissionIdentity() {
               </Card>
             </section>
 
-            <MissionRlsCountProbe {...(snapshot.email ? { email: snapshot.email } : {})} membershipCount={snapshot.memberships.length} />
 
             {operatorMemberships.length ? (
               <section className="mt-8">
