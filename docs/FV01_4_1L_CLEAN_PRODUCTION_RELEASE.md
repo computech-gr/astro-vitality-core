@@ -41,3 +41,13 @@ Publish the already-tested FV-01.4.1K diagnostic-removal build, without changing
 - Rollback reference: prior live build served `app-shell-Dy5VDVsz.js`, `index-DREcC8Nj.js`, `client-CMf19Wv5.js`.
 - Probe component, its wiring, its test and test-account email literals: absent from `src/` and `tests/`.
 - `bun run check`: PASS, 205 pass / 0 fail.
+
+## Execution record (post-publication)
+
+- Published: candidate `3a5c371b0a9acbed467dca1562a023a77e00a323` plus this documentation-only file.
+- `/mission/identity` on the canonical origin: HTTP 200.
+- New asset fingerprints: `index-DvSGNpE7.js`, `mission.identity-DUYFqq3N.js`, `offline-CYxfTI6P.js` (previously `index-DREcC8Nj.js`, `mission.identity-BWo1kZO3.js`, `offline-B3C_TSA0.js`).
+- Published bundle scan: 0 matches for the probe component, test-account email literals, removal marker or STOP warning; ordinary sign-in/invite UI present.
+- Authenticated UI behaviour not asserted; owner refresh confirmation requested.
+- A3, A7: owner-confirmed PASS. R1/R2/R3/R5: screenshot-evidenced PASS (TEST A and TEST B). R4: INCONCLUSIVE.
+- Phase B NOT APPROVED. FV-01-13 OPEN. Final FV-01 security approval BLOCKED.
