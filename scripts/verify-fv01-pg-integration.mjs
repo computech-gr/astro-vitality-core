@@ -2,8 +2,8 @@
 // Requires a DISPOSABLE local PostgreSQL 17 reachable through FV01_PG_SOCKET_DIR
 // (and optional FV01_PG_PORT). It refuses to run when any managed PG* connection
 // variable would be used, so it cannot touch the project database.
-// Steps: recreate database -> Supabase-like stubs -> every applied migration ->
-// proposed FV-01 migration -> fixtures -> sequential and concurrent scenarios.
+// Steps: recreate database -> Supabase-like stubs -> every migration in supabase/migrations (FV-01 included once) ->
+// fixtures -> sequential and concurrent scenarios.
 import { execFileSync, spawn } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -23,7 +23,6 @@ psql(["-c", "alter database fv01_it set search_path = public, extensions"]);
 psql(["-f", "tests/integration-pg/stub.sql"], "fv01_it");
 const migrations = readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort();
 for (const f of migrations) psql(["-f", join("supabase/migrations", f)], "fv01_it");
-psql(["-f", "supabase/proposed/20261014000000_fv01_security_privacy_remediation.sql"], "fv01_it");
 psql(["-f", "tests/integration-pg/fv01-setup.sql"], "fv01_it");
 const seq = psql(["-t", "-A", "-f", "tests/integration-pg/fv01-sequential.sql"], "fv01_it");
 const seqPasses = seq.split("\n").filter((l) => l.startsWith("PASS"));

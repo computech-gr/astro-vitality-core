@@ -10,7 +10,8 @@ import {
 } from "../../src/infrastructure/mission-selection-storage";
 import { classifyMissionSyncError } from "../../src/infrastructure/ground-research/supabase-transport";
 
-const SQL_PATH = join(process.cwd(), "supabase/proposed/20261014000000_fv01_security_privacy_remediation.sql");
+// FV-01.3: migration moved unchanged from supabase/proposed/ to supabase/migrations/ when applied.
+const SQL_PATH = join(process.cwd(), "supabase/migrations/20261014000000_fv01_security_privacy_remediation.sql");
 const sql = readFileSync(SQL_PATH, "utf8").toLowerCase().replace(/\s+/g, " ");
 
 function memoryStore() {
