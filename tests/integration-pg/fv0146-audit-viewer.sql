@@ -45,7 +45,7 @@ grant all on fv46_walk to authenticated;
 do $$ declare c text; p jsonb; i int := 0; begin
   loop p := public.get_mission_audit_log('m1', p_limit => 1, p_cursor => c);
     insert into fv46_walk select e ->> 'ref', i from jsonb_array_elements(p -> 'entries') e; i := i + 1;
-    c := p ->> 'next_cursor'; exit when c is null or i > 50; end loop; end $$;
+    c := p ->> 'next_cursor'; exit when c is null or i > 1000; end loop; end $$;
 select fvtest.check((select array_agg(ref order by n) from fv46_walk) = (select array_agg(e ->> 'ref' order by o) from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') with ordinality x(e, o)), 'FV0146 keyset cursor walk equals full ordered read');
 select fvtest.check((select count(distinct ref) = count(*) from fv46_walk), 'FV0146 cursor walk has no duplicates');
 select fvtest.check(not exists (select 1 from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') e where e ? 'id' or (e ->> 'ref') ~ '-'), 'FV0146 raw audit record IDs never returned');
