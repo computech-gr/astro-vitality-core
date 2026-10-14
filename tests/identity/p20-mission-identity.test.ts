@@ -31,7 +31,7 @@ describe("FV-01-UI-01 mission sign-up password validation", () => {
   });
 
   test("accepts passwords of exactly 12 characters or more", () => {
-    expect(validateMissionSignUpPassword("thirteenchars!")).toBeNull();
+    expect(validateMissionSignUpPassword("twelvechars!")).toBeNull();
     expect(validateMissionSignUpPassword("a much longer passphrase 42")).toBeNull();
   });
 
