@@ -1,4 +1,5 @@
 import { P35SubmissionReadiness } from "@/components/p35-submission-readiness";
+import { P35FinalAcceptance } from "@/components/p35-final-acceptance";
 import { P354IntegrationReadiness } from "@/components/p354-integration-readiness";
 import evidenceLedger from "../../data/submission/p20-evidence.v1.json";
 import { CheckCircle2, ExternalLink, Film, MonitorPlay, Rocket, ShieldCheck, TriangleAlert } from "lucide-react";
@@ -71,11 +72,11 @@ export function ChallengeSubmissionPage() {
 
       <section className="mt-10" aria-labelledby="evidence-heading">
         <h2 id="evidence-heading" className="font-display text-2xl font-semibold">Submission evidence</h2>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
           {evidence.map((item) => (
-            <Card key={item.id}>
-              <CardHeader><CardTitle className="flex items-start justify-between gap-4 text-base"><span>{item.id} · {item.title}</span><span className="font-mono text-[0.65rem] text-muted-foreground">{statusLabel[item.status]}</span></CardTitle></CardHeader>
-              <CardContent className="text-sm leading-6 text-muted-foreground">{item.evidence}</CardContent>
+            <Card key={item.id} className="min-w-0">
+              <CardHeader><CardTitle className="flex min-w-0 flex-wrap items-start justify-between gap-2 text-base"><span className="min-w-0 break-words">{item.id} · {item.title}</span><span className="font-mono text-[0.65rem] text-muted-foreground">{statusLabel[item.status]}</span></CardTitle></CardHeader>
+              <CardContent className="min-w-0 break-words [overflow-wrap:anywhere] text-sm leading-6 text-muted-foreground">{item.evidence}</CardContent>
             </Card>
           ))}
         </div>
@@ -83,6 +84,7 @@ export function ChallengeSubmissionPage() {
 
       <P35SubmissionReadiness />
       <P354IntegrationReadiness />
+      <P35FinalAcceptance />
 
       <section className="mt-10 border border-border bg-surface p-5 text-sm leading-6 text-muted-foreground">
         <p>The Mitochondria is an independent open-source NASA Space Apps Challenge project. It is not NASA-endorsed, is not clinically validated and does not provide autonomous diagnosis or treatment.</p>
