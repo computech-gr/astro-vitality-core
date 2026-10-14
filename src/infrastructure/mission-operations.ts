@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { MissionRole } from "@/infrastructure/mission-identity";
+import { sanitizeAuditPage, type MissionAuditPage } from "@/domain/mission-audit/audit";
 
 export type MissionStatus = "planning" | "active" | "completed" | "aborted";
 export type CrewStatus = "candidate" | "active" | "inactive";
@@ -265,8 +266,7 @@ export async function loadMissionAuditLog(input: {
   search?: string;
   limit?: number;
   before?: { at: string; id: string } | null;
-}): Promise<import("@/domain/mission-audit/audit").MissionAuditPage> {
-  const { sanitizeAuditPage } = await import("@/domain/mission-audit/audit");
+}): Promise<MissionAuditPage> {
   const raw = await rpc<unknown>("get_mission_audit_log", {
     p_mission_id: input.missionId,
     p_from: input.from ?? null,
