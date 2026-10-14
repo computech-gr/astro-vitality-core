@@ -96,6 +96,12 @@ if (includePending) {
   const mr = psql(["-t", "-A", "-f", "tests/integration-pg/fv0143-multirole.sql"], "fv0143_it");
   if (!mr.includes("FV0143 DONE")) throw new Error("FV-01.4.3 scenarios incomplete");
   passes.push(...mr.split("\n").filter((l) => l.startsWith("PASS")).map((l) => l.replace("PASS: ", "PASS: [FV-01.4.3] ")));
+  // FV-01.4.6: staged audit-viewer reader scenarios (only when its staged file is present).
+  if (pending.some((f) => f.includes("fv0146"))) {
+    const av = psql(["-t", "-A", "-f", "tests/integration-pg/fv0146-audit-viewer.sql"], "fv0143_it");
+    if (!av.includes("FV0146 DONE")) throw new Error("FV-01.4.6 scenarios incomplete");
+    passes.push(...av.split("\n").filter((l) => l.startsWith("PASS")).map((l) => l.replace("PASS: ", "PASS: [FV-01.4.6] ")));
+  }
   psql(["-c", "drop database fv0143_it"]);
 }
 for (const p of passes) console.log(p);
