@@ -52,7 +52,7 @@ describe("P21 categorized navigation", () => {
     expect(shell).toContain('"System Architecture": guideHref("system-architecture")');
     const guide = read("src/components/project-guide.tsx");
     for (const slug of TECHNOLOGY_TOPIC_SLUGS) expect(guide).toContain(`id: "${slug}"`);
-    expect(guide).toContain("/technology/${item.id}");
+    for (const slug of TECHNOLOGY_TOPIC_SLUGS) expect(guide).toContain(`href: "/technology/${slug}"`);
   });
 
   test("homepage anchors used by existing links still exist", () => {
