@@ -24,7 +24,10 @@ psql(["-f", "tests/integration-pg/stub.sql"], "fv01_it");
 const migrations = readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort();
 for (const f of migrations) psql(["-f", join("supabase/migrations", f)], "fv01_it");
 // FV-01.4.3: staged (NOT applied in production) hardening migrations are exercised only when explicitly requested.
-const includePending = process.env.FV0143_INCLUDE_PENDING === "1";
+// FV-01.4.3 is governed migration 12 (applied above for every run). Optional extra
+// staged files in supabase/pending are still only applied with the flag.
+const FV0143 = "20261015000000_fv0143_multirole_hardening.sql";
+const includePending = process.env.FV0143_INCLUDE_PENDING === "1" || migrations.includes(FV0143);
 const pending = includePending && existsSync("supabase/pending")
   ? readdirSync("supabase/pending").filter((f) => f.endsWith(".sql") && !f.includes("rollback")).sort()
   : [];
@@ -84,9 +87,11 @@ if (includePending) {
   psql(["-c", "drop database if exists fv0143_it", "-c", "create database fv0143_it"]);
   psql(["-c", "alter database fv0143_it set search_path = public, extensions"]);
   psql(["-f", "tests/integration-pg/stub.sql"], "fv0143_it");
-  for (const f of migrations) psql(["-f", join("supabase/migrations", f)], "fv0143_it");
+  // Pre-existing invites must be created BEFORE migration 12 to prove they cannot bypass approval.
+  for (const f of migrations.filter((m) => m !== FV0143)) psql(["-f", join("supabase/migrations", f)], "fv0143_it");
   psql(["-f", "tests/integration-pg/fv01-setup.sql"], "fv0143_it");
   psql(["-f", "tests/integration-pg/fv0143-pre-existing.sql"], "fv0143_it");
+  if (migrations.includes(FV0143)) psql(["-f", join("supabase/migrations", FV0143)], "fv0143_it");
   for (const f of pending) psql(["-f", join("supabase/pending", f)], "fv0143_it");
   const mr = psql(["-t", "-A", "-f", "tests/integration-pg/fv0143-multirole.sql"], "fv0143_it");
   if (!mr.includes("FV0143 DONE")) throw new Error("FV-01.4.3 scenarios incomplete");
