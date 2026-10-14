@@ -56,7 +56,12 @@ create trigger trg_membership_role_compatibility
 alter table public.mission_invites
   add column if not exists approval_state text not null default 'not_required',
   add column if not exists approved_by uuid,
-  add column if not exists approved_at timestamptz;
+  add column if not exists approved_at timestamptz,
+  -- FV-01.4.3 recipient binding: Ground Medical invites are bound to ONE verified account.
+  add column if not exists intended_recipient_user_id uuid,
+  add column if not exists intended_recipient_email text,
+  add column if not exists recipient_bound_by uuid,
+  add column if not exists recipient_bound_at timestamptz;
 do $$ begin
   alter table public.mission_invites add constraint mission_invites_approval_state_ck
     check (approval_state in ('not_required','pending','approved'));
@@ -65,6 +70,9 @@ exception when duplicate_object then null; end $$;
 -- Requirement 10: no pre-existing open Ground Medical invite may bypass approval.
 update public.mission_invites set approval_state = 'pending'
 where role = 'ground_medical' and active and claimed_at is null and approval_state = 'not_required';
+-- An open Ground Medical invite may never stay approved without a bound recipient.
+update public.mission_invites set approval_state = 'pending', approved_by = null, approved_at = null
+where role = 'ground_medical' and active and claimed_at is null and approval_state = 'approved' and intended_recipient_user_id is null;
 
 -- ---------------------------------------------------------------------------
 -- 3. Invite creation: Ground Medical invites start pending.
@@ -107,13 +115,55 @@ end;
 $function$;
 
 -- ---------------------------------------------------------------------------
--- 4. Ground Medical approval. Approver must be an independent person: not the
---    inviter, already holding Ground Medical or Operator in THIS mission.
---    Single-use (pending -> approved only). No tokens. If no independent
---    approver exists (single-Operator mission without Ground Medical),
---    onboarding stays blocked by design.
+-- 4a. Recipient binding. Any active Operator of the mission binds a Ground
+--     Medical invite to an existing account with a CONFIRMED email in the
+--     platform identity store (auth.users). Binding or re-binding always
+--     resets approval to pending, so a recipient can never change after approval.
 -- ---------------------------------------------------------------------------
-create or replace function public.approve_mission_invite(p_invite_id uuid)
+create or replace function public.bind_mission_invite_recipient(p_invite_id uuid, p_recipient_email text)
+returns jsonb language plpgsql security definer set search_path = public, pg_temp as $function$
+declare v_invite public.mission_invites%rowtype; v_email text; v_user uuid; v_count integer;
+begin
+  if auth.uid() is null then raise exception 'authentication required'; end if;
+  select * into v_invite from public.mission_invites where id = p_invite_id for update;
+  if not found or not public.has_mission_role(v_invite.mission_id, array['mission_operator']) then
+    raise exception 'recipient binding denied';
+  end if;
+  if v_invite.role <> 'ground_medical' then raise exception 'recipient binding is only required for ground_medical invites'; end if;
+  if not v_invite.active or v_invite.claimed_at is not null or v_invite.expires_at <= now() then
+    raise exception 'invite is expired, revoked or already used';
+  end if;
+  v_email := lower(btrim(coalesce(p_recipient_email, '')));
+  if v_email = '' or length(v_email) > 320 then raise exception 'recipient identity not verified'; end if;
+  select count(*), min(u.id::text)::uuid into v_count, v_user from auth.users u
+  where lower(u.email) = v_email and u.email_confirmed_at is not null;
+  -- Uniform error: never reveal whether an address exists but is unconfirmed.
+  if v_count <> 1 then raise exception 'recipient identity not verified'; end if;
+  if v_user = v_invite.created_by then raise exception 'the inviter cannot be the recipient'; end if;
+
+  update public.mission_invites set intended_recipient_user_id = v_user, intended_recipient_email = v_email,
+    recipient_bound_by = auth.uid(), recipient_bound_at = now(),
+    approval_state = 'pending', approved_by = null, approved_at = null
+  where id = v_invite.id;
+  insert into public.audit_events(mission_id,actor_user_id,action,target_type,target_id,metadata)
+  values(v_invite.mission_id,auth.uid(),'mission_invite_recipient_bound','mission_invite',v_invite.id::text,
+    jsonb_build_object('recipient_user_id',v_user,'previous_recipient_user_id',v_invite.intended_recipient_user_id,
+      'approval_reset',v_invite.approval_state = 'approved'));
+  return jsonb_build_object('status','bound','invite_id',v_invite.id,'recipient_email',v_email,'approval_state','pending');
+end;
+$function$;
+revoke all on function public.bind_mission_invite_recipient(uuid, text) from public, anon;
+grant execute on function public.bind_mission_invite_recipient(uuid, text) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 4b. Ground Medical approval. Approver must be an independent person: not the
+--     inviter, not the bound recipient, holding Ground Medical or Operator in
+--     THIS mission, and must restate the recipient identity they verified
+--     (p_expected_recipient_email) so a concurrent re-binding cannot be approved
+--     blindly. Single-use (pending -> approved). No tokens.
+-- ---------------------------------------------------------------------------
+drop function if exists public.approve_mission_invite(uuid);
+create or replace function public.approve_mission_invite(p_invite_id uuid, p_expected_recipient_email text)
 returns jsonb language plpgsql security definer set search_path = public, pg_temp as $function$
 declare v_invite public.mission_invites%rowtype; v_reason text;
 begin
@@ -126,6 +176,9 @@ begin
   if v_invite.role <> 'ground_medical' or v_invite.approval_state <> 'pending' then v_reason := 'not_pending';
   elsif not v_invite.active or v_invite.claimed_at is not null or v_invite.expires_at <= now() then v_reason := 'invite_unavailable';
   elsif v_invite.created_by = auth.uid() then v_reason := 'inviter_cannot_approve';
+  elsif v_invite.intended_recipient_user_id is null then v_reason := 'recipient_unbound';
+  elsif v_invite.intended_recipient_user_id = auth.uid() then v_reason := 'recipient_cannot_approve';
+  elsif v_invite.intended_recipient_email is distinct from lower(btrim(coalesce(p_expected_recipient_email,''))) then v_reason := 'recipient_mismatch';
   end if;
 
   if v_reason is not null then
@@ -138,12 +191,12 @@ begin
   update public.mission_invites set approval_state='approved', approved_by=auth.uid(), approved_at=now() where id=v_invite.id;
   insert into public.audit_events(mission_id,actor_user_id,action,target_type,target_id,metadata)
   values(v_invite.mission_id,auth.uid(),'mission_invite_approved','mission_invite',v_invite.id::text,
-    jsonb_build_object('role',v_invite.role,'inviter_user_id',v_invite.created_by));
-  return jsonb_build_object('status','approved','invite_id',v_invite.id);
+    jsonb_build_object('role',v_invite.role,'inviter_user_id',v_invite.created_by,'recipient_user_id',v_invite.intended_recipient_user_id));
+  return jsonb_build_object('status','approved','invite_id',v_invite.id,'recipient_email',v_invite.intended_recipient_email);
 end;
 $function$;
-revoke all on function public.approve_mission_invite(uuid) from public, anon;
-grant execute on function public.approve_mission_invite(uuid) to authenticated;
+revoke all on function public.approve_mission_invite(uuid, text) from public, anon;
+grant execute on function public.approve_mission_invite(uuid, text) to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 5. Invite acceptance (F1). Denials RETURN 'rejected' so the audit row and
@@ -174,6 +227,9 @@ begin
     v_reason := 'self_issued_invite';
   elsif v_invite.role = 'ground_medical' and v_invite.approval_state <> 'approved' then
     v_reason := 'approval_required';
+  elsif v_invite.role = 'ground_medical' and v_invite.intended_recipient_user_id is distinct from auth.uid() then
+    -- Bearer code alone is insufficient: only the bound, approved account may redeem.
+    v_reason := 'wrong_recipient';
   elsif v_invite.role = 'ground_medical' and v_invite.approved_by = auth.uid() then
     v_reason := 'approver_cannot_be_recipient';
   else
@@ -194,6 +250,7 @@ begin
       'message',case v_reason
         when 'self_issued_invite' then 'You cannot accept an invitation you issued.'
         when 'approval_required' then 'This Ground Medical invitation is awaiting independent approval.'
+        when 'wrong_recipient' then 'This invitation is bound to a different account.'
         when 'approver_cannot_be_recipient' then 'The approver of this invitation cannot accept it.'
         else 'This role cannot be combined with your existing role in this mission.' end);
   end if;
@@ -340,7 +397,9 @@ begin
         'id',mi.id,'role',mi.role,'crew_member_id',mi.crew_member_id,'expires_at',mi.expires_at,
         'created_at',mi.created_at,'claimed_at',mi.claimed_at,'active',mi.active,
         'approval_state',mi.approval_state,'approved_at',mi.approved_at,
-        'issued_by_me',(mi.created_by = auth.uid())
+        'issued_by_me',(mi.created_by = auth.uid()),
+        'recipient_email',case when mi.role = 'ground_medical' then mi.intended_recipient_email end,
+        'recipient_bound_at',mi.recipient_bound_at
       ) order by mi.created_at desc)
       from public.mission_invites mi
       where mi.mission_id=m.id

@@ -45,6 +45,9 @@ export interface MissionOperationsInvite {
   approval_state?: InviteApprovalState;
   approved_at?: string | null;
   issued_by_me?: boolean;
+  /** Verified account the Ground Medical invite is bound to (operators of this mission only). */
+  recipient_email?: string | null;
+  recipient_bound_at?: string | null;
 }
 
 export type InviteApprovalState = "not_required" | "pending" | "approved";
@@ -64,17 +67,21 @@ export function assertNotRejected(result: RejectableResult | null | undefined, f
 export function pendingApprovalsFor(invites: MissionOperationsInvite[]): Array<MissionOperationsInvite & { canApprove: boolean }> {
   return invites
     .filter((invite) => invite.role === "ground_medical" && invite.approval_state === "pending" && invite.active && !invite.claimed_at)
-    .map((invite) => ({ ...invite, canApprove: invite.issued_by_me !== true }));
+    .map((invite) => ({ ...invite, canApprove: invite.issued_by_me !== true && Boolean(invite.recipient_email) }));
 }
 
 const APPROVAL_REASONS: Record<string, string> = {
   inviter_cannot_approve: "The inviter cannot approve their own Ground Medical invitation.",
   not_pending: "This invitation is not awaiting approval.",
   invite_unavailable: "This invitation is expired, revoked or already used.",
+  recipient_unbound: "Bind the invitation to a verified recipient account before approval.",
+  recipient_cannot_approve: "The recipient cannot approve their own access.",
+  recipient_mismatch: "The recipient changed since you reviewed it. Reload and verify again.",
 };
 
-export async function approveMissionInvite(inviteId: string): Promise<void> {
-  const result = await rpc<RejectableResult>("approve_mission_invite", { p_invite_id: inviteId });
+/** Approver restates the exact identity they reviewed; the server refuses if the binding changed. */
+export async function approveMissionInvite(inviteId: string, expectedRecipientEmail: string): Promise<void> {
+  const result = await rpc<RejectableResult>("approve_mission_invite", { p_invite_id: inviteId, p_expected_recipient_email: expectedRecipientEmail });
   if (result.status === "rejected") throw new Error(APPROVAL_REASONS[result.reason ?? ""] ?? "Invitation approval refused.");
 }
 
@@ -239,4 +246,11 @@ export async function assignExistingCrewToMission(input: {
     p_target_mission_id: input.targetMissionId,
     p_crew_member_id: input.crewMemberId,
   });
+}
+
+/** Binds a Ground Medical invite to one verified account; any re-binding restarts approval. */
+export async function bindMissionInviteRecipient(inviteId: string, recipientEmail: string): Promise<void> {
+  const email = recipientEmail.trim();
+  if (!email) throw new Error("Enter the recipient's verified account email.");
+  await rpc("bind_mission_invite_recipient", { p_invite_id: inviteId, p_recipient_email: email });
 }

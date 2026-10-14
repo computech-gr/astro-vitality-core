@@ -44,5 +44,37 @@ Approver must be a different person from the inviter, hold active Mission Operat
 ## Verification
 
 `FV01_PG_SOCKET_DIR=<disposable socket> FV0143_INCLUDE_PENDING=1 node scripts/verify-fv01-pg-integration.mjs`
-Result: 78 assertions PASS (28 existing FV-01 + 50 FV-01.4.3) on disposable PostgreSQL 17.9. Without the flag the original 28 still pass.
+Result: 103 assertions PASS (28 existing FV-01 + 75 FV-01.4.3) on disposable PostgreSQL 17.9. Without the flag the original 28 still pass.
 Rollback script verified to restore the original functions and remove the trigger while keeping all memberships.
+
+## Recipient binding (FV-01.4.3 final pre-production review)
+
+**Finding (before this addition):** an approved Ground Medical invite was a bearer credential. Anyone holding the code (other than the inviter and approver) could redeem it, so approval did not authorize a specific person.
+
+**Correction (staged):**
+
+- `bind_mission_invite_recipient(invite_id, email)`: an active Operator of the mission binds the invite to exactly one platform account whose email is **confirmed** in the identity store (`auth.users`). Unknown, unconfirmed or ambiguous addresses all get the same "recipient identity not verified" error, so the response does not reveal whether an address exists. The inviter cannot bind themselves. Only Ground Medical invites can be bound; Crew Self, Operator and Researcher invites are unchanged.
+- Binding or re-binding always resets approval to `pending` and clears the previous approver, so a recipient cannot change after approval.
+- `approve_mission_invite(invite_id, expected_recipient_email)`: the approver states the identity they reviewed. Approval is refused if no recipient is bound, the binding has changed (`recipient_mismatch`), the approver is the recipient, or the approver is the inviter. Approval is single-use.
+- `accept_mission_invite`: a Ground Medical invite is redeemed only by the bound, approved account. Any other account presenting the code is refused (`wrong_recipient`), the code is treated as leaked and revoked, and the attempt is audited.
+- Existing pending Ground Medical invites have no recipient, so they cannot be approved until one is bound. Any open approved invite without a recipient is reset to pending.
+- The operations workspace shows the bound email to Operators of that mission only. It never shows codes.
+
+**Remaining identity-assurance and collusion risks:**
+
+- Identity assurance equals the platform's email confirmation. A compromised mailbox or account inherits the binding. Stronger assurance (MFA, or an organisation directory) is a platform capability that is not available today.
+- An Operator can bind the invite to an account they control (other than their own); only the independent approver's out-of-band check of that person prevents this.
+- Two colluding mission members (Operator + Operator or Operator + Ground Medical) can still onboard an account of their choice. Detection relies on the permanent audit records (`mission_invite_recipient_bound`, `mission_invite_approved`, `mission_invite_accepted`).
+- Revoking on a wrong-recipient attempt is fail-closed. A holder of a leaked code can therefore cancel a legitimate invite (denial of service); the Operator re-issues it.
+
+## Production migration checklist (owner-gated, nothing executed yet)
+
+1. Owner approves: the role matrix, the approval and recipient-binding model, and blocked single-Operator Ground Medical onboarding.
+2. Owner confirms a fresh production backup.
+3. Read-only preflight, all must hold: zero users with a forbidden active pair in one mission; zero open unclaimed Ground Medical invites (or list them, since they will become pending and unbound); `auth.users` has `email` and `email_confirmed_at`; function signatures match the governed chain; record counts for missions, memberships, invites, events, index rows and audit entries.
+4. Re-run `FV01_PG_SOCKET_DIR=… FV0143_INCLUDE_PENDING=1 node scripts/verify-fv01-pg-integration.mjs` (expect 103 PASS) and the full `bun run check`.
+5. Move the staged file into `supabase/migrations/` with a governed marker. Update the governed count from 11 to 12 in `migration-policy.mjs`, `verify-p19.mjs` and the release docs. Apply it with the migration tool byte-for-byte.
+6. Post-apply read-only check: the new functions and trigger exist; counts unchanged except new approval columns; existing memberships unchanged; the two synthetic events and index rows unchanged.
+7. Publish the screen changes (only after step 6).
+8. Live check without writes: `/mission/operations` and `/project/ground-research` load. Any functional live test of invitations needs separate owner authorization.
+9. Undo if needed: `supabase/pending/20261015000000_fv0143_multirole_hardening.rollback.sql`. It is verified in the disposable database and keeps the new columns, marked deprecated.
