@@ -31,7 +31,8 @@
       "id": "cv-004",
       "biology_en": "Recovery after exertion and autonomic function",
       "context_en": "Slow recovery is non-specific.",
-      "linkage_en": "Exertion protocol"
+      "linkage_en": "Exertion protocol",
+      "unit_en": "bpm difference"
     },
     {
       "id": "cv-005",
@@ -129,7 +130,8 @@
       "id": "cv-020",
       "biology_en": "Right ventricular function",
       "context_en": "Not replaced by LVEF.",
-      "linkage_en": "Echo protocol"
+      "linkage_en": "Echo protocol",
+      "unit_en": "method-dependent"
     },
     {
       "id": "cv-021",
@@ -177,13 +179,15 @@
       "id": "cv-028",
       "biology_en": "Spectral component of HRV",
       "context_en": "Influenced by breathing.",
-      "linkage_en": "Breathing rate"
+      "linkage_en": "Breathing rate",
+      "unit_en": "ms² or normalized"
     },
     {
       "id": "cv-029",
       "biology_en": "Spectral component of HRV",
       "context_en": "Not equivalent to pure sympathetic activity.",
-      "linkage_en": "Recording conditions"
+      "linkage_en": "Recording conditions",
+      "unit_en": "ms² or normalized"
     },
     {
       "id": "cv-030",
@@ -207,13 +211,15 @@
       "id": "cv-033",
       "biology_en": "Premature atrial contractions",
       "context_en": "A single PAC is not sufficient for diagnosis.",
-      "linkage_en": "ECG duration"
+      "linkage_en": "ECG duration",
+      "unit_en": "% or /day"
     },
     {
       "id": "cv-034",
       "biology_en": "Premature ventricular contractions",
       "context_en": "Interpret by burden/symptoms.",
-      "linkage_en": "ECG duration"
+      "linkage_en": "ECG duration",
+      "unit_en": "% or /day"
     },
     {
       "id": "cv-035",
@@ -352,7 +358,8 @@
       "id": "cv-057",
       "biology_en": "Degradation of stabilized fibrin",
       "context_en": "Non-specific; FEU≠DDU.",
-      "linkage_en": "Assay, clinical context"
+      "linkage_en": "Assay, clinical context",
+      "unit_en": "mg/L FEU or DDU"
     },
     {
       "id": "cv-058",
@@ -550,7 +557,8 @@
       "id": "cv-090",
       "biology_en": "Inherited atherogenic factor",
       "context_en": "Units are not directly convertible.",
-      "linkage_en": "Assay"
+      "linkage_en": "Assay",
+      "unit_en": "nmol/L or mg/dL"
     },
     {
       "id": "cv-091",

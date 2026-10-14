@@ -36,10 +36,10 @@ describe("P35.4.1 unified handbook English localization", () => {
     );
     for (const x of m) {
       expect(x.biology && x.context && x.linkage).toBeTruthy();
-      for (const t of [x.biology!, x.context!, x.linkage!, x.reviewFlag ?? ""])
+      for (const t of [x.unit, x.biology!, x.context!, x.linkage!, x.reviewFlag ?? ""])
         expect(containsUntranslatedGreek(t)).toBe(false);
       const src = cvSource.metrics.find((s) => s.id === x.id)!;
-      expect([x.name, x.group, x.unit, x.source.biology_el, x.source.context_el]).toEqual([
+      expect([x.name, x.group, x.sourceUnit, x.source.biology_el, x.source.context_el]).toEqual([
         src.name,
         src.group,
         src.unit,
@@ -80,7 +80,7 @@ describe("P35.4.1 unified handbook English localization", () => {
   });
   it("detects untranslated Greek but allows scientific notation", () => {
     expect(containsUntranslatedGreek("Πίεση")).toBe(true);
-    expect(containsUntranslatedGreek("TNF-α and β-CTX, δ44/42Ca ‰, ΔHR")).toBe(false);
+    expect(containsUntranslatedGreek("TNF-α and β-CTX, δ44/42Ca ‰, ΔHR, μIU/mL")).toBe(false);
   });
   it("keeps clinical activation disabled", () => {
     expect(cvEn.clinicalActivation).toBe(false);

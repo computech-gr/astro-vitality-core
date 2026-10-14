@@ -11,7 +11,7 @@ export const DEFAULT_SCIENTIFIC_LOCALE: ScientificLocale = "en";
 
 /** Greek letters outside scientific notation. δ (delta notation) and α/β prefixes in marker names are allowed. */
 const GREEK = /[\u0370-\u03FF\u1F00-\u1FFF]/;
-const ALLOWED_SCIENTIFIC_GREEK = /δ44\/42Ca|β-CTX|TNF-α|Δ(?=[A-Z])/g;
+const ALLOWED_SCIENTIFIC_GREEK = /δ44\/42Ca|β-CTX|TNF-α|Δ(?=[A-Z])|μ(?=[A-Za-z])/g;
 export function containsUntranslatedGreek(text: string): boolean {
   return GREEK.test(text.replace(ALLOWED_SCIENTIFIC_GREEK, ""));
 }
@@ -21,6 +21,7 @@ export interface LocalizedCardiovascularMetric {
   name: string;
   group: string;
   unit: string;
+  sourceUnit: string;
   activation: string;
   reviewStatus: string;
   biology: string | null;
