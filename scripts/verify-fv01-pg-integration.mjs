@@ -5,7 +5,7 @@
 // Steps: recreate database -> Supabase-like stubs -> every migration in supabase/migrations (FV-01 included once) ->
 // fixtures -> sequential and concurrent scenarios.
 import { execFileSync, spawn } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const socket = process.env.FV01_PG_SOCKET_DIR;
@@ -23,6 +23,12 @@ psql(["-c", "alter database fv01_it set search_path = public, extensions"]);
 psql(["-f", "tests/integration-pg/stub.sql"], "fv01_it");
 const migrations = readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort();
 for (const f of migrations) psql(["-f", join("supabase/migrations", f)], "fv01_it");
+// FV-01.4.3: staged (NOT applied in production) hardening migrations are exercised only when explicitly requested.
+const includePending = process.env.FV0143_INCLUDE_PENDING === "1";
+const pending = includePending && existsSync("supabase/pending")
+  ? readdirSync("supabase/pending").filter((f) => f.endsWith(".sql") && !f.includes("rollback")).sort()
+  : [];
+for (const f of pending) psql(["-f", join("supabase/pending", f)], "fv01_it");
 psql(["-f", "tests/integration-pg/fv01-setup.sql"], "fv01_it");
 const seq = psql(["-t", "-A", "-f", "tests/integration-pg/fv01-sequential.sql"], "fv01_it");
 const seqPasses = seq.split("\n").filter((l) => l.startsWith("PASS"));
@@ -71,5 +77,21 @@ if (snap2 !== "1") throw new Error("C3 snapshot changed after close: " + snap2 +
 passes.push("PASS: post-close ingestion never changes the frozen snapshot");
 
 psql(["-c", "drop database fv01_it"]);
+
+// FV-01.4.3 multi-role scenarios in a fresh disposable database:
+// migrations -> fixtures -> pre-existing invites -> staged hardening -> scenarios.
+if (includePending) {
+  psql(["-c", "drop database if exists fv0143_it", "-c", "create database fv0143_it"]);
+  psql(["-c", "alter database fv0143_it set search_path = public, extensions"]);
+  psql(["-f", "tests/integration-pg/stub.sql"], "fv0143_it");
+  for (const f of migrations) psql(["-f", join("supabase/migrations", f)], "fv0143_it");
+  psql(["-f", "tests/integration-pg/fv01-setup.sql"], "fv0143_it");
+  psql(["-f", "tests/integration-pg/fv0143-pre-existing.sql"], "fv0143_it");
+  for (const f of pending) psql(["-f", join("supabase/pending", f)], "fv0143_it");
+  const mr = psql(["-t", "-A", "-f", "tests/integration-pg/fv0143-multirole.sql"], "fv0143_it");
+  if (!mr.includes("FV0143 DONE")) throw new Error("FV-01.4.3 scenarios incomplete");
+  passes.push(...mr.split("\n").filter((l) => l.startsWith("PASS")).map((l) => l.replace("PASS: ", "PASS: [FV-01.4.3] ")));
+  psql(["-c", "drop database fv0143_it"]);
+}
 for (const p of passes) console.log(p);
 console.log(`FV-01 PostgreSQL integration: PASS (${passes.length} assertions, disposable PostgreSQL ${psql(["-t", "-A", "-c", "show server_version"]).trim()})`);
