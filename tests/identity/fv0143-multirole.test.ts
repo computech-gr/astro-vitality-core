@@ -80,6 +80,7 @@ describe("FV-01.4.3 approval and refusal handling", () => {
     expect(list.map((i) => [i.id, i.canApprove])).toEqual([
       ["i1", false],
       ["i2", true],
+      ["i6", false],
     ]);
   });
   test("rejected results surface as errors, never as success", () => {
