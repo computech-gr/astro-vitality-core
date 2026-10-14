@@ -53,18 +53,35 @@ export interface LocalizedBoneVariable {
   decrease: string | null;
   implementationNotes: string | null;
   reviewFlag?: string;
-  source: { measurementDescription_el: string; biologicalInterpretation_el: string; implementationNotes_el: string };
+  source: {
+    measurementDescription_el: string;
+    biologicalInterpretation_el: string;
+    implementationNotes_el: string;
+  };
 }
 
-const safe = (text: string | undefined): string | null => (text && !containsUntranslatedGreek(text) ? text : null);
+const safe = (text: string | undefined): string | null =>
+  text && !containsUntranslatedGreek(text) ? text : null;
 
 export function localizedCardiovascularMetrics(): LocalizedCardiovascularMetric[] {
-  const en = new Map(cardiovascularEn.metrics.map((item) => [item.id, item as typeof item & { reviewFlag?: string }]));
+  const en = new Map(
+    cardiovascularEn.metrics.map((item) => [
+      item.id,
+      item as typeof item & { reviewFlag?: string },
+    ]),
+  );
   return cardiovascularSource.metrics.map((metric) => {
     const t = en.get(metric.id);
     return {
-      id: metric.id, name: metric.name, group: metric.group, unit: metric.unit, activation: metric.activation, reviewStatus: metric.reviewStatus,
-      biology: safe(t?.biology_en), context: safe(t?.context_en), linkage: safe(t?.linkage_en),
+      id: metric.id,
+      name: metric.name,
+      group: metric.group,
+      unit: metric.unit,
+      activation: metric.activation,
+      reviewStatus: metric.reviewStatus,
+      biology: safe(t?.biology_en),
+      context: safe(t?.context_en),
+      linkage: safe(t?.linkage_en),
       ...(t?.reviewFlag ? { reviewFlag: t.reviewFlag } : {}),
       source: { biology_el: metric.biology, context_el: metric.context },
     };
@@ -77,23 +94,38 @@ export function localizedCardiovascularRelationships(): LocalizedRelationship[] 
       | { combination_en: string; interpretationAndLimits_en: string; reviewFlag?: string }
       | undefined;
     return {
-      index, activation: rel.activation,
-      combination: safe(t?.combination_en), interpretationAndLimits: safe(t?.interpretationAndLimits_en),
+      index,
+      activation: rel.activation,
+      combination: safe(t?.combination_en),
+      interpretationAndLimits: safe(t?.interpretationAndLimits_en),
       ...(t?.reviewFlag ? { reviewFlag: t.reviewFlag } : {}),
-      source: { combination_el: rel.combination, interpretationAndLimits_el: rel.interpretationAndLimits },
+      source: {
+        combination_el: rel.combination,
+        interpretationAndLimits_el: rel.interpretationAndLimits,
+      },
     };
   });
 }
 
 export function localizedBoneVariables(): LocalizedBoneVariable[] {
-  const en = new Map(boneEn.variables.map((item) => [item.id, item as typeof item & { reviewFlag?: string }]));
+  const en = new Map(
+    boneEn.variables.map((item) => [item.id, item as typeof item & { reviewFlag?: string }]),
+  );
   return boneSource.variables.map((variable) => {
     const t = en.get(variable.id);
     return {
-      id: variable.id, name: variable.name, category: variable.category, handbookEvidenceTier: variable.handbookEvidenceTier,
-      reviewStatus: variable.reviewStatus, operationalStatus: variable.operationalStatus,
-      what: safe(t?.what_en), specimen: safe(t?.specimen_en), unit: safe(t?.unit_en),
-      increase: safe(t?.increase_en), decrease: safe(t?.decrease_en), implementationNotes: safe(t?.implementationNotes_en),
+      id: variable.id,
+      name: variable.name,
+      category: variable.category,
+      handbookEvidenceTier: variable.handbookEvidenceTier,
+      reviewStatus: variable.reviewStatus,
+      operationalStatus: variable.operationalStatus,
+      what: safe(t?.what_en),
+      specimen: safe(t?.specimen_en),
+      unit: safe(t?.unit_en),
+      increase: safe(t?.increase_en),
+      decrease: safe(t?.decrease_en),
+      implementationNotes: safe(t?.implementationNotes_en),
       ...(t?.reviewFlag ? { reviewFlag: t.reviewFlag } : {}),
       source: {
         measurementDescription_el: variable.measurementDescription,
@@ -121,4 +153,5 @@ export const BONE_CATEGORY_LABELS: Record<string, string> = {
   exercise_nutrition_exposure: "Exercise, nutrition & exposure",
 };
 export const boneCategoryLabel = (category: string): string =>
-  BONE_CATEGORY_LABELS[category] ?? category.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
+  BONE_CATEGORY_LABELS[category] ??
+  category.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());

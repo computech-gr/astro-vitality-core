@@ -18,8 +18,12 @@ const sha = (p: string) => createHash("sha256").update(readFileSync(p)).digest("
 
 describe("P35.4.1 unified handbook English localization", () => {
   it("leaves the Greek source catalogs byte-identical", () => {
-    expect(sha("data/scientific/cardiovascular-handbook.catalog.v1.json")).toBe("4e08ddac0d53801c1fcac1d2e315fa216b709ff170397a8ce0d8616155988bb8");
-    expect(sha("data/scientific/bone-health-handbook-v7.catalog.json")).toBe("13cadc0007684958c979645a262a66b28dd71ae1e9cdf24f923a618166b5b413");
+    expect(sha("data/scientific/cardiovascular-handbook.catalog.v1.json")).toBe(
+      "4e08ddac0d53801c1fcac1d2e315fa216b709ff170397a8ce0d8616155988bb8",
+    );
+    expect(sha("data/scientific/bone-health-handbook-v7.catalog.json")).toBe(
+      "13cadc0007684958c979645a262a66b28dd71ae1e9cdf24f923a618166b5b413",
+    );
     expect(cvEn.sourceSha256).toBe(cvSource.sourceSha256);
     expect(boneEn.sourceSha256).toBe(boneSource.source.sha256);
   });
@@ -27,16 +31,29 @@ describe("P35.4.1 unified handbook English localization", () => {
   it("covers all 96 cardiovascular markers and 8 relationships with Greek-free English", () => {
     const m = localizedCardiovascularMetrics();
     expect(m).toHaveLength(96);
-    expect(new Set(cvEn.metrics.map((x) => x.id))).toEqual(new Set(cvSource.metrics.map((x) => x.id)));
+    expect(new Set(cvEn.metrics.map((x) => x.id))).toEqual(
+      new Set(cvSource.metrics.map((x) => x.id)),
+    );
     for (const x of m) {
       expect(x.biology && x.context && x.linkage).toBeTruthy();
-      for (const t of [x.biology!, x.context!, x.linkage!, x.reviewFlag ?? ""]) expect(containsUntranslatedGreek(t)).toBe(false);
+      for (const t of [x.biology!, x.context!, x.linkage!, x.reviewFlag ?? ""])
+        expect(containsUntranslatedGreek(t)).toBe(false);
       const src = cvSource.metrics.find((s) => s.id === x.id)!;
-      expect([x.name, x.group, x.unit, x.source.biology_el, x.source.context_el]).toEqual([src.name, src.group, src.unit, src.biology, src.context]);
+      expect([x.name, x.group, x.unit, x.source.biology_el, x.source.context_el]).toEqual([
+        src.name,
+        src.group,
+        src.unit,
+        src.biology,
+        src.context,
+      ]);
     }
     const r = localizedCardiovascularRelationships();
     expect(r).toHaveLength(8);
-    expect(r.every((x) => x.combination && x.interpretationAndLimits && x.activation === "research_only")).toBe(true);
+    expect(
+      r.every(
+        (x) => x.combination && x.interpretationAndLimits && x.activation === "research_only",
+      ),
+    ).toBe(true);
   });
   it("covers all 63 bone variables with Greek-free English and preserved metadata", () => {
     const v = localizedBoneVariables();
