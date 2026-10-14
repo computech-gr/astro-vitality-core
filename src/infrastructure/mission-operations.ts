@@ -254,3 +254,29 @@ export async function bindMissionInviteRecipient(inviteId: string, recipientEmai
   if (!email) throw new Error("Enter the recipient's verified account email.");
   await rpc("bind_mission_invite_recipient", { p_invite_id: inviteId, p_recipient_email: email });
 }
+
+/** FV-01.4.6: read-only, operator-only, redacted mission audit log (server function get_mission_audit_log). */
+export async function loadMissionAuditLog(input: {
+  missionId: string;
+  from?: string | null;
+  to?: string | null;
+  action?: string;
+  outcome?: "" | "success" | "refused";
+  search?: string;
+  limit?: number;
+  before?: { at: string; id: string } | null;
+}): Promise<import("@/domain/mission-audit/audit").MissionAuditPage> {
+  const { sanitizeAuditPage } = await import("@/domain/mission-audit/audit");
+  const raw = await rpc<unknown>("get_mission_audit_log", {
+    p_mission_id: input.missionId,
+    p_from: input.from ?? null,
+    p_to: input.to ?? null,
+    p_action: input.action || null,
+    p_outcome: input.outcome || null,
+    p_search: input.search?.trim() || null,
+    p_limit: input.limit ?? 25,
+    p_before_at: input.before?.at ?? null,
+    p_before_id: input.before?.id ?? null,
+  });
+  return sanitizeAuditPage(raw);
+}
