@@ -70,13 +70,18 @@ export function editDistance(a: string, b: string, max = 2) {
     const cur = [i];
     let rowMin = i;
     for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-      rowMin = Math.min(rowMin, cur[j]);
+      const v = Math.min(
+        (prev[j] ?? 0) + 1,
+        (cur[j - 1] ?? 0) + 1,
+        (prev[j - 1] ?? 0) + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+      cur[j] = v;
+      rowMin = Math.min(rowMin, v);
     }
     if (rowMin > max) return max + 1;
     prev = cur;
   }
-  return prev[b.length];
+  return prev[b.length] ?? max + 1;
 }
 
 function tokenScore(token: string, words: string[], weight: number) {
