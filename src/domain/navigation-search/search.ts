@@ -54,7 +54,12 @@ export const SECTION_ENTRIES: readonly SearchEntry[] = [
 ];
 
 export function normalize(text: string) {
-  return text.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  return text
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 /** Levenshtein distance bounded by `max`; returns max+1 when exceeded. */
@@ -80,7 +85,12 @@ function tokenScore(token: string, words: string[], weight: number) {
     if (word === token) best = Math.max(best, 10 * weight);
     else if (word.startsWith(token)) best = Math.max(best, 7 * weight);
     else if (token.length >= 3 && word.includes(token)) best = Math.max(best, 4 * weight);
-    else if (token.length >= 4 && editDistance(token, word.slice(0, token.length + 1), token.length >= 7 ? 2 : 1) <= (token.length >= 7 ? 2 : 1)) best = Math.max(best, 2 * weight);
+    else if (
+      token.length >= 4 &&
+      editDistance(token, word.slice(0, token.length + 1), token.length >= 7 ? 2 : 1) <=
+        (token.length >= 7 ? 2 : 1)
+    )
+      best = Math.max(best, 2 * weight);
   }
   return best;
 }
@@ -93,7 +103,11 @@ export function scoreEntry(entry: SearchEntry, query: string) {
   const rest = normalize(`${entry.category} ${entry.description ?? ""}`).split(" ");
   let total = 0;
   for (const token of tokens) {
-    const s = Math.max(tokenScore(token, title, 3), tokenScore(token, keywords, 2), tokenScore(token, rest, 1));
+    const s = Math.max(
+      tokenScore(token, title, 3),
+      tokenScore(token, keywords, 2),
+      tokenScore(token, rest, 1),
+    );
     if (!s) return 0;
     total += s;
   }
@@ -121,4 +135,11 @@ export function dedupeEntries(entries: readonly SearchEntry[]) {
   });
 }
 
-export const INITIAL_SUGGESTIONS = ["Mission Workspace", "Daily Readiness Check-in", "Live Monitoring", "Health Intelligence", "Project Guide", "Team"] as const;
+export const INITIAL_SUGGESTIONS = [
+  "Mission Workspace",
+  "Daily Readiness Check-in",
+  "Live Monitoring",
+  "Health Intelligence",
+  "Project Guide",
+  "Team",
+] as const;

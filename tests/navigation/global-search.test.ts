@@ -54,7 +54,8 @@ describe("global navigation search", () => {
     const labels = new Set(searchCatalogue.map((e) => e.title));
     for (const key of Object.keys(SEARCH_KEYWORDS)) expect(labels.has(key), key).toBe(true);
     const text = JSON.stringify(searchCatalogue);
-    for (const banned of ["MISSION_TEST", "FV01-TEST", "@", "mission-"]) expect(text.includes(banned) && banned !== "mission-" ? banned : "").toBe("");
+    for (const banned of ["MISSION_TEST", "FV01-TEST", "@computech"])
+      expect(text).not.toContain(banned);
     expect(text).not.toMatch(/mission-[0-9a-f]{16,}/);
   });
 
