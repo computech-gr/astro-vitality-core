@@ -24,7 +24,6 @@ import {
   updateMissionOperation,
   type CrewStatus,
   type MissionOperationsWorkspace,
-  type MissionStatus,
 } from "@/infrastructure/mission-operations";
 import { CrewDisplayNameEditor } from "@/components/crew-display-name-editor";
 import { MissionAuditLog } from "@/components/mission-audit-log";
