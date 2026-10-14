@@ -85,10 +85,41 @@ export function MissionIdentity() {
     [snapshot.memberships],
   );
   const [inviteMissionId, setInviteMissionId] = useState("");
+  const [inviteCrewOptions, setInviteCrewOptions] = useState<MissionOperationsCrew[]>([]);
+  const [inviteCrewLoading, setInviteCrewLoading] = useState(false);
+  const [inviteCrewError, setInviteCrewError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!inviteMissionId && operatorMemberships[0]) setInviteMissionId(operatorMemberships[0].missionId);
   }, [inviteMissionId, operatorMemberships]);
+
+  // Load eligible crew for the selected mission through the existing RLS-protected
+  // workspace loader. Changing mission or role clears any previous selection first.
+  useEffect(() => {
+    setInviteCrewMemberId("");
+    setInviteCrewOptions([]);
+    setInviteCrewError(null);
+    if (!inviteMissionId || inviteRole !== "crew_self") {
+      setInviteCrewLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setInviteCrewLoading(true);
+    loadInviteCrewOptions(inviteMissionId)
+      .then((crew) => {
+        if (cancelled) return;
+        setInviteCrewOptions(crew);
+        setInviteCrewLoading(false);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setInviteCrewError(error instanceof Error ? error.message : "Crew list could not be loaded.");
+        setInviteCrewLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [inviteMissionId, inviteRole]);
 
   async function run(action: () => Promise<void>, success?: string) {
     setBusy(true);
