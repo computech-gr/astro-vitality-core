@@ -145,7 +145,8 @@ describe("FV-01.4.6 Mission Audit Log", () => {
     expect(sql).toMatch(/revoke all on function .* from public, anon/);
     expect(sql).not.toMatch(/grant select|create policy|insert into|update public|delete from/i);
     expect(sql).toContain("p_cursor text");
-    expect(sql).not.toMatch(/'id', *f\.id|p_before_id uuid/);
+    expect(sql).not.toMatch(/'id', *f\.id|p_before_id uuid|encrypt_iv|SIV/);
+    expect(sql).toContain("fv0146:actor:pseudonym");
   });
   it("client drops free text and sensitive values even under allowed keys", () => {
     expect(
