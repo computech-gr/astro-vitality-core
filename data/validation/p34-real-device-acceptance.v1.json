@@ -107,7 +107,7 @@
       "id": "SCIENCE-01",
       "title": "Directional and baseline interpretation",
       "role": "Crew Self",
-      "route": "/mission/health",
+      "route": "/mission/intelligence",
       "procedure": "Verify only observed directional changes and matched context; no clinical claims",
       "trace": "P25/P26/P32",
       "status": "not_executed",

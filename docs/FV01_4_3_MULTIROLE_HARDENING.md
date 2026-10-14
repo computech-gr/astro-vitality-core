@@ -75,7 +75,7 @@ Rollback script verified to restore the original functions and remove the trigge
 5. Move the staged file into `supabase/migrations/` with a governed marker. Update the governed count from 11 to 12 in `migration-policy.mjs`, `verify-p19.mjs` and the release docs. Apply it with the migration tool byte-for-byte.
 6. Post-apply read-only check: the new functions and trigger exist; counts unchanged except new approval columns; existing memberships unchanged; the two synthetic events and index rows unchanged.
 7. Publish the screen changes (only after step 6).
-8. Live check without writes: `/mission/operations` and `/project/ground-research` load. Any functional live test of invitations needs separate owner authorization.
+8. Live check without writes: `/mission/operations` and `/mission/ground` (Ground & Research Console) load. Any functional live test of invitations needs separate owner authorization.
 9. Undo if needed: `supabase/pending/20261015000000_fv0143_multirole_hardening.rollback.sql`. It is verified in the disposable database and keeps the new columns, marked deprecated.
 
 ## Production release evidence (2026-10-14)
@@ -86,3 +86,10 @@ Rollback script verified to restore the original functions and remove the trigge
 - Isolated tests: 103/103 PASS (28 FV-01 + 75 FV-01.4.3); rollback restores the original 4 functions and removes the trigger with memberships unchanged. Full `bun run check`: 236 pass, 0 fail.
 - Post-migration: all 9 functions identical to the tested build; 7 invite columns, check constraint and enabled trigger present; privileged invite functions callable by signed-in users only (not anon, not sandbox_exec); `mission_role_conflict` not callable by browser roles. Counts unchanged: 3 missions, 7 memberships (7 active), 5 invites (1 open, 0 pending/bound), 3 crew, 3 assignments, 2 events, 2 index rows, 57 audit entries (the 2 added since the earlier 55 are operator `mission_operations_workspace_read` page views before the release). Invite, membership and event content fingerprints unchanged.
 - Rollback (manual only): `supabase/pending/20261015000000_fv0143_multirole_hardening.rollback.sql`.
+
+## Production deployment status (FV-01.4.5 record)
+
+- Status: **APPLIED and PUBLISHED.** Governed migration 12 `supabase/migrations/20261015000000_fv0143_multirole_hardening.sql` was applied exactly once and the screen changes were published afterwards.
+- The migration file's header comment still reads "STAGED, NOT APPLIED". That text is historical: it describes the file's state when it was reviewed. The SQL is intentionally kept byte-for-byte (SHA-256 `4103442a…6eb5f`) and must not be edited, renamed, reapplied or deleted. This document is the authoritative deployment record.
+- The rollback script remains in `supabase/pending/` and is manual only.
+- FV-01-13 remains OPEN; the Final Security Gate remains BLOCKED.
