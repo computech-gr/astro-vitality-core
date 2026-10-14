@@ -37,7 +37,7 @@ describe("FV-01.4.6 Mission Audit Log", () => {
     expect(redactDetails({ status: "active", code: "X", email: "a@b", code_hash: "h", payload: { hr: 1 }, name: "n" })).toEqual({ status: "active" });
   });
   it("never surfaces raw actor IDs", () => {
-    const p = sanitizeAuditPage({ entries: [{ id: "1", occurred_at: "2026-01-01T00:00:00Z", action: "a", outcome: "x", target_type: "t", actor: "00000000-0000-0000-0000-000000000001", details: {} }], has_more: true, actions: ["b", "a"] });
+    const p = sanitizeAuditPage({ next_cursor: "abc_-=", entries: [{ ref: "0123456789abcdef0123", occurred_at: "2026-01-01T00:00:00Z", action: "a", outcome: "x", target_type: "t", actor: "00000000-0000-0000-0000-000000000001", details: {} }], has_more: true, actions: ["b", "a"] });
     expect(p.entries[0]!.actor).toBe("member"); expect(p.entries[0]!.outcome).toBe("success"); expect(p.has_more).toBe(true); expect(p.actions).toEqual(["a", "b"]);
   });
   it("handles empty or malformed pages", () => expect(sanitizeAuditPage(null).entries).toEqual([]));
@@ -62,6 +62,17 @@ describe("FV-01.4.6 Mission Audit Log", () => {
     expect(sql).toContain("set search_path = public, pg_temp");
     expect(sql).toMatch(/revoke all on function .* from public, anon/);
     expect(sql).not.toMatch(/grant select|create policy|insert into|update public|delete from/i);
+    expect(sql).toContain("p_cursor text");
+    expect(sql).not.toMatch(/'id', *f\.id|p_before_id/);
+  });
+  it("client drops free text and sensitive values even under allowed keys", () => {
+    expect(redactDetails({ reason: "wrong_recipient: jane@x.org code ZX9", status: "Jane Doe", role: "TOKEN-1", policy: "sk_live", expires_in_hours: 999999, external_ref_present: "yes", kind: "x", outcome: "y" })).toEqual({});
+    expect(redactDetails({ reason: "wrong_recipient", role: "ground_medical", expires_in_hours: 72, creator_operator: true })).toEqual({ reason: "wrong_recipient", role: "ground_medical", expires_in_hours: 72, creator_operator: true });
+    const p = sanitizeAuditPage({ entries: [{ id: "raw-uuid", ref: "not-hex", action: "Leak bob@x.org", target_type: "Invite <a@b>", actor_role: "jane", details: {} }], has_more: true, next_cursor: "bad cursor!", actions: ["ok_action", "Bad Action"] });
+    const e = p.entries[0]!;
+    expect(JSON.stringify(p)).not.toMatch(/raw-uuid|bob|a@b|jane/);
+    expect([e.ref, e.action, e.target_type, e.actor_role]).toEqual(["", "other", "other", null]);
+    expect(p.has_more).toBe(false); expect(p.actions).toEqual(["ok_action"]);
   });
 });
 
