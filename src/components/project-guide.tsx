@@ -7,6 +7,42 @@ const CHALLENGE_URL =
   "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
 
+const DOCS_URL = GITHUB_URL + "/blob/main/docs/";
+
+/** Phase history taken strictly from repository documentation file names; status is documentation-only. */
+const roadmapPhases: readonly { phase: string; title: string; doc: string }[] = [
+  { phase: "P4", title: "Canonical health data", doc: "CANONICAL_HEALTH_DATA.md" },
+  { phase: "P5", title: "Device adapter SDK", doc: "DEVICE_ADAPTER_SDK.md" },
+  { phase: "P6", title: "Wearables integration", doc: "WEARABLES_INTEGRATION.md" },
+  { phase: "P7", title: "Medical & laboratory integration", doc: "MEDICAL_LAB_INTEGRATION.md" },
+  { phase: "P8", title: "Environmental & radiation telemetry", doc: "ENVIRONMENTAL_RADIATION_TELEMETRY.md" },
+  { phase: "P9", title: "Astronaut live dashboard", doc: "LIVE_DASHBOARD.md" },
+  { phase: "P10", title: "Personal baseline engine", doc: "PERSONAL_BASELINE_ENGINE.md" },
+  { phase: "P11", title: "Cognitive & behavioral module", doc: "COGNITIVE_BEHAVIORAL_MODULE.md" },
+  { phase: "P12", title: "Health intelligence v1", doc: "HEALTH_INTELLIGENCE_V1.md" },
+  { phase: "P13", title: "Action & protocol guidance", doc: "ACTION_PROTOCOL_GUIDANCE.md" },
+  { phase: "P14", title: "Offline mission mode", doc: "OFFLINE_MISSION_MODE.md" },
+  { phase: "P16", title: "Security & safety hardening", doc: "SECURITY_MODEL.md" },
+  { phase: "P17", title: "Simulation & synthetic dataset", doc: "SIMULATION_SYNTHETIC_DATASET.md" },
+  { phase: "P18", title: "Validation & usability", doc: "VALIDATION_USABILITY.md" },
+  { phase: "P19", title: "Open-source release candidate", doc: "RELEASE_CANDIDATE.md" },
+  { phase: "P20", title: "Real-device evidence", doc: "P20_REAL_DEVICE_EVIDENCE.md" },
+  { phase: "P24", title: "Multi-mission crew reuse", doc: "P24_MULTI_MISSION_CREW_REUSE.md" },
+  { phase: "P25", title: "Unified scientific evidence", doc: "P25_UNIFIED_SCIENTIFIC_EVIDENCE.md" },
+  { phase: "P26", title: "Four integrated health domains", doc: "P26_FOUR_INTEGRATED_HEALTH_DOMAINS.md" },
+  { phase: "P27", title: "Self-assessment & action guidance", doc: "P27_ASTRONAUT_SELF_ASSESSMENT_ACTION_GUIDANCE.md" },
+  { phase: "P28", title: "Research privacy workspace", doc: "P28_RESEARCH_PRIVACY_WORKSPACE.md" },
+  { phase: "P29", title: "Autonomous offline operations", doc: "P29_AUTONOMOUS_OFFLINE_MISSION_OPERATIONS.md" },
+  { phase: "P30", title: "NASA scientific evidence", doc: "P30_NASA_SCIENTIFIC_EVIDENCE_INTEGRATION.md" },
+  { phase: "P31", title: "Multi-astronaut simulation", doc: "P31_MULTI_ASTRONAUT_MISSION_SIMULATION.md" },
+  { phase: "P32", title: "Scientific validation & independent review", doc: "P32_SCIENTIFIC_VALIDATION_INDEPENDENT_REVIEW.md" },
+  { phase: "P33", title: "Astronaut experience UX", doc: "P33_ASTRONAUT_EXPERIENCE_MISSION_CONTROL_UX.md" },
+  { phase: "P34", title: "Real-device end-to-end acceptance", doc: "P34_REAL_DEVICE_END_TO_END_ACCEPTANCE.md" },
+  { phase: "P35", title: "Global submission package", doc: "P35_GLOBAL_SUBMISSION_PACKAGE.md" },
+];
+
+export const ROADMAP_DOCS = roadmapPhases.map((phase) => phase.doc);
+
 type GuideItem = {
   id: string;
   title: string;
@@ -182,6 +218,24 @@ export function ProjectGuidePage() {
             </section>
           ))}
         </div>
+        <section id="roadmap-detail" aria-labelledby="roadmap-detail-title" className="mt-20 scroll-mt-28">
+          <p className="section-kicker">About</p>
+          <h2 id="roadmap-detail-title" className="mt-3 font-display text-3xl font-semibold sm:text-4xl">Roadmap</h2>
+          <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">
+            Phase history as documented in the repository. A listed phase means its document exists; it does not mean real-device, clinical or independent scientific validation is complete. See Validation &amp; Limitations for open gates.
+          </p>
+          <ol className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {roadmapPhases.map((phase) => (
+              <li key={phase.phase} className="border border-border bg-surface p-4">
+                <p className="text-xs font-medium text-primary">{phase.phase}</p>
+                <a href={DOCS_URL + phase.doc} target="_blank" rel="noopener noreferrer" aria-label={`${phase.phase} ${phase.title} document (opens GitHub in a new tab)`} className="mt-1 inline-flex min-h-9 items-center gap-1.5 text-sm font-medium hover:text-primary hover:underline">
+                  {phase.title}
+                  <ExternalLink aria-hidden="true" className="size-3.5" />
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
       </div>
     </main>
   );
