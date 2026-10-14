@@ -69,12 +69,9 @@ begin
         where k in ('previous_status', 'status', 'role', 'kind', 'classification', 'expires_in_hours',
                     'external_ref_present', 'bootstrap_one_time', 'creator_operator', 'reason', 'policy', 'outcome')
           and jsonb_typeof(f.metadata -> k) in ('string', 'number', 'boolean'))
-    ) order by f.occurred_at desc, f.id desc), '[]'::jsonb),
-    count(*) > v_limit
-  into v_rows, v_more
-  from (select * from filtered order by occurred_at desc, id desc limit v_limit) f
-  cross join (select count(*) as n from filtered) c
-  group by c.n;
+    ) order by f.occurred_at desc, f.id desc), '[]'::jsonb)
+  into v_rows
+  from (select * from filtered order by occurred_at desc, id desc limit v_limit) f;
 
   select count(*) > v_limit into v_more from (
     select 1 from public.audit_events a
