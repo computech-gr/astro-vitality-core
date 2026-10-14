@@ -53,8 +53,6 @@ select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1')
 select set_config('request.jwt.claim.sub', '', false);
 select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1')$q$, 'authentication required|invalid input'), 'FV0146 unauthenticated denied');
 reset role;
-set role anon;
-select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1')$q$, 'permission denied'), 'FV0146 anon cannot execute');
-reset role;
+select fvtest.check(not has_function_privilege('anon', 'public.get_mission_audit_log(text,timestamptz,timestamptz,text,text,text,integer,timestamptz,uuid)', 'execute'), 'FV0146 anon cannot execute');
 select fvtest.check((select provolatile = 's' and prosecdef and proconfig::text like '%search_path=public, pg_temp%' from pg_proc where proname = 'get_mission_audit_log'), 'FV0146 stable security definer with fixed search_path');
 select 'FV0146 DONE';
