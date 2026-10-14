@@ -151,6 +151,32 @@ export function LiveDashboard() {
   const liveMissionContextRef = useRef<Awaited<ReturnType<typeof activeLiveMissionContext>>>({ missionId: "mission-local-p9", crewMemberId: "crew-local-p9", classification: "medical_sensitive" as const, source: "local_fallback" as const });
   const [missionContextSource, setMissionContextSource] = useState<"authenticated_membership" | "local_fallback">("local_fallback");
 
+  // Resolve the authenticated crew context on page entry, not only after a device starts.
+  // A signed-in Crew Self user must not be presented as a local demo by default.
+  useEffect(() => {
+    let mounted = true;
+    const refreshMissionContext = async () => {
+      try {
+        const context = await activeLiveMissionContext();
+        if (!mounted) return;
+        liveMissionContextRef.current = context;
+        setMissionContextSource(context.source);
+      } catch (error) {
+        // Fail closed: never display authenticated membership without verification.
+        if (mounted) {
+          setMissionContextSource("local_fallback");
+          console.warn("Live mission identity resolution failed", error);
+        }
+      }
+    };
+    void refreshMissionContext();
+    window.addEventListener("focus", refreshMissionContext);
+    return () => {
+      mounted = false;
+      window.removeEventListener("focus", refreshMissionContext);
+    };
+  }, []);
+
   useEffect(() => {
     setBrowserCapabilities(detectBrowserLiveCapabilities());
     const timer = window.setInterval(() => setNow(new Date().toISOString()), 10_000);
