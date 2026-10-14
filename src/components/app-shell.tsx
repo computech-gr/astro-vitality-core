@@ -95,7 +95,7 @@ const navigation: readonly NavigationEntry[] = [
     ],
   },
   {
-    label: "Operations",
+    label: "Mission Operations",
     href: "/#mission",
     description: "Sign-in, mission governance, ground oversight and offline continuity.",
     groups: [
