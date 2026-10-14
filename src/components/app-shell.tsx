@@ -29,7 +29,9 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -138,9 +140,7 @@ const technologyTopicDestinations: Readonly<Record<string, string>> = {
   "Security & Privacy": "/technology/security-privacy",
 };
 
-export function navigationItems(entry: NavigationEntry) {
-  return entry.groups?.flatMap((group) => group.items) ?? [];
-}
+
 
 function guideHref(anchor: string) {
   return `/project/guide#${anchor}`;
@@ -181,7 +181,7 @@ const guideDestinations: Readonly<Record<string, string>> = {
   "Resources & References": guideHref("resources-references"),
 };
 
-export function itemHref(label: string, fallback: string) {
+function itemHref(label: string, fallback: string) {
   if (technologyTopicDestinations[label]) return technologyTopicDestinations[label];
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "Backend Architecture (GitHub)") return `${GITHUB_URL}/blob/main/docs/ARCHITECTURE.md`;
