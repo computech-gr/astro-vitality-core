@@ -1,0 +1,583 @@
+{
+  "schemaVersion": "1.0",
+  "locale": "en",
+  "sourceLocale": "el",
+  "sourceCatalog": "data/scientific/bone-health-handbook-v7.catalog.json",
+  "sourceSha256": "7c446c479d1e1841c4485dac40d265aab958e804b9f6bc50d98a92872f75afb2",
+  "translationStatus": "machine_assisted_pending_independent_scientific_review",
+  "operationalActivation": false,
+  "note": "English presentation layer. The Greek source catalog is unchanged and remains authoritative for traceability. Translation does not constitute scientific validation.",
+  "variables": [
+    {
+      "id": "bone-001",
+      "what_en": "Type I collagen fragment; indicates the rate of resorption.",
+      "specimen_en": "Serum",
+      "unit_en": "pg/mL or ng/L",
+      "increase_en": "Possibly more intense osteoclastic resorption.",
+      "decrease_en": "Possibly lower resorption; interpret together with P1NP.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-002",
+      "what_en": "N-terminal telopeptide of type I collagen.",
+      "specimen_en": "Urine or serum",
+      "unit_en": "nmol BCE/mmol creatinine or assay-specific",
+      "increase_en": "Increased breakdown of bone collagen.",
+      "decrease_en": "Reduced resorption or effect of countermeasures.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-003",
+      "what_en": "Cross-link of mature collagen, not exclusive to bone.",
+      "specimen_en": "Urine",
+      "unit_en": "nmol/mmol creatinine",
+      "increase_en": "More collagen degradation.",
+      "decrease_en": "Less degradation, with limited specificity.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-004",
+      "what_en": "Collagen cross-link with greater bone specificity.",
+      "specimen_en": "Urine",
+      "unit_en": "nmol/mmol creatinine",
+      "increase_en": "Possible increase in bone resorption.",
+      "decrease_en": "Possible decrease in bone resorption.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-005",
+      "what_en": "Peptide from the breakdown of type I collagen.",
+      "specimen_en": "Urine/serum",
+      "unit_en": "assay-specific",
+      "increase_en": "More intense collagen degradation.",
+      "decrease_en": "Less degradation; assay-dependent.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-006",
+      "what_en": "Collagen amino acid; historical, non-specific marker.",
+      "specimen_en": "Urine",
+      "unit_en": "mg/day or ratio",
+      "increase_en": "Increased collagen turnover or dietary effect.",
+      "decrease_en": "Reduced turnover; does not prove bone improvement.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-007",
+      "what_en": "Collagen derivative; historical marker.",
+      "specimen_en": "Urine",
+      "unit_en": "assay-specific",
+      "increase_en": "More collagen degradation.",
+      "decrease_en": "Less degradation; low specificity.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-008",
+      "what_en": "Enzyme related to osteoclast number/activity.",
+      "specimen_en": "Serum",
+      "unit_en": "U/L or assay-specific",
+      "increase_en": "Possibly increased osteoclastic activity.",
+      "decrease_en": "Possibly decreased osteoclastic activity.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-009",
+      "what_en": "Type I collagen synthesis propeptide from osteoblasts.",
+      "specimen_en": "Serum",
+      "unit_en": "µg/L",
+      "increase_en": "Increased formation or increased turnover.",
+      "decrease_en": "Possible suppression of formation; not automatically favourable.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-010",
+      "what_en": "C-terminal propeptide of type I procollagen.",
+      "specimen_en": "Serum",
+      "unit_en": "µg/L",
+      "increase_en": "More collagen synthesis.",
+      "decrease_en": "Less collagen synthesis.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-011",
+      "what_en": "Bone isoenzyme of alkaline phosphatase; osteoblasts.",
+      "specimen_en": "Serum",
+      "unit_en": "µg/L or U/L",
+      "increase_en": "Possibly increased formation activity.",
+      "decrease_en": "Possibly decreased formation activity.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-012",
+      "what_en": "Osteoblast protein; turnover marker subject to many influences.",
+      "specimen_en": "Serum",
+      "unit_en": "ng/mL",
+      "increase_en": "Increased turnover/formation; assay-dependent.",
+      "decrease_en": "Reduced osteoblastic activity or turnover.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-013",
+      "what_en": "Total calcium; influenced by albumin.",
+      "specimen_en": "Serum",
+      "unit_en": "mg/dL or mmol/L",
+      "increase_en": "Possible hypercalcemia; requires clinical evaluation.",
+      "decrease_en": "Possible hypocalcemia; not a measure of bone mass.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-014",
+      "what_en": "Free, biologically active calcium.",
+      "specimen_en": "Blood",
+      "unit_en": "mmol/L",
+      "increase_en": "Change in homeostasis; influenced by sample pH.",
+      "decrease_en": "Change in homeostasis; does not directly indicate BMD.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-015",
+      "what_en": "Excreted calcium; related to bone mobilization and kidney stones.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mg/day",
+      "increase_en": "Hypercalciuria/increased stone risk under certain conditions.",
+      "decrease_en": "Lower excretion; may reflect intake/kidney function.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-016",
+      "what_en": "Blood phosphate; influenced by kidney and hormones.",
+      "specimen_en": "Serum",
+      "unit_en": "mg/dL or mmol/L",
+      "increase_en": "Possible renal/hormonal disturbance.",
+      "decrease_en": "Possible insufficient intake or redistribution.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-017",
+      "what_en": "Phosphorus excretion; also a component of stone chemistry.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mg/day",
+      "increase_en": "Greater urinary phosphorus load.",
+      "decrease_en": "Lower load; depends on diet/kidney function.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-018",
+      "what_en": "Parathyroid hormone; regulates calcium, phosphorus and bone turnover.",
+      "specimen_en": "Serum/plasma",
+      "unit_en": "pg/mL",
+      "increase_en": "Chronic elevation may enhance resorption.",
+      "decrease_en": "May be suppressed by higher calcium.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-019",
+      "what_en": "Main marker of vitamin D stores.",
+      "specimen_en": "Serum",
+      "unit_en": "ng/mL or nmol/L",
+      "increase_en": "Improved sufficiency up to an appropriate level; excess is undesirable.",
+      "decrease_en": "Possible insufficient vitamin D status.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements.",
+      "reviewFlag": "'έως κατάλληλο επίπεδο' — no target level is defined in the source or implemented."
+    },
+    {
+      "id": "bone-020",
+      "what_en": "Active hormonal metabolite, not a marker of stores.",
+      "specimen_en": "Serum",
+      "unit_en": "pg/mL",
+      "increase_en": "Hormonal/renal change; not necessarily sufficiency.",
+      "decrease_en": "Reduced activation or altered regulation.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-021",
+      "what_en": "Hormone regulating phosphorus and vitamin D.",
+      "specimen_en": "Serum/plasma",
+      "unit_en": "pg/mL or RU/mL",
+      "increase_en": "Possible increase in phosphaturia; multifactorial.",
+      "decrease_en": "Possible decrease in phosphate-load signalling.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-022",
+      "what_en": "Osteocyte protein; inhibits Wnt/bone formation.",
+      "specimen_en": "Serum",
+      "unit_en": "pmol/L or ng/mL",
+      "increase_en": "Possible inhibition of osteoblastic signalling.",
+      "decrease_en": "Possible release of inhibition; not automatically a clinical improvement.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-023",
+      "what_en": "Osteoclast differentiation/activation signal.",
+      "specimen_en": "Serum",
+      "unit_en": "assay-specific",
+      "increase_en": "Possible enhancement of osteoclastogenesis.",
+      "decrease_en": "Possible reduction in signalling; interpret together with OPG.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-024",
+      "what_en": "Binds RANKL and limits osteoclastogenesis.",
+      "specimen_en": "Serum",
+      "unit_en": "assay-specific",
+      "increase_en": "Possible compensatory protective action.",
+      "decrease_en": "Possibly less inhibition of RANKL.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-025",
+      "what_en": "Wnt inhibitor related to bone formation.",
+      "specimen_en": "Serum",
+      "unit_en": "assay-specific",
+      "increase_en": "Possible suppression of Wnt signalling.",
+      "decrease_en": "Possibly less inhibition; research interpretation.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-026",
+      "what_en": "Natural isotopic ratio; research estimate of net bone balance.",
+      "specimen_en": "Blood/urine",
+      "unit_en": "δ44/42Ca ‰",
+      "increase_en": "Direction depends on the isotopic model and material.",
+      "decrease_en": "A simple general ↑/↓ interpretation is not permitted.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements.",
+      "reviewFlag": "Source explicitly forbids a simple ↑/↓ reading; direction depends on the isotopic model."
+    },
+    {
+      "id": "bone-027",
+      "what_en": "Administered stable tracers for calcium kinetics.",
+      "specimen_en": "Blood/urine after tracer administration",
+      "unit_en": "fractional absorption / model",
+      "increase_en": "Interpret only with a specific kinetic model.",
+      "decrease_en": "Not a simple risk threshold.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-028",
+      "what_en": "Citrate binds calcium and limits crystallization.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mg/day",
+      "increase_en": "Often a protective increase.",
+      "decrease_en": "Low citrate may increase stone risk.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-029",
+      "what_en": "Oxalate forms crystals with calcium.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mg/day",
+      "increase_en": "Possible increase in Ca-oxalate risk.",
+      "decrease_en": "Possible decrease in risk, under certain conditions.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-030",
+      "what_en": "Urinary magnesium; part of the lithogenic profile.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mg/day",
+      "increase_en": "May reflect intake/renal excretion.",
+      "decrease_en": "May reduce inhibitory factors.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements.",
+      "reviewFlag": "Decrease text 'μειώσει ανασταλτικούς παράγοντες' is ambiguous (may mean lower urinary magnesium reduces stone-inhibiting factors); rendered literally."
+    },
+    {
+      "id": "bone-031",
+      "what_en": "Sodium excretion; linked to salt intake.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mmol/day",
+      "increase_en": "Often associated with increased calciuria.",
+      "decrease_en": "Lower sodium load.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-032",
+      "what_en": "Potassium excretion; dietary/renal marker.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mmol/day",
+      "increase_en": "Often reflects intake; not a standalone stone marker.",
+      "decrease_en": "Possibly low intake or another change.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-033",
+      "what_en": "Related to the acid load from proteins.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mmol/day",
+      "increase_en": "Possibly greater acid production.",
+      "decrease_en": "Possibly lower acid load.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-034",
+      "what_en": "Uric acid; risk of specific stone types.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mg/day",
+      "increase_en": "Possibly greater lithogenic burden.",
+      "decrease_en": "Possibly lower burden.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-035",
+      "what_en": "Check of collection completeness/normalization.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mg/day",
+      "increase_en": "Not independent evidence of disease.",
+      "decrease_en": "May indicate incomplete collection or muscle changes.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-036",
+      "what_en": "Urine acidity influences stone type.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "pH",
+      "increase_en": "High pH favours certain phosphate stones.",
+      "decrease_en": "Low pH favours uric acid stones.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-037",
+      "what_en": "Urine volume/hydration.",
+      "specimen_en": "24-hour urine",
+      "unit_en": "mL/day",
+      "increase_en": "Usually lowers concentrations of lithogenic substances.",
+      "decrease_en": "Low volume increases supersaturation.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-038",
+      "what_en": "Calcium oxalate saturation index.",
+      "specimen_en": "Calculation",
+      "unit_en": "dimensionless/index",
+      "increase_en": "Greater crystallization tendency of the corresponding salt.",
+      "decrease_en": "Lower crystallization tendency; a validated algorithm is required.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-039",
+      "what_en": "Calcium phosphate saturation index.",
+      "specimen_en": "Calculation",
+      "unit_en": "dimensionless/index",
+      "increase_en": "Greater crystallization tendency of the corresponding salt.",
+      "decrease_en": "Lower crystallization tendency; a validated algorithm is required.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-040",
+      "what_en": "Uric acid saturation index.",
+      "specimen_en": "Calculation",
+      "unit_en": "dimensionless/index",
+      "increase_en": "Greater crystallization tendency of the corresponding salt.",
+      "decrease_en": "Lower crystallization tendency; a validated algorithm is required.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-041",
+      "what_en": "Sodium urate saturation index.",
+      "specimen_en": "Calculation",
+      "unit_en": "dimensionless/index",
+      "increase_en": "Greater crystallization tendency of the corresponding salt.",
+      "decrease_en": "Lower crystallization tendency; a validated algorithm is required.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-042",
+      "what_en": "Magnesium ammonium phosphate saturation index.",
+      "specimen_en": "Calculation",
+      "unit_en": "dimensionless/index",
+      "increase_en": "Greater crystallization tendency of the corresponding salt.",
+      "decrease_en": "Lower crystallization tendency; a validated algorithm is required.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-043",
+      "what_en": "DXA areal density of the hip.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "g/cm²",
+      "increase_en": "Higher measured density.",
+      "decrease_en": "Density loss; check precision error.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-044",
+      "what_en": "DXA density of the femoral neck.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "g/cm²",
+      "increase_en": "Increase in BMD.",
+      "decrease_en": "Loss of BMD.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-045",
+      "what_en": "DXA of the lumbar spine.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "g/cm²",
+      "increase_en": "Increase or technical artifact.",
+      "decrease_en": "Loss of BMD.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements.",
+      "reviewFlag": "'Αύξηση ή τεχνικό artifact' rendered literally; spinal aBMD increases may be artefactual (e.g. degenerative change) — confirm."
+    },
+    {
+      "id": "bone-046",
+      "what_en": "QCT volumetric density.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "mg HA/cm³",
+      "increase_en": "Possible increase in density.",
+      "decrease_en": "Possible loss of density.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-047",
+      "what_en": "Cortical bone density.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "mg HA/cm³",
+      "increase_en": "Possibly higher density.",
+      "decrease_en": "Possibly lower density.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-048",
+      "what_en": "Trabecular (cancellous) bone density.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "mg HA/cm³",
+      "increase_en": "Possibly higher density.",
+      "decrease_en": "Possible loss of trabecular bone.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-049",
+      "what_en": "Mean trabecular thickness.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "mm",
+      "increase_en": "Possibly stronger microstructure.",
+      "decrease_en": "Possible trabecular thinning.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-050",
+      "what_en": "Number of trabeculae per unit length.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "1/mm",
+      "increase_en": "Possibly denser network.",
+      "decrease_en": "Possible loss of trabeculae.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-051",
+      "what_en": "Mean distance between trabeculae.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "mm",
+      "increase_en": "Possible deterioration of microarchitecture.",
+      "decrease_en": "Possibly smaller separation.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-052",
+      "what_en": "Cortical bone thickness.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "mm",
+      "increase_en": "Possible improvement in mechanical support.",
+      "decrease_en": "Possible cortical thinning.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-053",
+      "what_en": "Modelled failure load from FEA.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "N",
+      "increase_en": "Greater estimated strength.",
+      "decrease_en": "Lower estimated strength.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-054",
+      "what_en": "Estimated mechanical strength from a model.",
+      "specimen_en": "DXA/QCT/HR-pQCT/FEA",
+      "unit_en": "N or model-specific",
+      "increase_en": "Possible improvement in the strength model.",
+      "decrease_en": "Possible deterioration in the strength model.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-055",
+      "what_en": "Completed / scheduled resistance exercise sessions.",
+      "specimen_en": "Log/device",
+      "unit_en": "% sessions",
+      "increase_en": "Better adherence; not a guarantee of protection.",
+      "decrease_en": "Reduced adherence; possibly insufficient loading.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-056",
+      "what_en": "Exercise load and progression.",
+      "specimen_en": "Log/device",
+      "unit_en": "kg or N",
+      "increase_en": "Greater mechanical loading within the plan.",
+      "decrease_en": "Lower loading; requires context.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-057",
+      "what_en": "Calcium intake from diet/supplements.",
+      "specimen_en": "Log/device",
+      "unit_en": "mg/day",
+      "increase_en": "Does not automatically mean better bones.",
+      "decrease_en": "May affect homeostasis.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-058",
+      "what_en": "Vitamin D intake.",
+      "specimen_en": "Log/device",
+      "unit_en": "IU/day",
+      "increase_en": "Does not replace 25(OH)D.",
+      "decrease_en": "Possibly insufficient intake.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-059",
+      "what_en": "Protein for bone/muscle.",
+      "specimen_en": "Log/device",
+      "unit_en": "g/day",
+      "increase_en": "Depends on needs and diet.",
+      "decrease_en": "Possibly insufficient tissue support.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-060",
+      "what_en": "Dietary sodium.",
+      "specimen_en": "Log/device",
+      "unit_en": "mg/day",
+      "increase_en": "May increase calciuria.",
+      "decrease_en": "May reduce sodium load.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-061",
+      "what_en": "Fluid consumed.",
+      "specimen_en": "Log/device",
+      "unit_en": "mL/day",
+      "increase_en": "Usually supports urine production.",
+      "decrease_en": "Possible increase in urine concentration.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-062",
+      "what_en": "Days of exposure to microgravity.",
+      "specimen_en": "Log/device",
+      "unit_en": "days",
+      "increase_en": "Greater cumulative exposure.",
+      "decrease_en": "Lower exposure.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    },
+    {
+      "id": "bone-063",
+      "what_en": "Actual time under low mechanical loading.",
+      "specimen_en": "Log/device",
+      "unit_en": "hours/days",
+      "increase_en": "Greater exposure to the risk factor.",
+      "decrease_en": "Lower exposure.",
+      "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements."
+    }
+  ]
+}
