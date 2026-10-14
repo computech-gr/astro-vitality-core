@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createMissionInvite, loadMissionIdentity, type MissionMembershipContext, type MissionRole } from "@/infrastructure/mission-identity";
 import {
+  approveMissionInvite,
   assignExistingCrewToMission,
   canDeactivateMembership,
   canEditCrewDisplayName,
@@ -17,6 +18,7 @@ import {
   createMissionOperation,
   loadMissionOperationsWorkspace,
   missionTransitionOptions,
+  pendingApprovalsFor,
   setMissionMembershipActive,
   updateMissionCrewMember,
   updateMissionOperation,
@@ -239,6 +241,8 @@ export function MissionOperations() {
                       {inviteRole === "crew_self" ? <div><Label>Active crew member</Label><Select value={inviteCrewId} onValueChange={setInviteCrewId}><SelectTrigger className="mt-2"><SelectValue placeholder="Select crew member" /></SelectTrigger><SelectContent>{activeCrew.map((crew) => <SelectItem key={crew.crew_member_id} value={crew.crew_member_id}>{crew.display_name}</SelectItem>)}</SelectContent></Select></div> : null}
                       <Button disabled={busy || (inviteRole === "crew_self" && !inviteCrewId)} onClick={() => void issueInvite()}>Create one-time invite</Button>
                       {createdInvite ? <div className="rounded-md border border-emerald-400/30 bg-emerald-400/10 p-4"><p className="text-xs uppercase tracking-wider text-emerald-300">One-time code — copy now</p><p className="mt-2 break-all font-mono text-sm">{createdInvite}</p></div> : null}
+                      <p className="text-xs text-muted-foreground">You cannot accept an invitation you issued yourself. Ground Medical invitations require approval by a different Operator or an existing Ground Medical member of this mission.</p>
+                      {pendingApprovalsFor(workspace.invites).length ? <div className="space-y-2"><p className="text-sm font-medium">Ground Medical invitations awaiting approval</p>{pendingApprovalsFor(workspace.invites).map((invite) => <div key={invite.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3"><span className="font-mono text-xs text-muted-foreground">invite {invite.id.slice(0, 8)}… · expires {new Date(invite.expires_at).toLocaleString()}</span>{invite.canApprove ? <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(async () => { await approveMissionInvite(invite.id); await refreshWorkspace(); }, "Ground Medical invitation approved.")}>Approve</Button> : <Badge variant="outline">Issued by you — needs another approver</Badge>}</div>)}</div> : null}
                     </CardContent>
                   </Card>
 

@@ -41,6 +41,41 @@ export interface MissionOperationsInvite {
   created_at: string;
   claimed_at?: string | null;
   active: boolean;
+  /** FV-01.4.3 (staged): absent until the hardening migration is applied. */
+  approval_state?: InviteApprovalState;
+  approved_at?: string | null;
+  issued_by_me?: boolean;
+}
+
+export type InviteApprovalState = "not_required" | "pending" | "approved";
+
+interface RejectableResult {
+  status?: string;
+  reason?: string;
+  message?: string;
+}
+
+/** Hardened RPCs return a 'rejected' result (so audit rows commit) instead of raising. */
+export function assertNotRejected(result: RejectableResult | null | undefined, fallback: string): void {
+  if (result?.status === "rejected") throw new Error(result.message ?? fallback);
+}
+
+/** Ground Medical invites awaiting an independent approver; the inviter can never approve their own. */
+export function pendingApprovalsFor(invites: MissionOperationsInvite[]): Array<MissionOperationsInvite & { canApprove: boolean }> {
+  return invites
+    .filter((invite) => invite.role === "ground_medical" && invite.approval_state === "pending" && invite.active && !invite.claimed_at)
+    .map((invite) => ({ ...invite, canApprove: invite.issued_by_me !== true }));
+}
+
+const APPROVAL_REASONS: Record<string, string> = {
+  inviter_cannot_approve: "The inviter cannot approve their own Ground Medical invitation.",
+  not_pending: "This invitation is not awaiting approval.",
+  invite_unavailable: "This invitation is expired, revoked or already used.",
+};
+
+export async function approveMissionInvite(inviteId: string): Promise<void> {
+  const result = await rpc<RejectableResult>("approve_mission_invite", { p_invite_id: inviteId });
+  if (result.status === "rejected") throw new Error(APPROVAL_REASONS[result.reason ?? ""] ?? "Invitation approval refused.");
 }
 
 export interface MissionOperationsWorkspace {
@@ -185,11 +220,12 @@ export function crewDisplayNameUpdate(missionId: string, crewMemberId: string, d
 }
 
 export async function setMissionMembershipActive(input: { missionId: string; membershipId: string; active: boolean }): Promise<void> {
-  await rpc("set_mission_membership_active", {
+  const result = await rpc<RejectableResult>("set_mission_membership_active", {
     p_mission_id: input.missionId,
     p_membership_id: input.membershipId,
     p_active: input.active,
   });
+  assertNotRejected(result, "Membership change refused.");
 }
 
 /** Reuses a global crew identity without copying or transferring any mission health records. */
