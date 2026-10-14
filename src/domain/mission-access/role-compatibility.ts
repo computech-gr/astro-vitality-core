@@ -27,15 +27,24 @@ export function consoleSelectionKey(m: ConsoleMembership): string {
 }
 
 /** Eligible console memberships, ordered by mission then role priority (never by load order). */
-export function orderConsoleMemberships<T extends ConsoleMembership>(memberships: readonly T[]): T[] {
+export function orderConsoleMemberships<T extends ConsoleMembership>(
+  memberships: readonly T[],
+): T[] {
   return memberships
     .filter((m) => CONSOLE_ROLE_PRIORITY.includes(m.role))
     .slice()
-    .sort((a, b) => a.missionId.localeCompare(b.missionId) || CONSOLE_ROLE_PRIORITY.indexOf(a.role) - CONSOLE_ROLE_PRIORITY.indexOf(b.role));
+    .sort(
+      (a, b) =>
+        a.missionId.localeCompare(b.missionId) ||
+        CONSOLE_ROLE_PRIORITY.indexOf(a.role) - CONSOLE_ROLE_PRIORITY.indexOf(b.role),
+    );
 }
 
 /** Keeps a still-valid previous selection; otherwise the highest-priority role of the first mission. */
-export function resolveConsoleSelection<T extends ConsoleMembership>(memberships: readonly T[], previousKey?: string): T | undefined {
+export function resolveConsoleSelection<T extends ConsoleMembership>(
+  memberships: readonly T[],
+  previousKey?: string,
+): T | undefined {
   const ordered = orderConsoleMemberships(memberships);
   return ordered.find((m) => consoleSelectionKey(m) === previousKey) ?? ordered[0];
 }
