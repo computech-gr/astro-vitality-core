@@ -16,7 +16,18 @@ const INDEXABLE = {
   "/project/guide": "src/routes/project.guide.tsx",
   "/mission/validation": "src/routes/mission.validation.tsx",
   "/mission/submission": "src/routes/mission.submission.tsx",
+  "/technology": "src/routes/technology.index.tsx",
 };
+
+// P21: the eight Technology topic pages share one dynamic route that derives
+// its self-canonical path from the structured topic definitions.
+const TOPIC_SLUGS = [...read("src/content/technology-topics.ts").matchAll(/^\s+slug: "([a-z-]+)",$/gm)].map((m) => m[1]);
+if (TOPIC_SLUGS.length !== 8) failures.push(`expected 8 technology topics, found ${TOPIC_SLUGS.length}`);
+const topicRoute = read("src/routes/technology.$topic.tsx");
+if (!topicRoute.includes("indexableRouteHead")) failures.push("technology topic route must use indexableRouteHead");
+if (!topicRoute.includes("technologyTopicPath(")) failures.push("technology topic route must self-canonicalize");
+const TOPIC_PATHS = TOPIC_SLUGS.map((slug) => `/technology/${slug}`);
+for (const path of TOPIC_PATHS) if (!policy.includes(`"${path}"`)) failures.push(`policy missing technology route ${path}`);
 
 const OPERATIONAL = {
   "/mission/identity": "src/routes/mission.identity.tsx",
@@ -92,7 +103,7 @@ if (!sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.
   failures.push("sitemap.xml missing sitemaps.org urlset namespace");
 }
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-const expected = Object.keys(INDEXABLE).map((p) => (p === "/" ? `${ORIGIN}/` : `${ORIGIN}${p}`));
+const expected = [...Object.keys(INDEXABLE), ...TOPIC_PATHS].map((p) => (p === "/" ? `${ORIGIN}/` : `${ORIGIN}${p}`));
 for (const url of expected) {
   if (!locs.includes(url)) failures.push(`sitemap.xml missing indexable URL ${url}`);
 }
@@ -124,6 +135,8 @@ const PAGE_COMPONENTS = [
   "src/components/offline-mission.tsx",
   "src/components/ground-research-console.tsx",
   "src/components/synthetic-mission.tsx",
+  "src/components/knowledge/topic-page.tsx",
+  "src/components/knowledge/technology-index.tsx",
 ];
 for (const file of PAGE_COMPONENTS) {
   const src = read(file);

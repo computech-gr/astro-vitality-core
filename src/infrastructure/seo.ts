@@ -18,12 +18,26 @@ import { canonicalUrl } from "./config";
 /** Absolute production URL of the shared social preview image. */
 export const SOCIAL_PREVIEW_PATH = "/og-image.jpg" as const;
 
+/** P21 public educational Technology topic pages (indexable). */
+export const TECHNOLOGY_TOPIC_ROUTES = [
+  "/technology/system-architecture",
+  "/technology/device-integration",
+  "/technology/wearables",
+  "/technology/medical-laboratory-data",
+  "/technology/environmental-telemetry",
+  "/technology/canonical-health-data-model",
+  "/technology/offline-first-architecture",
+  "/technology/security-privacy",
+] as const;
+
 /** Public content routes that are indexable and listed in sitemap.xml. */
 export const INDEXABLE_ROUTES = [
   "/",
   "/project/guide",
   "/mission/validation",
   "/mission/submission",
+  "/technology",
+  ...TECHNOLOGY_TOPIC_ROUTES,
 ] as const;
 
 /** Operational application routes that must never be indexed. */
