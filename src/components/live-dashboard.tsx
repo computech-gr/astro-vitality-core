@@ -143,6 +143,7 @@ export function LiveDashboard() {
   const streamAbortRef = useRef<AbortController | null>(null);
   const connectedSourceRef = useRef<{ sourceId: string; displayName: string; transport: string } | null>(null);
   const [hardwareEvidence, setHardwareEvidence] = useState<HardwareEvidenceReceipt | null>(null);
+  const [lastPersistError, setLastPersistError] = useState<string | null>(null);
   const [browserCapabilities, setBrowserCapabilities] = useState<BrowserLiveCapabilities | null>(null);
   const [cameraPreview, setCameraPreview] = useState<CameraPpgPreviewState>({ phase: "idle", waveform: [], signalQuality: 0, contactQuality: 0 });
   const [motionPreview, setMotionPreview] = useState<MotionPreviewState | null>(null);
@@ -167,6 +168,7 @@ export function LiveDashboard() {
   async function connectAdapter(adapter: DeviceAdapter, transport: string) {
     setBusy(true);
     setLiveSourceError(null);
+    setLastPersistError(null);
     adapterRef.current = adapter;
     try {
       const missionContext = await activeLiveMissionContext();
@@ -229,7 +231,10 @@ export function LiveDashboard() {
                 payload: result.value,
               })
                 .then(() => setHardwareEvidence((current) => current ? { ...current, persistedSampleCount: current.persistedSampleCount + 1 } : current))
-                .catch((error) => console.warn("Offline observation persistence failed", error));
+                .catch((error) => {
+                  setLastPersistError(error instanceof Error ? error.message : "Encrypted observation write failed");
+                  console.warn("Offline observation persistence failed", error);
+                });
             } else if (result.ok && result.kind === "series") {
               const metricCode = result.value.metricCode;
               setHardwareEvidence((current) => current ? {
@@ -259,7 +264,10 @@ export function LiveDashboard() {
                 payload: result.value,
               })
                 .then(() => setHardwareEvidence((current) => current ? { ...current, persistedSampleCount: current.persistedSampleCount + 1 } : current))
-                .catch((error) => console.warn("Offline motion persistence failed", error));
+                .catch((error) => {
+                  setLastPersistError(error instanceof Error ? error.message : "Encrypted series write failed");
+                  console.warn("Offline motion persistence failed", error);
+                });
             }
           }
         } catch (error) {
@@ -358,6 +366,20 @@ export function LiveDashboard() {
           <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Persistence</span><strong className="mt-1 block font-mono text-sm text-amber-300">ENCRYPTED LOCAL + GOVERNED SYNC QUEUE</strong></div>
           <div><span className="text-xs uppercase tracking-wider text-muted-foreground">Health interpretation</span><strong className="mt-1 block font-mono text-sm">BASELINE DELTAS ONLY — NO ALERTS / DIAGNOSIS</strong></div>
         </div>
+
+        <section className="mt-4 rounded-lg border border-border bg-surface/70 p-4" aria-labelledby="p352-monitoring-title">
+          <p className="section-kicker">P35.2 · Live crew monitoring readiness</p>
+          <h2 id="p352-monitoring-title" className="mt-2 font-display text-xl font-semibold">Authenticated identity, sensor freshness and encrypted write evidence</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">Only an authorized mission membership identifies a real crew record. Local fallback sessions are device-local demonstrations, not verified astronaut identities. Connected hardware is not proof of a current measurement; freshness and successful encrypted writes are separate checks.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-live="polite">
+            <div className="rounded-md border border-border p-3"><span className="text-xs text-muted-foreground">Mission identity</span><strong className="mt-1 block text-sm">{missionContextSource === "authenticated_membership" ? "AUTHENTICATED MEMBERSHIP" : "LOCAL FALLBACK · NOT VERIFIED CREW"}</strong></div>
+            <div className="rounded-md border border-border p-3"><span className="text-xs text-muted-foreground">Device transport</span><strong className="mt-1 block text-sm">{connectedSource?.connection?.toUpperCase() ?? "DISCONNECTED"}</strong></div>
+            <div className="rounded-md border border-border p-3"><span className="text-xs text-muted-foreground">Last physical sample</span><strong className="mt-1 block text-sm">{hardwareEvidence?.lastSampleAt ? formatTime(hardwareEvidence.lastSampleAt) : "NO SAMPLE"}</strong></div>
+            <div className="rounded-md border border-border p-3"><span className="text-xs text-muted-foreground">Encrypted persistence</span><strong className="mt-1 block text-sm">{lastPersistError ? "WRITE FAILED" : hardwareEvidence?.persistedSampleCount ? `${hardwareEvidence.persistedSampleCount} CONFIRMED` : "NOT CONFIRMED"}</strong></div>
+          </div>
+          {lastPersistError && <p role="alert" className="mt-3 text-sm text-amber-300">Local encrypted write failure: {lastPersistError}. Do not interpret the displayed measurement as saved.</p>}
+          <p className="mt-3 text-xs text-muted-foreground">Research prototype · No medical diagnosis · No NASA crew telemetry access · Final Security Gate BLOCKED</p>
+        </section>
 
         <section id="live-sources" className="mt-6 rounded-lg border border-border bg-surface/70 p-4" aria-labelledby="hardware-path-title">
           <div className="flex flex-wrap items-start justify-between gap-4">
