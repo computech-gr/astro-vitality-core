@@ -13,7 +13,7 @@
       "biology_en": "Sinoatrial (sinus node) rate and autonomic regulation",
       "context_en": "HR↑ may compensate for SV↓ or reflect exercise; HR↓ may be physiological at rest.",
       "linkage_en": "Association with BP, SV, posture, ECG",
-      "reviewFlag": "'Ρυθμός φλεβοκόμβου' rendered as 'sinoatrial (sinus node) rate'; confirm intended terminology."
+      "reviewFlag": "Source term for 'sinus node rhythm/rate' rendered as 'sinoatrial (sinus node) rate'; confirm intended terminology."
     },
     {
       "id": "cv-002",
@@ -56,7 +56,7 @@
       "biology_en": "SBP−DBP; influenced by SV and arterial elasticity",
       "context_en": "Not an exclusive index of arterial stiffness.",
       "linkage_en": "BP, PWV",
-      "reviewFlag": "'ελαστικότητα' rendered as 'arterial elasticity'; source does not specify arterial vs. general compliance."
+      "reviewFlag": "Source term 'elasticity' rendered as 'arterial elasticity'; source does not specify arterial vs. general compliance."
     },
     {
       "id": "cv-009",
@@ -292,7 +292,7 @@
       "biology_en": "Change in diameter per pressure",
       "context_en": "Depends on BP and image quality.",
       "linkage_en": "PWV",
-      "reviewFlag": "'εικόνα' rendered as 'image quality'; source may mean the imaging itself."
+      "reviewFlag": "Source term 'image' rendered as 'image quality'; source may mean the imaging itself."
     },
     {
       "id": "cv-048",
@@ -625,7 +625,7 @@
       "index": 6,
       "combination_en": "ECG irregular + K⁺ out of range",
       "interpretationAndLimits_en": "Requires verification of ECG quality, electrolyte assessment and clinical review.",
-      "reviewFlag": "'εκτός ορίων' (out of range) references limits that the handbook does not define; no threshold is implied or implemented."
+      "reviewFlag": "'Out of range' references limits that the handbook does not define; no threshold is implied or implemented."
     },
     {
       "index": 7,

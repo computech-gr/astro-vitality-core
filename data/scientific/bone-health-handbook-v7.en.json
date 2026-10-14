@@ -178,7 +178,7 @@
       "increase_en": "Improved sufficiency up to an appropriate level; excess is undesirable.",
       "decrease_en": "Possible insufficient vitamin D status.",
       "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements.",
-      "reviewFlag": "'έως κατάλληλο επίπεδο' — no target level is defined in the source or implemented."
+      "reviewFlag": "'Up to an appropriate level' — no target level is defined in the source or implemented."
     },
     {
       "id": "bone-020",
@@ -279,7 +279,7 @@
       "increase_en": "May reflect intake/renal excretion.",
       "decrease_en": "May reduce inhibitory factors.",
       "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements.",
-      "reviewFlag": "Decrease text 'μειώσει ανασταλτικούς παράγοντες' is ambiguous (may mean lower urinary magnesium reduces stone-inhibiting factors); rendered literally."
+      "reviewFlag": "Decrease text ('may reduce inhibitory factors') is ambiguous (may mean lower urinary magnesium reduces stone-inhibiting factors); rendered literally."
     },
     {
       "id": "bone-031",
@@ -415,7 +415,7 @@
       "increase_en": "Increase or technical artifact.",
       "decrease_en": "Loss of BMD.",
       "implementationNotes_en": "Software: store the value, unit, specimen, method, date, baseline and source; compute a trend only from comparable measurements.",
-      "reviewFlag": "'Αύξηση ή τεχνικό artifact' rendered literally; spinal aBMD increases may be artefactual (e.g. degenerative change) — confirm."
+      "reviewFlag": "'Increase or technical artifact' rendered literally; spinal aBMD increases may be artefactual (e.g. degenerative change) — confirm."
     },
     {
       "id": "bone-046",
