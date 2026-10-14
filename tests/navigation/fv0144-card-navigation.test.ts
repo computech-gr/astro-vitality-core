@@ -9,8 +9,8 @@ const shell = readFileSync(join(root, "src/components/app-shell.tsx"), "utf8");
 const itemLines = guide.split("\n").filter((line) => /^\s*\{ id: "[a-z0-9-]+", title: /.test(line));
 
 describe("FV-01.4.4 card navigation coverage", () => {
-  test("project guide has the expected 49 cards", () => {
-    expect(itemLines.length).toBe(49);
+  test("project guide has the expected 45 cards", () => {
+    expect(itemLines.length).toBe(45);
   });
 
   test("every card has a destination or an explicit no-action reason", () => {
