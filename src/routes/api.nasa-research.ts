@@ -26,5 +26,5 @@ export const Route = createFileRoute("/api/nasa-research")({
       return Response.json({accession,mode,retrievedAt:new Date().toISOString(),data},{headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
     } catch { return Response.json({error:"NASA API request failed or timed out"},{status:502}); }
     finally {clearTimeout(timeout);}
-  }}}},
+  }}},
 });
