@@ -1,5 +1,4 @@
 "use client";
-import cardiovascularCatalog from "../../data/scientific/cardiovascular-handbook.catalog.v1.json";
 
 import { useEffect, useState } from "react";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
@@ -7,6 +6,7 @@ import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
 import { HEALTH_DOMAINS, getHealthDomain, projectDomainEvidence, type HealthDomainId } from "@/domain/health-domains/registry";
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "@/domain/health-intelligence/patterns";
+import { CardiovascularHandbookReference } from "@/components/scientific-handbook-reference";
 
 export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }) {
   const domain = getHealthDomain(domainId);
@@ -47,14 +47,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
     <p className="mt-4 max-w-3xl text-muted-foreground">{domain.scope}</p>
     <p className="mt-3 rounded-md border border-border p-3 text-sm" role="status">{domain.reviewState === "scientific_review_pending" ? "Scientific domain review pending. Existing evidence is displayed without clinical inference." : "Bone handbook mapping available. Clinical validation and approved thresholds are not established."}</p>
     <nav aria-label="Astronaut health domains" className="mt-6 flex flex-wrap gap-2">{HEALTH_DOMAINS.map((item) => <a key={item.id} href={item.path} aria-current={item.id === domainId ? "page" : undefined} className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">{item.title}</a>)}</nav>
-    {domainId === "cardiovascular" && <section className="mt-8 rounded-xl border border-border p-5" aria-label="Cardiovascular handbook reference">
-      <h2 className="text-xl font-semibold">Cardiovascular scientific handbook · research reference</h2>
-      <p className="mt-2 text-sm text-muted-foreground">Nikolas' cardiovascular handbook: {cardiovascularCatalog.metrics.length} catalogued measurements across 7 groups. Scientific review pending; no clinical thresholds, diagnoses or alerts are enabled by this reference.</p>
-      <details className="mt-4 text-sm"><summary className="cursor-pointer">Explore the source-derived measurement catalog</summary>
-        <div className="mt-4 space-y-4">{[...new Set(cardiovascularCatalog.metrics.map((metric) => metric.group))].map((group) => <div key={group}><h3 className="font-semibold">{group}</h3><ul className="mt-2 list-disc space-y-1 pl-5">{cardiovascularCatalog.metrics.filter((metric) => metric.group === group).map((metric) => <li key={metric.id}><strong>{metric.name}</strong> · {metric.unit || "unit not specified"} <span className="text-muted-foreground">— {metric.context}</span></li>)}</ul></div>)}</div>
-      </details>
-      <p className="mt-3 text-xs text-muted-foreground">Reference-only · {cardiovascularCatalog.reviewStatus.replaceAll("_", " ")} · not evidence of device availability or independent validation.</p>
-    </section>}
+    {domainId === "cardiovascular" && <CardiovascularHandbookReference />}
     <section className="mt-8 rounded-xl border border-border p-5" aria-label="Private domain evidence">
       <h2 className="text-xl font-semibold">Mission-scoped measurements</h2>
       {memberships.length > 1 && <label className="mt-3 block text-sm">Active mission <select className="ml-2 rounded-md border border-border bg-background p-2" value={selected} onChange={(event) => setSelected(event.target.value)}>{memberships.map((member) => <option key={`${member.missionId}|${member.crewMemberId}`} value={`${member.missionId}|${member.crewMemberId}`}>{member.missionId}</option>)}</select></label>}

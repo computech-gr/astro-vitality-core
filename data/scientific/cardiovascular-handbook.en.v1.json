@@ -1,0 +1,644 @@
+{
+  "schemaVersion": "1.0",
+  "locale": "en",
+  "sourceLocale": "el",
+  "sourceCatalog": "data/scientific/cardiovascular-handbook.catalog.v1.json",
+  "sourceSha256": "2b9fdb73ba09cc90c8e7a862a9a83b2db9f0f4d04c657b91f8d7db050eb88360",
+  "translationStatus": "machine_assisted_pending_independent_scientific_review",
+  "clinicalActivation": false,
+  "note": "English presentation layer. The Greek source catalog is unchanged and remains authoritative for traceability. Translation does not constitute scientific validation.",
+  "metrics": [
+    {
+      "id": "cv-001",
+      "biology_en": "Sinoatrial (sinus node) rate and autonomic regulation",
+      "context_en": "HR↑ may compensate for SV↓ or reflect exercise; HR↓ may be physiological at rest.",
+      "linkage_en": "Association with BP, SV, posture, ECG",
+      "reviewFlag": "Source term for 'sinus node rhythm/rate' rendered as 'sinoatrial (sinus node) rate'; confirm intended terminology."
+    },
+    {
+      "id": "cv-002",
+      "biology_en": "Baseline heart rate under standardized rest",
+      "context_en": "The trend is more important than a single value.",
+      "linkage_en": "Comparable time of day/posture"
+    },
+    {
+      "id": "cv-003",
+      "biology_en": "Response to workload/O₂ consumption",
+      "context_en": "Interpret relative to workload.",
+      "linkage_en": "VO₂peak, workload"
+    },
+    {
+      "id": "cv-004",
+      "biology_en": "Recovery after exertion and autonomic function",
+      "context_en": "Slow recovery is non-specific.",
+      "linkage_en": "Exertion protocol",
+      "unit_en": "bpm difference"
+    },
+    {
+      "id": "cv-005",
+      "biology_en": "Pressure during systole",
+      "context_en": "A low value on standing may accompany reduced preload.",
+      "linkage_en": "HR, symptoms, posture"
+    },
+    {
+      "id": "cv-006",
+      "biology_en": "Pressure during diastole",
+      "context_en": "Influenced by vascular tone.",
+      "linkage_en": "SBP, MAP"
+    },
+    {
+      "id": "cv-007",
+      "biology_en": "Approximate mean perfusion pressure",
+      "context_en": "MAP≈DBP+(SBP−DBP)/3 under appropriate conditions.",
+      "linkage_en": "Mark as estimated"
+    },
+    {
+      "id": "cv-008",
+      "biology_en": "SBP−DBP; influenced by SV and arterial elasticity",
+      "context_en": "Not an exclusive index of arterial stiffness.",
+      "linkage_en": "BP, PWV",
+      "reviewFlag": "Source term 'elasticity' rendered as 'arterial elasticity'; source does not specify arterial vs. general compliance."
+    },
+    {
+      "id": "cv-009",
+      "biology_en": "Volume of blood ejected per contraction",
+      "context_en": "May decrease with low preload.",
+      "linkage_en": "CO, HR, echo"
+    },
+    {
+      "id": "cv-010",
+      "biology_en": "Total output = HR×SV/1000",
+      "context_en": "May be maintained by HR↑ despite SV↓.",
+      "linkage_en": "HR, SV"
+    },
+    {
+      "id": "cv-011",
+      "biology_en": "CO adjusted for body surface area",
+      "context_en": "Depends on a correct BSA.",
+      "linkage_en": "CO, BSA"
+    },
+    {
+      "id": "cv-012",
+      "biology_en": "Resistance of the systemic circulation",
+      "context_en": "Influenced by vascular tone and flow.",
+      "linkage_en": "MAP, CVP, CO"
+    },
+    {
+      "id": "cv-013",
+      "biology_en": "Pressure near the right atrium",
+      "context_en": "A change in 0 g should not be simplistically interpreted as venous congestion.",
+      "linkage_en": "Posture, intrathoracic pressure"
+    },
+    {
+      "id": "cv-014",
+      "biology_en": "Liquid component of blood",
+      "context_en": "A decrease may limit preload.",
+      "linkage_en": "Hct, hydration, posture"
+    },
+    {
+      "id": "cv-015",
+      "biology_en": "Total circulating volume",
+      "context_en": "Important for orthostasis.",
+      "linkage_en": "Plasma volume, RBC mass",
+      "reviewFlag": "Source marker name reads 'Blood volum' (likely 'Blood volume'); name preserved as in source pending review."
+    },
+    {
+      "id": "cv-016",
+      "biology_en": "Blood flow toward the right heart",
+      "context_en": "In steady state it approximates CO.",
+      "linkage_en": "CVP, SV"
+    },
+    {
+      "id": "cv-017",
+      "biology_en": "Left ventricular end-diastolic volume",
+      "context_en": "Index of filling; depends on loading conditions.",
+      "linkage_en": "SV, EF"
+    },
+    {
+      "id": "cv-018",
+      "biology_en": "End-systolic volume",
+      "context_en": "Related to ejection/loading.",
+      "linkage_en": "EDV, EF"
+    },
+    {
+      "id": "cv-019",
+      "biology_en": "Myocardial mass",
+      "context_en": "Changes may reflect remodeling.",
+      "linkage_en": "Echo method"
+    },
+    {
+      "id": "cv-020",
+      "biology_en": "Right ventricular function",
+      "context_en": "Not replaced by LVEF.",
+      "linkage_en": "Echo protocol",
+      "unit_en": "method-dependent"
+    },
+    {
+      "id": "cv-021",
+      "biology_en": "(EDV−ESV)/EDV×100",
+      "context_en": "A normal EF does not exclude every form of cardiac dysfunction.",
+      "linkage_en": "LV volumes"
+    },
+    {
+      "id": "cv-022",
+      "biology_en": "Doppler early/late diastolic filling",
+      "context_en": "Influenced by age and loading.",
+      "linkage_en": "E/e′, echo"
+    },
+    {
+      "id": "cv-023",
+      "biology_en": "Estimate of filling pressures, with limitations",
+      "context_en": "Not an absolute pressure measurement.",
+      "linkage_en": "Echo quality"
+    },
+    {
+      "id": "cv-024",
+      "biology_en": "Recording of cardiac electrical potentials",
+      "context_en": "Required to document rhythm.",
+      "linkage_en": "Signal/lead/time"
+    },
+    {
+      "id": "cv-025",
+      "biology_en": "Interval between successive R waves",
+      "context_en": "Basis of HR and HRV.",
+      "linkage_en": "Artefact rejection"
+    },
+    {
+      "id": "cv-026",
+      "biology_en": "Standard deviation of NN intervals",
+      "context_en": "Depends on recording duration.",
+      "linkage_en": "5 min vs 24 h"
+    },
+    {
+      "id": "cv-027",
+      "biology_en": "Short-term NN variability",
+      "context_en": "Influenced by breathing/artefacts.",
+      "linkage_en": "Rest/posture"
+    },
+    {
+      "id": "cv-028",
+      "biology_en": "Spectral component of HRV",
+      "context_en": "Influenced by breathing.",
+      "linkage_en": "Breathing rate",
+      "unit_en": "ms² or normalized"
+    },
+    {
+      "id": "cv-029",
+      "biology_en": "Spectral component of HRV",
+      "context_en": "Not equivalent to pure sympathetic activity.",
+      "linkage_en": "Recording conditions",
+      "unit_en": "ms² or normalized"
+    },
+    {
+      "id": "cv-030",
+      "biology_en": "Atrioventricular conduction",
+      "context_en": "Changes require clinical interpretation.",
+      "linkage_en": "ECG"
+    },
+    {
+      "id": "cv-031",
+      "biology_en": "Ventricular depolarization",
+      "context_en": "Width depends on conduction.",
+      "linkage_en": "ECG"
+    },
+    {
+      "id": "cv-032",
+      "biology_en": "QT corrected for HR",
+      "context_en": "The correction depends on the formula and HR.",
+      "linkage_en": "Formula, drugs, electrolytes"
+    },
+    {
+      "id": "cv-033",
+      "biology_en": "Premature atrial contractions",
+      "context_en": "A single PAC is not sufficient for diagnosis.",
+      "linkage_en": "ECG duration",
+      "unit_en": "% or /day"
+    },
+    {
+      "id": "cv-034",
+      "biology_en": "Premature ventricular contractions",
+      "context_en": "Interpret by burden/symptoms.",
+      "linkage_en": "ECG duration",
+      "unit_en": "% or /day"
+    },
+    {
+      "id": "cv-035",
+      "biology_en": "Time spent in atrial fibrillation",
+      "context_en": "Requires ECG confirmation.",
+      "linkage_en": "ECG annotation"
+    },
+    {
+      "id": "cv-036",
+      "biology_en": "Tachyarrhythmia episode",
+      "context_en": "Must be flagged by a physician or a validated algorithm.",
+      "linkage_en": "ECG"
+    },
+    {
+      "id": "cv-037",
+      "biology_en": "ST-segment changes",
+      "context_en": "Non-specific without clinical context.",
+      "linkage_en": "ECG leads, symptoms"
+    },
+    {
+      "id": "cv-038",
+      "biology_en": "Change in pressure during stand/tilt",
+      "context_en": "A drop accompanied by symptoms increases concern.",
+      "linkage_en": "Protocol/time"
+    },
+    {
+      "id": "cv-039",
+      "biology_en": "Compensatory HR response",
+      "context_en": "Interpret together with BP and volume.",
+      "linkage_en": "Protocol/time"
+    },
+    {
+      "id": "cv-040",
+      "biology_en": "Tolerance time during controlled tilt",
+      "context_en": "The protocol affects comparability.",
+      "linkage_en": "Symptoms"
+    },
+    {
+      "id": "cv-041",
+      "biology_en": "Change in RR per change in pressure",
+      "context_en": "Depends on the estimation method.",
+      "linkage_en": "ECG/BP"
+    },
+    {
+      "id": "cv-042",
+      "biology_en": "Doppler cerebral blood flow velocity",
+      "context_en": "Not directly equivalent to total cerebral perfusion.",
+      "linkage_en": "Arterial diameter"
+    },
+    {
+      "id": "cv-043",
+      "biology_en": "Dizziness/nausea/presyncope",
+      "context_en": "Must be time-synchronized with measurements.",
+      "linkage_en": "BP, HR"
+    },
+    {
+      "id": "cv-044",
+      "biology_en": "Carotid intima-media thickness",
+      "context_en": "Does not by itself prove coronary artery disease.",
+      "linkage_en": "Age, method"
+    },
+    {
+      "id": "cv-045",
+      "biology_en": "Pressure-wave velocity/stiffness",
+      "context_en": "A higher value is often associated with stiffness.",
+      "linkage_en": "BP, segment"
+    },
+    {
+      "id": "cv-046",
+      "biology_en": "Endothelium-dependent vasodilation",
+      "context_en": "Highly protocol-dependent.",
+      "linkage_en": "Baseline diameter"
+    },
+    {
+      "id": "cv-047",
+      "biology_en": "Change in diameter per pressure",
+      "context_en": "Depends on BP and image quality.",
+      "linkage_en": "PWV",
+      "reviewFlag": "Source term 'image' rendered as 'image quality'; source may mean the imaging itself."
+    },
+    {
+      "id": "cv-048",
+      "biology_en": "Imaging burden of coronary calcium",
+      "context_en": "A CAC of zero does not exclude non-calcified plaque.",
+      "linkage_en": "CT, age"
+    },
+    {
+      "id": "cv-049",
+      "biology_en": "Plaques/stenoses on CT",
+      "context_en": "Specialized imaging, not a wearable.",
+      "linkage_en": "Radiology"
+    },
+    {
+      "id": "cv-050",
+      "biology_en": "Estimate of plaque extent",
+      "context_en": "Not equivalent to cIMT.",
+      "linkage_en": "Imaging modality"
+    },
+    {
+      "id": "cv-051",
+      "biology_en": "Outflow path from the cranium",
+      "context_en": "Reversed/stagnant flow does not prove a thrombus.",
+      "linkage_en": "Side, posture"
+    },
+    {
+      "id": "cv-052",
+      "biology_en": "Doppler peak velocity",
+      "context_en": "A lower velocity may accompany stasis.",
+      "linkage_en": "Side, angle"
+    },
+    {
+      "id": "cv-053",
+      "biology_en": "Categorization of venous flow",
+      "context_en": "Grade 3 stagnant, grade 4 predominantly reversed.",
+      "linkage_en": "NASA VTE definitions"
+    },
+    {
+      "id": "cv-054",
+      "biology_en": "Ultrasound compressibility",
+      "context_en": "Reduced compressibility may support thrombosis.",
+      "linkage_en": "Operator"
+    },
+    {
+      "id": "cv-055",
+      "biology_en": "Echogenic phenomenon of slow flow",
+      "context_en": "Not a standalone diagnosis of thrombus.",
+      "linkage_en": "Ultrasound"
+    },
+    {
+      "id": "cv-056",
+      "biology_en": "Visible thrombus",
+      "context_en": "Requires specialized clinical confirmation.",
+      "linkage_en": "Location/extent"
+    },
+    {
+      "id": "cv-057",
+      "biology_en": "Degradation of stabilized fibrin",
+      "context_en": "Non-specific; FEU≠DDU.",
+      "linkage_en": "Assay, clinical context",
+      "unit_en": "mg/L FEU or DDU"
+    },
+    {
+      "id": "cv-058",
+      "biology_en": "Platelet count",
+      "context_en": "Does not by itself describe coagulation.",
+      "linkage_en": "CBC"
+    },
+    {
+      "id": "cv-059",
+      "biology_en": "Substrate for fibrin formation",
+      "context_en": "Also increases with inflammation.",
+      "linkage_en": "CRP"
+    },
+    {
+      "id": "cv-060",
+      "biology_en": "Extrinsic coagulation pathway/anticoagulants",
+      "context_en": "Does not by itself predict VTE.",
+      "linkage_en": "Medication"
+    },
+    {
+      "id": "cv-061",
+      "biology_en": "Intrinsic coagulation pathway",
+      "context_en": "Not a standalone thrombosis test.",
+      "linkage_en": "Medication"
+    },
+    {
+      "id": "cv-062",
+      "biology_en": "Endothelial/hemostatic system",
+      "context_en": "Non-specific research marker.",
+      "linkage_en": "Assay"
+    },
+    {
+      "id": "cv-063",
+      "biology_en": "Maximum measured O₂ uptake",
+      "context_en": "A decrease may indicate deconditioning.",
+      "linkage_en": "Protocol, effort"
+    },
+    {
+      "id": "cv-064",
+      "biology_en": "Mechanical power during exercise",
+      "context_en": "Must accompany HR/VO₂.",
+      "linkage_en": "Device"
+    },
+    {
+      "id": "cv-065",
+      "biology_en": "Peripheral Hb saturation",
+      "context_en": "Errors from motion/perfusion.",
+      "linkage_en": "Signal quality"
+    },
+    {
+      "id": "cv-066",
+      "biology_en": "Partial pressure of O₂ in arterial blood",
+      "context_en": "Requires a blood sample.",
+      "linkage_en": "Blood gas"
+    },
+    {
+      "id": "cv-067",
+      "biology_en": "Breathing rate",
+      "context_en": "An increase is non-specific.",
+      "linkage_en": "Activity"
+    },
+    {
+      "id": "cv-068",
+      "biology_en": "End-tidal CO₂",
+      "context_en": "Depends on ventilation and sampling.",
+      "linkage_en": "Sensor"
+    },
+    {
+      "id": "cv-069",
+      "biology_en": "Metabolic state/effort",
+      "context_en": "Not specific for cardiac ischemia.",
+      "linkage_en": "Workload"
+    },
+    {
+      "id": "cv-070",
+      "biology_en": "Osmotic fluid balance",
+      "context_en": "Changes affect neuromuscular function.",
+      "linkage_en": "Hydration"
+    },
+    {
+      "id": "cv-071",
+      "biology_en": "Cardiomyocyte membrane potential",
+      "context_en": "Extreme changes are associated with arrhythmias.",
+      "linkage_en": "ECG, renal"
+    },
+    {
+      "id": "cv-072",
+      "biology_en": "Electrical stability",
+      "context_en": "Changes may coexist with rhythm disturbances.",
+      "linkage_en": "K, drugs"
+    },
+    {
+      "id": "cv-073",
+      "biology_en": "Contraction/electrical signaling",
+      "context_en": "Influenced by albumin and pH.",
+      "linkage_en": "Ionized Ca"
+    },
+    {
+      "id": "cv-074",
+      "biology_en": "ATP/metabolism",
+      "context_en": "Influenced by kidney, bone and diet.",
+      "linkage_en": "Bone module"
+    },
+    {
+      "id": "cv-075",
+      "biology_en": "Oxygen transport",
+      "context_en": "A change in concentration ≠ necessarily a change in RBC mass.",
+      "linkage_en": "Plasma volume"
+    },
+    {
+      "id": "cv-076",
+      "biology_en": "Red-cell volume fraction",
+      "context_en": "Influenced by plasma volume.",
+      "linkage_en": "Hb"
+    },
+    {
+      "id": "cv-077",
+      "biology_en": "RAAS and blood pressure",
+      "context_en": "Depends on posture, Na and medications.",
+      "linkage_en": "Aldosterone"
+    },
+    {
+      "id": "cv-078",
+      "biology_en": "Na retention/K excretion",
+      "context_en": "Depends on posture/time of day.",
+      "linkage_en": "Renin, K"
+    },
+    {
+      "id": "cv-079",
+      "biology_en": "Antidiuretic regulation",
+      "context_en": "Non-specific under stress.",
+      "linkage_en": "Hydration"
+    },
+    {
+      "id": "cv-080",
+      "biology_en": "Atrial stretch/natriuresis",
+      "context_en": "Not equivalent to BNP.",
+      "linkage_en": "Volume"
+    },
+    {
+      "id": "cv-081",
+      "biology_en": "Cardiac wall stress",
+      "context_en": "Influenced by kidney function/age.",
+      "linkage_en": "Echo"
+    },
+    {
+      "id": "cv-082",
+      "biology_en": "Myocardial injury",
+      "context_en": "Does not by itself prove myocardial infarction.",
+      "linkage_en": "Symptoms/ECG"
+    },
+    {
+      "id": "cv-083",
+      "biology_en": "Glycemic state",
+      "context_en": "Depends on fasting/stress.",
+      "linkage_en": "Insulin"
+    },
+    {
+      "id": "cv-084",
+      "biology_en": "Hormonal glycemic regulation",
+      "context_en": "Depends on meal/fasting.",
+      "linkage_en": "Glucose"
+    },
+    {
+      "id": "cv-085",
+      "biology_en": "Average glycemia over preceding months",
+      "context_en": "Influenced by RBC changes.",
+      "linkage_en": "Hb"
+    },
+    {
+      "id": "cv-086",
+      "biology_en": "Atherogenic cholesterol",
+      "context_en": "Chronic risk, not an acute event.",
+      "linkage_en": "ApoB"
+    },
+    {
+      "id": "cv-087",
+      "biology_en": "Lipoprotein profile",
+      "context_en": "Not a simple inverse causality.",
+      "linkage_en": "Lipids"
+    },
+    {
+      "id": "cv-088",
+      "biology_en": "Metabolic/lipid profile",
+      "context_en": "Influenced by meals.",
+      "linkage_en": "Fasting"
+    },
+    {
+      "id": "cv-089",
+      "biology_en": "Number of atherogenic particles",
+      "context_en": "Complementary clinical marker.",
+      "linkage_en": "LDL"
+    },
+    {
+      "id": "cv-090",
+      "biology_en": "Inherited atherogenic factor",
+      "context_en": "Units are not directly convertible.",
+      "linkage_en": "Assay",
+      "unit_en": "nmol/L or mg/dL"
+    },
+    {
+      "id": "cv-091",
+      "biology_en": "Systemic inflammation",
+      "context_en": "Not specific to the heart.",
+      "linkage_en": "Infection"
+    },
+    {
+      "id": "cv-092",
+      "biology_en": "Inflammatory cytokine",
+      "context_en": "Research marker; variable.",
+      "linkage_en": "CRP"
+    },
+    {
+      "id": "cv-093",
+      "biology_en": "Inflammatory cytokine",
+      "context_en": "Non-specific.",
+      "linkage_en": "Assay"
+    },
+    {
+      "id": "cv-094",
+      "biology_en": "Oxidative DNA damage",
+      "context_en": "Does not diagnose vascular disease.",
+      "linkage_en": "Radiation",
+      "reviewFlag": "Source marker name reads '8-OHd' (likely 8-OHdG, 8-hydroxy-2′-deoxyguanosine); name preserved pending review."
+    },
+    {
+      "id": "cv-095",
+      "biology_en": "Oxidative lipid damage",
+      "context_en": "Non-specific.",
+      "linkage_en": "Assay"
+    },
+    {
+      "id": "cv-096",
+      "biology_en": "Stress response/circadian rhythm",
+      "context_en": "Strong diurnal variation.",
+      "linkage_en": "Sleep/time"
+    }
+  ],
+  "relationshipExamples": [
+    {
+      "index": 0,
+      "combination_en": "HR↑ + SV↓ + CO≈stable",
+      "interpretationAndLimits_en": "Possible compensation for reduced stroke volume through tachycardia; assessment of conditions and method is required."
+    },
+    {
+      "index": 1,
+      "combination_en": "BP↓ standing + dizziness + HR↑",
+      "interpretationAndLimits_en": "Compatible with orthostatic intolerance; not a standalone diagnosis. Record the time after standing up."
+    },
+    {
+      "index": 2,
+      "combination_en": "HRV↓ + poor sleep + high workload",
+      "interpretationAndLimits_en": "Possible change in autonomic regulation; not a diagnosis of stress or arrhythmia."
+    },
+    {
+      "index": 3,
+      "combination_en": "PWV↑ + BP↑",
+      "interpretationAndLimits_en": "Increased blood pressure may affect PWV; do not automatically infer vascular calcification."
+    },
+    {
+      "index": 4,
+      "combination_en": "Normal SpO₂ + Hb↓",
+      "interpretationAndLimits_en": "Blood O₂ content may be reduced despite normal saturation."
+    },
+    {
+      "index": 5,
+      "combination_en": "CTX↑ + PWV↑",
+      "interpretationAndLimits_en": "Two parallel findings; they do not prove transfer of bone calcium to the vessels."
+    },
+    {
+      "index": 6,
+      "combination_en": "ECG irregular + K⁺ out of range",
+      "interpretationAndLimits_en": "Requires verification of ECG quality, electrolyte assessment and clinical review.",
+      "reviewFlag": "'Out of range' references limits that the handbook does not define; no threshold is implied or implemented."
+    },
+    {
+      "index": 7,
+      "combination_en": "Slow venous flow + D-dimer↑",
+      "interpretationAndLimits_en": "Increases the need for medical assessment depending on context; does not confirm a thrombus."
+    }
+  ]
+}
