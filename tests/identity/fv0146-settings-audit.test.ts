@@ -52,7 +52,8 @@ describe("FV-01.4.6 Mission Audit Log", () => {
   });
   it("viewer is read-only (no edit, delete or direct table access)", () => {
     const ui = readFileSync("src/components/mission-audit-log.tsx", "utf8");
-    expect(ui).not.toMatch(/delete|update|insert|\.from\(/i);
+    expect(ui).not.toMatch(/\.(delete|update|insert|upsert)\(|\.from\(|rpc\(/);
+    expect(ui).toContain("loadMissionAuditLog");
   });
   it("staged reader is operator-only, stable and grants no table access", () => {
     const sql = readFileSync("supabase/pending/20261016000000_fv0146_mission_audit_viewer.sql", "utf8");
