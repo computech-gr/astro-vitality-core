@@ -33,6 +33,8 @@ import { Route as MissionSimulationRouteImport } from './routes/mission.simulati
 import { Route as MissionSubmissionRouteImport } from './routes/mission.submission'
 import { Route as MissionValidationRouteImport } from './routes/mission.validation'
 import { Route as ProjectGuideRouteImport } from './routes/project.guide'
+import { Route as TechnologyIndexRouteImport } from './routes/technology.index'
+import { Route as TechnologyTopicRouteImport } from './routes/technology.$topic'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const IndexRoute = IndexRouteImport.update({
@@ -157,6 +159,16 @@ const ProjectGuideRoute = ProjectGuideRouteImport.update({
   path: '/project/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TechnologyIndexRoute = TechnologyIndexRouteImport.update({
+  id: '/technology/',
+  path: '/technology/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TechnologyTopicRoute = TechnologyTopicRouteImport.update({
+  id: '/technology/$topic',
+  path: '/technology/$topic',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -188,6 +200,8 @@ export interface FileRoutesByFullPath {
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
   '/project/guide': typeof ProjectGuideRoute
+  '/technology/$topic': typeof TechnologyTopicRoute
+  '/technology/': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesByTo {
@@ -215,6 +229,8 @@ export interface FileRoutesByTo {
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
   '/project/guide': typeof ProjectGuideRoute
+  '/technology/$topic': typeof TechnologyTopicRoute
+  '/technology': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesById {
@@ -243,6 +259,8 @@ export interface FileRoutesById {
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
   '/project/guide': typeof ProjectGuideRoute
+  '/technology/$topic': typeof TechnologyTopicRoute
+  '/technology/': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRouteTypes {
@@ -272,6 +290,8 @@ export interface FileRouteTypes {
     | '/mission/submission'
     | '/mission/validation'
     | '/project/guide'
+    | '/technology/$topic'
+    | '/technology/'
     | '/.lovable/oauth/consent'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -299,6 +319,8 @@ export interface FileRouteTypes {
     | '/mission/submission'
     | '/mission/validation'
     | '/project/guide'
+    | '/technology/$topic'
+    | '/technology'
     | '/.lovable/oauth/consent'
   id:
     | '__root__'
@@ -326,6 +348,8 @@ export interface FileRouteTypes {
     | '/mission/submission'
     | '/mission/validation'
     | '/project/guide'
+    | '/technology/$topic'
+    | '/technology/'
     | '/.lovable/oauth/consent'
   fileRoutesById: FileRoutesById
 }
@@ -354,6 +378,8 @@ export interface RootRouteChildren {
   MissionSubmissionRoute: typeof MissionSubmissionRoute
   MissionValidationRoute: typeof MissionValidationRoute
   ProjectGuideRoute: typeof ProjectGuideRoute
+  TechnologyTopicRoute: typeof TechnologyTopicRoute
+  TechnologyIndexRoute: typeof TechnologyIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
@@ -527,6 +553,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/technology/': {
+      id: '/technology/'
+      path: '/technology'
+      fullPath: '/technology/'
+      preLoaderRoute: typeof TechnologyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/technology/$topic': {
+      id: '/technology/$topic'
+      path: '/technology/$topic'
+      fullPath: '/technology/$topic'
+      preLoaderRoute: typeof TechnologyTopicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -563,6 +603,8 @@ const rootRouteChildren: RootRouteChildren = {
   MissionSubmissionRoute: MissionSubmissionRoute,
   MissionValidationRoute: MissionValidationRoute,
   ProjectGuideRoute: ProjectGuideRoute,
+  TechnologyTopicRoute: TechnologyTopicRoute,
+  TechnologyIndexRoute: TechnologyIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, CircleAlert, ExternalLink, Info, ServerCog } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +46,7 @@ function SmartLink({ link, className }: { link: TopicLink; className?: string })
   return <a href={link.href} className={className}>{link.label}<ArrowRight aria-hidden="true" className="size-3.5" /></a>;
 }
 
-function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section aria-labelledby={id} className="grid gap-6 border-t border-border py-12 lg:grid-cols-[0.3fr_0.7fr]">
       <h2 id={id} className="font-display text-2xl font-semibold sm:text-3xl">{title}</h2>
