@@ -77,7 +77,10 @@ export function localizedCardiovascularMetrics(): LocalizedCardiovascularMetric[
       id: metric.id,
       name: metric.name,
       group: metric.group,
-      unit: metric.unit,
+      unit:
+        safe((t as { unit_en?: string } | undefined)?.unit_en ?? metric.unit) ??
+        "unit translation review required",
+      sourceUnit: metric.unit,
       activation: metric.activation,
       reviewStatus: metric.reviewStatus,
       biology: safe(t?.biology_en),
