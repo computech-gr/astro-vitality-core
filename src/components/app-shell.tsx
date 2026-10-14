@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { TopicCardGrid } from "@/components/knowledge/technology-index";
 import astronautEarthrise from "@/assets/astronaut-earthrise.jpg";
 import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -348,15 +349,15 @@ const flow = [
   ["07", "Learn", "Preserve provenance and improve mission knowledge over time."],
 ];
 
-const capabilities: ReadonlyArray<readonly [LucideIcon, string, string]> = [
-  [Activity, "Monitoring", "A unified view across diverse mission-health signals and their provenance."],
-  [Fingerprint, "Personal baseline", "Contextual interpretation centered on individual change—not generic norms alone."],
-  [CircleGauge, "Trend & pattern detection", "Longitudinal patterns designed to become visible before isolated readings dominate."],
-  [ShieldCheck, "Risk assessment", "Decision support that communicates uncertainty without making a diagnosis."],
-  [BrainCircuit, "Explainable intelligence", "Evidence paths designed to keep humans informed and in control."],
-  [HeartPulse, "Action guidance", "Protocol-aware guidance intended to support, never replace, qualified judgment."],
-  [CloudOff, "Offline Mission Mode", "Local-first continuity designed for delayed, intermittent or absent connectivity."],
-  [RadioTower, "Device-agnostic integration", "An extensible adapter direction for wearables, laboratory systems and habitat telemetry."],
+const capabilities: ReadonlyArray<readonly [LucideIcon, string, string, string, string]> = [
+  [Activity, "Monitoring", "A unified view across physiological, environmental and self-reported signals, each shown with its source, freshness and quality — LIVE, STALE or DISCONNECTED is always visible.", "/mission/live", "Open Live Monitoring"],
+  [Fingerprint, "Personal baseline", "Each crew member is compared with their own versioned baseline, kept separate from clinical reference intervals and mission limits.", "/project/guide#personal-baselines", "Learn about baselines"],
+  [CircleGauge, "Trend & pattern detection", "Governed trend policies look across days, not single readings, and report confidence, confounders and missing context.", "/mission/intelligence", "Open Health Intelligence"],
+  [ShieldCheck, "Risk assessment", "Decision support that states uncertainty openly. Research-only relationships can never become operational alerts or a diagnosis.", "/project/guide#scientific-safety-boundaries", "Read the safety boundaries"],
+  [BrainCircuit, "Explainable intelligence", "Every finding carries its evidence path so crew and ground teams can see why it appeared — and challenge it.", "/mission/alerts", "Open Explainable Alerts"],
+  [HeartPulse, "Action guidance", "Versioned protocol guidance such as repeat measurement or workload review supports, never replaces, qualified judgment.", "/mission/guidance", "Open Action Guidance"],
+  [CloudOff, "Offline Mission Mode", "Encrypted local storage and a store-and-forward queue keep the health loop running when Earth is out of contact.", "/technology/offline-first-architecture", "Learn how offline works"],
+  [RadioTower, "Device-agnostic integration", "One adapter contract for wearables, laboratory systems and habitat telemetry; unknown metrics are rejected, not guessed.", "/technology/device-integration", "Learn about integration"],
 ];
 
 export function AppShell() {
@@ -397,7 +398,7 @@ export function AppShell() {
           <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
             <p className="section-kicker">Mission capabilities</p><h2 id="capabilities-title" className="section-title max-w-3xl">Intelligence designed around the human.</h2>
             <div className="mt-12 grid border-l border-t border-border sm:grid-cols-2 lg:grid-cols-4">
-              {capabilities.map(([Icon, title, copy]) => <article key={title} className="min-h-64 border-b border-r border-border p-6 transition-colors hover:bg-surface"><Icon aria-hidden="true" className="size-6 text-primary" /><h3 className="mt-10 font-display text-xl font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{copy}</p></article>)}
+              {capabilities.map(([Icon, title, copy, href, linkLabel]) => <article key={title} className="group flex min-h-72 flex-col border-b border-r border-border p-6 transition-colors hover:bg-surface"><Icon aria-hidden="true" className="size-6 text-primary" /><h3 className="mt-10 font-display text-xl font-semibold">{title}</h3><p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">{copy}</p><a href={href} className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary hover:underline">{linkLabel}<ArrowRight aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-1" /></a></article>)}
             </div>
             <p className="mt-6 max-w-3xl border-l-2 border-signal pl-5 text-sm leading-6 text-muted-foreground">The Mitochondria is conceived as human decision support—not an autonomous doctor. It does not diagnose and does not replace qualified medical judgment.</p>
           </div>
@@ -425,6 +426,17 @@ export function AppShell() {
           </div>
         </section>
 
+        <section id="technology-topics" aria-labelledby="topics-title" className="border-t border-border py-20 lg:py-28">
+          <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
+            <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+              <div><p className="section-kicker">Technology</p><h2 id="topics-title" className="section-title">How the platform is built.</h2></div>
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground lg:justify-self-end">Eight in-depth topics explain each part of the architecture, why it matters beyond low Earth orbit, and exactly what is implemented today.</p>
+            </div>
+            <div className="mt-12"><TopicCardGrid /></div>
+            <a href="/technology" className="mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary hover:underline">View all technology topics <ArrowRight aria-hidden="true" className="size-4" /></a>
+          </div>
+        </section>
+
         <section id="open-source" aria-labelledby="open-title" className="border-y border-border bg-surface py-20 lg:py-28">
           <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
@@ -446,7 +458,7 @@ export function AppShell() {
 
 function Footer() {
   const columns = [
-    ["Explore", [["Mission", "#mission"], ["Science", "#science"], ["Platform", "#platform"], ["Technology", "#technology"]]],
+    ["Explore", [["Mission", "#mission"], ["Science", "#science"], ["Platform", "#platform"], ["Technology", "/technology"]]],
     ["Project", [["Open Source", "#open-source"], ["Roadmap", "/project/guide#roadmap"], ["Resources & References", "/project/guide#resources-references"], ["Team", "/project/guide#team"]]],
     ["External", [["NASA Space Apps 2026", NASA_URL], ["GitHub", GITHUB_URL]]],
   ] as const;
