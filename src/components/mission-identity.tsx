@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { activateFirstMission, loadFirstOperatorBootstrapStatus, type FirstOperatorBootstrapStatus } from "@/infrastructure/first-operator-activation";
+import { loadInviteCrewOptions, type MissionOperationsCrew } from "@/infrastructure/mission-operations";
 import { loadMissionAuthReadiness, type MissionAuthReadiness } from "@/infrastructure/mission-auth-readiness";
 import {
   acceptMissionInvite,
