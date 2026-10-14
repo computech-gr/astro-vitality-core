@@ -26,23 +26,23 @@ export function MissionAuditLog({ missionId }: { missionId: string }) {
   const [applied, setApplied] = useState<MissionAuditFilters>(EMPTY_AUDIT_FILTERS);
   const [entries, setEntries] = useState<MissionAuditEntry[]>([]);
   const [actions, setActions] = useState<string[]>([]);
-  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [view, setView] = useState<ViewState>("loading");
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const request = useRef(0);
 
-  const load = useCallback(async (f: MissionAuditFilters, cursor?: MissionAuditEntry) => {
+  const load = useCallback(async (f: MissionAuditFilters, cursor?: string | null) => {
     const range = auditDateRange(f);
     if (range.error) { setError(range.error); return; }
     const id = ++request.current;
     if (cursor) setLoadingMore(true); else { setView("loading"); setError(""); }
     try {
-      const page = await loadMissionAuditLog({ missionId, from: range.from, to: range.to, action: f.action, outcome: f.outcome, search: f.search, limit: AUDIT_PAGE_SIZE, before: cursor ? { at: cursor.occurred_at, id: cursor.id } : null });
+      const page = await loadMissionAuditLog({ missionId, from: range.from, to: range.to, action: f.action, outcome: f.outcome, search: f.search, limit: AUDIT_PAGE_SIZE, cursor: cursor ?? null });
       if (id !== request.current) return; // ignore stale responses after mission/filter switches
       setEntries((prev) => (cursor ? [...prev, ...page.entries] : page.entries));
-      setHasMore(page.has_more);
+      setNextCursor(page.has_more ? page.next_cursor : null);
       if (page.actions.length) setActions(page.actions);
       setView("ready");
     } catch (cause) {
@@ -90,15 +90,15 @@ export function MissionAuditLog({ missionId }: { missionId: string }) {
           {view === "ready" && !entries.length ? <p className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">{JSON.stringify(applied) === JSON.stringify(EMPTY_AUDIT_FILTERS) ? "No audit records exist for this mission." : "No audit records match these filters."}</p> : null}
           {view === "ready" && entries.length ? (
             <ol className="space-y-2" aria-label="Audit records, newest first">
-              {entries.map((entry) => (
-                <li key={entry.id} className="rounded-md border border-border">
-                  <button type="button" className="flex w-full flex-wrap items-center justify-between gap-2 p-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" aria-expanded={open === entry.id} aria-controls={`audit-${entry.id}`} onClick={() => setOpen(open === entry.id ? null : entry.id)}>
+              {entries.map((entry, index) => (
+                <li key={entry.ref || `row-${index}`} className="rounded-md border border-border">
+                  <button type="button" className="flex w-full flex-wrap items-center justify-between gap-2 p-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" aria-expanded={open === (entry.ref || `row-${index}`)} aria-controls={`audit-${entry.ref || index}`} onClick={() => setOpen(open === (entry.ref || `row-${index}`) ? null : (entry.ref || `row-${index}`))}>
                     <span className="font-mono text-xs text-muted-foreground">{formatAuditTimestampUtc(entry.occurred_at)}</span>
                     <span className="flex-1 text-sm font-medium">{auditActionLabel(entry.action)}</span>
                     <Badge variant={entry.outcome === "refused" ? "destructive" : "outline"}>{entry.outcome === "refused" ? "Refused" : "Success"}</Badge>
                   </button>
-                  {open === entry.id ? (
-                    <dl id={`audit-${entry.id}`} className="grid gap-2 border-t border-border p-3 text-sm sm:grid-cols-2">
+                  {open === (entry.ref || `row-${index}`) ? (
+                    <dl id={`audit-${entry.ref || index}`} className="grid gap-2 border-t border-border p-3 text-sm sm:grid-cols-2">
                       <div><dt className="text-xs uppercase tracking-wider text-muted-foreground">Actor</dt><dd>{entry.actor === "self" ? "You" : entry.actor}{entry.actor_role ? ` · ${entry.actor_role.replaceAll("_", " ")}` : ""}</dd></div>
                       <div><dt className="text-xs uppercase tracking-wider text-muted-foreground">Target</dt><dd>{entry.target_type.replaceAll("_", " ") || "—"}</dd></div>
                       {Object.entries(entry.details).map(([k, v]) => <div key={k}><dt className="text-xs uppercase tracking-wider text-muted-foreground">{k.replaceAll("_", " ")}</dt><dd>{String(v)}</dd></div>)}
@@ -109,7 +109,7 @@ export function MissionAuditLog({ missionId }: { missionId: string }) {
             </ol>
           ) : null}
         </div>
-        {view === "ready" && hasMore ? <Button variant="outline" disabled={loadingMore} onClick={() => void load(applied, entries[entries.length - 1])}>{loadingMore ? <Loader2 className="animate-spin" /> : null} Load older records</Button> : null}
+        {view === "ready" && nextCursor ? <Button variant="outline" disabled={loadingMore} onClick={() => void load(applied, nextCursor)}>{loadingMore ? <Loader2 className="animate-spin" /> : null} Load older records</Button> : null}
       </CardContent>
     </Card>
   );
