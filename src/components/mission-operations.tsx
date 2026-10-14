@@ -18,7 +18,6 @@ import {
   createMissionCrewMember,
   createMissionOperation,
   loadMissionOperationsWorkspace,
-  missionTransitionOptions,
   pendingApprovalsFor,
   setMissionMembershipActive,
   updateMissionCrewMember,
@@ -28,6 +27,8 @@ import {
   type MissionStatus,
 } from "@/infrastructure/mission-operations";
 import { CrewDisplayNameEditor } from "@/components/crew-display-name-editor";
+import { MissionAuditLog } from "@/components/mission-audit-log";
+import { MissionSettingsPanel } from "@/components/mission-settings-panel";
 
 function roleLabel(role: MissionRole) {
   return role.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -196,14 +197,9 @@ export function MissionOperations() {
 
             {workspace ? (
               <>
+                <nav aria-label="Mission Operations sections" className="mt-8 flex flex-wrap gap-3 text-sm"><a className="rounded-md border border-border px-3 py-2 hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" href="#mission-settings">Mission Settings</a><a className="rounded-md border border-border px-3 py-2 hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" href="#mission-audit-log">Mission Audit Log</a></nav>
                 <section className="mt-8 grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-                  <Card>
-                    <CardHeader><CardTitle>Mission lifecycle</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
-                      <div><Label>Status</Label><Select value={workspace.mission.status} onValueChange={(value) => void run(async () => { await updateMissionOperation({ missionId, status: value as MissionStatus }); await refreshWorkspace(); }, `Mission status changed to ${value}.`)}><SelectTrigger className="mt-2"><SelectValue /></SelectTrigger><SelectContent>{missionTransitionOptions(workspace.mission.status).map((status) => <SelectItem key={status} value={status}>{status.toUpperCase()}</SelectItem>)}</SelectContent></Select></div>
-                      <p className="text-xs leading-5 text-muted-foreground">Lifecycle is forward-only: planning → active → completed/aborted. Terminal missions cannot be silently reopened.</p>
-                    </CardContent>
-                  </Card>
+                  <MissionSettingsPanel mission={workspace.mission} disabled={busy} onSaved={() => refreshWorkspace(missionId)} />
 
                   <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="text-primary" /> Add crew member</CardTitle></CardHeader>
@@ -253,6 +249,7 @@ export function MissionOperations() {
                     <CardContent>{workspace.memberships.length ? <div className="space-y-3">{workspace.memberships.map((membership) => <div key={membership.id} className="rounded-md border border-border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><strong>{roleLabel(membership.role)}</strong><p className="mt-1 font-mono text-xs text-muted-foreground">user {membership.user_id.slice(0,8)}…{membership.crew_member_id ? ` · crew ${membership.crew_member_id}` : ""}</p></div><Badge variant={membership.active ? "default" : "outline"}>{membership.active ? "ACTIVE" : "INACTIVE"}</Badge></div><div className="mt-3"><Button size="sm" variant="outline" disabled={busy || (membership.active && !canDeactivateMembership(membership, workspace.memberships))} onClick={() => void run(async () => { await setMissionMembershipActive({ missionId, membershipId: membership.id, active: !membership.active }); await refreshIdentity(); await refreshWorkspace(); }, membership.active ? "Membership deactivated." : "Membership reactivated.")}>{membership.active ? "Deactivate" : "Reactivate"}</Button>{membership.active && membership.role === "mission_operator" && !canDeactivateMembership(membership, workspace.memberships) ? <p className="mt-2 text-xs text-muted-foreground">The last active mission operator cannot be deactivated.</p> : null}</div></div>)}</div> : <p className="text-sm text-muted-foreground">No mission memberships are visible.</p>}</CardContent>
                   </Card>
                 </section>
+                <section className="mt-8"><MissionAuditLog missionId={missionId} /></section>
               </>
             ) : null}
           </>
