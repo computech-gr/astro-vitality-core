@@ -5,8 +5,10 @@ import { orderConsoleMemberships } from "../../src/domain/mission-access/role-co
 import ledger from "../../data/validation/p34-real-device-acceptance.v1.json";
 import type { MissionMembershipContext } from "../../src/infrastructure/mission-identity";
 
-const routeFile = (path: string) => `src/routes/${path.replace(/^\//, "").replaceAll("/", ".")}.tsx`;
-const has = (role: Parameters<typeof workflowsForRole>[0], id: string) => workflowsForRole(role).some((w) => w.id === id);
+const routeFile = (path: string) =>
+  `src/routes/${path.replace(/^\//, "").replaceAll("/", ".")}.tsx`;
+const has = (role: Parameters<typeof workflowsForRole>[0], id: string) =>
+  workflowsForRole(role).some((w) => w.id === id);
 
 describe("FV-01.4.5 role-aware mission workspace", () => {
   it("shows Ground & Research only to Ground Medical and Researcher", () => {
@@ -17,11 +19,15 @@ describe("FV-01.4.5 role-aware mission workspace", () => {
   });
   it("keeps operator-only crew administration", () => {
     expect(has("mission_operator", "operations")).toBe(true);
-    for (const r of ["crew_self", "ground_medical", "researcher"] as const) expect(has(r, "operations")).toBe(false);
+    for (const r of ["crew_self", "ground_medical", "researcher"] as const)
+      expect(has(r, "operations")).toBe(false);
   });
   it("multi-role user regains access when selecting an authorized membership", () => {
     const base = { missionId: "m1", missionCode: "M1" };
-    const memberships: MissionMembershipContext[] = [{ ...base, role: "mission_operator" }, { ...base, role: "researcher" }];
+    const memberships: MissionMembershipContext[] = [
+      { ...base, role: "mission_operator" },
+      { ...base, role: "researcher" },
+    ];
     expect(workflowsForRole(memberships[0]!.role).some((w) => w.id === "ground")).toBe(false);
     expect(workflowsForRole(memberships[1]!.role).some((w) => w.id === "ground")).toBe(true);
     expect(orderConsoleMemberships(memberships).map((m) => m.role)).toEqual(["researcher"]);
