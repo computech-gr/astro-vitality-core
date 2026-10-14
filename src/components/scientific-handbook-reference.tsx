@@ -28,7 +28,7 @@ function LocaleToggle({
   );
 }
 
-function Flag({ text }: { text?: string }) {
+function Flag({ text }: { text?: string | undefined }) {
   return text ? <p className="mt-1 text-xs text-muted-foreground">Review note: {text}</p> : null;
 }
 
