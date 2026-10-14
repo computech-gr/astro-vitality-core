@@ -29,6 +29,13 @@
       "when": 1791878538447,
       "tag": "0003_fv01_security_privacy_remediation",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791962320527,
+      "tag": "0004_fv0143_multirole_hardening",
+      "breakpoints": true
     }
   ]
 }

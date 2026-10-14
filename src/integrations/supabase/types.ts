@@ -289,6 +289,9 @@ export type Database = {
       mission_invites: {
         Row: {
           active: boolean
+          approval_state: string
+          approved_at: string | null
+          approved_by: string | null
           claimed_at: string | null
           claimed_by: string | null
           code_hash: string
@@ -297,11 +300,18 @@ export type Database = {
           crew_member_id: string | null
           expires_at: string
           id: string
+          intended_recipient_email: string | null
+          intended_recipient_user_id: string | null
           mission_id: string
+          recipient_bound_at: string | null
+          recipient_bound_by: string | null
           role: string
         }
         Insert: {
           active?: boolean
+          approval_state?: string
+          approved_at?: string | null
+          approved_by?: string | null
           claimed_at?: string | null
           claimed_by?: string | null
           code_hash: string
@@ -310,11 +320,18 @@ export type Database = {
           crew_member_id?: string | null
           expires_at: string
           id?: string
+          intended_recipient_email?: string | null
+          intended_recipient_user_id?: string | null
           mission_id: string
+          recipient_bound_at?: string | null
+          recipient_bound_by?: string | null
           role: string
         }
         Update: {
           active?: boolean
+          approval_state?: string
+          approved_at?: string | null
+          approved_by?: string | null
           claimed_at?: string | null
           claimed_by?: string | null
           code_hash?: string
@@ -323,7 +340,11 @@ export type Database = {
           crew_member_id?: string | null
           expires_at?: string
           id?: string
+          intended_recipient_email?: string | null
+          intended_recipient_user_id?: string | null
           mission_id?: string
+          recipient_bound_at?: string | null
+          recipient_bound_by?: string | null
           role?: string
         }
         Relationships: [
@@ -485,12 +506,20 @@ export type Database = {
     }
     Functions: {
       accept_mission_invite: { Args: { p_code: string }; Returns: Json }
+      approve_mission_invite: {
+        Args: { p_expected_recipient_email: string; p_invite_id: string }
+        Returns: Json
+      }
       assign_existing_crew_to_mission: {
         Args: {
           p_crew_member_id: string
           p_source_mission_id: string
           p_target_mission_id: string
         }
+        Returns: Json
+      }
+      bind_mission_invite_recipient: {
+        Args: { p_invite_id: string; p_recipient_email: string }
         Returns: Json
       }
       bootstrap_first_mission: {
@@ -550,6 +579,19 @@ export type Database = {
       ingest_mission_event: {
         Args: { p_event: Json; p_idempotency_key: string }
         Returns: Json
+      }
+      mission_role_conflict: {
+        Args: {
+          p_exclude?: string
+          p_mission_id: string
+          p_role: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      mission_roles_compatible: {
+        Args: { p_a: string; p_b: string }
+        Returns: boolean
       }
       set_mission_membership_active: {
         Args: {
