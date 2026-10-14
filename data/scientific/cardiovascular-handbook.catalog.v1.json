@@ -1,0 +1,1014 @@
+{
+  "schemaVersion": "1.0",
+  "sourceDocument": "NASA_Cardiovascular_Handbook_Expanded_Biology_GR (2).docx",
+  "sourceSha256": "2b9fdb73ba09cc90c8e7a862a9a83b2db9f0f4d04c657b91f8d7db050eb88360",
+  "sourceAuthor": "Nikolas (team scientific contributor)",
+  "reviewStatus": "pending_independent_review",
+  "clinicalActivation": false,
+  "metricCount": 96,
+  "metrics": [
+    {
+      "id": "cv-001",
+      "name": "HR",
+      "unit": "bpm",
+      "biology": "Ρυθμός φλεβοκόμβου και αυτόνομης ρύθμισης",
+      "context": "HR↑ μπορεί να αντιρροπεί SV↓ ή άσκηση· HR↓ μπορεί να είναι φυσιολογικό σε ηρεμία. · Σύνδεση: Συσχέτιση με BP, SV, στάση, ECG",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-002",
+      "name": "Resting HR",
+      "unit": "bpm",
+      "biology": "Βασική καρδιακή συχνότητα σε τυποποιημένη ηρεμία",
+      "context": "Τάση σημαντικότερη από μεμονωμένη τιμή. · Σύνδεση: Συγκρίσιμη ώρα/στάση",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-003",
+      "name": "Exercise HR",
+      "unit": "bpm",
+      "biology": "Απόκριση σε έργο/κατανάλωση O₂",
+      "context": "Ερμηνεία ως προς workload. · Σύνδεση: VO₂peak, workload",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-004",
+      "name": "HR recovery",
+      "unit": "bpm διαφορά",
+      "biology": "Αποκατάσταση μετά κόπωση και αυτόνομη λειτουργία",
+      "context": "Αργή αποκατάσταση μη ειδική. · Σύνδεση: Πρωτόκολλο κόπωσης",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-005",
+      "name": "SBP",
+      "unit": "mmHg",
+      "biology": "Πίεση κατά τη συστολή",
+      "context": "Χαμηλή σε ορθοστασία μπορεί να συνοδεύει μειωμένο preload. · Σύνδεση: HR, συμπτώματα, στάση",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-006",
+      "name": "DBP",
+      "unit": "mmHg",
+      "biology": "Πίεση κατά τη διαστολή",
+      "context": "Επηρεάζεται από αγγειακό τόνο. · Σύνδεση: SBP, MAP",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-007",
+      "name": "MAP",
+      "unit": "mmHg",
+      "biology": "Προσεγγιστική μέση πίεση διάχυσης",
+      "context": "MAP≈DBP+(SBP−DBP)/3 σε κατάλληλες συνθήκες. · Σύνδεση: Επισημάνετε estimated",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-008",
+      "name": "Pulse pressure",
+      "unit": "mmHg",
+      "biology": "SBP−DBP· επηρεάζεται από SV και ελαστικότητα",
+      "context": "Δεν είναι αποκλειστικός δείκτης αρτηριακής δυσκαμψίας. · Σύνδεση: BP, PWV",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-009",
+      "name": "Stroke volume",
+      "unit": "mL/beat",
+      "biology": "Όγκος αίματος ανά συστολή",
+      "context": "Μπορεί να πέφτει με χαμηλό preload. · Σύνδεση: CO, HR, echo",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-010",
+      "name": "Cardiac output",
+      "unit": "L/min",
+      "biology": "Συνολική παροχή = HR×SV/1000",
+      "context": "Μπορεί να διατηρείται με HR↑ παρά SV↓. · Σύνδεση: HR, SV",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-011",
+      "name": "Cardiac index",
+      "unit": "L/min/m²",
+      "biology": "CO διορθωμένο για επιφάνεια σώματος",
+      "context": "Εξαρτάται από σωστό BSA. · Σύνδεση: CO, BSA",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-012",
+      "name": "SVR",
+      "unit": "dyn·s/cm⁵",
+      "biology": "Αντίσταση συστηματικής κυκλοφορίας",
+      "context": "Επηρεάζεται από αγγειακό τόνο και ροή. · Σύνδεση: MAP, CVP, CO",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-013",
+      "name": "CVP",
+      "unit": "mmHg",
+      "biology": "Πίεση κοντά στον δεξιό κόλπο",
+      "context": "Η μεταβολή σε 0g δεν ερμηνεύεται απλοϊκά ως φλεβική συμφόρηση. · Σύνδεση: Στάση, ενδοθωρακική πίεση",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-014",
+      "name": "Plasma volume",
+      "unit": "mL / % change",
+      "biology": "Υγρό μέρος αίματος",
+      "context": "Μείωση μπορεί να περιορίσει preload. · Σύνδεση: Hct, hydration, posture",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-015",
+      "name": "Blood volum",
+      "unit": "mL",
+      "biology": "Συνολικός κυκλοφορών όγκος",
+      "context": "Σημαντικό για ορθοστασία. · Σύνδεση: Plasma volume, RBC mass",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-016",
+      "name": "Venous return",
+      "unit": "L/min",
+      "biology": "Ροή αίματος προς δεξιά καρδιά",
+      "context": "Στη σταθερή κατάσταση προσεγγίζει CO. · Σύνδεση: CVP, SV",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-017",
+      "name": "LV EDV",
+      "unit": "mL",
+      "biology": "Τελικός διαστολικός όγκος αριστερής κοιλίας",
+      "context": "Δείκτης πλήρωσης, εξαρτάται από συνθήκες. · Σύνδεση: SV, EF",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-018",
+      "name": "LV ESV",
+      "unit": "mL",
+      "biology": "Τελικός συστολικός όγκος",
+      "context": "Σχετίζεται με εξώθηση/φόρτιση. · Σύνδεση: EDV, EF",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-019",
+      "name": "LV mass",
+      "unit": "g",
+      "biology": "Μυοκαρδιακή μάζα",
+      "context": "Μεταβολές μπορούν να αντανακλούν remodeling. · Σύνδεση: Echo method",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-020",
+      "name": "RV function",
+      "unit": "μεθοδοεξαρτώμενο",
+      "biology": "Λειτουργία δεξιάς κοιλίας",
+      "context": "Δεν αντικαθίσταται από LVEF. · Σύνδεση: Echo protocol",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-021",
+      "name": "LVEF",
+      "unit": "%",
+      "biology": "(EDV−ESV)/EDV×100",
+      "context": "Φυσιολογική EF δεν αποκλείει κάθε καρδιακή δυσλειτουργία. · Σύνδεση: LV volumes",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-022",
+      "name": "E/A",
+      "unit": "ratio",
+      "biology": "Doppler πρώιμης/όψιμης διαστολικής πλήρωσης",
+      "context": "Επηρεάζεται από ηλικία, φόρτιση. · Σύνδεση: E/e′, echo",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-023",
+      "name": "E/e′",
+      "unit": "ratio",
+      "biology": "Εκτίμηση πιέσεων πλήρωσης με περιορισμούς",
+      "context": "Όχι απόλυτη μέτρηση πίεσης. · Σύνδεση: Echo quality",
+      "group": "Hemodynamics",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-024",
+      "name": "ECG",
+      "unit": "waveform",
+      "biology": "Καταγραφή δυναμικών καρδιάς",
+      "context": "Απαραίτητο για τεκμηρίωση ρυθμού. · Σύνδεση: Σήμα/lead/time",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-025",
+      "name": "RR interval",
+      "unit": "ms",
+      "biology": "Απόσταση διαδοχικών R",
+      "context": "Βάση HR και HRV. · Σύνδεση: Artefact rejection",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-026",
+      "name": "SDNN",
+      "unit": "ms",
+      "biology": "Τυπική απόκλιση NN διαστημάτων",
+      "context": "Εξαρτάται από διάρκεια καταγραφής. · Σύνδεση: 5min vs 24h",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-027",
+      "name": "RMSSD",
+      "unit": "ms",
+      "biology": "Βραχυπρόθεσμη διακύμανση NN",
+      "context": "Επηρεάζεται από αναπνοή/artefacts. · Σύνδεση: Rest/posture",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-028",
+      "name": "HF HRV",
+      "unit": "ms² ή normalized",
+      "biology": "Φασματική συνιστώσα HRV",
+      "context": "Επηρεάζεται από αναπνοή. · Σύνδεση: Breathing rate",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-029",
+      "name": "LF HRV",
+      "unit": "ms² ή normalized",
+      "biology": "Φασματική συνιστώσα HRV",
+      "context": "Δεν ταυτίζεται με καθαρή συμπαθητική δραστηριότητα. · Σύνδεση: Recording conditions",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-030",
+      "name": "PR",
+      "unit": "ms",
+      "biology": "Κολποκοιλιακή αγωγή",
+      "context": "Αλλαγές απαιτούν κλινική ερμηνεία. · Σύνδεση: ECG",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-031",
+      "name": "QRS",
+      "unit": "ms",
+      "biology": "Κοιλιακή εκπόλωση",
+      "context": "Εύρος εξαρτάται από αγωγή. · Σύνδεση: ECG",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-032",
+      "name": "QTc",
+      "unit": "ms",
+      "biology": "QT διορθωμένο ως προς HR",
+      "context": "Η διόρθωση εξαρτάται από τύπο και HR. · Σύνδεση: Formula, drugs, electrolytes",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-033",
+      "name": "PAC burden",
+      "unit": "% ή /day",
+      "biology": "Πρόωρες κολπικές συστολές",
+      "context": "Δεν αρκεί μεμονωμένη PAC για διάγνωση. · Σύνδεση: ECG duration",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-034",
+      "name": "PVC burden",
+      "unit": "% ή /day",
+      "biology": "Πρόωρες κοιλιακές συστολές",
+      "context": "Ερμηνεία ανά burden/συμπτώματα. · Σύνδεση: ECG duration",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-035",
+      "name": "AF burden",
+      "unit": "% time",
+      "biology": "Χρόνος σε κολπική μαρμαρυγή",
+      "context": "Χρειάζεται επιβεβαίωση ECG. · Σύνδεση: ECG annotation",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-036",
+      "name": "SVT/VT episode",
+      "unit": "event",
+      "biology": "Επεισόδιο ταχυαρρυθμίας",
+      "context": "Πρέπει να επισημαίνεται από ιατρό/επικυρωμένο αλγόριθμο. · Σύνδεση: ECG",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-037",
+      "name": "ST changes",
+      "unit": "mm",
+      "biology": "Μεταβολές ST",
+      "context": "Μη ειδικές χωρίς κλινικό πλαίσιο. · Σύνδεση: ECG leads, symptoms",
+      "group": "Electrical",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-038",
+      "name": "Orthostatic ΔSBP",
+      "unit": "mmHg",
+      "biology": "Αλλαγή πίεσης κατά stand/tilt",
+      "context": "Πτώση με συμπτώματα ενισχύει ανησυχία. · Σύνδεση: Protocol/time",
+      "group": "Orthostatic and autonomic",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-039",
+      "name": "Orthostatic ΔHR",
+      "unit": "bpm",
+      "biology": "Αντιρροπιστική απόκριση HR",
+      "context": "Ερμηνεία μαζί με BP και volume. · Σύνδεση: Protocol/time",
+      "group": "Orthostatic and autonomic",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-040",
+      "name": "Tilt tolerance",
+      "unit": "min/event",
+      "biology": "Χρόνος ανοχής σε ελεγχόμενη κλίση",
+      "context": "Πρωτόκολλο επηρεάζει συγκρισιμότητα. · Σύνδεση: Symptoms",
+      "group": "Orthostatic and autonomic",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-041",
+      "name": "Baroreflex sensitivity",
+      "unit": "ms/mmHg",
+      "biology": "Μεταβολή RR ανά μεταβολή πίεσης",
+      "context": "Εξαρτάται από μέθοδο εκτίμησης. · Σύνδεση: ECG/BP",
+      "group": "Orthostatic and autonomic",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-042",
+      "name": "Cerebral flow velocity",
+      "unit": "cm/s",
+      "biology": "Doppler ταχύτητα εγκεφαλικής ροής",
+      "context": "Δεν ισοδυναμεί απευθείας με συνολική εγκεφαλική αιμάτωση. · Σύνδεση: Arterial diameter",
+      "group": "Orthostatic and autonomic",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-043",
+      "name": "Orthostatic symptoms",
+      "unit": "categorical",
+      "biology": "Ζάλη/ναυτία/προσυγκοπή",
+      "context": "Πρέπει να συγχρονίζονται με μετρήσεις. · Σύνδεση: BP, HR",
+      "group": "Orthostatic and autonomic",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-044",
+      "name": "cIMT",
+      "unit": "mm",
+      "biology": "Πάχος έσω-μέσου χιτώνα καρωτίδας",
+      "context": "Δεν αποδεικνύει μόνη της στεφανιαία νόσο. · Σύνδεση: Age, method",
+      "group": "Vascular",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-045",
+      "name": "PWV",
+      "unit": "m/s",
+      "biology": "Ταχύτητα κύματος πίεσης/δυσκαμψία",
+      "context": "Μεγαλύτερη τιμή συχνά συνδέεται με δυσκαμψία. · Σύνδεση: BP, segment",
+      "group": "Vascular",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-046",
+      "name": "FMD",
+      "unit": "%",
+      "biology": "Ενδοθηλιοεξαρτώμενη αγγειοδιαστολή",
+      "context": "Μεγάλη εξάρτηση από πρωτόκολλο. · Σύνδεση: Baseline diameter",
+      "group": "Vascular",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-047",
+      "name": "Carotid distensibility",
+      "unit": "%/mmHg",
+      "biology": "Μεταβολή διαμέτρου ανά πίεση",
+      "context": "Εξαρτάται από BP και εικόνα. · Σύνδεση: PWV",
+      "group": "Vascular",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-048",
+      "name": "CAC score",
+      "unit": "Agatston",
+      "biology": "Απεικονιστικό φορτίο στεφανιαίου ασβεστίου",
+      "context": "Μηδενικό CAC δεν αποκλείει μη ασβεστοποιημένη πλάκα. · Σύνδεση: CT, age",
+      "group": "Vascular",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-049",
+      "name": "Coronary CTA findings",
+      "unit": "categorical",
+      "biology": "Πλάκες/στενώσεις με CT",
+      "context": "Ειδική απεικόνιση, όχι wearable. · Σύνδεση: Radiology",
+      "group": "Vascular",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-050",
+      "name": "Arterial plaque burden",
+      "unit": "method-specific",
+      "biology": "Εκτίμηση έκτασης πλάκας",
+      "context": "Δεν είναι ισοδύναμο με cIMT. · Σύνδεση: Imaging modality",
+      "group": "Vascular",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-051",
+      "name": "IJV flow direction",
+      "unit": "forward/stagnant/reverse",
+      "biology": "Διαδρομή εκροής από κρανίο",
+      "context": "Ανάστροφη/στάσιμη ροή δεν αποδεικνύει θρόμβο. · Σύνδεση: Side, posture",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-052",
+      "name": "IJV peak velocity",
+      "unit": "cm/s",
+      "biology": "Doppler μέγιστη ταχύτητα",
+      "context": "Μικρότερη ταχύτητα μπορεί να συνοδεύει στάση. · Σύνδεση: Side, angle",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-053",
+      "name": "IJV flow grade",
+      "unit": "1–4",
+      "biology": "Κατηγοριοποίηση φλεβικής ροής",
+      "context": "Grade 3 στάσιμη, 4 κυρίως ανάστροφη. · Σύνδεση: NASA VTE definitions",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-054",
+      "name": "IJV compressibility",
+      "unit": "yes/no",
+      "biology": "Υπερηχογραφική συμπιεστότητα",
+      "context": "Μειωμένη συμπιεστότητα μπορεί να υποστηρίζει θρόμβωση. · Σύνδεση: Operator",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-055",
+      "name": "Spontaneous echo contrast",
+      "unit": "grade",
+      "biology": "Ηχογενές φαινόμενο βραδείας ροής",
+      "context": "Δεν είναι αυτόνομη διάγνωση θρόμβου. · Σύνδεση: Ultrasound",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-056",
+      "name": "Thrombus on ultrasound",
+      "unit": "yes/no",
+      "biology": "Ορατός θρόμβος",
+      "context": "Χρειάζεται εξειδικευμένη κλινική επιβεβαίωση. · Σύνδεση: Location/extent",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-057",
+      "name": "D-dimer",
+      "unit": "mg/L FEU ή DDU",
+      "biology": "Αποδόμηση σταθεροποιημένου ινώδους",
+      "context": "Μη ειδικό· FEU≠DDU. · Σύνδεση: Assay, clinical context",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-058",
+      "name": "Platelet count",
+      "unit": "10⁹/L",
+      "biology": "Αριθμός αιμοπεταλίων",
+      "context": "Δεν περιγράφει μόνος του πήξη. · Σύνδεση: CBC",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-059",
+      "name": "Fibrinogen",
+      "unit": "g/L",
+      "biology": "Υπόστρωμα δημιουργίας ινώδους",
+      "context": "Αυξάνει και στη φλεγμονή. · Σύνδεση: CRP",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-060",
+      "name": "PT/INR",
+      "unit": "s/INR",
+      "biology": "Εξωγενής οδός πήξης/αντιπηκτικά",
+      "context": "Δεν προβλέπει μόνο του VTE. · Σύνδεση: Medication",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-061",
+      "name": "aPTT",
+      "unit": "s",
+      "biology": "Ενδογενής οδός πήξης",
+      "context": "Δεν είναι αυτόνομο τεστ θρόμβωσης. · Σύνδεση: Medication",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-062",
+      "name": "vWF",
+      "unit": "assay",
+      "biology": "Ενδοθηλιακό/αιμοστατικό σύστημα",
+      "context": "Μη ειδικός ερευνητικός δείκτης. · Σύνδεση: Assay",
+      "group": "Venous and coagulation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-063",
+      "name": "VO₂peak",
+      "unit": "mL/kg/min",
+      "biology": "Μέγιστη μετρημένη πρόσληψη O₂",
+      "context": "Μείωση μπορεί να δείχνει αποπροπόνηση. · Σύνδεση: Protocol, effort",
+      "group": "Exercise and oxygenation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-064",
+      "name": "Workload",
+      "unit": "W",
+      "biology": "Μηχανική ισχύς στην άσκηση",
+      "context": "Πρέπει να συνοδεύει HR/VO₂. · Σύνδεση: Device",
+      "group": "Exercise and oxygenation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-065",
+      "name": "SpO₂",
+      "unit": "%",
+      "biology": "Περιφερικός κορεσμός Hb",
+      "context": "Σφάλματα από κίνηση/αιμάτωση. · Σύνδεση: Signal quality",
+      "group": "Exercise and oxygenation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-066",
+      "name": "PaO₂",
+      "unit": "mmHg",
+      "biology": "Μερική πίεση O₂ αρτηριακού αίματος",
+      "context": "Απαιτεί δείγμα αίματος. · Σύνδεση: Blood gas",
+      "group": "Exercise and oxygenation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-067",
+      "name": "Respiratory rate",
+      "unit": "/min",
+      "biology": "Ρυθμός αναπνοής",
+      "context": "Μη ειδική αύξηση. · Σύνδεση: Activity",
+      "group": "Exercise and oxygenation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-068",
+      "name": "EtCO₂",
+      "unit": "mmHg",
+      "biology": "Τελοεκπνευστικό CO₂",
+      "context": "Εξαρτάται από αερισμό και δειγματοληψία. · Σύνδεση: Sensor",
+      "group": "Exercise and oxygenation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-069",
+      "name": "Lactate",
+      "unit": "mmol/L",
+      "biology": "Μεταβολική κατάσταση/προσπάθεια",
+      "context": "Μη ειδικός για καρδιακή ισχαιμία. · Σύνδεση: Workload",
+      "group": "Exercise and oxygenation",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-070",
+      "name": "Sodium",
+      "unit": "mmol/L",
+      "biology": "Ωσμωτική ισορροπία υγρών",
+      "context": "Μεταβολές επηρεάζουν νευρομυϊκή λειτουργία. · Σύνδεση: Hydration",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-071",
+      "name": "Potassium",
+      "unit": "mmol/L",
+      "biology": "Δυναμικό μεμβράνης καρδιομυοκυττάρων",
+      "context": "Ακραίες μεταβολές συνδέονται με αρρυθμίες. · Σύνδεση: ECG, renal",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-072",
+      "name": "Magnesium",
+      "unit": "mmol/L",
+      "biology": "Ηλεκτρική σταθερότητα",
+      "context": "Αλλαγές μπορεί να συνυπάρχουν με διαταραχές ρυθμού. · Σύνδεση: K, drugs",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-073",
+      "name": "Calcium serum",
+      "unit": "mmol/L",
+      "biology": "Συστολή/ηλεκτρική σηματοδότηση",
+      "context": "Επηρεάζεται από λευκωματίνη και pH. · Σύνδεση: Ionized Ca",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-074",
+      "name": "Phosphate",
+      "unit": "mmol/L",
+      "biology": "ATP/μεταβολισμός",
+      "context": "Επηρεάζεται από νεφρό, οστά, διατροφή. · Σύνδεση: Bone module",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-075",
+      "name": "Hemoglobin",
+      "unit": "g/dL",
+      "biology": "Μεταφορά οξυγόνου",
+      "context": "Αλλαγή συγκέντρωσης ≠ απαραίτητα αλλαγή RBC mass. · Σύνδεση: Plasma volume",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-076",
+      "name": "Hematocrit",
+      "unit": "%",
+      "biology": "Κλάσμα όγκου ερυθρών",
+      "context": "Επηρεάζεται από plasma volume. · Σύνδεση: Hb",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-077",
+      "name": "Renin",
+      "unit": "assay-specific",
+      "biology": "RAAS και πίεση",
+      "context": "Εξαρτάται από στάση, Na, φάρμακα. · Σύνδεση: Aldosterone",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-078",
+      "name": "Aldosterone",
+      "unit": "assay-specific",
+      "biology": "Κατακράτηση Na/απέκκριση K",
+      "context": "Εξαρτάται από στάση/ώρα. · Σύνδεση: Renin, K",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-079",
+      "name": "Vasopressin/copeptin",
+      "unit": "assay-specific",
+      "biology": "Αντιδιουρητική ρύθμιση",
+      "context": "Μη ειδική σε stress. · Σύνδεση: Hydration",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-080",
+      "name": "ANP",
+      "unit": "pg/mL",
+      "biology": "Κολπική διάταση/νατριούρηση",
+      "context": "Δεν ισοδυναμεί με BNP. · Σύνδεση: Volume",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-081",
+      "name": "BNP/NT-proBNP",
+      "unit": "pg/mL",
+      "biology": "Καρδιακό τοιχωματικό stress",
+      "context": "Επηρεάζεται από νεφρό/ηλικία. · Σύνδεση: Echo",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-082",
+      "name": "Troponin I/T",
+      "unit": "assay-specific",
+      "biology": "Μυοκαρδιακή βλάβη",
+      "context": "Δεν αποδεικνύει από μόνη της έμφραγμα. · Σύνδεση: Symptoms/ECG",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-083",
+      "name": "Glucose",
+      "unit": "mg/dL",
+      "biology": "Γλυκαιμική κατάσταση",
+      "context": "Εξαρτάται από νηστεία/στρες. · Σύνδεση: Insulin",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-084",
+      "name": "Insulin",
+      "unit": "μIU/mL",
+      "biology": "Ορμονική γλυκαιμική ρύθμιση",
+      "context": "Εξαρτάται από γεύμα/νηστεία. · Σύνδεση: Glucose",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-085",
+      "name": "HbA1c",
+      "unit": "%",
+      "biology": "Μέση γλυκαιμία προηγούμενων μηνών",
+      "context": "Επηρεάζεται από μεταβολές RBC. · Σύνδεση: Hb",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-086",
+      "name": "LDL-C",
+      "unit": "mg/dL",
+      "biology": "Αθηρογόνος χοληστερόλη",
+      "context": "Χρόνιος κίνδυνος, όχι οξύ συμβάν. · Σύνδεση: ApoB",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-087",
+      "name": "HDL-C",
+      "unit": "mg/dL",
+      "biology": "Λιποπρωτεϊνικό προφίλ",
+      "context": "Δεν είναι απλή αντίστροφη αιτιότητα. · Σύνδεση: Lipids",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-088",
+      "name": "Triglycerides",
+      "unit": "mg/dL",
+      "biology": "Μεταβολικό/λιπιδικό προφίλ",
+      "context": "Επηρεάζεται από γεύμα. · Σύνδεση: Fasting",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-089",
+      "name": "ApoB",
+      "unit": "mg/dL",
+      "biology": "Αριθμός αθηρογόνων σωματιδίων",
+      "context": "Συμπληρωματικός κλινικός δείκτης. · Σύνδεση: LDL",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-090",
+      "name": "Lp(a)",
+      "unit": "nmol/L ή mg/dL",
+      "biology": "Κληρονομικός αθηρογόνος παράγοντας",
+      "context": "Μονάδες μη άμεσα μετατρέψιμες. · Σύνδεση: Assay",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-091",
+      "name": "hsCRP",
+      "unit": "mg/L",
+      "biology": "Συστηματική φλεγμονή",
+      "context": "Μη ειδικό για καρδιά. · Σύνδεση: Infection",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-092",
+      "name": "IL-6",
+      "unit": "pg/mL",
+      "biology": "Κυτταροκίνη φλεγμονής",
+      "context": "Ερευνητικό, μεταβλητό. · Σύνδεση: CRP",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-093",
+      "name": "TNF-α",
+      "unit": "pg/mL",
+      "biology": "Κυτταροκίνη φλεγμονής",
+      "context": "Μη ειδικό. · Σύνδεση: Assay",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-094",
+      "name": "8-OHd",
+      "unit": "assay-specific",
+      "biology": "Οξειδωτική βλάβη DNA",
+      "context": "Δεν διαγιγνώσκει αγγειακή νόσο. · Σύνδεση: Radiation",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-095",
+      "name": "F2-isoprostanes",
+      "unit": "assay-specific",
+      "biology": "Οξειδωτική βλάβη λιπιδίων",
+      "context": "Μη ειδικό. · Σύνδεση: Assay",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    },
+    {
+      "id": "cv-096",
+      "name": "Cortisol",
+      "unit": "assay-specific",
+      "biology": "Απόκριση stress/κιρκάδιος ρυθμός",
+      "context": "Ισχυρή ημερήσια διακύμανση. · Σύνδεση: Sleep/time",
+      "group": "Biochemistry",
+      "reviewStatus": "pending_independent_review",
+      "activation": "reference_only"
+    }
+  ],
+  "relationshipExamples": [
+    {
+      "combination": "HR↑ + SV↓ + CO≈σταθερή",
+      "interpretationAndLimits": "Πιθανή αντιρρόπηση μειωμένου όγκου παλμού μέσω ταχυκαρδίας· απαιτείται αξιολόγηση συνθηκών και μεθόδου.",
+      "activation": "research_only"
+    },
+    {
+      "combination": "BP↓ όρθιος + ζάλη + HR↑",
+      "interpretationAndLimits": "Συμβατό με ορθοστατική δυσανεξία, όχι αυτοτελής διάγνωση. Καταχώρισε χρόνο μετά την έγερση.",
+      "activation": "research_only"
+    },
+    {
+      "combination": "HRV↓ + κακός ύπνος + υψηλό workload",
+      "interpretationAndLimits": "Πιθανή μεταβολή αυτόνομης ρύθμισης· όχι διάγνωση στρες ή αρρυθμίας.",
+      "activation": "research_only"
+    },
+    {
+      "combination": "PWV↑ + BP↑",
+      "interpretationAndLimits": "Η αυξημένη πίεση μπορεί να επηρεάζει την PWV· μη συνάγεις αυτομάτως αγγειακή ασβεστοποίηση.",
+      "activation": "research_only"
+    },
+    {
+      "combination": "SpO₂ φυσιολογική + Hb↓",
+      "interpretationAndLimits": "Η περιεκτικότητα αίματος σε O₂ μπορεί να είναι μειωμένη παρά φυσιολογικό κορεσμό.",
+      "activation": "research_only"
+    },
+    {
+      "combination": "CTX↑ + PWV↑",
+      "interpretationAndLimits": "Δύο παράλληλα ευρήματα· δεν αποδεικνύουν μεταφορά οστικού ασβεστίου στα αγγεία.",
+      "activation": "research_only"
+    },
+    {
+      "combination": "ECG irregular + K⁺ εκτός ορίων",
+      "interpretationAndLimits": "Χρειάζεται επαλήθευση ποιότητας ECG, αξιολόγηση ηλεκτρολυτών και κλινική ανασκόπηση.",
+      "activation": "research_only"
+    },
+    {
+      "combination": "Φλεβική ροή βραδεία + D-dimer↑",
+      "interpretationAndLimits": "Αυξάνει την ανάγκη ιατρικής εκτίμησης ανάλογα με το πλαίσιο· δεν επιβεβαιώνει θρόμβο.",
+      "activation": "research_only"
+    }
+  ],
+  "sourceNote": "Transcribed from the handbook tables. Descriptive reference material; not NASA clinical validation."
+}
