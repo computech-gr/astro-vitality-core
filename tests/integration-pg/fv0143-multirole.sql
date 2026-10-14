@@ -123,7 +123,9 @@ select fvtest.check((public.approve_mission_invite(fvtest.invite_id(:'gmb'), 'c2
 select fvtest.check((public.approve_mission_invite(fvtest.invite_id(:'gmb'), 'b3@fv.test'))->>'status' = 'approved', 'approver authorizes the identity they verified');
 select set_config('request.jwt.claim.sub', :'op', false);
 select fvtest.check((public.bind_mission_invite_recipient(fvtest.invite_id(:'gmb'), 'c2@fv.test'))->>'approval_state' = 'pending', 'changing the recipient after approval resets to pending');
+reset role;
 select fvtest.check((select approved_by is null and approval_state = 'pending' from public.mission_invites where id = fvtest.invite_id(:'gmb')), 'previous approval is discarded on re-binding');
+set role authenticated;
 select set_config('request.jwt.claim.sub', :'u2', false);
 select fvtest.check((public.accept_mission_invite(:'gmb'))->>'reason' = 'approval_required', 'new recipient cannot redeem until re-approved');
 select set_config('request.jwt.claim.sub', :'gm', false);
