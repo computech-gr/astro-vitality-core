@@ -22,7 +22,7 @@ describe("FV-01.4.6 Mission Settings", () => {
   it("treats inputs as UTC and always sends the end date", () => {
     expect(utcInputToIso("2026-11-01T08:00")).toBe("2026-11-01T08:00:00.000Z");
     const u = buildMissionSettingsUpdate(planning, { ...draftFromMission(planning), name: " Renamed " });
-    expect(u).toEqual({ missionId: "m1", name: "Renamed", status: undefined, startsAt: planning.starts_at!, endsAt: planning.ends_at! });
+    expect(u).toEqual({ missionId: "m1", name: "Renamed", startsAt: planning.starts_at!, endsAt: planning.ends_at! });
   });
   it("UI guards duplicate submission and reuses the existing RPC only", () => {
     const ui = readFileSync("src/components/mission-settings-panel.tsx", "utf8");

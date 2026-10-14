@@ -79,11 +79,11 @@ export function validateMissionSettings(mission: MissionSettingsSnapshot, draft:
 
 /** Arguments for updateMissionOperation. Always sends the end date so it is never cleared by accident. */
 export function buildMissionSettingsUpdate(mission: MissionSettingsSnapshot, draft: MissionSettingsDraft) {
-  return {
-    missionId: mission.id,
-    name: draft.name.trim(),
-    status: draft.status !== mission.status ? draft.status : undefined,
-    startsAt: utcInputToIso(draft.startsAt) ?? undefined,
-    endsAt: utcInputToIso(draft.endsAt) ?? undefined,
-  };
+  const update: { missionId: string; name: string; status?: MissionSettingsStatus; startsAt?: string; endsAt?: string } = { missionId: mission.id, name: draft.name.trim() };
+  if (draft.status !== mission.status) update.status = draft.status;
+  const startsAt = utcInputToIso(draft.startsAt);
+  const endsAt = utcInputToIso(draft.endsAt);
+  if (startsAt) update.startsAt = startsAt;
+  if (endsAt) update.endsAt = endsAt;
+  return update;
 }

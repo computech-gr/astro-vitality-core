@@ -97,7 +97,7 @@ export function MissionSettingsPanel({ mission, onSaved, disabled }: Props) {
           </div>
           <div>
             <Label htmlFor="settings-status">Status</Label>
-            <Select value={draft.status} onValueChange={(v) => set("status", v as MissionSettingsStatus)} disabled={closed || saving || disabled}>
+            <Select value={draft.status} onValueChange={(v) => set("status", v as MissionSettingsStatus)} disabled={closed || saving || Boolean(disabled)}>
               <SelectTrigger id="settings-status" className="mt-2"><SelectValue /></SelectTrigger>
               <SelectContent>{allowedStatusTargets(mission.status).map((s) => <SelectItem key={s} value={s}>{s.toUpperCase()}</SelectItem>)}</SelectContent>
             </Select>
