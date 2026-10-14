@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 
 import { TopicCardGrid } from "@/components/knowledge/technology-index";
+import { NavigationSearch } from "@/components/navigation-search";
+import { SEARCH_KEYWORDS, SECTION_ENTRIES, dedupeEntries, type SearchEntry } from "@/domain/navigation-search/search";
 import astronautEarthrise from "@/assets/astronaut-earthrise.jpg";
 import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -214,6 +216,28 @@ function itemHref(label: string, fallback: string) {
   return guideDestinations[label] ?? fallback;
 }
 
+/**
+ * Global search catalogue, derived from the same navigation + itemHref()
+ * mapping as the menus (no second catalogue). Public labels only.
+ */
+export const searchCatalogue: readonly SearchEntry[] = dedupeEntries([
+  ...navigation.flatMap((entry) =>
+    entry.groups
+      ? entry.groups.flatMap((group) =>
+          group.items.map((item) => ({
+            title: item,
+            href: itemHref(item, group.href ?? entry.href),
+            category: entry.label,
+            description: group.title,
+            keywords: SEARCH_KEYWORDS[item],
+          })),
+        )
+      : [{ title: entry.label, href: entry.href, category: "Home", description: "Start page" }],
+  ),
+  ...SECTION_ENTRIES,
+  { title: "Project Guide", href: "/project/guide", category: "Open Source & About", description: "Every project section in one guide", keywords: ["guide", "overview", "docs"] },
+]);
+
 
 function isExternal(href: string) {
   return href.startsWith("https://");
@@ -301,6 +325,8 @@ export function SiteHeader() {
             </Button>
           ))}
         </nav>
+        <div className="flex items-center gap-2">
+        <NavigationSearch entries={searchCatalogue} />
         <Button asChild className="hidden h-11 bg-primary px-4 font-semibold text-primary-foreground shadow-[0_0_30px_var(--primary-glow)] hover:bg-primary/90 2xl:inline-flex">
           <a href={NASA_URL} target="_blank" rel="noopener noreferrer">NASA Space Apps 2026 <ExternalLink aria-hidden="true" /></a>
         </Button>
@@ -334,6 +360,7 @@ export function SiteHeader() {
             </nav>
           </SheetContent>
         </Sheet>
+        </div>
       </div>
     </header>
   );
