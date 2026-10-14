@@ -85,6 +85,7 @@ const expectedMigrations = [
   "20261012000000_p24_multi_mission_crew_reuse.sql",
   "20261013000000_p28_research_export_privacy.sql",
   "20261014000000_fv01_security_privacy_remediation.sql",
+  "20261015000000_fv0143_multirole_hardening.sql",
 ];
 if (JSON.stringify(migrationNames) !== JSON.stringify(expectedMigrations)) {
   failures.push(`P19 fresh-clone migration chain must contain the governed applied migrations; found: ${migrationNames.join(", ")}`);
@@ -99,7 +100,7 @@ for (const name of migrationNames) {
 }
 
 const releaseDoc = readFileSync(join(root, "docs/RELEASE_CANDIDATE.md"), "utf8").toLowerCase();
-for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "eleven-migration chain", ".output/server/index.mjs", ".output/public"]) {
+for (const token of ["independent machine", "docker", "local supabase", "not clinically validated", "v0.x", "twelve-migration chain", ".output/server/index.mjs", ".output/public"]) {
   if (!releaseDoc.includes(token)) failures.push(`release candidate docs missing ${token}`);
 }
 
@@ -109,8 +110,8 @@ for (const token of ["clean environment", "git rev-parse head", "bun run verify:
 }
 
 const releaseChecklist = readFileSync(join(root, "docs/RELEASE_CHECKLIST.md"), "utf8").toLowerCase();
-if (!releaseChecklist.includes("exactly the eleven governed migrations")) {
-  failures.push("release checklist must describe the current eleven-migration governed chain");
+if (!releaseChecklist.includes("exactly the twelve governed migrations")) {
+  failures.push("release checklist must describe the current twelve-migration governed chain");
 }
 if (/exactly the (five|six|seven) governed/.test(releaseChecklist)) {
   failures.push("release checklist contains stale pre-FV-01 migration-count wording");
@@ -142,11 +143,12 @@ for (const token of [
   "sample:release",
   ".output/server/index.mjs",
   ".output/public",
-  "exactly the eleven governed migrations",
+  "exactly the twelve governed migrations",
   "p23a unified mission record index",
   "p24 multi-mission crew reuse",
   "p28 research export privacy",
   "fv-01 security & privacy remediation",
+  "fv-01.4.3 multi-role security hardening",
   "p20 mission identity & invites",
   "p20 mission & crew operations",
   "p20 secure bootstrap & auth readiness",

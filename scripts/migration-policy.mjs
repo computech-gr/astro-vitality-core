@@ -15,6 +15,7 @@ const GOVERNED_MIGRATION_MARKERS = [
   "-- P24: Explicit, operator-authorized reuse",
   "-- P28: Fail-closed privacy containment",
   "-- FV-01 Security & Privacy Remediation",
+  "-- FV-01.4.3 Multi-Role Security Hardening",
 ];
 
 export function isGovernedMigration(root, name) {
