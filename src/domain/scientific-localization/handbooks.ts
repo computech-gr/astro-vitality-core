@@ -116,6 +116,9 @@ export const BONE_CATEGORY_LABELS: Record<string, string> = {
   bone_resorption: "Bone resorption",
   bone_formation: "Bone formation",
   calcium_endocrine: "Calcium & endocrine regulation",
+  urine_stone: "Urine chemistry & kidney-stone risk",
+  imaging_strength: "Imaging & bone strength",
+  exercise_nutrition_exposure: "Exercise, nutrition & exposure",
 };
 export const boneCategoryLabel = (category: string): string =>
   BONE_CATEGORY_LABELS[category] ?? category.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
