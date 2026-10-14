@@ -72,11 +72,11 @@ export function ChallengeSubmissionPage() {
 
       <section className="mt-10" aria-labelledby="evidence-heading">
         <h2 id="evidence-heading" className="font-display text-2xl font-semibold">Submission evidence</h2>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
           {evidence.map((item) => (
-            <Card key={item.id}>
+            <Card key={item.id} className="min-w-0">
               <CardHeader><CardTitle className="flex min-w-0 flex-wrap items-start justify-between gap-2 text-base"><span className="min-w-0 break-words">{item.id} · {item.title}</span><span className="font-mono text-[0.65rem] text-muted-foreground">{statusLabel[item.status]}</span></CardTitle></CardHeader>
-              <CardContent className="min-w-0 break-words text-sm leading-6 text-muted-foreground">{item.evidence}</CardContent>
+              <CardContent className="min-w-0 break-words [overflow-wrap:anywhere] text-sm leading-6 text-muted-foreground">{item.evidence}</CardContent>
             </Card>
           ))}
         </div>
