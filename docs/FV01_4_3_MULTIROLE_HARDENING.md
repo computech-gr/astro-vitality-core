@@ -1,7 +1,6 @@
 # FV-01.4.3 Multi-Role Security Hardening (F1–F3)
 
-Status: **IMPLEMENTED LOCALLY AND VERIFIED IN A DISPOSABLE DATABASE. NOT APPLIED TO PRODUCTION. NOT PUBLISHED.**
-The role compatibility matrix is a **proposal awaiting final owner approval**.
+Status: **APPLIED TO PRODUCTION as governed migration 12 (2026-10-14).** The role compatibility matrix, independent Ground Medical approval, recipient binding and single-Operator restriction are **owner-approved**.
 FV-01-13 remains OPEN. Final Security Gate remains BLOCKED.
 
 ## Findings addressed
@@ -21,7 +20,7 @@ FV-01-13 remains OPEN. Final Security Gate remains BLOCKED.
 
 Different missions: no restriction.
 
-## Staged objects (`supabase/pending/20261015000000_fv0143_multirole_hardening.sql`)
+## Objects (`supabase/migrations/20261015000000_fv0143_multirole_hardening.sql`)
 
 - New: `mission_roles_compatible`, `mission_role_conflict` (not callable by browser roles), `enforce_membership_role_compatibility` + trigger `trg_membership_role_compatibility`, `approve_mission_invite`.
 - Replaced: `accept_mission_invite`, `create_mission_invite`, `set_mission_membership_active`, `get_mission_operations_workspace`.
@@ -78,3 +77,12 @@ Rollback script verified to restore the original functions and remove the trigge
 7. Publish the screen changes (only after step 6).
 8. Live check without writes: `/mission/operations` and `/project/ground-research` load. Any functional live test of invitations needs separate owner authorization.
 9. Undo if needed: `supabase/pending/20261015000000_fv0143_multirole_hardening.rollback.sql`. It is verified in the disposable database and keeps the new columns, marked deprecated.
+
+## Production release evidence (2026-10-14)
+
+- Backup/restore: confirmed by the owner with Lovable Support before release. No timestamp or restore reference was provided to the agent; none is recorded here.
+- Migration file: `supabase/migrations/20261015000000_fv0143_multirole_hardening.sql`, SHA-256 `4103442ad4cfad19daf747c3ebe2f3920a4d8e72761805bc9a8d24a408b6eb5f`, byte-identical to the tested staged file (its header comment still reads "STAGED"; left unchanged to keep the fingerprint). Applied once via the migration tool (recorded as `drizzle/migrations/0004_fv0143_multirole_hardening.sql`, identical apart from the trailing newline). Governed chain: 12 migrations.
+- Preflight: 0 forbidden active pairs; 0 open Ground Medical invites; 6 affected functions identical to the tested baseline.
+- Isolated tests: 103/103 PASS (28 FV-01 + 75 FV-01.4.3); rollback restores the original 4 functions and removes the trigger with memberships unchanged. Full `bun run check`: 236 pass, 0 fail.
+- Post-migration: all 9 functions identical to the tested build; 7 invite columns, check constraint and enabled trigger present; privileged invite functions callable by signed-in users only (not anon, not sandbox_exec); `mission_role_conflict` not callable by browser roles. Counts unchanged: 3 missions, 7 memberships (7 active), 5 invites (1 open, 0 pending/bound), 3 crew, 3 assignments, 2 events, 2 index rows, 57 audit entries (the 2 added since the earlier 55 are operator `mission_operations_workspace_read` page views before the release). Invite, membership and event content fingerprints unchanged.
+- Rollback (manual only): `supabase/pending/20261015000000_fv0143_multirole_hardening.rollback.sql`.
