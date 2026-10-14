@@ -2,8 +2,8 @@
 
 ## Status
 
-| Capability        | Status                                                                                                     |
-| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| Capability        | Status                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
 | Mission Settings  | Implemented and published. No database change (reuses `update_mission_operation`).                        |
 | Mission Audit Log | Screen implemented and published; its database reader is **staged, awaiting owner approval** (see below). |
 

@@ -57,7 +57,7 @@ export function sanitizeAuditPage(raw: unknown): MissionAuditPage {
   const entries = Array.isArray(page.entries) ? page.entries : [];
   return {
     entries: entries.map((item) => {
-      const e = item as Record<string, unknown>;
+      const e = item as Partial<Record<"id" | "occurred_at" | "action" | "outcome" | "target_type" | "actor" | "actor_role" | "details", unknown>>;
       const actor = typeof e.actor === "string" && (e.actor === "self" || /^member-[0-9a-f]{8}$/.test(e.actor)) ? e.actor : "member";
       return {
         id: String(e.id ?? ""),
