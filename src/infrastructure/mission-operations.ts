@@ -87,6 +87,16 @@ export async function loadMissionOperationsWorkspace(missionId: string): Promise
   return rpc<MissionOperationsWorkspace>("get_mission_operations_workspace", { p_mission_id: missionId });
 }
 
+/** Crew members eligible for a crew_self invite: active crew of the selected mission only. */
+export function eligibleInviteCrew(crew: MissionOperationsCrew[]): MissionOperationsCrew[] {
+  return crew.filter((member) => member.status === "active");
+}
+
+export async function loadInviteCrewOptions(missionId: string): Promise<MissionOperationsCrew[]> {
+  const workspace = await loadMissionOperationsWorkspace(missionId);
+  return eligibleInviteCrew(workspace.crew);
+}
+
 export async function createMissionOperation(input: { code: string; name: string; startsAt?: string }): Promise<{ mission_id: string }> {
   return rpc("create_mission_operation", {
     p_code: input.code.trim(),
