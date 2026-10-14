@@ -2,12 +2,12 @@
 
 ## Status
 
-| Capability        | Status                                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------------------------- |
-| Mission Settings  | Implemented and published. No database change (reuses `update_mission_operation`).                        |
-| Mission Audit Log | Screen implemented and published; its database reader is **staged, awaiting owner approval** (see below). |
+| Capability        | Status                                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Mission Settings  | Implemented and published. No database change (reuses `update_mission_operation`).                                                    |
+| Mission Audit Log | Implemented, published, and its reader applied as **governed migration 13** (2026-10-14). Signed-in production acceptance: see below. |
 
-Until the reader is approved and applied, the Audit Log section states that it is waiting for an approved database update and shows no records.
+_Historical (before migration 13): the Audit Log said it was waiting for an approved database update and showed no records. No longer applies._
 
 ## Phase 1 audit (read-only, 2026-10-14)
 
@@ -45,9 +45,9 @@ The server re-checks the Operator role on every save and every audit read. Hidin
 3. Select a row to expand details. Load older records pages 25 at a time.
 4. There are no edit, delete or export controls.
 
-## Security design (staged reader)
+## Security design (reader, applied as governed migration 13)
 
-`supabase/pending/20261016000000_fv0146_mission_audit_viewer.sql` — `public.get_mission_audit_log(...)`:
+`supabase/migrations/20261016000000_fv0146_mission_audit_viewer.sql` (formerly staged in `supabase/pending/`) — `public.get_mission_audit_log(...)`:
 
 - Stable (read-only) security definer function with fixed `search_path = public, pg_temp`. It writes nothing, not even its own audit row.
 - Requires a signed-in user and an active Mission Operator membership in the requested mission; any other mission is refused.
@@ -60,8 +60,7 @@ The server re-checks the Operator role on every save and every audit read. Hidin
 
 ## Database changes
 
-- Production: **none applied.**
-- Staged: 1 new read-only function (governed migration 13 once approved). It changes 0 rows.
+- Production: governed migration 13 applied once (2026-10-14 ~09:29 UTC): 1 new read-only function, 0 rows changed. No other pending migration applied.
 
 ## Tests
 
@@ -70,14 +69,13 @@ The server re-checks the Operator role on every save and every audit read. Hidin
 
 ## Known limitations
 
-- The Audit Log shows no records until the staged reader is approved and applied.
 - The start date can be changed but not cleared (server rule). The mission code and ID are immutable.
 - Ground Medical keeps its existing table-level read rule, but has no browser grant and no viewer.
-- Signed-in screens were not exercised in production (no test writes allowed).
+- Production keyboard testing was a focus/Tab-order check in a test browser, not a full assistive-technology review.
 
 ## Production publication evidence
 
-See the final report of this release. FV-01-13 remains OPEN; the Final Security Gate remains BLOCKED.
+Published at https://mitochondria.edocinfo.com. FV-01-13 remains OPEN; the Final Security Gate remains BLOCKED.
 
 ## Production release evidence (governed migration 13)
 
@@ -86,4 +84,16 @@ See the final report of this release. FV-01-13 remains OPEN; the Final Security 
 - Applied exactly once on 2026-10-14 ~09:29 UTC via the governed migration tool as `drizzle/migrations/0005_fv0146_mission_audit_viewer.sql` (identical except trailing newline); governed copy `supabase/migrations/20261016000000_fv0146_mission_audit_viewer.sql` is byte-identical to the approved file. The staged copy was removed from `supabase/pending/`; the rollback stays there, manual only. The "STAGED" header comment is historical and kept to preserve the fingerprint.
 - Post-migration (read-only): one signature `get_mission_audit_log(text, timestamptz, timestamptz, text, text, text, integer, text)`; security definer, stable, `search_path=public, pg_temp`, owner `postgres`; EXECUTE authenticated only (anon and PUBLIC false); an anonymous call returns `permission denied`; drizzle history 6; record counts unchanged (3/7/5/2 events/2 index/59 audit).
 - Correction: `authenticated` does hold a table SELECT grant on `audit_events`; the pre-existing RLS policy limits direct reads to Ground Medical and Mission Operator members of the mission. This release did not change it. Earlier text saying browsers have no SELECT grant was inaccurate.
-- Behaviour (authorization, redaction, cursor, filters, isolation) verified in the disposable PostgreSQL 17.9 harness (155/155) against the same governed file; no signed-in production calls were made, to avoid impersonation and production writes.
+- Behaviour (authorization, redaction, cursor, filters, isolation) verified in the disposable PostgreSQL 17.9 harness (155/155) against the same governed file; at release time no signed-in production calls were made (superseded by the acceptance below).
+
+## Signed-in production acceptance (2026-10-14 ~10:00 UTC, owner-authorized)
+
+Test browser on https://mitochondria.edocinfo.com, signed in as the owner's own account (minted for the requesting user; no impersonation), an active Mission Operator in all 3 missions. No settings were saved and no data was changed; the only writes were the automatic `mission_operations_workspace_read` audit entries, which the owner permitted.
+
+- Mission Operations loaded the Operator workspace; Mission Settings showed the selected mission's code, name and status (start/end empty, matching the database).
+- Audit Log loaded real records through the deployed function, newest first, with UTC timestamps (25 per page; "Load older records" 25 → 34; MISSION_TEST has 35 records in total).
+- Filters: Refused → "No audit records match"; action filter → 1 row; search "zzznomatch" → empty; "workspace" → matches; date 2026-10-14 → only that day's entries; inverted range → "The start date must be on or before the end date."
+- Expand by keyboard (Enter) showed only "Actor: You · mission operator" and "Target: mission".
+- Mission switching MISSION_TEST / FV01-TEST-A / FV01-TEST-B: the settings name and the audit record set changed each time, with counts matching that mission only.
+- Leak scan of the visible audit section on every view: 0 UUIDs, 0 emails, 0 long hex strings, 0 mission/crew codes or secret names.
+- Desktop 1280 px and phone 390 px: usable layout, logical Tab order through the filters, 0 console errors. The only failed request was the hosting analytics beacon (`/__l5e/trackevents`), not the app.
