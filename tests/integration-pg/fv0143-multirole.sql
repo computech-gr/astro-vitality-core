@@ -131,12 +131,13 @@ select fvtest.check((public.accept_mission_invite(:'gm_c4'))->>'status' = 'accep
 select fvtest.check(fvtest.roles('m2', :'c4u') = 'crew_self' and fvtest.roles('m1', :'c4u') = 'ground_medical', 'cross-mission roles stay mission-scoped');
 
 -- ---------- Crew Self binding with an extra role ----------
+select set_config('request.jwt.claim.sub', :'c1u', false);
+select fvtest.check((public.ingest_mission_event(fvtest.ev('m1','c1','fv0143-c1-own'), 'key-fv0143-c1-own-aaaaaa'))->>'status' = 'accepted', 'Crew Self writes own crew data');
 select set_config('request.jwt.claim.sub', :'c2u', false);
 select fvtest.check(fvtest.raises($q$select public.ingest_mission_event(fvtest.ev('m1','c1','fv0143-c2-as-c1'), 'key-fv0143-c2-as-c1-aaaa')$q$, 'operator event scope denied'),
   'Crew Self + Operator cannot write medical data for another crew member');
-select fvtest.check((select count(*) from public.mission_events where crew_member_id = 'c1') = 0 or true, 'crew binding read check executed');
 select fvtest.check((public.ingest_mission_event(fvtest.ev('m1','c2','fv0143-c2-own'), 'key-fv0143-c2-own-aaaaaa'))->>'status' = 'accepted', 'Crew Self + Operator still writes own crew data');
-select fvtest.check((select count(*) from public.mission_events where crew_member_id <> 'c2') = 0, 'Crew Self + Operator reads only own crew events');
+select fvtest.check((select count(*) from public.mission_events where crew_member_id = 'c1') = 0, 'Crew Self + Operator cannot read another crew member''s events');
 
 -- ---------- F1: self-reactivation refusal + reactivation compatibility ----------
 reset role;
