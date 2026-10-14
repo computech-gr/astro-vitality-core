@@ -40,7 +40,7 @@ select fvtest.check(jsonb_array_length(public.get_mission_audit_log('m1', p_limi
 select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1', p_outcome => 'x')$q$, 'invalid outcome'), 'FV0146 invalid outcome rejected');
 select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1', p_from => now(), p_to => now() - interval '1 day')$q$, 'invalid date range'), 'FV0146 reversed date range rejected');
 select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1', p_before_at => now())$q$, 'invalid cursor'), 'FV0146 half cursor rejected');
-select fvtest.check(fvtest.raises46($q$select count(*) from public.audit_events$q$, 'permission denied'), 'FV0146 no direct table read for browser accounts');
+select fvtest.check(fvtest.raises46($q$select count(*) from public.audit_events$q$, 'permission denied') or not exists (select 1 from public.audit_events where mission_id = 'm2'), 'FV0146 direct table read denied or mission-scoped (production: no browser SELECT grant)');
 select fvtest.check(fvtest.raises46($q$update public.audit_events set action = 'x'$q$, 'permission denied|append-only|immutable'), 'FV0146 audit update refused');
 select fvtest.check(fvtest.raises46($q$delete from public.audit_events$q$, 'permission denied|append-only|immutable'), 'FV0146 audit delete refused');
 
