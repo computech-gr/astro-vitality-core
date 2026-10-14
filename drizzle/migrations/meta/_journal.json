@@ -36,6 +36,13 @@
       "when": 1791962320527,
       "tag": "0004_fv0143_multirole_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791970163622,
+      "tag": "0005_fv0146_mission_audit_viewer",
+      "breakpoints": true
     }
   ]
 }

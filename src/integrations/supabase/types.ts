@@ -567,6 +567,19 @@ export type Database = {
         Args: { p_mission_id: string }
         Returns: Json
       }
+      get_mission_audit_log: {
+        Args: {
+          p_action?: string
+          p_cursor?: string
+          p_from?: string
+          p_limit?: number
+          p_mission_id: string
+          p_outcome?: string
+          p_search?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
       get_mission_bootstrap_status: { Args: never; Returns: Json }
       get_mission_operations_workspace: {
         Args: { p_mission_id: string }

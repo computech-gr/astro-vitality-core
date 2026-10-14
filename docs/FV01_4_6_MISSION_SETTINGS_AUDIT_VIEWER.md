@@ -78,3 +78,12 @@ The server re-checks the Operator role on every save and every audit read. Hidin
 ## Production publication evidence
 
 See the final report of this release. FV-01-13 remains OPEN; the Final Security Gate remains BLOCKED.
+
+## Production release evidence (governed migration 13)
+
+- Owner approval received 2026-10-14 for revision 3 (SHA-256 `04a68d3c3a5f1653beadf7922e5256c9514f6fae850ed0e36ce05af6a259191e`; rollback `7b03216d656afc3f66e90e8fcf4e6f7e62d4f1f7b47ce23f539d5e04a2b4f6dd`). Both verified before execution.
+- Preflight (read-only): function absent; 12 governed migrations consistent (drizzle history 5 entries); all 3 missions have research keys; `has_mission_role` security definer owned by `postgres`; pgcrypto in `extensions`; counts 3 missions / 7 memberships / 5 invites / 2 events / 59 audit entries.
+- Applied exactly once on 2026-10-14 ~09:29 UTC via the governed migration tool as `drizzle/migrations/0005_fv0146_mission_audit_viewer.sql` (identical except trailing newline); governed copy `supabase/migrations/20261016000000_fv0146_mission_audit_viewer.sql` is byte-identical to the approved file. The staged copy was removed from `supabase/pending/`; the rollback stays there, manual only. The "STAGED" header comment is historical and kept to preserve the fingerprint.
+- Post-migration (read-only): one signature `get_mission_audit_log(text, timestamptz, timestamptz, text, text, text, integer, text)`; security definer, stable, `search_path=public, pg_temp`, owner `postgres`; EXECUTE authenticated only (anon and PUBLIC false); an anonymous call returns `permission denied`; drizzle history 6; record counts unchanged (3/7/5/2 events/2 index/59 audit).
+- Correction: `authenticated` does hold a table SELECT grant on `audit_events`; the pre-existing RLS policy limits direct reads to Ground Medical and Mission Operator members of the mission. This release did not change it. Earlier text saying browsers have no SELECT grant was inaccurate.
+- Behaviour (authorization, redaction, cursor, filters, isolation) verified in the disposable PostgreSQL 17.9 harness (155/155) against the same governed file; no signed-in production calls were made, to avoid impersonation and production writes.
