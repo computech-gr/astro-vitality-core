@@ -21,6 +21,8 @@ create or replace function fvtest.raises46(p_sql text, p_pattern text) returns b
 begin execute p_sql; return false; exception when others then return sqlerrm ~ p_pattern; end $$;
 grant execute on function fvtest.raises46(text, text) to authenticated;
 
+create or replace function fvtest.b64url_json(p text) returns jsonb language sql as $f$ select convert_from(decode(rpad(translate(p, '-_', '+/'), ((length(p) + 3) / 4) * 4, '='), 'base64'), 'utf8')::jsonb $f$;
+grant execute on function fvtest.b64url_json(text) to authenticated;
 set role authenticated;
 select set_config('request.jwt.claim.sub', :'op', false);
 select fvtest.check(jsonb_array_length(public.get_mission_audit_log('m1') -> 'entries') >= 3, 'FV0146 operator reads own mission audit log');
@@ -52,8 +54,6 @@ select fvtest.check(not exists (select 1 from jsonb_array_elements(public.get_mi
 select fvtest.check(not exists (select 1 from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') e where (e ->> 'ref') !~ '^[0-9a-f]{32}$'), 'FV0146 ref is an opaque 32-hex HMAC');
 select fvtest.check((public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor') !~ '[0-9a-f]{8}-[0-9a-f]{4}', 'FV0146 cursor does not reveal a UUID');
 select fvtest.check(fvtest.raises46(format($q$select public.get_mission_audit_log('m1', p_limit => 1, p_cursor => %L)$q$, overlay((public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor') placing (case when substr(public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor', 20, 1) = 'A' then 'B' else 'A' end) from 20 for 1)), 'invalid cursor'), 'FV0146 tampered cursor rejected');
-create or replace function fvtest.b64url_json(p text) returns jsonb language sql as $f$ select convert_from(decode(rpad(translate(p, '-_', '+/'), ((length(p) + 3) / 4) * 4, '='), 'base64'), 'utf8')::jsonb $f$;
-grant execute on function fvtest.b64url_json(text) to authenticated;
 select fvtest.check((select split_part(c, '.', 1) = 'v3' and split_part(c, '.', 3) ~ '^[0-9a-f]{64}$' from (select public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor' c) x), 'FV0146 cursor is versioned v3 with HMAC-SHA256 tag');
 select fvtest.check((select (select array_agg(k order by k) from jsonb_object_keys(fvtest.b64url_json(split_part(p ->> 'next_cursor', '.', 2))) k) = array['f','m','r','t','v']
    and fvtest.b64url_json(split_part(p ->> 'next_cursor', '.', 2)) ->> 'r' = p -> 'entries' -> 0 ->> 'ref'
