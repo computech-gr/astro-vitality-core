@@ -317,8 +317,24 @@ export function MissionIdentity() {
                     <div className="grid gap-4 md:grid-cols-4">
                       <div><Label>Mission</Label><Select value={inviteMissionId} onValueChange={setInviteMissionId}><SelectTrigger className="mt-2"><SelectValue /></SelectTrigger><SelectContent>{operatorMemberships.map((item) => <SelectItem key={`${item.missionId}:${item.role}`} value={item.missionId}>{item.missionCode ?? item.missionId}</SelectItem>)}</SelectContent></Select></div>
                       <div><Label>Role</Label><Select value={inviteRole} onValueChange={(value) => setInviteRole(value as MissionRole)}><SelectTrigger className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="crew_self">Crew self</SelectItem><SelectItem value="ground_medical">Ground medical</SelectItem><SelectItem value="mission_operator">Mission operator</SelectItem><SelectItem value="researcher">Researcher</SelectItem></SelectContent></Select></div>
-                      <div><Label htmlFor="invite-crew">Crew member ID</Label><Input id="invite-crew" value={inviteCrewMemberId} onChange={(event) => setInviteCrewMemberId(event.target.value)} className="mt-2" placeholder="Required for crew_self" /></div>
-                      <div className="flex items-end"><Button className="w-full" disabled={busy || !inviteMissionId || (inviteRole === "crew_self" && !inviteCrewMemberId.trim())} onClick={() => void createInvite()}>Create one-time invite</Button></div>
+                      {inviteRole === "crew_self" ? (
+                        <div>
+                          <Label>Crew member</Label>
+                          <Select value={inviteCrewMemberId} onValueChange={setInviteCrewMemberId} disabled={inviteCrewLoading || Boolean(inviteCrewError)}>
+                            <SelectTrigger className="mt-2" aria-label="Crew member"><SelectValue placeholder={inviteCrewLoading ? "Loading crew…" : inviteCrewError ? "Crew unavailable" : "Select crew member"} /></SelectTrigger>
+                            <SelectContent>
+                              {inviteCrewOptions.map((member) => (
+                                <SelectItem key={member.crew_member_id} value={member.crew_member_id}>
+                                  {member.display_name}{member.external_ref ? ` (${member.external_ref})` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {inviteCrewError ? <p role="alert" className="mt-1 text-xs text-rose-300">{inviteCrewError}</p> : null}
+                          {!inviteCrewLoading && !inviteCrewError && inviteCrewOptions.length === 0 ? <p className="mt-1 text-xs text-muted-foreground">No active crew members in this mission yet. Register crew in Mission &amp; Crew Operations first.</p> : null}
+                        </div>
+                      ) : null}
+                      <div className="flex items-end"><Button className="w-full" disabled={busy || !inviteMissionId || (inviteRole === "crew_self" && (!inviteCrewMemberId || !inviteCrewOptions.some((member) => member.crew_member_id === inviteCrewMemberId)))} onClick={() => void createInvite()}>Create one-time invite</Button></div>
                     </div>
                     {createdInvite ? <div className="mt-4 rounded-md border border-emerald-400/30 bg-emerald-400/10 p-4"><p className="text-xs uppercase tracking-wider text-emerald-300">One-time code — copy now</p><p className="mt-2 break-all font-mono text-sm">{createdInvite}</p></div> : null}
                   </CardContent>
