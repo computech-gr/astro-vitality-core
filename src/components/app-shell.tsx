@@ -46,45 +46,101 @@ const NASA_URL = "https://www.spaceappschallenge.org/2026/";
 const CHALLENGE_URL = "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
 
+type NavigationGroup = {
+  title: string;
+  href?: string;
+  items: readonly string[];
+};
+
 type NavigationEntry = {
   label: string;
   href: string;
-  items?: readonly string[];
+  description?: string;
+  groups?: readonly NavigationGroup[];
 };
 
+/**
+ * P21 categorized navigation. Every label keeps its existing destination via
+ * itemHref(); groups only organize presentation into mega-menu columns.
+ */
 const navigation: readonly NavigationEntry[] = [
   { label: "Home", href: "/#home" },
   {
     label: "Mission",
     href: "/#mission",
-    items: ["The Challenge", "Our Mission", "Mission Scenario", "Mission Identity & Sign-in", "Mission & Crew Operations", "Why Autonomous Health", "Long-Duration Spaceflight"],
+    description: "The challenge, the mission story and why autonomy matters.",
+    groups: [
+      { title: "Mission story", items: ["The Challenge", "Our Mission", "Mission Scenario"] },
+      { title: "Why it matters", items: ["Why Autonomous Health", "Long-Duration Spaceflight"] },
+    ],
   },
   {
     label: "Science",
     href: "/#science",
-    items: ["Scientific Foundation", "Spaceflight Health Risks", "Biomarkers & Signals", "Personal Baselines", "Cognitive & Behavioral Health", "Environment & Radiation", "Scientific Safety Boundaries"],
+    description: "Evidence, biomarkers, baselines and the safety boundaries that govern them.",
+    groups: [
+      { title: "Foundations", items: ["Scientific Foundation", "Spaceflight Health Risks", "Biomarkers & Signals", "Personal Baselines"] },
+      { title: "Context & safety", items: ["Cognitive & Behavioral Health", "Environment & Radiation", "NASA Scientific Evidence", "Scientific Safety Boundaries"] },
+    ],
   },
   {
     label: "Platform",
     href: "/#platform",
-    items: ["Platform Overview", "Mission Workspace", "Daily Readiness Check-in", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Personalization", "Health Intelligence", "NASA Scientific Evidence", "Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
+    description: "Crew-facing workspaces, monitoring, health domains and explainable intelligence.",
+    groups: [
+      { title: "Crew workspace", items: ["Platform Overview", "Mission Workspace", "Daily Readiness Check-in", "Astronaut Health Twin", "Personalization"] },
+      { title: "Monitoring & data", items: ["Live Monitoring", "Device Integration Center", "Recorded Mission Data"] },
+      { title: "Health domains", items: ["Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health"] },
+      { title: "Intelligence & action", items: ["Health Intelligence", "Explainable Alerts", "Action Guidance"] },
+    ],
+  },
+  {
+    label: "Operations",
+    href: "/#mission",
+    description: "Sign-in, mission governance, ground oversight and offline continuity.",
+    groups: [
+      { title: "Access & governance", items: ["Mission Identity & Sign-in", "Mission & Crew Operations"] },
+      { title: "Ground & autonomy", items: ["Ground & Research Console", "Offline Mission Mode"] },
+    ],
   },
   {
     label: "Technology",
     href: "/#technology",
-    items: ["System Architecture", "Device Integration", "Wearables", "Medical & Laboratory Data", "Environmental Telemetry", "Canonical Health Data Model", "Offline-First Architecture", "Security & Privacy"],
+    description: "Eight in-depth topics on how the platform is built.",
+    groups: [
+      { title: "Architecture", items: ["System Architecture", "Canonical Health Data Model", "Offline-First Architecture", "Security & Privacy"] },
+      { title: "Data sources", items: ["Device Integration", "Wearables", "Medical & Laboratory Data", "Environmental Telemetry"] },
+      { title: "Overview", items: ["All Technology Topics"] },
+    ],
   },
   {
-    label: "Open Source",
+    label: "Open Source & About",
     href: "/#open-source",
-    items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License", "Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"],
-  },
-  {
-    label: "About",
-    href: "/#about",
-    items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Challenge Submission", "Resources & References"],
+    description: "Repository, documentation, governance and project background.",
+    groups: [
+      { title: "Open Source", href: "/#open-source", items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License"] },
+      { title: "Backend on GitHub", items: ["Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"] },
+      { title: "About", href: "/#about", items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Challenge Submission", "Resources & References"] },
+    ],
   },
 ];
+
+/** P21: Technology labels open dedicated educational topic pages. */
+const technologyTopicDestinations: Readonly<Record<string, string>> = {
+  "All Technology Topics": "/technology",
+  "System Architecture": "/technology/system-architecture",
+  "Device Integration": "/technology/device-integration",
+  Wearables: "/technology/wearables",
+  "Medical & Laboratory Data": "/technology/medical-laboratory-data",
+  "Environmental Telemetry": "/technology/environmental-telemetry",
+  "Canonical Health Data Model": "/technology/canonical-health-data-model",
+  "Offline-First Architecture": "/technology/offline-first-architecture",
+  "Security & Privacy": "/technology/security-privacy",
+};
+
+export function navigationItems(entry: NavigationEntry) {
+  return entry.groups?.flatMap((group) => group.items) ?? [];
+}
 
 function guideHref(anchor: string) {
   return `/project/guide#${anchor}`;
