@@ -1,4 +1,5 @@
 import { P35SubmissionReadiness } from "@/components/p35-submission-readiness";
+import { P354IntegrationReadiness } from "@/components/p354-integration-readiness";
 import evidenceLedger from "../../data/submission/p20-evidence.v1.json";
 import { CheckCircle2, ExternalLink, Film, MonitorPlay, Rocket, ShieldCheck, TriangleAlert } from "lucide-react";
 
@@ -81,6 +82,7 @@ export function ChallengeSubmissionPage() {
       </section>
 
       <P35SubmissionReadiness />
+      <P354IntegrationReadiness />
 
       <section className="mt-10 border border-border bg-surface p-5 text-sm leading-6 text-muted-foreground">
         <p>The Mitochondria is an independent open-source NASA Space Apps Challenge project. It is not NASA-endorsed, is not clinically validated and does not provide autonomous diagnosis or treatment.</p>
