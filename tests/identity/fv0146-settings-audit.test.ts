@@ -94,10 +94,10 @@ describe("FV-01.4.6 Mission Audit Log", () => {
   });
   it("never surfaces raw actor IDs", () => {
     const p = sanitizeAuditPage({
-      next_cursor: "abc_-=",
+      next_cursor: "v3.eyJ2IjoiMyJ9." + "a".repeat(64),
       entries: [
         {
-          ref: "0123456789abcdef0123",
+          ref: "0123456789abcdef0123456789abcdef",
           occurred_at: "2026-01-01T00:00:00Z",
           action: "a",
           outcome: "x",
