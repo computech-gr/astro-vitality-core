@@ -65,7 +65,13 @@ describe("FV-01.4.3 approval and refusal handling", () => {
   test("only open pending Ground Medical invites are listed; inviter or unbound invites cannot be approved", () => {
     const list = pendingApprovalsFor([
       { ...base, approval_state: "pending", issued_by_me: true, recipient_email: "r@x.test" },
-      { ...base, id: "i2", approval_state: "pending", issued_by_me: false, recipient_email: "r@x.test" },
+      {
+        ...base,
+        id: "i2",
+        approval_state: "pending",
+        issued_by_me: false,
+        recipient_email: "r@x.test",
+      },
       { ...base, id: "i6", approval_state: "pending", issued_by_me: false, recipient_email: null },
       { ...base, id: "i3", approval_state: "approved" },
       { ...base, id: "i4", role: "researcher", approval_state: "not_required" },
