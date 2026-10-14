@@ -104,7 +104,8 @@ export function sanitizeAuditPage(raw: unknown): MissionAuditPage {
     actions: unknown[];
   }>;
   const cursor =
-    typeof page.next_cursor === "string" && /^[A-Za-z0-9_=-]{1,600}$/.test(page.next_cursor)
+    typeof page.next_cursor === "string" &&
+    /^v3\.[A-Za-z0-9_-]{1,300}\.[0-9a-f]{64}$/.test(page.next_cursor)
       ? page.next_cursor
       : null;
   const entries = Array.isArray(page.entries) ? page.entries : [];
@@ -128,7 +129,7 @@ export function sanitizeAuditPage(raw: unknown): MissionAuditPage {
           ? e.actor
           : "member";
       return {
-        ref: typeof e.ref === "string" && /^[0-9a-f]{20}$/.test(e.ref) ? e.ref : "",
+        ref: typeof e.ref === "string" && /^[0-9a-f]{32}$/.test(e.ref) ? e.ref : "",
         occurred_at: String(e.occurred_at ?? ""),
         action: typeof e.action === "string" && IDENTIFIER.test(e.action) ? e.action : "other",
         outcome: e.outcome === "refused" ? "refused" : "success",

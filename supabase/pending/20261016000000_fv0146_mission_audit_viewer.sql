@@ -8,11 +8,17 @@
 --   * metadata values are returned only when they belong to an explicitly enumerated value set
 --     verified against every producer in supabase/migrations (no free text, no numbers outside range).
 --   * action / target_type / actor_role are returned only when they are lower-case identifiers.
--- Pagination: opaque, encrypted and HMAC-authenticated keyset cursor bound to the mission and the
---   exact filter set. Keys are derived (domain-separated) from the mission's server-only secret in
---   public.mission_research_keys, which no browser role can read.
--- Revision 2 (pre-deployment hardening): replaces p_before_at/p_before_id with p_cursor; removes raw IDs,
---   free-text reason and the unconstrained kind/outcome keys.
+-- Pagination (revision 3): compact, versioned, HMAC-SHA256-authenticated cursor; no encryption.
+--   Keyset order is (occurred_at desc, ref desc) where ref = HMAC(record id) is already the value shown
+--   to the browser, so the cursor carries only data the caller can already see (timestamp + ref) and
+--   no internal record identifier. Confidentiality is therefore not needed; integrity is.
+--   Format: v3.<base64url(json{v,m,f,t,r})>.<hex HMAC>, bound to version, mission, a fingerprint of the
+--   exact normalized filters and the position. Comparison of tags is over equal-length hex strings.
+-- Keys: domain-separated HMAC keys (cursor, entry ref, actor pseudonym) derived from the mission's
+--   server-only secret in public.mission_research_keys, which no browser role can read.
+-- Revision 2: removed raw IDs, free-text reason and unconstrained kind/outcome keys.
+-- Revision 3: replaced the custom deterministic-IV AES-CBC cursor with the HMAC cursor above and
+--   replaced unkeyed SHA-256 actor pseudonyms with keyed HMAC pseudonyms.
 
 create or replace function public.get_mission_audit_log(
   p_mission_id text,
@@ -35,20 +41,18 @@ declare
   v_search text := nullif(btrim(coalesce(p_search, '')), '');
   v_secret bytea;
   v_mac_key bytea;
-  v_enc_key bytea;
   v_ref_key bytea;
+  v_actor_key bytea;
   v_fp text;
   v_before_at timestamptz;
-  v_before_id uuid;
-  v_raw bytea;
+  v_before_ref text;
+  v_parts text[];
   v_payload jsonb;
   v_rows jsonb;
   v_more boolean;
   v_last_at timestamptz;
-  v_last_id uuid;
-  v_plain bytea;
-  v_iv bytea;
-  v_ct bytea;
+  v_last_ref text;
+  v_body text;
   v_next text;
 begin
   if v_uid is null then raise exception 'authentication required'; end if;
@@ -63,57 +67,61 @@ begin
   select k.pseudonym_salt into v_secret from public.mission_research_keys k where k.mission_id = p_mission_id;
   if v_secret is null then raise exception 'mission audit log unavailable'; end if;
   v_mac_key := extensions.digest(v_secret || convert_to('fv0146:cursor:mac', 'utf8'), 'sha256');
-  v_enc_key := extensions.digest(v_secret || convert_to('fv0146:cursor:enc', 'utf8'), 'sha256');
   v_ref_key := extensions.digest(v_secret || convert_to('fv0146:entry:ref', 'utf8'), 'sha256');
+  v_actor_key := extensions.digest(v_secret || convert_to('fv0146:actor:pseudonym', 'utf8'), 'sha256');
   -- Filter fingerprint: a cursor is only valid for the mission and filters it was issued for.
-  v_fp := encode(extensions.digest(concat_ws('|', 'v2', p_mission_id, coalesce(p_from::text, ''), coalesce(p_to::text, ''),
+  v_fp := encode(extensions.digest(concat_ws('|', 'v3', p_mission_id, coalesce(p_from::text, ''), coalesce(p_to::text, ''),
             coalesce(p_action, ''), coalesce(p_outcome, ''), coalesce(lower(v_search), '')), 'sha256'), 'hex');
 
   if p_cursor is not null then
     begin
-      if length(p_cursor) > 600 then raise exception 'x'; end if;
-      v_raw := decode(translate(p_cursor, '-_', '+/'), 'base64');
-      if length(v_raw) < 16 + 16 + 32 then raise exception 'x'; end if;
-      if extensions.hmac(substring(v_raw from 1 for length(v_raw) - 32), v_mac_key, 'sha256')
-         <> substring(v_raw from length(v_raw) - 31) then raise exception 'x'; end if;
-      v_payload := convert_from(extensions.decrypt_iv(substring(v_raw from 17 for length(v_raw) - 48), v_enc_key,
-                     substring(v_raw from 1 for 16), 'aes-cbc/pad:pkcs'), 'utf8')::jsonb;
-      if v_payload ->> 'v' <> '2' or v_payload ->> 'f' <> v_fp then raise exception 'x'; end if;
+      if length(p_cursor) > 400 then raise exception 'x'; end if;
+      v_parts := string_to_array(p_cursor, '.');
+      if array_length(v_parts, 1) <> 3 or v_parts[1] <> 'v3' or v_parts[3] !~ '^[0-9a-f]{64}$'
+         or v_parts[2] !~ '^[A-Za-z0-9_-]+$' then raise exception 'x'; end if;
+      if encode(extensions.hmac(convert_to('v3.' || v_parts[2], 'utf8'), v_mac_key, 'sha256'), 'hex') <> v_parts[3]
+        then raise exception 'x'; end if;
+      v_payload := convert_from(decode(rpad(translate(v_parts[2], '-_', '+/'),
+                     ((length(v_parts[2]) + 3) / 4) * 4, '='), 'base64'), 'utf8')::jsonb;
+      if v_payload ->> 'v' <> '3' or v_payload ->> 'm' <> p_mission_id or v_payload ->> 'f' <> v_fp
+         or (v_payload ->> 'r') !~ '^[0-9a-f]{32}$' then raise exception 'x'; end if;
       v_before_at := (v_payload ->> 't')::timestamptz;
-      v_before_id := (v_payload ->> 'i')::uuid;
+      v_before_ref := v_payload ->> 'r';
+      if v_before_at is null then raise exception 'x'; end if;
     exception when others then
       raise exception 'invalid cursor';
     end;
   end if;
 
   with base as (
-    select a.id, a.occurred_at, a.action, a.target_type, a.actor_user_id, a.metadata,
+    select a.occurred_at,
+      left(encode(extensions.hmac(convert_to(a.id::text, 'utf8'), v_ref_key, 'sha256'), 'hex'), 32) as ref, a.action, a.target_type, a.actor_user_id, a.metadata,
       case when a.action ~ '(denied|rejected|refused)' or a.metadata ? 'reason' then 'refused' else 'success' end as outcome
     from public.audit_events a
     where a.mission_id = p_mission_id
       and (p_from is null or a.occurred_at >= p_from)
       and (p_to is null or a.occurred_at < p_to)
       and (p_action is null or a.action = p_action)
-      and (v_before_at is null or (a.occurred_at, a.id) < (v_before_at, v_before_id))
       and (v_search is null
         or strpos(lower(a.action), lower(v_search)) > 0
         or strpos(lower(a.target_type), lower(v_search)) > 0)
   ), filtered as (
-    select * from base where p_outcome is null or outcome = p_outcome
-    order by occurred_at desc, id desc
+    select * from base where (p_outcome is null or outcome = p_outcome)
+      and (v_before_at is null or (occurred_at, ref) < (v_before_at, v_before_ref))
+    order by occurred_at desc, ref desc
     limit v_limit + 1
   ), page as (
-    select *, row_number() over (order by occurred_at desc, id desc) as rn from filtered
+    select *, row_number() over (order by occurred_at desc, ref desc) as rn from filtered
   )
   select
     coalesce(jsonb_agg(jsonb_build_object(
-      'ref', left(encode(extensions.hmac(convert_to(f.id::text, 'utf8'), v_ref_key, 'sha256'), 'hex'), 20),
+      'ref', f.ref,
       'occurred_at', f.occurred_at,
       'action', case when f.action ~ '^[a-z][a-z0-9_]{0,63}$' then f.action else 'other' end,
       'outcome', f.outcome,
       'target_type', case when f.target_type ~ '^[a-z][a-z0-9_]{0,63}$' then f.target_type else 'other' end,
       'actor', case when f.actor_user_id = v_uid then 'self'
-        else 'member-' || left(encode(extensions.digest(p_mission_id || ':' || f.actor_user_id::text, 'sha256'), 'hex'), 8) end,
+        else 'member-' || left(encode(extensions.hmac(convert_to(f.actor_user_id::text, 'utf8'), v_actor_key, 'sha256'), 'hex'), 8) end,
       'actor_role', (select string_agg(m.role, ',' order by m.role) from public.mission_memberships m
         where m.mission_id = p_mission_id and m.user_id = f.actor_user_id
           and m.role in ('crew_self', 'ground_medical', 'mission_operator', 'researcher')),
@@ -139,18 +147,17 @@ begin
             when k in ('external_ref_present', 'bootstrap_one_time', 'creator_operator') then jsonb_typeof(f.metadata -> k) = 'boolean'
             else false
           end) d)
-    ) order by f.occurred_at desc, f.id desc) filter (where f.rn <= v_limit), '[]'::jsonb),
+    ) order by f.occurred_at desc, f.ref desc) filter (where f.rn <= v_limit), '[]'::jsonb),
     count(*) > v_limit,
-    (array_agg(f.occurred_at order by f.occurred_at desc, f.id desc) filter (where f.rn <= v_limit))[v_limit],
-    (array_agg(f.id order by f.occurred_at desc, f.id desc) filter (where f.rn <= v_limit))[v_limit]
-  into v_rows, v_more, v_last_at, v_last_id
+    (array_agg(f.occurred_at order by f.occurred_at desc, f.ref desc) filter (where f.rn <= v_limit))[v_limit],
+    (array_agg(f.ref order by f.occurred_at desc, f.ref desc) filter (where f.rn <= v_limit))[v_limit]
+  into v_rows, v_more, v_last_at, v_last_ref
   from page f;
 
-  if coalesce(v_more, false) and v_last_id is not null then
-    v_plain := convert_to(jsonb_build_object('v', '2', 'f', v_fp, 't', v_last_at, 'i', v_last_id)::text, 'utf8');
-    v_iv := substring(extensions.hmac(v_plain, v_enc_key, 'sha256') from 1 for 16); -- deterministic IV (SIV-style)
-    v_ct := extensions.encrypt_iv(v_plain, v_enc_key, v_iv, 'aes-cbc/pad:pkcs');
-    v_next := translate(replace(encode(v_iv || v_ct || extensions.hmac(v_iv || v_ct, v_mac_key, 'sha256'), 'base64'), E'\n', ''), '+/', '-_');
+  if coalesce(v_more, false) and v_last_ref is not null then
+    v_body := translate(rtrim(replace(encode(convert_to(jsonb_build_object('v', '3', 'm', p_mission_id, 'f', v_fp,
+                't', v_last_at, 'r', v_last_ref)::text, 'utf8'), 'base64'), E'\n', ''), '='), '+/', '-_');
+    v_next := 'v3.' || v_body || '.' || encode(extensions.hmac(convert_to('v3.' || v_body, 'utf8'), v_mac_key, 'sha256'), 'hex');
   end if;
 
   return jsonb_build_object(
@@ -167,4 +174,4 @@ $$;
 revoke all on function public.get_mission_audit_log(text, timestamptz, timestamptz, text, text, text, integer, text) from public, anon;
 grant execute on function public.get_mission_audit_log(text, timestamptz, timestamptz, text, text, text, integer, text) to authenticated;
 comment on function public.get_mission_audit_log(text, timestamptz, timestamptz, text, text, text, integer, text)
-  is 'FV-01.4.6 r2: read-only, operator-only, mission-scoped, server-redacted audit log reader with opaque authenticated cursor.';
+  is 'FV-01.4.6 r2: read-only, operator-only, mission-scoped, server-redacted audit log reader with versioned HMAC-authenticated cursor (r3).';

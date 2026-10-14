@@ -21,6 +21,8 @@ create or replace function fvtest.raises46(p_sql text, p_pattern text) returns b
 begin execute p_sql; return false; exception when others then return sqlerrm ~ p_pattern; end $$;
 grant execute on function fvtest.raises46(text, text) to authenticated;
 
+create or replace function fvtest.b64url_json(p text) returns jsonb language sql as $f$ select convert_from(decode(rpad(translate(p, '-_', '+/'), ((length(p) + 3) / 4) * 4, '='), 'base64'), 'utf8')::jsonb $f$;
+grant execute on function fvtest.b64url_json(text) to authenticated;
 set role authenticated;
 select set_config('request.jwt.claim.sub', :'op', false);
 select fvtest.check(jsonb_array_length(public.get_mission_audit_log('m1') -> 'entries') >= 3, 'FV0146 operator reads own mission audit log');
@@ -49,9 +51,21 @@ do $$ declare c text; p jsonb; i int := 0; begin
 select fvtest.check((select array_agg(ref order by n) from fv46_walk) = (select array_agg(e ->> 'ref' order by o) from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') with ordinality x(e, o)), 'FV0146 keyset cursor walk equals full ordered read');
 select fvtest.check((select count(distinct ref) = count(*) from fv46_walk), 'FV0146 cursor walk has no duplicates');
 select fvtest.check(not exists (select 1 from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') e where e ? 'id' or (e ->> 'ref') ~ '-'), 'FV0146 raw audit record IDs never returned');
-select fvtest.check(not exists (select 1 from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') e where (e ->> 'ref') !~ '^[0-9a-f]{20}$'), 'FV0146 ref is an opaque 20-hex HMAC');
+select fvtest.check(not exists (select 1 from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') e where (e ->> 'ref') !~ '^[0-9a-f]{32}$'), 'FV0146 ref is an opaque 32-hex HMAC');
 select fvtest.check((public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor') !~ '[0-9a-f]{8}-[0-9a-f]{4}', 'FV0146 cursor does not reveal a UUID');
 select fvtest.check(fvtest.raises46(format($q$select public.get_mission_audit_log('m1', p_limit => 1, p_cursor => %L)$q$, overlay((public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor') placing (case when substr(public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor', 20, 1) = 'A' then 'B' else 'A' end) from 20 for 1)), 'invalid cursor'), 'FV0146 tampered cursor rejected');
+select fvtest.check((select split_part(c, '.', 1) = 'v3' and split_part(c, '.', 3) ~ '^[0-9a-f]{64}$' from (select public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor' c) x), 'FV0146 cursor is versioned v3 with HMAC-SHA256 tag');
+select fvtest.check((select (select array_agg(k order by k) from jsonb_object_keys(fvtest.b64url_json(split_part(p ->> 'next_cursor', '.', 2))) k) = array['f','m','r','t','v']
+   and fvtest.b64url_json(split_part(p ->> 'next_cursor', '.', 2)) ->> 'r' = p -> 'entries' -> 0 ->> 'ref'
+   from (select public.get_mission_audit_log('m1', p_limit => 1) p) x), 'FV0146 cursor carries only mission, filter fingerprint, timestamp and the visible ref (no internal ID)');
+select fvtest.check((select fvtest.raises46(format($q$select public.get_mission_audit_log('m1', p_limit => 1, p_cursor => %L)$q$,
+   'v3.' || translate(rtrim(replace(encode(convert_to(jsonb_set(fvtest.b64url_json(split_part(c, '.', 2)), '{t}', '"2099-01-01T00:00:00+00:00"')::text, 'utf8'), 'base64'), E'\n', ''), '='), '+/', '-_') || '.' || split_part(c, '.', 3)), 'invalid cursor')
+   from (select public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor' c) x), 'FV0146 modified cursor position with original tag rejected');
+select fvtest.check((select fvtest.raises46(format($q$select public.get_mission_audit_log('m1', p_cursor => %L)$q$, replace(c, 'v3.', 'v2.')), 'invalid cursor') from (select public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor' c) x), 'FV0146 version downgrade rejected');
+select fvtest.check((select fvtest.raises46(format($q$select public.get_mission_audit_log('m1', p_cursor => %L)$q$, c || '.x'), 'invalid cursor') from (select public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor' c) x), 'FV0146 malformed segment count rejected');
+select fvtest.check((select public.get_mission_audit_log('m1', p_limit => 1, p_cursor => c) = public.get_mission_audit_log('m1', p_limit => 1, p_cursor => c) from (select public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor' c) x), 'FV0146 cursor replay is deterministic within the same mission and filters');
+select fvtest.check(not exists (select 1 from jsonb_array_elements(public.get_mission_audit_log('m1', p_limit => 100) -> 'entries') e
+   where e ->> 'actor' in ('member-' || left(encode(extensions.digest('m1:' || '00000000-0000-0000-0000-0000000000a2', 'sha256'), 'hex'), 8))), 'FV0146 actor pseudonym is keyed (not unkeyed SHA-256)');
 select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1', p_cursor => 'not-a-cursor')$q$, 'invalid cursor'), 'FV0146 garbage cursor rejected');
 select fvtest.check(fvtest.raises46($q$select public.get_mission_audit_log('m1', p_cursor => repeat('A', 700))$q$, 'invalid cursor'), 'FV0146 oversized cursor rejected');
 select fvtest.check(fvtest.raises46(format($q$select public.get_mission_audit_log('m1', p_action => 'mission_updated', p_cursor => %L)$q$, public.get_mission_audit_log('m1', p_limit => 1) ->> 'next_cursor'), 'invalid cursor'), 'FV0146 cursor bound to its filter set');
