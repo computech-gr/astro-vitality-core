@@ -3,11 +3,12 @@ import { Download, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionMembershipContext } from "@/infrastructure/mission-identity";
+import { consoleSelectionKey, orderConsoleMemberships, resolveConsoleSelection } from "@/domain/mission-access/role-compatibility";
 import { loadDeidentifiedResearchExport, loadGroundMissionSnapshot, type GroundSnapshotDto } from "@/infrastructure/ground-research";
 
 export function GroundResearchConsolePage() {
   const [memberships, setMemberships] = useState<MissionMembershipContext[]>([]);
-  const [missionId, setMissionId] = useState("");
+  const [selectionKey, setSelectionKey] = useState("");
   const [snapshot, setSnapshot] = useState<GroundSnapshotDto>();
   const [status, setStatus] = useState("Sign in with an active research or ground medical mission membership.");
   const [busy, setBusy] = useState(false);
@@ -17,17 +18,18 @@ export function GroundResearchConsolePage() {
       try {
         const identity = await loadMissionIdentity();
         if (!live) return;
-        const eligible = identity.memberships.filter(m => m.role === "researcher" || m.role === "ground_medical");
+        const eligible = orderConsoleMemberships(identity.memberships);
         setMemberships(eligible);
-        setMissionId(previous => eligible.some(m => m.missionId === previous) ? previous : (eligible[0]?.missionId ?? ""));
+        setSelectionKey(previous => { const next = resolveConsoleSelection(eligible, previous); return next ? consoleSelectionKey(next) : ""; });
         setSnapshot(undefined);
-      } catch { if (live) { setMemberships([]); setMissionId(""); setSnapshot(undefined); } }
+      } catch { if (live) { setMemberships([]); setSelectionKey(""); setSnapshot(undefined); } }
     };
     void refresh();
     const unsubscribe = subscribeMissionIdentity(() => { void refresh(); });
     return () => { live = false; unsubscribe(); };
   }, []);
-  const selected = memberships.find(m => m.missionId === missionId);
+  // FV-01.4.3 F3: selection is mission+role, resolved deterministically; the server still authorizes every call.
+  const selected = memberships.find(m => consoleSelectionKey(m) === selectionKey);
   async function loadSnapshot() {
     if (!selected || selected.role !== "ground_medical") return;
     setBusy(true);
@@ -56,15 +58,16 @@ export function GroundResearchConsolePage() {
     <p className="mt-5 max-w-3xl text-muted-foreground">Researcher access is aggregate-only. No individual events, pseudonyms, exact times, payloads, source IDs or medical records are exported. Small cohorts and low-volume missions are suppressed by the server.</p>
     <h2 className="sr-only">Research export workspace</h2>
     <Card className="mt-8"><CardHeader><CardTitle>Authorized mission context</CardTitle></CardHeader><CardContent className="space-y-4">
-      <label htmlFor="p28-mission" className="block text-sm font-medium">Active research / medical mission</label>
-      <select id="p28-mission" className="w-full rounded-md border border-border bg-background p-3 text-foreground" value={missionId} onChange={e => { setMissionId(e.target.value); setSnapshot(undefined); }}>
+      <label htmlFor="p28-mission" className="block text-sm font-medium">Active research / medical mission and role</label>
+      <select id="p28-mission" className="w-full rounded-md border border-border bg-background p-3 text-foreground" value={selectionKey} onChange={e => { setSelectionKey(e.target.value); setSnapshot(undefined); }}>
         {!memberships.length && <option value="">No eligible active membership</option>}
-        {memberships.map(m => <option key={`${m.missionId}:${m.role}`} value={m.missionId}>{m.missionName ?? m.missionCode ?? m.missionId} — {m.role}</option>)}
+        {memberships.map(m => <option key={`${m.missionId}:${m.role}`} value={consoleSelectionKey(m)}>{m.missionName ?? m.missionCode ?? m.missionId} — {m.role === "ground_medical" ? "Ground medical" : "Researcher"}</option>)}
       </select>
       <div className="flex flex-wrap gap-3">
         <Button disabled={busy || !selected} onClick={() => void exportResearch()}><Download className="mr-2 size-4"/> Export aggregate</Button>
         <Button variant="outline" disabled={busy || selected?.role !== "ground_medical"} onClick={() => void loadSnapshot()}>Ground medical snapshot</Button>
       </div>
+      {selected && <p className="text-xs text-muted-foreground">Acting as: {selected.role === "ground_medical" ? "Ground medical" : "Researcher"}</p>}
       <p role="status" className="text-sm text-muted-foreground">{status}</p>
     </CardContent></Card>
     {snapshot && selected?.role === "ground_medical" && <div className="mt-6 grid gap-4 sm:grid-cols-3">
