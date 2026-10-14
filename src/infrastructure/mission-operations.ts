@@ -265,7 +265,7 @@ export async function loadMissionAuditLog(input: {
   outcome?: "" | "success" | "refused";
   search?: string;
   limit?: number;
-  before?: { at: string; id: string } | null;
+  cursor?: string | null;
 }): Promise<MissionAuditPage> {
   const raw = await rpc<unknown>("get_mission_audit_log", {
     p_mission_id: input.missionId,
@@ -275,8 +275,7 @@ export async function loadMissionAuditLog(input: {
     p_outcome: input.outcome || null,
     p_search: input.search?.trim() || null,
     p_limit: input.limit ?? 25,
-    p_before_at: input.before?.at ?? null,
-    p_before_id: input.before?.id ?? null,
+    p_cursor: input.cursor ?? null,
   });
   return sanitizeAuditPage(raw);
 }
