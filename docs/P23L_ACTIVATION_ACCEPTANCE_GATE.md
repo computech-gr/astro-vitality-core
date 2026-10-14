@@ -23,3 +23,21 @@ No further UI or bootstrap migrations are required solely to repeat static readi
 ## Scope
 
 This patch adds a reproducible **static** acceptance gate and this runbook. It does not execute privileged SQL, create accounts, apply migrations, or alter clinical data.
+
+## Recorded evidence (FV-01.4.5, read-only, non-secret)
+
+Read-only production query of `mission_bootstrap_control` and `mission_memberships` (2026-10-14):
+
+| Item | Value |
+| --- | --- |
+| Bootstrap armed at | 2026-10-11 21:22:03 UTC |
+| Bootstrap consumed at | 2026-10-11 21:26:08 UTC (single consumption, ~4 min after arming) |
+| Bootstrap mission | MISSION_TEST |
+| Consumer holds an active Mission Operator membership in that mission | Yes (1) |
+
+Status: steps 1–4 (account, arming, one-time redemption, operator membership) are **recorded as completed**. No secret, hash value, user ID or email is recorded here.
+
+Gaps:
+- The stored secret hash was not cleared after consumption. It is inert (consumption is single-use and `consumed_at` is set), but clearing it would need a privileged write and separate owner authorization.
+- No timestamped owner record exists for steps 5–7 of this runbook as a single P23L run. Related evidence lives in the FV-01.4.x documents (B1–B7); duplicate/cross-mission write tests remain NOT EXECUTED and real-device offline/Camera PPG tests remain NOT EXECUTED (P34).
+- The bootstrap must never be repeated or re-armed.

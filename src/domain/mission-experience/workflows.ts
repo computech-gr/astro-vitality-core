@@ -17,7 +17,7 @@ export const MISSION_WORKFLOWS: readonly MissionWorkflow[] = [
   { id: "guidance", title: "Self-assessment and guidance", detail: "Voluntary, session-only checklist and reviewed non-diagnostic protocol guidance.", href: "/mission/guidance", roles: ["crew_self"], category: "act" },
   { id: "offline", title: "Offline operations", detail: "Inspect encrypted local records, sync state and records needing human review.", href: "/mission/offline", roles: ["crew_self", "mission_operator"], category: "act" },
   { id: "alerts", title: "Review explainable alerts", detail: "Inspect quality, provenance and limitations; alerts are not diagnoses.", href: "/mission/alerts", roles: ["crew_self", "ground_medical", "mission_operator"], category: "review" },
-  { id: "ground", title: "Ground and research workspace", detail: "Medical access and privacy-restricted research exports remain role separated.", href: "/mission/ground", roles: ["ground_medical", "researcher", "mission_operator"], category: "review" },
+  { id: "ground", title: "Ground and research workspace", detail: "Medical access and privacy-restricted research exports remain role separated.", href: "/mission/ground", roles: ["ground_medical", "researcher"], category: "review" },
   { id: "operations", title: "Mission and crew operations", detail: "Manage authorized mission memberships and crew assignments.", href: "/mission/operations", roles: ["mission_operator"], category: "act" },
   { id: "simulation", title: "Synthetic mission demonstration", detail: "Explore four fictional crew profiles, never live astronaut health data.", href: "/mission/simulation", roles: ["crew_self", "ground_medical", "mission_operator", "researcher"], category: "observe" },
 ];

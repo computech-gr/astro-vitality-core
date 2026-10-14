@@ -341,7 +341,7 @@ export const TECHNOLOGY_TOPICS: readonly TechnologyTopic[] = [
     ],
     status: [
       { level: "implemented", text: "Row-level security, mission-scoped roles, audit events and pseudonymized export are implemented in production." },
-      { level: "partial", text: "Additional multi-role hardening is prepared and awaiting owner-authorized deployment." },
+      { level: "implemented", text: "FV-01.4.3 multi-role hardening (role compatibility, self-acceptance blocks, Ground Medical recipient binding and independent approval) is applied in production as governed migration 12." },
       { level: "partial", text: "An open platform-level finding (FV-01-13) keeps the overall final security gate blocked." },
     ],
     limitations: ["No independent penetration test has been completed.", "The platform does not yet offer multi-factor or directory-backed identity assurance."],
