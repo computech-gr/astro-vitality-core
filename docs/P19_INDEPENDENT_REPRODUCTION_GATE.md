@@ -47,7 +47,7 @@ supabase migration list --local
 find supabase/migrations -maxdepth 1 -type f -name '*.sql' -print | sort
 ```
 
-The repository must contain exactly the twelve governed migrations documented in `docs/LOCAL_REPRODUCIBILITY.md`, with no duplicate SQL content. `bun run verify:p19` is the authoritative repository gate for this invariant.
+The repository must contain exactly the thirteen governed migrations documented in `docs/LOCAL_REPRODUCIBILITY.md`, with no duplicate SQL content. `bun run verify:p19` is the authoritative repository gate for this invariant.
 
 ## Evidence to retain
 

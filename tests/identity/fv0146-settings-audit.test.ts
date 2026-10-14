@@ -136,7 +136,7 @@ describe("FV-01.4.6 Mission Audit Log", () => {
   });
   it("staged reader is operator-only, stable and grants no table access", () => {
     const sql = readFileSync(
-      "supabase/pending/20261016000000_fv0146_mission_audit_viewer.sql",
+      "supabase/migrations/20261016000000_fv0146_mission_audit_viewer.sql",
       "utf8",
     );
     expect(sql).toContain("array['mission_operator']");

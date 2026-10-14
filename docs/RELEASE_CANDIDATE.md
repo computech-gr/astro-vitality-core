@@ -26,7 +26,7 @@ An independent machine should be able to:
 1. clone the repository;
 2. install dependencies from `bun.lock`;
 3. start/reset local Supabase through Docker;
-4. apply the exact twelve-migration chain plus synthetic seed from repository state;
+4. apply the exact thirteen-migration chain plus synthetic seed from repository state;
 5. obtain browser-safe local environment configuration without exposing service-role credentials;
 6. run the full quality/security gate;
 7. start the application locally or build/run the Docker image;
