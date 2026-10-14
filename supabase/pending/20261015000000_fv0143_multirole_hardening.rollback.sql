@@ -207,7 +207,12 @@ end;
 $function$
 
 ;
-revoke execute on function public.approve_mission_invite(uuid) from authenticated;
+revoke execute on function public.approve_mission_invite(uuid, text) from authenticated;
+revoke execute on function public.bind_mission_invite_recipient(uuid, text) from authenticated;
 comment on column public.mission_invites.approval_state is 'DEPRECATED: FV-01.4.3 rolled back';
 comment on column public.mission_invites.approved_by is 'DEPRECATED: FV-01.4.3 rolled back';
 comment on column public.mission_invites.approved_at is 'DEPRECATED: FV-01.4.3 rolled back';
+comment on column public.mission_invites.intended_recipient_user_id is 'DEPRECATED: FV-01.4.3 rolled back';
+comment on column public.mission_invites.intended_recipient_email is 'DEPRECATED: FV-01.4.3 rolled back';
+comment on column public.mission_invites.recipient_bound_by is 'DEPRECATED: FV-01.4.3 rolled back';
+comment on column public.mission_invites.recipient_bound_at is 'DEPRECATED: FV-01.4.3 rolled back';
