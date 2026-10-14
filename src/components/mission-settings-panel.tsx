@@ -39,6 +39,7 @@ export function MissionSettingsPanel({ mission, onSaved, disabled }: Props) {
     setDraft(draftFromMission(mission));
     setState("idle");
     setMessage("");
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when the saved mission values change
   }, [mission.id, mission.name, mission.status, mission.starts_at, mission.ends_at]);
 
   const closed = isTerminalStatus(mission.status);
