@@ -11,4 +11,6 @@ assert.match(domain,/SELF_REPORTED_UNVERIFIED/); assert.match(domain,/realDevice
 const ui=read("src/components/real-device-acceptance.tsx");
 assert.match(ui,/session-only/); assert.match(ui,/NOT VERIFIED/); assert.match(ui,/Export session-only observations/);
 assert.match(read("src/components/validation-usability.tsx"),/<RealDeviceAcceptance \/>/);
+import { existsSync } from "node:fs";
+for (const c of ledger.cases) assert.ok(existsSync(`src/routes/${c.route.slice(1).replaceAll("/",".")}.tsx`), `P34 route not registered: ${c.route}`);
 console.log("P34 real-device acceptance verifier: PASS (15 not executed, zero approvals)");
