@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { TopicCardGrid } from "@/components/knowledge/technology-index";
 import astronautEarthrise from "@/assets/astronaut-earthrise.jpg";
 import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -29,7 +30,9 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -46,45 +49,99 @@ const NASA_URL = "https://www.spaceappschallenge.org/2026/";
 const CHALLENGE_URL = "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
 
+type NavigationGroup = {
+  title: string;
+  href?: string;
+  items: readonly string[];
+};
+
 type NavigationEntry = {
   label: string;
   href: string;
-  items?: readonly string[];
+  description?: string;
+  groups?: readonly NavigationGroup[];
 };
 
+/**
+ * P21 categorized navigation. Every label keeps its existing destination via
+ * itemHref(); groups only organize presentation into mega-menu columns.
+ */
 const navigation: readonly NavigationEntry[] = [
   { label: "Home", href: "/#home" },
   {
     label: "Mission",
     href: "/#mission",
-    items: ["The Challenge", "Our Mission", "Mission Scenario", "Mission Identity & Sign-in", "Mission & Crew Operations", "Why Autonomous Health", "Long-Duration Spaceflight"],
+    description: "The challenge, the mission story and why autonomy matters.",
+    groups: [
+      { title: "Mission story", items: ["The Challenge", "Our Mission", "Mission Scenario"] },
+      { title: "Why it matters", items: ["Why Autonomous Health", "Long-Duration Spaceflight"] },
+    ],
   },
   {
     label: "Science",
     href: "/#science",
-    items: ["Scientific Foundation", "Spaceflight Health Risks", "Biomarkers & Signals", "Personal Baselines", "Cognitive & Behavioral Health", "Environment & Radiation", "Scientific Safety Boundaries"],
+    description: "Evidence, biomarkers, baselines and the safety boundaries that govern them.",
+    groups: [
+      { title: "Foundations", items: ["Scientific Foundation", "Spaceflight Health Risks", "Biomarkers & Signals", "Personal Baselines"] },
+      { title: "Context & safety", items: ["Cognitive & Behavioral Health", "Environment & Radiation", "NASA Scientific Evidence", "Scientific Safety Boundaries"] },
+    ],
   },
   {
     label: "Platform",
     href: "/#platform",
-    items: ["Platform Overview", "Mission Workspace", "Daily Readiness Check-in", "Astronaut Health Twin", "Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Personalization", "Health Intelligence", "NASA Scientific Evidence", "Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health", "Explainable Alerts", "Action Guidance", "Offline Mission Mode", "Ground & Research Console"],
+    description: "Crew-facing workspaces, monitoring, health domains and explainable intelligence.",
+    groups: [
+      { title: "Crew workspace", items: ["Platform Overview", "Mission Workspace", "Daily Readiness Check-in", "Astronaut Health Twin", "Personalization"] },
+      { title: "Monitoring & data", items: ["Live Monitoring", "Device Integration Center", "Recorded Mission Data"] },
+      { title: "Health domains", items: ["Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health"] },
+      { title: "Intelligence & action", items: ["Health Intelligence", "Explainable Alerts", "Action Guidance"] },
+    ],
+  },
+  {
+    label: "Mission Operations",
+    href: "/#mission",
+    description: "Sign-in, mission governance, ground oversight and offline continuity.",
+    groups: [
+      { title: "Access & governance", items: ["Mission Identity & Sign-in", "Mission & Crew Operations"] },
+      { title: "Ground & autonomy", items: ["Ground & Research Console", "Offline Mission Mode"] },
+    ],
   },
   {
     label: "Technology",
     href: "/#technology",
-    items: ["System Architecture", "Device Integration", "Wearables", "Medical & Laboratory Data", "Environmental Telemetry", "Canonical Health Data Model", "Offline-First Architecture", "Security & Privacy"],
+    description: "Eight in-depth topics on how the platform is built.",
+    groups: [
+      { title: "Architecture", items: ["System Architecture", "Canonical Health Data Model", "Offline-First Architecture", "Security & Privacy"] },
+      { title: "Data sources", items: ["Device Integration", "Wearables", "Medical & Laboratory Data", "Environmental Telemetry"] },
+      { title: "Overview", items: ["All Technology Topics"] },
+    ],
   },
   {
-    label: "Open Source",
+    label: "Open Source & About",
     href: "/#open-source",
-    items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License", "Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"],
-  },
-  {
-    label: "About",
-    href: "/#about",
-    items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Challenge Submission", "Resources & References"],
+    description: "Repository, documentation, governance and project background.",
+    groups: [
+      { title: "Open Source", href: "/#open-source", items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License"] },
+      { title: "Backend on GitHub", items: ["Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"] },
+      { title: "About", href: "/#about", items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Challenge Submission", "Resources & References"] },
+    ],
   },
 ];
+
+/** P21: Technology labels open dedicated educational topic pages. */
+const technologyTopicDestinations: Readonly<Record<string, string>> = {
+  "All Technology Topics": "/technology",
+  "System Architecture": "/technology/system-architecture",
+  "Device Integration": "/technology/device-integration",
+  Wearables: "/technology/wearables",
+  "Medical & Laboratory Data": "/technology/medical-laboratory-data",
+  "Environmental Telemetry": "/technology/environmental-telemetry",
+  "Canonical Health Data Model": "/technology/canonical-health-data-model",
+  "Offline-First Architecture": "/technology/offline-first-architecture",
+  "Security & Privacy": "/technology/security-privacy",
+};
+
+
 
 function guideHref(anchor: string) {
   return `/project/guide#${anchor}`;
@@ -126,6 +183,7 @@ const guideDestinations: Readonly<Record<string, string>> = {
 };
 
 function itemHref(label: string, fallback: string) {
+  if (technologyTopicDestinations[label]) return technologyTopicDestinations[label];
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "Backend Architecture (GitHub)") return `${GITHUB_URL}/blob/main/docs/ARCHITECTURE.md`;
   if (label === "Database Schema & Migrations (GitHub)") return `${GITHUB_URL}/tree/main/supabase/migrations`;
@@ -199,42 +257,56 @@ export function SiteHeader() {
 
   return (
     <header data-site-header className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
-      <div className="mx-auto grid h-[4.75rem] w-full max-w-[94rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:px-8">
+      <div className="mx-auto grid h-[4.75rem] w-full max-w-[94rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 lg:px-8 xl:grid-cols-[auto_minmax(0,1fr)_auto]">
         <Brand />
-        <nav aria-label="Primary navigation" className="hidden items-center justify-center gap-1 lg:flex">
-          {navigation.map((entry) => entry.items ? (
-            <DropdownMenu key={entry.label}>
+        <nav aria-label="Primary navigation" className="hidden items-center justify-center gap-0.5 xl:flex">
+          {navigation.map((entry) => entry.groups ? (
+            <DropdownMenu key={entry.label} modal={false}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-10 px-2.5 text-muted-foreground hover:text-foreground xl:px-3">
+                <Button variant="ghost" size="sm" className="h-10 px-2.5 text-muted-foreground hover:text-foreground data-[state=open]:text-foreground">
                   {entry.label}<ChevronDown aria-hidden="true" className="size-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-72 border-border bg-popover/95 p-2 backdrop-blur-xl">
-                {entry.items.map((item) => {
-                  const href = itemHref(item, entry.href);
-                  const external = isExternal(href);
-                  return (
-                    <DropdownMenuItem key={item} asChild className="min-h-10 cursor-pointer px-3">
-                      <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="flex items-center gap-1.5">
-                        {item}{external && <ExternalLink aria-hidden="true" className="size-3.5" />}
-                      </a>
-                    </DropdownMenuItem>
-                  );
-                })}
+              <DropdownMenuContent
+                align="center"
+                collisionPadding={16}
+                data-mega-menu={entry.label}
+                className="max-h-[calc(100dvh-6rem)] w-[min(calc(100vw-2rem),var(--mega-width))] overflow-y-auto border-border bg-popover/95 p-0 backdrop-blur-xl"
+                style={{ ["--mega-width" as string]: `${Math.min(entry.groups.length, 4) * 15 + 2}rem` }}
+              >
+                {entry.description && <p className="border-b border-border px-5 py-3 text-xs text-muted-foreground">{entry.description}</p>}
+                <div className="grid gap-x-2 p-3" style={{ gridTemplateColumns: `repeat(${Math.min(entry.groups.length, 4)}, minmax(0, 1fr))` }}>
+                  {entry.groups.map((group) => (
+                    <DropdownMenuGroup key={group.title} className="min-w-0">
+                      <DropdownMenuLabel className="px-3 pb-1 pt-2 font-mono text-[0.65rem] font-semibold uppercase tracking-wider text-primary">{group.title}</DropdownMenuLabel>
+                      {group.items.map((item) => {
+                        const href = itemHref(item, group.href ?? entry.href);
+                        const external = isExternal(href);
+                        return (
+                          <DropdownMenuItem key={item} asChild className="min-h-10 cursor-pointer px-3">
+                            <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="flex items-center gap-1.5">
+                              {item}{external && <><ExternalLink aria-hidden="true" className="size-3.5" /><span className="sr-only"> (opens in a new tab)</span></>}
+                            </a>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuGroup>
+                  ))}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button key={entry.label} variant="ghost" size="sm" asChild className="h-10 px-2.5 text-muted-foreground hover:text-foreground xl:px-3">
+            <Button key={entry.label} variant="ghost" size="sm" asChild className="h-10 px-2.5 text-muted-foreground hover:text-foreground">
               <a href={entry.href}>{entry.label}</a>
             </Button>
           ))}
         </nav>
-        <Button asChild className="hidden h-11 bg-primary px-5 font-semibold text-primary-foreground shadow-[0_0_30px_var(--primary-glow)] hover:bg-primary/90 lg:inline-flex">
+        <Button asChild className="hidden h-11 bg-primary px-4 font-semibold text-primary-foreground shadow-[0_0_30px_var(--primary-glow)] hover:bg-primary/90 2xl:inline-flex">
           <a href={NASA_URL} target="_blank" rel="noopener noreferrer">NASA Space Apps 2026 <ExternalLink aria-hidden="true" /></a>
         </Button>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" aria-label="Open navigation menu" className="min-h-11 min-w-11 border-border bg-background/60 lg:hidden"><Menu /></Button>
+            <Button variant="outline" size="icon" aria-label="Open navigation menu" className="min-h-11 min-w-11 border-border bg-background/60 xl:hidden"><Menu /></Button>
           </SheetTrigger>
           <SheetContent className="w-[min(92vw,26rem)] overflow-y-auto border-border bg-background p-5 pt-16">
             <SheetHeader className="text-left">
@@ -244,13 +316,16 @@ export function SiteHeader() {
             <nav aria-label="Mobile navigation" className="mt-5">
               <SheetClose asChild><a href="/#home" className="flex min-h-11 items-center border-b border-border py-3 font-medium">Home</a></SheetClose>
               <Accordion type="multiple">
-                {navigation.filter((entry) => entry.items).map((entry) => (
+                {navigation.filter((entry) => entry.groups).map((entry) => (
                   <AccordionItem value={entry.label} key={entry.label}>
                     <AccordionTrigger className="min-h-12 py-3 text-base hover:no-underline">{entry.label}</AccordionTrigger>
                     <AccordionContent>
-                      <div className="border-l border-primary/50 pl-4">
-                        {entry.items?.map((item) => <NavLink mobile key={item} href={itemHref(item, entry.href)}>{item}</NavLink>)}
-                      </div>
+                      {entry.groups?.map((group) => (
+                        <div key={group.title} role="group" aria-label={`${entry.label}: ${group.title}`} className="mb-3 border-l border-primary/50 pl-4">
+                          <p className="pb-1 pt-2 font-mono text-[0.65rem] font-semibold uppercase tracking-wider text-primary">{group.title}</p>
+                          {group.items.map((item) => <NavLink mobile key={item} href={itemHref(item, group.href ?? entry.href)}>{item}</NavLink>)}
+                        </div>
+                      ))}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -274,15 +349,15 @@ const flow = [
   ["07", "Learn", "Preserve provenance and improve mission knowledge over time."],
 ];
 
-const capabilities: ReadonlyArray<readonly [LucideIcon, string, string]> = [
-  [Activity, "Monitoring", "A unified view across diverse mission-health signals and their provenance."],
-  [Fingerprint, "Personal baseline", "Contextual interpretation centered on individual change—not generic norms alone."],
-  [CircleGauge, "Trend & pattern detection", "Longitudinal patterns designed to become visible before isolated readings dominate."],
-  [ShieldCheck, "Risk assessment", "Decision support that communicates uncertainty without making a diagnosis."],
-  [BrainCircuit, "Explainable intelligence", "Evidence paths designed to keep humans informed and in control."],
-  [HeartPulse, "Action guidance", "Protocol-aware guidance intended to support, never replace, qualified judgment."],
-  [CloudOff, "Offline Mission Mode", "Local-first continuity designed for delayed, intermittent or absent connectivity."],
-  [RadioTower, "Device-agnostic integration", "An extensible adapter direction for wearables, laboratory systems and habitat telemetry."],
+const capabilities: ReadonlyArray<readonly [LucideIcon, string, string, string, string]> = [
+  [Activity, "Monitoring", "A unified view across physiological, environmental and self-reported signals, each shown with its source, freshness and quality — LIVE, STALE or DISCONNECTED is always visible.", "/mission/live", "Open Live Monitoring"],
+  [Fingerprint, "Personal baseline", "Each crew member is compared with their own versioned baseline, kept separate from clinical reference intervals and mission limits.", "/project/guide#personal-baselines", "Learn about baselines"],
+  [CircleGauge, "Trend & pattern detection", "Governed trend policies look across days, not single readings, and report confidence, confounders and missing context.", "/mission/intelligence", "Open Health Intelligence"],
+  [ShieldCheck, "Risk assessment", "Decision support that states uncertainty openly. Research-only relationships can never become operational alerts or a diagnosis.", "/project/guide#scientific-safety-boundaries", "Read the safety boundaries"],
+  [BrainCircuit, "Explainable intelligence", "Every finding carries its evidence path so crew and ground teams can see why it appeared — and challenge it.", "/mission/alerts", "Open Explainable Alerts"],
+  [HeartPulse, "Action guidance", "Versioned protocol guidance such as repeat measurement or workload review supports, never replaces, qualified judgment.", "/mission/guidance", "Open Action Guidance"],
+  [CloudOff, "Offline Mission Mode", "Encrypted local storage and a store-and-forward queue keep the health loop running when Earth is out of contact.", "/technology/offline-first-architecture", "Learn how offline works"],
+  [RadioTower, "Device-agnostic integration", "One adapter contract for wearables, laboratory systems and habitat telemetry; unknown metrics are rejected, not guessed.", "/technology/device-integration", "Learn about integration"],
 ];
 
 export function AppShell() {
@@ -323,7 +398,7 @@ export function AppShell() {
           <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
             <p className="section-kicker">Mission capabilities</p><h2 id="capabilities-title" className="section-title max-w-3xl">Intelligence designed around the human.</h2>
             <div className="mt-12 grid border-l border-t border-border sm:grid-cols-2 lg:grid-cols-4">
-              {capabilities.map(([Icon, title, copy]) => <article key={title} className="min-h-64 border-b border-r border-border p-6 transition-colors hover:bg-surface"><Icon aria-hidden="true" className="size-6 text-primary" /><h3 className="mt-10 font-display text-xl font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{copy}</p></article>)}
+              {capabilities.map(([Icon, title, copy, href, linkLabel]) => <article key={title} className="group flex min-h-72 flex-col border-b border-r border-border p-6 transition-colors hover:bg-surface"><Icon aria-hidden="true" className="size-6 text-primary" /><h3 className="mt-10 font-display text-xl font-semibold">{title}</h3><p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">{copy}</p><a href={href} className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary hover:underline">{linkLabel}<ArrowRight aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-1" /></a></article>)}
             </div>
             <p className="mt-6 max-w-3xl border-l-2 border-signal pl-5 text-sm leading-6 text-muted-foreground">The Mitochondria is conceived as human decision support—not an autonomous doctor. It does not diagnose and does not replace qualified medical judgment.</p>
           </div>
@@ -351,6 +426,17 @@ export function AppShell() {
           </div>
         </section>
 
+        <section id="technology-topics" aria-labelledby="topics-title" className="border-t border-border py-20 lg:py-28">
+          <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
+            <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+              <div><p className="section-kicker">Technology</p><h2 id="topics-title" className="section-title">How the platform is built.</h2></div>
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground lg:justify-self-end">Eight in-depth topics explain each part of the architecture, why it matters beyond low Earth orbit, and exactly what is implemented today.</p>
+            </div>
+            <div className="mt-12"><TopicCardGrid /></div>
+            <a href="/technology" className="mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary hover:underline">View all technology topics <ArrowRight aria-hidden="true" className="size-4" /></a>
+          </div>
+        </section>
+
         <section id="open-source" aria-labelledby="open-title" className="border-y border-border bg-surface py-20 lg:py-28">
           <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
@@ -372,7 +458,7 @@ export function AppShell() {
 
 function Footer() {
   const columns = [
-    ["Explore", [["Mission", "#mission"], ["Science", "#science"], ["Platform", "#platform"], ["Technology", "#technology"]]],
+    ["Explore", [["Mission", "#mission"], ["Science", "#science"], ["Platform", "#platform"], ["Technology", "/technology"]]],
     ["Project", [["Open Source", "#open-source"], ["Roadmap", "/project/guide#roadmap"], ["Resources & References", "/project/guide#resources-references"], ["Team", "/project/guide#team"]]],
     ["External", [["NASA Space Apps 2026", NASA_URL], ["GitHub", GITHUB_URL]]],
   ] as const;

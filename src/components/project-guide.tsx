@@ -145,6 +145,11 @@ export function ProjectGuidePage() {
                     <article key={item.id} id={item.id} className="scroll-mt-28 border border-border bg-surface p-5 sm:p-6">
                       <h3 className="text-lg font-semibold">{item.title}</h3>
                       <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>
+                      {group.id === "technology-guide" && (
+                        <a href={`/technology/${item.id}`} className="mt-4 mr-3 inline-flex min-h-9 items-center text-sm font-medium text-primary hover:underline">
+                          Read the full topic page
+                        </a>
+                      )}
                       {item.href && (
                         <Button asChild variant="outline" size="sm" className="mt-5">
                           <a href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener noreferrer" : undefined}>

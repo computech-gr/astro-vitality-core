@@ -25,6 +25,8 @@ Graph or Twitter metadata. All absolute URLs come from
 | `/project/guide`      | Public project documentation and navigation guide    |
 | `/mission/validation` | Public validation evidence and known limitations     |
 | `/mission/submission` | Public challenge submission and attribution material |
+| `/technology`         | Public index of the eight Technology topics          |
+| `/technology/<topic>` | Eight public educational Technology topic pages      |
 
 Each one self-canonicalizes to its own production URL and carries a complete
 title, description, `robots: index, follow`, Open Graph set (`og:title`,
@@ -65,8 +67,8 @@ heading level is skipped and no heading is used purely for styling.
 
 `public/robots.txt` allows all crawlers and declares
 `Sitemap: https://mitochondria.edocinfo.com/sitemap.xml`.
-`public/sitemap.xml` is a valid `urlset` containing exactly the four
-indexable routes above, on absolute production URLs.
+`public/sitemap.xml` is a valid `urlset` containing exactly the indexable
+routes above (four core routes, the Technology index and eight topic pages), on absolute production URLs.
 
 ## Enforcement
 
