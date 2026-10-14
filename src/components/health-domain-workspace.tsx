@@ -1,5 +1,5 @@
-import cardiovascularCatalog from "../../data/scientific/cardiovascular-handbook.catalog.v1.json";
 "use client";
+import cardiovascularCatalog from "../../data/scientific/cardiovascular-handbook.catalog.v1.json";
 
 import { useEffect, useState } from "react";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";

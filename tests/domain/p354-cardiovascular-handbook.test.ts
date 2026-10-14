@@ -12,7 +12,15 @@ describe("P35.4 cardiovascular handbook intake", () => {
   it("cannot be used as clinical approval or an operational alert source", () => {
     expect(catalog.clinicalActivation).toBe(false);
     expect(catalog.reviewStatus).toBe("pending_independent_review");
-    expect(catalog.metrics.every((item) => item.activation === "reference_only" && item.reviewStatus === "pending_independent_review")).toBe(true);
-    expect(catalog.relationshipExamples.every((item) => item.activation === "research_only")).toBe(true);
+    expect(
+      catalog.metrics.every(
+        (item) =>
+          item.activation === "reference_only" &&
+          item.reviewStatus === "pending_independent_review",
+      ),
+    ).toBe(true);
+    expect(catalog.relationshipExamples.every((item) => item.activation === "research_only")).toBe(
+      true,
+    );
   });
 });
