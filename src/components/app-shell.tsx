@@ -181,7 +181,8 @@ const guideDestinations: Readonly<Record<string, string>> = {
   "Resources & References": guideHref("resources-references"),
 };
 
-function itemHref(label: string, fallback: string) {
+export function itemHref(label: string, fallback: string) {
+  if (technologyTopicDestinations[label]) return technologyTopicDestinations[label];
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "Backend Architecture (GitHub)") return `${GITHUB_URL}/blob/main/docs/ARCHITECTURE.md`;
   if (label === "Database Schema & Migrations (GitHub)") return `${GITHUB_URL}/tree/main/supabase/migrations`;
@@ -255,42 +256,56 @@ export function SiteHeader() {
 
   return (
     <header data-site-header className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
-      <div className="mx-auto grid h-[4.75rem] w-full max-w-[94rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:px-8">
+      <div className="mx-auto grid h-[4.75rem] w-full max-w-[94rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 lg:px-8 xl:grid-cols-[auto_minmax(0,1fr)_auto]">
         <Brand />
-        <nav aria-label="Primary navigation" className="hidden items-center justify-center gap-1 lg:flex">
-          {navigation.map((entry) => entry.items ? (
-            <DropdownMenu key={entry.label}>
+        <nav aria-label="Primary navigation" className="hidden items-center justify-center gap-0.5 xl:flex">
+          {navigation.map((entry) => entry.groups ? (
+            <DropdownMenu key={entry.label} modal={false}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-10 px-2.5 text-muted-foreground hover:text-foreground xl:px-3">
+                <Button variant="ghost" size="sm" className="h-10 px-2.5 text-muted-foreground hover:text-foreground data-[state=open]:text-foreground">
                   {entry.label}<ChevronDown aria-hidden="true" className="size-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-72 border-border bg-popover/95 p-2 backdrop-blur-xl">
-                {entry.items.map((item) => {
-                  const href = itemHref(item, entry.href);
-                  const external = isExternal(href);
-                  return (
-                    <DropdownMenuItem key={item} asChild className="min-h-10 cursor-pointer px-3">
-                      <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="flex items-center gap-1.5">
-                        {item}{external && <ExternalLink aria-hidden="true" className="size-3.5" />}
-                      </a>
-                    </DropdownMenuItem>
-                  );
-                })}
+              <DropdownMenuContent
+                align="center"
+                collisionPadding={16}
+                data-mega-menu={entry.label}
+                className="max-h-[calc(100dvh-6rem)] w-[min(calc(100vw-2rem),var(--mega-width))] overflow-y-auto border-border bg-popover/95 p-0 backdrop-blur-xl"
+                style={{ ["--mega-width" as string]: `${Math.min(entry.groups.length, 4) * 15 + 2}rem` }}
+              >
+                {entry.description && <p className="border-b border-border px-5 py-3 text-xs text-muted-foreground">{entry.description}</p>}
+                <div className="grid gap-x-2 p-3" style={{ gridTemplateColumns: `repeat(${Math.min(entry.groups.length, 4)}, minmax(0, 1fr))` }}>
+                  {entry.groups.map((group) => (
+                    <DropdownMenuGroup key={group.title} className="min-w-0">
+                      <DropdownMenuLabel className="px-3 pb-1 pt-2 font-mono text-[0.65rem] font-semibold uppercase tracking-wider text-primary">{group.title}</DropdownMenuLabel>
+                      {group.items.map((item) => {
+                        const href = itemHref(item, group.href ?? entry.href);
+                        const external = isExternal(href);
+                        return (
+                          <DropdownMenuItem key={item} asChild className="min-h-10 cursor-pointer px-3">
+                            <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="flex items-center gap-1.5">
+                              {item}{external && <><ExternalLink aria-hidden="true" className="size-3.5" /><span className="sr-only"> (opens in a new tab)</span></>}
+                            </a>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuGroup>
+                  ))}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button key={entry.label} variant="ghost" size="sm" asChild className="h-10 px-2.5 text-muted-foreground hover:text-foreground xl:px-3">
+            <Button key={entry.label} variant="ghost" size="sm" asChild className="h-10 px-2.5 text-muted-foreground hover:text-foreground">
               <a href={entry.href}>{entry.label}</a>
             </Button>
           ))}
         </nav>
-        <Button asChild className="hidden h-11 bg-primary px-5 font-semibold text-primary-foreground shadow-[0_0_30px_var(--primary-glow)] hover:bg-primary/90 lg:inline-flex">
+        <Button asChild className="hidden h-11 bg-primary px-4 font-semibold text-primary-foreground shadow-[0_0_30px_var(--primary-glow)] hover:bg-primary/90 2xl:inline-flex">
           <a href={NASA_URL} target="_blank" rel="noopener noreferrer">NASA Space Apps 2026 <ExternalLink aria-hidden="true" /></a>
         </Button>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" aria-label="Open navigation menu" className="min-h-11 min-w-11 border-border bg-background/60 lg:hidden"><Menu /></Button>
+            <Button variant="outline" size="icon" aria-label="Open navigation menu" className="min-h-11 min-w-11 border-border bg-background/60 xl:hidden"><Menu /></Button>
           </SheetTrigger>
           <SheetContent className="w-[min(92vw,26rem)] overflow-y-auto border-border bg-background p-5 pt-16">
             <SheetHeader className="text-left">
@@ -300,13 +315,16 @@ export function SiteHeader() {
             <nav aria-label="Mobile navigation" className="mt-5">
               <SheetClose asChild><a href="/#home" className="flex min-h-11 items-center border-b border-border py-3 font-medium">Home</a></SheetClose>
               <Accordion type="multiple">
-                {navigation.filter((entry) => entry.items).map((entry) => (
+                {navigation.filter((entry) => entry.groups).map((entry) => (
                   <AccordionItem value={entry.label} key={entry.label}>
                     <AccordionTrigger className="min-h-12 py-3 text-base hover:no-underline">{entry.label}</AccordionTrigger>
                     <AccordionContent>
-                      <div className="border-l border-primary/50 pl-4">
-                        {entry.items?.map((item) => <NavLink mobile key={item} href={itemHref(item, entry.href)}>{item}</NavLink>)}
-                      </div>
+                      {entry.groups?.map((group) => (
+                        <div key={group.title} role="group" aria-label={`${entry.label}: ${group.title}`} className="mb-3 border-l border-primary/50 pl-4">
+                          <p className="pb-1 pt-2 font-mono text-[0.65rem] font-semibold uppercase tracking-wider text-primary">{group.title}</p>
+                          {group.items.map((item) => <NavLink mobile key={item} href={itemHref(item, group.href ?? entry.href)}>{item}</NavLink>)}
+                        </div>
+                      ))}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
