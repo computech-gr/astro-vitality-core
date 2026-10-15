@@ -120,15 +120,9 @@ export function MissionDocumentReviewWorkbench() {
     !hasDuplicateMetrics &&
     !busy,
   );
-  const previewObservations = canExport
-    ? selected.map(({ id, label, value, unit, excerpt }) => ({
-        id,
-        label,
-        value,
-        unit,
-        excerpt,
-      }))
-    : [];
+  const previewObservations = canExport ? selected.map(({ id, label, value, unit, excerpt }) => ({
+    id, label, value, unit, excerpt,
+  })) : [];
   function exportReviewedBatch() {
     if (!canExport || !missionId || !crewMemberId || !identity?.userId) return;
     const payload = {
@@ -502,8 +496,7 @@ export function MissionDocumentReviewWorkbench() {
         <button
           type="button"
           className="rounded border px-3 py-2 text-sm disabled:opacity-50"
-          disabled={!canExport}
-          onClick={() => setPreviewVisible(true)}
+          disabled={!canExport} onClick={() => setPreviewVisible(true)}
         >
           Preview reviewed synthetic measurements ({selected.length})
         </button>
