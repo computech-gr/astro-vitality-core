@@ -13,9 +13,9 @@ test("P36.2B5 enforces different real user and active ground_medical in same mis
   expect(sql).toContain("v_review.mission_id is distinct from new.mission_id");
   expect(sql).toContain("not v_review.active");
 });
-test("P36.2B5 rejects membership updates that invalidate staged review", () => {
-  expect(sql).toContain("after update of mission_id, crew_member_id, user_id, role, active");
-  expect(sql).toContain("p36_guard_membership_changes");
+test("P36.2B6 does not block emergency membership deactivation", () => {
+  expect(sql).not.toContain("create trigger p36_review_membership_change_guard");
+  expect(sql).not.toContain("p36_guard_membership_changes");
 });
 test("P36.2B5 retains deny-all and exposes no write or approval RPC", () => {
   expect((sql.match(/force row level security/g) ?? []).length).toBe(2);
