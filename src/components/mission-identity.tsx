@@ -811,7 +811,8 @@ export function MissionIdentity() {
                           disabled={
                             busy ||
                             !inviteMissionId ||
-                            (inviteRole === "crew_self" && (!inviteCrewMemberId || crewSelectionInvalid))
+                            (inviteRole === "crew_self" &&
+                              (!inviteCrewMemberId || crewSelectionInvalid))
                           }
                           onClick={() => void createInvite()}
                         >
