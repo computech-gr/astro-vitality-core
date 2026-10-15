@@ -11,7 +11,7 @@ test("no privileged API, no approval transition, no browser grants", () => {
   expect(sql).toContain("new.status <> 'quarantined'");
   expect(sql).toContain("new.reviewed_by_membership_id is null");
   expect(sql).not.toMatch(/grant\s+(insert|update|execute)/i);
-  expect((sql.match(/force row level security/g) ?? []).length).toBe(2);
+  expect((sql.match(/force row level security/g) ?? []).length).toBe(3);
 });
 test("immutable scope and source survive revocation", () => {
   for (const field of ["mission_id","crew_member_id","source_fingerprint","observation_date","submitted_by_user_snapshot","created_at"]) {

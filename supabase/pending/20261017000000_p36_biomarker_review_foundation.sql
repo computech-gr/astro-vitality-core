@@ -1,4 +1,4 @@
--- P36.2B7: staged revision, never deployed. Pending quarantine only; no approval path.
+-- P36.2B8: staged revision, never deployed. Pending quarantine only; no approval path.
 -- Identity provenance uses mission_memberships rather than direct auth.users references.
 -- NO authenticated/anon grants, NO ingest RPC, NO automatic observation promotion.
 create table if not exists public.p36_biomarker_review_batches (
@@ -135,3 +135,76 @@ create trigger p36_review_membership_guard before insert or update
 -- no approval/rejection API, and no browser write permission in this patch.
 -- The original submitter may be inactive; a NEW active independent medical
 -- reviewer is mandatory for quarantine. Item rows remain unchanged.
+
+-- P36.2B8: append-only quarantine decision evidence, no appeal or writer endpoint.
+-- Separate event rows are intentionally inaccessible to browser clients.
+create table if not exists public.p36_biomarker_review_events (
+  id uuid primary key default gen_random_uuid(),
+  batch_id uuid not null references public.p36_biomarker_review_batches(id) on delete restrict,
+  mission_id text not null references public.missions(id) on delete restrict,
+  event_type text not null check (event_type = 'quarantined'),
+  previous_status text not null check (previous_status = 'pending_review'),
+  resulting_status text not null check (resulting_status = 'quarantined'),
+  reviewer_membership_id uuid not null references public.mission_memberships(id) on delete restrict,
+  reviewer_user_snapshot uuid not null,
+  submitter_membership_id uuid not null references public.mission_memberships(id) on delete restrict,
+  submitter_user_snapshot uuid not null,
+  source_fingerprint text not null check (source_fingerprint ~ '^[a-f0-9]{64}$'),
+  decision_note text,
+  occurred_at timestamptz not null default now(),
+  unique (batch_id, event_type)
+);
+create index if not exists p36_review_events_mission_time
+  on public.p36_biomarker_review_events(mission_id, occurred_at desc);
+alter table public.p36_biomarker_review_events enable row level security;
+alter table public.p36_biomarker_review_events force row level security;
+revoke all on public.p36_biomarker_review_events from public, anon, authenticated;
+drop policy if exists p36_events_deny_all on public.p36_biomarker_review_events;
+create policy p36_events_deny_all on public.p36_biomarker_review_events
+  as restrictive for all to public using (false) with check (false);
+comment on table public.p36_biomarker_review_events is
+  'P36.2B8 staged append-only quarantine evidence. No browser grants, no appeal or approval workflow.';
+
+-- The trigger uses the caller's database permissions, not SECURITY DEFINER.
+-- Future privileged service must use a single transaction and ensure the
+-- event insert succeeds; failure aborts the original batch transition.
+create or replace function public.p36_record_quarantine_event()
+returns trigger language plpgsql set search_path = public, pg_temp as $$
+begin
+  if old.status = 'pending_review' and new.status = 'quarantined' then
+    insert into public.p36_biomarker_review_events (
+      batch_id, mission_id, event_type, previous_status, resulting_status,
+      reviewer_membership_id, reviewer_user_snapshot,
+      submitter_membership_id, submitter_user_snapshot,
+      source_fingerprint, decision_note, occurred_at
+    ) values (
+      new.id, new.mission_id, 'quarantined', old.status, new.status,
+      new.reviewed_by_membership_id, new.reviewed_by_user_snapshot,
+      new.submitted_by_membership_id, new.submitted_by_user_snapshot,
+      new.source_fingerprint, new.review_note, new.reviewed_at
+    );
+  end if;
+  return new;
+end $$;
+revoke all on function public.p36_record_quarantine_event() from public, anon, authenticated;
+drop trigger if exists p36_quarantine_audit on public.p36_biomarker_review_batches;
+create trigger p36_quarantine_audit after update on public.p36_biomarker_review_batches
+  for each row execute function public.p36_record_quarantine_event();
+
+-- Append-only: no direct modification or deletion, including by privileged
+-- application writers. A database owner could still alter schema; independent
+-- operational audit controls remain a future acceptance requirement.
+create or replace function public.p36_reject_review_event_mutation()
+returns trigger language plpgsql set search_path = public, pg_temp as $$
+begin
+  raise exception 'P36 review decision evidence is append-only';
+end $$;
+revoke all on function public.p36_reject_review_event_mutation() from public, anon, authenticated;
+drop trigger if exists p36_events_immutable on public.p36_biomarker_review_events;
+create trigger p36_events_immutable before update or delete
+  on public.p36_biomarker_review_events for each row
+  execute function public.p36_reject_review_event_mutation();
+
+-- Appeals and re-review are deliberately NOT implemented in P36.2B8.
+-- They require separate append-only requests, a second independent reviewer,
+-- retention governance, and an audited privileged service in a future gate.
