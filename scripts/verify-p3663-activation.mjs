@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Offline pre-deployment gate. Never connects to or modifies a database.
+// Usage: node scripts/verify-p3663-activation.mjs /private/path/restore-evidence.json
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 const names = [
