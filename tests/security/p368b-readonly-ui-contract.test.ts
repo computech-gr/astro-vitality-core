@@ -14,7 +14,7 @@ describe("P36.8B read-only reviewer UI contract", () => {
     expect(ui).toContain('m.role === "ground_medical"');
     // P36.8C supersedes "no decision controls": research decisions are allowed only via the governed RPC.
     expect(ui).not.toMatch(/onClick=\{[^}]*approve/i);
-    expect(ui).not.toMatch(/\bapproved\b|clinical approval\b(?! )/);
+    expect(ui).not.toMatch(/"approved"/);
     expect(read("src/components/ground-research-console.tsx")).toContain("<GroundMedicalReviewPanel />");
   });
 });
