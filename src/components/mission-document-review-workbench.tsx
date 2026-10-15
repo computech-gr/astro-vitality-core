@@ -472,6 +472,8 @@ export function MissionDocumentReviewWorkbench() {
           setText("");
           setCandidates([]);
           setSource("");
+          setSourceSha256("");
+          setCloudStatus("");
           setStatus("Local document cleared from this page.");
         }}
       >
