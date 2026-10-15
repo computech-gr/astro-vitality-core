@@ -18,7 +18,7 @@ test("P36.2B6 does not block emergency membership deactivation", () => {
   expect(sql).not.toContain("p36_guard_membership_changes");
 });
 test("P36.2B5 retains deny-all and exposes no write or approval RPC", () => {
-  expect((sql.match(/force row level security/g) ?? []).length).toBe(2);
+  expect((sql.match(/force row level security/g) ?? []).length).toBe(3);
   expect((sql.match(/as restrictive for all to public using \(false\) with check \(false\)/g) ?? []).length).toBe(2);
   expect(sql).not.toMatch(/grant\s+execute/i);
   expect(sql).not.toMatch(/create\s+(or replace\s+)?function\s+public\.(?:ingest|approve|submit)/i);

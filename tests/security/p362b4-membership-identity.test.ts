@@ -18,7 +18,7 @@ test("P36.2B4 retains synthetic-only and source integrity constraints", () => {
 });
 
 test("P36.2B4 stays deny-all without a client write or approval path", () => {
-  expect((sql.match(/force row level security/g) ?? []).length).toBe(2);
+  expect((sql.match(/force row level security/g) ?? []).length).toBe(3);
   expect((sql.match(/as restrictive for all to public using \(false\) with check \(false\)/g) ?? []).length).toBe(2);
   expect(sql).toContain("from public, anon, authenticated");
   expect(sql).not.toMatch(/grant\s+(select|insert|update|delete|all)/i);

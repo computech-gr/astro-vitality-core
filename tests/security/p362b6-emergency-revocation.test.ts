@@ -18,7 +18,7 @@ test("review requires active independent medical reviewer", () => {
   expect(sql).toContain("v_review.role <> 'ground_medical'");
 });
 test("no browser privileges or approval endpoint", () => {
-  expect((sql.match(/force row level security/g) ?? []).length).toBe(2);
+  expect((sql.match(/force row level security/g) ?? []).length).toBe(3);
   expect(sql).toContain("revoke all on public.p36_biomarker_review_batches, public.p36_biomarker_review_items from public, anon, authenticated");
   expect(sql).not.toMatch(/grant\s+execute/i);
 });
