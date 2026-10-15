@@ -6,9 +6,8 @@ const infra = readFileSync("src/infrastructure/p368b-ground-medical-review.ts", 
 const ui = readFileSync("src/components/p368b-ground-medical-review.tsx", "utf8");
 
 describe("P36.8C governed research decision contract", () => {
-  it("is staged only, never in governed migrations until owner approval", () => {
-    expect(() => readFileSync("drizzle/migrations/0010_p368c_research_decisions.sql")).toThrow();
-    expect(sql).toContain("STAGED ONLY");
+  it("governed migration 0010 is byte-identical to the owner-approved staged SQL", () => {
+    expect(readFileSync("drizzle/migrations/0010_p368c_research_decisions.sql", "utf8")).toBe(sql);
   });
   it("allows only research-only decisions via a locked, independent, security-definer RPC", () => {
     expect(sql).toContain("p_decision not in ('accepted_for_research','rejected_for_research')");

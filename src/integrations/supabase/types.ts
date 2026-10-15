@@ -506,6 +506,8 @@ export type Database = {
           created_at: string
           crew_member_id: string
           decision_authorization_basis: string | null
+          decision_idempotency_key: string | null
+          decision_payload_hash: string | null
           decision_received_at: string | null
           decision_request_id: string | null
           id: string
@@ -528,6 +530,8 @@ export type Database = {
           created_at?: string
           crew_member_id: string
           decision_authorization_basis?: string | null
+          decision_idempotency_key?: string | null
+          decision_payload_hash?: string | null
           decision_received_at?: string | null
           decision_request_id?: string | null
           id?: string
@@ -550,6 +554,8 @@ export type Database = {
           created_at?: string
           crew_member_id?: string
           decision_authorization_basis?: string | null
+          decision_idempotency_key?: string | null
+          decision_payload_hash?: string | null
           decision_received_at?: string | null
           decision_request_id?: string | null
           id?: string
@@ -657,7 +663,7 @@ export type Database = {
           {
             foreignKeyName: "p36_biomarker_review_events_batch_id_fkey"
             columns: ["batch_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "p36_biomarker_review_batches"
             referencedColumns: ["id"]
           },
@@ -863,6 +869,17 @@ export type Database = {
           p_source_filename: string
           p_source_sha256: string
           p_synthetic_attestation: boolean
+        }
+        Returns: Json
+      }
+      p368_decide_ground_medical_batch: {
+        Args: {
+          p_batch_id: string
+          p_decision: string
+          p_expected_item_count: number
+          p_idempotency_key: string
+          p_mission_id: string
+          p_note: string
         }
         Returns: Json
       }
