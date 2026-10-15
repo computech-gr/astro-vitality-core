@@ -1,4 +1,4 @@
--- P36.2B8: staged revision, never deployed. Pending quarantine only; no approval path.
+-- P36.2B9: staged revision, never deployed. Pending quarantine only; no approval path.
 -- Identity provenance uses mission_memberships rather than direct auth.users references.
 -- NO authenticated/anon grants, NO ingest RPC, NO automatic observation promotion.
 create table if not exists public.p36_biomarker_review_batches (
@@ -57,8 +57,9 @@ declare
   v_submit public.mission_memberships%rowtype;
   v_review public.mission_memberships%rowtype;
 begin
+  -- SHARE locks serialize membership revocation with the decision transaction.
   select * into v_submit from public.mission_memberships
-    where id = new.submitted_by_membership_id;
+    where id = new.submitted_by_membership_id for share;
   -- On INSERT the submitter must currently be authorized. On UPDATE the
   -- historical submitter may have been revoked, but identity/scope stay frozen.
   if not found or v_submit.mission_id is distinct from new.mission_id
@@ -102,8 +103,9 @@ begin
     raise exception 'P36 submitter snapshot must match membership user';
   end if;
   if new.reviewed_by_membership_id is not null then
+    -- A concurrent role change/deactivation waits until the decision commits.
     select * into v_review from public.mission_memberships
-      where id = new.reviewed_by_membership_id;
+      where id = new.reviewed_by_membership_id for share;
     if not found or not v_review.active or v_review.role <> 'ground_medical'
        or v_review.mission_id is distinct from new.mission_id
        or v_review.user_id = v_submit.user_id then
@@ -204,6 +206,46 @@ drop trigger if exists p36_events_immutable on public.p36_biomarker_review_event
 create trigger p36_events_immutable before update or delete
   on public.p36_biomarker_review_events for each row
   execute function public.p36_reject_review_event_mutation();
+
+
+-- P36.2B9: only the automatic AFTER UPDATE audit trigger may insert evidence.
+-- pg_trigger_depth is a defense-in-depth provenance check, not a cryptographic
+-- attestation against a database owner/superuser (who can disable triggers).
+create or replace function public.p36_validate_quarantine_event_insert()
+returns trigger language plpgsql set search_path = public, pg_temp as $$
+declare
+  v_batch public.p36_biomarker_review_batches%rowtype;
+begin
+  -- Direct INSERT invokes this trigger at depth 1. The batch AFTER UPDATE
+  -- trigger invokes it at depth 2; reject standalone forged evidence.
+  if pg_trigger_depth() <> 2 then
+    raise exception 'P36 quarantine evidence must originate from batch transition';
+  end if;
+  select * into v_batch from public.p36_biomarker_review_batches
+    where id = new.batch_id for share;
+  if not found or v_batch.status <> 'quarantined'
+     or new.mission_id is distinct from v_batch.mission_id
+     or new.event_type <> 'quarantined'
+     or new.previous_status <> 'pending_review'
+     or new.resulting_status <> v_batch.status
+     or new.reviewer_membership_id is distinct from v_batch.reviewed_by_membership_id
+     or new.reviewer_user_snapshot is distinct from v_batch.reviewed_by_user_snapshot
+     or new.submitter_membership_id is distinct from v_batch.submitted_by_membership_id
+     or new.submitter_user_snapshot is distinct from v_batch.submitted_by_user_snapshot
+     or new.source_fingerprint is distinct from v_batch.source_fingerprint
+     or new.decision_note is distinct from v_batch.review_note
+     or new.occurred_at is distinct from v_batch.reviewed_at then
+    raise exception 'P36 quarantine event does not match the committed batch transition';
+  end if;
+  return new;
+end $$;
+revoke all on function public.p36_validate_quarantine_event_insert() from public, anon, authenticated;
+drop trigger if exists p36_events_insert_guard on public.p36_biomarker_review_events;
+create trigger p36_events_insert_guard before insert
+  on public.p36_biomarker_review_events for each row
+  execute function public.p36_validate_quarantine_event_insert();
+comment on table public.p36_biomarker_review_events is
+  'P36.2B9 staged atomic quarantine audit with insert guard. No browser grants or approval workflow.';
 
 -- Appeals and re-review are deliberately NOT implemented in P36.2B8.
 -- They require separate append-only requests, a second independent reviewer,
