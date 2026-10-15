@@ -13,3 +13,4 @@
 
 - Unapproved database changes are staged in supabase/pending/ (never supabase/migrations/) and exercised only by the disposable harness with FV0143_INCLUDE_PENDING=1; this keeps production migrations owner-gated.
 - Greek scientific handbooks in data/scientific stay byte-identical; English display text lives in sibling _.en_.json layers joined by ID via src/domain/scientific-localization (keeps source traceability).
+- P36 synthetic Cloud submission goes only through the server function in src/lib/p36-cloud-submission.functions.ts calling a security-definer RPC as the signed-in user (never the service role), and stays off unless the server flag P36_CLOUD_SUBMISSION_ENABLED is "true"; this keeps identity checks in the database and live writes owner-gated.
