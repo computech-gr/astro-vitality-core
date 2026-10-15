@@ -267,14 +267,21 @@ function rpcClient(): RpcClient {
 export async function acceptMissionInvite(code: string): Promise<void> {
   const normalized = code.trim();
   if (!normalized) throw new Error("Enter a mission invite code.");
-  const { data, error } = await rpcClient().rpc<{ status?: string; message?: string }>(
-    "accept_mission_invite",
-    { p_code: normalized },
-  );
+  const { data, error } = await rpcClient().rpc<{
+    status?: string;
+    message?: string;
+    mission_id?: string;
+    role?: string;
+  }>("accept_mission_invite", { p_code: normalized });
   if (error) throw new Error(error.message);
-  // FV-01.1: binding conflicts are returned (not raised) so the audit record persists.
+  // The deployed invite RPC returns mission_id + role on success; some
+  // governed variants return status=accepted. Never treat null/unknown as success.
   if (data?.status === "rejected")
     throw new Error(data.message ?? "Mission invite rejected; operator review required.");
+  const accepted = data?.status === "accepted" ||
+    (typeof data?.mission_id === "string" && data.mission_id.length > 0 &&
+      typeof data?.role === "string" && data.role.length > 0);
+  if (!accepted) throw new Error("Invitation acceptance could not be confirmed. Please try again or contact your Mission Operator.");
   emitIdentityChanged();
 }
 

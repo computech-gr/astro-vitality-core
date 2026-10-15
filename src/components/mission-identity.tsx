@@ -80,6 +80,8 @@ export function MissionIdentity() {
   const [password, setPassword] = useState("");
   const [signInError, setSignInError] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState("");
+  const [inviteFeedback, setInviteFeedback] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [inviteBusy, setInviteBusy] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -643,22 +645,44 @@ export function MissionIdentity() {
                   <Input
                     id="invite-code"
                     value={inviteCode}
-                    onChange={(event) => setInviteCode(event.target.value)}
+                    onChange={(event) => {
+                      setInviteCode(event.target.value);
+                      setInviteFeedback(null);
+                    }}
+                    aria-describedby={inviteFeedback ? "invite-feedback" : undefined}
+                    aria-invalid={inviteFeedback?.kind === "error"}
                     className="mt-2 font-mono"
                     placeholder="Paste mission invite"
                   />
                   <Button
                     className="mt-3"
-                    disabled={busy || !inviteCode.trim()}
-                    onClick={() =>
-                      void run(async () => {
-                        await acceptMissionInvite(inviteCode);
-                        setInviteCode("");
-                      }, "Mission invite accepted.")
-                    }
+                    disabled={busy || inviteBusy || !inviteCode.trim()}
+                    onClick={() => {
+                      if (busy || inviteBusy || !inviteCode.trim()) return;
+                      setInviteBusy(true);
+                      setInviteFeedback(null);
+                      void (async () => {
+                        try {
+                          await acceptMissionInvite(inviteCode);
+                          setInviteCode("");
+                          setInviteFeedback({ kind: "success", text: "Mission invite accepted. Your mission membership is being refreshed." });
+                          await refresh();
+                        } catch (error) {
+                          setInviteFeedback({ kind: "error", text: error instanceof Error ? error.message : "Invitation acceptance failed. Please try again." });
+                        } finally {
+                          setInviteBusy(false);
+                        }
+                      })();
+                    }}
                   >
-                    <KeyRound /> Accept invite
+                    <KeyRound /> {inviteBusy ? "Accepting…" : "Accept invite"}
                   </Button>
+                  {inviteFeedback ? (
+                    <p id="invite-feedback" role={inviteFeedback.kind === "error" ? "alert" : "status"}
+                      className={`mt-3 text-sm ${inviteFeedback.kind === "error" ? "text-destructive" : "text-primary"}`}>
+                      {inviteFeedback.text}
+                    </p>
+                  ) : null}
                   <div className="mt-6 space-y-3 border-t border-border pt-4">
                     <h3 className="text-sm font-semibold">Change password</h3>
                     <p className="text-xs text-muted-foreground">
