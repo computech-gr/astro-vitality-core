@@ -1,3 +1,4 @@
+import { GroundMedicalReviewPanel } from "@/components/p368b-ground-medical-review";
 import { useEffect, useState } from "react";
 import { Download, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,7 @@ export function GroundResearchConsolePage() {
     {snapshot && selected?.role === "ground_medical" && <div className="mt-6 grid gap-4 sm:grid-cols-3">
       {([ ["Events", snapshot.total_events], ["Crew", snapshot.crew_count], ["Findings", snapshot.finding_count] ] as const).map(([label,value]) => <Card key={label}><CardHeader><CardTitle>{label}</CardTitle></CardHeader><CardContent className="text-3xl font-semibold">{value}</CardContent></Card>)}
     </div>}
+    <GroundMedicalReviewPanel />
     <div className="mt-8 flex gap-3 text-sm text-muted-foreground"><ShieldCheck className="size-5 shrink-0 text-primary"/><p>Server-side mission-role authorization, minimum three distinct contributing crew, minimum ten events, count bucketing, and audit events. This is a privacy-contained exploratory export, not a claim of formal anonymization or approved human-subjects research.</p></div>
   </div></main>;
 }
