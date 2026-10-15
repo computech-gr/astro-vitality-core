@@ -203,9 +203,16 @@ end $$;
 revoke all on function public.p36_validate_quarantine_event_insert() from public, anon, authenticated;
 
 -- 5. Item protection gap: items were update-protected only; now delete-protected too.
+-- Dedicated function so the 0007 rollback (which drops p36_reject_item_mutation) stays independent.
+create or replace function public.p36_reject_item_delete()
+returns trigger language plpgsql set search_path = public, pg_temp as $$
+begin
+  raise exception 'P36 submitted review items are immutable';
+end $$;
+revoke all on function public.p36_reject_item_delete() from public, anon, authenticated;
 drop trigger if exists p36_items_no_delete on public.p36_biomarker_review_items;
 create trigger p36_items_no_delete before delete on public.p36_biomarker_review_items
-  for each row execute function public.p36_reject_item_mutation();
+  for each row execute function public.p36_reject_item_delete();
 
 -- 6. The ONLY research-decision path. Identity = auth.uid(); never a parameter.
 create or replace function public.p368_decide_ground_medical_batch(
