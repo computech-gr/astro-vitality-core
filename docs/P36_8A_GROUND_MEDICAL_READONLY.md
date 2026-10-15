@@ -21,3 +21,12 @@ Both functions require an authenticated active `ground_medical` membership in th
 ## Next patch
 
 P36.8B will add the reviewer UI and server-side authenticated proxy after these live RPC tests. P36.8C will separately design governed reviewer decisions, with independent audit, revocation/concurrency and explicit scientific sign-off; never auto-approve or promote to clinical records.
+
+## Deployment record (2026-10-15)
+
+- Owner-approved; backup status `OWNER_MANAGED_BACKUP_RISK_ACCEPTED` (no verified backup claimed).
+- Preflight repeated immediately before deployment: unchanged (9 history entries, no P36.8A functions, 1 synthetic pending batch / 8 items, 0 review events, no browser table grants).
+- Applied once as governed migration `drizzle/migrations/0009_p368a_ground_medical_readonly.sql`, SHA-256 `516d21846204d2d219ef15b647c90ce7e590c6aae8436c9cf487f4c0fee60f49` (identical to staged file).
+- Live post-check: 10 history entries; both RPCs security definer with pinned search_path, execute only for authenticated/service_role; signed-out calls refused (42501); forced RLS and zero browser table grants unchanged; batch/item/event/membership/mission/audit counts unchanged.
+- Revocation, cross-mission, self-review, role and anonymous denials verified only in disposable PostgreSQL 17.9 (`tests/integration-pg/p368a-readonly.sql`, 20 scenarios). Live memberships were not altered.
+- Live authenticated Ground Medical acceptance: PENDING owner test.
