@@ -1,4 +1,4 @@
--- P36.2B4: staged revision of P36.2B3, never deployed.
+-- P36.2B5: staged revision of P36.2B4, never deployed.
 -- Identity provenance uses mission_memberships rather than direct auth.users references.
 -- NO authenticated/anon grants, NO ingest RPC, NO automatic observation promotion.
 create table if not exists public.p36_biomarker_review_batches (
@@ -44,5 +44,67 @@ drop policy if exists p36_batches_deny_all on public.p36_biomarker_review_batche
 create policy p36_batches_deny_all on public.p36_biomarker_review_batches as restrictive for all to public using (false) with check (false);
 drop policy if exists p36_items_deny_all on public.p36_biomarker_review_items;
 create policy p36_items_deny_all on public.p36_biomarker_review_items as restrictive for all to public using (false) with check (false);
-comment on table public.p36_biomarker_review_batches is 'P36.2B4 staged schema: NO CLIENT ACCESS OR WRITE PATH. Synthetic-only; independent authorization acceptance required.';
+comment on table public.p36_biomarker_review_batches is 'P36.2B5 staged schema: NO CLIENT ACCESS OR WRITE PATH. Synthetic-only; independent authorization acceptance required.';
 comment on table public.p36_biomarker_review_items is 'P36.2B4 staged schema: no import, no scientific approval and no clinical use.';
+
+-- P36.2B5: Integrity guard for any future privileged writer. This does NOT
+-- create a writer or reviewer API. Enforce real-user separation and scope.
+create or replace function public.p36_validate_review_memberships()
+returns trigger language plpgsql set search_path = public, pg_temp as $$
+declare
+  v_submit public.mission_memberships%rowtype;
+  v_review public.mission_memberships%rowtype;
+begin
+  select * into v_submit from public.mission_memberships
+    where id = new.submitted_by_membership_id;
+  if not found or not v_submit.active or v_submit.role <> 'crew_self'
+     or v_submit.mission_id is distinct from new.mission_id
+     or v_submit.crew_member_id is distinct from new.crew_member_id then
+    raise exception 'P36 submitter must be active crew_self for matching mission and crew';
+  end if;
+  if new.reviewed_by_membership_id is not null then
+    select * into v_review from public.mission_memberships
+      where id = new.reviewed_by_membership_id;
+    if not found or not v_review.active or v_review.role <> 'ground_medical'
+       or v_review.mission_id is distinct from new.mission_id
+       or v_review.user_id = v_submit.user_id then
+      raise exception 'P36 reviewer must be an independent active ground_medical user in the same mission';
+    end if;
+  end if;
+  return new;
+end $$;
+revoke all on function public.p36_validate_review_memberships() from public, anon, authenticated;
+drop trigger if exists p36_review_membership_guard on public.p36_biomarker_review_batches;
+create trigger p36_review_membership_guard before insert or update
+  on public.p36_biomarker_review_batches for each row
+  execute function public.p36_validate_review_memberships();
+
+-- Revalidate existing batches when a referenced membership is deactivated,
+-- moved to another mission/crew, reassigned to another user, or role-changed.
+-- Fail closed instead of silently retaining an invalid approval identity.
+create or replace function public.p36_guard_membership_changes()
+returns trigger language plpgsql set search_path = public, pg_temp as $$
+begin
+  if exists (
+    select 1 from public.p36_biomarker_review_batches b
+    join public.mission_memberships submitter on submitter.id = b.submitted_by_membership_id
+    left join public.mission_memberships reviewer on reviewer.id = b.reviewed_by_membership_id
+    where (b.submitted_by_membership_id = new.id or b.reviewed_by_membership_id = new.id)
+      and (not submitter.active or submitter.role <> 'crew_self'
+        or submitter.mission_id is distinct from b.mission_id
+        or submitter.crew_member_id is distinct from b.crew_member_id
+        or (b.reviewed_by_membership_id is not null and
+          (reviewer.id is null or not reviewer.active or reviewer.role <> 'ground_medical'
+           or reviewer.mission_id is distinct from b.mission_id
+           or reviewer.user_id = submitter.user_id)))
+  ) then
+    raise exception 'P36 membership change would invalidate a staged review batch';
+  end if;
+  return new;
+end $$;
+revoke all on function public.p36_guard_membership_changes() from public, anon, authenticated;
+drop trigger if exists p36_review_membership_change_guard on public.mission_memberships;
+create trigger p36_review_membership_change_guard
+  after update of mission_id, crew_member_id, user_id, role, active
+  on public.mission_memberships for each row
+  execute function public.p36_guard_membership_changes();
