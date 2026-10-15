@@ -76,10 +76,61 @@ export function MissionDocumentReviewWorkbench() {
   const [status, setStatus] = useState("No document loaded. No data are uploaded or saved.");
   const [busy, setBusy] = useState(false);
   const [source, setSource] = useState("");
+  const [reviewerConfirmed, setReviewerConfirmed] = useState(false);
+  const [observationDate, setObservationDate] = useState("");
+  const [exportStatus, setExportStatus] = useState("");
+  const missionId = eligible ? identity?.active?.missionId : undefined;
+  const crewMemberId = eligible ? identity?.active?.crewMemberId : undefined;
+  const selected = candidates.filter((candidate) => candidate.selected);
+  const hasDuplicateMetrics =
+    new Set(selected.map((candidate) => candidate.id)).size !== selected.length;
+  const canExport = Boolean(
+    eligible &&
+    consent &&
+    reviewerConfirmed &&
+    source &&
+    observationDate &&
+    selected.length > 0 &&
+    !hasDuplicateMetrics &&
+    !busy,
+  );
+  function exportReviewedBatch() {
+    if (!canExport || !missionId || !crewMemberId || !identity?.userId) return;
+    const payload = {
+      schema: "mitochondria.p36.2b2.synthetic-reviewed-batch.v1",
+      status: "LOCAL_REVIEW_ONLY_NOT_APPROVED_FOR_IMPORT",
+      syntheticOnly: true,
+      missionId,
+      crewMemberId,
+      reviewerUserId: identity.userId,
+      sourceFilename: source,
+      observedOn: observationDate,
+      reviewedAt: new Date().toISOString(),
+      observations: selected.map(({ id, label, value, unit, excerpt }) => ({
+        metricId: id,
+        metricName: label,
+        value,
+        unit,
+        sourceExcerpt: excerpt,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "mitochondria-p362b2-synthetic-review.json";
+    link.click();
+    URL.revokeObjectURL(url);
+    setExportStatus(
+      "Synthetic review exported locally. Not a clinical or scientific approval; no cloud records written.",
+    );
+  }
   async function load(file: File) {
     setText("");
     setCandidates([]);
     setSource("");
+    setReviewerConfirmed(false);
+    setExportStatus("");
     if (!eligible) {
       setStatus("Active Crew Self mission membership required.");
       return;
@@ -105,6 +156,7 @@ export function MissionDocumentReviewWorkbench() {
       setText(bounded);
       setSource(file.name);
       setCandidates(parseCandidates(bounded));
+      setReviewerConfirmed(false);
       setStatus(
         `${result.method}: local extraction only. ${result.warnings.join(" ")} Review all text. Exact catalog name and unit required; other results remain unmatched.`,
       );
@@ -171,6 +223,7 @@ export function MissionDocumentReviewWorkbench() {
             onClick={() => {
               if (!eligible) return;
               setCandidates(parseCandidates(text));
+              setReviewerConfirmed(false);
               setStatus("Candidate matching refreshed; no values have been saved.");
             }}
           >
@@ -224,10 +277,56 @@ export function MissionDocumentReviewWorkbench() {
           approval or persistence. No automatic report, trend, or diagnosis.
         </p>
       </section>
+      <section className="space-y-3 rounded border p-3" aria-label="Synthetic review handoff">
+        <h2 className="font-semibold">P36.2B2 — Synthetic review handoff (local only)</h2>
+        <p className="text-sm">
+          This is NOT a cloud import, scientific approval or medical record. Only synthetic test
+          values are permitted. A separate security-reviewed server-side approval workflow is
+          required for persistence.
+        </p>
+        <label className="block text-sm" htmlFor="p362-observed-on">
+          Synthetic observation date
+        </label>
+        <input
+          id="p362-observed-on"
+          className="rounded border bg-background p-2"
+          type="date"
+          value={observationDate}
+          onChange={(event) => setObservationDate(event.target.value)}
+        />
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={reviewerConfirmed}
+            onChange={(event) => setReviewerConfirmed(event.target.checked)}
+          />
+          I manually checked every selected synthetic value, unit and source excerpt. This does not
+          constitute scientific approval.
+        </label>
+        {hasDuplicateMetrics && (
+          <p role="alert" className="text-sm">
+            Duplicate metric IDs selected. Select only one observation per metric in this handoff.
+          </p>
+        )}
+        <button
+          type="button"
+          className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+          disabled={!canExport}
+          onClick={exportReviewedBatch}
+        >
+          Export synthetic review JSON locally ({selected.length})
+        </button>
+        <p role="status" className="text-sm">
+          {exportStatus}
+        </p>
+      </section>
       <button
         type="button"
         className="rounded border px-3 py-2 text-sm"
         onClick={() => {
+          setReviewerConfirmed(false);
+          setObservationDate("");
+          setExportStatus("");
           setText("");
           setCandidates([]);
           setSource("");
