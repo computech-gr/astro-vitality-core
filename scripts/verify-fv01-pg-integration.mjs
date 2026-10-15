@@ -4,7 +4,7 @@
 // variable would be used, so it cannot touch the project database.
 // Steps: recreate database -> Supabase-like stubs -> every migration in supabase/migrations (FV-01 included once) ->
 // fixtures -> sequential and concurrent scenarios.
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
