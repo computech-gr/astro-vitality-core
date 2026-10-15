@@ -866,6 +866,31 @@ export type Database = {
         }
         Returns: Json
       }
+      p368_get_ground_medical_batch: {
+        Args: { p_batch_id: string; p_mission_id: string }
+        Returns: {
+          batch_id: string
+          crew_member_id: string
+          measured_value: number
+          metric_id: string
+          observed_on: string
+          review_status: string
+          source_excerpt: string
+          submitted_at: string
+          unit: string
+        }[]
+      }
+      p368_list_ground_medical_pending: {
+        Args: { p_mission_id: string }
+        Returns: {
+          batch_id: string
+          crew_member_id: string
+          item_count: number
+          observed_on: string
+          review_status: string
+          submitted_at: string
+        }[]
+      }
       set_mission_membership_active: {
         Args: {
           p_active: boolean
