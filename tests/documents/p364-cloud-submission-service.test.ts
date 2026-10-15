@@ -30,8 +30,12 @@ describe("P36.4 synthetic cloud submission service (staged)", () => {
     expect((sql.match(/\('cv-|\('bh-|\('[a-z]+-\d+',/g) ?? []).length).toBeGreaterThanOrEqual(96);
   });
   it("grants only function execute to authenticated; no table grants or approvals", () => {
-    expect(sql).toMatch(/grant execute on function public\.p36_submit_synthetic_review_batch\([^)]*\) to authenticated;/);
-    expect(sql).not.toMatch(/grant\s+(select|insert|update|delete|all)\s+on\s+(table\s+)?public\.p36/i);
+    expect(sql).toMatch(
+      /grant execute on function public\.p36_submit_synthetic_review_batch\([^)]*\) to authenticated;/,
+    );
+    expect(sql).not.toMatch(
+      /grant\s+(select|insert|update|delete|all)\s+on\s+(table\s+)?public\.p36/i,
+    );
     expect(sql).not.toMatch(/status\s*=\s*'approved'/);
   });
 });

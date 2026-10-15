@@ -62,11 +62,7 @@ export type P36SubmissionResult =
   | { ok: true; status: "submitted" | "replayed"; batchId: string; itemCount: number }
   | { ok: false; code: P36SubmissionErrorCode; message: string };
 export type P36SubmissionErrorCode =
-  | "not_active"
-  | "invalid"
-  | "forbidden"
-  | "duplicate"
-  | "unavailable";
+  "not_active" | "invalid" | "forbidden" | "duplicate" | "unavailable";
 
 const messages: Record<P36SubmissionErrorCode, string> = {
   not_active: "Cloud submission is not active in this deployment.",
@@ -131,5 +127,10 @@ export const submitSyntheticReviewBatch = createServerFn({ method: "POST" })
     if (!r || (r.status !== "submitted" && r.status !== "replayed") || !r.batch_id) {
       return fail("unavailable");
     }
-    return { ok: true, status: r.status, batchId: r.batch_id, itemCount: Number(r.item_count ?? 0) };
+    return {
+      ok: true,
+      status: r.status,
+      batchId: r.batch_id,
+      itemCount: Number(r.item_count ?? 0),
+    };
   });

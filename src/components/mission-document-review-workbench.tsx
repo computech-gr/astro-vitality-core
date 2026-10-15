@@ -120,9 +120,15 @@ export function MissionDocumentReviewWorkbench() {
     !hasDuplicateMetrics &&
     !busy,
   );
-  const previewObservations = canExport ? selected.map(({ id, label, value, unit, excerpt }) => ({
-    id, label, value, unit, excerpt,
-  })) : [];
+  const previewObservations = canExport
+    ? selected.map(({ id, label, value, unit, excerpt }) => ({
+        id,
+        label,
+        value,
+        unit,
+        excerpt,
+      }))
+    : [];
   function exportReviewedBatch() {
     if (!canExport || !missionId || !crewMemberId || !identity?.userId) return;
     const payload = {
@@ -172,7 +178,9 @@ export function MissionDocumentReviewWorkbench() {
       })),
     };
     if (!validateSyntheticCloudHandoff(handoff)) {
-      setCloudStatus("Batch is not valid for synthetic submission (plain decimal values, unique markers).");
+      setCloudStatus(
+        "Batch is not valid for synthetic submission (plain decimal values, unique markers).",
+      );
       return;
     }
     // Deterministic key: identical retries replay the same batch instead of duplicating it.
@@ -269,26 +277,38 @@ export function MissionDocumentReviewWorkbench() {
         understand this file will be processed in this browser only, and I will use synthetic test
         data.
       </label>
-      <div className="rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4 space-y-2" aria-label="Laboratory report selection">
+      <div
+        className="rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4 space-y-2"
+        aria-label="Laboratory report selection"
+      >
         <p className="font-semibold">Synthetic laboratory report</p>
-        <p className="text-sm text-muted-foreground">PDF, image, CSV or TXT · processed locally · maximum 12 MB</p>
-        <button type="button" className="rounded-md bg-primary px-5 py-3 font-semibold text-primary-foreground disabled:opacity-50" disabled={!eligible || !consent || busy} onClick={() => fileInputRef.current?.click()}>
+        <p className="text-sm text-muted-foreground">
+          PDF, image, CSV or TXT · processed locally · maximum 12 MB
+        </p>
+        <button
+          type="button"
+          className="rounded-md bg-primary px-5 py-3 font-semibold text-primary-foreground disabled:opacity-50"
+          disabled={!eligible || !consent || busy}
+          onClick={() => fileInputRef.current?.click()}
+        >
           {busy ? "Reading laboratory report…" : "Upload Laboratory Report"}
         </button>
-        <p className="text-xs" role="status">{source ? `Selected: ${source}` : "No laboratory report selected"}</p>
-      <input
-        ref={fileInputRef}
-        aria-label="Select examination file"
-        className="sr-only"
-        type="file"
-        accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.txt"
-        disabled={!eligible || !consent || busy}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) void load(f);
-          e.currentTarget.value = "";
-        }}
-      />
+        <p className="text-xs" role="status">
+          {source ? `Selected: ${source}` : "No laboratory report selected"}
+        </p>
+        <input
+          ref={fileInputRef}
+          aria-label="Select examination file"
+          className="sr-only"
+          type="file"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.txt"
+          disabled={!eligible || !consent || busy}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void load(f);
+            e.currentTarget.value = "";
+          }}
+        />
       </div>
       <p role="status" className="text-sm">
         {status}
@@ -385,13 +405,19 @@ export function MissionDocumentReviewWorkbench() {
           className="rounded border bg-background p-2"
           type="date"
           value={observationDate}
-          onChange={(event) => { setObservationDate(event.target.value); setPreviewVisible(false); }}
+          onChange={(event) => {
+            setObservationDate(event.target.value);
+            setPreviewVisible(false);
+          }}
         />
         <label className="flex items-start gap-2 text-sm">
           <input
             type="checkbox"
             checked={reviewerConfirmed}
-            onChange={(event) => { setReviewerConfirmed(event.target.checked); setPreviewVisible(false); }}
+            onChange={(event) => {
+              setReviewerConfirmed(event.target.checked);
+              setPreviewVisible(false);
+            }}
           />
           I manually checked every selected synthetic value, unit and source excerpt. This does not
           constitute scientific approval.
@@ -413,51 +439,107 @@ export function MissionDocumentReviewWorkbench() {
           {exportStatus}
         </p>
       </section>
-      <section aria-label="P36.4 controlled cloud submission" className="space-y-3 rounded border p-3">
+      <section
+        aria-label="P36.4 controlled cloud submission"
+        className="space-y-3 rounded border p-3"
+      >
         <h2 className="font-semibold">P36.4 — Synthetic Cloud Submission</h2>
         {cloudEnabled ? (
           <>
-            <p className="text-sm">Owner-activated synthetic-only submission. The server re-checks your active Crew Self membership, mission and crew scope, exact catalog units and duplicates. Batches stay pending review; nothing is approved or interpreted.</p>
-            <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!canExport || !sourceSha256 || cloudBusy} onClick={() => void submitToCloud()}>
-              {cloudBusy ? "Submitting synthetic batch…" : `Submit reviewed synthetic measurements to Cloud (${selected.length})`}
+            <p className="text-sm">
+              Owner-activated synthetic-only submission. The server re-checks your active Crew Self
+              membership, mission and crew scope, exact catalog units and duplicates. Batches stay
+              pending review; nothing is approved or interpreted.
+            </p>
+            <button
+              type="button"
+              className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+              disabled={!canExport || !sourceSha256 || cloudBusy}
+              onClick={() => void submitToCloud()}
+            >
+              {cloudBusy
+                ? "Submitting synthetic batch…"
+                : `Submit reviewed synthetic measurements to Cloud (${selected.length})`}
             </button>
           </>
         ) : (
           <>
-            <p className="text-sm">Cloud submission is not active in this deployment. The staged review schema has not been applied to the shared database. Signing in verifies identity but does not activate the pending database schema or server-side authorization service.</p>
-            <button type="button" disabled aria-disabled="true" className="rounded border px-3 py-2 text-sm opacity-50">Submit reviewed synthetic measurements to Cloud — pending activation</button>
+            <p className="text-sm">
+              Cloud submission is not active in this deployment. The staged review schema has not
+              been applied to the shared database. Signing in verifies identity but does not
+              activate the pending database schema or server-side authorization service.
+            </p>
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              className="rounded border px-3 py-2 text-sm opacity-50"
+            >
+              Submit reviewed synthetic measurements to Cloud — pending activation
+            </button>
           </>
         )}
-        {cloudStatus && <p role="status" className="text-sm">{cloudStatus}</p>}
-        <p className="text-xs text-muted-foreground">Local preview and JSON export remain available. Original documents are never uploaded by this page; only a SHA-256 fingerprint and reviewed values are sent. No browser database writes.</p>
+        {cloudStatus && (
+          <p role="status" className="text-sm">
+            {cloudStatus}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Local preview and JSON export remain available. Original documents are never uploaded by
+          this page; only a SHA-256 fingerprint and reviewed values are sent. No browser database
+          writes.
+        </p>
       </section>
-      <section aria-label="P36.3 local synthetic research preview" className="space-y-3 rounded border p-3">
+      <section
+        aria-label="P36.3 local synthetic research preview"
+        className="space-y-3 rounded border p-3"
+      >
         <h2 className="font-semibold">P36.3 — Synthetic research preview (local only)</h2>
         <p className="text-sm text-muted-foreground">
           This is a temporary visualization of manually selected synthetic measurements, not a
           clinical interpretation, approved observation, trend or server record. No cloud write.
         </p>
-        <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50"
-          disabled={!canExport} onClick={() => setPreviewVisible(true)}>
+        <button
+          type="button"
+          className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+          disabled={!canExport}
+          onClick={() => setPreviewVisible(true)}
+        >
           Preview reviewed synthetic measurements ({selected.length})
         </button>
         {previewVisible && canExport && (
           <div className="space-y-2" role="region" aria-label="Local synthetic biomarker preview">
-            <p className="text-sm">Mission: {missionId} · Crew: {crewMemberId} · Synthetic date: {observationDate}</p>
+            <p className="text-sm">
+              Mission: {missionId} · Crew: {crewMemberId} · Synthetic date: {observationDate}
+            </p>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead><tr><th className="p-2">Biomarker</th><th className="p-2">Synthetic value</th><th className="p-2">Exact unit</th><th className="p-2">Evidence</th></tr></thead>
-                <tbody>{previewObservations.map((item) => (
-                  <tr key={item.id} className="border-t">
-                    <td className="p-2">{item.label} ({item.id})</td>
-                    <td className="p-2">{item.value}</td>
-                    <td className="p-2">{item.unit}</td>
-                    <td className="p-2 max-w-xs break-words">{item.excerpt}</td>
+                <thead>
+                  <tr>
+                    <th className="p-2">Biomarker</th>
+                    <th className="p-2">Synthetic value</th>
+                    <th className="p-2">Exact unit</th>
+                    <th className="p-2">Evidence</th>
                   </tr>
-                ))}</tbody>
+                </thead>
+                <tbody>
+                  {previewObservations.map((item) => (
+                    <tr key={item.id} className="border-t">
+                      <td className="p-2">
+                        {item.label} ({item.id})
+                      </td>
+                      <td className="p-2">{item.value}</td>
+                      <td className="p-2">{item.unit}</td>
+                      <td className="p-2 max-w-xs break-words">{item.excerpt}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
-            <p className="text-xs text-muted-foreground">LOCAL_REVIEW_ONLY_NOT_APPROVED_FOR_IMPORT · No reference-range interpretation, diagnosis, automatic scoring, trend or persistence.</p>
+            <p className="text-xs text-muted-foreground">
+              LOCAL_REVIEW_ONLY_NOT_APPROVED_FOR_IMPORT · No reference-range interpretation,
+              diagnosis, automatic scoring, trend or persistence.
+            </p>
           </div>
         )}
       </section>
