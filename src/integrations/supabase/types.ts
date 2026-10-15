@@ -843,6 +843,16 @@ export type Database = {
         Args: { p_a: string; p_b: string }
         Returns: boolean
       }
+      p36_list_synthetic_review_history: {
+        Args: { p_crew_member_id: string; p_mission_id: string }
+        Returns: {
+          batch_id: string
+          created_at: string
+          item_count: number
+          observed_on: string
+          review_status: string
+        }[]
+      }
       p36_submit_synthetic_review_batch: {
         Args: {
           p_crew_member_id: string
