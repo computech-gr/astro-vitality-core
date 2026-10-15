@@ -79,6 +79,7 @@ export function MissionDocumentReviewWorkbench() {
   const [reviewerConfirmed, setReviewerConfirmed] = useState(false);
   const [observationDate, setObservationDate] = useState("");
   const [exportStatus, setExportStatus] = useState("");
+  const [previewVisible, setPreviewVisible] = useState(false);
   const missionId = eligible ? identity?.active?.missionId : undefined;
   const crewMemberId = eligible ? identity?.active?.crewMemberId : undefined;
   const selected = candidates.filter((candidate) => candidate.selected);
@@ -94,6 +95,9 @@ export function MissionDocumentReviewWorkbench() {
     !hasDuplicateMetrics &&
     !busy,
   );
+  const previewObservations = canExport ? selected.map(({ id, label, value, unit, excerpt }) => ({
+    id, label, value, unit, excerpt,
+  })) : [];
   function exportReviewedBatch() {
     if (!canExport || !missionId || !crewMemberId || !identity?.userId) return;
     const payload = {
@@ -131,6 +135,7 @@ export function MissionDocumentReviewWorkbench() {
     setSource("");
     setReviewerConfirmed(false);
     setExportStatus("");
+    setPreviewVisible(false);
     if (!eligible) {
       setStatus("Active Crew Self mission membership required.");
       return;
@@ -157,6 +162,7 @@ export function MissionDocumentReviewWorkbench() {
       setSource(file.name);
       setCandidates(parseCandidates(bounded));
       setReviewerConfirmed(false);
+      setPreviewVisible(false);
       setStatus(
         `${result.method}: local extraction only. ${result.warnings.join(" ")} Review all text. Exact catalog name and unit required; other results remain unmatched.`,
       );
@@ -224,6 +230,7 @@ export function MissionDocumentReviewWorkbench() {
               if (!eligible) return;
               setCandidates(parseCandidates(text));
               setReviewerConfirmed(false);
+              setPreviewVisible(false);
               setStatus("Candidate matching refreshed; no values have been saved.");
             }}
           >
@@ -255,11 +262,13 @@ export function MissionDocumentReviewWorkbench() {
                       type="checkbox"
                       aria-label={`Reviewed candidate ${i + 1}`}
                       checked={c.selected}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        setPreviewVisible(false);
+                        setReviewerConfirmed(false);
                         setCandidates((cs) =>
                           cs.map((v, j) => (j === i ? { ...v, selected: e.target.checked } : v)),
-                        )
-                      }
+                        );
+                      }}
                     />
                   </td>
                   <td className="p-2">{c.id}</td>
@@ -292,13 +301,13 @@ export function MissionDocumentReviewWorkbench() {
           className="rounded border bg-background p-2"
           type="date"
           value={observationDate}
-          onChange={(event) => setObservationDate(event.target.value)}
+          onChange={(event) => { setObservationDate(event.target.value); setPreviewVisible(false); }}
         />
         <label className="flex items-start gap-2 text-sm">
           <input
             type="checkbox"
             checked={reviewerConfirmed}
-            onChange={(event) => setReviewerConfirmed(event.target.checked)}
+            onChange={(event) => { setReviewerConfirmed(event.target.checked); setPreviewVisible(false); }}
           />
           I manually checked every selected synthetic value, unit and source excerpt. This does not
           constitute scientific approval.
@@ -320,6 +329,36 @@ export function MissionDocumentReviewWorkbench() {
           {exportStatus}
         </p>
       </section>
+      <section aria-label="P36.3 local synthetic research preview" className="space-y-3 rounded border p-3">
+        <h2 className="font-semibold">P36.3 — Synthetic research preview (local only)</h2>
+        <p className="text-sm text-muted-foreground">
+          This is a temporary visualization of manually selected synthetic measurements, not a
+          clinical interpretation, approved observation, trend or server record. No cloud write.
+        </p>
+        <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+          disabled={!canExport} onClick={() => setPreviewVisible(true)}>
+          Preview reviewed synthetic measurements ({selected.length})
+        </button>
+        {previewVisible && canExport && (
+          <div className="space-y-2" role="region" aria-label="Local synthetic biomarker preview">
+            <p className="text-sm">Mission: {missionId} · Crew: {crewMemberId} · Synthetic date: {observationDate}</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead><tr><th className="p-2">Biomarker</th><th className="p-2">Synthetic value</th><th className="p-2">Exact unit</th><th className="p-2">Evidence</th></tr></thead>
+                <tbody>{previewObservations.map((item) => (
+                  <tr key={item.id} className="border-t">
+                    <td className="p-2">{item.label} ({item.id})</td>
+                    <td className="p-2">{item.value}</td>
+                    <td className="p-2">{item.unit}</td>
+                    <td className="p-2 max-w-xs break-words">{item.excerpt}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground">LOCAL_REVIEW_ONLY_NOT_APPROVED_FOR_IMPORT · No reference-range interpretation, diagnosis, automatic scoring, trend or persistence.</p>
+          </div>
+        )}
+      </section>
       <button
         type="button"
         className="rounded border px-3 py-2 text-sm"
@@ -327,6 +366,7 @@ export function MissionDocumentReviewWorkbench() {
           setReviewerConfirmed(false);
           setObservationDate("");
           setExportStatus("");
+          setPreviewVisible(false);
           setText("");
           setCandidates([]);
           setSource("");
