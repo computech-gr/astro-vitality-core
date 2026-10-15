@@ -802,10 +802,7 @@
       "name": "ECG",
       "originalUnit": "waveform",
       "category": "Electrical",
-      "allowedSourceClasses": [
-        "ecg_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["ecg_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -1039,10 +1036,7 @@
       "name": "QRS",
       "originalUnit": "ms",
       "category": "Electrical",
-      "allowedSourceClasses": [
-        "ecg_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["ecg_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -1072,10 +1066,7 @@
       "name": "QTc",
       "originalUnit": "ms",
       "category": "Electrical",
-      "allowedSourceClasses": [
-        "ecg_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["ecg_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -1887,10 +1878,7 @@
       "name": "Thrombus on ultrasound",
       "originalUnit": "yes/no",
       "category": "Venous and coagulation",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4708,10 +4696,7 @@
       "name": "Total Hip aBMD",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4741,10 +4726,7 @@
       "name": "Femoral Neck aBMD",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4774,10 +4756,7 @@
       "name": "Lumbar Spine aBMD",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4807,10 +4786,7 @@
       "name": "Total vBMD",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4840,10 +4816,7 @@
       "name": "Cortical vBMD",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4873,10 +4846,7 @@
       "name": "Trabecular vBMD",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4906,10 +4876,7 @@
       "name": "Trabecular Thickness",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4939,10 +4906,7 @@
       "name": "Trabecular Number",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
@@ -4972,10 +4936,7 @@
       "name": "Trabecular Separation",
       "originalUnit": null,
       "category": "imaging_strength",
-      "allowedSourceClasses": [
-        "imaging_report",
-        "manual_entry"
-      ],
+      "allowedSourceClasses": ["imaging_report", "manual_entry"],
       "sourceClassification": "provisional_requires_scientific_review",
       "integrationStatus": "catalog_only_not_connected",
       "interpretationStatus": "reference_only_pending_independent_review",
