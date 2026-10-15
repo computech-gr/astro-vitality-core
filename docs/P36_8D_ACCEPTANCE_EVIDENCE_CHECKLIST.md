@@ -34,19 +34,19 @@ Synthetic, research-only. Backup status: `OWNER_MANAGED_BACKUP_RISK_ACCEPTED` (w
 - [ ] 8. Idempotent retry via controlled same-key method only (UI does not replay after navigation). Status: **NOT_RUN** until a reviewed, separately approved harness exists — see "Step 8 controlled replay method"
 - [ ] 9. Crew Self / Operator / Researcher / anonymous / other-mission denial (live read-only; revocation via disposable tests)
 - [ ] 10. Original batch fingerprint, MISSION_TEST, mission events, health index unchanged; clinical disabled
-- [ ] 11. Independent reviewer sign-off: name **\_\_** date **\_\_**
+- [ ] 11. Independent reviewer sign-off: name ______ date ______
 
 ## Replay & CI readiness re-verification (2026-10-15 20:57 UTC, read-only)
 
-| Item                                       | Result                                                                                                                                                                                 |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Migration 0009 / 0010 SHA-256              | `516d2184…0f49` / `7a233de3…07f1` unchanged; history 11                                                                                                                                |
-| Original batch + items                     | `pending_review`, no decision key; 8 items, md5 `411c6bb5…2e21`; 0 events; 10 memberships                                                                                              |
-| Disposable PostgreSQL 17.9                 | 305/305, incl. D2 same-key replay (identical receipt, `replay=true`), D3 same-key different payload refused, CC1 concurrent conflicting decisions, CC2 concurrent identical retries, RV1/RV2 |
-| Replay-readiness contract tests            | 3/3 pass                                                                                                                                                                               |
-| `bun run check` / build                    | 382 pass, 0 fail / pass                                                                                                                                                                |
-| GitHub HEAD at verification `52f26669`     | quality success, trivy success, Supabase Preview skipped (contains closure-handoff files)                                                                                              |
-| Commit containing this replay patch        | CI NOT YET VERIFIED — record its SHA and results before step 1                                                                                                                          |
+| Item                                   | Result                                                                                                                                                                                       |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Migration 0009 / 0010 SHA-256          | `516d2184…0f49` / `7a233de3…07f1` unchanged; history 11                                                                                                                                      |
+| Original batch + items                 | `pending_review`, no decision key; 8 items, md5 `411c6bb5…2e21`; 0 events; 10 memberships                                                                                                    |
+| Disposable PostgreSQL 17.9             | 305/305, incl. D2 same-key replay (identical receipt, `replay=true`), D3 same-key different payload refused, CC1 concurrent conflicting decisions, CC2 concurrent identical retries, RV1/RV2 |
+| Replay-readiness contract tests        | 3/3 pass                                                                                                                                                                                     |
+| `bun run check` / build                | 382 pass, 0 fail / pass                                                                                                                                                                      |
+| GitHub HEAD at verification `52f26669` | quality success, trivy success, Supabase Preview skipped (contains closure-handoff files)                                                                                                    |
+| Commit containing this replay patch    | CI NOT YET VERIFIED — record its SHA and results before step 1                                                                                                                               |
 
 ## Step 8 controlled replay method (design only; not implemented, not approved)
 
