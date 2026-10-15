@@ -182,9 +182,9 @@ export function validateMissionSignInInput(email: string, password: string): str
 }
 
 export function missionSignInErrorMessage(error: {
-  message?: string;
-  status?: number;
-  code?: string;
+  message?: string | undefined;
+  status?: number | undefined;
+  code?: string | undefined;
 }): string {
   const msg = (error.message ?? "").toLowerCase();
   if (error.status === 429 || /rate.limit|too many requests|over_email_send_rate_limit/.test(msg))
