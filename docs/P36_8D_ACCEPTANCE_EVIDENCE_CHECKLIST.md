@@ -5,22 +5,22 @@ Synthetic, research-only. Backup status: `OWNER_MANAGED_BACKUP_RISK_ACCEPTED` (w
 
 ## Pre-acceptance evidence (recorded 2026-10-15, read-only)
 
-| Item | Result |
-| --- | --- |
-| Migration 0010 SHA-256 | `7a233de3…07f1` matches approved SQL |
-| Migration history | 11 entries |
-| Security-definer RPCs (list/get/decide) | 3 present; anonymous execute denied |
-| Browser table grants on `p36_*` | 0 |
-| Original batch `e985ff6e-810f-419a-89a8-2376e217cb9f` | `pending_review`, synthetic, no decision key |
-| Original items | 8, fingerprint md5 `411c6bb5836ec920e5a085fb23ed2e21` |
-| Decision events / decision audits | 0 / 0 |
-| Memberships (all) / FV01-TEST-B fingerprint | 10 / md5 `05db5f927fe136ccf013f6f50d1fb8d8` |
-| Mission events / health index | 77 / 77 |
-| GitHub main `4f28db73` | quality success, trivy success, Supabase Preview skipped |
-| Acceptance-gate tests | 3/3 pass |
-| `bun run check` | 376 pass, 0 fail |
-| Disposable PostgreSQL 17.9 | 305/305 (role isolation, research-only decisions, idempotency, immutability, revocation races) |
-| Typecheck / lint / build | pass / 0 errors, 10 warnings / pass |
+| Item                                                  | Result                                                                                         |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Migration 0010 SHA-256                                | `7a233de3…07f1` matches approved SQL                                                           |
+| Migration history                                     | 11 entries                                                                                     |
+| Security-definer RPCs (list/get/decide)               | 3 present; anonymous execute denied                                                            |
+| Browser table grants on `p36_*`                       | 0                                                                                              |
+| Original batch `e985ff6e-810f-419a-89a8-2376e217cb9f` | `pending_review`, synthetic, no decision key                                                   |
+| Original items                                        | 8, fingerprint md5 `411c6bb5836ec920e5a085fb23ed2e21`                                          |
+| Decision events / decision audits                     | 0 / 0                                                                                          |
+| Memberships (all) / FV01-TEST-B fingerprint           | 10 / md5 `05db5f927fe136ccf013f6f50d1fb8d8`                                                    |
+| Mission events / health index                         | 77 / 77                                                                                        |
+| GitHub main `4f28db73`                                | quality success, trivy success, Supabase Preview skipped                                       |
+| Acceptance-gate tests                                 | 3/3 pass                                                                                       |
+| `bun run check`                                       | 376 pass, 0 fail                                                                               |
+| Disposable PostgreSQL 17.9                            | 305/305 (role isolation, research-only decisions, idempotency, immutability, revocation races) |
+| Typecheck / lint / build                              | pass / 0 errors, 10 warnings / pass                                                            |
 
 ## Live acceptance — reviewer fills in (each step requires owner authorization)
 
