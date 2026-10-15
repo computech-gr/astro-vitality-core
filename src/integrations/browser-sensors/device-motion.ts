@@ -74,6 +74,7 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
   private connected = false;
   private cursor?: AdapterSyncCursor;
   private lastDataAt?: string;
+  private receivedUsableEvent = false;
 
   constructor(options: DeviceMotionAdapterOptions = {}) {
     this.onPreview = options.onPreview;
@@ -85,18 +86,21 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
   }
 
   async *discover(): AsyncIterable<DiscoveredSource> {
-    if (!isDeviceMotionSupported()) throw new Error("Motion sensors are not exposed by this browser");
+    if (!isDeviceMotionSupported())
+      throw new Error("Motion sensors are not exposed by this browser");
     yield SOURCE;
   }
 
   async connect(options: AdapterConnectOptions): Promise<void> {
     if (options.sourceId !== SOURCE.sourceId) throw new Error("Unknown device-motion source");
-    if (!isDeviceMotionSupported()) throw new Error("Motion sensors are not exposed by this browser");
+    if (!isDeviceMotionSupported())
+      throw new Error("Motion sensors are not exposed by this browser");
     const ctor = DeviceMotionEvent as DeviceMotionPermissionConstructor;
     if (typeof ctor.requestPermission === "function") {
       const permission = await ctor.requestPermission();
       if (permission !== "granted") throw new Error("Motion sensor permission was not granted");
     }
+    this.receivedUsableEvent = false;
     this.connected = true;
   }
 
@@ -119,7 +123,8 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
   }
 
   async *stream(options: AdapterStreamOptions): AsyncIterable<AdapterStreamItem> {
-    if (!this.connected || options.sourceId !== SOURCE.sourceId) throw new Error("Motion sensor source is not connected");
+    if (!this.connected || options.sourceId !== SOURCE.sourceId)
+      throw new Error("Motion sensor source is not connected");
     const queue: AdapterStreamItem[] = [];
     let wake: (() => void) | undefined;
     let lastPreviewAt = 0;
@@ -134,7 +139,11 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
         (value) => typeof value === "number" && Number.isFinite(value),
       );
       const acceleration = primaryHasValues ? primary : event.accelerationIncludingGravity;
-      const hasAcceleration = Boolean(acceleration);
+      const hasAcceleration = [acceleration?.x, acceleration?.y, acceleration?.z].some(
+        (value) => typeof value === "number" && Number.isFinite(value),
+      );
+      if (!hasAcceleration) return; // Never fabricate a zero-valued sensor observation.
+      this.receivedUsableEvent = true;
       const x = finiteOrZero(acceleration?.x) / STANDARD_GRAVITY;
       const y = finiteOrZero(acceleration?.y) / STANDARD_GRAVITY;
       const z = finiteOrZero(acceleration?.z) / STANDARD_GRAVITY;
@@ -179,6 +188,19 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
     };
 
     window.addEventListener("devicemotion", listener);
+    // Some desktop browsers expose DeviceMotionEvent without an actual sensor.
+    // Fail explicitly rather than leaving the UI connected with no observations.
+    const startupTimeout = window.setTimeout(() => {
+      if (!this.receivedUsableEvent) {
+        queue.push({
+          kind: "error",
+          message:
+            "No usable motion events received. Use a compatible phone browser with motion permissions enabled.",
+        } as unknown as AdapterStreamItem);
+        wake?.();
+        wake = undefined;
+      }
+    }, 6000);
     try {
       while (!options.signal?.aborted) {
         if (!queue.length) {
@@ -191,9 +213,17 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
             }),
           ]);
         }
-        while (queue.length) yield queue.shift()!;
+        while (queue.length) {
+          const next = queue.shift()!;
+          if ((next as unknown as { kind: string }).kind === "error")
+            throw new Error(
+              "No usable motion events received. Use a compatible phone browser with motion permissions enabled.",
+            );
+          yield next;
+        }
       }
     } finally {
+      window.clearTimeout(startupTimeout);
       window.removeEventListener("devicemotion", listener);
     }
   }
@@ -206,7 +236,8 @@ export class BrowserDeviceMotionAdapter implements DeviceAdapter {
     item: AdapterStreamItem,
     context: AdapterNormalizationContext,
   ): CanonicalObservationDraft | RawSignalChunk {
-    if (item.kind !== "series") throw new Error("Device motion adapter emits raw acceleration series only");
+    if (item.kind !== "series")
+      throw new Error("Device motion adapter emits raw acceleration series only");
     return {
       id: item.packet.packetId,
       mission: { missionId: context.missionId, crewMemberId: context.crewMemberId },

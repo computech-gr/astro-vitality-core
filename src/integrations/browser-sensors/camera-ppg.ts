@@ -20,12 +20,7 @@ export type CameraPermissionState = "granted" | "denied" | "prompt" | "unsupport
 export type RearCameraState = "available" | "not_detected" | "unknown_until_permission" | "unknown";
 export type CameraPolicyState = "allowed" | "blocked" | "unsupported" | "unknown";
 export type CameraAcquisitionStage =
-  | "preflight"
-  | "policy_check"
-  | "basic_capture"
-  | "rear_selection"
-  | "capture_ready"
-  | "error";
+  "preflight" | "policy_check" | "basic_capture" | "rear_selection" | "capture_ready" | "error";
 
 export interface CameraPpgDiagnostics {
   checkedAt: string;
@@ -121,7 +116,10 @@ export function classifyCameraAccessError(
               : "Camera access was not granted. The permission prompt may have been dismissed or blocked by browser/device policy.",
       };
     case "NotFoundError":
-      return { cameraBusyLikely: false, likelyCause: "No usable video-input camera was found for this browser session." };
+      return {
+        cameraBusyLikely: false,
+        likelyCause: "No usable video-input camera was found for this browser session.",
+      };
     case "NotReadableError":
       return {
         cameraBusyLikely: true,
@@ -129,13 +127,27 @@ export function classifyCameraAccessError(
           "A camera exists, but the browser could not read it. Another app may be using the camera, or the operating system/driver may be blocking access.",
       };
     case "OverconstrainedError":
-      return { cameraBusyLikely: false, likelyCause: "The requested camera constraints could not be satisfied by the available camera hardware." };
+      return {
+        cameraBusyLikely: false,
+        likelyCause:
+          "The requested camera constraints could not be satisfied by the available camera hardware.",
+      };
     case "SecurityError":
-      return { cameraBusyLikely: false, likelyCause: "Camera access was blocked by browser security policy or document context." };
+      return {
+        cameraBusyLikely: false,
+        likelyCause: "Camera access was blocked by browser security policy or document context.",
+      };
     case "AbortError":
-      return { cameraBusyLikely: false, likelyCause: "Camera startup was interrupted before capture became available." };
+      return {
+        cameraBusyLikely: false,
+        likelyCause: "Camera startup was interrupted before capture became available.",
+      };
     case "TypeError":
-      return { cameraBusyLikely: false, likelyCause: "Camera capture is unavailable in this document context or the media constraints were rejected." };
+      return {
+        cameraBusyLikely: false,
+        likelyCause:
+          "Camera capture is unavailable in this document context or the media constraints were rejected.",
+      };
     default:
       return {
         cameraBusyLikely: false,
@@ -145,7 +157,6 @@ export function classifyCameraAccessError(
       };
   }
 }
-
 
 function inspectCameraPermissionsPolicy(): CameraPolicyState {
   if (typeof document === "undefined") return "unknown";
@@ -183,7 +194,9 @@ async function inspectVideoInputs(permissionState: CameraPermissionState): Promi
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoInputs = devices.filter((device) => device.kind === "videoinput");
-    const labelledRearCamera = videoInputs.some((device) => /rear|back|environment/i.test(device.label));
+    const labelledRearCamera = videoInputs.some((device) =>
+      /rear|back|environment/i.test(device.label),
+    );
     return {
       enumerateDevicesAvailable: true,
       videoInputCount: videoInputs.length,
@@ -216,11 +229,18 @@ export async function collectCameraPpgDiagnostics(
   const visibilityState = typeof document !== "undefined" ? document.visibilityState : "unknown";
 
   let likelyCause = classified.likelyCause;
-  if (!secureContext) likelyCause = "Camera APIs require a secure HTTPS context; this page is not running in one.";
-  else if (!topLevelContext) likelyCause = "Camera access may be restricted because the console is running inside an embedded frame.";
-  else if (permissionsPolicyCamera === "blocked") likelyCause = "The page Permissions Policy blocks camera access for this origin. User permission cannot override this policy.";
-  else if (!isCameraPpgSupported()) likelyCause = "This browser does not expose navigator.mediaDevices.getUserMedia().";
-  else if (inputs.videoInputCount === 0) likelyCause = "No video-input camera is visible to the browser.";
+  if (!secureContext)
+    likelyCause = "Camera APIs require a secure HTTPS context; this page is not running in one.";
+  else if (!topLevelContext)
+    likelyCause =
+      "Camera access may be restricted because the console is running inside an embedded frame.";
+  else if (permissionsPolicyCamera === "blocked")
+    likelyCause =
+      "The page Permissions Policy blocks camera access for this origin. User permission cannot override this policy.";
+  else if (!isCameraPpgSupported())
+    likelyCause = "This browser does not expose navigator.mediaDevices.getUserMedia().";
+  else if (inputs.videoInputCount === 0)
+    likelyCause = "No video-input camera is visible to the browser.";
 
   return {
     checkedAt: new Date().toISOString(),
@@ -274,7 +294,11 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
   async connect(options: AdapterConnectOptions): Promise<void> {
     if (options.sourceId !== SOURCE.sourceId) throw new Error("Unknown camera PPG source");
     if (!isCameraPpgSupported()) throw new Error("Camera access is not supported by this browser");
-    const preflightDiagnostics = await collectCameraPpgDiagnostics(undefined, undefined, "preflight");
+    const preflightDiagnostics = await collectCameraPpgDiagnostics(
+      undefined,
+      undefined,
+      "preflight",
+    );
     this.onPreview?.({
       phase: "requesting_permission",
       waveform: [],
@@ -285,14 +309,18 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
     });
     try {
       if (preflightDiagnostics.permissionsPolicyCamera === "blocked") {
-        throw new DOMException("Permissions Policy blocks camera access for this origin", "SecurityError");
+        throw new DOMException(
+          "Permissions Policy blocks camera access for this origin",
+          "SecurityError",
+        );
       }
 
       // Stage 1: acquire the simplest possible video stream. This separates
       // permission/policy failures from rear-camera selection constraints.
       this.media = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
       let videoTrack = this.media.getVideoTracks()[0];
-      if (!videoTrack) throw new DOMException("Camera stream contains no video track", "NotFoundError");
+      if (!videoTrack)
+        throw new DOMException("Camera stream contains no video track", "NotFoundError");
 
       this.onPreview?.({
         phase: "requesting_permission",
@@ -300,39 +328,57 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
         signalQuality: 0,
         contactQuality: 0,
         message: "Basic camera access granted; selecting the rear camera…",
-        diagnostics: await collectCameraPpgDiagnostics(undefined, videoTrack.getSettings?.().facingMode, "basic_capture"),
+        diagnostics: await collectCameraPpgDiagnostics(
+          undefined,
+          videoTrack.getSettings?.().facingMode,
+          "basic_capture",
+        ),
       });
 
       // Stage 2: prefer the rear/environment camera after basic capture succeeds.
       // First try track constraints; if the browser ignores them, use a labelled
       // rear-camera device id once labels are exposed after permission grant.
-      await videoTrack.applyConstraints({
-        facingMode: { ideal: "environment" },
-        width: { ideal: 640 },
-        height: { ideal: 480 },
-      }).catch(() => undefined);
+      await videoTrack
+        .applyConstraints({
+          facingMode: { ideal: "environment" },
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        })
+        .catch(() => undefined);
 
       let selectedFacingMode = videoTrack.getSettings?.().facingMode;
       if (selectedFacingMode !== "environment" && navigator.mediaDevices.enumerateDevices) {
-        const devices = await navigator.mediaDevices.enumerateDevices().catch(() => [] as MediaDeviceInfo[]);
-        const rear = devices.find((device) => device.kind === "videoinput" && /rear|back|environment/i.test(device.label));
+        const devices = await navigator.mediaDevices
+          .enumerateDevices()
+          .catch(() => [] as MediaDeviceInfo[]);
+        const rear = devices.find(
+          (device) => device.kind === "videoinput" && /rear|back|environment/i.test(device.label),
+        );
         if (rear?.deviceId) {
-          stopMediaStream(this.media);
-          this.media = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: {
-              deviceId: { exact: rear.deviceId },
-              width: { ideal: 640 },
-              height: { ideal: 480 },
-            },
-          });
+          const originalStream = this.media;
+          try {
+            this.media = await navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: {
+                deviceId: { exact: rear.deviceId },
+                width: { ideal: 640 },
+                height: { ideal: 480 },
+              },
+            });
+            stopMediaStream(originalStream);
+          } catch {
+            this.media = originalStream;
+          } // Keep working basic camera if rear selection fails.
           videoTrack = this.media.getVideoTracks()[0];
-          if (!videoTrack) throw new DOMException("Rear camera stream contains no video track", "NotFoundError");
+          if (!videoTrack)
+            throw new DOMException("Rear camera stream contains no video track", "NotFoundError");
           selectedFacingMode = videoTrack.getSettings?.().facingMode;
         }
       }
 
-      const capabilities = videoTrack.getCapabilities?.() as MediaTrackCapabilities & { torch?: boolean };
+      const capabilities = videoTrack.getCapabilities?.() as MediaTrackCapabilities & {
+        torch?: boolean;
+      };
       if (capabilities?.torch) {
         await videoTrack
           .applyConstraints({ advanced: [{ torch: true } as MediaTrackConstraintSet] })
@@ -364,9 +410,26 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
 
       if (video.readyState < HTMLMediaElement.HAVE_METADATA) {
         await new Promise<void>((resolve, reject) => {
-          const timeout = window.setTimeout(() => reject(new Error("Camera started but did not become ready")), 8000);
-          video.addEventListener("loadedmetadata", () => { window.clearTimeout(timeout); resolve(); }, { once: true });
-          video.addEventListener("error", () => { window.clearTimeout(timeout); reject(new Error("Camera video stream failed to initialize")); }, { once: true });
+          const timeout = window.setTimeout(
+            () => reject(new Error("Camera started but did not become ready")),
+            8000,
+          );
+          video.addEventListener(
+            "loadedmetadata",
+            () => {
+              window.clearTimeout(timeout);
+              resolve();
+            },
+            { once: true },
+          );
+          video.addEventListener(
+            "error",
+            () => {
+              window.clearTimeout(timeout);
+              reject(new Error("Camera video stream failed to initialize"));
+            },
+            { once: true },
+          );
         });
       }
       await video.play();
@@ -376,7 +439,11 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
       canvas.height = 40;
       this.canvas = canvas;
       this.connected = true;
-      const diagnostics = await collectCameraPpgDiagnostics(undefined, selectedFacingMode, "capture_ready");
+      const diagnostics = await collectCameraPpgDiagnostics(
+        undefined,
+        selectedFacingMode,
+        "capture_ready",
+      );
       this.onPreview?.({
         phase: "acquiring",
         waveform: [],
@@ -392,7 +459,8 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
       this.videoHost = undefined;
       this.video = undefined;
       this.connected = false;
-      const message = error instanceof Error ? error.message : "Camera permission or camera start failed";
+      const message =
+        error instanceof Error ? error.message : "Camera permission or camera start failed";
       const diagnostics = await collectCameraPpgDiagnostics(error, undefined, "error");
       this.onPreview?.({
         phase: "error",
@@ -402,7 +470,9 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
         message,
         diagnostics,
       });
-      throw new Error(`Camera PPG unavailable: ${diagnostics.errorName ?? "UnknownError"}: ${message}`);
+      throw new Error(
+        `Camera PPG unavailable: ${diagnostics.errorName ?? "UnknownError"}: ${message}`,
+      );
     }
   }
 
@@ -417,7 +487,8 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
   }
 
   async *stream(options: AdapterStreamOptions): AsyncIterable<AdapterStreamItem> {
-    if (!this.connected || options.sourceId !== SOURCE.sourceId) throw new Error("Camera PPG source is not connected");
+    if (!this.connected || options.sourceId !== SOURCE.sourceId)
+      throw new Error("Camera PPG source is not connected");
     const video = this.video;
     const canvas = this.canvas;
     if (!video || !canvas) throw new Error("Camera PPG capture surface unavailable");
@@ -463,10 +534,20 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
             signalQuality: estimate?.signalQuality ?? 0,
             contactQuality: estimate?.contactQuality ?? 0,
             ...(estimate ? { bpm: estimate.bpm } : {}),
-            ...(!estimate ? { message: "Hold a fingertip steadily over the rear camera while the signal settles." } : {}),
+            ...(!estimate
+              ? {
+                  message:
+                    "Hold a fingertip steadily over the rear camera while the signal settles.",
+                }
+              : {}),
           };
           this.onPreview?.(preview);
-          if (estimate && (lastEmittedBpm !== estimate.bpm || !this.lastDataAt || capturedAt - Date.parse(this.lastDataAt) >= 1500)) {
+          if (
+            estimate &&
+            (lastEmittedBpm !== estimate.bpm ||
+              !this.lastDataAt ||
+              capturedAt - Date.parse(this.lastDataAt) >= 1500)
+          ) {
             lastEmittedBpm = estimate.bpm;
             const observedAt = new Date(capturedAt).toISOString();
             this.lastDataAt = observedAt;
@@ -509,7 +590,8 @@ export class BrowserCameraPpgAdapter implements DeviceAdapter {
     item: AdapterStreamItem,
     context: AdapterNormalizationContext,
   ): CanonicalObservationDraft | RawSignalChunk {
-    if (item.kind !== "observation") throw new Error("Camera PPG adapter only emits scalar heart-rate observations");
+    if (item.kind !== "observation")
+      throw new Error("Camera PPG adapter only emits scalar heart-rate observations");
     return {
       id: item.packet.packetId,
       mission: { missionId: context.missionId, crewMemberId: context.crewMemberId },
