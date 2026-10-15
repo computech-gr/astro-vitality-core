@@ -135,48 +135,21 @@ export const submitSyntheticReviewBatch = createServerFn({ method: "POST" })
     };
   });
 
+
 // Read-only, crew-scoped synthetic history. The database function checks auth.uid(),
 // current Crew Self membership, mission and crew again; no table SELECT grants.
-const historyInput = z
-  .object({ missionId: z.string().min(1).max(128), crewMemberId: z.string().min(1).max(128) })
-  .strict();
-export type SyntheticHistoryRow = {
-  batchId: string;
-  observedOn: string;
-  createdAt: string;
-  status: string;
-  itemCount: number;
-};
+const historyInput = z.object({ missionId: z.string().min(1).max(128), crewMemberId: z.string().min(1).max(128) }).strict();
+export type SyntheticHistoryRow = { batchId: string; observedOn: string; createdAt: string; status: string; itemCount: number };
 export const listSyntheticReviewHistory = createServerFn({ method: "POST" })
   .middleware([attachSessionBearer, requireSupabaseAuth])
   .inputValidator((input: unknown) => historyInput.parse(input))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ ok: true; records: SyntheticHistoryRow[] } | { ok: false; message: string }> => {
-      if (process.env["P36_CLOUD_SUBMISSION_ENABLED"] !== "true")
-        return { ok: false, message: "Cloud history is not activated." };
-      const rpc = context.supabase.rpc as unknown as (
-        fn: string,
-        args: Record<string, unknown>,
-      ) => Promise<{ data: unknown; error: { code?: string } | null }>;
-      const { data: rows, error } = await rpc.call(
-        context.supabase,
-        "p36_list_synthetic_review_history",
-        { p_mission_id: data.missionId, p_crew_member_id: data.crewMemberId },
-      );
-      if (error || !Array.isArray(rows))
-        return { ok: false, message: "Saved reviews unavailable or access denied." };
-      return {
-        ok: true,
-        records: rows.slice(0, 100).map((row: Record<string, unknown>) => ({
-          batchId: String(row["batch_id"] ?? ""),
-          observedOn: String(row["observed_on"] ?? ""),
-          createdAt: String(row["created_at"] ?? ""),
-          status: String(row["review_status"] ?? ""),
-          itemCount: Number(row["item_count"] ?? 0),
-        })),
-      };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ok:true; records:SyntheticHistoryRow[]} | {ok:false; message:string}> => {
+    if (process.env["P36_CLOUD_SUBMISSION_ENABLED"] !== "true") return {ok:false, message:"Cloud history is not activated."};
+    const rpc = context.supabase.rpc as unknown as (fn:string, args:Record<string,unknown>) => Promise<{data:unknown; error:{code?:string}|null}>;
+    const {data: rows, error} = await rpc.call(context.supabase, "p36_list_synthetic_review_history", {p_mission_id:data.missionId, p_crew_member_id:data.crewMemberId});
+    if (error || !Array.isArray(rows)) return {ok:false, message:"Saved reviews unavailable or access denied."};
+    return {ok:true, records: rows.slice(0, 100).map((row:Record<string,unknown>) => ({
+      batchId:String(row["batch_id"] ?? ""), observedOn:String(row["observed_on"] ?? ""),
+      createdAt:String(row["created_at"] ?? ""), status:String(row["review_status"] ?? ""), itemCount:Number(row["item_count"] ?? 0),
+    }))};
+  });

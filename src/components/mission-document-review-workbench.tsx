@@ -95,15 +95,7 @@ export function MissionDocumentReviewWorkbench() {
   const [cloudEnabled, setCloudEnabled] = useState(false);
   const [cloudBusy, setCloudBusy] = useState(false);
   const [cloudStatus, setCloudStatus] = useState("");
-  const [savedHistory, setSavedHistory] = useState<
-    Array<{
-      batchId: string;
-      observedOn: string;
-      createdAt: string;
-      status: string;
-      itemCount: number;
-    }>
-  >([]);
+  const [savedHistory, setSavedHistory] = useState<Array<{batchId:string; observedOn:string; createdAt:string; status:string; itemCount:number}>>([]);
   const [historyStatus, setHistoryStatus] = useState("");
   const [historyBusy, setHistoryBusy] = useState(false);
   const submitBatch = useServerFn(submitSyntheticReviewBatch);
@@ -140,15 +132,9 @@ export function MissionDocumentReviewWorkbench() {
     !hasDuplicateMetrics &&
     !busy,
   );
-  const previewObservations = canExport
-    ? selected.map(({ id, label, value, unit, excerpt }) => ({
-        id,
-        label,
-        value,
-        unit,
-        excerpt,
-      }))
-    : [];
+  const previewObservations = canExport ? selected.map(({ id, label, value, unit, excerpt }) => ({
+    id, label, value, unit, excerpt,
+  })) : [];
   function exportReviewedBatch() {
     if (!canExport || !missionId || !crewMemberId || !identity?.userId) return;
     const payload = {
@@ -234,11 +220,7 @@ export function MissionDocumentReviewWorkbench() {
       const result = await listHistory({ data: { missionId, crewMemberId } });
       if (result.ok) {
         setSavedHistory(result.records);
-        setHistoryStatus(
-          result.records.length
-            ? "Saved synthetic reviews, newest observation first."
-            : "No saved synthetic reviews for this astronaut.",
-        );
+        setHistoryStatus(result.records.length ? "Saved synthetic reviews, newest observation first." : "No saved synthetic reviews for this astronaut.");
       } else {
         setSavedHistory([]);
         setHistoryStatus(result.message);
@@ -390,17 +372,8 @@ export function MissionDocumentReviewWorkbench() {
           Proposed matches ({candidates.length}) — never auto-approved
         </h2>
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            className="rounded border px-3 py-2 text-sm disabled:opacity-50"
-            disabled={!eligible || candidates.length === 0 || busy}
-            onClick={() => setAllReviewed(!allSelected)}
-          >
-            {allSelected ? "Deselect All" : "Select All"} ({candidates.length})
-          </button>
-          <span className="text-xs text-muted-foreground">
-            Selection is not scientific approval. Review every value and unit before confirming.
-          </span>
+          <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!eligible || candidates.length === 0 || busy} onClick={() => setAllReviewed(!allSelected)}>{allSelected ? "Deselect All" : "Select All"} ({candidates.length})</button>
+          <span className="text-xs text-muted-foreground">Selection is not scientific approval. Review every value and unit before confirming.</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -558,8 +531,7 @@ export function MissionDocumentReviewWorkbench() {
         <button
           type="button"
           className="rounded border px-3 py-2 text-sm disabled:opacity-50"
-          disabled={!canExport}
-          onClick={() => setPreviewVisible(true)}
+          disabled={!canExport} onClick={() => setPreviewVisible(true)}
         >
           Preview reviewed synthetic measurements ({selected.length})
         </button>
@@ -599,57 +571,13 @@ export function MissionDocumentReviewWorkbench() {
           </div>
         )}
       </section>
-      <section
-        className="space-y-3 rounded border p-3"
-        aria-label="Astronaut saved synthetic reviews"
-      >
+      <section className="space-y-3 rounded border p-3" aria-label="Astronaut saved synthetic reviews">
         <h2 className="font-semibold">Astronaut saved reviews — by observation date</h2>
-        <p className="text-sm text-muted-foreground">
-          Only synthetic pending-review batches saved in Cloud for the currently signed-in Crew Self
-          and selected mission. No original PDFs or scientific approval.
-        </p>
-        <button
-          type="button"
-          className="rounded border px-3 py-2 text-sm disabled:opacity-50"
-          disabled={!eligible || !cloudEnabled || historyBusy}
-          onClick={() => void refreshSavedHistory()}
-        >
-          {historyBusy ? "Loading saved reviews…" : "Refresh saved reviews"}
-        </button>
-        {!cloudEnabled && (
-          <p className="text-sm" role="status">
-            Cloud history pending owner-approved activation; nothing is saved to Cloud yet.
-          </p>
-        )}
-        <p className="text-sm" role="status">
-          {historyStatus}
-        </p>
-        {savedHistory.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr>
-                  <th className="p-2">Observation date</th>
-                  <th className="p-2">Saved at</th>
-                  <th className="p-2">Markers</th>
-                  <th className="p-2">Review status</th>
-                  <th className="p-2">Batch ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {savedHistory.map((record) => (
-                  <tr key={record.batchId} className="border-t">
-                    <td className="p-2">{record.observedOn}</td>
-                    <td className="p-2">{record.createdAt}</td>
-                    <td className="p-2">{record.itemCount}</td>
-                    <td className="p-2">{record.status}</td>
-                    <td className="p-2 font-mono text-xs">{record.batchId}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <p className="text-sm text-muted-foreground">Only synthetic pending-review batches saved in Cloud for the currently signed-in Crew Self and selected mission. No original PDFs or scientific approval.</p>
+        <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!eligible || !cloudEnabled || historyBusy} onClick={() => void refreshSavedHistory()}>{historyBusy ? "Loading saved reviews…" : "Refresh saved reviews"}</button>
+        {!cloudEnabled && <p className="text-sm" role="status">Cloud history pending owner-approved activation; nothing is saved to Cloud yet.</p>}
+        <p className="text-sm" role="status">{historyStatus}</p>
+        {savedHistory.length > 0 && <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th className="p-2">Observation date</th><th className="p-2">Saved at</th><th className="p-2">Markers</th><th className="p-2">Review status</th><th className="p-2">Batch ID</th></tr></thead><tbody>{savedHistory.map((record) => <tr key={record.batchId} className="border-t"><td className="p-2">{record.observedOn}</td><td className="p-2">{record.createdAt}</td><td className="p-2">{record.itemCount}</td><td className="p-2">{record.status}</td><td className="p-2 font-mono text-xs">{record.batchId}</td></tr>)}</tbody></table></div>}
       </section>
       <button
         type="button"
