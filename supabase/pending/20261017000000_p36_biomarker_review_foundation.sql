@@ -1,4 +1,4 @@
--- P36.2B5: staged revision of P36.2B4, never deployed.
+-- P36.2B6: staged revision of P36.2B5, never deployed.
 -- Identity provenance uses mission_memberships rather than direct auth.users references.
 -- NO authenticated/anon grants, NO ingest RPC, NO automatic observation promotion.
 create table if not exists public.p36_biomarker_review_batches (
@@ -6,6 +6,7 @@ create table if not exists public.p36_biomarker_review_batches (
   mission_id text not null references public.missions(id) on delete cascade,
   crew_member_id text not null references public.crew_members(id) on delete cascade,
   submitted_by_membership_id uuid not null references public.mission_memberships(id) on delete restrict,
+  submitted_by_user_snapshot uuid not null,
   source_fingerprint text not null check (source_fingerprint ~ '^[a-f0-9]{64}$'),
   source_filename text not null check (char_length(source_filename) between 1 and 255),
   observation_date date not null,
@@ -13,6 +14,7 @@ create table if not exists public.p36_biomarker_review_batches (
   classification text not null default 'synthetic' check (classification = 'synthetic'),
   created_at timestamptz not null default now(),
   reviewed_by_membership_id uuid references public.mission_memberships(id) on delete restrict,
+  reviewed_by_user_snapshot uuid,
   reviewed_at timestamptz,
   review_note text,
   constraint p36_reviewer_independent check (reviewed_by_membership_id is null or reviewed_by_membership_id <> submitted_by_membership_id),
@@ -62,6 +64,15 @@ begin
      or v_submit.crew_member_id is distinct from new.crew_member_id then
     raise exception 'P36 submitter must be active crew_self for matching mission and crew';
   end if;
+  if tg_op = 'UPDATE' and (new.submitted_by_membership_id is distinct from old.submitted_by_membership_id
+    or new.submitted_by_user_snapshot is distinct from old.submitted_by_user_snapshot
+    or (old.reviewed_by_membership_id is not null and new.reviewed_by_membership_id is distinct from old.reviewed_by_membership_id)
+    or (old.reviewed_by_user_snapshot is not null and new.reviewed_by_user_snapshot is distinct from old.reviewed_by_user_snapshot)) then
+    raise exception 'P36 historical reviewer/submitter provenance is immutable';
+  end if;
+  if new.submitted_by_user_snapshot is distinct from v_submit.user_id then
+    raise exception 'P36 submitter snapshot must match membership user';
+  end if;
   if new.reviewed_by_membership_id is not null then
     select * into v_review from public.mission_memberships
       where id = new.reviewed_by_membership_id;
@@ -70,6 +81,11 @@ begin
        or v_review.user_id = v_submit.user_id then
       raise exception 'P36 reviewer must be an independent active ground_medical user in the same mission';
     end if;
+    if new.reviewed_by_user_snapshot is distinct from v_review.user_id then
+      raise exception 'P36 reviewer snapshot must match membership user';
+    end if;
+  elsif new.reviewed_by_user_snapshot is not null then
+    raise exception 'P36 reviewer snapshot requires a reviewer membership';
   end if;
   return new;
 end $$;
@@ -79,32 +95,9 @@ create trigger p36_review_membership_guard before insert or update
   on public.p36_biomarker_review_batches for each row
   execute function public.p36_validate_review_memberships();
 
--- Revalidate existing batches when a referenced membership is deactivated,
--- moved to another mission/crew, reassigned to another user, or role-changed.
--- Fail closed instead of silently retaining an invalid approval identity.
-create or replace function public.p36_guard_membership_changes()
-returns trigger language plpgsql set search_path = public, pg_temp as $$
-begin
-  if exists (
-    select 1 from public.p36_biomarker_review_batches b
-    join public.mission_memberships submitter on submitter.id = b.submitted_by_membership_id
-    left join public.mission_memberships reviewer on reviewer.id = b.reviewed_by_membership_id
-    where (b.submitted_by_membership_id = new.id or b.reviewed_by_membership_id = new.id)
-      and (not submitter.active or submitter.role <> 'crew_self'
-        or submitter.mission_id is distinct from b.mission_id
-        or submitter.crew_member_id is distinct from b.crew_member_id
-        or (b.reviewed_by_membership_id is not null and
-          (reviewer.id is null or not reviewer.active or reviewer.role <> 'ground_medical'
-           or reviewer.mission_id is distinct from b.mission_id
-           or reviewer.user_id = submitter.user_id)))
-  ) then
-    raise exception 'P36 membership change would invalidate a staged review batch';
-  end if;
-  return new;
-end $$;
-revoke all on function public.p36_guard_membership_changes() from public, anon, authenticated;
-drop trigger if exists p36_review_membership_change_guard on public.mission_memberships;
-create trigger p36_review_membership_change_guard
-  after update of mission_id, crew_member_id, user_id, role, active
-  on public.mission_memberships for each row
-  execute function public.p36_guard_membership_changes();
+-- P36.2B6 emergency revocation: NO membership update/delete guard trigger.
+-- Membership deactivation and role removal must remain possible immediately.
+-- Historical user snapshots preserve attribution. Existing review rows remain
+-- inaccessible to browser roles; a future privileged approval service MUST
+-- check current membership status and user identity at decision time.
+-- Membership deletion is still restricted by the FK: use active=false to revoke.
