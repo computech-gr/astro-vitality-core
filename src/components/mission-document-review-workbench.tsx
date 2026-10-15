@@ -81,7 +81,7 @@ export function MissionDocumentReviewWorkbench() {
     }
   }
   return (
-    <main className="mx-auto max-w-5xl space-y-5 p-6">
+    <main className="mx-auto w-full min-w-0 max-w-5xl space-y-5 p-6">
       <h1 className="text-2xl font-bold">P36.2A — Mission Document Review</h1>
       <p className="text-sm text-muted-foreground">
         Research-only local extraction preview. This stage does not write mission observations,
