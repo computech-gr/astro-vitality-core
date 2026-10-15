@@ -1,4 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  loadMissionIdentity,
+  subscribeMissionIdentity,
+  type MissionIdentitySnapshot,
+} from "@/infrastructure/mission-identity";
 import registry from "../../data/scientific/p36-biomarker-source-registry.v1.json";
 import { extractBoneDocument } from "@/domain/bone-health/document-extraction";
 
@@ -40,6 +45,31 @@ function parseCandidates(text: string): Candidate[] {
   return found.slice(0, 100);
 }
 export function MissionDocumentReviewWorkbench() {
+  const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
+  useEffect(() => {
+    let active = true;
+    const refreshIdentity = () => {
+      void loadMissionIdentity()
+        .then((value) => {
+          if (active) setIdentity(value);
+        })
+        .catch(() => {
+          if (active) setIdentity(null);
+        });
+    };
+    refreshIdentity();
+    const unsubscribe = subscribeMissionIdentity(refreshIdentity);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+  const eligible = Boolean(
+    identity?.signedIn &&
+    identity.active?.missionId &&
+    identity.active?.crewMemberId &&
+    identity.active.role === "crew_self",
+  );
   const [consent, setConsent] = useState(false);
   const [text, setText] = useState("");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -50,6 +80,10 @@ export function MissionDocumentReviewWorkbench() {
     setText("");
     setCandidates([]);
     setSource("");
+    if (!eligible) {
+      setStatus("Active Crew Self mission membership required.");
+      return;
+    }
     if (!consent) {
       setStatus("Confirm local-only document processing first.");
       return;
@@ -88,6 +122,15 @@ export function MissionDocumentReviewWorkbench() {
         upload original documents, generate medical reports, or link a document to a crew identity.
         Use synthetic reports only until security and scientific gates are cleared.
       </p>
+      <section
+        aria-label="Mission review context"
+        className="rounded border p-3 text-sm"
+        role="status"
+      >
+        {eligible
+          ? `Crew Self context: ${identity?.active?.missionCode ?? identity?.active?.missionId} / ${identity?.active?.crewDisplayName ?? identity?.active?.crewMemberId}. Local review only; no server writes.`
+          : "No verified active Crew Self mission context. Select an active Crew Self membership in Mission Identity before reviewing synthetic documents."}
+      </section>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} /> I
         understand this file will be processed in this browser only, and I will use synthetic test
@@ -98,7 +141,7 @@ export function MissionDocumentReviewWorkbench() {
         className="block w-full max-w-full text-sm"
         type="file"
         accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.txt"
-        disabled={!consent || busy}
+        disabled={!eligible || !consent || busy}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) void load(f);
@@ -126,6 +169,7 @@ export function MissionDocumentReviewWorkbench() {
             className="rounded border px-3 py-2 text-sm"
             type="button"
             onClick={() => {
+              if (!eligible) return;
               setCandidates(parseCandidates(text));
               setStatus("Candidate matching refreshed; no values have been saved.");
             }}
@@ -176,8 +220,8 @@ export function MissionDocumentReviewWorkbench() {
           </table>
         </div>
         <p className="text-xs text-muted-foreground">
-          Review checkboxes are temporary UI state, not scientific approval or persistence. No
-          automatic report, trend, or diagnosis.
+          Mission context is display-only. Review checkboxes are temporary UI state, not scientific
+          approval or persistence. No automatic report, trend, or diagnosis.
         </p>
       </section>
       <button
