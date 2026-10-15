@@ -6,6 +6,15 @@ import {
 } from "@/infrastructure/mission-identity";
 import registry from "../../data/scientific/p36-biomarker-source-registry.v1.json";
 import { extractBoneDocument } from "@/domain/bone-health/document-extraction";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  getP36CloudSubmissionStatus,
+  submitSyntheticReviewBatch,
+} from "@/lib/p36-cloud-submission.functions";
+import {
+  validateSyntheticCloudHandoff,
+  type SyntheticCloudHandoff,
+} from "@/domain/biomarkers/p364-cloud-handoff-contract";
 
 type Candidate = {
   id: string;
@@ -81,6 +90,21 @@ export function MissionDocumentReviewWorkbench() {
   const [observationDate, setObservationDate] = useState("");
   const [exportStatus, setExportStatus] = useState("");
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [sourceSha256, setSourceSha256] = useState("");
+  const [cloudEnabled, setCloudEnabled] = useState(false);
+  const [cloudBusy, setCloudBusy] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState("");
+  const submitBatch = useServerFn(submitSyntheticReviewBatch);
+  const readCloudStatus = useServerFn(getP36CloudSubmissionStatus);
+  useEffect(() => {
+    let active = true;
+    void readCloudStatus()
+      .then((s) => active && setCloudEnabled(s.enabled === true))
+      .catch(() => active && setCloudEnabled(false));
+    return () => {
+      active = false;
+    };
+  }, [readCloudStatus]);
   const missionId = eligible ? identity?.active?.missionId : undefined;
   const crewMemberId = eligible ? identity?.active?.crewMemberId : undefined;
   const selected = candidates.filter((candidate) => candidate.selected);
@@ -130,10 +154,56 @@ export function MissionDocumentReviewWorkbench() {
       "Synthetic review exported locally. Not a clinical or scientific approval; no cloud records written.",
     );
   }
+  async function submitToCloud() {
+    if (!canExport || !missionId || !crewMemberId || !identity?.userId || !sourceSha256) return;
+    const handoff: SyntheticCloudHandoff = {
+      schema: "mitochondria.p36.4.synthetic-cloud-handoff.v1",
+      syntheticOnly: true,
+      missionId,
+      crewMemberId,
+      observedOn: observationDate,
+      sourceFilename: source,
+      sourceSha256,
+      observations: selected.map(({ id, value, unit, excerpt }) => ({
+        metricId: id,
+        value,
+        unit,
+        sourceExcerpt: excerpt,
+      })),
+    };
+    if (!validateSyntheticCloudHandoff(handoff)) {
+      setCloudStatus("Batch is not valid for synthetic submission (plain decimal values, unique markers).");
+      return;
+    }
+    // Deterministic key: identical retries replay the same batch instead of duplicating it.
+    const keyDigest = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(`${identity.userId}|${JSON.stringify(handoff)}`),
+    );
+    const idempotencyKey = Array.from(new Uint8Array(keyDigest), (b) =>
+      b.toString(16).padStart(2, "0"),
+    ).join("");
+    setCloudBusy(true);
+    setCloudStatus("");
+    try {
+      const result = await submitBatch({ data: { handoff, idempotencyKey } });
+      setCloudStatus(
+        result.ok
+          ? `${result.status === "replayed" ? "Already submitted" : "Submitted"}: ${result.itemCount} synthetic value(s), pending independent review. Not approved or interpreted.`
+          : result.message,
+      );
+    } catch {
+      setCloudStatus("Cloud submission failed. Nothing was saved; sign in again and retry.");
+    } finally {
+      setCloudBusy(false);
+    }
+  }
   async function load(file: File) {
     setText("");
     setCandidates([]);
     setSource("");
+    setSourceSha256("");
+    setCloudStatus("");
     setReviewerConfirmed(false);
     setExportStatus("");
     setPreviewVisible(false);
@@ -159,6 +229,10 @@ export function MissionDocumentReviewWorkbench() {
         ? { text: await file.text(), method: "local text", warnings: [] as string[] }
         : await extractBoneDocument(file);
       const bounded = result.text.slice(0, 100_000);
+      const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+      setSourceSha256(
+        Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join(""),
+      );
       setText(bounded);
       setSource(file.name);
       setCandidates(parseCandidates(bounded));
@@ -341,9 +415,21 @@ export function MissionDocumentReviewWorkbench() {
       </section>
       <section aria-label="P36.4 controlled cloud submission" className="space-y-3 rounded border p-3">
         <h2 className="font-semibold">P36.4 — Synthetic Cloud Submission</h2>
-        <p className="text-sm">Cloud submission is not active in this deployment. The staged review schema has not been applied to the shared database. Signing in verifies identity but does not activate the pending database schema or server-side authorization service.</p>
-        <button type="button" disabled aria-disabled="true" className="rounded border px-3 py-2 text-sm opacity-50">Submit reviewed synthetic measurements to Cloud — pending activation</button>
-        <p className="text-xs text-muted-foreground">Local preview and JSON export remain available. Original documents are never uploaded by this page. No browser database writes.</p>
+        {cloudEnabled ? (
+          <>
+            <p className="text-sm">Owner-activated synthetic-only submission. The server re-checks your active Crew Self membership, mission and crew scope, exact catalog units and duplicates. Batches stay pending review; nothing is approved or interpreted.</p>
+            <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!canExport || !sourceSha256 || cloudBusy} onClick={() => void submitToCloud()}>
+              {cloudBusy ? "Submitting synthetic batch…" : `Submit reviewed synthetic measurements to Cloud (${selected.length})`}
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm">Cloud submission is not active in this deployment. The staged review schema has not been applied to the shared database. Signing in verifies identity but does not activate the pending database schema or server-side authorization service.</p>
+            <button type="button" disabled aria-disabled="true" className="rounded border px-3 py-2 text-sm opacity-50">Submit reviewed synthetic measurements to Cloud — pending activation</button>
+          </>
+        )}
+        {cloudStatus && <p role="status" className="text-sm">{cloudStatus}</p>}
+        <p className="text-xs text-muted-foreground">Local preview and JSON export remain available. Original documents are never uploaded by this page; only a SHA-256 fingerprint and reviewed values are sent. No browser database writes.</p>
       </section>
       <section aria-label="P36.3 local synthetic research preview" className="space-y-3 rounded border p-3">
         <h2 className="font-semibold">P36.3 — Synthetic research preview (local only)</h2>
