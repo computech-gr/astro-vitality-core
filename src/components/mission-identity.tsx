@@ -47,6 +47,7 @@ import {
   subscribeMissionIdentity,
   validateMissionSignUpPassword,
   changeMissionPassword,
+  validateMissionPasswordChange,
   type MissionIdentitySnapshot,
   type MissionMembershipContext,
   type MissionRole,
@@ -77,6 +78,7 @@ export function MissionIdentity() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordChangeBusy, setPasswordChangeBusy] = useState(false);
