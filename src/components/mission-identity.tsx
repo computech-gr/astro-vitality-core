@@ -352,21 +352,15 @@ export function MissionIdentity() {
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       className="mt-2"
-                      aria-describedby="mission-password-note mission-password-error"
-                      aria-invalid={Boolean(password && validateMissionSignUpPassword(password))}
+                      aria-describedby="mission-signin-password-help"
                     />
-                    <p id="mission-password-note" className="mt-2 text-xs text-muted-foreground">
-                      Password must contain at least 12 characters.
+                    <p
+                      id="mission-signin-password-help"
+                      className="mt-2 text-xs text-muted-foreground"
+                    >
+                      Enter your existing password. New-password requirements apply only when
+                      creating or changing a password.
                     </p>
-                    {password && validateMissionSignUpPassword(password) ? (
-                      <p
-                        id="mission-password-error"
-                        role="alert"
-                        className="mt-1 text-xs text-rose-300"
-                      >
-                        {validateMissionSignUpPassword(password)}
-                      </p>
-                    ) : null}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
