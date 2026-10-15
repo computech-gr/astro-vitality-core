@@ -10,6 +10,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   getP36CloudSubmissionStatus,
   submitSyntheticReviewBatch,
+  listSyntheticReviewHistory,
 } from "@/lib/p36-cloud-submission.functions";
 import {
   validateSyntheticCloudHandoff,
@@ -94,7 +95,11 @@ export function MissionDocumentReviewWorkbench() {
   const [cloudEnabled, setCloudEnabled] = useState(false);
   const [cloudBusy, setCloudBusy] = useState(false);
   const [cloudStatus, setCloudStatus] = useState("");
+  const [savedHistory, setSavedHistory] = useState<Array<{batchId:string; observedOn:string; createdAt:string; status:string; itemCount:number}>>([]);
+  const [historyStatus, setHistoryStatus] = useState("");
+  const [historyBusy, setHistoryBusy] = useState(false);
   const submitBatch = useServerFn(submitSyntheticReviewBatch);
+  const listHistory = useServerFn(listSyntheticReviewHistory);
   const readCloudStatus = useServerFn(getP36CloudSubmissionStatus);
   useEffect(() => {
     let active = true;
@@ -110,6 +115,13 @@ export function MissionDocumentReviewWorkbench() {
   const selected = candidates.filter((candidate) => candidate.selected);
   const hasDuplicateMetrics =
     new Set(selected.map((candidate) => candidate.id)).size !== selected.length;
+  const allSelected = candidates.length > 0 && candidates.every((c) => c.selected);
+  function setAllReviewed(checked: boolean) {
+    setCandidates((previous) => previous.map((candidate) => ({ ...candidate, selected: checked })));
+    setReviewerConfirmed(false);
+    setPreviewVisible(false);
+    setCloudStatus("");
+  }
   const canExport = Boolean(
     eligible &&
     consent &&
@@ -189,6 +201,7 @@ export function MissionDocumentReviewWorkbench() {
     setCloudStatus("");
     try {
       const result = await submitBatch({ data: { handoff, idempotencyKey } });
+      if (result.ok) void refreshSavedHistory();
       setCloudStatus(
         result.ok
           ? `${result.status === "replayed" ? "Already submitted" : "Submitted"}: ${result.itemCount} synthetic value(s), pending independent review. Not approved or interpreted.`
@@ -198,6 +211,24 @@ export function MissionDocumentReviewWorkbench() {
       setCloudStatus("Cloud submission failed. Nothing was saved; sign in again and retry.");
     } finally {
       setCloudBusy(false);
+    }
+  }
+  async function refreshSavedHistory() {
+    if (!eligible || !missionId || !crewMemberId || !cloudEnabled) return;
+    setHistoryBusy(true);
+    try {
+      const result = await listHistory({ data: { missionId, crewMemberId } });
+      if (result.ok) {
+        setSavedHistory(result.records);
+        setHistoryStatus(result.records.length ? "Saved synthetic reviews, newest observation first." : "No saved synthetic reviews for this astronaut.");
+      } else {
+        setSavedHistory([]);
+        setHistoryStatus(result.message);
+      }
+    } catch {
+      setHistoryStatus("Unable to load saved reviews. No changes were made.");
+    } finally {
+      setHistoryBusy(false);
     }
   }
   async function load(file: File) {
@@ -340,6 +371,10 @@ export function MissionDocumentReviewWorkbench() {
         <h2 className="font-semibold">
           Proposed matches ({candidates.length}) — never auto-approved
         </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!eligible || candidates.length === 0 || busy} onClick={() => setAllReviewed(!allSelected)}>{allSelected ? "Deselect All" : "Select All"} ({candidates.length})</button>
+          <span className="text-xs text-muted-foreground">Selection is not scientific approval. Review every value and unit before confirming.</span>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -453,7 +488,7 @@ export function MissionDocumentReviewWorkbench() {
             >
               {cloudBusy
                 ? "Submitting synthetic batch…"
-                : `Submit reviewed synthetic measurements to Cloud (${selected.length})`}
+                : `Save reviewed synthetic measurements to Cloud (${selected.length})`}
             </button>
           </>
         ) : (
@@ -535,6 +570,14 @@ export function MissionDocumentReviewWorkbench() {
             </p>
           </div>
         )}
+      </section>
+      <section className="space-y-3 rounded border p-3" aria-label="Astronaut saved synthetic reviews">
+        <h2 className="font-semibold">Astronaut saved reviews — by observation date</h2>
+        <p className="text-sm text-muted-foreground">Only synthetic pending-review batches saved in Cloud for the currently signed-in Crew Self and selected mission. No original PDFs or scientific approval.</p>
+        <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!eligible || !cloudEnabled || historyBusy} onClick={() => void refreshSavedHistory()}>{historyBusy ? "Loading saved reviews…" : "Refresh saved reviews"}</button>
+        {!cloudEnabled && <p className="text-sm" role="status">Cloud history pending owner-approved activation; nothing is saved to Cloud yet.</p>}
+        <p className="text-sm" role="status">{historyStatus}</p>
+        {savedHistory.length > 0 && <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th className="p-2">Observation date</th><th className="p-2">Saved at</th><th className="p-2">Markers</th><th className="p-2">Review status</th><th className="p-2">Batch ID</th></tr></thead><tbody>{savedHistory.map((record) => <tr key={record.batchId} className="border-t"><td className="p-2">{record.observedOn}</td><td className="p-2">{record.createdAt}</td><td className="p-2">{record.itemCount}</td><td className="p-2">{record.status}</td><td className="p-2 font-mono text-xs">{record.batchId}</td></tr>)}</tbody></table></div>}
       </section>
       <button
         type="button"
