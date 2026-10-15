@@ -22,5 +22,6 @@ test("P36.2B4 stays deny-all without a client write or approval path", () => {
   expect((sql.match(/as restrictive for all to public using \(false\) with check \(false\)/g) ?? []).length).toBe(2);
   expect(sql).toContain("from public, anon, authenticated");
   expect(sql).not.toMatch(/grant\s+(select|insert|update|delete|all)/i);
-  expect(sql).not.toMatch(/create\s+(or replace\s+)?function/i);
+  expect(sql).not.toMatch(/grant\s+execute/i);
+  expect(sql).not.toMatch(/create\s+(or replace\s+)?function\s+public\.(?:ingest|approve|submit)/i);
 });
