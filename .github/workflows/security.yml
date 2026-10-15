@@ -15,9 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      # Pinned to immutable commit SHAs (GHSA-69fq-xp46-6x23: trivy-action tags <0.35.0 were
+      # force-pushed to malware in March 2026 and the unprefixed tags were later removed).
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
       - name: Filesystem vulnerability and secret scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0 (immutable release)
         with:
           scan-type: fs
           scan-ref: .
