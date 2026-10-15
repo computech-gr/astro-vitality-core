@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   loadMissionIdentity,
   subscribeMissionIdentity,
@@ -70,6 +70,7 @@ export function MissionDocumentReviewWorkbench() {
     identity.active?.crewMemberId &&
     identity.active.role === "crew_self",
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [consent, setConsent] = useState(false);
   const [text, setText] = useState("");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -194,9 +195,17 @@ export function MissionDocumentReviewWorkbench() {
         understand this file will be processed in this browser only, and I will use synthetic test
         data.
       </label>
+      <div className="rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4 space-y-2" aria-label="Laboratory report selection">
+        <p className="font-semibold">Synthetic laboratory report</p>
+        <p className="text-sm text-muted-foreground">PDF, image, CSV or TXT · processed locally · maximum 12 MB</p>
+        <button type="button" className="rounded-md bg-primary px-5 py-3 font-semibold text-primary-foreground disabled:opacity-50" disabled={!eligible || !consent || busy} onClick={() => fileInputRef.current?.click()}>
+          {busy ? "Reading laboratory report…" : "Upload Laboratory Report"}
+        </button>
+        <p className="text-xs" role="status">{source ? `Selected: ${source}` : "No laboratory report selected"}</p>
       <input
+        ref={fileInputRef}
         aria-label="Select examination file"
-        className="block w-full max-w-full text-sm"
+        className="sr-only"
         type="file"
         accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.txt"
         disabled={!eligible || !consent || busy}
@@ -206,6 +215,7 @@ export function MissionDocumentReviewWorkbench() {
           e.currentTarget.value = "";
         }}
       />
+      </div>
       <p role="status" className="text-sm">
         {status}
       </p>
@@ -328,6 +338,12 @@ export function MissionDocumentReviewWorkbench() {
         <p role="status" className="text-sm">
           {exportStatus}
         </p>
+      </section>
+      <section aria-label="P36.4 controlled cloud submission" className="space-y-3 rounded border p-3">
+        <h2 className="font-semibold">P36.4 — Synthetic Cloud Submission</h2>
+        <p className="text-sm">Cloud submission is not active in this deployment. The staged review schema has not been applied to the shared database. Signing in verifies identity but does not activate the pending database schema or server-side authorization service.</p>
+        <button type="button" disabled aria-disabled="true" className="rounded border px-3 py-2 text-sm opacity-50">Submit reviewed synthetic measurements to Cloud — pending activation</button>
+        <p className="text-xs text-muted-foreground">Local preview and JSON export remain available. Original documents are never uploaded by this page. No browser database writes.</p>
       </section>
       <section aria-label="P36.3 local synthetic research preview" className="space-y-3 rounded border p-3">
         <h2 className="font-semibold">P36.3 — Synthetic research preview (local only)</h2>
