@@ -20,7 +20,7 @@ export function GroundMedicalReviewPanel() {
         if (!live) return;
         const allowed = identity.memberships.filter(m => m.role === "ground_medical");
         setMissions(allowed);
-        setMissionId(previous => allowed.some(m => m.missionId === previous) ? previous : (allowed.length === 1 ? allowed[0].missionId : ""));
+        setMissionId(previous => allowed.some(m => m.missionId === previous) ? previous : (allowed.length === 1 ? (allowed[0]?.missionId ?? "") : ""));
       } catch {
         if (live) { setMissions([]); setMissionId(""); }
       }
