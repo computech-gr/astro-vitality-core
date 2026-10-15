@@ -27,7 +27,7 @@ function parseCandidates(text: string): Candidate[] {
     if (matches.length !== 1) continue;
     const metric = matches[0]!;
     // Exact unit only: never silently convert or interpret reference intervals.
-    if (metric.originalUnit.trim() !== match[3]!.trim()) continue;
+    if (!metric.originalUnit || metric.originalUnit.trim() !== match[3]!.trim()) continue;
     found.push({
       id: metric.id,
       label: metric.name,
