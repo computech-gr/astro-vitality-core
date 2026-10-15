@@ -95,6 +95,7 @@ export function MissionDocumentReviewWorkbench() {
       </label>
       <input
         aria-label="Select examination file"
+        className="block w-full max-w-full text-sm"
         type="file"
         accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.txt"
         disabled={!consent || busy}
