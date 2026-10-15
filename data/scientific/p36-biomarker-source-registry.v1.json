@@ -1,0 +1,5411 @@
+{
+  "schemaVersion": "p36.1.0",
+  "generatedFrom": [
+    "data/scientific/cardiovascular-handbook.catalog.v1.json",
+    "data/scientific/bone-health-handbook-v7.catalog.json"
+  ],
+  "scope": "research_only",
+  "notDeviceCompatibilityCertification": true,
+  "clinicalActivation": false,
+  "sourceMappingIsProvisional": true,
+  "counts": {
+    "cardiovascular": 96,
+    "bone_health": 63,
+    "total": 159
+  },
+  "metrics": [
+    {
+      "id": "cv-001",
+      "domain": "cardiovascular",
+      "name": "HR",
+      "originalUnit": "bpm",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-002",
+      "domain": "cardiovascular",
+      "name": "Resting HR",
+      "originalUnit": "bpm",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "camera_ppg_or_ble_hr_if_supported",
+        "clinical_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-003",
+      "domain": "cardiovascular",
+      "name": "Exercise HR",
+      "originalUnit": "bpm",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "camera_ppg_or_ble_hr_if_supported",
+        "clinical_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-004",
+      "domain": "cardiovascular",
+      "name": "HR recovery",
+      "originalUnit": "bpm διαφορά",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "camera_ppg_or_ble_hr_if_supported",
+        "clinical_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-005",
+      "domain": "cardiovascular",
+      "name": "SBP",
+      "originalUnit": "mmHg",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-006",
+      "domain": "cardiovascular",
+      "name": "DBP",
+      "originalUnit": "mmHg",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-007",
+      "domain": "cardiovascular",
+      "name": "MAP",
+      "originalUnit": "mmHg",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-008",
+      "domain": "cardiovascular",
+      "name": "Pulse pressure",
+      "originalUnit": "mmHg",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "camera_ppg_or_ble_hr_if_supported",
+        "clinical_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-009",
+      "domain": "cardiovascular",
+      "name": "Stroke volume",
+      "originalUnit": "mL/beat",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-010",
+      "domain": "cardiovascular",
+      "name": "Cardiac output",
+      "originalUnit": "L/min",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-011",
+      "domain": "cardiovascular",
+      "name": "Cardiac index",
+      "originalUnit": "L/min/m²",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-012",
+      "domain": "cardiovascular",
+      "name": "SVR",
+      "originalUnit": "dyn·s/cm⁵",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-013",
+      "domain": "cardiovascular",
+      "name": "CVP",
+      "originalUnit": "mmHg",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-014",
+      "domain": "cardiovascular",
+      "name": "Plasma volume",
+      "originalUnit": "mL / % change",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-015",
+      "domain": "cardiovascular",
+      "name": "Blood volum",
+      "originalUnit": "mL",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-016",
+      "domain": "cardiovascular",
+      "name": "Venous return",
+      "originalUnit": "L/min",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-017",
+      "domain": "cardiovascular",
+      "name": "LV EDV",
+      "originalUnit": "mL",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-018",
+      "domain": "cardiovascular",
+      "name": "LV ESV",
+      "originalUnit": "mL",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-019",
+      "domain": "cardiovascular",
+      "name": "LV mass",
+      "originalUnit": "g",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-020",
+      "domain": "cardiovascular",
+      "name": "RV function",
+      "originalUnit": "μεθοδοεξαρτώμενο",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-021",
+      "domain": "cardiovascular",
+      "name": "LVEF",
+      "originalUnit": "%",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-022",
+      "domain": "cardiovascular",
+      "name": "E/A",
+      "originalUnit": "ratio",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-023",
+      "domain": "cardiovascular",
+      "name": "E/e′",
+      "originalUnit": "ratio",
+      "category": "Hemodynamics",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-024",
+      "domain": "cardiovascular",
+      "name": "ECG",
+      "originalUnit": "waveform",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "ecg_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-025",
+      "domain": "cardiovascular",
+      "name": "RR interval",
+      "originalUnit": "ms",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "camera_ppg_or_ble_hr_if_supported",
+        "clinical_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-026",
+      "domain": "cardiovascular",
+      "name": "SDNN",
+      "originalUnit": "ms",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-027",
+      "domain": "cardiovascular",
+      "name": "RMSSD",
+      "originalUnit": "ms",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-028",
+      "domain": "cardiovascular",
+      "name": "HF HRV",
+      "originalUnit": "ms² ή normalized",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "camera_ppg_or_ble_hr_if_supported",
+        "clinical_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-029",
+      "domain": "cardiovascular",
+      "name": "LF HRV",
+      "originalUnit": "ms² ή normalized",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "camera_ppg_or_ble_hr_if_supported",
+        "clinical_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-030",
+      "domain": "cardiovascular",
+      "name": "PR",
+      "originalUnit": "ms",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-031",
+      "domain": "cardiovascular",
+      "name": "QRS",
+      "originalUnit": "ms",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "ecg_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-032",
+      "domain": "cardiovascular",
+      "name": "QTc",
+      "originalUnit": "ms",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "ecg_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-033",
+      "domain": "cardiovascular",
+      "name": "PAC burden",
+      "originalUnit": "% ή /day",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-034",
+      "domain": "cardiovascular",
+      "name": "PVC burden",
+      "originalUnit": "% ή /day",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-035",
+      "domain": "cardiovascular",
+      "name": "AF burden",
+      "originalUnit": "% time",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-036",
+      "domain": "cardiovascular",
+      "name": "SVT/VT episode",
+      "originalUnit": "event",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-037",
+      "domain": "cardiovascular",
+      "name": "ST changes",
+      "originalUnit": "mm",
+      "category": "Electrical",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-038",
+      "domain": "cardiovascular",
+      "name": "Orthostatic ΔSBP",
+      "originalUnit": "mmHg",
+      "category": "Orthostatic and autonomic",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-039",
+      "domain": "cardiovascular",
+      "name": "Orthostatic ΔHR",
+      "originalUnit": "bpm",
+      "category": "Orthostatic and autonomic",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-040",
+      "domain": "cardiovascular",
+      "name": "Tilt tolerance",
+      "originalUnit": "min/event",
+      "category": "Orthostatic and autonomic",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-041",
+      "domain": "cardiovascular",
+      "name": "Baroreflex sensitivity",
+      "originalUnit": "ms/mmHg",
+      "category": "Orthostatic and autonomic",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-042",
+      "domain": "cardiovascular",
+      "name": "Cerebral flow velocity",
+      "originalUnit": "cm/s",
+      "category": "Orthostatic and autonomic",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-043",
+      "domain": "cardiovascular",
+      "name": "Orthostatic symptoms",
+      "originalUnit": "categorical",
+      "category": "Orthostatic and autonomic",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-044",
+      "domain": "cardiovascular",
+      "name": "cIMT",
+      "originalUnit": "mm",
+      "category": "Vascular",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-045",
+      "domain": "cardiovascular",
+      "name": "PWV",
+      "originalUnit": "m/s",
+      "category": "Vascular",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-046",
+      "domain": "cardiovascular",
+      "name": "FMD",
+      "originalUnit": "%",
+      "category": "Vascular",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-047",
+      "domain": "cardiovascular",
+      "name": "Carotid distensibility",
+      "originalUnit": "%/mmHg",
+      "category": "Vascular",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-048",
+      "domain": "cardiovascular",
+      "name": "CAC score",
+      "originalUnit": "Agatston",
+      "category": "Vascular",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-049",
+      "domain": "cardiovascular",
+      "name": "Coronary CTA findings",
+      "originalUnit": "categorical",
+      "category": "Vascular",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-050",
+      "domain": "cardiovascular",
+      "name": "Arterial plaque burden",
+      "originalUnit": "method-specific",
+      "category": "Vascular",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-051",
+      "domain": "cardiovascular",
+      "name": "IJV flow direction",
+      "originalUnit": "forward/stagnant/reverse",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-052",
+      "domain": "cardiovascular",
+      "name": "IJV peak velocity",
+      "originalUnit": "cm/s",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-053",
+      "domain": "cardiovascular",
+      "name": "IJV flow grade",
+      "originalUnit": "1–4",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-054",
+      "domain": "cardiovascular",
+      "name": "IJV compressibility",
+      "originalUnit": "yes/no",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-055",
+      "domain": "cardiovascular",
+      "name": "Spontaneous echo contrast",
+      "originalUnit": "grade",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-056",
+      "domain": "cardiovascular",
+      "name": "Thrombus on ultrasound",
+      "originalUnit": "yes/no",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-057",
+      "domain": "cardiovascular",
+      "name": "D-dimer",
+      "originalUnit": "mg/L FEU ή DDU",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-058",
+      "domain": "cardiovascular",
+      "name": "Platelet count",
+      "originalUnit": "10⁹/L",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-059",
+      "domain": "cardiovascular",
+      "name": "Fibrinogen",
+      "originalUnit": "g/L",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-060",
+      "domain": "cardiovascular",
+      "name": "PT/INR",
+      "originalUnit": "s/INR",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-061",
+      "domain": "cardiovascular",
+      "name": "aPTT",
+      "originalUnit": "s",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-062",
+      "domain": "cardiovascular",
+      "name": "vWF",
+      "originalUnit": "assay",
+      "category": "Venous and coagulation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-063",
+      "domain": "cardiovascular",
+      "name": "VO₂peak",
+      "originalUnit": "mL/kg/min",
+      "category": "Exercise and oxygenation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-064",
+      "domain": "cardiovascular",
+      "name": "Workload",
+      "originalUnit": "W",
+      "category": "Exercise and oxygenation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-065",
+      "domain": "cardiovascular",
+      "name": "SpO₂",
+      "originalUnit": "%",
+      "category": "Exercise and oxygenation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-066",
+      "domain": "cardiovascular",
+      "name": "PaO₂",
+      "originalUnit": "mmHg",
+      "category": "Exercise and oxygenation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-067",
+      "domain": "cardiovascular",
+      "name": "Respiratory rate",
+      "originalUnit": "/min",
+      "category": "Exercise and oxygenation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-068",
+      "domain": "cardiovascular",
+      "name": "EtCO₂",
+      "originalUnit": "mmHg",
+      "category": "Exercise and oxygenation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-069",
+      "domain": "cardiovascular",
+      "name": "Lactate",
+      "originalUnit": "mmol/L",
+      "category": "Exercise and oxygenation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-070",
+      "domain": "cardiovascular",
+      "name": "Sodium",
+      "originalUnit": "mmol/L",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-071",
+      "domain": "cardiovascular",
+      "name": "Potassium",
+      "originalUnit": "mmol/L",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-072",
+      "domain": "cardiovascular",
+      "name": "Magnesium",
+      "originalUnit": "mmol/L",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-073",
+      "domain": "cardiovascular",
+      "name": "Calcium serum",
+      "originalUnit": "mmol/L",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-074",
+      "domain": "cardiovascular",
+      "name": "Phosphate",
+      "originalUnit": "mmol/L",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-075",
+      "domain": "cardiovascular",
+      "name": "Hemoglobin",
+      "originalUnit": "g/dL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-076",
+      "domain": "cardiovascular",
+      "name": "Hematocrit",
+      "originalUnit": "%",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-077",
+      "domain": "cardiovascular",
+      "name": "Renin",
+      "originalUnit": "assay-specific",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-078",
+      "domain": "cardiovascular",
+      "name": "Aldosterone",
+      "originalUnit": "assay-specific",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-079",
+      "domain": "cardiovascular",
+      "name": "Vasopressin/copeptin",
+      "originalUnit": "assay-specific",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-080",
+      "domain": "cardiovascular",
+      "name": "ANP",
+      "originalUnit": "pg/mL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-081",
+      "domain": "cardiovascular",
+      "name": "BNP/NT-proBNP",
+      "originalUnit": "pg/mL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-082",
+      "domain": "cardiovascular",
+      "name": "Troponin I/T",
+      "originalUnit": "assay-specific",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-083",
+      "domain": "cardiovascular",
+      "name": "Glucose",
+      "originalUnit": "mg/dL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-084",
+      "domain": "cardiovascular",
+      "name": "Insulin",
+      "originalUnit": "μIU/mL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-085",
+      "domain": "cardiovascular",
+      "name": "HbA1c",
+      "originalUnit": "%",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-086",
+      "domain": "cardiovascular",
+      "name": "LDL-C",
+      "originalUnit": "mg/dL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-087",
+      "domain": "cardiovascular",
+      "name": "HDL-C",
+      "originalUnit": "mg/dL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-088",
+      "domain": "cardiovascular",
+      "name": "Triglycerides",
+      "originalUnit": "mg/dL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-089",
+      "domain": "cardiovascular",
+      "name": "ApoB",
+      "originalUnit": "mg/dL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-090",
+      "domain": "cardiovascular",
+      "name": "Lp(a)",
+      "originalUnit": "nmol/L ή mg/dL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-091",
+      "domain": "cardiovascular",
+      "name": "hsCRP",
+      "originalUnit": "mg/L",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-092",
+      "domain": "cardiovascular",
+      "name": "IL-6",
+      "originalUnit": "pg/mL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-093",
+      "domain": "cardiovascular",
+      "name": "TNF-α",
+      "originalUnit": "pg/mL",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-094",
+      "domain": "cardiovascular",
+      "name": "8-OHd",
+      "originalUnit": "assay-specific",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-095",
+      "domain": "cardiovascular",
+      "name": "F2-isoprostanes",
+      "originalUnit": "assay-specific",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "cv-096",
+      "domain": "cardiovascular",
+      "name": "Cortisol",
+      "originalUnit": "assay-specific",
+      "category": "Biochemistry",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-001",
+      "domain": "bone_health",
+      "name": "CTX / β-CTX",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-002",
+      "domain": "bone_health",
+      "name": "NTX",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-003",
+      "domain": "bone_health",
+      "name": "Pyridinoline (PYD)",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-004",
+      "domain": "bone_health",
+      "name": "Deoxypyridinoline (DPD)",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-005",
+      "domain": "bone_health",
+      "name": "Helical Peptide",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-006",
+      "domain": "bone_health",
+      "name": "Hydroxyproline",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-007",
+      "domain": "bone_health",
+      "name": "Hydroxylysine",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-008",
+      "domain": "bone_health",
+      "name": "TRAP5b",
+      "originalUnit": null,
+      "category": "bone_resorption",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-009",
+      "domain": "bone_health",
+      "name": "P1NP / PINP",
+      "originalUnit": null,
+      "category": "bone_formation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-010",
+      "domain": "bone_health",
+      "name": "PICP",
+      "originalUnit": null,
+      "category": "bone_formation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-011",
+      "domain": "bone_health",
+      "name": "BSAP / BAP",
+      "originalUnit": null,
+      "category": "bone_formation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-012",
+      "domain": "bone_health",
+      "name": "Osteocalcin",
+      "originalUnit": null,
+      "category": "bone_formation",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-013",
+      "domain": "bone_health",
+      "name": "Serum Total Calcium",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-014",
+      "domain": "bone_health",
+      "name": "Ionized Calcium",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-015",
+      "domain": "bone_health",
+      "name": "Urinary Calcium 24h",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-016",
+      "domain": "bone_health",
+      "name": "Serum Phosphate",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-017",
+      "domain": "bone_health",
+      "name": "Urinary Phosphorus",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-018",
+      "domain": "bone_health",
+      "name": "PTH",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-019",
+      "domain": "bone_health",
+      "name": "25(OH) Vitamin D",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-020",
+      "domain": "bone_health",
+      "name": "1,25(OH)₂ Vitamin D",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-021",
+      "domain": "bone_health",
+      "name": "FGF23",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-022",
+      "domain": "bone_health",
+      "name": "Sclerostin",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-023",
+      "domain": "bone_health",
+      "name": "RANKL",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-024",
+      "domain": "bone_health",
+      "name": "OPG",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-025",
+      "domain": "bone_health",
+      "name": "DKK1",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-026",
+      "domain": "bone_health",
+      "name": "Stable Ca isotope ratio",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-027",
+      "domain": "bone_health",
+      "name": "Stable Ca tracer kinetics",
+      "originalUnit": null,
+      "category": "calcium_endocrine",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-028",
+      "domain": "bone_health",
+      "name": "Urinary Citrate",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-029",
+      "domain": "bone_health",
+      "name": "Urinary Oxalate",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-030",
+      "domain": "bone_health",
+      "name": "Urinary Magnesium",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-031",
+      "domain": "bone_health",
+      "name": "Urinary Sodium",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-032",
+      "domain": "bone_health",
+      "name": "Urinary Potassium",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-033",
+      "domain": "bone_health",
+      "name": "Urinary Sulfate",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-034",
+      "domain": "bone_health",
+      "name": "Urinary Uric Acid",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-035",
+      "domain": "bone_health",
+      "name": "Urinary Creatinine",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-036",
+      "domain": "bone_health",
+      "name": "Urine pH",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-037",
+      "domain": "bone_health",
+      "name": "Total Urine Volume",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-038",
+      "domain": "bone_health",
+      "name": "Calcium Oxalate Supersaturation",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-039",
+      "domain": "bone_health",
+      "name": "Brushite / Ca Phosphate Supersaturation",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-040",
+      "domain": "bone_health",
+      "name": "Uric Acid Supersaturation",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-041",
+      "domain": "bone_health",
+      "name": "Sodium Urate Supersaturation",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-042",
+      "domain": "bone_health",
+      "name": "Struvite Supersaturation",
+      "originalUnit": null,
+      "category": "urine_stone",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-043",
+      "domain": "bone_health",
+      "name": "Total Hip aBMD",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-044",
+      "domain": "bone_health",
+      "name": "Femoral Neck aBMD",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-045",
+      "domain": "bone_health",
+      "name": "Lumbar Spine aBMD",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-046",
+      "domain": "bone_health",
+      "name": "Total vBMD",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-047",
+      "domain": "bone_health",
+      "name": "Cortical vBMD",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-048",
+      "domain": "bone_health",
+      "name": "Trabecular vBMD",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-049",
+      "domain": "bone_health",
+      "name": "Trabecular Thickness",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-050",
+      "domain": "bone_health",
+      "name": "Trabecular Number",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-051",
+      "domain": "bone_health",
+      "name": "Trabecular Separation",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "imaging_report",
+        "manual_entry"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-052",
+      "domain": "bone_health",
+      "name": "Cortical Thickness",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-053",
+      "domain": "bone_health",
+      "name": "Bone Failure Load",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-054",
+      "domain": "bone_health",
+      "name": "Estimated Bone Strength",
+      "originalUnit": null,
+      "category": "imaging_strength",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-055",
+      "domain": "bone_health",
+      "name": "Resistance Exercise Adherence",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-056",
+      "domain": "bone_health",
+      "name": "Resistance Exercise Load",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-057",
+      "domain": "bone_health",
+      "name": "Dietary Calcium Intake",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-058",
+      "domain": "bone_health",
+      "name": "Dietary Vitamin D Intake",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-059",
+      "domain": "bone_health",
+      "name": "Dietary Protein Intake",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-060",
+      "domain": "bone_health",
+      "name": "Dietary Sodium Intake",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-061",
+      "domain": "bone_health",
+      "name": "Fluid Intake",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-062",
+      "domain": "bone_health",
+      "name": "Mission Duration",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    },
+    {
+      "id": "bone-063",
+      "domain": "bone_health",
+      "name": "Microgravity Exposure",
+      "originalUnit": null,
+      "category": "exercise_nutrition_exposure",
+      "allowedSourceClasses": [
+        "laboratory_or_clinical_report",
+        "manual_entry",
+        "research_dataset_if_provenance_valid"
+      ],
+      "sourceClassification": "provisional_requires_scientific_review",
+      "integrationStatus": "catalog_only_not_connected",
+      "interpretationStatus": "reference_only_pending_independent_review",
+      "requiresHumanConfirmation": true,
+      "requiredProvenance": [
+        "document_id",
+        "observed_at",
+        "source_type",
+        "original_value",
+        "original_unit",
+        "extraction_method",
+        "reviewer_confirmation"
+      ],
+      "comparabilityFields": [
+        "specimen",
+        "assay_method",
+        "anatomical_site",
+        "modality",
+        "posture",
+        "rest_state",
+        "device_model"
+      ]
+    }
+  ]
+}
