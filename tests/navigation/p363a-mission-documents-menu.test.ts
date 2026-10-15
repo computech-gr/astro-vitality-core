@@ -16,6 +16,6 @@ describe("P36.3A Mission Documents navigation", () => {
     expect(shell).toContain('keywords: SEARCH_KEYWORDS[item]');
   });
   it("does not alter mission review access or data handling", () => {
-    expect(shell).not.toContain("supabase.from("p36_biomarker_review_batches")");
+    expect(shell).not.toContain('supabase.from("p36_biomarker_review_batches")');
   });
 });
