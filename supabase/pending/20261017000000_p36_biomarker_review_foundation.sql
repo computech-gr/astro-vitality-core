@@ -1,22 +1,24 @@
--- P36.2B3: fail-closed, synthetic-only storage foundation.
+-- P36.2B4: staged revision of P36.2B3, never deployed.
+-- Identity provenance uses mission_memberships rather than direct auth.users references.
 -- NO authenticated/anon grants, NO ingest RPC, NO automatic observation promotion.
 create table if not exists public.p36_biomarker_review_batches (
   id uuid primary key default gen_random_uuid(),
   mission_id text not null references public.missions(id) on delete cascade,
   crew_member_id text not null references public.crew_members(id) on delete cascade,
-  submitted_by uuid not null references auth.users(id),
+  submitted_by_membership_id uuid not null references public.mission_memberships(id) on delete restrict,
   source_fingerprint text not null check (source_fingerprint ~ '^[a-f0-9]{64}$'),
   source_filename text not null check (char_length(source_filename) between 1 and 255),
   observation_date date not null,
   status text not null default 'pending_review' check (status in ('pending_review','rejected','approved')),
   classification text not null default 'synthetic' check (classification = 'synthetic'),
   created_at timestamptz not null default now(),
-  reviewed_by uuid references auth.users(id),
+  reviewed_by_membership_id uuid references public.mission_memberships(id) on delete restrict,
   reviewed_at timestamptz,
   review_note text,
+  constraint p36_reviewer_independent check (reviewed_by_membership_id is null or reviewed_by_membership_id <> submitted_by_membership_id),
   constraint p36_review_state_consistent check (
-    (status = 'pending_review' and reviewed_by is null and reviewed_at is null)
-    or (status in ('approved','rejected') and reviewed_by is not null and reviewed_at is not null)
+    (status = 'pending_review' and reviewed_by_membership_id is null and reviewed_at is null)
+    or (status in ('approved','rejected') and reviewed_by_membership_id is not null and reviewed_at is not null)
   ),
   unique (mission_id, crew_member_id, source_fingerprint, observation_date)
 );
@@ -42,5 +44,5 @@ drop policy if exists p36_batches_deny_all on public.p36_biomarker_review_batche
 create policy p36_batches_deny_all on public.p36_biomarker_review_batches as restrictive for all to public using (false) with check (false);
 drop policy if exists p36_items_deny_all on public.p36_biomarker_review_items;
 create policy p36_items_deny_all on public.p36_biomarker_review_items as restrictive for all to public using (false) with check (false);
-comment on table public.p36_biomarker_review_batches is 'P36.2B3 reserved schema: NO CLIENT ACCESS OR WRITE PATH. Synthetic-only; independent authorization acceptance required.';
-comment on table public.p36_biomarker_review_items is 'P36.2B3 reserved schema: no import, no scientific approval and no clinical use.';
+comment on table public.p36_biomarker_review_batches is 'P36.2B4 staged schema: NO CLIENT ACCESS OR WRITE PATH. Synthetic-only; independent authorization acceptance required.';
+comment on table public.p36_biomarker_review_items is 'P36.2B4 staged schema: no import, no scientific approval and no clinical use.';
