@@ -92,7 +92,6 @@ begin
   perform p368ct.ok('D10 replay and refusals created no extra events or audit rows',
     (select count(*) from public.p36_biomarker_review_events) = 2
     and (select count(*) from public.audit_events where action='p36.review_decision') = 2);
-  perform p368ct.ok('D11 decided batches leave the P36.8A pending queue', true);
 end $$;
 
 set role authenticated;
@@ -120,8 +119,6 @@ begin
   perform p368ct.expect_fail('D21 stale item count refused', format($s$select p368ct.decide(%L,'m1',%L,'accepted_for_research',null,'key-dec-x09-aaaaaaaa',3)$s$, gm, b), 'stale view');
   perform p368ct.expect_fail('D22 malformed idempotency key refused', format($s$select p368ct.decide(%L,'m1',%L,'accepted_for_research',null,'short',2)$s$, gm, b), 'idempotency key');
   perform p368ct.expect_fail('D23 unknown batch refused', format($s$select p368ct.decide(%L,'m1','00000000-0000-0000-0000-000000000000','accepted_for_research',null,'key-dec-x10-aaaaaaaa',2)$s$, gm), 'not available');
-  perform p368ct.ok('D24 refusals left the batch pending with no receipt',
-    true);
 end $$;
 reset role;
 do $$ begin
