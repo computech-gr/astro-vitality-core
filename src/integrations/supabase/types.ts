@@ -509,8 +509,10 @@ export type Database = {
           decision_received_at: string | null
           decision_request_id: string | null
           id: string
+          idempotency_key: string | null
           mission_id: string
           observation_date: string
+          request_payload_hash: string | null
           review_note: string | null
           reviewed_at: string | null
           reviewed_by_membership_id: string | null
@@ -529,8 +531,10 @@ export type Database = {
           decision_received_at?: string | null
           decision_request_id?: string | null
           id?: string
+          idempotency_key?: string | null
           mission_id: string
           observation_date: string
+          request_payload_hash?: string | null
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by_membership_id?: string | null
@@ -549,8 +553,10 @@ export type Database = {
           decision_received_at?: string | null
           decision_request_id?: string | null
           id?: string
+          idempotency_key?: string | null
           mission_id?: string
           observation_date?: string
+          request_payload_hash?: string | null
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by_membership_id?: string | null
@@ -716,6 +722,21 @@ export type Database = {
           },
         ]
       }
+      p36_metric_unit_catalog: {
+        Row: {
+          metric_id: string
+          unit: string
+        }
+        Insert: {
+          metric_id: string
+          unit: string
+        }
+        Update: {
+          metric_id?: string
+          unit?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -821,6 +842,19 @@ export type Database = {
       mission_roles_compatible: {
         Args: { p_a: string; p_b: string }
         Returns: boolean
+      }
+      p36_submit_synthetic_review_batch: {
+        Args: {
+          p_crew_member_id: string
+          p_idempotency_key: string
+          p_items: Json
+          p_mission_id: string
+          p_observed_on: string
+          p_source_filename: string
+          p_source_sha256: string
+          p_synthetic_attestation: boolean
+        }
+        Returns: Json
       }
       set_mission_membership_active: {
         Args: {
