@@ -30,7 +30,7 @@ do $$ declare r jsonb; begin
       jsonb_build_object('metricId','cv-001','value','72','unit','bpm','sourceExcerpt','Synthetic cv-001: 72 bpm'),
       jsonb_build_object('metricId','cv-003','value','70','unit','bpm','sourceExcerpt','Synthetic cv-003: 70 bpm')),
     'key-p368-aaaaaaaaaaa1', true);
-  insert into p368t.ctx values ('batch', r->>'batchId');
+  insert into p368t.ctx values ('batch', r->>'batch_id');
 end $$;
 reset role;
 create table p368t.before as select
