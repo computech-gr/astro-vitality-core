@@ -213,6 +213,9 @@ export function MissionIdentity() {
     }
   }
 
+  // prettier-ignore
+  const crewSelectionInvalid = !inviteCrewOptions.some((member) => member.crew_member_id === inviteCrewMemberId);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="mx-auto max-w-[92rem] px-5 py-8 lg:px-8">
@@ -808,11 +811,7 @@ export function MissionIdentity() {
                           disabled={
                             busy ||
                             !inviteMissionId ||
-                            (inviteRole === "crew_self" &&
-                              (!inviteCrewMemberId ||
-                                !inviteCrewOptions.some(
-                                  (member) => member.crew_member_id === inviteCrewMemberId,
-                                )))
+                            (inviteRole === "crew_self" && (!inviteCrewMemberId || crewSelectionInvalid))
                           }
                           onClick={() => void createInvite()}
                         >
