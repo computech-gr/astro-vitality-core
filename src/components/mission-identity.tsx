@@ -78,6 +78,7 @@ export function MissionIdentity() {
   const [message, setMessage] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [signInError, setSignInError] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -177,18 +178,19 @@ export function MissionIdentity() {
     if (busy) return;
     const validation = validateMissionSignInInput(email, password);
     if (validation) {
-      setMessage(validation);
+      setSignInError(validation);
       return;
     }
     setBusy(true);
     setMessage(null);
+    setSignInError(null);
     try {
       await signInMissionIdentity(email, password);
       setPassword("");
       await refresh();
     } catch (error) {
       setPassword("");
-      setMessage(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
+      setSignInError(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
       setBusy(false);
     }
   }
@@ -338,7 +340,7 @@ export function MissionIdentity() {
                       type="email"
                       autoComplete="email"
                       value={email}
-                      onChange={(event) => setEmail(event.target.value)}
+                      onChange={(event) => { setEmail(event.target.value); setSignInError(null); }}
                       placeholder="astronaut@example.org"
                       className="mt-2"
                     />
@@ -350,9 +352,10 @@ export function MissionIdentity() {
                       type="password"
                       autoComplete="current-password"
                       value={password}
-                      onChange={(event) => setPassword(event.target.value)}
+                      onChange={(event) => { setPassword(event.target.value); setSignInError(null); }}
                       className="mt-2"
-                      aria-describedby="mission-signin-password-help"
+                      aria-describedby={signInError ? "mission-signin-password-help mission-signin-error" : "mission-signin-password-help"}
+                      aria-invalid={Boolean(signInError)}
                     />
                     <p
                       id="mission-signin-password-help"
@@ -362,6 +365,16 @@ export function MissionIdentity() {
                       creating or changing a password.
                     </p>
                   </div>
+                  {signInError ? (
+                    <div
+                      id="mission-signin-error"
+                      role="alert"
+                      aria-live="assertive"
+                      className="rounded-md border border-rose-400/50 bg-rose-400/10 p-3 text-sm text-rose-200"
+                    >
+                      {signInError}
+                    </div>
+                  ) : null}
                   <div className="flex flex-wrap gap-2">
                     <Button
                       disabled={busy || authReadiness?.state === "configuration_required" || false}
