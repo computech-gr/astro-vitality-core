@@ -636,11 +636,21 @@ export function MissionIdentity() {
                       Requires an authenticated session and network access. Never store passwords in
                       mission records.
                     </p>
+                    <Label htmlFor="current-mission-password">Current password</Label>
+                    <Input
+                      id="current-mission-password"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                      value={currentPassword}
+                      onChange={(event) => setCurrentPassword(event.target.value)}
+                    />
                     <Label htmlFor="new-mission-password">New password</Label>
                     <Input
                       id="new-mission-password"
                       type="password"
                       autoComplete="new-password"
+                      required
                       value={newPassword}
                       onChange={(event) => setNewPassword(event.target.value)}
                     />
@@ -649,6 +659,7 @@ export function MissionIdentity() {
                       id="confirm-mission-password"
                       type="password"
                       autoComplete="new-password"
+                      required
                       value={confirmPassword}
                       onChange={(event) => setConfirmPassword(event.target.value)}
                     />
@@ -657,22 +668,33 @@ export function MissionIdentity() {
                       disabled={
                         passwordChangeBusy ||
                         busy ||
-                        !newPassword ||
-                        newPassword !== confirmPassword ||
-                        Boolean(validateMissionSignUpPassword(newPassword))
+                        Boolean(
+                          validateMissionPasswordChange({
+                            currentPassword,
+                            newPassword,
+                            confirmPassword,
+                          }),
+                        )
                       }
                       onClick={() =>
                         void (async () => {
+                          if (passwordChangeBusy) return;
                           setPasswordChangeBusy(true);
                           setPasswordChangeMessage(null);
                           try {
-                            await changeMissionPassword(newPassword);
+                            await changeMissionPassword({
+                              currentPassword,
+                              newPassword,
+                              confirmPassword,
+                            });
+                            setCurrentPassword("");
                             setNewPassword("");
                             setConfirmPassword("");
                             setPasswordChangeMessage(
                               "Password updated. Sign out and sign in again to verify your new credentials.",
                             );
                           } catch (error) {
+                            setCurrentPassword("");
                             setPasswordChangeMessage(
                               error instanceof Error ? error.message : "Password change failed.",
                             );
@@ -682,7 +704,7 @@ export function MissionIdentity() {
                         })()
                       }
                     >
-                      Update password
+                      {passwordChangeBusy ? "Updating password…" : "Update password"}
                     </Button>
                     {newPassword && validateMissionSignUpPassword(newPassword) ? (
                       <p role="alert" className="text-xs text-amber-300">
@@ -692,6 +714,11 @@ export function MissionIdentity() {
                     {newPassword && confirmPassword && newPassword !== confirmPassword ? (
                       <p role="alert" className="text-xs text-amber-300">
                         Passwords do not match.
+                      </p>
+                    ) : null}
+                    {currentPassword && newPassword && currentPassword === newPassword ? (
+                      <p role="alert" className="text-xs text-amber-300">
+                        The new password must differ from the current password.
                       </p>
                     ) : null}
                     {passwordChangeMessage ? (

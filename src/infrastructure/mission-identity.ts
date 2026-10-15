@@ -282,14 +282,64 @@ export async function activeLiveMissionContext(): Promise<{
   };
 }
 
-/** Change the signed-in user's own password through Supabase Auth, never a mission table. */
-export async function changeMissionPassword(nextPassword: string): Promise<void> {
-  const validation = validateMissionSignUpPassword(nextPassword);
+export interface MissionPasswordChangeInput {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+/** Pure validation for the password-change form. Returns a user-facing error or null. */
+export function validateMissionPasswordChange(input: MissionPasswordChangeInput): string | null {
+  if (!input.currentPassword || !input.newPassword || !input.confirmPassword)
+    return "Enter your current password, a new password and its confirmation.";
+  const strength = validateMissionSignUpPassword(input.newPassword);
+  if (strength) return strength;
+  if (input.newPassword !== input.confirmPassword) return "Passwords do not match.";
+  if (input.newPassword === input.currentPassword)
+    return "The new password must differ from the current password.";
+  return null;
+}
+
+let passwordChangeInFlight = false;
+
+/**
+ * Change the signed-in user's own password through the auth service, never a mission table.
+ * The current password is verified against the signed-in account before any update; a wrong
+ * current password leaves credentials untouched. Passwords are never logged or persisted.
+ */
+export async function changeMissionPassword(input: MissionPasswordChangeInput): Promise<void> {
+  const validation = validateMissionPasswordChange(input);
   if (validation) throw new Error(validation);
-  const { data, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !data.session) throw new Error("Sign in before changing your password.");
-  if (typeof navigator !== "undefined" && !navigator.onLine)
-    throw new Error("Password changes require an online connection.");
-  const { error } = await supabase.auth.updateUser({ password: nextPassword });
-  if (error) throw new Error(error.message);
+  if (passwordChangeInFlight) throw new Error("A password change is already in progress.");
+  passwordChangeInFlight = true;
+  try {
+    if (typeof navigator !== "undefined" && !navigator.onLine)
+      throw new Error("Password changes require an online connection.");
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (userError || !user?.email) throw new Error("Sign in before changing your password.");
+    let verifiedUserId: string | undefined;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: input.currentPassword,
+      });
+      if (!error) verifiedUserId = data.user?.id;
+    } catch {
+      throw new Error("Could not reach the sign-in service. Check your connection and try again.");
+    }
+    if (verifiedUserId !== user.id) throw new Error("Current password is incorrect.");
+    let updateError: { message: string } | null = null;
+    try {
+      ({ error: updateError } = await supabase.auth.updateUser({
+        password: input.newPassword,
+        current_password: input.currentPassword,
+      }));
+    } catch {
+      throw new Error("Could not reach the sign-in service. Your password was not changed.");
+    }
+    if (updateError) throw new Error(`Password was not changed: ${updateError.message}`);
+  } finally {
+    passwordChangeInFlight = false;
+  }
 }
