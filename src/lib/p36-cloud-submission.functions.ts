@@ -149,7 +149,7 @@ export const listSyntheticReviewHistory = createServerFn({ method: "POST" })
     const {data: rows, error} = await rpc.call(context.supabase, "p36_list_synthetic_review_history", {p_mission_id:data.missionId, p_crew_member_id:data.crewMemberId});
     if (error || !Array.isArray(rows)) return {ok:false, message:"Saved reviews unavailable or access denied."};
     return {ok:true, records: rows.slice(0, 100).map((row:Record<string,unknown>) => ({
-      batchId:String(row.batch_id ?? ""), observedOn:String(row.observed_on ?? ""),
-      createdAt:String(row.created_at ?? ""), status:String(row.review_status ?? ""), itemCount:Number(row.item_count ?? 0),
+      batchId:String(row["batch_id"] ?? ""), observedOn:String(row["observed_on"] ?? ""),
+      createdAt:String(row["created_at"] ?? ""), status:String(row["review_status"] ?? ""), itemCount:Number(row["item_count"] ?? 0),
     }))};
   });
