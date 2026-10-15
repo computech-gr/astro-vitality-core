@@ -500,6 +500,222 @@ export type Database = {
         }
         Relationships: []
       }
+      p36_biomarker_review_batches: {
+        Row: {
+          classification: string
+          created_at: string
+          crew_member_id: string
+          decision_authorization_basis: string | null
+          decision_received_at: string | null
+          decision_request_id: string | null
+          id: string
+          mission_id: string
+          observation_date: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by_membership_id: string | null
+          reviewed_by_user_snapshot: string | null
+          source_filename: string
+          source_fingerprint: string
+          status: string
+          submitted_by_membership_id: string
+          submitted_by_user_snapshot: string
+        }
+        Insert: {
+          classification?: string
+          created_at?: string
+          crew_member_id: string
+          decision_authorization_basis?: string | null
+          decision_received_at?: string | null
+          decision_request_id?: string | null
+          id?: string
+          mission_id: string
+          observation_date: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by_membership_id?: string | null
+          reviewed_by_user_snapshot?: string | null
+          source_filename: string
+          source_fingerprint: string
+          status?: string
+          submitted_by_membership_id: string
+          submitted_by_user_snapshot: string
+        }
+        Update: {
+          classification?: string
+          created_at?: string
+          crew_member_id?: string
+          decision_authorization_basis?: string | null
+          decision_received_at?: string | null
+          decision_request_id?: string | null
+          id?: string
+          mission_id?: string
+          observation_date?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by_membership_id?: string | null
+          reviewed_by_user_snapshot?: string | null
+          source_filename?: string
+          source_fingerprint?: string
+          status?: string
+          submitted_by_membership_id?: string
+          submitted_by_user_snapshot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_biomarker_review_batches_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_biomarker_review_batches_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_biomarker_review_batches_reviewed_by_membership_id_fkey"
+            columns: ["reviewed_by_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mission_memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_biomarker_review_batches_submitted_by_membership_id_fkey"
+            columns: ["submitted_by_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mission_memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p36_biomarker_review_events: {
+        Row: {
+          authorization_basis: string
+          batch_id: string
+          decision_note: string | null
+          decision_request_id: string
+          event_type: string
+          id: string
+          mission_id: string
+          occurred_at: string
+          previous_status: string
+          resulting_status: string
+          reviewer_membership_id: string
+          reviewer_user_snapshot: string
+          server_received_at: string
+          source_fingerprint: string
+          submitter_membership_id: string
+          submitter_user_snapshot: string
+        }
+        Insert: {
+          authorization_basis: string
+          batch_id: string
+          decision_note?: string | null
+          decision_request_id: string
+          event_type: string
+          id?: string
+          mission_id: string
+          occurred_at?: string
+          previous_status: string
+          resulting_status: string
+          reviewer_membership_id: string
+          reviewer_user_snapshot: string
+          server_received_at: string
+          source_fingerprint: string
+          submitter_membership_id: string
+          submitter_user_snapshot: string
+        }
+        Update: {
+          authorization_basis?: string
+          batch_id?: string
+          decision_note?: string | null
+          decision_request_id?: string
+          event_type?: string
+          id?: string
+          mission_id?: string
+          occurred_at?: string
+          previous_status?: string
+          resulting_status?: string
+          reviewer_membership_id?: string
+          reviewer_user_snapshot?: string
+          server_received_at?: string
+          source_fingerprint?: string
+          submitter_membership_id?: string
+          submitter_user_snapshot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_biomarker_review_events_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "p36_biomarker_review_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_biomarker_review_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_biomarker_review_events_reviewer_membership_id_fkey"
+            columns: ["reviewer_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mission_memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_biomarker_review_events_submitter_membership_id_fkey"
+            columns: ["submitter_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mission_memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p36_biomarker_review_items: {
+        Row: {
+          batch_id: string
+          disposition: string
+          id: string
+          measured_value: number
+          metric_id: string
+          source_excerpt: string
+          unit: string
+        }
+        Insert: {
+          batch_id: string
+          disposition?: string
+          id?: string
+          measured_value: number
+          metric_id: string
+          source_excerpt: string
+          unit: string
+        }
+        Update: {
+          batch_id?: string
+          disposition?: string
+          id?: string
+          measured_value?: number
+          metric_id?: string
+          source_excerpt?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_biomarker_review_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "p36_biomarker_review_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
