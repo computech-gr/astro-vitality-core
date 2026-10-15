@@ -7,11 +7,12 @@ const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 
 async function extractText(path: string): Promise<{ text: string; pages: number }> {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const doc = await pdfjs.getDocument({
+  const task = pdfjs.getDocument({
     data: new Uint8Array(readFileSync(path)),
     isEvalSupported: false,
     useWorkerFetch: false,
-  }).promise;
+  });
+  const doc = await task.promise;
   try {
     const parts: string[] = [];
     for (let i = 1; i <= doc.numPages; i++) {
@@ -22,7 +23,7 @@ async function extractText(path: string): Promise<{ text: string; pages: number 
     }
     return { text: parts.join("\n"), pages: doc.numPages };
   } finally {
-    await doc.destroy();
+    await task.destroy();
   }
 }
 
@@ -34,6 +35,8 @@ describe("P36.6.1 pdfjs-dist v6 security upgrade", () => {
     const src = readFileSync("src/domain/bone-health/document-extraction.ts", "utf8");
     expect(src).toContain("isEvalSupported: false");
     expect(src).toContain('pdfjs-dist/build/pdf.worker.min.mjs?url');
+    expect(src).toContain("loadingTask.destroy()");
+    expect(src).not.toContain("document.destroy()");
   });
 
   it("extracts selectable text and yields only exact catalog matches", async () => {

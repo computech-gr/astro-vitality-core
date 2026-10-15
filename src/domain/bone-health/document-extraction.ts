@@ -49,7 +49,9 @@ export async function extractBoneDocument(file: File): Promise<ExtractedDocument
     const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
     pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
     const loadParams = { data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false };
-    const document = await pdfjs.getDocument(loadParams).promise;
+    // pdfjs-dist v6: destroy() lives on the loading task, not on the document proxy.
+    const loadingTask = pdfjs.getDocument(loadParams);
+    const document = await loadingTask.promise;
     try {
       if (document.numPages > 12) throw new Error("PDF exceeds 12-page limit.");
       const sections: string[] = [];
@@ -70,7 +72,7 @@ export async function extractBoneDocument(file: File): Promise<ExtractedDocument
         sections.push(text);
       }
       return {text:sections.join("\n"),pages:document.numPages,method:warnings.length?"PDF text + on-device OCR":"PDF selectable text",warnings};
-    } finally { await document.destroy(); }
+    } finally { await loadingTask.destroy(); }
   }
   if (/\.(png|jpe?g|webp)$/i.test(file.name)) {
     const bitmap = await createImageBitmap(file);
