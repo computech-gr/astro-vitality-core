@@ -1,6 +1,6 @@
 # P36.8C — Governed synthetic research review decisions: implementation design
 
-Status: DESIGN ONLY. Nothing staged or deployed. Migration 0010 requires explicit owner approval in a separate turn.
+Status: IMPLEMENTED AND STAGED (see P36_8C_IMPLEMENTATION.md). Not deployed. Migration 0010 requires explicit owner approval in a separate turn.
 
 ## Live baseline (read-only, 2026-10-15 20:18 UTC)
 
@@ -11,10 +11,10 @@ Status: DESIGN ONLY. Nothing staged or deployed. Migration 0010 requires explici
 
 ## Decision semantics
 
-| Decision | Batch status | Meaning |
-|---|---|---|
+| Decision                | Batch status            | Meaning                                                     |
+| ----------------------- | ----------------------- | ----------------------------------------------------------- |
 | `accepted_for_research` | `accepted_for_research` | Synthetic values are usable for research demonstration only |
-| `rejected_for_research` | `rejected_for_research` | Synthetic values are excluded from research demonstration |
+| `rejected_for_research` | `rejected_for_research` | Synthetic values are excluded from research demonstration   |
 
 The existing `approved`/`rejected` values are not used and get no transition. No status promotes data into mission events, the crew health index or any clinical record. Item `disposition` is not changed (items stay write-once).
 
@@ -25,7 +25,7 @@ The existing `approved`/`rejected` values are not used and get no transition. No
 3. **Trigger `p36_validate_review_memberships()`** (CREATE OR REPLACE): keep every existing frozen-provenance and lock check. Allowed UPDATE transitions become exactly:
    - `pending_review → quarantined` (unchanged: only when submitter revoked/disqualified);
    - `pending_review → accepted_for_research | rejected_for_research` only when submitter is still active Crew Self in scope, and only when the session flag `p36.decision_rpc = 'on'` (set locally by the decision RPC) is present.
-   Any terminal status remains final. Receipt still generated in the trigger.
+     Any terminal status remains final. Receipt still generated in the trigger.
 4. **Events CHECKs**: extend `event_type` and `resulting_status` to `quarantined | accepted_for_research | rejected_for_research` with `event_type = resulting_status`; `previous_status` stays `pending_review`. Keep `unique(batch_id, event_type)` and add `unique(batch_id)` so a batch has at most one decision event.
 5. **`p36_record_quarantine_event()`** → generalised to record any `pending_review → terminal` transition using the same columns. `p36_validate_quarantine_event_insert()` generalised to match the batch's terminal status; depth check (`pg_trigger_depth() = 2`) unchanged. Immutable events trigger unchanged.
 6. **Item protection gap**: add `p36_items_no_delete` BEFORE DELETE trigger on items (today only UPDATE is blocked) and change batch→event FK behaviour is already `restrict`.
