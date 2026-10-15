@@ -26,6 +26,7 @@ export const SEARCH_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   "Security Policy": ["security", "vulnerability", "disclosure"],
   "Mission & Crew Operations": ["operator", "crew", "invite", "operations"],
   "Mission Identity & Sign-in": ["login", "sign in", "account", "auth"],
+  "Mission Documents": ["document", "documents", "lab", "laboratory", "biomarker", "synthetic", "review", "pdf"],
   "Daily Readiness Check-in": ["readiness", "check-in", "fatigue", "sleep"],
   "Live Monitoring": ["live", "dashboard", "vitals"],
   "Device Integration Center": ["devices", "wearable", "sensor"],

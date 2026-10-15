@@ -94,7 +94,7 @@ const navigation: readonly NavigationEntry[] = [
     description: "Crew-facing workspaces, monitoring, health domains and explainable intelligence.",
     groups: [
       { title: "Crew workspace", items: ["Platform Overview", "Mission Workspace", "Daily Readiness Check-in", "Astronaut Health Twin", "Personalization"] },
-      { title: "Monitoring & data", items: ["Live Monitoring", "Device Integration Center", "Recorded Mission Data"] },
+      { title: "Monitoring & data", items: ["Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Mission Documents"] },
       { title: "Health domains", items: ["Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health"] },
       { title: "Intelligence & action", items: ["Health Intelligence", "Explainable Alerts", "Action Guidance"] },
     ],
@@ -200,6 +200,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
+  if (label === "Mission Documents") return "/mission/documents";
   if (label === "Health Intelligence") return "/mission/intelligence";
   if (label === "NASA Scientific Evidence") return "/mission/nasa-evidence";
   if (label === "Bone Health") return "/mission/bone-health";
