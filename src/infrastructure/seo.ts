@@ -58,6 +58,7 @@ export const NON_INDEXABLE_ROUTES = [
   "/mission/simulation",
   "/mission/bone-health",
   "/mission/immune-health",
+  "/mission/documents",
   "/mission/cardiovascular-health",
   "/mission/behavioral-health",
 ] as const;
