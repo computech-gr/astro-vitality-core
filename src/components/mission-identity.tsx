@@ -46,6 +46,7 @@ import {
   signUpMissionIdentity,
   subscribeMissionIdentity,
   validateMissionSignUpPassword,
+  validateMissionSignInInput,
   changeMissionPassword,
   validateMissionPasswordChange,
   type MissionIdentitySnapshot,
@@ -172,6 +173,26 @@ export function MissionIdentity() {
     }
   }
 
+  async function signIn() {
+    if (busy) return;
+    const validation = validateMissionSignInInput(email, password);
+    if (validation) {
+      setMessage(validation);
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      await signInMissionIdentity(email, password);
+      setPassword("");
+      await refresh();
+    } catch (error) {
+      setPassword("");
+      setMessage(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
+      setBusy(false);
+    }
+  }
+
   async function signUp() {
     const passwordError = validateMissionSignUpPassword(password);
     if (passwordError) {
@@ -239,7 +260,11 @@ export function MissionIdentity() {
         </section>
 
         {message ? (
-          <div className="mt-6 rounded-md border border-border bg-card/70 p-3 text-sm text-muted-foreground">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mt-6 rounded-md border border-border bg-card/70 p-3 text-sm text-foreground"
+          >
             {message}
           </div>
         ) : null}
@@ -345,13 +370,8 @@ export function MissionIdentity() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
-                      disabled={
-                        busy ||
-                        authReadiness?.state === "configuration_required" ||
-                        !email.trim() ||
-                        !password
-                      }
-                      onClick={() => void run(() => signInMissionIdentity(email, password))}
+                      disabled={busy || authReadiness?.state === "configuration_required" || false}
+                      onClick={() => void signIn()}
                     >
                       <LogIn /> Sign in
                     </Button>

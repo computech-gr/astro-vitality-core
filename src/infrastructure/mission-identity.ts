@@ -173,9 +173,46 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
   };
 }
 
+export function validateMissionSignInInput(email: string, password: string): string | null {
+  if (!email.trim()) return "Please enter your email address.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+    return "Please enter a valid email address.";
+  if (!password) return "Please enter your password.";
+  return null;
+}
+
+export function missionSignInErrorMessage(error: {
+  message?: string;
+  status?: number;
+  code?: string;
+}): string {
+  const msg = (error.message ?? "").toLowerCase();
+  if (error.status === 429 || /rate.limit|too many requests|over_email_send_rate_limit/.test(msg))
+    return "Too many attempts. Please wait and try again.";
+  if (/email not confirmed|email_not_confirmed/.test(msg))
+    return "Please verify your email address before signing in.";
+  if (/network|fetch|connection|timeout|failed to fetch/.test(msg))
+    return "Unable to connect. Check your internet connection and try again.";
+  // Do not distinguish unknown accounts from incorrect passwords.
+  return "Incorrect email or password. Please try again.";
+}
+
 export async function signInMissionIdentity(email: string, password: string): Promise<void> {
-  const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-  if (error) throw new Error(error.message);
+  const validation = validateMissionSignInInput(email, password);
+  if (validation) throw new Error(validation);
+  if (typeof navigator !== "undefined" && !navigator.onLine)
+    throw new Error("Unable to connect. Check your internet connection and try again.");
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) throw new Error(missionSignInErrorMessage(error));
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      /^(Incorrect email|Too many attempts|Please verify|Unable to connect)/.test(error.message)
+    )
+      throw error;
+    throw new Error("Unable to connect. Check your internet connection and try again.");
+  }
   emitIdentityChanged();
 }
 
