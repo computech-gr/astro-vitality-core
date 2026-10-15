@@ -104,5 +104,107 @@ if (includePending) {
   }
   psql(["-c", "drop database fv0143_it"]);
 }
+
+// P36.4: staged synthetic submission path (only when the staged file is present).
+if (pending.some((f) => f.includes("p364_synthetic_submission"))) {
+  const DB = "p364_it";
+  const run = (args) => {
+    const r = spawnSync("psql", [...base, "-d", DB, "-t", "-A", ...args], { env, encoding: "utf8" });
+    if (r.status !== 0) throw new Error("P36.4 psql failed: " + r.stderr + r.stdout);
+    return (r.stdout + "\n" + r.stderr).replace(/^psql:[^\n]*?NOTICE:\s+/gm, "");
+  };
+  const q = (sql) => run(["-c", sql]).split("\n")[0].trim();
+  psql(["-c", `drop database if exists ${DB}`, "-c", `create database ${DB}`]);
+  psql(["-c", `alter database ${DB} set search_path = public, extensions`]);
+  psql(["-f", "tests/integration-pg/stub.sql"], DB);
+  for (const f of migrations) psql(["-f", join("supabase/migrations", f)], DB);
+  for (const f of pending) psql(["-f", join("supabase/pending", f)], DB);
+  for (const f of pending) psql(["-f", join("supabase/pending", f)], DB); // re-apply: idempotent
+  passes.push("PASS: [P36.4] staged B10 + P36.4 SQL applies twice without error (idempotent)");
+  psql(["-f", "tests/integration-pg/fv01-setup.sql"], DB);
+  const out = run(["-f", "tests/integration-pg/p364-submission.sql"]);
+  if (!out.includes("P364 DONE")) throw new Error("P36.4 scenarios incomplete: " + out);
+  passes.push(...out.split("\n").filter((l) => l.startsWith("PASS")).map((l) => l.replace("PASS: ", "PASS: [P36.4] ")));
+
+  const s = (sql) =>
+    new Promise((resolve) => {
+      const child = spawn("psql", [...base, "-d", DB, "-t", "-A", "-c", sql], { env });
+      let o = "";
+      child.stdout.on("data", (d) => (o += d));
+      child.stderr.on("data", (d) => (o += d));
+      child.on("close", (code) => resolve({ code, out: o }));
+    });
+  const B2 = "00000000-0000-0000-0000-0000000000b2";
+  const sub = (sha, key, v = "70", m = "cv-003") =>
+    `select p364t.sub('${B2}','m1','c2',repeat('${sha}',64),'${key}',p364t.it('${m}','bpm','${v}'),'2026-10-02')`;
+  const asB2 = "set role authenticated;";
+  const count = (where) => q(`select count(*) from p36_biomarker_review_batches where ${where}`);
+
+  // K1: identical concurrent retries (same key) -> one submitted, one replayed, one batch.
+  const k1a = s(`${asB2} begin; ${sub("1", "key-k1-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`);
+  await sleep(500);
+  const k1b = s(`${asB2} ${sub("1", "key-k1-aaaaaaaaaaaa")};`);
+  const [r1a, r1b] = await Promise.all([k1a, k1b]);
+  if (r1a.code !== 0 || r1b.code !== 0 || !/submitted/.test(r1a.out) || !/replayed/.test(r1b.out) || count("idempotency_key='key-k1-aaaaaaaaaaaa'") !== "1")
+    throw new Error("K1 failed: " + r1a.out + r1b.out);
+  passes.push("PASS: [P36.4] K1 concurrent identical retries: one submitted, one replayed, exactly one batch");
+
+  // K2: concurrent different keys, same source+date -> one wins, other duplicate.
+  const k2a = s(`${asB2} begin; ${sub("2", "key-k2a-aaaaaaaaaaa")}; select pg_sleep(2); commit;`);
+  await sleep(500);
+  const k2b = s(`${asB2} ${sub("2", "key-k2b-aaaaaaaaaaa", "71")};`);
+  const [r2a, r2b] = await Promise.all([k2a, k2b]);
+  if (r2a.code !== 0 || r2b.code === 0 || !/duplicate synthetic submission/.test(r2b.out) || count(`source_fingerprint=repeat('2',64)`) !== "1")
+    throw new Error("K2 failed: " + r2a.out + r2b.out);
+  passes.push("PASS: [P36.4] K2 concurrent duplicate source/date under different keys: one batch, other refused");
+
+  const revoke = `update mission_memberships set active=false where user_id='${B2}' and mission_id='m1'`;
+  const restore = `update mission_memberships set active=true where user_id='${B2}' and mission_id='m1'`;
+  // K3: revocation holds first then commits -> submission waits and is refused.
+  const k3a = s(`begin; ${revoke}; select pg_sleep(2); commit;`);
+  await sleep(500);
+  const k3b = s(`${asB2} ${sub("3", "key-k3-aaaaaaaaaaaa")};`);
+  const [r3a, r3b] = await Promise.all([k3a, k3b]);
+  if (r3a.code !== 0 || r3b.code === 0 || !/active crew_self membership/.test(r3b.out) || count(`source_fingerprint=repeat('3',64)`) !== "0")
+    throw new Error("K3 failed: " + r3a.out + r3b.out);
+  passes.push("PASS: [P36.4] K3 revocation-first: concurrent submission waits on membership lock and is refused");
+  q(restore);
+
+  // K4: submission holds first then commits -> revocation waits; batch exists, membership then inactive.
+  const k4a = s(`${asB2} begin; ${sub("4", "key-k4-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`);
+  await sleep(500);
+  const t0 = Date.now();
+  const k4b = s(`${revoke};`);
+  const [r4a, r4b] = await Promise.all([k4a, k4b]);
+  if (r4a.code !== 0 || r4b.code !== 0 || Date.now() - t0 < 1000 || count(`source_fingerprint=repeat('4',64)`) !== "1" ||
+      q(`select bool_and(not active) from mission_memberships where user_id='${B2}' and mission_id='m1'`) !== "t")
+    throw new Error("K4 failed: " + r4a.out + r4b.out);
+  passes.push("PASS: [P36.4] K4 submission-first: revocation waits for commit; batch kept, membership then revoked");
+  q(restore);
+
+  // K5: submission rolls back while revocation waits -> no batch, no audit, revocation completes.
+  const auditBefore = q("select count(*) from audit_events where action='p36_synthetic_batch_submitted'");
+  const k5a = s(`${asB2} begin; ${sub("5", "key-k5-aaaaaaaaaaaa")}; select pg_sleep(2); rollback;`);
+  await sleep(500);
+  const k5b = s(`${revoke};`);
+  const [r5a, r5b] = await Promise.all([k5a, k5b]);
+  if (r5a.code !== 0 || r5b.code !== 0 || count(`source_fingerprint=repeat('5',64)`) !== "0" ||
+      q("select count(*) from audit_events where action='p36_synthetic_batch_submitted'") !== auditBefore)
+    throw new Error("K5 failed: " + r5a.out + r5b.out);
+  passes.push("PASS: [P36.4] K5 rolled-back submission leaves no batch or audit; revocation completes");
+  q(restore);
+
+  // R1: rollback script removes the P36.4 write path; B10 schema and audit rows remain.
+  psql(["-f", "supabase/pending/20261018000000_p364_synthetic_submission.rollback.sql"], DB);
+  if (q("select count(*) from pg_proc where proname='p36_submit_synthetic_review_batch'") !== "0" ||
+      q("select to_regclass('public.p36_metric_unit_catalog') is null") !== "t" ||
+      q("select to_regclass('public.p36_biomarker_review_batches') is not null") !== "t" ||
+      q("select count(*) > 0 from audit_events where action='p36_synthetic_batch_submitted'") !== "t")
+    throw new Error("R1 rollback verification failed");
+  passes.push("PASS: [P36.4] R1 rollback removes function/catalog/columns; B10 schema and append-only audit retained");
+  psql(["-f", "supabase/pending/20261018000000_p364_synthetic_submission.sql"], DB);
+  passes.push("PASS: [P36.4] R2 P36.4 SQL re-applies cleanly after rollback");
+  psql(["-c", `drop database ${DB}`]);
+}
 for (const p of passes) console.log(p);
 console.log(`FV-01 PostgreSQL integration: PASS (${passes.length} assertions, disposable PostgreSQL ${psql(["-t", "-A", "-c", "show server_version"]).trim()})`);
