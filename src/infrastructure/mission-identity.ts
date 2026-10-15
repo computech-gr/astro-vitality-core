@@ -37,7 +37,9 @@ function readActiveKey(userId: string | undefined): string | undefined {
   return readActiveSelection(window.localStorage, userId);
 }
 
-function membershipKey(value: Pick<MissionMembershipContext, "missionId" | "role" | "crewMemberId">) {
+function membershipKey(
+  value: Pick<MissionMembershipContext, "missionId" | "role" | "crewMemberId">,
+) {
   return `${value.missionId}::${value.role}::${value.crewMemberId ?? ""}`;
 }
 
@@ -53,7 +55,8 @@ export function subscribeMissionIdentity(listener: () => void): () => void {
   }
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
     const nextUserId = session?.user.id;
-    if (shouldClearSelection(event, lastKnownUserId, nextUserId)) clearActiveSelection(window.localStorage);
+    if (shouldClearSelection(event, lastKnownUserId, nextUserId))
+      clearActiveSelection(window.localStorage);
     lastKnownUserId = nextUserId;
     listener();
   });
@@ -73,7 +76,12 @@ export function setActiveMissionMembership(membership?: MissionMembershipContext
 export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
   const config = getSupabaseBrowserConfigStatus();
   if (!config.configured) {
-    return { configured: false, signedIn: false, memberships: [], error: "Cloud identity configuration is unavailable." };
+    return {
+      configured: false,
+      signedIn: false,
+      memberships: [],
+      error: "Cloud identity configuration is unavailable.",
+    };
   }
 
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -99,7 +107,13 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
 
   const membershipRows = data ?? [];
   const missionIds = [...new Set(membershipRows.map((row) => row.mission_id))];
-  const crewIds = [...new Set(membershipRows.map((row) => row.crew_member_id).filter((value): value is string => Boolean(value)))];
+  const crewIds = [
+    ...new Set(
+      membershipRows
+        .map((row) => row.crew_member_id)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  ];
 
   const [missionResult, crewResult] = await Promise.all([
     missionIds.length
@@ -122,7 +136,9 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
     };
   }
 
-  const missionById = new Map((missionResult.data ?? []).map((mission) => [mission.id, mission] as const));
+  const missionById = new Map(
+    (missionResult.data ?? []).map((mission) => [mission.id, mission] as const),
+  );
   const crewById = new Map((crewResult.data ?? []).map((crew) => [crew.id, crew] as const));
   const memberships: MissionMembershipContext[] = membershipRows.map((row) => {
     const mission = missionById.get(row.mission_id);
@@ -172,7 +188,10 @@ export function validateMissionSignUpPassword(password: string): string | null {
   return null;
 }
 
-export async function signUpMissionIdentity(email: string, password: string): Promise<{ confirmationRequired: boolean }> {
+export async function signUpMissionIdentity(
+  email: string,
+  password: string,
+): Promise<{ confirmationRequired: boolean }> {
   const passwordError = validateMissionSignUpPassword(password);
   if (passwordError) throw new Error(passwordError);
   const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
@@ -182,7 +201,8 @@ export async function signUpMissionIdentity(email: string, password: string): Pr
 }
 
 export async function requestMissionMagicLink(email: string): Promise<void> {
-  const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/mission/identity` : undefined;
+  const redirectTo =
+    typeof window !== "undefined" ? `${window.location.origin}/mission/identity` : undefined;
   const { error } = await supabase.auth.signInWithOtp({
     email: email.trim(),
     ...(redirectTo ? { options: { emailRedirectTo: redirectTo } } : {}),
@@ -210,10 +230,14 @@ function rpcClient(): RpcClient {
 export async function acceptMissionInvite(code: string): Promise<void> {
   const normalized = code.trim();
   if (!normalized) throw new Error("Enter a mission invite code.");
-  const { data, error } = await rpcClient().rpc<{ status?: string; message?: string }>("accept_mission_invite", { p_code: normalized });
+  const { data, error } = await rpcClient().rpc<{ status?: string; message?: string }>(
+    "accept_mission_invite",
+    { p_code: normalized },
+  );
   if (error) throw new Error(error.message);
   // FV-01.1: binding conflicts are returned (not raised) so the audit record persists.
-  if (data?.status === "rejected") throw new Error(data.message ?? "Mission invite rejected; operator review required.");
+  if (data?.status === "rejected")
+    throw new Error(data.message ?? "Mission invite rejected; operator review required.");
   emitIdentityChanged();
 }
 
@@ -256,4 +280,16 @@ export async function activeLiveMissionContext(): Promise<{
     classification: "medical_sensitive",
     source: "local_fallback",
   };
+}
+
+/** Change the signed-in user's own password through Supabase Auth, never a mission table. */
+export async function changeMissionPassword(nextPassword: string): Promise<void> {
+  const validation = validateMissionSignUpPassword(nextPassword);
+  if (validation) throw new Error(validation);
+  const { data, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !data.session) throw new Error("Sign in before changing your password.");
+  if (typeof navigator !== "undefined" && !navigator.onLine)
+    throw new Error("Password changes require an online connection.");
+  const { error } = await supabase.auth.updateUser({ password: nextPassword });
+  if (error) throw new Error(error.message);
 }

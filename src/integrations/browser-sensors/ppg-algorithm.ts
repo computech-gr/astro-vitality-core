@@ -32,7 +32,9 @@ function linearDetrend(samples: TimedPpgSample[]) {
   const values = samples.map((sample) => sample.value);
   const avgT = mean(times);
   const avgV = mean(values);
-  const covariance = mean(times.map((time, index) => (time - avgT) * ((values[index] ?? avgV) - avgV)));
+  const covariance = mean(
+    times.map((time, index) => (time - avgT) * ((values[index] ?? avgV) - avgV)),
+  );
   const variance = mean(times.map((time) => (time - avgT) ** 2));
   const slope = variance > 0 ? covariance / variance : 0;
   return values.map((value, index) => value - (avgV + slope * ((times[index] ?? 0) - avgT)));
@@ -41,7 +43,9 @@ function linearDetrend(samples: TimedPpgSample[]) {
 function estimateContactQuality(samples: TimedPpgSample[]) {
   const rgb = samples.filter(
     (sample): sample is TimedPpgSample & { red: number; green: number; blue: number } =>
-      typeof sample.red === "number" && typeof sample.green === "number" && typeof sample.blue === "number",
+      typeof sample.red === "number" &&
+      typeof sample.green === "number" &&
+      typeof sample.blue === "number",
   );
   if (!rgb.length) return 0.5;
   const red = mean(rgb.map((sample) => sample.red));
@@ -82,7 +86,8 @@ export function estimatePpgHeartRate(samples: TimedPpgSample[]): PpgHeartRateEst
     for (let index = 0; index < ordered.length; index += 1) {
       const sample = ordered[index]!;
       const phase = 2 * Math.PI * hz * ((sample.atMs - first.atMs) / 1000);
-      const hann = ordered.length > 1 ? 0.5 - 0.5 * Math.cos((2 * Math.PI * index) / (ordered.length - 1)) : 1;
+      const hann =
+        ordered.length > 1 ? 0.5 - 0.5 * Math.cos((2 * Math.PI * index) / (ordered.length - 1)) : 1;
       const value = (normalized[index] ?? 0) * hann;
       sin += value * Math.sin(phase);
       cos += value * Math.cos(phase);
