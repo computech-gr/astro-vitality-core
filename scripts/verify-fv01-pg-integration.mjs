@@ -319,12 +319,32 @@ if (pending.some((f) => f.includes("p365_synthetic_review_history"))) {
   for (const f of pending) psql(["-f", join("supabase/pending", f)], DB);
   passes.push("PASS: [P36.5] staged B10 -> P36.4 -> P36.5 chain applies twice without error");
   psql(["-f", "tests/integration-pg/fv01-setup.sql"], DB);
-  const r = spawnSync("psql", [...base, "-d", DB, "-t", "-A", "-f", "tests/integration-pg/p365-history.sql"], { env, encoding: "utf8" });
+  const r = spawnSync(
+    "psql",
+    [...base, "-d", DB, "-t", "-A", "-f", "tests/integration-pg/p365-history.sql"],
+    { env, encoding: "utf8" },
+  );
   const out = (r.stdout + "\n" + r.stderr).replace(/^psql:[^\n]*?NOTICE:\s+/gm, "");
-  if (r.status !== 0 || !out.includes("P365 DONE")) throw new Error("P36.5 scenarios failed: " + out);
-  passes.push(...out.split("\n").filter((l) => l.startsWith("PASS")).map((l) => l.replace("PASS: ", "PASS: [P36.5] ")));
+  if (r.status !== 0 || !out.includes("P365 DONE"))
+    throw new Error("P36.5 scenarios failed: " + out);
+  passes.push(
+    ...out
+      .split("\n")
+      .filter((l) => l.startsWith("PASS"))
+      .map((l) => l.replace("PASS: ", "PASS: [P36.5] ")),
+  );
   psql(["-f", "supabase/pending/20261019000000_p365_synthetic_review_history.rollback.sql"], DB);
-  if (psql(["-t", "-A", "-c", "select count(*) from pg_proc where proname='p36_list_synthetic_review_history'"], DB).trim() !== "0")
+  if (
+    psql(
+      [
+        "-t",
+        "-A",
+        "-c",
+        "select count(*) from pg_proc where proname='p36_list_synthetic_review_history'",
+      ],
+      DB,
+    ).trim() !== "0"
+  )
     throw new Error("P36.5 rollback failed");
   passes.push("PASS: [P36.5] rollback removes the history function only");
   psql(["-c", `drop database ${DB}`]);
