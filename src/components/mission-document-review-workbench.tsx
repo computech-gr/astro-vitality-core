@@ -5,6 +5,7 @@ import {
   type MissionIdentitySnapshot,
 } from "@/infrastructure/mission-identity";
 import registry from "../../data/scientific/p36-biomarker-source-registry.v1.json";
+import { getDocumentDomainProjection, domainForMetric, DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import { extractBoneDocument } from "@/domain/bone-health/document-extraction";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -113,6 +114,7 @@ export function MissionDocumentReviewWorkbench() {
   const missionId = eligible ? identity?.active?.missionId : undefined;
   const crewMemberId = eligible ? identity?.active?.crewMemberId : undefined;
   const selected = candidates.filter((candidate) => candidate.selected);
+  const domainProjection = getDocumentDomainProjection(candidates);
   const hasDuplicateMetrics =
     new Set(selected.map((candidate) => candidate.id)).size !== selected.length;
   const allSelected = candidates.length > 0 && candidates.every((c) => c.selected);
@@ -367,6 +369,23 @@ export function MissionDocumentReviewWorkbench() {
           </button>
         </section>
       )}
+      <section aria-label="Document domain routing preview" className="space-y-2 rounded border p-3">
+        <h2 className="font-semibold">P35.6 — Document-to-Domain routing preview</h2>
+        <p className="text-sm text-muted-foreground">Based only on exact canonical metric name and unit matches from the existing P36 registry. A single synthetic document can contain several domains. This is a local, read-only suggestion; no classification or link is saved. Unmatched text is not classified.</p>
+        {domainProjection.length === 0 ? (
+          <p className="text-sm">No exact canonical matches yet. No domain can be proposed.</p>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {domainProjection.map((domain) => (
+              <li key={domain.id} className="flex flex-wrap items-center justify-between gap-2 rounded border p-2">
+                <span>{DOMAIN_LABELS[domain.id]} — {domain.count} matched marker(s), {domain.selectedCount} reviewer-selected</span>
+                <a className="underline" href={domain.path}>Open {DOMAIN_LABELS[domain.id]} reference page</a>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="text-xs text-muted-foreground">P35.5 IMM/BSC proposals remain PENDING_NIKOLAS_REVIEW and are not eligible for automatic metric matching. This preview does not populate health-domain timelines or authorize cloud writes.</p>
+      </section>
       <section className="space-y-2">
         <h2 className="font-semibold">
           Proposed matches ({candidates.length}) — never auto-approved
@@ -382,6 +401,7 @@ export function MissionDocumentReviewWorkbench() {
                 <th className="p-2">Reviewed</th>
                 <th className="p-2">Catalog ID</th>
                 <th className="p-2">Marker</th>
+                <th className="p-2">Domain</th>
                 <th className="p-2">Value</th>
                 <th className="p-2">Unit</th>
                 <th className="p-2">Original excerpt</th>
@@ -406,6 +426,7 @@ export function MissionDocumentReviewWorkbench() {
                   </td>
                   <td className="p-2">{c.id}</td>
                   <td className="p-2">{c.label}</td>
+                  <td className="p-2">{(() => { const d = domainForMetric(c.id); return d ? DOMAIN_LABELS[d] : "Unclassified"; })()}</td>
                   <td className="p-2">{c.value}</td>
                   <td className="p-2">{c.unit}</td>
                   <td className="p-2 max-w-xs break-words">{c.excerpt}</td>
