@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionIdentitySnapshot } from "@/infrastructure/mission-identity";
 import { summarizeDemoAccess } from "@/domain/mission-access/demo-readiness";
+import { buildDemoRunbook, summarizeDemoActors } from "@/domain/mission-access/demo-runbook";
 import { DEMO_JOURNEY, getDemoJourneyAccess, isReservedDemoMission, canRecordDemoJourneyEvidence, summarizeDemoJourneyEvidence, type DemoJourneyEvidence } from "@/domain/mission-access/demo-journey";
 
 /** Operator-visible navigation only. Every destination enforces its own RBAC/RLS. */
@@ -21,6 +22,17 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
   const access = summarizeDemoAccess(identity, missionCode);
   const editable = canRecordDemoJourneyEvidence(missionCode);
   const progress = summarizeDemoJourneyEvidence(DEMO_JOURNEY.map(step => evidence[step.href] ?? "not_checked"));
+  const runbook = buildDemoRunbook(missionCode, identity, evidence);
+  const actors = summarizeDemoActors(runbook);
+  const exportRunbook = () => {
+    const blob = new Blob([JSON.stringify(runbook, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mitochondria-demo-runbook-${missionCode.replace(/[^a-zA-Z0-9_-]/g, "_")}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   return (
     <section className="mt-8" aria-label="Synthetic mission demo launchpad">
       <Card>
@@ -41,6 +53,20 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
             <p className="mt-1 text-xs text-muted-foreground">{progress.observed}/{progress.total} observed · {progress.blocked} blocked · {progress.remaining} not checked. This is a manual navigation checklist, not proof of authorization, backend acceptance or scientific validation.</p>
             <p className="mt-1 text-xs text-muted-foreground">No data is stored, uploaded or synchronized. Reset happens when the page reloads or mission changes. MISSION_TEST cannot be marked complete.</p>
             <button type="button" disabled={!editable || progress.observed + progress.blocked === 0} className="mt-2 rounded border border-border px-3 py-1 text-xs disabled:opacity-50" onClick={() => setEvidence({})}>Reset checklist</button>
+          </div>
+          <div className="mt-4 rounded-md border border-border p-3" aria-label="Demo role handoff runbook">
+            <p className="text-sm font-semibold">Operational demo runbook — role-separated handoffs</p>
+            <p className="mt-1 text-xs text-muted-foreground">This is an offline planning export, not an authorization, an audit receipt or proof that a step was completed. No cloud calls or stored data.</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {actors.map(item => (
+                <div key={item.actor} className="rounded border border-border p-2 text-xs">
+                  <span className="font-semibold">{item.actor.replaceAll("_", " ")}</span>
+                  <span className="ml-2 text-muted-foreground">{item.steps} steps · {item.membershipVisible ? "membership visible" : "separate authorized account required"}</span>
+                </div>
+              ))}
+            </div>
+            <button type="button" onClick={exportRunbook} className="mt-3 rounded border border-border px-3 py-2 text-xs hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">Export offline demo runbook (JSON)</button>
+            <p className="mt-2 text-xs text-muted-foreground">Exporting from MISSION_TEST is planning-only and always resets all statuses to not checked. Never import the export as execution evidence.</p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {SYNTHETIC_DEMO_JOURNEY.map((step, index) => (
