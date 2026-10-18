@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { FinalDemoHandoff } from "@/components/final-demo-handoff";
 import { GovernedDemoMissionActivation } from "@/components/governed-demo-mission-activation";
 import { IntegratedOfflineDemo } from "@/components/integrated-offline-demo";
 import { OfflineSyntheticIntelligenceReport } from "@/components/offline-synthetic-intelligence-report";
@@ -112,6 +113,7 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
           <OfflineSyntheticIntelligenceReport missionCode={missionCode} />
           <IntegratedOfflineDemo missionCode={missionCode} />
           <GovernedDemoMissionActivation identity={identity} />
+          <FinalDemoHandoff identity={identity} missionCode={missionCode} />
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {SYNTHETIC_DEMO_JOURNEY.map((step, index) => (
               <div key={step.href} className="rounded-md border border-border p-3">
