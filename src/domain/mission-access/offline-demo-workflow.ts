@@ -30,10 +30,10 @@ export function buildIntegratedDemoBundle(missionCode: string) {
 export function validateOfflineSyntheticDataset(input: unknown): { ok: true; dataset: SyntheticDemoDataset } | { ok: false; reason: string } {
  if (!input || typeof input !== "object" || Array.isArray(input)) return {ok:false,reason:"Invalid document"};
  const value = input as Record<string,unknown>;
- if (value.schema !== "mitochondria.synthetic-demo-dataset.v1" || value.synthetic !== true || value.exportOnly !== true || value.importAuthorized !== false || value.subjectId !== "FICTIONAL-CREW-01") return {ok:false,reason:"Not an authorized synthetic preview fixture"};
- if (typeof value.missionCode !== "string" || value.missionCode.length > 100 || !Array.isArray(value.observations) || value.observations.length !== 18) return {ok:false,reason:"Unexpected mission or observation count"};
- const expected = buildSyntheticDemoDataset(value.missionCode);
- if (JSON.stringify(value.observations) !== JSON.stringify(expected.observations)) return {ok:false,reason:"Fixture mismatch: only exact generated demo data are supported"};
- if (!Array.isArray(value.limitations) || JSON.stringify(value.limitations) !== JSON.stringify(expected.limitations)) return {ok:false,reason:"Required provenance/limitations missing"};
+ if (value["schema"] !== "mitochondria.synthetic-demo-dataset.v1" || value["synthetic"] !== true || value["exportOnly"] !== true || value["importAuthorized"] !== false || value["subjectId"] !== "FICTIONAL-CREW-01") return {ok:false,reason:"Not an authorized synthetic preview fixture"};
+ if (typeof value["missionCode"] !== "string" || value["missionCode"].length > 100 || !Array.isArray(value["observations"]) || value["observations"].length !== 18) return {ok:false,reason:"Unexpected mission or observation count"};
+ const expected = buildSyntheticDemoDataset(value["missionCode"]);
+ if (JSON.stringify(value["observations"]) !== JSON.stringify(expected.observations)) return {ok:false,reason:"Fixture mismatch: only exact generated demo data are supported"};
+ if (!Array.isArray(value["limitations"]) || JSON.stringify(value["limitations"]) !== JSON.stringify(expected.limitations)) return {ok:false,reason:"Required provenance/limitations missing"};
  return {ok:true,dataset:expected};
 }
