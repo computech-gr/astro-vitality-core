@@ -19,7 +19,7 @@ const MISSION_ROUTES = [
 
 describe("P21 categorized navigation", () => {
   test("top-level groups match the approved information architecture", () => {
-    for (const label of ["Mission", "Science", "Platform", "Mission Operations", "Technology", "Open Source & About"]) {
+    for (const label of ["Mission Console", "Health & Intelligence", "Science", "Technology", "About & Open Source"]) {
       expect(shell).toContain(`label: "${label}",`);
     }
   });
