@@ -64,10 +64,11 @@ export function BoneHealthEntryPage() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
+    if (!authorizedSelection) { setHistory([]); return; }
     let active = true;
     listBoneEntries(missionId, crewMemberId).then((rows) => { if (active) setHistory(rows); }).catch(() => { if (active) setMessage("Encrypted local history unavailable on this device."); });
     return () => { active = false; };
-  }, [missionId, crewMemberId]);
+  }, [missionId, crewMemberId, authorizedSelection]);
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setMessage("");
     try {
@@ -80,6 +81,9 @@ export function BoneHealthEntryPage() {
     } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to save record."); }
     finally { setBusy(false); }
   }
+  const syntheticHistory = authorizedSelection ? history.filter((entry) => entry.dataOrigin === "synthetic") : [];
+  const uniqueVariables = new Set(syntheticHistory.map((entry) => entry.variableId));
+  const latestByVariable = [...syntheticHistory].sort((a, b) => b.observedAt.localeCompare(a.observedAt)).filter((entry, index, entries) => entries.findIndex((other) => other.variableId === entry.variableId) === index);
   const field = "w-full rounded-md border border-border bg-background px-3 py-2 text-foreground";
   return <main className="mx-auto max-w-5xl px-5 py-10 text-foreground">
     <nav aria-label="Astronaut health domains" className="mb-5 flex flex-wrap gap-3 text-sm"><a className="underline" href="/mission/bone-health" aria-current="page">Bone Health</a><a className="underline" href="/mission/immune-health">Immune Changes</a><a className="underline" href="/mission/cardiovascular-health">Cardiovascular Health</a><a className="underline" href="/mission/behavioral-health">Behavioral Health</a></nav>
@@ -103,6 +107,21 @@ export function BoneHealthEntryPage() {
       {message && <p role="status" className="sm:col-span-2">{message}</p>}
     </form>
     {authorizedSelection && <BoneHealthImport missionId={missionId} crewMemberId={crewMemberId} dataOrigin={dataOrigin} onImported={async()=>setHistory(await listBoneEntries(missionId,crewMemberId))} />}
+    {authorizedSelection && <section className="mt-8 rounded-xl border border-border p-5" aria-label="Bone research evidence summary">
+      <h2 className="text-xl font-semibold">Bone research evidence summary · local only</h2>
+      <p className="mt-2 text-sm text-muted-foreground">Read-only synthetic evidence from encrypted local records for the selected mission and crew. Not cloud-synced, not a clinical assessment, and not combined with the cloud evidence summary on other health pages.</p>
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+        <div><dt className="font-medium">Synthetic local observations</dt><dd>{syntheticHistory.length}</dd></div>
+        <div><dt className="font-medium">Variables with observations</dt><dd>{uniqueVariables.size} of {BONE_HEALTH_VARIABLES.length} catalog variables</dd></div>
+        <div><dt className="font-medium">Catalog variables without local observations</dt><dd>{Math.max(0, BONE_HEALTH_VARIABLES.length - uniqueVariables.size)}</dd></div>
+      </dl>
+      {latestByVariable.length > 0 ? <ul className="mt-4 space-y-2">{latestByVariable.map((entry) => <li className="rounded border border-border p-3 text-sm" key={entry.variableId}>
+        <p className="font-medium">{BONE_HEALTH_VARIABLES.find((item) => item.id === entry.variableId)?.name ?? entry.variableId}</p>
+        <p>Latest local observation: {entry.value} {entry.unit} · {entry.observedAt.slice(0, 16).replace("T", " ")}</p>
+        <p className="text-muted-foreground">Source: {entry.sourceLabel} · specimen/modality: {entry.specimen || "not provided"} · method: {entry.assayMethod || "not provided"}</p>
+      </li>)}</ul> : <p className="mt-4 text-sm text-muted-foreground">No synthetic bone observations in this device's local history for the selected crew and mission.</p>}
+      <p className="mt-3 text-xs text-muted-foreground">Units and methods are reported as entered; no cross-unit comparison, inferred trend, medical interpretation or scientific approval. Real-origin records are excluded from this research summary.</p>
+    </section>}
     <section className="mt-10"><h2 className="text-xl font-semibold">Local measurement history</h2><p className="mt-2 text-sm text-muted-foreground">Only records matching the mission and crew IDs above are shown. Different methods or units must not be compared automatically.</p>
       <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b"><th className="p-2">Date</th><th className="p-2">Variable</th><th className="p-2">Result</th><th className="p-2">Source</th><th className="p-2">Origin</th></tr></thead><tbody>{history.map(row=><tr className="border-b" key={row.id}><td className="p-2">{row.observedAt.slice(0,16).replace("T"," ")}</td><td className="p-2">{BONE_HEALTH_VARIABLES.find(v=>v.id===row.variableId)?.name ?? row.variableId}</td><td className="p-2">{row.value} {row.unit}</td><td className="p-2">{row.sourceLabel}</td><td className="p-2">{row.dataOrigin}</td></tr>)}</tbody></table>{history.length===0 && <p className="p-4 text-muted-foreground">No records for this mission and crew.</p>}</div>
     </section>
