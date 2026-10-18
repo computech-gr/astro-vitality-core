@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { buildSyntheticDomainPreview, SYNTHETIC_DEMO_DOMAINS, type SyntheticPreviewDomain } from "@/domain/mission-access/synthetic-domain-preview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionIdentitySnapshot } from "@/infrastructure/mission-identity";
 import { summarizeDemoAccess } from "@/domain/mission-access/demo-readiness";
@@ -12,6 +13,7 @@ export const SYNTHETIC_DEMO_JOURNEY = DEMO_JOURNEY;
 export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
   const [evidence, setEvidence] = useState<Record<string, DemoJourneyEvidence>>({});
+  const [previewDomain, setPreviewDomain] = useState<SyntheticPreviewDomain>("cardiovascular");
   useEffect(() => {
     let active = true;
     const refresh = () => { void loadMissionIdentity().then((value) => { if (active) setIdentity(value); }).catch(() => { if (active) setIdentity(null); }); };
@@ -27,6 +29,7 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
   const actors = summarizeDemoActors(runbook);
   const demoDataset = buildSyntheticDemoDataset(missionCode);
   const datasetSummary = summarizeSyntheticDemoDataset(demoDataset);
+  const domainPreview = buildSyntheticDomainPreview(demoDataset, previewDomain);
   const exportDataset = () => {
     if (isReservedDemoMission(missionCode)) return;
     const blob = new Blob([JSON.stringify(demoDataset, null, 2)], { type: "application/json" });
@@ -89,6 +92,19 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
             </div>
             <button type="button" disabled={isReservedDemoMission(missionCode)} onClick={exportDataset} className="mt-3 rounded border border-border px-3 py-2 text-xs hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50">Export synthetic demo dataset (JSON)</button>
             <p className="mt-2 text-xs text-muted-foreground">Local download only. No Cloud writes, real people, device connections or scientific interpretation. MISSION_TEST export is disabled. Import into canonical health records is intentionally not enabled.</p>
+          </div>
+          <div className="mt-4 rounded-md border border-border p-3" aria-label="Interactive synthetic health preview">
+            <p className="text-sm font-semibold">Interactive synthetic health preview — read-only</p>
+            <p className="mt-1 text-xs text-muted-foreground">Explore the existing 18 fictional observations by health domain. Available even on MISSION_TEST because this preview does not export, import, save, or modify mission records. Not a medical interpretation.</p>
+            <label className="mt-3 block text-xs font-medium" htmlFor="synthetic-health-preview-domain">Health domain</label>
+            <select id="synthetic-health-preview-domain" value={previewDomain} onChange={event => setPreviewDomain(event.target.value as SyntheticPreviewDomain)} className="mt-1 w-full max-w-xs rounded border border-border bg-background p-2 text-sm">
+              {SYNTHETIC_DEMO_DOMAINS.map(domain => <option key={domain} value={domain}>{domain}</option>)}
+            </select>
+            <p className="mt-3 text-xs text-muted-foreground">{domainPreview.metricCount} fictional metrics · {domainPreview.observationCount} observations · {domainPreview.timepoints.length} timepoints. No clinical ranges, diagnoses, or alerts.</p>
+            <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[420px] text-left text-xs"><thead><tr className="border-b border-border"><th className="p-2 font-semibold">Illustrative metric</th>{domainPreview.timepoints.map(day => <th key={day} className="p-2 font-semibold">Day {day}</th>)}</tr></thead><tbody>
+              {domainPreview.rows.map(row => <tr key={row.metric} className="border-b border-border/50"><th scope="row" className="p-2 font-medium">{row.metric}<span className="block text-muted-foreground">{row.unit}</span></th>{row.values.map((value, index) => <td key={domainPreview.timepoints[index]} className="p-2 tabular-nums">{value === null ? "Missing" : value}</td>)}</tr>)}
+            </tbody></table></div>
+            <p className="mt-2 text-xs text-muted-foreground">Synthetic generated · illustrative quality · local projection only. This is not a canonical biomarker history and must not be used as validation evidence.</p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {SYNTHETIC_DEMO_JOURNEY.map((step, index) => (
