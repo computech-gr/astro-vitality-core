@@ -6,10 +6,13 @@ import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
 import { HEALTH_DOMAINS, getHealthDomain, projectDomainEvidence, type HealthDomainId } from "@/domain/health-domains/registry";
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "@/domain/health-intelligence/patterns";
+import proposedCatalog from "../../data/scientific/p355-proposed-domain-catalog.v1.json";
 import { CardiovascularHandbookReference } from "@/components/scientific-handbook-reference";
 
 export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }) {
   const domain = getHealthDomain(domainId);
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const draftCatalog = proposedCatalog.entries.filter((item) => item.domain === domainId && (item.id.toLowerCase().includes(catalogQuery.toLowerCase()) || item.name.toLowerCase().includes(catalogQuery.toLowerCase())));
   const [memberships, setMemberships] = useState<Array<{ missionId: string; crewMemberId: string }>>([]);
   const [selected, setSelected] = useState("");
   const [report, setReport] = useState<ScientificEvidenceReport | null>(null);
@@ -48,6 +51,16 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
     <p className="mt-3 rounded-md border border-border p-3 text-sm" role="status">{domain.reviewState === "scientific_review_pending" ? "Scientific domain review pending. Existing evidence is displayed without clinical inference." : "Bone handbook mapping available. Clinical validation and approved thresholds are not established."}</p>
     <nav aria-label="Astronaut health domains" className="mt-6 flex flex-wrap gap-2">{HEALTH_DOMAINS.map((item) => <a key={item.id} href={item.path} aria-current={item.id === domainId ? "page" : undefined} className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">{item.title}</a>)}</nav>
     {domainId === "cardiovascular" && <CardiovascularHandbookReference />}
+    {(domainId === "immune" || domainId === "behavioral") && <section className="mt-7 rounded-xl border border-border p-5" aria-label="Scientific draft catalog">
+      <h2 className="text-xl font-semibold">Scientific proposal catalog · {domainId === "immune" ? "IMM" : "BSC"}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">Claude scientific draft v1.0 (18 Oct 2026). All entries are PENDING_NIKOLAS_REVIEW. These are reference proposals only: not approved measurements, ingestion mappings, diagnostic rules or clinical thresholds. Matrix v1.1 is unchanged.</p>
+      <label className="mt-4 block text-sm" htmlFor="scientific-catalog-search">Search proposed measurements</label>
+      <input id="scientific-catalog-search" className="mt-2 w-full rounded-md border border-border bg-background p-2 text-sm" type="search" value={catalogQuery} onChange={(event) => setCatalogQuery(event.target.value)} placeholder="Search name or catalog ID" />
+      <p className="mt-2 text-xs text-muted-foreground" role="status">{draftCatalog.length} proposed entries · no scientific approval</p>
+      <div className="mt-3 max-h-80 overflow-y-auto rounded-md border border-border"><ul className="divide-y divide-border">{draftCatalog.map((item) => <li className="p-3 text-sm" key={item.id}><span className="font-semibold">{item.id}</span> · {item.name}<span className="mt-1 block text-xs text-muted-foreground">PENDING_NIKOLAS_REVIEW · not active</span></li>)}</ul></div>
+      <p className="mt-3 text-sm">Synthetic document review remains a separate, human-controlled process. <a className="underline" href="/mission/documents">Open Mission Documents</a>.</p>
+    </section>}
+
     <section className="mt-8 rounded-xl border border-border p-5" aria-label="Private domain evidence">
       <h2 className="text-xl font-semibold">Mission-scoped measurements</h2>
       {memberships.length > 1 && <label className="mt-3 block text-sm">Active mission <select className="ml-2 rounded-md border border-border bg-background p-2" value={selected} onChange={(event) => setSelected(event.target.value)}>{memberships.map((member) => <option key={`${member.missionId}|${member.crewMemberId}`} value={`${member.missionId}|${member.crewMemberId}`}>{member.missionId}</option>)}</select></label>}
