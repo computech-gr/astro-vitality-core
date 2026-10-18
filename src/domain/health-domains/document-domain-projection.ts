@@ -10,7 +10,18 @@ export const DOMAIN_LABELS: Record<HealthDomainId, string> = {
 };
 
 type CandidateReference = { id: string; selected: boolean };
-const metricDomains = new Map<string, string>(registry.metrics.map((metric) => [metric.id, metric.domain]));
+// Registry uses "bone_health"; health-domain IDs use "bone". Exact alias only, no guessing.
+const REGISTRY_DOMAIN_ALIASES: Record<string, HealthDomainId> = { bone_health: "bone", cardiovascular: "cardiovascular" };
+const metricDomains = new Map<string, HealthDomainId>(
+  registry.metrics.flatMap((metric) => {
+    const domain = REGISTRY_DOMAIN_ALIASES[metric.domain];
+    return domain ? [[metric.id, domain] as const] : [];
+  }),
+);
+
+export function domainForMetric(id: string): HealthDomainId | undefined {
+  return metricDomains.get(id);
+}
 
 export function getDocumentDomainProjection(candidates: readonly CandidateReference[]) {
   return HEALTH_DOMAINS.map((domain) => {

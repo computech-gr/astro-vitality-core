@@ -5,7 +5,7 @@ import {
   type MissionIdentitySnapshot,
 } from "@/infrastructure/mission-identity";
 import registry from "../../data/scientific/p36-biomarker-source-registry.v1.json";
-import { getDocumentDomainProjection, DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
+import { getDocumentDomainProjection, domainForMetric, DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import { extractBoneDocument } from "@/domain/bone-health/document-extraction";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -426,6 +426,7 @@ export function MissionDocumentReviewWorkbench() {
                   </td>
                   <td className="p-2">{c.id}</td>
                   <td className="p-2">{c.label}</td>
+                  <td className="p-2">{(() => { const d = domainForMetric(c.id); return d ? DOMAIN_LABELS[d] : "Unclassified"; })()}</td>
                   <td className="p-2">{c.value}</td>
                   <td className="p-2">{c.unit}</td>
                   <td className="p-2 max-w-xs break-words">{c.excerpt}</td>
