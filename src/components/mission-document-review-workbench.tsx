@@ -5,7 +5,7 @@ import {
   type MissionIdentitySnapshot,
 } from "@/infrastructure/mission-identity";
 import registry from "../../data/scientific/p36-biomarker-source-registry.v1.json";
-import { getDocumentDomainProjection, domainForMetric, DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
+import { getDocumentDomainProjection, getUnitPendingBoneHints, domainForMetric, DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import { extractBoneDocument } from "@/domain/bone-health/document-extraction";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -115,6 +115,7 @@ export function MissionDocumentReviewWorkbench() {
   const crewMemberId = eligible ? identity?.active?.crewMemberId : undefined;
   const selected = candidates.filter((candidate) => candidate.selected);
   const domainProjection = getDocumentDomainProjection(candidates);
+  const boneHints = getUnitPendingBoneHints(text);
   const hasDuplicateMetrics =
     new Set(selected.map((candidate) => candidate.id)).size !== selected.length;
   const allSelected = candidates.length > 0 && candidates.every((c) => c.selected);
@@ -383,6 +384,15 @@ export function MissionDocumentReviewWorkbench() {
               </li>
             ))}
           </ul>
+        )}
+        {boneHints.length > 0 && (
+          <div className="space-y-2 rounded border p-3" aria-label="Bone markers awaiting unit review">
+            <h3 className="font-semibold">Bone Health — possible catalog names ({boneHints.length}), unit review required</h3>
+            <p className="text-sm text-muted-foreground">Exact name-only hints from synthetic document text. The bone catalog does not define approved units. These are NOT accepted measurements, NOT selectable, NOT submitted, and do not count toward domain routing.</p>
+            <ul className="space-y-1 text-sm">{boneHints.map((hint, i) => (
+              <li key={`${hint.id}-${i}`} className="rounded border p-2"><strong>{hint.name}</strong> ({hint.id}) — <span className="break-words">{hint.excerpt}</span></li>
+            ))}</ul>
+          </div>
         )}
         <p className="text-xs text-muted-foreground">P35.5 IMM/BSC proposals remain PENDING_NIKOLAS_REVIEW and are not eligible for automatic metric matching. This preview does not populate health-domain timelines or authorize cloud writes.</p>
       </section>

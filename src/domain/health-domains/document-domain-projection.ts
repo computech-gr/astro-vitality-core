@@ -34,3 +34,20 @@ export function getDocumentDomainProjection(candidates: readonly CandidateRefere
     };
   }).filter((domain) => domain.count > 0);
 }
+
+/** Advisory only: catalog names without approved units must never become reviewed candidates. */
+export function getUnitPendingBoneHints(text: string): Array<{ id: string; name: string; excerpt: string }> {
+  const lines = text.split(/\r?\n/).slice(0, 1000);
+  const boneMetrics = registry.metrics.filter((metric) => metric.domain === "bone_health" && !metric.originalUnit?.trim());
+  const hints: Array<{ id: string; name: string; excerpt: string }> = [];
+  for (const line of lines) {
+    if (line.length > 350 || /(?:reference|normal|interval|range|ref\.|[<>≤≥]|\d\s*[-–]\s*\d)/i.test(line)) continue;
+    const match = /^\s*(.+?)\s*[:=]\s*[-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+)\s+([^\s;,|]+)\s*$/.exec(line);
+    if (!match) continue;
+    const matches = boneMetrics.filter((metric) => metric.name.trim().toLocaleLowerCase("en-US") === match[1]!.trim().toLocaleLowerCase("en-US"));
+    if (matches.length !== 1) continue;
+    hints.push({ id: matches[0]!.id, name: matches[0]!.name, excerpt: line });
+    if (hints.length >= 50) break;
+  }
+  return hints;
+}

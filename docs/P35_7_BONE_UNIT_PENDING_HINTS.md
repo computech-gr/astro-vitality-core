@@ -1,0 +1,3 @@
+# P35.7 — Bone Unit-Pending Advisory Hints
+
+Synthetic-only, local, read-only. Existing P36 exact name+unit matching and submission are unchanged. Bone registry entries with no originalUnit may appear as **advisory exact-name hints** only, separate from accepted candidates. No value or unit is inferred or approved. Ambiguous names and reference-range lines are suppressed. No backend, migration, RLS, scientific approval, MISSION_TEST or production publishing. Browser acceptance needs authorized Crew Self in FV01-TEST-B. Test both bone hints and a cardiovascular accepted candidate in the same synthetic TXT, and ensure only the latter can be submitted. The hints do not populate a health timeline or report.
