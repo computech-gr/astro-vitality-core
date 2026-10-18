@@ -34,7 +34,7 @@ describe("global site header", () => {
   });
 
   test("header section links work from nested routes", () => {
-    for (const href of ["/#home", "/#mission", "/#science", "/#platform", "/#technology", "/#open-source", "/#about"]) {
+    for (const href of ["/#home", "/mission/experience", "/mission/intelligence", "/#science", "/#technology", "/#open-source", "/#about"]) {
       expect(appShell).toContain(`href: "${href}"`);
     }
     expect(appShell).toContain('href="/#home" aria-label="The Mitochondria home"');

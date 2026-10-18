@@ -71,47 +71,38 @@ type NavigationEntry = {
 const navigation: readonly NavigationEntry[] = [
   { label: "Home", href: "/#home" },
   {
-    label: "Mission",
-    href: "/#mission",
-    description: "The challenge, the mission story and why autonomy matters.",
+    label: "Mission Console",
+    href: "/mission/experience",
+    description: "Sign in, select a mission, collect synthetic evidence and work with the crew.",
     groups: [
-      { title: "Mission story", items: ["The Challenge", "Our Mission", "Mission Scenario"] },
-      { title: "Why it matters", items: ["Why Autonomous Health", "Long-Duration Spaceflight"] },
+      { title: "Mission & crew", items: ["Mission Identity & Sign-in", "Mission Workspace", "Mission & Crew Operations", "Daily Readiness Check-in"] },
+      { title: "Measurements", items: ["Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Offline Mission Mode"] },
+      { title: "Ground operations", items: ["Ground & Research Console", "Mission Scenario"] },
+    ],
+  },
+  {
+    label: "Health & Intelligence",
+    href: "/mission/intelligence",
+    description: "Review synthetic documents, health domains and research-only intelligence.",
+    groups: [
+      { title: "Evidence & context", items: ["Mission Documents", "Platform Overview", "Astronaut Health Twin", "Personalization"] },
+      { title: "Health domains", items: ["Bone Health", "Cardiovascular Health", "Immune Changes", "Behavioral Health"] },
+      { title: "Research intelligence", items: ["Health Intelligence", "Explainable Alerts", "Action Guidance", "NASA Scientific Evidence"] },
     ],
   },
   {
     label: "Science",
     href: "/#science",
-    description: "Evidence, biomarkers, baselines and the safety boundaries that govern them.",
+    description: "Evidence, biomarkers, baselines and scientific boundaries.",
     groups: [
       { title: "Foundations", items: ["Scientific Foundation", "Spaceflight Health Risks", "Biomarkers & Signals", "Personal Baselines"] },
-      { title: "Context & safety", items: ["Cognitive & Behavioral Health", "Environment & Radiation", "NASA Scientific Evidence", "Scientific Safety Boundaries"] },
-    ],
-  },
-  {
-    label: "Platform",
-    href: "/#platform",
-    description: "Crew-facing workspaces, monitoring, health domains and explainable intelligence.",
-    groups: [
-      { title: "Crew workspace", items: ["Platform Overview", "Mission Workspace", "Daily Readiness Check-in", "Astronaut Health Twin", "Personalization"] },
-      { title: "Monitoring & data", items: ["Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Mission Documents"] },
-      { title: "Health domains", items: ["Bone Health", "Immune Changes", "Cardiovascular Health", "Behavioral Health"] },
-      { title: "Intelligence & action", items: ["Health Intelligence", "Explainable Alerts", "Action Guidance"] },
-    ],
-  },
-  {
-    label: "Mission Operations",
-    href: "/#mission",
-    description: "Sign-in, mission governance, ground oversight and offline continuity.",
-    groups: [
-      { title: "Access & governance", items: ["Mission Identity & Sign-in", "Mission & Crew Operations"] },
-      { title: "Ground & autonomy", items: ["Ground & Research Console", "Offline Mission Mode"] },
+      { title: "Context & safety", items: ["Cognitive & Behavioral Health", "Environment & Radiation", "Scientific Safety Boundaries"] },
     ],
   },
   {
     label: "Technology",
     href: "/#technology",
-    description: "Eight in-depth topics on how the platform is built.",
+    description: "Architecture, device interfaces, data and security.",
     groups: [
       { title: "Architecture", items: ["System Architecture", "Canonical Health Data Model", "Offline-First Architecture", "Security & Privacy"] },
       { title: "Data sources", items: ["Device Integration", "Wearables", "Medical & Laboratory Data", "Environmental Telemetry"] },
@@ -119,13 +110,14 @@ const navigation: readonly NavigationEntry[] = [
     ],
   },
   {
-    label: "Open Source & About",
-    href: "/#open-source",
-    description: "Repository, documentation, governance and project background.",
+    label: "About & Open Source",
+    href: "/#about",
+    description: "Challenge background, open-source documentation and project status.",
     groups: [
-      { title: "Open Source", href: "/#open-source", items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "Security Policy", "License"] },
-      { title: "Backend on GitHub", items: ["Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"] },
-      { title: "About", href: "/#about", items: ["The Mitochondria", "NASA Space Apps 2026", "Team", "Scientific Approach", "Roadmap", "Validation & Limitations", "Challenge Submission", "Resources & References"] },
+      { title: "Project", items: ["The Challenge", "Our Mission", "Why Autonomous Health", "Long-Duration Spaceflight", "The Mitochondria", "Team", "Roadmap"] },
+      { title: "Open source", href: "/#open-source", items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "License"] },
+      { title: "Governance & references", items: ["Security Policy", "Scientific Approach", "Validation & Limitations", "Challenge Submission", "Resources & References", "NASA Space Apps 2026"] },
+      { title: "Backend", items: ["Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"] },
     ],
   },
 ];

@@ -6,8 +6,8 @@ const shell = readFileSync(resolve("src/components/app-shell.tsx"), "utf8");
 const search = readFileSync(resolve("src/domain/navigation-search/search.ts"), "utf8");
 
 describe("P36.3A Mission Documents navigation", () => {
-  it("shows Mission Documents in the global Platform menu, including mobile navigation", () => {
-    expect(shell).toContain('"Recorded Mission Data", "Mission Documents"');
+  it("shows Mission Documents in the global Health & Intelligence menu, including mobile navigation", () => {
+    expect(shell).toContain('{ title: "Evidence & context", items: ["Mission Documents"');
     expect(shell).toContain('if (label === "Mission Documents") return "/mission/documents";');
     expect(shell).toContain('group.items.map');
   });
