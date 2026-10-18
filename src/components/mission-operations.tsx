@@ -28,6 +28,7 @@ import {
 import { CrewDisplayNameEditor } from "@/components/crew-display-name-editor";
 import { MissionAuditLog } from "@/components/mission-audit-log";
 import { MissionSettingsPanel } from "@/components/mission-settings-panel";
+import { MissionDemoLaunchpad } from "@/components/mission-demo-launchpad";
 
 function roleLabel(role: MissionRole) {
   return role.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -196,6 +197,7 @@ export function MissionOperations() {
 
             {workspace ? (
               <>
+                <MissionDemoLaunchpad missionCode={workspace.mission.code} />
                 <nav aria-label="Mission Operations sections" className="mt-8 flex flex-wrap gap-3 text-sm"><a className="rounded-md border border-border px-3 py-2 hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" href="#mission-settings">Mission Settings</a><a className="rounded-md border border-border px-3 py-2 hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" href="#mission-audit-log">Mission Audit Log</a></nav>
                 <section className="mt-8 grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
                   <MissionSettingsPanel mission={workspace.mission} disabled={busy} onSaved={() => refreshWorkspace(missionId)} />
