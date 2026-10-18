@@ -23,3 +23,14 @@ export function getDemoJourneyAccess(identity: MissionIdentitySnapshot | null, m
 }
 
 export function isReservedDemoMission(code: string): boolean { return code.trim().toUpperCase() === "MISSION_TEST"; }
+
+/** Non-authorizing demo guide. Evidence must be recorded by a real, separately authorized actor. */
+export type DemoJourneyEvidence = "not_checked" | "observed" | "blocked";
+export function summarizeDemoJourneyEvidence(values: readonly DemoJourneyEvidence[]) {
+  const observed = values.filter(value => value === "observed").length;
+  const blocked = values.filter(value => value === "blocked").length;
+  return { observed, blocked, remaining: DEMO_JOURNEY.length - observed - blocked, total: DEMO_JOURNEY.length };
+}
+export function canRecordDemoJourneyEvidence(missionCode: string): boolean {
+  return Boolean(missionCode.trim()) && !isReservedDemoMission(missionCode);
+}
