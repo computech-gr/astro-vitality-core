@@ -8,7 +8,7 @@ describe("P35.6 read-only document domain projection", () => {
   });
   it("projects exact existing metric IDs without duplication or cross-domain guessing", () => {
     const first = registry.metrics.find((metric) => metric.domain === "cardiovascular");
-    const second = registry.metrics.find((metric) => metric.domain === "bone");
+    const second = registry.metrics.find((metric) => metric.domain === "bone_health");
     expect(first).toBeDefined();
     expect(second).toBeDefined();
     const result = getDocumentDomainProjection([
