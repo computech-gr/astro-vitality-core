@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionIdentitySnapshot } from "@/infrastructure/mission-identity";
 import { summarizeDemoAccess } from "@/domain/mission-access/demo-readiness";
 import { buildDemoRunbook, summarizeDemoActors } from "@/domain/mission-access/demo-runbook";
+import { buildSyntheticDemoDataset, summarizeSyntheticDemoDataset } from "@/domain/mission-access/synthetic-demo-dataset";
 import { DEMO_JOURNEY, getDemoJourneyAccess, isReservedDemoMission, canRecordDemoJourneyEvidence, summarizeDemoJourneyEvidence, type DemoJourneyEvidence } from "@/domain/mission-access/demo-journey";
 
 /** Operator-visible navigation only. Every destination enforces its own RBAC/RLS. */
@@ -24,6 +25,18 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
   const progress = summarizeDemoJourneyEvidence(DEMO_JOURNEY.map(step => evidence[step.href] ?? "not_checked"));
   const runbook = buildDemoRunbook(missionCode, identity, evidence);
   const actors = summarizeDemoActors(runbook);
+  const demoDataset = buildSyntheticDemoDataset(missionCode);
+  const datasetSummary = summarizeSyntheticDemoDataset(demoDataset);
+  const exportDataset = () => {
+    if (isReservedDemoMission(missionCode)) return;
+    const blob = new Blob([JSON.stringify(demoDataset, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mitochondria-synthetic-dataset-${missionCode.replace(/[^a-zA-Z0-9_-]/g, "_")}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   const exportRunbook = () => {
     const blob = new Blob([JSON.stringify(runbook, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -67,6 +80,15 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
             </div>
             <button type="button" onClick={exportRunbook} className="mt-3 rounded border border-border px-3 py-2 text-xs hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">Export offline demo runbook (JSON)</button>
             <p className="mt-2 text-xs text-muted-foreground">Exporting from MISSION_TEST is planning-only and always resets all statuses to not checked. Never import the export as execution evidence.</p>
+          </div>
+          <div className="mt-4 rounded-md border border-border p-3" aria-label="Synthetic multi-domain demo dataset">
+            <p className="text-sm font-semibold">Synthetic multi-domain demo dataset</p>
+            <p className="mt-1 text-xs text-muted-foreground">Deterministic fictional astronaut records for offline demo rehearsal. {datasetSummary.total} observations across {datasetSummary.domains} health domains, {datasetSummary.timepoints} timepoints. Values are illustrative, not clinical thresholds or validated health findings.</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {datasetSummary.byDomain.map(item => <div key={item.domain} className="rounded border border-border p-2 text-xs"><span className="font-semibold">{item.domain}</span><p className="text-muted-foreground">{item.count} fictional observations</p></div>)}
+            </div>
+            <button type="button" disabled={isReservedDemoMission(missionCode)} onClick={exportDataset} className="mt-3 rounded border border-border px-3 py-2 text-xs hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50">Export synthetic demo dataset (JSON)</button>
+            <p className="mt-2 text-xs text-muted-foreground">Local download only. No Cloud writes, real people, device connections or scientific interpretation. MISSION_TEST export is disabled. Import into canonical health records is intentionally not enabled.</p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {SYNTHETIC_DEMO_JOURNEY.map((step, index) => (
