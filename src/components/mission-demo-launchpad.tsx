@@ -2,20 +2,10 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionIdentitySnapshot } from "@/infrastructure/mission-identity";
 import { summarizeDemoAccess } from "@/domain/mission-access/demo-readiness";
+import { DEMO_JOURNEY, getDemoJourneyAccess, isReservedDemoMission } from "@/domain/mission-access/demo-journey";
 
 /** Operator-visible navigation only. Every destination enforces its own RBAC/RLS. */
-export const SYNTHETIC_DEMO_JOURNEY = [
-  { label: "Mission identity", href: "/mission/identity", purpose: "Confirm the signed-in identity and active mission membership." },
-  { label: "Mission workspace", href: "/mission/experience", purpose: "Select the synthetic mission and crew context." },
-  { label: "Mission documents", href: "/mission/documents", purpose: "Review synthetic lab evidence with Crew Self authorization." },
-  { label: "Device integration", href: "/mission/devices", purpose: "Inspect simulated-device capabilities and collection boundaries." },
-  { label: "Bone health", href: "/mission/bone-health", purpose: "Inspect synthetic-only local bone evidence." },
-  { label: "Cardiovascular health", href: "/mission/cardiovascular-health", purpose: "Inspect cardiovascular research evidence." },
-  { label: "Immune changes", href: "/mission/immune-health", purpose: "Inspect scientific draft proposals and missing evidence." },
-  { label: "Behavioral health", href: "/mission/behavioral-health", purpose: "Inspect behavioral and sleep research evidence." },
-  { label: "Health intelligence", href: "/mission/intelligence", purpose: "Review non-diagnostic research intelligence." },
-  { label: "Ground & research", href: "/mission/ground", purpose: "Independent Ground Medical membership is required for decisions." },
-] as const;
+export const SYNTHETIC_DEMO_JOURNEY = DEMO_JOURNEY;
 
 export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
@@ -41,11 +31,13 @@ export function MissionDemoLaunchpad({ missionCode }: { missionCode: string }) {
             </ul>
             <p className="mt-2 text-xs text-muted-foreground">Read-only membership inspection. This panel does not grant access, select a new mission, impersonate a crew member or enable clinical/real-data processing.</p>
           </div>
+          {isReservedDemoMission(missionCode) && <p role="note" className="mt-4 rounded-md border border-amber-500/40 p-3 text-sm">MISSION_TEST is reserved for final acceptance. This journey is navigation-only; do not write or create demo records in this mission. Use a separately approved synthetic demo mission.</p>}
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {SYNTHETIC_DEMO_JOURNEY.map((step, index) => (
               <a key={step.href} href={step.href} className="rounded-md border border-border p-3 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
                 <span className="text-sm font-semibold">{index + 1}. {step.label}</span>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.purpose}</p>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">Access: {getDemoJourneyAccess(identity, missionCode, step)}</p>
               </a>
             ))}
           </div>
