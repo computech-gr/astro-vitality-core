@@ -15,7 +15,7 @@ describe("final public navigation", () => {
 
   test("implemented operational surfaces keep direct mission routes", () => {
     expect(shell).toContain('if (label === "Daily Readiness Check-in") return "/mission/readiness"');
-    expect(shell).toContain('"Mission Workspace", "Daily Readiness Check-in"');
+    expect(shell).toContain('"Mission Identity & Sign-in", "Mission Workspace", "Mission & Crew Operations", "Daily Readiness Check-in"');
     expect(shell).toContain('if (label === "Live Monitoring") return "/mission/live"');
     expect(shell).toContain('if (label === "Device Integration Center") return "/mission/devices"');
     expect(shell).toContain('if (label === "Health Intelligence") return "/mission/intelligence"');

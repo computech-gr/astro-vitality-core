@@ -9,9 +9,9 @@ const failures = [];
 
 for (const token of [
   "export function SiteHeader()",
-  'href: "/#mission"',
+  'href: "/mission/experience"',
   'href: "/#science"',
-  'href: "/#platform"',
+  'href: "/mission/intelligence"',
   'href: "/#technology"',
   'href: "/#open-source"',
   'href: "/#about"',
