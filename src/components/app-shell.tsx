@@ -179,9 +179,9 @@ const guideDestinations: Readonly<Record<string, string>> = {
 
 function itemHref(label: string, fallback: string) {
   if (technologyTopicDestinations[label]) return technologyTopicDestinations[label];
-  if (label === "NASA Competition Presentation (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_Final_Competition_Edition.pdf`;
-  if (label === "NASA Evaluator Quick Start (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Demonstration_Guide_Final_Competition_Edition.pdf`;
-  if (label === "Master Technical Manual (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_Final_Competition_Edition.pdf`;
+  if (label === "NASA Competition Presentation (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf`;
+  if (label === "NASA Evaluator Quick Start (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf`;
+  if (label === "Master Technical Manual (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf`;
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "Backend Architecture (GitHub)") return `${GITHUB_URL}/blob/main/docs/ARCHITECTURE.md`;
   if (label === "Database Schema & Migrations (GitHub)") return `${GITHUB_URL}/tree/main/supabase/migrations`;
