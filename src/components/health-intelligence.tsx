@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ScientificResearchCandidates } from "@/components/scientific-research-candidates";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
@@ -109,6 +110,8 @@ export function HealthIntelligencePage() {
           <Card className="bg-deep"><CardHeader><FlaskConical className="text-signal" /><CardTitle>Explainability contract</CardTitle></CardHeader><CardContent className="text-sm leading-6 text-muted-foreground">Every finding carries what changed, why it matched, contributing observations, missing evidence, confounders, confidence breakdown, uncertainty reasons, scientific source IDs and non-diagnostic guardrails.</CardContent></Card>
           <Card><CardHeader><CardTitle>Safety rails</CardTitle></CardHeader><CardContent><div className="grid gap-3 sm:grid-cols-2">{safeguards.map((item) => <div key={item} className="flex gap-3 border border-border/70 bg-background/40 p-3 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-signal" /><span>{item}</span></div>)}</div></CardContent></Card>
         </section>
+
+        <ScientificResearchCandidates />
 
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold">Reviewed v1.1 pattern catalogue</h2>
