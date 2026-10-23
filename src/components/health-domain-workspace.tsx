@@ -48,7 +48,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
     <p className="section-kicker">P26 · Integrated Astronaut Health Domains</p>
     <h1 className="mt-3 font-display text-4xl font-semibold">{domain.title}</h1>
     <p className="mt-4 max-w-3xl text-muted-foreground">{domain.scope}</p>
-    <p className="mt-3 rounded-md border border-border p-3 text-sm" role="status">{domain.reviewState === "scientific_review_pending" ? "Scientific domain review pending. Existing evidence is displayed without clinical inference." : "Bone handbook mapping available. Clinical validation and approved thresholds are not established."}</p>
+    <p className="mt-3 rounded-md border border-border p-3 text-sm" role="status">{domainId === "immune" || domainId === "behavioral" ? "Scientific handbook integrated. Measurement-level validation is awaiting independent review. Research reference only." : domain.reviewState === "scientific_review_pending" ? "Scientific domain review pending. Existing evidence is displayed without clinical inference." : "Bone handbook mapping available. Clinical validation and approved thresholds are not established."}</p>
     <nav aria-label="Astronaut health domains" className="mt-6 flex flex-wrap gap-2">{HEALTH_DOMAINS.map((item) => <a key={item.id} href={item.path} aria-current={item.id === domainId ? "page" : undefined} className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">{item.title}</a>)}</nav>
     {domainId === "cardiovascular" && <CardiovascularHandbookReference />}
     {(domainId === "immune" || domainId === "behavioral") && <section className="mt-7 rounded-xl border border-border p-5" aria-label="Scientific draft catalog">
