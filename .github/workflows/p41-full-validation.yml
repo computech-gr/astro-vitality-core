@@ -1,4 +1,4 @@
-name: P41 Full Validation
+name: P42 Full Scientific Validation
 
 on:
   workflow_dispatch:
@@ -19,8 +19,14 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         run: bun install --frozen-lockfile
+      - name: Report validated commit
+        run: echo "Validated commit $GITHUB_SHA on ref $GITHUB_REF"
       - name: Full repository validation
         run: bun run check
+      - name: P37 scientific intake verifier
+        run: node scripts/verify-nikolas-scientific-intake.mjs
+      - name: P38 reconciliation verifier
+        run: node scripts/verify-p38-nikolas-reconciliation.mjs
       - name: P39 scientific mapping verifier
         run: node scripts/verify-p39-semantic-review.mjs
       - name: P40 scientific review verifier
@@ -29,3 +35,5 @@ jobs:
         run: node scripts/verify-p41-review-workbook.mjs
       - name: P41.2 validation handoff verifier
         run: node scripts/verify-p41-validation-completion.mjs
+      - name: P42 scientific triage verifier
+        run: node scripts/verify-p42-semantic-triage.mjs
