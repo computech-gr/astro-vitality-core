@@ -1,4 +1,4 @@
-name: P44 Full Scientific Validation
+name: P45 Final Application Validation
 
 on:
   workflow_dispatch:
@@ -41,3 +41,5 @@ jobs:
         run: node scripts/verify-p43-semantic-decisions.mjs
       - name: P44 research explorer verifier
         run: node scripts/verify-p44-research-explorer.mjs
+      - name: P45 research explorer UX verifier
+        run: node scripts/verify-p45-final-ux.mjs
