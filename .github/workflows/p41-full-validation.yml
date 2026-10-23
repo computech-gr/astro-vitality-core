@@ -1,4 +1,4 @@
-name: P43 Full Scientific Validation
+name: P44 Full Scientific Validation
 
 on:
   workflow_dispatch:
@@ -39,3 +39,5 @@ jobs:
         run: node scripts/verify-p42-semantic-triage.mjs
       - name: P43 scientific decisions verifier
         run: node scripts/verify-p43-semantic-decisions.mjs
+      - name: P44 research explorer verifier
+        run: node scripts/verify-p44-research-explorer.mjs
