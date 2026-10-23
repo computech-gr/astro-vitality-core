@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "status": "RESEARCH_ONLY",
+  "relationships": [
+    {
+      "domains": [
+        "immune",
+        "behavioral"
+      ],
+      "signals": [
+        "salivary cortisol",
+        "sleep duration",
+        "immune cell function"
+      ],
+      "interpretation": "Contextual association only; not a causal or diagnostic claim"
+    },
+    {
+      "domains": [
+        "immune",
+        "bone"
+      ],
+      "signals": [
+        "IL-6",
+        "CTX",
+        "25(OH) vitamin D"
+      ],
+      "interpretation": "Shared physiology and confounding; not causal attribution"
+    },
+    {
+      "domains": [
+        "behavioral",
+        "cardiovascular"
+      ],
+      "signals": [
+        "HRV RMSSD",
+        "sleep duration",
+        "workload"
+      ],
+      "interpretation": "Research context only; no psychiatric diagnosis"
+    }
+  ]
+}
