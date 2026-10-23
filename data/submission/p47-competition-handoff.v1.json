@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "phase": "P47",
+  "classification": "RESEARCH_PROTOTYPE_NOT_CLINICALLY_VALIDATED",
+  "source_evidence": "P46 evidence freeze plus user-provided GitHub P46 run #6 screenshot",
+  "p46_ci": {
+    "workflow": "P46 Final Acceptance Evidence Gate #6",
+    "branch": "main",
+    "short_commit": "fbc1e6f",
+    "duration_seconds": 41,
+    "result": "SUCCESS",
+    "full_sha": "NOT_CAPTURED",
+    "run_url": "NOT_CAPTURED",
+    "provenance": "USER_PROVIDED_GITHUB_SCREENSHOT"
+  },
+  "scientific": {
+    "proposals": 54,
+    "independent_approvals": 0,
+    "operational_activations": 0,
+    "unmapped_source_records": 162
+  },
+  "open_gates": [
+    "GATE-DEVICE-OCR",
+    "GATE-CREW-ISOLATION",
+    "GATE-SCIENTIFIC-REVIEW",
+    "GATE-SUBMISSION"
+  ],
+  "submission_assets": {
+    "demo_url": "https://mitochondria.edocinfo.com",
+    "repository_url": "https://github.com/computech-gr/astro-vitality-core",
+    "video_url": null,
+    "presentation_url": null,
+    "challenge_submission_url": null,
+    "final_rules_checked": false,
+    "public_access_checked": false
+  },
+  "claims": {
+    "nasa_endorsed": false,
+    "flight_validated": false,
+    "clinically_validated": false,
+    "real_astronaut_data": false,
+    "research_only": true
+  },
+  "submission_ready": false,
+  "publication_authorized": false
+}
