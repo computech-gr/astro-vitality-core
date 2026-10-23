@@ -1,4 +1,4 @@
-name: P45 Final Application Validation
+name: P46 Final Acceptance Evidence Gate
 
 on:
   workflow_dispatch:
@@ -43,3 +43,5 @@ jobs:
         run: node scripts/verify-p44-research-explorer.mjs
       - name: P45 research explorer UX verifier
         run: node scripts/verify-p45-final-ux.mjs
+      - name: P46 evidence freeze verifier
+        run: node scripts/verify-p46-evidence-freeze.mjs
