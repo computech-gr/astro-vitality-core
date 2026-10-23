@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiNasaResearchRouteImport } from './routes/api.nasa-research'
+import { Route as CompetitionDemoVideoRouteImport } from './routes/competition.demo-video'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
 import { Route as MissionBehavioralHealthRouteImport } from './routes/mission.behavioral-health'
 import { Route as MissionBoneHealthRouteImport } from './routes/mission.bone-health'
@@ -58,6 +59,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
 const ApiNasaResearchRoute = ApiNasaResearchRouteImport.update({
   id: '/api/nasa-research',
   path: '/api/nasa-research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionDemoVideoRoute = CompetitionDemoVideoRouteImport.update({
+  id: '/competition/demo-video',
+  path: '/competition/demo-video',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionAlertsRoute = MissionAlertsRouteImport.update({
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
+  '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
+  '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
+  '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/api/nasa-research'
+    | '/competition/demo-video'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/api/nasa-research'
+    | '/competition/demo-video'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/api/nasa-research'
+    | '/competition/demo-video'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -382,6 +394,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiNasaResearchRoute: typeof ApiNasaResearchRoute
+  CompetitionDemoVideoRoute: typeof CompetitionDemoVideoRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
   MissionBehavioralHealthRoute: typeof MissionBehavioralHealthRoute
   MissionBoneHealthRoute: typeof MissionBoneHealthRoute
@@ -437,6 +450,13 @@ declare module '@tanstack/react-router' {
       path: '/api/nasa-research'
       fullPath: '/api/nasa-research'
       preLoaderRoute: typeof ApiNasaResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competition/demo-video': {
+      id: '/competition/demo-video'
+      path: '/competition/demo-video'
+      fullPath: '/competition/demo-video'
+      preLoaderRoute: typeof CompetitionDemoVideoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/alerts': {
@@ -623,6 +643,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiNasaResearchRoute: ApiNasaResearchRoute,
+  CompetitionDemoVideoRoute: CompetitionDemoVideoRoute,
   MissionAlertsRoute: MissionAlertsRoute,
   MissionBehavioralHealthRoute: MissionBehavioralHealthRoute,
   MissionBoneHealthRoute: MissionBoneHealthRoute,
