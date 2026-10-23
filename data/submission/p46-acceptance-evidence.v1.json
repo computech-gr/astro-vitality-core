@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "phase": "P46",
+  "release_classification": "RESEARCH_PROTOTYPE_NOT_CLINICALLY_VALIDATED",
+  "evidence_cutoff": "2026-10-23",
+  "repository": "computech-gr/astro-vitality-core",
+  "p45_gitHub_evidence": {
+    "workflow": "P45 Final Application Validation #5",
+    "branch": "main",
+    "commit_short": "e320970",
+    "result": "SUCCESS",
+    "duration_seconds": 52,
+    "provenance": "USER_PROVIDED_GITHUB_SCREENSHOT",
+    "commit_full_sha": "NOT_CAPTURED"
+  },
+  "scientific": {
+    "p37_immune_records": 117,
+    "p37_behavioral_records": 99,
+    "p39_candidates": 54,
+    "p43_proposals": 54,
+    "independent_approvals": 0,
+    "operational_activations": 0,
+    "status": "REVIEW_ONLY"
+  },
+  "browser_acceptance": {
+    "source": "LOVABLE_REPORTED_NOT_INDEPENDENTLY_REPRODUCED",
+    "signed_out": "PASS_REPORTED",
+    "operator": "PASS_REPORTED",
+    "crew_self_single_mission": "PASS_REPORTED",
+    "search_wbc_results": 1,
+    "initial_cards": 12,
+    "show_more_cards": 24,
+    "classification_equivalence_results": 11,
+    "write_requests_observed": 0
+  },
+  "open_gates": [
+    {
+      "id": "GATE-DEVICE-OCR",
+      "status": "OPEN",
+      "requirement": "Real device airplane-mode offline OCR test with timestamped evidence"
+    },
+    {
+      "id": "GATE-CREW-ISOLATION",
+      "status": "OPEN",
+      "requirement": "Two distinct Crew Self accounts and missions: negative cross-mission access test"
+    },
+    {
+      "id": "GATE-SCIENTIFIC-REVIEW",
+      "status": "OPEN",
+      "requirement": "Independent qualified scientific review and signed decisions for research proposals"
+    },
+    {
+      "id": "GATE-P46-CI",
+      "status": "PENDING",
+      "requirement": "P46 GitHub full validation success on synchronized P46 commit"
+    },
+    {
+      "id": "GATE-SUBMISSION",
+      "status": "PENDING",
+      "requirement": "Final submission links, media, disclosures and challenge rules verified"
+    }
+  ],
+  "restrictions": {
+    "clinical_activation": false,
+    "catalog_merges": false,
+    "cloud_writes": false,
+    "migrations": false,
+    "publication_authorized": false,
+    "nasa_endorsement_claim": false
+  },
+  "frozen_source_sha256": {
+    "data/scientific/p43-semantic-decision-proposals.v1.json": "dc3167252692eddf1f9bf072df299119925b8620bae4501f0de09857f13426a1",
+    "src/components/scientific-research-candidates.tsx": "956cc76535f8f6e84f04e7b3deedfeb8938c28598e14ca30b5d75d2f3ba8f998",
+    "src/components/health-intelligence.tsx": "4277687b35132a5247833ee57500a5428bd702d5f2c07e6a9fa7b6c96e5f0194",
+    "scripts/verify-p45-final-ux.mjs": "22e7581c4800a7a3df7bfb6d064223164f90449e04ea7c1f0d78dcc5a06254f2"
+  }
+}
