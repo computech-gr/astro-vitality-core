@@ -115,6 +115,7 @@ const navigation: readonly NavigationEntry[] = [
     description: "Challenge background, open-source documentation and project status.",
     groups: [
       { title: "Project", items: ["The Challenge", "Our Mission", "Why Autonomous Health", "Long-Duration Spaceflight", "The Mitochondria", "Team", "Roadmap"] },
+      { title: "Competition documents (PDF)", items: ["NASA Competition Presentation (PDF)", "NASA Evaluator Quick Start (PDF)", "Master Technical Manual (PDF)"] },
       { title: "Open source", href: "/#open-source", items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "License"] },
       { title: "Governance & references", items: ["Security Policy", "Scientific Approach", "Validation & Limitations", "Challenge Submission", "Resources & References", "NASA Space Apps 2026"] },
       { title: "Backend", items: ["Backend Architecture (GitHub)", "Database Schema & Migrations (GitHub)", "Access Rules / RLS (GitHub)"] },
@@ -178,6 +179,9 @@ const guideDestinations: Readonly<Record<string, string>> = {
 
 function itemHref(label: string, fallback: string) {
   if (technologyTopicDestinations[label]) return technologyTopicDestinations[label];
+  if (label === "NASA Competition Presentation (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_Final_Competition_Edition.pdf`;
+  if (label === "NASA Evaluator Quick Start (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Demonstration_Guide_Final_Competition_Edition.pdf`;
+  if (label === "Master Technical Manual (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_Final_Competition_Edition.pdf`;
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "Backend Architecture (GitHub)") return `${GITHUB_URL}/blob/main/docs/ARCHITECTURE.md`;
   if (label === "Database Schema & Migrations (GitHub)") return `${GITHUB_URL}/tree/main/supabase/migrations`;
