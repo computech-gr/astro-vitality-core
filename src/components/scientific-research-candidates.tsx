@@ -7,6 +7,7 @@ import proposals from "../../data/scientific/p43-semantic-decision-proposals.v1.
 export function ScientificResearchCandidates() {
   const [search, setSearch] = useState("");
   const [classification, setClassification] = useState("ALL");
+  const [visibleCount, setVisibleCount] = useState(12);
   const rows = proposals.rows;
   const classifications = Array.from(
     new Set(rows.map((row) => row.provisional_semantic_disposition)),
@@ -26,6 +27,8 @@ export function ScientificResearchCandidates() {
       }),
     [classification, rows, search],
   );
+  const visible = filtered.slice(0, visibleCount);
+  const remaining = filtered.length - visible.length;
 
   return (
     <section className="mt-12 space-y-4" aria-label="P43 research-only scientific mapping explorer">
@@ -43,9 +46,14 @@ export function ScientificResearchCandidates() {
         <label className="flex flex-col gap-1 text-sm">
           Search by source or candidate
           <input
+            type="search"
+            aria-label="Search provisional scientific proposals"
             className="rounded border border-border bg-background px-3 py-2"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setVisibleCount(12);
+            }}
             placeholder="e.g. WBC"
           />
         </label>
@@ -54,7 +62,10 @@ export function ScientificResearchCandidates() {
           <select
             className="max-w-full rounded border border-border bg-background px-3 py-2"
             value={classification}
-            onChange={(event) => setClassification(event.target.value)}
+            onChange={(event) => {
+              setClassification(event.target.value);
+              setVisibleCount(12);
+            }}
           >
             <option value="ALL">All classifications</option>
             {classifications.map((value) => (
@@ -66,11 +77,11 @@ export function ScientificResearchCandidates() {
         </label>
       </div>
       <p className="text-sm text-muted-foreground" role="status">
-        Showing {filtered.length} of {rows.length} proposals · 0 independently approved · 0
+        Showing {filtered.length} matching proposals ({visible.length} rendered) of {rows.length} · 0 independently approved · 0
         operationally activated
       </p>
       <div className="grid gap-3 md:grid-cols-2">
-        {filtered.map((row) => (
+        {visible.map((row) => (
           <article
             key={row.source_id}
             className="rounded-lg border border-border bg-surface p-4 text-sm"
@@ -94,6 +105,15 @@ export function ScientificResearchCandidates() {
           </article>
         ))}
       </div>
+      {remaining > 0 && (
+        <button
+          type="button"
+          className="rounded border border-border px-4 py-2 text-sm font-medium hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          onClick={() => setVisibleCount((count) => count + 12)}
+        >
+          Show 12 more ({remaining} remaining)
+        </button>
+      )}
       {filtered.length === 0 && (
         <p className="text-sm text-muted-foreground">No matching research proposals.</p>
       )}
