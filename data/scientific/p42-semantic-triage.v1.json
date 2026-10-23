@@ -1,0 +1,927 @@
+{
+  "schema_version": "p42.1.0",
+  "purpose": "Evidence-aware triage of P39 candidates, not independent scientific adjudication",
+  "source": "data/scientific/p39-semantic-review-candidates.v1.json",
+  "candidate_count": 54,
+  "decision_policy": "NO_AUTOMATIC_APPROVAL",
+  "rows": [
+    {
+      "source_id": "IMM-NIK-001",
+      "source_name": "WBC",
+      "source_unit": "10^9/L",
+      "candidate_catalog_id": "IMM-001",
+      "candidate_catalog_name": "White blood cell count (total leukocytes)",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-002",
+      "source_name": "Neutrophils absolute",
+      "source_unit": "10^9/L",
+      "candidate_catalog_id": "IMM-002",
+      "candidate_catalog_name": "Neutrophil count (absolute)",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-003",
+      "source_name": "Lymphocytes absolute",
+      "source_unit": "10^9/L",
+      "candidate_catalog_id": "IMM-003",
+      "candidate_catalog_name": "Lymphocyte count (absolute)",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-004",
+      "source_name": "Monocytes absolute",
+      "source_unit": "10^9/L",
+      "candidate_catalog_id": "IMM-004",
+      "candidate_catalog_name": "Monocyte count (absolute)",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-005",
+      "source_name": "Eosinophils",
+      "source_unit": "10^9/L",
+      "candidate_catalog_id": "IMM-005",
+      "candidate_catalog_name": "Eosinophil and basophil counts",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-006",
+      "source_name": "Basophils",
+      "source_unit": "10^9/L",
+      "candidate_catalog_id": "IMM-005",
+      "candidate_catalog_name": "Eosinophil and basophil counts",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-007",
+      "source_name": "Neutrophil-to-lymphocyte ratio",
+      "source_unit": "λόγος",
+      "candidate_catalog_id": "IMM-006",
+      "candidate_catalog_name": "Neutrophil-to-lymphocyte ratio (NLR)",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-008",
+      "source_name": "CD3+ T",
+      "source_unit": "cells/μL",
+      "candidate_catalog_id": "IMM-010",
+      "candidate_catalog_name": "T-cell subsets (CD3+, CD4+, CD8+, CD4/CD8 ratio)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-009",
+      "source_name": "CD4+ T",
+      "source_unit": "cells/μL",
+      "candidate_catalog_id": "IMM-010",
+      "candidate_catalog_name": "T-cell subsets (CD3+, CD4+, CD8+, CD4/CD8 ratio)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-010",
+      "source_name": "CD8+ T",
+      "source_unit": "cells/μL",
+      "candidate_catalog_id": "IMM-010",
+      "candidate_catalog_name": "T-cell subsets (CD3+, CD4+, CD8+, CD4/CD8 ratio)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-011",
+      "source_name": "CD4/CD8",
+      "source_unit": "λόγος",
+      "candidate_catalog_id": "IMM-010",
+      "candidate_catalog_name": "T-cell subsets (CD3+, CD4+, CD8+, CD4/CD8 ratio)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-012",
+      "source_name": "CD19+ B",
+      "source_unit": "cells/μL",
+      "candidate_catalog_id": "IMM-012",
+      "candidate_catalog_name": "B-cell count (CD19+)",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-013",
+      "source_name": "CD16+/CD56+ NK",
+      "source_unit": "cells/μL",
+      "candidate_catalog_id": "IMM-013",
+      "candidate_catalog_name": "NK-cell count (CD3−CD56+) and NK-cell cytotoxic function",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-020",
+      "source_name": "NK cytotoxicity",
+      "source_unit": "% lysis",
+      "candidate_catalog_id": "IMM-013",
+      "candidate_catalog_name": "NK-cell count (CD3−CD56+) and NK-cell cytotoxic function",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-048",
+      "source_name": "hsCRP",
+      "source_unit": "mg/L",
+      "candidate_catalog_id": "IMM-007",
+      "candidate_catalog_name": "C-reactive protein",
+      "p39_relation_candidate": "related_assay",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-050",
+      "source_name": "EBV DNA",
+      "source_unit": "copies/mL ή copies/sample",
+      "candidate_catalog_id": "IMM-015",
+      "candidate_catalog_name": "Latent herpesvirus DNA shedding (EBV, VZV, CMV, HSV-1)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-051",
+      "source_name": "CMV DNA",
+      "source_unit": "copies/mL ή copies/sample",
+      "candidate_catalog_id": "IMM-015",
+      "candidate_catalog_name": "Latent herpesvirus DNA shedding (EBV, VZV, CMV, HSV-1)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-052",
+      "source_name": "VZV DNA",
+      "source_unit": "copies/mL ή copies/sample",
+      "candidate_catalog_id": "IMM-015",
+      "candidate_catalog_name": "Latent herpesvirus DNA shedding (EBV, VZV, CMV, HSV-1)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-053",
+      "source_name": "HSV-1 DNA",
+      "source_unit": "copies/mL ή copies/sample",
+      "candidate_catalog_id": "IMM-015",
+      "candidate_catalog_name": "Latent herpesvirus DNA shedding (EBV, VZV, CMV, HSV-1)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-064",
+      "source_name": "Cortisol saliva",
+      "source_unit": "nmol/L",
+      "candidate_catalog_id": "IMM-019",
+      "candidate_catalog_name": "Cortisol — time-anchored repeated profile (salivary preferred)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-074",
+      "source_name": "IgG",
+      "source_unit": "g/L",
+      "candidate_catalog_id": "IMM-014",
+      "candidate_catalog_name": "Serum immunoglobulins (IgG, IgA, IgM) and salivary secretory IgA",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-075",
+      "source_name": "IgA",
+      "source_unit": "g/L",
+      "candidate_catalog_id": "IMM-014",
+      "candidate_catalog_name": "Serum immunoglobulins (IgG, IgA, IgM) and salivary secretory IgA",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-076",
+      "source_name": "IgM",
+      "source_unit": "g/L",
+      "candidate_catalog_id": "IMM-014",
+      "candidate_catalog_name": "Serum immunoglobulins (IgG, IgA, IgM) and salivary secretory IgA",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-077",
+      "source_name": "Salivary secretory IgA",
+      "source_unit": "μg/mL",
+      "candidate_catalog_id": "IMM-014",
+      "candidate_catalog_name": "Serum immunoglobulins (IgG, IgA, IgM) and salivary secretory IgA",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-079",
+      "source_name": "25(OH) vitamin D",
+      "source_unit": "ng/mL",
+      "candidate_catalog_id": "IMM-030",
+      "candidate_catalog_name": "25-hydroxyvitamin D",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "IMM-NIK-086",
+      "source_name": "Microbiome diversity",
+      "source_unit": "index",
+      "candidate_catalog_id": "IMM-021",
+      "candidate_catalog_name": "Gut microbiome composition and diversity (stool)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-001",
+      "source_name": "Total sleep time",
+      "source_unit": "min",
+      "candidate_catalog_id": "BSC-001",
+      "candidate_catalog_name": "Total sleep time (main sleep + naps)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-003",
+      "source_name": "Sleep efficiency",
+      "source_unit": "%",
+      "candidate_catalog_id": "BSC-002",
+      "candidate_catalog_name": "Sleep efficiency",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-004",
+      "source_name": "Sleep onset",
+      "source_unit": "timestamp",
+      "candidate_catalog_id": "BSC-005",
+      "candidate_catalog_name": "Sleep timing (onset, offset, midpoint)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-005",
+      "source_name": "Wake time",
+      "source_unit": "timestamp",
+      "candidate_catalog_id": "BSC-005",
+      "candidate_catalog_name": "Sleep timing (onset, offset, midpoint)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-006",
+      "source_name": "Sleep onset latency",
+      "source_unit": "min",
+      "candidate_catalog_id": "BSC-004",
+      "candidate_catalog_name": "Sleep onset latency",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-007",
+      "source_name": "Wake after sleep onset (WASO)",
+      "source_unit": "min",
+      "candidate_catalog_id": "BSC-003",
+      "candidate_catalog_name": "Wake after sleep onset",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-009",
+      "source_name": "Sleep midpoint",
+      "source_unit": "clock time",
+      "candidate_catalog_id": "BSC-005",
+      "candidate_catalog_name": "Sleep timing (onset, offset, midpoint)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-010",
+      "source_name": "Sleep timing variability",
+      "source_unit": "min SD",
+      "candidate_catalog_id": "BSC-006",
+      "candidate_catalog_name": "Sleep regularity (day-to-day variability of sleep timing)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-013",
+      "source_name": "Subjective sleep quality",
+      "source_unit": "ordinal",
+      "candidate_catalog_id": "BSC-008",
+      "candidate_catalog_name": "Subjective sleep quality and perceived sleep quantity",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-017",
+      "source_name": "PVT median reaction time",
+      "source_unit": "ms",
+      "candidate_catalog_id": "BSC-017",
+      "candidate_catalog_name": "Psychomotor Vigilance Test (PVT)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-019",
+      "source_name": "PVT lapses",
+      "source_unit": "count",
+      "candidate_catalog_id": "BSC-017",
+      "candidate_catalog_name": "Psychomotor Vigilance Test (PVT)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-027",
+      "source_name": "Karolinska Sleepiness Scale",
+      "source_unit": "1–9",
+      "candidate_catalog_id": "BSC-015",
+      "candidate_catalog_name": "Karolinska Sleepiness Scale (KSS)",
+      "p39_relation_candidate": "alias",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "ALIAS_REQUIRES_METHOD_AND_UNIT_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-031",
+      "source_name": "Fractal 2-Back accuracy",
+      "source_unit": "%",
+      "candidate_catalog_id": "BSC-018",
+      "candidate_catalog_name": "Working memory — Fractal 2-Back",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-032",
+      "source_name": "Abstract Matching accuracy",
+      "source_unit": "%",
+      "candidate_catalog_id": "BSC-019",
+      "candidate_catalog_name": "Named executive/attention tasks: Abstract Matching, Line Orientation, Matrix Reasoning, Emotion Recognition, Visual Object Learning, Motor Praxis",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-033",
+      "source_name": "Line Orientation error",
+      "source_unit": "degrees",
+      "candidate_catalog_id": "BSC-019",
+      "candidate_catalog_name": "Named executive/attention tasks: Abstract Matching, Line Orientation, Matrix Reasoning, Emotion Recognition, Visual Object Learning, Motor Praxis",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-034",
+      "source_name": "Emotion Recognition accuracy",
+      "source_unit": "%",
+      "candidate_catalog_id": "BSC-019",
+      "candidate_catalog_name": "Named executive/attention tasks: Abstract Matching, Line Orientation, Matrix Reasoning, Emotion Recognition, Visual Object Learning, Motor Praxis",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-035",
+      "source_name": "Matrix Reasoning accuracy",
+      "source_unit": "%",
+      "candidate_catalog_id": "BSC-019",
+      "candidate_catalog_name": "Named executive/attention tasks: Abstract Matching, Line Orientation, Matrix Reasoning, Emotion Recognition, Visual Object Learning, Motor Praxis",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-036",
+      "source_name": "Digit Symbol Substitution correct",
+      "source_unit": "count",
+      "candidate_catalog_id": "BSC-020",
+      "candidate_catalog_name": "Digit Symbol Substitution Task (processing speed)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-037",
+      "source_name": "Balloon Analog Risk Task choices",
+      "source_unit": "count/index",
+      "candidate_catalog_id": "BSC-021",
+      "candidate_catalog_name": "Balloon Analog Risk Task (BART)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-055",
+      "source_name": "Team cohesion",
+      "source_unit": "scale",
+      "candidate_catalog_id": "BSC-027",
+      "candidate_catalog_name": "Team cohesion / team functioning (aggregated)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-072",
+      "source_name": "NASA-TLX overall",
+      "source_unit": "0–100",
+      "candidate_catalog_id": "BSC-024",
+      "candidate_catalog_name": "NASA Task Load Index (NASA-TLX), task-linked",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-078",
+      "source_name": "Light exposure photopic",
+      "source_unit": "lux",
+      "candidate_catalog_id": "BSC-010",
+      "candidate_catalog_name": "Light exposure (personal) — illuminance, timing, melanopic dose where supported",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-080",
+      "source_name": "Noise exposure",
+      "source_unit": "dBA",
+      "candidate_catalog_id": "BSC-031",
+      "candidate_catalog_name": "Environmental context for sleep and cognition (CO2, noise, temperature)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-081",
+      "source_name": "Cabin CO2",
+      "source_unit": "mmHg/ppm",
+      "candidate_catalog_id": "BSC-031",
+      "candidate_catalog_name": "Environmental context for sleep and cognition (CO2, noise, temperature)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-082",
+      "source_name": "Cabin temperature",
+      "source_unit": "°C",
+      "candidate_catalog_id": "BSC-031",
+      "candidate_catalog_name": "Environmental context for sleep and cognition (CO2, noise, temperature)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-083",
+      "source_name": "Heart rate resting",
+      "source_unit": "bpm",
+      "candidate_catalog_id": "BSC-028",
+      "candidate_catalog_name": "Nocturnal resting heart rate and HRV (RMSSD) during sleep",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-084",
+      "source_name": "HRV RMSSD",
+      "source_unit": "ms",
+      "candidate_catalog_id": "BSC-028",
+      "candidate_catalog_name": "Nocturnal resting heart rate and HRV (RMSSD) during sleep",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    },
+    {
+      "source_id": "BHP-085",
+      "source_name": "Salivary cortisol",
+      "source_unit": "nmol/L",
+      "candidate_catalog_id": "BSC-030",
+      "candidate_catalog_name": "Cortisol profile (stress physiology context)",
+      "p39_relation_candidate": "component",
+      "p39_unit_status": "REVIEW_REQUIRED_EXISTING_CATALOG_HAS_NO_UNITS",
+      "triage_bucket": "RELATED_OR_DISTINCT_REQUIRES_PROTOCOL_REVIEW",
+      "review_questions": [
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ],
+      "scientific_decision": "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
+      "operational_activation": false
+    }
+  ]
+}
