@@ -1,0 +1,31 @@
+name: P41 Full Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Full repository validation
+        run: bun run check
+      - name: P39 scientific mapping verifier
+        run: node scripts/verify-p39-semantic-review.mjs
+      - name: P40 scientific review verifier
+        run: node scripts/verify-p40-independent-review.mjs
+      - name: P41 scientific workbook verifier
+        run: node scripts/verify-p41-review-workbook.mjs
+      - name: P41.2 validation handoff verifier
+        run: node scripts/verify-p41-validation-completion.mjs
