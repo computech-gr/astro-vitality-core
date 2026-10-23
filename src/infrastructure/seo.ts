@@ -36,6 +36,7 @@ export const INDEXABLE_ROUTES = [
   "/project/guide",
   "/mission/validation",
   "/mission/submission",
+  "/competition/demo-video",
   "/technology",
   ...TECHNOLOGY_TOPIC_ROUTES,
 ] as const;
