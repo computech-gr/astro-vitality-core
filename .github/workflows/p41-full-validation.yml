@@ -1,4 +1,4 @@
-name: P46 Final Acceptance Evidence Gate
+name: P47 Competition Submission Validation
 
 on:
   workflow_dispatch:
@@ -45,3 +45,5 @@ jobs:
         run: node scripts/verify-p45-final-ux.mjs
       - name: P46 evidence freeze verifier
         run: node scripts/verify-p46-evidence-freeze.mjs
+      - name: P47 competition handoff verifier
+        run: node scripts/verify-p47-competition-handoff.mjs

@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+const read = (p) => JSON.parse(readFileSync(p, "utf8"));
+const p46 = read("data/submission/p46-acceptance-evidence.v1.json");
+const p47 = read("data/submission/p47-competition-handoff.v1.json");
+assert.equal(p47.phase, "P47");
+assert.equal(p47.scientific.proposals, p46.scientific.p43_proposals);
+assert.equal(p47.scientific.independent_approvals, 0);
+assert.equal(p47.scientific.operational_activations, 0);
+assert.equal(p47.claims.research_only, true);
+for (const key of ["nasa_endorsed", "flight_validated", "clinically_validated", "real_astronaut_data"]) assert.equal(p47.claims[key], false);
+for (const gate of ["GATE-DEVICE-OCR", "GATE-CREW-ISOLATION", "GATE-SCIENTIFIC-REVIEW", "GATE-SUBMISSION"]) assert.ok(p47.open_gates.includes(gate), gate);
+assert.equal(p47.submission_ready, false);
+assert.equal(p47.publication_authorized, false);
+assert.equal(p47.submission_assets.final_rules_checked, false);
+assert.equal(p47.submission_assets.public_access_checked, false);
+assert.ok(existsSync("docs/P47_NASA_COMPETITION_HANDOFF.md"));
+console.log("P47 PASS: conditional competition handoff; 54 research proposals, 0 approvals, 0 activations; submission not confirmed.");
