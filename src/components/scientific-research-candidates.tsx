@@ -77,8 +77,8 @@ export function ScientificResearchCandidates() {
         </label>
       </div>
       <p className="text-sm text-muted-foreground" role="status">
-        Showing {filtered.length} matching proposals ({visible.length} rendered) of {rows.length} ·
-        0 independently approved · 0 operationally activated
+        Showing {filtered.length} matching proposals ({visible.length} rendered) of {rows.length} · 0 independently approved · 0
+        operationally activated
       </p>
       <div className="grid gap-3 md:grid-cols-2">
         {visible.map((row) => (
