@@ -35,13 +35,13 @@ export async function answerSyntheticQuestion(
     Object.keys(data).some(
       (k) => !["question", "consent", "provenance", "missionId", "crewMemberId"].includes(k),
     ) ||
-    data.consent !== true ||
-    data.provenance !== "synthetic"
+    data['consent'] !== true ||
+    data['provenance'] !== "synthetic"
   )
     return fail("Explicit synthetic-only consent required", 403);
   let question: string;
   try {
-    question = validateSyntheticQuestion(data.question);
+    question = validateSyntheticQuestion(data['question']);
   } catch {
     return fail("Invalid or out-of-scope question", 400);
   }
@@ -55,7 +55,7 @@ export async function answerSyntheticQuestion(
   } catch {
     return fail("Invalid authoritative evidence; no data sent", 503);
   }
-  if (snapshot.missionId !== data.missionId || snapshot.crewMemberId !== data.crewMemberId)
+  if (snapshot.missionId !== data['missionId'] || snapshot.crewMemberId !== data['crewMemberId'])
     return fail("Synthetic scope mismatch", 403);
   const verified = await deps.rpc("medical_v3_ai_evidence", {
     p_mission: snapshot.missionId,

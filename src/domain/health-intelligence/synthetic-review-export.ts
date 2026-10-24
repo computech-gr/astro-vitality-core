@@ -61,12 +61,12 @@ export async function validateSyntheticSnapshot(raw: unknown): Promise<Synthetic
   )
     throw new Error("Invalid authoritative synthetic evidence.");
   const evidence = doc.observations.map((o: Record<string, unknown>) => ({
-    id: o.id,
-    metric: o.metric,
-    value: o.value,
-    unit: o.unit,
-    time: o.time,
-    domain: o.domain,
+    id: o['id'],
+    metric: o['metric'],
+    value: o['value'],
+    unit: o['unit'],
+    time: o['time'],
+    domain: o['domain'],
   }));
   if (
     JSON.stringify(evidence) !== JSON.stringify(snapshot.evidence) ||
