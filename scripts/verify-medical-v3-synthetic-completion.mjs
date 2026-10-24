@@ -19,6 +19,7 @@ const transactionCheck=(sql,name)=>{const result=run(`BEGIN;${sql};ROLLBACK;`);c
 // Reconstruct real pending foundation and source, never substitute an evidence resolver.
 const adminBase=base.slice(0,-1).concat('postgres');
 execFileSync('psql',[...adminBase,'-c','drop database if exists medical_v3_it','-c','create database medical_v3_it'],{env,stdio:'pipe'});
+execFileSync('psql',[...adminBase,'-c','alter database medical_v3_it set search_path=public,extensions'],{env,stdio:'pipe'});
 file('tests/integration-pg/stub.sql');
 for(const name of readdirSync('supabase/migrations').filter(name=>name.endsWith('.sql')).sort()) file(`supabase/migrations/${name}`);
 file('supabase/pending/20261024000000_medical_governance_v3.sql');
