@@ -1,12 +1,12 @@
 {
   "version": "1.0",
   "video": {
-    "status": "pending_human",
-    "publicUrl": null,
-    "originalTeamCreated": null,
-    "rightsAndLicensesConfirmed": null,
-    "requiredLikenessConsentsConfirmed": null,
-    "checkedAt": null
+    "status": "ready",
+    "publicUrl": "https://mitochondria.edocinfo.com/competition/demo-video",
+    "originalTeamCreated": true,
+    "rightsAndLicensesConfirmed": true,
+    "requiredLikenessConsentsConfirmed": true,
+    "checkedAt": "2026-10-24T06:45:50Z"
   },
   "official2026SubmissionRules": {
     "status": "pending_external",

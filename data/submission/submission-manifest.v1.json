@@ -49,8 +49,8 @@
     },
     {
       "file": "data/submission/p20-evidence.v1.json",
-      "sha256": "c6c41efdd063b8b7ad7d9c039888e02a1ead0a039a2dbc4cd1cce628415028b4",
-      "bytes": 3986
+      "sha256": "60efbd23839936e28f60e9b3a28e89f748d93346735c69d55670ae37e3ac9d52",
+      "bytes": 4429
     },
     {
       "file": "data/submission/p20-real-device-evidence.v1.json",
@@ -64,8 +64,8 @@
     },
     {
       "file": "data/submission/p20-final-external-evidence.v1.json",
-      "sha256": "0d223b29edc252c523d489e3e6fb1943822fc430a9b072075baa303b269523c4",
-      "bytes": 623
+      "sha256": "b58fdf88a41fe3fbdc3cd24d4c00817dc52d396ffd39cdc3e6bdcff559ff3c25",
+      "bytes": 687
     },
     {
       "file": "docs/P20_REAL_DEVICE_EVIDENCE.md",
