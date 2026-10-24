@@ -156,7 +156,10 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           const check = validateAIDraft(text, evidence);
           if (!check.ok)
             return Response.json(
-              { error: "AI draft failed evidence validation; rejected", violations: check.violations.slice(0, 20) },
+              {
+                error: "AI draft failed evidence validation; rejected",
+                violations: check.violations.slice(0, 20),
+              },
               { status: 422, headers: noStore },
             );
           return Response.json(

@@ -41,14 +41,29 @@ const KNOWN_BIOMARKERS: Array<[string, RegExp]> = [
 ];
 
 const FORBIDDEN_CLAIMS: Array<[string, RegExp]> = [
-  ["reference range", /\b(reference|normal|healthy|typical|expected)\s+(range|interval|limit|value)s?\b/i],
+  [
+    "reference range",
+    /\b(reference|normal|healthy|typical|expected)\s+(range|interval|limit|value)s?\b/i,
+  ],
   ["range judgement", /\b(within|outside|above|below)\s+(the\s+)?(normal|reference|expected)\b/i],
   ["range judgement", /\b(low|high)[-\s]to[-\s](normal|high|low)\b|\b(high|low)[-\s]normal\b/i],
-  ["range judgement", /\b(abnormal(ly)?|elevated|decreased|deficien(t|cy)|insufficien(t|cy)|subclinical)\b/i],
+  [
+    "range judgement",
+    /\b(abnormal(ly)?|elevated|decreased|deficien(t|cy)|insufficien(t|cy)|subclinical)\b/i,
+  ],
   ["limit", /\b(upper|lower)\s+limit\b/i],
-  ["diagnosis", /\b(diagnos(ed|is)\s+(with|of)|indicative\s+of|consistent\s+with|suggest(s|ive)\s+of|signs?\s+of)\b/i],
-  ["disease", /\b(osteoporosis|osteopenia|anemia|anaemia|infection|disease|disorder|syndrome|deficiency)\b/i],
-  ["treatment", /\b(prescrib\w*|treat(ment|ed)?\s+(with|by)|dos(e|age|ing)|supplement(ation)?|medication)\b/i],
+  [
+    "diagnosis",
+    /\b(diagnos(ed|is)\s+(with|of)|indicative\s+of|consistent\s+with|suggest(s|ive)\s+of|signs?\s+of)\b/i,
+  ],
+  [
+    "disease",
+    /\b(osteoporosis|osteopenia|anemia|anaemia|infection|disease|disorder|syndrome|deficiency)\b/i,
+  ],
+  [
+    "treatment",
+    /\b(prescrib\w*|treat(ment|ed)?\s+(with|by)|dos(e|age|ing)|supplement(ation)?|medication)\b/i,
+  ],
   ["numbered reference", /\[\d+\]/],
 ];
 
@@ -64,7 +79,8 @@ export function validateAIDraft(text: string, evidence: DraftEvidence[]): DraftV
 
   const metricText = evidence.map((e) => `${e.metric} ${e.unit}`.toLowerCase()).join(" ");
   for (const [name, re] of KNOWN_BIOMARKERS)
-    if (re.test(text) && !re.test(metricText)) violations.push(`biomarker not in evidence: ${name}`);
+    if (re.test(text) && !re.test(metricText))
+      violations.push(`biomarker not in evidence: ${name}`);
   for (const [label, re] of FORBIDDEN_CLAIMS) {
     const m = text.match(re);
     if (m) violations.push(`${label}: "${m[0]}"`);
