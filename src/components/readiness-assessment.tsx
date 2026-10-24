@@ -38,7 +38,6 @@ import {
 import { persistOfflineMissionEvent } from "@/infrastructure/offline";
 import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/mission-identity";
 
-
 const DEMO_PROTOCOL = {
   id: "p11-brief-vigilance-demo",
   version: "1.0.0",
@@ -67,14 +66,30 @@ export function ReadinessAssessment() {
   const [MISSION, setMission] = useState<{ missionId: string; crewMemberId: string } | null>(null);
   useEffect(() => {
     let alive = true;
-    const refresh = () => { void loadMissionIdentity().then(snapshot => {
-      if (!alive) return;
-      const member = snapshot.active?.role === "crew_self" ? snapshot.active : snapshot.memberships.find(m => m.role === "crew_self" && m.crewMemberId);
-      setMission(member?.crewMemberId ? { missionId: member.missionId, crewMemberId: member.crewMemberId } : null);
-    }).catch(() => { if (alive) setMission(null); }); };
+    const refresh = () => {
+      void loadMissionIdentity()
+        .then((snapshot) => {
+          if (!alive) return;
+          const member =
+            snapshot.active?.role === "crew_self"
+              ? snapshot.active
+              : snapshot.memberships.find((m) => m.role === "crew_self" && m.crewMemberId);
+          setMission(
+            member?.crewMemberId
+              ? { missionId: member.missionId, crewMemberId: member.crewMemberId }
+              : null,
+          );
+        })
+        .catch(() => {
+          if (alive) setMission(null);
+        });
+    };
     refresh();
     const unsubscribe = subscribeMissionIdentity(refresh);
-  return () => { alive = false; unsubscribe(); };
+    return () => {
+      alive = false;
+      unsubscribe();
+    };
   }, []);
   const [state, setState] = useState(() =>
     createReadinessAssessmentState(new Date().toISOString()),
@@ -124,7 +139,8 @@ export function ReadinessAssessment() {
   useEffect(() => {
     const warnIfMidFlow = (event: BeforeUnloadEvent) => {
       const current = stateRef.current;
-      const midFlow = !current.completedAt && (current.step !== "context" || current.trials.length > 0);
+      const midFlow =
+        !current.completedAt && (current.step !== "context" || current.trials.length > 0);
       if (midFlow) event.preventDefault();
     };
     window.addEventListener("beforeunload", warnIfMidFlow);
@@ -334,358 +350,378 @@ export function ReadinessAssessment() {
         </section>
 
         {!MISSION && (
-          <section aria-label="Identity and access status" className="mt-8 rounded-xl border border-border bg-card p-5">
+          <section
+            aria-label="Identity and access status"
+            className="mt-8 rounded-xl border border-border bg-card p-5"
+          >
             <h2 className="font-display text-xl font-semibold">Authorized crew access required</h2>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground" role="status">Sign in and select an authorized crew mission before recording readiness assessments. No placeholder records will be created.</p>
-            <Button asChild variant="outline" className="mt-4"><a href="/mission/identity">Mission identity &amp; sign-in</a></Button>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground" role="status">
+              Sign in and select an authorized crew mission before recording readiness assessments.
+              No placeholder records will be created.
+            </p>
+            <Button asChild variant="outline" className="mt-4">
+              <a href="/mission/identity">Mission identity &amp; sign-in</a>
+            </Button>
           </section>
         )}
-        {MISSION && <>
-        <h2 id="readiness-flow-heading" className="mt-10 font-display text-2xl font-semibold">
-          Daily check-in steps
-        </h2>
-        <Progress className="mt-5" value={progress} aria-label="Assessment progress" />
+        {MISSION && (
+          <>
+            <h2 id="readiness-flow-heading" className="mt-10 font-display text-2xl font-semibold">
+              Daily check-in steps
+            </h2>
+            <Progress className="mt-5" value={progress} aria-label="Assessment progress" />
 
-        <div aria-labelledby="readiness-flow-heading" className="mt-6 grid gap-5">
-          <Card className="border-border bg-card/70">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="text-primary" />
-                Scientific & privacy boundary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
-              <p>Personal baseline and repeated measures matter more than a single score.</p>
-              <p>Mood/psychiatric diagnosis is intentionally not inferred from this flow.</p>
-              <p>
-                P11 records are encrypted locally by P14 and queued for governed store-and-forward synchronization.
-              </p>
-            </CardContent>
-          </Card>
-
-          {state.step === "context" && (
-            <Card className="border-border bg-card/70">
-              <CardHeader>
-                <CardTitle>1. Schedule context</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-5 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="work-rest">Current context</Label>
-                  <Select
-                    value={workRestState}
-                    onValueChange={(value) => setWorkRestState(value as typeof workRestState)}
-                  >
-                    <SelectTrigger id="work-rest" className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rest">Rest</SelectItem>
-                      <SelectItem value="routine_work">Routine work</SelectItem>
-                      <SelectItem value="critical_task">Critical task</SelectItem>
-                      <SelectItem value="exercise">Exercise</SelectItem>
-                      <SelectItem value="eva">EVA</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="recent-sleep">Recent sleep duration (hours)</Label>
-                  <Input
-                    id="recent-sleep"
-                    type="number"
-                    min="0"
-                    max="24"
-                    step="0.1"
-                    className="mt-2"
-                    value={recentSleep}
-                    onChange={(event) => setRecentSleep(event.target.value)}
-                  />
-                </div>
-                <div className="md:col-span-2 flex justify-end">
-                  <Button onClick={() => setState((current) => ({ ...current, step: "check_in" }))}>
-                    Continue
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {state.step === "check_in" && (
-            <Card className="border-border bg-card/70">
-              <CardHeader>
-                <CardTitle>2. State check-in</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Fatigue/stress use consistent 0–10 state anchors. Sleepiness uses KSS 1–9. Do not
-                  reinterpret these as diagnoses.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-7">
-                <div>
-                  <div className="flex justify-between">
-                    <Label htmlFor="fatigue-number">Fatigue</Label>
-                    <span className="font-mono text-sm">{fatigue}/10</span>
-                  </div>
-                  <Slider
-                    className="mt-3"
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={[fatigue]}
-                    onValueChange={(value) => setFatigue(value[0] ?? 0)}
-                    aria-label="Fatigue (0 to 10)"
-                  />
-                  <Input
-                    id="fatigue-number"
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={1}
-                    className="mt-2 w-24"
-                    value={fatigue}
-                    onChange={(event) => {
-                      const next = Number(event.target.value);
-                      if (Number.isFinite(next)) setFatigue(Math.min(10, Math.max(0, Math.round(next))));
-                    }}
-                    aria-label="Fatigue numeric value (0 to 10)"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="sleepiness">Sleepiness (KSS)</Label>
-                  <Select value={sleepiness} onValueChange={setSleepiness}>
-                    <SelectTrigger id="sleepiness" className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {KSS_ANCHORS.map((anchor, index) => (
-                        <SelectItem key={index + 1} value={String(index + 1)}>
-                          {index + 1} — {anchor}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    1 = extremely alert · 9 = extremely sleepy
+            <div aria-labelledby="readiness-flow-heading" className="mt-6 grid gap-5">
+              <Card className="border-border bg-card/70">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="text-primary" />
+                    Scientific & privacy boundary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+                  <p>Personal baseline and repeated measures matter more than a single score.</p>
+                  <p>Mood/psychiatric diagnosis is intentionally not inferred from this flow.</p>
+                  <p>
+                    P11 records are encrypted locally by P14 and queued for governed
+                    store-and-forward synchronization.
                   </p>
-                </div>
-                <div>
-                  <div className="flex justify-between">
-                    <Label htmlFor="stress-number">Current stress</Label>
-                    <span className="font-mono text-sm">{stress}/10</span>
-                  </div>
-                  <Slider
-                    className="mt-3"
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={[stress]}
-                    onValueChange={(value) => setStress(value[0] ?? 0)}
-                    aria-label="Current stress (0 to 10)"
-                  />
-                  <Input
-                    id="stress-number"
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={1}
-                    className="mt-2 w-24"
-                    value={stress}
-                    onChange={(event) => {
-                      const next = Number(event.target.value);
-                      if (Number.isFinite(next)) setStress(Math.min(10, Math.max(0, Math.round(next))));
-                    }}
-                    aria-label="Current stress numeric value (0 to 10)"
-                  />
-                </div>
-                {state.issues.length > 0 && (
-                  <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
-                    {state.issues.join(" · ")}
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <Button
-                    variant="outline"
-                    onClick={() => setState((current) => ({ ...current, step: "context" }))}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={saveCheckIn}>Save & continue</Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </CardContent>
+              </Card>
 
-          {state.step === "vigilance" && (
-            <Card className="border-border bg-card/70">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BrainCircuit className="text-primary" />
-                  3. Brief vigilance measurement
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  This 60-second protocol is a software demonstration of the PVT measurement path,
-                  not a claim that an abbreviated protocol is clinically or operationally validated.
-                  A governed mission protocol must define duration and any lapse threshold.
-                </p>
-              </CardHeader>
-              <CardContent>
-                {!taskRunning ? (
-                  <div className="flex flex-col items-center rounded-lg border border-dashed border-border p-8 text-center">
-                    <Clock3 className="size-8 text-primary" />
-                    <p className="mt-4 max-w-xl text-sm text-muted-foreground">
-                      Start when ready. Respond only when the target appears. Early responses are
-                      retained as false starts. No hard-coded lapse threshold is used in this demo.
+              {state.step === "context" && (
+                <Card className="border-border bg-card/70">
+                  <CardHeader>
+                    <CardTitle>1. Schedule context</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid gap-5 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="work-rest">Current context</Label>
+                      <Select
+                        value={workRestState}
+                        onValueChange={(value) => setWorkRestState(value as typeof workRestState)}
+                      >
+                        <SelectTrigger id="work-rest" className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="rest">Rest</SelectItem>
+                          <SelectItem value="routine_work">Routine work</SelectItem>
+                          <SelectItem value="critical_task">Critical task</SelectItem>
+                          <SelectItem value="exercise">Exercise</SelectItem>
+                          <SelectItem value="eva">EVA</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="recent-sleep">Recent sleep duration (hours)</Label>
+                      <Input
+                        id="recent-sleep"
+                        type="number"
+                        min="0"
+                        max="24"
+                        step="0.1"
+                        className="mt-2"
+                        value={recentSleep}
+                        onChange={(event) => setRecentSleep(event.target.value)}
+                      />
+                    </div>
+                    <div className="md:col-span-2 flex justify-end">
+                      <Button
+                        onClick={() => setState((current) => ({ ...current, step: "check_in" }))}
+                      >
+                        Continue
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {state.step === "check_in" && (
+                <Card className="border-border bg-card/70">
+                  <CardHeader>
+                    <CardTitle>2. State check-in</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Fatigue/stress use consistent 0–10 state anchors. Sleepiness uses KSS 1–9. Do
+                      not reinterpret these as diagnoses.
                     </p>
-                    <Button className="mt-5" onClick={startVigilance}>
-                      Start 60-second task
-                    </Button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={respondToStimulus}
-                    className="flex min-h-72 w-full items-center justify-center rounded-lg border border-border bg-surface/50 p-6 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label="Vigilance response area"
-                  >
+                  </CardHeader>
+                  <CardContent className="space-y-7">
                     <div>
-                      {stimulusVisible ? (
-                        <div
-                          className="mx-auto size-24 rounded-full bg-primary shadow-[0_0_50px_hsl(var(--primary)/0.45)]"
-                          aria-label="Respond now"
-                        />
-                      ) : (
-                        <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-                          Wait for target…
-                        </p>
-                      )}
-                      <p className="mt-8 font-mono text-xs text-muted-foreground">
-                        {Math.ceil(remainingSeconds)} seconds remaining
+                      <div className="flex justify-between">
+                        <Label htmlFor="fatigue-number">Fatigue</Label>
+                        <span className="font-mono text-sm">{fatigue}/10</span>
+                      </div>
+                      <Slider
+                        className="mt-3"
+                        min={0}
+                        max={10}
+                        step={1}
+                        value={[fatigue]}
+                        onValueChange={(value) => setFatigue(value[0] ?? 0)}
+                        aria-label="Fatigue (0 to 10)"
+                      />
+                      <Input
+                        id="fatigue-number"
+                        type="number"
+                        min={0}
+                        max={10}
+                        step={1}
+                        className="mt-2 w-24"
+                        value={fatigue}
+                        onChange={(event) => {
+                          const next = Number(event.target.value);
+                          if (Number.isFinite(next))
+                            setFatigue(Math.min(10, Math.max(0, Math.round(next))));
+                        }}
+                        aria-label="Fatigue numeric value (0 to 10)"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="sleepiness">Sleepiness (KSS)</Label>
+                      <Select value={sleepiness} onValueChange={setSleepiness}>
+                        <SelectTrigger id="sleepiness" className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {KSS_ANCHORS.map((anchor, index) => (
+                            <SelectItem key={index + 1} value={String(index + 1)}>
+                              {index + 1} — {anchor}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        1 = extremely alert · 9 = extremely sleepy
                       </p>
                     </div>
-                  </button>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {state.step === "review" && (
-            <Card className="border-border bg-card/70">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="text-primary" />
-                  4. Review
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-md border border-border p-4">
-                    <p className="text-xs uppercase text-muted-foreground">Fatigue</p>
-                    <strong className="mt-1 block font-mono">
-                      {state.checkIn?.fatigueVas0To10 ?? "—"}/10
-                    </strong>
-                  </div>
-                  <div className="rounded-md border border-border p-4">
-                    <p className="text-xs uppercase text-muted-foreground">Sleepiness KSS</p>
-                    <strong className="mt-1 block font-mono">
-                      {state.checkIn?.sleepinessKss1To9 ?? "—"}/9
-                    </strong>
-                  </div>
-                  <div className="rounded-md border border-border p-4">
-                    <p className="text-xs uppercase text-muted-foreground">Vigilance</p>
-                    <strong className="mt-1 block text-sm">{resultSummary}</strong>
-                  </div>
-                </div>
-                <div className="rounded-lg border border-border p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium">Optional post-task workload</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        NASA-TLX raw dimensions are task-linked context and are not part of the
-                        required daily &lt;3-minute flow.
-                      </p>
+                      <div className="flex justify-between">
+                        <Label htmlFor="stress-number">Current stress</Label>
+                        <span className="font-mono text-sm">{stress}/10</span>
+                      </div>
+                      <Slider
+                        className="mt-3"
+                        min={0}
+                        max={10}
+                        step={1}
+                        value={[stress]}
+                        onValueChange={(value) => setStress(value[0] ?? 0)}
+                        aria-label="Current stress (0 to 10)"
+                      />
+                      <Input
+                        id="stress-number"
+                        type="number"
+                        min={0}
+                        max={10}
+                        step={1}
+                        className="mt-2 w-24"
+                        value={stress}
+                        onChange={(event) => {
+                          const next = Number(event.target.value);
+                          if (Number.isFinite(next))
+                            setStress(Math.min(10, Math.max(0, Math.round(next))));
+                        }}
+                        aria-label="Current stress numeric value (0 to 10)"
+                      />
                     </div>
-                    {state.workload && (
-                      <span className="font-mono text-xs text-primary">RECORDED</span>
+                    {state.issues.length > 0 && (
+                      <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+                        {state.issues.join(" · ")}
+                      </div>
                     )}
-                  </div>
-                  <div className="mt-4">
-                    <Label htmlFor="tlx-task">Task / shift label</Label>
-                    <Input
-                      id="tlx-task"
-                      className="mt-2"
-                      value={workloadTaskLabel}
-                      onChange={(event) => setWorkloadTaskLabel(event.target.value)}
-                      placeholder="e.g. docking simulation"
-                      maxLength={80}
-                    />
-                  </div>
-                  <div className="mt-5 grid gap-5 md:grid-cols-2">
-                    {(
-                      [
-                        ["mental_demand", "Mental demand"],
-                        ["physical_demand", "Physical demand"],
-                        ["temporal_demand", "Temporal demand"],
-                        ["performance", "Performance"],
-                        ["effort", "Effort"],
-                        ["frustration", "Frustration"],
-                      ] as const
-                    ).map(([dimension, label]) => (
-                      <div key={dimension}>
-                        <div className="flex justify-between">
-                          <Label>{label}</Label>
-                          <span className="font-mono text-xs">{tlx[dimension]}</span>
+                    <div className="flex justify-between">
+                      <Button
+                        variant="outline"
+                        onClick={() => setState((current) => ({ ...current, step: "context" }))}
+                      >
+                        Back
+                      </Button>
+                      <Button onClick={saveCheckIn}>Save & continue</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {state.step === "vigilance" && (
+                <Card className="border-border bg-card/70">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BrainCircuit className="text-primary" />
+                      3. Brief vigilance measurement
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      This 60-second protocol is a software demonstration of the PVT measurement
+                      path, not a claim that an abbreviated protocol is clinically or operationally
+                      validated. A governed mission protocol must define duration and any lapse
+                      threshold.
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    {!taskRunning ? (
+                      <div className="flex flex-col items-center rounded-lg border border-dashed border-border p-8 text-center">
+                        <Clock3 className="size-8 text-primary" />
+                        <p className="mt-4 max-w-xl text-sm text-muted-foreground">
+                          Start when ready. Respond only when the target appears. Early responses
+                          are retained as false starts. No hard-coded lapse threshold is used in
+                          this demo.
+                        </p>
+                        <Button className="mt-5" onClick={startVigilance}>
+                          Start 60-second task
+                        </Button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={respondToStimulus}
+                        className="flex min-h-72 w-full items-center justify-center rounded-lg border border-border bg-surface/50 p-6 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label="Vigilance response area"
+                      >
+                        <div>
+                          {stimulusVisible ? (
+                            <div
+                              className="mx-auto size-24 rounded-full bg-primary shadow-[0_0_50px_hsl(var(--primary)/0.45)]"
+                              aria-label="Respond now"
+                            />
+                          ) : (
+                            <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
+                              Wait for target…
+                            </p>
+                          )}
+                          <p className="mt-8 font-mono text-xs text-muted-foreground">
+                            {Math.ceil(remainingSeconds)} seconds remaining
+                          </p>
                         </div>
-                        <Slider
-                          className="mt-2"
-                          min={0}
-                          max={100}
-                          step={5}
-                          value={[tlx[dimension]]}
-                          onValueChange={(value) => {
-                            setTlxTouched((current) => new Set(current).add(dimension));
-                            setTlx((current) => ({
-                              ...current,
-                              [dimension as NasaTlxDimension]: value[0] ?? 0,
-                            }));
-                          }}
-                          aria-label={`NASA-TLX ${label} (0 to 100)`}
-                        />
-                        {!tlxTouched.has(dimension) && (
-                          <p className="mt-1 text-xs text-muted-foreground">Not rated yet — adjust the slider to rate this dimension.</p>
+                      </button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {state.step === "review" && (
+                <Card className="border-border bg-card/70">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle2 className="text-primary" />
+                      4. Review
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="rounded-md border border-border p-4">
+                        <p className="text-xs uppercase text-muted-foreground">Fatigue</p>
+                        <strong className="mt-1 block font-mono">
+                          {state.checkIn?.fatigueVas0To10 ?? "—"}/10
+                        </strong>
+                      </div>
+                      <div className="rounded-md border border-border p-4">
+                        <p className="text-xs uppercase text-muted-foreground">Sleepiness KSS</p>
+                        <strong className="mt-1 block font-mono">
+                          {state.checkIn?.sleepinessKss1To9 ?? "—"}/9
+                        </strong>
+                      </div>
+                      <div className="rounded-md border border-border p-4">
+                        <p className="text-xs uppercase text-muted-foreground">Vigilance</p>
+                        <strong className="mt-1 block text-sm">{resultSummary}</strong>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-border p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">Optional post-task workload</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            NASA-TLX raw dimensions are task-linked context and are not part of the
+                            required daily &lt;3-minute flow.
+                          </p>
+                        </div>
+                        {state.workload && (
+                          <span className="font-mono text-xs text-primary">RECORDED</span>
                         )}
                       </div>
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="mt-5"
-                    onClick={saveWorkload}
-                    disabled={tlxTouched.size < 6}
-                  >
-                    Record task workload
-                  </Button>
-                  {tlxTouched.size < 6 && (
-                    <p className="mt-2 text-xs text-muted-foreground" role="status">
-                      Rate all six dimensions before recording ({tlxTouched.size}/6 rated). Default
-                      slider positions are never recorded as answers.
+                      <div className="mt-4">
+                        <Label htmlFor="tlx-task">Task / shift label</Label>
+                        <Input
+                          id="tlx-task"
+                          className="mt-2"
+                          value={workloadTaskLabel}
+                          onChange={(event) => setWorkloadTaskLabel(event.target.value)}
+                          placeholder="e.g. docking simulation"
+                          maxLength={80}
+                        />
+                      </div>
+                      <div className="mt-5 grid gap-5 md:grid-cols-2">
+                        {(
+                          [
+                            ["mental_demand", "Mental demand"],
+                            ["physical_demand", "Physical demand"],
+                            ["temporal_demand", "Temporal demand"],
+                            ["performance", "Performance"],
+                            ["effort", "Effort"],
+                            ["frustration", "Frustration"],
+                          ] as const
+                        ).map(([dimension, label]) => (
+                          <div key={dimension}>
+                            <div className="flex justify-between">
+                              <Label>{label}</Label>
+                              <span className="font-mono text-xs">{tlx[dimension]}</span>
+                            </div>
+                            <Slider
+                              className="mt-2"
+                              min={0}
+                              max={100}
+                              step={5}
+                              value={[tlx[dimension]]}
+                              onValueChange={(value) => {
+                                setTlxTouched((current) => new Set(current).add(dimension));
+                                setTlx((current) => ({
+                                  ...current,
+                                  [dimension as NasaTlxDimension]: value[0] ?? 0,
+                                }));
+                              }}
+                              aria-label={`NASA-TLX ${label} (0 to 100)`}
+                            />
+                            {!tlxTouched.has(dimension) && (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Not rated yet — adjust the slider to rate this dimension.
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="mt-5"
+                        onClick={saveWorkload}
+                        disabled={tlxTouched.size < 6}
+                      >
+                        Record task workload
+                      </Button>
+                      {tlxTouched.size < 6 && (
+                        <p className="mt-2 text-xs text-muted-foreground" role="status">
+                          Rate all six dimensions before recording ({tlxTouched.size}/6 rated).
+                          Default slider positions are never recorded as answers.
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      No readiness score, psychiatric label, diagnosis or alert is generated. P12
+                      may correlate governed longitudinal features with other signals while
+                      preserving uncertainty and evidence.
                     </p>
-                  )}
-                </div>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  No readiness score, psychiatric label, diagnosis or alert is generated. P12 may
-                  correlate governed longitudinal features with other signals while preserving
-                  uncertainty and evidence.
-                </p>
-                {!state.completedAt ? (
-                  <Button onClick={complete}>Complete assessment</Button>
-                ) : (
-                  <p className="font-mono text-sm text-primary">
-                    Completed in {formatSeconds(assessmentElapsedSeconds(state, state.completedAt))}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </div>
-        </>}
+                    {!state.completedAt ? (
+                      <Button onClick={complete}>Complete assessment</Button>
+                    ) : (
+                      <p className="font-mono text-sm text-primary">
+                        Completed in{" "}
+                        {formatSeconds(assessmentElapsedSeconds(state, state.completedAt))}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

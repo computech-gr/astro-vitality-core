@@ -79,12 +79,10 @@ describe("D4 — append-only correction and supersession", () => {
     expect(
       validateBoneEntry({ ...baseEntry, status: "erroneous", statusReason: "typo" }),
     ).toBeNull();
-    expect(
-      validateBoneEntry({ ...baseEntry, supersedesId: "entry-0" }),
-    ).toBeNull();
-    expect(
-      validateBoneEntry({ ...baseEntry, status: "deleted" as never }),
-    ).toBe("Unknown entry status.");
+    expect(validateBoneEntry({ ...baseEntry, supersedesId: "entry-0" })).toBeNull();
+    expect(validateBoneEntry({ ...baseEntry, status: "deleted" as never })).toBe(
+      "Unknown entry status.",
+    );
   });
 });
 
