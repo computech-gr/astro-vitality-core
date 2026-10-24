@@ -19,12 +19,12 @@ describe("final release evidence boundaries", () => {
     expect(artifact.syntheticOnly).toBe(true);
     expect(artifact.scenario).toBe("mission_day_127_fatigue_recovery");
     const measurements = artifact.dataset.events.filter(
-      (event: { kind: string }) => event.kind === "measurement",
+      (event: { kind: string }) => event.kind === "observation",
     );
     expect(measurements.length).toBeGreaterThan(0);
     for (const event of measurements) {
-      expect(event.measurement.classification).toBe("synthetic");
-      expect(event.measurement.tags).toContain("synthetic:true");
+      expect(event.envelope.observation.classification).toBe("synthetic");
+      expect(event.envelope.observation.tags).toContain("synthetic:true");
     }
   });
 
