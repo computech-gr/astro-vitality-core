@@ -79,6 +79,7 @@ const escapeRe = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 export function validateAIDraft(text: string, evidence: DraftEvidence[]): DraftValidationResult {
   const violations: string[] = [];
   const ids = new Set(evidence.map((e) => e.id));
+  if (ids.size !== evidence.length) violations.push("duplicate evidence IDs");
   const cited = citationsIn(text);
   if (!text.trim()) violations.push("empty draft");
   if (!cited.length) violations.push("no evidence citations");
@@ -104,6 +105,15 @@ export function validateAIDraft(text: string, evidence: DraftEvidence[]): DraftV
     const mentionsValue = nums.some((n) => values.has(n));
     const mentionsMetric = evidence.some((e) => line.includes(e.metric));
     const lineCites = citationsIn(line).some((id) => ids.has(id));
+    const localEvidence = evidence.filter((e) => citationsIn(line).includes(e.id));
+    for (const e of evidence) {
+      if (line.includes(e.metric) && !localEvidence.some((c) => c.metric === e.metric))
+        violations.push(`metric not supported by statement citations: ${e.metric}`);
+    }
+    const dated = line.match(/\d{4}-\d{2}-\d{2}(?:T[\d:.]+Z)?/g) ?? [];
+    for (const date of dated)
+      if (!localEvidence.some((e) => e.time === date || e.time.startsWith(`${date}T`)))
+        violations.push(`time not supported by statement citations: ${date}`);
     if ((mentionsValue || mentionsMetric) && !lineCites)
       violations.push(`uncited measurement claim: "${line.slice(0, 80)}"`);
     // Numbers stated as measurements must exist in the evidence (no fabricated values).
@@ -116,7 +126,8 @@ export function validateAIDraft(text: string, evidence: DraftEvidence[]): DraftV
       : [];
     const decimals = stripped.match(/\d+[.,]\d+/g) ?? [];
     for (const n of [...withUnit, ...decimals])
-      if (!values.has(n)) violations.push(`value not in evidence: ${n}`);
+      if (!localEvidence.some((e) => e.value === n))
+        violations.push(`value not in cited evidence: ${n}`);
   }
   return { ok: violations.length === 0, violations: [...new Set(violations)], citedIds: cited };
 }
@@ -177,8 +188,29 @@ const SECTION_TITLES = {
  */
 export function renderStructuredDraft(raw: unknown): string | null {
   if (!raw || typeof raw !== "object") return null;
+  if (Object.keys(raw).some((key) => key !== "statements")) return null;
   const list = (raw as { statements?: unknown }).statements;
-  if (!Array.isArray(list) || !list.length) return null;
+  if (!Array.isArray(list) || !list.length || list.length > 40) return null;
+  for (const row of list) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) return null;
+    const r = row as Record<string, unknown>;
+    const statementText = r["text"];
+    if (
+      Object.keys(r).some((key) => !["section", "text", "observationIds"].includes(key)) ||
+      !["notice", "observed", "limitations", "questions"].includes(String(r["section"])) ||
+      typeof statementText !== "string" ||
+      !statementText.trim() ||
+      statementText.length > 1500 ||
+      ["[", "]", "\n", "\r"].some((character) => statementText.includes(character)) ||
+      [...statementText].some((character) => character.charCodeAt(0) < 9) ||
+      !Array.isArray(r["observationIds"]) ||
+      r["observationIds"].length > 120 ||
+      r["observationIds"].some((id) => typeof id !== "string" || !ID_TOKEN.test(id)) ||
+      new Set(r["observationIds"]).size !== r["observationIds"].length ||
+      (r["section"] === "observed" && !r["observationIds"].length)
+    )
+      return null;
+  }
   const out: string[] = [];
   for (const key of ["notice", "observed", "limitations", "questions"] as const) {
     const rows = list.filter(

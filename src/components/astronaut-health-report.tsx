@@ -48,12 +48,18 @@ export function AstronautHealthReport() {
             .filter(
               (m) => (m.role === "crew_self" || m.role === "ground_medical") && m.crewMemberId,
             )
-            .map((m) => ({
-              key: `${m.missionId}|${m.crewMemberId}`,
-              missionId: m.missionId,
-              crewMemberId: m.crewMemberId!,
-              label: `${m.missionName ?? m.missionCode ?? m.missionId} — ${m.crewDisplayName ?? m.crewMemberId}`,
-            }))
+            .flatMap((m) =>
+              m.crewMemberId
+                ? [
+                    {
+                      key: `${m.missionId}|${m.crewMemberId}`,
+                      missionId: m.missionId,
+                      crewMemberId: m.crewMemberId,
+                      label: `${m.missionName ?? m.missionCode ?? m.missionId} — ${m.crewDisplayName ?? m.crewMemberId}`,
+                    },
+                  ]
+                : [],
+            )
         : [],
     [identity],
   );
@@ -76,9 +82,13 @@ export function AstronautHealthReport() {
       active = false;
     };
   }, [member?.missionId, member?.crewMemberId]);
-  const report = member
-    ? buildHealthHistoryReport(records, member.missionId, member.crewMemberId, provenance)
-    : null;
+  const report = useMemo(
+    () =>
+      member
+        ? buildHealthHistoryReport(records, member.missionId, member.crewMemberId, provenance)
+        : null,
+    [records, member?.missionId, member?.crewMemberId, provenance],
+  );
   const printReport = () => window.print();
   const exportText = () => {
     if (!report) return;

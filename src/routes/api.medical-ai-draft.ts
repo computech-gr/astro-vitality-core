@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           .limit(1);
         if (membershipError || !membership?.length)
           return fail("Ground-medical authorization required", 403);
-        if (provenance === "real" && process.env["MITO_MEDICAL_AI_REAL_DATA_ENABLED"] !== "true")
+        if (provenance === "real")
           return fail(
             "Real-data AI transfer is disabled pending approved privacy configuration",
             403,
@@ -128,6 +128,43 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
         }
         const apiKey = process.env["OPENAI_API_KEY"];
         if (!apiKey) return fail("Server AI provider not configured; no data sent", 503);
+        if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
+          return fail(
+            "AI generation paused pending approved atomic quotas and authoritative synthetic evidence verification; no data sent",
+            503,
+          );
+        if (new Set(evidence.map((e) => e.id)).size !== evidence.length)
+          return fail("Duplicate evidence IDs", 422);
+        // Pending RPC types are intentionally not generated before owner approval.
+        const { data: verified, error: verificationError } = await supabase.rpc(
+          "medical_v3_ai_evidence",
+          {
+            p_mission: missionId,
+            p_crew: crewMemberId,
+          },
+        );
+        if (verificationError || !verified || !Array.isArray(verified))
+          return fail("Authoritative synthetic evidence unavailable; no data sent", 503);
+        if (JSON.stringify(verified) !== JSON.stringify(evidence))
+          return fail("Stale or tampered evidence; no data sent", 422);
+        const { data: reservation, error: quotaError } = await supabase.rpc(
+          "medical_v3_reserve_ai",
+          {
+            p_mission: missionId,
+            p_crew: crewMemberId,
+          },
+        );
+        const quota = reservation as { allowed?: boolean; reservationId?: string } | null;
+        if (quotaError || !quota)
+          return fail("Atomic quota service unavailable; no data sent", 503);
+        if (quota.allowed !== true || !quota.reservationId)
+          return Response.json(
+            { error: "AI request quota exhausted" },
+            {
+              status: 429,
+              headers: { ...noStore, "Retry-After": "60" },
+            },
+          );
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 25000);
         try {
@@ -193,6 +230,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           return fail("AI request timed out or failed", 502);
         } finally {
           clearTimeout(timeout);
+          await supabase.rpc("medical_v3_release_ai", { p_reservation: quota.reservationId });
         }
       },
     },

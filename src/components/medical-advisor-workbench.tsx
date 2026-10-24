@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { getMedicalReviewHistory } from "@/lib/medical-governance.functions";
+import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import type { HealthHistoryReport } from "@/domain/health-intelligence/health-history-report";
@@ -8,6 +11,7 @@ import {
   createAdvisorDraft,
   isApprovedForReport,
   MEDICAL_ADVISOR_NOTICE,
+  evidenceSha256,
   type AdvisorReview,
 } from "@/domain/health-intelligence/medical-advisor-review";
 export function MedicalAdvisorWorkbench({
@@ -26,7 +30,49 @@ export function MedicalAdvisorWorkbench({
   const [message, setMessage] = useState("");
   const [aiConsent, setAiConsent] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const approved = useMemo(() => isApprovedForReport(review, report), [review, report]);
+  const [sha, setSha] = useState("");
+  const [history, setHistory] = useState<DurableReviewEvent[]>([]);
+  const [historyMessage, setHistoryMessage] = useState("Persistent history has not been verified.");
+  const getHistory = useServerFn(getMedicalReviewHistory);
+  useEffect(() => {
+    let active = true;
+    setSha("");
+    void evidenceSha256(report)
+      .then((digest) => {
+        if (active) setSha(digest);
+      })
+      .catch(() => {
+        if (active) setSha("");
+      });
+    return () => {
+      active = false;
+    };
+  }, [report]);
+  useEffect(() => {
+    let active = true;
+    setHistory([]);
+    if (!authorizedMedicalRole) return;
+    void getHistory({ data: { missionId: report.missionId, crewMemberId: report.crewMemberId } })
+      .then((result) => {
+        if (active) {
+          setHistory(result.events);
+          setHistoryMessage(result.reason);
+        }
+      })
+      .catch(() => {
+        if (active)
+          setHistoryMessage(
+            "Persistent history unavailable; no server-verified acknowledgment can be shown.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [report.missionId, report.crewMemberId, authorizedMedicalRole, getHistory]);
+  const approved = useMemo(
+    () => authorizedMedicalRole && isApprovedForReport(review, report),
+    [review, report, authorizedMedicalRole],
+  );
   const draftPrompt = () => {
     const blob = new Blob([buildAIDraftingPrompt(report)], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -39,6 +85,7 @@ export function MedicalAdvisorWorkbench({
   const generateWithAI = async () => {
     if (!authorizedMedicalRole || !aiConsent || generating) return;
     setGenerating(true);
+    setAiConsent(false);
     setMessage("Requesting server-generated research draft...");
     try {
       const {
@@ -117,8 +164,37 @@ export function MedicalAdvisorWorkbench({
       className="space-y-3 rounded-lg border p-4 print:break-before-page"
       aria-label="AI draft and medical advisor review"
     >
-      <h3 className="font-semibold">AI-assisted medical opinion — advisor review</h3>
+      <h3 className="font-semibold">AI research draft — advisor acknowledgment</h3>
       <p className="text-sm">{MEDICAL_ADVISOR_NOTICE}</p>
+      <p className="text-xs text-muted-foreground">{historyMessage}</p>
+      <p className="break-all text-xs text-muted-foreground">
+        Evidence SHA-256: {sha || "Unavailable"}. Local digest only; not server attestation.
+      </p>
+      {review && (
+        <p className="text-sm font-semibold">
+          {!authorizedMedicalRole
+            ? "REVOKED — reviewer access unavailable"
+            : !isApprovedForReport({ ...review, decision: "approved" }, report)
+              ? "STALE — evidence changed"
+              : approved
+                ? "ADVISOR REVIEWED — session-only, research-only"
+                : "AI DRAFT — unverified"}
+        </p>
+      )}
+      {history.map((event) => (
+        <div key={event.id} className="border-t py-2 text-xs">
+          <strong>
+            {event.event_type === "approved" && !event.verified_current
+              ? "STALE / UNVERIFIED"
+              : event.event_type.toUpperCase()}
+          </strong>
+          <p>
+            Revision {event.revision} · Actor {event.actor_user_id} · {event.created_at}
+          </p>
+          <p className="break-all">{event.evidence_sha256}</p>
+          <p>{event.rationale}</p>
+        </div>
+      ))}
       <p className="text-xs text-muted-foreground">
         Privacy: server AI is available only when configured by the operator and explicitly
         authorized. Exporting the evidence prompt and entering it in a third-party AI tool may
@@ -138,12 +214,15 @@ export function MedicalAdvisorWorkbench({
         </label>
         <Button
           type="button"
+          className="h-auto max-w-full whitespace-normal text-left"
           onClick={() => void generateWithAI()}
           disabled={
             !authorizedMedicalRole || !aiConsent || !report.observations.length || generating
           }
         >
-          {generating ? "Generating draft..." : "Generate research draft with secure server AI"}
+          {generating
+            ? "Generating draft..."
+            : "Generate research draft with configured AI provider"}
         </Button>
         <Button
           type="button"
@@ -188,15 +267,17 @@ export function MedicalAdvisorWorkbench({
               id="advisor-rationale"
               className="w-full rounded border bg-background p-2"
               rows={3}
+              maxLength={2000}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
             <Button
               type="button"
+              className="h-auto max-w-full whitespace-normal text-left"
               onClick={approve}
               disabled={!authorizedMedicalRole || review.decision === "approved"}
             >
-              Approve reviewed opinion
+              Acknowledge reviewed draft (session only)
             </Button>
             {!authorizedMedicalRole && (
               <p className="text-sm">
@@ -212,7 +293,7 @@ export function MedicalAdvisorWorkbench({
       </div>
       {approved && review && (
         <div className="space-y-2 rounded border p-3">
-          <h4 className="font-semibold">Medical advisor reviewed opinion (research-only)</h4>
+          <h4 className="font-semibold">Advisor acknowledgment (session-only, research-only)</h4>
           <p className="whitespace-pre-wrap text-sm">{review.finalText}</p>
           <p className="text-xs">
             Reviewed by: {review.advisorIdentity} · {review.reviewedAt} · Evidence snapshot:{" "}
