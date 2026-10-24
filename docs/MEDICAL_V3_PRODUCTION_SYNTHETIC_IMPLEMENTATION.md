@@ -8,6 +8,8 @@ Apply only `supabase/pending/20261026000000_medical_v3_production_synthetic_demo
 
 Rollback: `supabase/pending/20261026000000_medical_v3_production_synthetic_demo.rollback.sql`.
 
+SHA-256 migration: `9c5e1a975fe3eb66a6a5fb68035f94f4905cf1caf469149fbe689068e3551942`; rollback: `63f289ed419f250dc7def21bbdf59b13c26cabe7cf44611ed2444593768a902f`.
+
 The candidate requires the existing mission `mission-9d8ce8f3e5554509a0885461f9ad2e1c`, code `MITO_DEMO_2026`, exact name `MITOCHONDRIA 2026 - Synthetic Demonstration`, status **planning**; crew `crew-9806e7e611f44dc38dac5e23f7740f1a`, exact name **Alex Morgan — Synthetic Astronaut**, active crew/assignment; and active ground-medical membership `63470171-3a22-4075-b197-ac85b90cb0ef`. No identity, role, mission status or existing records change. Runtime rechecks active caller ground-medical membership scoped to that crew, plus the same exact mission/crew prerequisites. Later status/name changes fail closed.
 
 ## Production impact
