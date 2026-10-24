@@ -1,5 +1,13 @@
 # P20 video evidence closure
 
+## V3 verifier recovery and synthetic source decision
+
+- [x] Verify before/after manifest fingerprints, apply four patch files, and format only requested touched files and v3 contract.
+- [ ] Run recovered safeguards, full tests, formatting, security/scientific and disposable database checks.
+- [ ] Prepare authoritative synthetic source implementation plan for separate owner decision; no implementation, transfers or activation.
+- [ ] Private restore and owner-risk gates await authentic owner evidence; production migrations and source trust remain unapproved.
+- [ ] Confirm final saved SHA and exact-commit Quality/Security results through managed synchronization and GitHub Actions.
+
 ## Medical governance v3 safe completion
 
 - [x] Verify and apply only the two additive manifest files; preserve all release guards.
