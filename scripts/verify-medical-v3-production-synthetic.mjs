@@ -172,8 +172,15 @@ transactionCheck(
   `alter table medical_v3_fixture_sources disable trigger medical_v3_fixture_immutable;update medical_v3_fixture_sources set source_sha256='tampered';${as(gm)}select medical_v3_ai_evidence('${mission}','${astronaut}') is null`,
   "tampered hash fails closed",
 );
-console.log(execFileSync("bun", ["scripts/test-production-synthetic-server.ts"], { env, encoding: "utf8" }));
-check(run("select count(*)=1 and bool_and(released_at is not null) from medical_ai_quota_reservations") === "t", "server integration released its genuine quota");
+console.log(
+  execFileSync("bun", ["scripts/test-production-synthetic-server.ts"], { env, encoding: "utf8" }),
+);
+check(
+  run(
+    "select count(*)=1 and bool_and(released_at is not null) from medical_ai_quota_reservations",
+  ) === "t",
+  "server integration released its genuine quota",
+);
 // Reset only the disposable quota test rows before testing the full minute boundary.
 run("delete from medical_ai_quota_reservations");
 const lease = JSON.parse(
