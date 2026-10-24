@@ -80,7 +80,7 @@ const navigation: readonly NavigationEntry[] = [
     description: "Sign in, select a mission, collect synthetic evidence and work with the crew.",
     groups: [
       { title: "Mission & crew", items: ["Mission Identity & Sign-in", "Mission Workspace", "Mission & Crew Operations", "Daily Readiness Check-in"] },
-      { title: "Measurements", items: ["Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Offline Mission Mode"] },
+      { title: "Measurements", items: ["Unified Data Intake", "Live Monitoring", "Device Integration Center", "Recorded Mission Data", "Offline Mission Mode"] },
       { title: "Ground operations", items: ["Ground & Research Console", "Mission Scenario"] },
     ],
   },
@@ -200,6 +200,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Mission & Crew Operations") return "/mission/operations";
   if (label === "Mission Workspace") return "/mission/experience";
   if (label === "Daily Readiness Check-in") return "/mission/readiness";
+  if (label === "Unified Data Intake") return "/mission/intake";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";

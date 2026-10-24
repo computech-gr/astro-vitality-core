@@ -26,6 +26,7 @@ import { Route as MissionGroundRouteImport } from './routes/mission.ground'
 import { Route as MissionGuidanceRouteImport } from './routes/mission.guidance'
 import { Route as MissionIdentityRouteImport } from './routes/mission.identity'
 import { Route as MissionImmuneHealthRouteImport } from './routes/mission.immune-health'
+import { Route as MissionIntakeRouteImport } from './routes/mission.intake'
 import { Route as MissionIntelligenceRouteImport } from './routes/mission.intelligence'
 import { Route as MissionLiveRouteImport } from './routes/mission.live'
 import { Route as MissionNasaEvidenceRouteImport } from './routes/mission.nasa-evidence'
@@ -128,6 +129,11 @@ const MissionImmuneHealthRoute = MissionImmuneHealthRouteImport.update({
   path: '/mission/immune-health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissionIntakeRoute = MissionIntakeRouteImport.update({
+  id: '/mission/intake',
+  path: '/mission/intake',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MissionIntelligenceRoute = MissionIntelligenceRouteImport.update({
   id: '/mission/intelligence',
   path: '/mission/intelligence',
@@ -217,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
   '/mission/immune-health': typeof MissionImmuneHealthRoute
+  '/mission/intake': typeof MissionIntakeRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/nasa-evidence': typeof MissionNasaEvidenceRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
   '/mission/immune-health': typeof MissionImmuneHealthRoute
+  '/mission/intake': typeof MissionIntakeRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/nasa-evidence': typeof MissionNasaEvidenceRoute
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/mission/guidance': typeof MissionGuidanceRoute
   '/mission/identity': typeof MissionIdentityRoute
   '/mission/immune-health': typeof MissionImmuneHealthRoute
+  '/mission/intake': typeof MissionIntakeRoute
   '/mission/intelligence': typeof MissionIntelligenceRoute
   '/mission/live': typeof MissionLiveRoute
   '/mission/nasa-evidence': typeof MissionNasaEvidenceRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/mission/guidance'
     | '/mission/identity'
     | '/mission/immune-health'
+    | '/mission/intake'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/nasa-evidence'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/mission/guidance'
     | '/mission/identity'
     | '/mission/immune-health'
+    | '/mission/intake'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/nasa-evidence'
@@ -385,6 +396,7 @@ export interface FileRouteTypes {
     | '/mission/guidance'
     | '/mission/identity'
     | '/mission/immune-health'
+    | '/mission/intake'
     | '/mission/intelligence'
     | '/mission/live'
     | '/mission/nasa-evidence'
@@ -419,6 +431,7 @@ export interface RootRouteChildren {
   MissionGuidanceRoute: typeof MissionGuidanceRoute
   MissionIdentityRoute: typeof MissionIdentityRoute
   MissionImmuneHealthRoute: typeof MissionImmuneHealthRoute
+  MissionIntakeRoute: typeof MissionIntakeRoute
   MissionIntelligenceRoute: typeof MissionIntelligenceRoute
   MissionLiveRoute: typeof MissionLiveRoute
   MissionNasaEvidenceRoute: typeof MissionNasaEvidenceRoute
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionImmuneHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mission/intake': {
+      id: '/mission/intake'
+      path: '/mission/intake'
+      fullPath: '/mission/intake'
+      preLoaderRoute: typeof MissionIntakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mission/intelligence': {
       id: '/mission/intelligence'
       path: '/mission/intelligence'
@@ -676,6 +696,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionGuidanceRoute: MissionGuidanceRoute,
   MissionIdentityRoute: MissionIdentityRoute,
   MissionImmuneHealthRoute: MissionImmuneHealthRoute,
+  MissionIntakeRoute: MissionIntakeRoute,
   MissionIntelligenceRoute: MissionIntelligenceRoute,
   MissionLiveRoute: MissionLiveRoute,
   MissionNasaEvidenceRoute: MissionNasaEvidenceRoute,
