@@ -6,7 +6,10 @@ import { spawnSync } from "node:child_process";
 const workflow = readFileSync(".github/workflows/medical-v3-exact-commit-status.yml", "utf8");
 const source = workflow.split("python3 - <<'PY'\n")[1]?.split("          PY")[0];
 if (!source) throw new Error("Exact-commit reporter missing");
-const script = source.split("\n").map((line) => line.replace(/^ {10}/, "")).join("\n");
+const script = source
+  .split("\n")
+  .map((line) => line.replace(/^ {10}/, ""))
+  .join("\n");
 function report(pages: unknown[][]) {
   const harness = `
 import io,json,os,urllib.request
@@ -28,9 +31,16 @@ print('PAGE_COUNT='+str(len(calls)))
   return result.stdout;
 }
 const run = (name: string, changes: Record<string, unknown> = {}) => ({
-  name, head_sha: "target", id: 1, run_attempt: 1, created_at: "2026-10-24T10:00:00Z",
-  status: "completed", conclusion: "success", run_number: 1,
-  html_url: "https://github.com/synthetic/repository/actions/runs/1", ...changes,
+  name,
+  head_sha: "target",
+  id: 1,
+  run_attempt: 1,
+  created_at: "2026-10-24T10:00:00Z",
+  status: "completed",
+  conclusion: "success",
+  run_number: 1,
+  html_url: "https://github.com/synthetic/repository/actions/runs/1",
+  ...changes,
 });
 const names = ["Quality", "Security Scan", "Medical v3 Release Gate"];
 describe("exact-commit CI conclusions", () => {
@@ -43,8 +53,12 @@ describe("exact-commit CI conclusions", () => {
     expect(output).toContain("All three green on exact SHA:** YES");
   });
   test("newer failed run takes precedence over an older successful rerun", () => {
-    const output = report([[...names.map((name) => run(name, { run_attempt: 9 })),
-      run("Quality", { id: 2, created_at: "2026-10-24T11:00:00Z", conclusion: "failure" })]]);
+    const output = report([
+      [
+        ...names.map((name) => run(name, { run_attempt: 9 })),
+        run("Quality", { id: 2, created_at: "2026-10-24T11:00:00Z", conclusion: "failure" }),
+      ],
+    ]);
     expect(output).toContain("completed | failure");
     expect(output).toContain("NO — NOT RELEASE READY");
   });
