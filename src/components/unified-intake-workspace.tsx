@@ -35,6 +35,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  editIntakeReviewRow,
+  intakeSelectionCounts,
+  isIntakeRowEligible,
+  setIntakeReviewSelection,
+} from "@/domain/health-intelligence/intake-review-selection";
 
 type IntakeRow = {
   key: string;
@@ -51,7 +58,6 @@ type IntakeRow = {
   selected: boolean;
 };
 
-const SAFE_DECIMAL = /^[-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
 const MAX_ROWS = 200;
 
 function classify(label: string, unit: string): IntakeClassification {
@@ -237,15 +243,17 @@ export function UnifiedIntakeWorkspace() {
   };
 
   const editRow = (key: string, patch: Partial<IntakeRow>) => {
-    setRows((previous) =>
-      previous.map((row) => {
-        if (row.key !== key) return row;
-        const next = { ...row, ...patch };
-        next.classification = classify(next.label, next.unit);
-        return next;
-      }),
-    );
-    resetReview();
+    const next = editIntakeReviewRow(rows, key, patch);
+    setRows(next.rows);
+    setReviewerConfirmed(next.reviewerConfirmed);
+    setDuplicateAcknowledged(next.duplicateAcknowledged);
+  };
+
+  const setAllSelected = (selected: boolean) => {
+    const next = setIntakeReviewSelection(rows, selected);
+    setRows(next.rows);
+    setReviewerConfirmed(next.reviewerConfirmed);
+    setDuplicateAcknowledged(next.duplicateAcknowledged);
   };
 
   const [batchFiles, setBatchFiles] = useState<
@@ -354,15 +362,8 @@ export function UnifiedIntakeWorkspace() {
     setManualObservedAt("");
   };
 
-  const saveableRows = rows.filter(
-    (row) =>
-      row.selected &&
-      row.classification.status === "matched" &&
-      SAFE_DECIMAL.test(row.value.trim()) &&
-      row.unit.trim() &&
-      row.observedAt &&
-      !Number.isNaN(Date.parse(row.observedAt)),
-  );
+  const selection = intakeSelectionCounts(rows);
+  const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
   const reviewOnlyRows = rows.filter((row) => row.classification.status !== "matched");
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
@@ -618,11 +619,41 @@ export function UnifiedIntakeWorkspace() {
               ))}
             </p>
           ) : null}
-          <div className="overflow-x-auto">
+          <p aria-live="polite" className="text-sm text-muted-foreground">
+            Selected: {selection.selected} · Eligible: {selection.eligible} · Excluded:{" "}
+            {selection.excluded}
+          </p>
+          <div
+            className="max-w-full overflow-x-auto"
+            role="region"
+            aria-label="Measurement review table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">Review</th>
+                  <th scope="col" className="py-2 pr-3">
+                    <span className="block">Review</span>
+                    <label className="flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap normal-case">
+                      <Checkbox
+                        aria-label={
+                          selection.allSelected
+                            ? "Deselect All eligible observations"
+                            : "Select All eligible observations"
+                        }
+                        checked={
+                          selection.allSelected
+                            ? true
+                            : selection.partiallySelected
+                              ? "indeterminate"
+                              : false
+                        }
+                        disabled={selection.eligible === 0 || busy}
+                        onCheckedChange={() => setAllSelected(!selection.allSelected)}
+                      />
+                      {selection.allSelected ? "Deselect All" : "Select All"}
+                    </label>
+                  </th>
                   <th className="py-2 pr-3">Label</th>
                   <th className="py-2 pr-3">Value</th>
                   <th className="py-2 pr-3">Unit</th>
@@ -635,15 +666,16 @@ export function UnifiedIntakeWorkspace() {
                 {rows.map((row) => (
                   <tr key={row.key} className="border-b border-border/60 align-top">
                     <td className="py-2 pr-3">
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${row.label}`}
-                        disabled={row.classification.status !== "matched"}
-                        checked={row.selected}
-                        onChange={(event) => {
-                          editRow(row.key, { selected: event.target.checked });
-                        }}
-                      />
+                      <label className="flex min-h-11 min-w-11 cursor-pointer items-center">
+                        <Checkbox
+                          aria-label={`Select ${row.label}`}
+                          disabled={!isIntakeRowEligible(row) || busy}
+                          checked={row.selected}
+                          onCheckedChange={(checked) => {
+                            editRow(row.key, { selected: checked === true });
+                          }}
+                        />
+                      </label>
                     </td>
                     <td className="py-2 pr-3 font-medium">{row.label}</td>
                     <td className="py-2 pr-3">
