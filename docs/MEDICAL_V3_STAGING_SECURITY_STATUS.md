@@ -60,7 +60,9 @@ Both unconfigured staging guard and existing isolated preflight exit **2 / BLOCK
 - Lint: **0 errors / 13 existing warnings**. Security boundary audit: PASS.
 - Repository formatting and touched test/script formatting: PASS.
 - Automatic validation reports `build OK`. Manual full typecheck/production build is prohibited by the sandbox workflow and was not run; require Quality on the exact synchronized commit, not preview output.
-- Scientific/security static verifier totals and exact-final-commit CI are reported after the final checks. Runtime SQL/remote/provider verifiers are excluded because no safe isolated environment has been attested; historical results are not reused as new acceptance.
+- Scientific/security inventory: **103 unique checks: 99 PASS, 3 unchanged evidence-gate failures, 1 expected unconfigured staging BLOCKED**. The four excluded database/remote scripts are `verify-fv01-pg-integration.mjs`, `verify-medical-governance-v3.mjs`, `verify-medical-v3-synthetic-completion.mjs` and `verify-remote-auth-config.mjs`; no safe isolated runtime was attested. Historical results are not reused as new acceptance.
+- Frozen-lockfile installation passes with no changes (564 installs / 714 packages checked).
+- Public GitHub check requests during this task returned 404 for intermediate managed SHAs. Exact-final-commit Quality/Security and synchronization remain unverified; final SHA is observed after the last edit. No stateful Git operation or workflow dispatch was performed.
 - Authentic private restore evidence, owner-risk acknowledgment and missing sealed `data/release/mission-day-127.synthetic.json` remain blocked; no bypass, replacement evidence or scientific activation.
 
 Production migrations, real-data AI, persistent production approvals and source trust changes remain unauthorized and inactive. All scientific statuses including `PENDING_NIKOLAS_REVIEW` are unchanged. Staging provisioning requires separate owner approval of the architecture, target and cost cap; no production activation is requested.
