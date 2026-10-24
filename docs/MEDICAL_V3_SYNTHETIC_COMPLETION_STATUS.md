@@ -16,7 +16,7 @@ The two attached manifest files were applied byte-identically. The integration i
 - Completion-contract verifier and all 11 existing static release guards pass; these are not runtime acceptance evidence.
 - Existing disposable PostgreSQL harnesses: 30 v3 assertions and 305 integration assertions pass. The v3 harness replaces the empty source with a test stub; it does not validate the requested fixture integration.
 - 99 verifier scripts executed: 96 returned zero; three failed. Private restore evidence and owner-risk acknowledgment remain correctly blocked. The submission gate additionally fails because `data/release/mission-day-127.synthetic.json` is absent; no sealed artifact was fabricated or regenerated.
-- Repository security audit passes. Fresh vulnerability/secret scan results are reported separately after execution.
+- Repository security audit passes. Fresh Trivy filesystem vulnerability/secret scan: zero HIGH/CRITICAL findings and zero secrets.
 - Automatic preview validation reported build OK. Manual typecheck and production build are prohibited in this environment; exact-commit GitHub Actions validation is required and unverified.
 - No live synthetic OpenAI call or desktop/mobile synthetic acceptance was performed: the required authoritative source does not exist and must remain blocked. No offline evidence was read, uploaded or promoted.
 

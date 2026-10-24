@@ -3,6 +3,7 @@
 ## V3 synthetic completion implementation gate
 
 - [x] Verify and apply both manifest files byte-identically.
+- [x] Run 506 tests, 335 disposable database assertions, formatting, lint, security scan and 99 verifiers; record exact results in docs/MEDICAL_V3_SYNTHETIC_COMPLETION_STATUS.md.
 - [ ] Complete synthetic integration: blocked by the contract's exact `heart_rate` fixture identifier, which is absent from the intake catalog; no remapping or authority changes permitted.
 - [ ] Validate non-production integration and request production approval only after successful acceptance; no production change authorized.
 
