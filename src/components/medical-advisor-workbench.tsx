@@ -220,7 +220,9 @@ export function MedicalAdvisorWorkbench({
             !authorizedMedicalRole || !aiConsent || !report.observations.length || generating
           }
         >
-          {generating ? "Generating draft..." : "Generate research draft with configured AI provider"}
+          {generating
+            ? "Generating draft..."
+            : "Generate research draft with configured AI provider"}
         </Button>
         <Button
           type="button"
