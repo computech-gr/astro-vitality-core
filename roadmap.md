@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Production synthetic demonstration implementation
+
+- [ ] Implement exact-ID pending migration, default-off synthetic capability and session-only demonstration.
+- [ ] Validate disposable migration/rollback, regressions and available quality/security/release checks.
+- [ ] Production migration, seeding, AI and deployment: blocked pending explicit owner authorization.
+
 ## Production synthetic demonstration readiness
 
 - [x] Inspect existing v3 authority, quotas, authorization and live database prerequisites; 561 tests and 81 existing disposable SQL assertions pass. Production-shape reproduction confirms unchanged fixture SQL cannot resolve the existing mission.
