@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## V3 isolated browser acceptance gate
+
+- [x] Verify both additive patch fingerprints before applying.
+- [ ] Prove an isolated app, authenticated disposable backend, test identity and bounded OpenAI budget before browser execution; never use the shared backend.
+- [ ] Execute loaded export/Q&A desktop/mobile acceptance only after isolation is proven; otherwise deliver fail-closed harness and blockers.
+- [ ] Run permitted regression/security checks and report exact-commit CI separately from local signals.
+
 ## V3 export and isolated evidence Q&A
 
 - [x] Verify both supplied baseline/after fingerprints and apply the patch.
