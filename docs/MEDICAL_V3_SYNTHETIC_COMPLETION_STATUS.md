@@ -39,4 +39,15 @@ SHA-256: `a29e11adc7eb00c09b0c37b840d3f7546dea252e6819a383ae586257ac8c564c`
 
 ## Approval status
 
+## Changed files and deviations
+
+- Supplied byte-identical files: `docs/MEDICAL_V3_SYNTHETIC_COMPLETION_CONTRACT.md`, `scripts/verify-medical-v3-completion-contract.mjs`.
+- Integration: `src/domain/health-intelligence/synthetic-evidence.ts`, `src/lib/medical-governance.functions.ts`, `src/routes/api.medical-ai-draft.ts`, `src/components/synthetic-medical-review.tsx`, `src/components/astronaut-health-report.tsx`.
+- Staged SQL and disable-first rollback: the two `20261025000000_medical_v3_synthetic_completion` pending files above.
+- Tests/guards: `tests/domain/medical-v3-completion-fixture.test.ts`, `scripts/verify-medical-v3-synthetic-completion.mjs`, `scripts/verify-medical-v3-release-gates.mjs`. The old guard matched the former equality expression; it now checks server-snapshot equality, request length and every field, plus transmission of only the server evidence. No safeguard was removed.
+- Documentation: `AGENTS.md`, `roadmap.md`, this status report. SQL was made replay-safe because the existing isolated harness intentionally applies pending migrations twice. These integration additions are beyond the two-file supplied manifest, as required by the completion request; no supplied fingerprint was changed.
+- Latest observed managed HEAD after most integration edits: `04dc9e746fdecf3b94070cd23ec048c93f523ddf`. This is not a verified final commit or synchronized GitHub SHA; subsequent report/guard edits may produce a different managed save. No Git stateful commands were run.
+
+## Remaining release blockers
+
 No production approval is requested: the contract's complete acceptance prerequisite has not been met. Private restore and owner-risk evidence gates remain blocked, as does the missing controlled release fixture submission gate. No production migrations, Cloud writes, role changes, real-data transmission, AI activation or persistent approval activation occurred. Final managed save SHA and exact-commit GitHub Quality/Security synchronization remain unverified.
