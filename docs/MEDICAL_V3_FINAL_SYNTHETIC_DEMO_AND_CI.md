@@ -49,6 +49,7 @@ Necessary integration deviations: formatted this supplied document; corrected wo
    ```
 
    The contract deliberately does not infer trends, diagnoses or normal ranges. Invented IDs, values, biomarkers and ranges are rejected, not rewritten.
+
 3. Session-review tests accept the exact cited text with reviewer identity and research-only rationale, reject empty rationale and invalidate acknowledgment when evidence changes. Existing edit behavior remains tested separately. No automated test constitutes human medical acceptance.
 4. Real disposable SQL tests append draft/approval/revocation revisions, enforce predecessor and concurrent-review rules, invalidate approval after source changes and verify quota contention and rollback. Authorized export reads real disposable history with server dates and a independently recomputed canonical SHA-256. No production persistent approval is activated.
 
