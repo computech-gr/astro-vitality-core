@@ -18,6 +18,7 @@ const INDEXABLE = {
   "/mission/submission": "src/routes/mission.submission.tsx",
   "/technology": "src/routes/technology.index.tsx",
   "/competition/demo-video": "src/routes/competition.demo-video.tsx",
+  "/competition/team": "src/routes/competition.team.tsx",
 };
 
 // P21: the eight Technology topic pages share one dynamic route that derives

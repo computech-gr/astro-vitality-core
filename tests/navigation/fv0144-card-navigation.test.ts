@@ -19,10 +19,10 @@ describe("FV-01.4.4 card navigation coverage", () => {
     }
   });
 
-  test("Team has no invented team link", () => {
-    const team = itemLines.find((l) => l.includes('id: "team"'))!;
-    expect(team).toContain("noAction:");
-    expect(guide).not.toContain("Meet the Team");
+  test("Team links to the registered competition team page", () => {
+    const team = itemLines.find((l) => l.includes('id: "team"'));
+    expect(team).toContain('href: "/competition/team"');
+    expect(existsSync(join(root, "src/routes/competition.team.tsx"))).toBe(true);
   });
 
   test("internal destinations resolve to route files or anchors", () => {

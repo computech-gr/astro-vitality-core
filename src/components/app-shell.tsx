@@ -24,6 +24,7 @@ import {
 
 import { TopicCardGrid } from "@/components/knowledge/technology-index";
 import { NavigationSearch } from "@/components/navigation-search";
+import { competitionTeam } from "@/content/competition-team";
 import { SEARCH_KEYWORDS, SECTION_ENTRIES, dedupeEntries, type SearchEntry } from "@/domain/navigation-search/search";
 import astronautEarthrise from "@/assets/astronaut-earthrise.jpg";
 import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
@@ -114,7 +115,7 @@ const navigation: readonly NavigationEntry[] = [
     href: "/#about",
     description: "Challenge background, open-source documentation and project status.",
     groups: [
-      { title: "Project", items: ["The Challenge", "Our Mission", "Why Autonomous Health", "Long-Duration Spaceflight", "The Mitochondria", "Team", "Roadmap"] },
+      { title: "Project", items: ["The Challenge", "Our Mission", "Why Autonomous Health", "Long-Duration Spaceflight", "The Mitochondria", "Our Team — NASA Space Apps 2026", "Official NASA Team Profile", "Roadmap"] },
       { title: "Competition Materials", items: ["NASA Competition Presentation (PDF)", "NASA Evaluator Quick Start (PDF)", "Master Technical Manual (PDF)", "Watch NASA Demo Video"] },
       { title: "Open source", href: "/#open-source", items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "License"] },
       { title: "Governance & references", items: ["Security Policy", "Scientific Approach", "Validation & Limitations", "Challenge Submission", "Resources & References", "NASA Space Apps 2026"] },
@@ -179,6 +180,8 @@ const guideDestinations: Readonly<Record<string, string>> = {
 
 function itemHref(label: string, fallback: string) {
   if (technologyTopicDestinations[label]) return technologyTopicDestinations[label];
+  if (label === "Our Team — NASA Space Apps 2026") return "/competition/team";
+  if (label === "Official NASA Team Profile") return competitionTeam.officialUrl;
   if (label === "Watch NASA Demo Video") return "/competition/demo-video";
   if (label === "NASA Competition Presentation (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf`;
   if (label === "NASA Evaluator Quick Start (PDF)") return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf`;
