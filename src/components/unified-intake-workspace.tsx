@@ -248,44 +248,87 @@ export function UnifiedIntakeWorkspace() {
     resetReview();
   };
 
-  const [batchFiles, setBatchFiles] = useState<Array<{name:string; state:string; count:number}>>([]);
+  const [batchFiles, setBatchFiles] = useState<
+    Array<{ name: string; state: string; count: number }>
+  >([]);
   const MAX_BATCH_FILES = 20;
   const MAX_FILE_BYTES = 15 * 1024 * 1024;
   const processBatch = async (files: File[]) => {
     if (busy || !files.length) return;
-    if (files.length > MAX_BATCH_FILES) {setStatus(`Select at most ${MAX_BATCH_FILES} files per batch.`);return;}
+    if (files.length > MAX_BATCH_FILES) {
+      setStatus(`Select at most ${MAX_BATCH_FILES} files per batch.`);
+      return;
+    }
     setBusy(true);
-    const results: Array<{name:string;state:string;count:number}> = [];
+    const results: Array<{ name: string; state: string; count: number }> = [];
     const incoming: IntakeRow[] = [];
     const hashes = new Set<string>();
     try {
       for (const file of files) {
-        let state="complete"; let count=0;
+        let state = "complete";
+        let count = 0;
         try {
-          if (file.size > MAX_FILE_BYTES || file.size === 0) throw new Error("File is empty or exceeds 15 MB.");
-          if (!/\.(csv|txt|pdf|png|jpe?g)$/i.test(file.name)) throw new Error("Unsupported file type.");
+          if (file.size > MAX_FILE_BYTES || file.size === 0)
+            throw new Error("File is empty or exceeds 15 MB.");
+          if (!/\.(csv|txt|pdf|png|jpe?g)$/i.test(file.name))
+            throw new Error("Unsupported file type.");
           const hash = await sha256Hex(file);
-          if (hashes.has(hash)) {state="duplicate file skipped";results.push({name:file.name,state,count});continue;}
+          if (hashes.has(hash)) {
+            state = "duplicate file skipped";
+            results.push({ name: file.name, state, count });
+            continue;
+          }
           hashes.add(hash);
           if (/\.csv$/i.test(file.name)) {
-            const parsed=parseIntakeCsv(await file.text());
-            const space=Math.max(0,MAX_ROWS-incoming.length);
-            const batch=parsed.rows.slice(0,space).map(row=>({...row,sourceLabel:`CSV: ${file.name}`,documentName:file.name,documentSha256:hash}));
-            incoming.push(...batch);count=batch.length;
+            const parsed = parseIntakeCsv(await file.text());
+            const space = Math.max(0, MAX_ROWS - incoming.length);
+            const batch = parsed.rows
+              .slice(0, space)
+              .map((row) => ({
+                ...row,
+                sourceLabel: `CSV: ${file.name}`,
+                documentName: file.name,
+                documentSha256: hash,
+              }));
+            incoming.push(...batch);
+            count = batch.length;
           } else {
-            const extracted=await extractBoneDocument(file);
-            const kind: ObservationSourceKind=extracted.method.includes("ocr")?"ocr":"pdf_text";
-            const space=Math.max(0,MAX_ROWS-incoming.length);
-            const batch=parseIntakeText(extracted.text,kind,`Document: ${file.name}`,file.name,hash).slice(0,space);
-            incoming.push(...batch);count=batch.length;
+            const extracted = await extractBoneDocument(file);
+            const kind: ObservationSourceKind = extracted.method.includes("ocr")
+              ? "ocr"
+              : "pdf_text";
+            const space = Math.max(0, MAX_ROWS - incoming.length);
+            const batch = parseIntakeText(
+              extracted.text,
+              kind,
+              `Document: ${file.name}`,
+              file.name,
+              hash,
+            ).slice(0, space);
+            incoming.push(...batch);
+            count = batch.length;
           }
-          if (!count) state="no matching candidate rows";
-        } catch(error) {state=error instanceof Error?`failed: ${error.message}`:"failed: unknown error";}
-        results.push({name:file.name,state,count});setBatchFiles([...results]);
+          if (!count) state = "no matching candidate rows";
+        } catch (error) {
+          state = error instanceof Error ? `failed: ${error.message}` : "failed: unknown error";
+        }
+        results.push({ name: file.name, state, count });
+        setBatchFiles([...results]);
       }
-      if (incoming.length) addRows(incoming,`Batch processed ${results.length} file(s); ${incoming.length} candidate row(s), all unchecked. Review each row before saving.`);
-      else setStatus(`Batch processed ${results.length} file(s); no candidate rows. Check per-file results.`);
-    } finally {setBatchFiles([...results]);setBusy(false);if(fileInputRef.current)fileInputRef.current.value="";}
+      if (incoming.length)
+        addRows(
+          incoming,
+          `Batch processed ${results.length} file(s); ${incoming.length} candidate row(s), all unchecked. Review each row before saving.`,
+        );
+      else
+        setStatus(
+          `Batch processed ${results.length} file(s); no candidate rows. Check per-file results.`,
+        );
+    } finally {
+      setBatchFiles([...results]);
+      setBusy(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const addManualRow = () => {
@@ -537,8 +580,20 @@ export function UnifiedIntakeWorkspace() {
             }}
           />
         </div>
-        {batchFiles.length > 0 && <div role="status" aria-live="polite" className="space-y-1 text-xs"><strong>Batch processing results</strong>{batchFiles.map((file,i)=><p key={`${file.name}-${i}`} className="break-all">{file.name}: {file.state} ({file.count} candidate row(s))</p>)}</div>}
-        <p className="text-xs text-muted-foreground">Batch limit: 20 files, 15 MB each. Files are processed sequentially on-device; failures are isolated and extracted rows remain unchecked.</p>
+        {batchFiles.length > 0 && (
+          <div role="status" aria-live="polite" className="space-y-1 text-xs">
+            <strong>Batch processing results</strong>
+            {batchFiles.map((file, i) => (
+              <p key={`${file.name}-${i}`} className="break-all">
+                {file.name}: {file.state} ({file.count} candidate row(s))
+              </p>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Batch limit: 20 files, 15 MB each. Files are processed sequentially on-device; failures
+          are isolated and extracted rows remain unchecked.
+        </p>
         <p className="text-xs text-muted-foreground">
           Documents are processed on this device only. Original files are never uploaded
           automatically; the document name and SHA-256 fingerprint are kept with each row for
