@@ -2,8 +2,8 @@
 
 ## V3 final CI and synthetic demonstration
 
-- [ ] Verify supplied manifest, correct clean-checkout sample generation and exact-SHA reporting, and run full permitted checks.
-- [ ] Execute existing disposable SQL/server synthetic demonstration; distinguish real integrations from simulated provider tests and blocked browsers.
+- [x] Verify supplied manifest, correct clean-checkout sample generation and exact-SHA reporting; 556 tests, 99/102 offline verifiers, formatting/lint/security and zero-finding full-scope Trivy completed.
+- [x] Execute existing disposable SQL/server synthetic demonstration; 51 synthetic and 30 governance assertions plus FV01 passed; simulated Q&A explicitly distinguished from live AI and blocked browsers in docs/MEDICAL_V3_FINAL_SYNTHETIC_DEMO_AND_CI.md.
 - [ ] Confirm exact-final-commit CI; blocked until matching synchronized GitHub runs exist.
 - [ ] Owner-only release evidence and independent browser infrastructure remain required; no production activation.
 
