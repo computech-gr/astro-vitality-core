@@ -37,6 +37,79 @@ const gm = "00000000-0000-0000-0000-0000000000a2",
 const as = (uid) =>
   `set role authenticated; select set_config('request.jwt.claim.sub','${uid}',false);`;
 let assertions = 0;
+const permissionDenied = (sql, name) => {
+  let message = "";
+  try {
+    run(`BEGIN;${sql};ROLLBACK;`);
+  } catch (error) {
+    message = String(error.stderr);
+  }
+  check(/permission denied/.test(message), name);
+};
+const tables = [
+  "medical_advisor_review_events",
+  "medical_ai_quota_reservations",
+  "medical_v3_fixture_sources",
+  "medical_v3_fixture_observations",
+  "medical_v3_fixture_receipts",
+];
+const exposed = [
+  "medical_v3_fixture_snapshot",
+  "medical_v3_ai_evidence",
+  "medical_v3_reserve_ai",
+  "medical_v3_release_ai",
+];
+const verifyPermissions = (rollback = false) => {
+  for (const table of tables) {
+    check(
+      run(
+        `select relowner='postgres'::regrole and relrowsecurity from pg_class where oid='public.${table}'::regclass`,
+      ) === "t",
+      `${table}: trusted owner and RLS`,
+    );
+    for (const role of ["anon", "authenticated", "service_role"]) {
+      for (const [verb, query] of Object.entries({
+        SELECT: `select * from public.${table}`,
+        INSERT: `insert into public.${table} default values`,
+        UPDATE: `update public.${table} set id=id where false`,
+        DELETE: `delete from public.${table} where false`,
+        TRUNCATE: `truncate public.${table} cascade`,
+      })) {
+        permissionDenied(
+          `set role ${role};${query}`,
+          `${rollback ? "rollback " : ""}${role} ${table} ${verb} denied`,
+        );
+      }
+    }
+  }
+  check(
+    run(
+      `select count(*)=15 and bool_and(proowner='postgres'::regrole and proconfig @> ARRAY['search_path=pg_catalog, public, extensions, pg_temp']) from pg_proc where pronamespace='public'::regnamespace and proname like 'medical_v3_%'`,
+    ) === "t",
+    "all 15 functions pinned to trusted owner/search_path",
+  );
+  const funcs = JSON.parse(
+    run(
+      `select json_agg(json_build_object('name',proname,'sig',oid::regprocedure::text,'definer',prosecdef)) from pg_proc where pronamespace='public'::regnamespace and proname like 'medical_v3_%'`,
+    ),
+  );
+  for (const f of funcs) {
+    const allowed = rollback ? f.name === "medical_v3_release_ai" : exposed.includes(f.name);
+    check(
+      run(
+        `select has_function_privilege('authenticated','${f.sig}','EXECUTE')=${allowed} and not has_function_privilege('anon','${f.sig}','EXECUTE') and not has_function_privilege('service_role','${f.sig}','EXECUTE')`,
+      ) === "t",
+      `${rollback ? "rollback " : ""}EXECUTE allowlist ${f.name}`,
+    );
+    if (allowed) check(f.definer, `${f.name} SECURITY DEFINER`);
+  }
+  check(
+    run(
+      `select count(*)=0 from pg_class where relnamespace='public'::regnamespace and relkind='S' and relname like 'medical%'`,
+    ) === "t",
+    "UUID schema has no v3 sequences",
+  );
+};
 const check = (ok, name) => {
   if (!ok) throw new Error(name);
   assertions++;
@@ -100,7 +173,23 @@ check(
   "failed migration creates no tables",
 );
 run(`update missions set status='planning' where id='${mission}'`);
+// Reproduce production defaults AND hostile PUBLIC inheritance before candidate creation.
+run(`ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO PUBLIC,anon,authenticated,service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO PUBLIC,anon,authenticated,service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO PUBLIC,anon,authenticated,service_role;
+CREATE TABLE public.acl_preflight_probe(id serial);
+CREATE FUNCTION public.acl_preflight_probe_fn() RETURNS int LANGUAGE sql AS 'select 1';`);
+check(
+  run(
+    "select has_table_privilege('anon','public.acl_preflight_probe','TRUNCATE') and has_sequence_privilege('authenticated','public.acl_preflight_probe_id_seq','USAGE') and has_function_privilege('anon','public.acl_preflight_probe_fn()','EXECUTE')",
+  ) === "t",
+  "production-equivalent permissive defaults actually applied",
+);
 file(migration);
+verifyPermissions();
+permissionDenied(as(gm) + "select medical_v3_has_scope('m1','c1')", "internal scope helper denied");
+permissionDenied(as(gm) + "select medical_v3_review_history('m1','c1')", "history RPC denied");
+permissionDenied(as(gm) + "select medical_v3_canonical_json('{}')", "canonical helper denied");
 const snapshot = JSON.parse(
   run(as(gm) + "select medical_v3_fixture_snapshot()")
     .split("\n")
@@ -227,6 +316,13 @@ try {
 }
 check(failed, "reapplication refuses existing namespace");
 file("supabase/pending/20261026000000_medical_v3_production_synthetic_demo.rollback.sql");
+verifyPermissions(true);
+check(
+  run(
+    "select has_table_privilege('anon','public.acl_preflight_probe','TRUNCATE') and has_function_privilege('anon','public.acl_preflight_probe_fn()','EXECUTE')",
+  ) === "t",
+  "unrelated defaults/objects unchanged",
+);
 for (const call of [
   "medical_v3_fixture_snapshot()",
   `medical_v3_ai_evidence('${mission}','${astronaut}')`,

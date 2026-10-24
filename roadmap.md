@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## Final permission hardening
+
+- [x] Harden all five tables, owned sequences and v3 function allowlist against inherited production privileges; 252 disposable SQL assertions pass.
+- [x] Test production-equivalent ACLs/rollback (252 assertions), existing governance/completion (81), 565 tests, lint/format/security, fresh zero-finding Trivy and 99/102 static checks; new hashes recorded in implementation handoff.
+- [ ] Exact-final-hardening GitHub Quality/Security and typecheck/build: awaiting matching completed runs.
+- [ ] Production migration, seeding, AI and deployment remain blocked pending explicit authorization.
+
 ## Production synthetic demonstration implementation
 
 - [x] Implement exact-ID pending migration, default-off synthetic capability and session-only demonstration; no production writes or activation.
