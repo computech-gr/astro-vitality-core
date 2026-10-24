@@ -17,8 +17,8 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           return fail("Cross-origin request denied", 403);
         const bearer = request.headers.get("authorization") ?? "";
         if (!bearer.startsWith("Bearer ")) return fail("Authentication required", 401);
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const supabaseUrl = process.env["SUPABASE_URL"];
+        const supabaseKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
         if (!supabaseUrl || !supabaseKey) return fail("Identity service unavailable", 503);
         const token = bearer.slice(7);
         // Integration fix: membership query must run as the caller (RLS), not anon.
@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           .limit(1);
         if (membershipError || !membership?.length)
           return fail("Ground-medical authorization required", 403);
-        if (provenance === "real" && process.env.MITO_MEDICAL_AI_REAL_DATA_ENABLED !== "true")
+        if (provenance === "real" && process.env["MITO_MEDICAL_AI_REAL_DATA_ENABLED"] !== "true")
           return fail(
             "Real-data AI transfer is disabled pending approved privacy configuration",
             403,
@@ -91,32 +91,32 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           if (!item || typeof item !== "object") return fail("Invalid evidence", 400);
           const o = item as Record<string, unknown>;
           if (
-            typeof o.id !== "string" ||
-            o.id.length > 100 ||
-            !/^[a-zA-Z0-9:_-]+$/.test(o.id) ||
-            typeof o.metric !== "string" ||
-            o.metric.length > 120 ||
-            (typeof o.value !== "string" && typeof o.value !== "number") ||
-            String(o.value).length > 80 ||
-            typeof o.unit !== "string" ||
-            o.unit.length > 35 ||
-            typeof o.time !== "string" ||
-            o.time.length > 40 ||
-            !Number.isFinite(Date.parse(o.time)) ||
-            typeof o.domain !== "string" ||
-            !allowedDomains.has(o.domain.toLowerCase())
+            typeof o["id"] !== "string" ||
+            o["id"].length > 100 ||
+            !/^[a-zA-Z0-9:_-]+$/.test(o["id"]) ||
+            typeof o["metric"] !== "string" ||
+            o["metric"].length > 120 ||
+            (typeof o["value"] !== "string" && typeof o["value"] !== "number") ||
+            String(o["value"]).length > 80 ||
+            typeof o["unit"] !== "string" ||
+            o["unit"].length > 35 ||
+            typeof o["time"] !== "string" ||
+            o["time"].length > 40 ||
+            !Number.isFinite(Date.parse(o["time"])) ||
+            typeof o["domain"] !== "string" ||
+            !allowedDomains.has(o["domain"].toLowerCase())
           )
             return fail("Invalid evidence", 400);
           evidence.push({
-            id: o.id,
-            metric: o.metric,
-            value: String(o.value),
-            unit: o.unit,
-            time: o.time,
-            domain: o.domain,
+            id: o["id"],
+            metric: o["metric"],
+            value: String(o["value"]),
+            unit: o["unit"],
+            time: o["time"],
+            domain: o["domain"],
           });
         }
-        const apiKey = process.env.OPENAI_API_KEY;
+        const apiKey = process.env["OPENAI_API_KEY"];
         if (!apiKey) return fail("Server AI provider not configured; no data sent", 503);
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 25000);
@@ -126,7 +126,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
             signal: controller.signal,
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
             body: JSON.stringify({
-              model: process.env.MITO_MEDICAL_AI_MODEL || "gpt-4.1-mini",
+              model: process.env["MITO_MEDICAL_AI_MODEL"] || "gpt-4.1-mini",
               store: false,
               max_output_tokens: 1500,
               instructions:
@@ -146,7 +146,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
               .join("\n")
               .trim() ?? "";
           if (!text || text.length > 12000) return fail("AI draft missing or oversized", 502);
-          const cited = [...text.matchAll(/\[([a-zA-Z0-9:_-]+)\]/g)].map((match) => match[1]);
+          const cited = [...text.matchAll(/\[([a-zA-Z0-9:_-]+)\]/g)].map((match) => match[1] ?? "");
           const ids = new Set(evidence.map((x) => x.id));
           if (cited.some((id) => !ids.has(id)))
             return fail("AI draft cited unknown evidence; rejected", 422);
@@ -154,7 +154,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
             {
               draft: text,
               source: "server-ai",
-              model: process.env.MITO_MEDICAL_AI_MODEL || "gpt-4.1-mini",
+              model: process.env["MITO_MEDICAL_AI_MODEL"] || "gpt-4.1-mini",
               generatedAt: new Date().toISOString(),
               warning: "Unverified AI research draft; independent medical advisor review required.",
             },
