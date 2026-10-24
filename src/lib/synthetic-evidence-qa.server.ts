@@ -14,7 +14,7 @@ import {
 export interface QaDependencies {
   enabled: boolean;
   apiKey: string | undefined;
-  model?: string;
+  model?: string | undefined;
   rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
   providerFetch: typeof fetch;
   now: () => string;
@@ -150,7 +150,7 @@ export async function answerSyntheticQuestion(
     const released = await deps.rpc("medical_v3_release_ai", {
       p_reservation: quota.reservationId,
     });
-    if (released.error) return fail("Quota release could not be confirmed; answer withheld", 503);
+    if (released.error) result = fail("Quota release could not be confirmed; answer withheld", 503);
   }
   return result;
 }
