@@ -13,7 +13,7 @@ The supplied files were copied exactly, then touched-file formatting and integra
 
 - `exportSyntheticMedicalHistory` requires authenticated caller middleware and the existing disabled v3 flag, then invokes only caller-scoped snapshot/history RPCs. Missing authority, revoked scope, malformed response, cross-scope history or changing evidence denies export.
 - Current canonical SHA-256 is independently recomputed and binds exact synthetic observation fields, scope and canonical bytes. Historic digests are format-validated and preserved from the authorized append-only RPC; the existing history RPC omits historical canonical bytes, so exported old digests are **not independently recomputed** here.
-- UTC event timestamps, revision uniqueness, event/actor identifiers, scope, provenance and verified-current digest/state are checked. Export uses server UTC `exported_at`. Parsed history explicitly allowlists fields instead of leaking internal request metadata. No export or chat transcript is stored in browser storage.
+- UTC event timestamps, contiguous revisions, predecessor links, nondecreasing event times, event/actor identifiers, scope, provenance and verified-current digest/state are checked. Export uses server UTC `exported_at`; Q&A validates `generated_at` as UTC. Parsed history explicitly allowlists fields instead of leaking internal request metadata. No export or chat transcript is stored in browser storage.
 - Export is an ordinary editable JSON file, not a cryptographic signature, attestation, legal opinion or scientific acceptance. Reviewer identifiers and review text still require careful handling.
 
 ## Isolated Q&A
@@ -26,7 +26,7 @@ The supplied files were copied exactly, then touched-file formatting and integra
 
 ## Actual validation
 
-- Full suite: **523 tests pass**, zero failures, 112 files; 14 new export/Q&A tests cover scope, consent, real-data denial, exact claims, injection, 429/Retry-After, provider denial/failure, stale source and release failure. Denied requests make zero provider calls.
+- Full suite: **524 tests pass**, zero failures, 112 files; 15 new export/Q&A tests cover scope, consent, real-data denial, chain integrity, UTC timestamps, exact claims, injection, 429/Retry-After, provider denial/failure, stale source and release failure. Denied requests make zero provider calls.
 - Real-source disposable SQL harness: **51 assertions pass**. Existing isolated database integration: **305 assertions pass**. No SQL changes or production migrations in this task.
 - Additional isolated verifier uses the actual caller-scoped disposable snapshot, history and quota RPCs, not a fabricated authoritative resolver. It exported retained history successfully with canonical/UTC checks. Invalid consent, real provenance, injection and cross-scope requests made zero provider calls.
 - Live OpenAI test: final isolated attempt **HTTP 200**, one provider call, **two exact valid observation citations**. Only the two invented server-controlled fixture readings and question were sent; no names, actor identifiers, offline data or real readings. First attempt withheld output because the test adapter incorrectly parsed a void release RPC as JSON; the adapter was repaired and a fresh explicit test run succeeded. No automatic provider retry.
@@ -39,6 +39,7 @@ The supplied files were copied exactly, then touched-file formatting and integra
 - Authentic restore evidence (`verify-p3663-activation`) and owner-risk evidence (`verify-p3664-owner-risk`) remain blocked. Submission gate still lacks sealed `data/release/mission-day-127.synthetic.json`. No evidence fabricated or safeguard weakened.
 - Full loaded desktop/mobile export/Q&A acceptance requires an isolated application attached to the disposable database; existing source/append race acceptance remains outstanding from v3 completion. Historical hash recomputation needs authorized historical canonical access, not a browser substitution.
 - Public GitHub evidence checked: Quality and Security Scan both succeeded at **`13e940f8b34df71ef51285b418f5864f4a65818c`**. That is not the current managed commit; exact-final-commit synchronization/Quality/Security status is unverified. Workflow definitions or preview checks do not prove exact-commit CI.
+- Latest observed managed implementation commit before this final documentation update: **`323229afa0642035d2f159e82d6c76f48f54552d`**. The platform manages subsequent commits; this is not claimed as the final documentation commit or synchronized GitHub SHA.
 - No production migrations, persistent approvals, production AI activation, role changes, real-data transmission, scientific activation or publication occurred. Separate owner approval remains mandatory before production activation; complete production approval is **not requested now** while acceptance blockers remain.
 
 ## Changed files
