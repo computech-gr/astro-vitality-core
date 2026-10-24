@@ -14,7 +14,7 @@ export const Route = createFileRoute("/competition/team")({
       title: "Our Team — NASA Space Apps 2026 | The Mitochondria",
       description: "Meet The Mitochondria team for NASA Space Apps Challenge 2026 in Nicosia, Cyprus, and explore its astronaut health-monitoring research prototype and competition materials.",
     });
-    return { ...head, meta: head.meta.filter((meta) => meta.property !== "og:image" && meta.name !== "twitter:image") };
+    return { ...head, meta: head.meta.filter((meta) => meta["property"] !== "og:image" && meta["name"] !== "twitter:image") };
   },
   component: CompetitionTeamPage,
 });
