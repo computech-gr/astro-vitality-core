@@ -1,10 +1,16 @@
 # P20 video evidence closure
 
+## Production synthetic demonstration implementation
+
+- [x] Implement exact-ID pending migration, default-off synthetic capability and session-only demonstration; no production writes or activation.
+- [x] Validate candidate/rollback (48 disposable assertions), existing suites (386 SQL assertions), 565 tests, lint/format/security and 99/102 release verifiers; details in docs/MEDICAL_V3_PRODUCTION_SYNTHETIC_IMPLEMENTATION.md.
+- [ ] Production migration, seeding, AI and deployment: blocked pending explicit owner authorization.
+
 ## Production synthetic demonstration readiness
 
 - [x] Inspect existing v3 authority, quotas, authorization and live database prerequisites; 561 tests and 81 existing disposable SQL assertions pass. Production-shape reproduction confirms unchanged fixture SQL cannot resolve the existing mission.
 - [x] Report exact proposed scope, risks, disable-first rollback and approval boundary in docs/MEDICAL_V3_PRODUCTION_SYNTHETIC_READINESS.md; no production migration, AI call or persistent approval.
-- [ ] Production activation remains blocked: corrected default-off application/SQL candidate and rollback validation, exact-commit typecheck/build, then explicit owner migration/AI/deployment authorization; unchanged pending SQL is not activation-ready.
+- [ ] Production activation remains blocked by exact-commit typecheck/build and explicit owner migration/AI/deployment authorization; corrected candidate and rollback are disposable-validated, older pending SQL must not be combined with it.
 
 ## Unified intake bulk review selection
 

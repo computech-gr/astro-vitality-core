@@ -23,20 +23,27 @@ type PendingRpcClient = {
 export const getSyntheticMedicalEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
+    if (
+      process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true" &&
+      process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] !== "true"
+    )
       return { available: false as const, snapshot: null };
     const client = context.supabase as unknown as PendingRpcClient;
     const result = await client.rpc("medical_v3_fixture_snapshot", {});
     if (result.error || !result.data)
       throw new Error("Authoritative synthetic source unavailable.");
-    return { available: true as const, snapshot: result.data as SyntheticEvidenceSnapshot };
+    const snapshot = await validateSyntheticSnapshot(result.data);
+    return { available: true as const, snapshot };
   });
 
 export const getMedicalReviewHistory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => scope.parse(data))
   .handler(async ({ data, context }) => {
-    if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
+    if (
+      process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true" ||
+      process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] === "true"
+    )
       return {
         available: false,
         events: [] as DurableReviewEvent[],
@@ -75,7 +82,10 @@ export const appendMedicalReview = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
+    if (
+      process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true" ||
+      process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] === "true"
+    )
       throw new Error(
         "Persistence disabled pending owner-approved migration; no review was saved.",
       );
@@ -119,7 +129,10 @@ export const exportSyntheticMedicalHistory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => scope.parse(data))
   .handler(async ({ data, context }) => {
-    if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
+    if (
+      process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true" ||
+      process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] === "true"
+    )
       throw new Error("History export disabled; no file generated.");
     const client = context.supabase as unknown as PendingRpcClient;
     const source = await client.rpc("medical_v3_fixture_snapshot", {});

@@ -2,6 +2,8 @@
 
 Checked: 2026-10-24T23:29:07Z. This is an assessment of the existing implementation, not activation authorization or browser acceptance.
 
+Historical assessment superseded for implementation readiness by `docs/MEDICAL_V3_PRODUCTION_SYNTHETIC_IMPLEMENTATION.md`: the standalone exact-scope candidate and rollback now exist and passed disposable validation. The older pending migrations remain unsuitable for this production demonstration; all production activation boundaries remain in force.
+
 ## Decision
 
 **Do not apply the current pending migrations unchanged or enable the governance flag.** A flag-only change would not work for the existing mission and would also expose persistent-review operations, which are not authorized. No production migration, feature flag, AI request, persistent approval, account, role, mission or observation was changed during this assessment.

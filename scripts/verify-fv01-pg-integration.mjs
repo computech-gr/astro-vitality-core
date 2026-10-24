@@ -36,7 +36,14 @@ const includePending = process.env.FV0143_INCLUDE_PENDING === "1" || migrations.
 const pending =
   includePending && existsSync("supabase/pending")
     ? readdirSync("supabase/pending")
-        .filter((f) => f.endsWith(".sql") && !f.includes("rollback"))
+        // Standalone exact-production-scope alternative has its own destructive verifier.
+        // Never combine it with the older generic v3 migrations in this fixture harness.
+        .filter(
+          (f) =>
+            f.endsWith(".sql") &&
+            !f.includes("rollback") &&
+            !f.includes("medical_v3_production_synthetic_demo"),
+        )
         .sort()
     : [];
 for (const f of pending) psql(["-f", join("supabase/pending", f)], "fv01_it");
@@ -418,29 +425,43 @@ if (pending.some((f) => f.includes("p368c_research_decisions"))) {
 
   // CC1: two reviewers decide the same batch concurrently -> exactly one terminal decision.
   const cc = ctx("cc");
-  const c1 = s(`begin; ${dec(GM1, cc, "accepted_for_research", "key-cc1-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`);
+  const c1 = s(
+    `begin; ${dec(GM1, cc, "accepted_for_research", "key-cc1-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`,
+  );
   await sleep(500);
   const c2 = s(`${dec(GM2, cc, "rejected_for_research", "key-cc2-aaaaaaaaaaaa")};`);
   const [rc1, rc2] = await Promise.all([c1, c2]);
   if (rc1.code !== 0 || rc2.code === 0 || !/already_decided/.test(rc2.out))
     throw new Error("P36.8C CC1 failed: " + rc1.out + rc2.out);
-  if (q(`select status||':'||(select count(*) from p36_biomarker_review_events where batch_id='${cc}') from p36_biomarker_review_batches where id='${cc}'`) !== "accepted_for_research:1")
+  if (
+    q(
+      `select status||':'||(select count(*) from p36_biomarker_review_events where batch_id='${cc}') from p36_biomarker_review_batches where id='${cc}'`,
+    ) !== "accepted_for_research:1"
+  )
     throw new Error("P36.8C CC1 state wrong");
-  passes.push("PASS: [P36.8C] CC1 concurrent conflicting decisions: exactly one succeeds, loser gets already_decided, one event");
+  passes.push(
+    "PASS: [P36.8C] CC1 concurrent conflicting decisions: exactly one succeeds, loser gets already_decided, one event",
+  );
 
   // CC2: same reviewer, same key, concurrent retries -> one decision, one replay.
   const rv0 = ctx("rv2");
-  const k1 = s(`begin; ${dec(GM1, rv0, "rejected_for_research", "key-cc3-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`);
+  const k1 = s(
+    `begin; ${dec(GM1, rv0, "rejected_for_research", "key-cc3-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`,
+  );
   await sleep(500);
   const k2 = s(`${dec(GM1, rv0, "rejected_for_research", "key-cc3-aaaaaaaaaaaa")};`);
   const [rk1, rk2] = await Promise.all([k1, k2]);
   if (rk1.code !== 0 || rk2.code !== 0 || !/"replay": true/.test(rk2.out))
     throw new Error("P36.8C CC2 failed: " + rk1.out + rk2.out);
-  passes.push("PASS: [P36.8C] CC2 concurrent identical retries: one decision, second returns replay of the same receipt");
+  passes.push(
+    "PASS: [P36.8C] CC2 concurrent identical retries: one decision, second returns replay of the same receipt",
+  );
 
   // RV1: reviewer revocation commits first (held) -> decision waits, then is denied.
   const rv1 = ctx("rv1");
-  const rvA = s(`begin; update mission_memberships set active=false where user_id='${GM2}' and mission_id='m1' and role='ground_medical'; select pg_sleep(2); commit;`);
+  const rvA = s(
+    `begin; update mission_memberships set active=false where user_id='${GM2}' and mission_id='m1' and role='ground_medical'; select pg_sleep(2); commit;`,
+  );
   await sleep(500);
   const rvB = s(`${dec(GM2, rv1, "accepted_for_research", "key-rv1-aaaaaaaaaaaa")};`);
   const [ra1, rb1] = await Promise.all([rvA, rvB]);
@@ -448,20 +469,37 @@ if (pending.some((f) => f.includes("p368c_research_decisions"))) {
     throw new Error("P36.8C RV1 failed: " + ra1.out + rb1.out);
   if (q(`select status from p36_biomarker_review_batches where id='${rv1}'`) !== "pending_review")
     throw new Error("P36.8C RV1 batch changed");
-  passes.push("PASS: [P36.8C] RV1 revocation-first: decision waits on the membership lock, then is denied; batch stays pending");
+  passes.push(
+    "PASS: [P36.8C] RV1 revocation-first: decision waits on the membership lock, then is denied; batch stays pending",
+  );
 
   // RV2: decision first (held) -> revocation waits; decision commits with the then-valid reviewer.
-  psql(["-c", `update mission_memberships set active=true where user_id='${GM2}' and mission_id='m1' and role='ground_medical'`], DB);
-  const dA = s(`begin; ${dec(GM2, rv1, "accepted_for_research", "key-rv2-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`);
+  psql(
+    [
+      "-c",
+      `update mission_memberships set active=true where user_id='${GM2}' and mission_id='m1' and role='ground_medical'`,
+    ],
+    DB,
+  );
+  const dA = s(
+    `begin; ${dec(GM2, rv1, "accepted_for_research", "key-rv2-aaaaaaaaaaaa")}; select pg_sleep(2); commit;`,
+  );
   await sleep(500);
   const t0 = Date.now();
-  const dB = s(`update mission_memberships set active=false where user_id='${GM2}' and mission_id='m1' and role='ground_medical';`);
+  const dB = s(
+    `update mission_memberships set active=false where user_id='${GM2}' and mission_id='m1' and role='ground_medical';`,
+  );
   const [rdA, rdB] = await Promise.all([dA, dB]);
   if (rdA.code !== 0 || rdB.code !== 0 || Date.now() - t0 < 1000)
     throw new Error("P36.8C RV2 failed: " + rdA.out + rdB.out);
-  if (q(`select status from p36_biomarker_review_batches where id='${rv1}'`) !== "accepted_for_research")
+  if (
+    q(`select status from p36_biomarker_review_batches where id='${rv1}'`) !==
+    "accepted_for_research"
+  )
     throw new Error("P36.8C RV2 batch not decided");
-  passes.push("PASS: [P36.8C] RV2 decision-first: revocation waits for the decision commit; one consistent decision recorded");
+  passes.push(
+    "PASS: [P36.8C] RV2 decision-first: revocation waits for the decision commit; one consistent decision recorded",
+  );
   psql(["-c", `drop database ${DB}`]);
 }
 for (const p of passes) console.log(p);

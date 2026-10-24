@@ -7,6 +7,7 @@ export const runtimeExclusions = Object.freeze({
   "verify-fv01-pg-integration.mjs": "Disposable PostgreSQL required",
   "verify-medical-governance-v3.mjs": "Disposable database required",
   "verify-medical-v3-synthetic-completion.mjs": "Disposable database/provider required",
+  "verify-medical-v3-production-synthetic.mjs": "Disposable exact-scope database required",
   "verify-remote-auth-config.mjs": "Independent authenticated services required",
   "verify-medical-v3-staging-target.mjs": "Owner-approved staging configuration required",
 });

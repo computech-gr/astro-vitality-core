@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { syntheticDemoMode } from "@/domain/health-intelligence/production-synthetic-demo";
 type PendingRpcClient = {
   rpc: (
     name: string,
@@ -23,12 +24,16 @@ export const askSyntheticEvidence = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    // Both flags remain unset in production. No browser can authorize isolation or enablement.
+    // Separate from persistence and test-environment switches. Defaults off.
     const { answerSyntheticQuestion } = await import("./synthetic-evidence-qa.server");
+    const mode = syntheticDemoMode({
+      production: process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"],
+      isolated: process.env["MITO_MEDICAL_QA_ISOLATED_ENABLED"],
+      environment: process.env["MITO_MEDICAL_TEST_ENVIRONMENT"],
+    });
     const response = await answerSyntheticQuestion(data, {
-      enabled:
-        process.env["MITO_MEDICAL_QA_ISOLATED_ENABLED"] === "true" &&
-        process.env["MITO_MEDICAL_TEST_ENVIRONMENT"] === "disposable",
+      enabled: mode !== "disabled",
+      productionSynthetic: mode === "production-synthetic",
       apiKey: process.env["OPENAI_API_KEY"],
       model: process.env["MITO_MEDICAL_AI_MODEL"],
       rpc: async (name, args) =>
