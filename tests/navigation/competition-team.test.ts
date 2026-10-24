@@ -1,6 +1,10 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
 import { searchCatalogue } from "@/components/app-shell";
 import { competitionDocuments, competitionTeam } from "@/content/competition-team";
+
+const OFFICIAL_CHALLENGE_URL = "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
+const STALE_CHALLENGE_URL = "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
 
 describe("official competition team destinations", () => {
   test("roster contains exactly the five supplied members and only one owner", () => {
@@ -14,6 +18,29 @@ describe("official competition team destinations", () => {
     expect(competitionTeam.officialUrl).toBe("https://www.spaceappschallenge.org/2026/find-a-team/the-mitochondria/?tab=details");
     expect(searchCatalogue.find((entry) => entry.title === "Official NASA Team Profile")?.href).toBe(competitionTeam.officialUrl);
     expect(searchCatalogue.find((entry) => entry.title === "Our Team — NASA Space Apps 2026")?.href).toBe("/competition/team");
+  });
+
+  test("menu exposes the corrected official challenge as a distinct destination", () => {
+    expect(competitionTeam.challengeUrl).toBe(OFFICIAL_CHALLENGE_URL);
+    expect(searchCatalogue.find((entry) => entry.title === "Official NASA Challenge")?.href).toBe(OFFICIAL_CHALLENGE_URL);
+    expect(searchCatalogue.find((entry) => entry.title === "Official NASA Team Profile")?.href).toBe(competitionTeam.officialUrl);
+  });
+
+  test("team page offers both official destinations and no user-facing source keeps the stale challenge URL", () => {
+    const page = readFileSync("src/routes/competition.team.tsx", "utf8");
+    expect(page).toContain("Official NASA Challenge");
+    expect(page).toContain("Official NASA Team Profile");
+    expect(page).toContain("competitionTeam.challengeUrl");
+    expect(page).toContain("competitionTeam.officialUrl");
+    for (const file of [
+      "src/routes/competition.team.tsx",
+      "src/content/competition-team.ts",
+      "src/components/app-shell.tsx",
+      "src/components/project-guide.tsx",
+      "src/domain/challenge-submission/catalog.ts",
+    ]) {
+      expect(readFileSync(file, "utf8")).not.toContain(STALE_CHALLENGE_URL);
+    }
   });
 
   test("competition PDFs retain the exact current FINAL destinations", () => {
