@@ -46,6 +46,18 @@ const DEMO_PROTOCOL = {
   sourceIds: ["SRC-15", "SRC-33"],
 } as const;
 
+const KSS_ANCHORS = [
+  "extremely alert",
+  "very alert",
+  "alert",
+  "fairly alert",
+  "neither alert nor sleepy",
+  "some signs of sleepiness",
+  "sleepy, but no effort to keep awake",
+  "sleepy, some effort to keep awake",
+  "very sleepy, great effort to keep awake",
+] as const;
+
 function formatSeconds(seconds: number) {
   const whole = Math.round(seconds);
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
@@ -112,7 +124,7 @@ export function ReadinessAssessment() {
     if (!MISSION) return;
     const now = new Date().toISOString();
     const checkIn: DailyBehavioralCheckIn = {
-      id: `p11-check-${Date.now()}`,
+      id: `p11-check-${crypto.randomUUID()}`,
       mission: MISSION,
       recordedAt: now,
       fatigueVas0To10: fatigue,
@@ -170,7 +182,7 @@ export function ReadinessAssessment() {
       practiceRunNumber: 1,
     });
     const batch = ingestPsychomotorVigilanceResult({
-      id: `p11-pvt-${Date.now()}`,
+      id: `p11-pvt-${crypto.randomUUID()}`,
       mission: MISSION,
       recordedAt: new Date().toISOString(),
       result,
@@ -179,7 +191,7 @@ export function ReadinessAssessment() {
     setState((current) => recordVigilanceResult({ ...current, issues: batch.issues }, result));
     void persistOfflineMissionEvent({
       kind: "readiness_assessment",
-      id: `p11-pvt-result-${Date.now()}`,
+      id: `p11-pvt-result-${crypto.randomUUID()}`,
       mission: MISSION,
       eventTimestamp: new Date().toISOString(),
       sourceId: DEMO_PROTOCOL.id,
@@ -243,7 +255,7 @@ export function ReadinessAssessment() {
     if (!MISSION) return;
     const recordedAt = new Date().toISOString();
     const workload: TaskLinkedWorkloadCheckIn = {
-      id: `p11-tlx-${Date.now()}`,
+      id: `p11-tlx-${crypto.randomUUID()}`,
       mission: MISSION,
       recordedAt,
       taskLabel: workloadTaskLabel.trim(),
@@ -417,9 +429,9 @@ export function ReadinessAssessment() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from({ length: 9 }, (_, index) => String(index + 1)).map((value) => (
-                        <SelectItem key={value} value={value}>
-                          {value}
+                      {KSS_ANCHORS.map((anchor, index) => (
+                        <SelectItem key={index + 1} value={String(index + 1)}>
+                          {index + 1} — {anchor}
                         </SelectItem>
                       ))}
                     </SelectContent>
