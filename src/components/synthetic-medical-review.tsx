@@ -38,9 +38,12 @@ export function SyntheticMedicalReview() {
       return;
     }
     setSnapshot(result.snapshot);
-    const resultHistory = await history({ data: {
-      missionId: result.snapshot.missionId, crewMemberId: result.snapshot.crewMemberId,
-    } });
+    const resultHistory = await history({
+      data: {
+        missionId: result.snapshot.missionId,
+        crewMemberId: result.snapshot.crewMemberId,
+      },
+    });
     setEvents(resultHistory.events);
     setStatus(
       "Invented synthetic fixtures — test receipts are not human medical review or scientific approval.",
