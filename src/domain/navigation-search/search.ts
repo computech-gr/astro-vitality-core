@@ -13,7 +13,7 @@ export type SearchEntry = {
 
 /** Synonyms keyed by navigation label. Labels must exist in the catalogue. */
 export const SEARCH_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
-  Team: ["team", "people", "contributors", "members", "authors"],
+  "Our Team — NASA Space Apps 2026": ["team", "people", "contributors", "members", "authors"],
   "Biomarkers & Signals": ["biomarker", "biomarkers", "signals", "metrics"],
   "Bone Health": ["bone", "skeletal", "musculoskeletal", "health"],
   "Immune Changes": ["immune", "inflammation", "health"],
@@ -147,5 +147,5 @@ export const INITIAL_SUGGESTIONS = [
   "Live Monitoring",
   "Health Intelligence",
   "Project Guide",
-  "Team",
+  "Our Team — NASA Space Apps 2026",
 ] as const;

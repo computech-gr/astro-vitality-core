@@ -27,6 +27,7 @@ describe("v20.2 SEO & indexability policy", () => {
       expect(isIndexableRoute(route)).toBe(true);
     }
     expect(INDEXABLE_ROUTES).toContain("/");
+    expect(INDEXABLE_ROUTES).toContain("/competition/team");
     expect(NON_INDEXABLE_ROUTES).toContain("/mission/ground");
   });
 

@@ -11,8 +11,8 @@ const first = (q: string) => searchEntries(searchCatalogue, q)[0];
 const titles = (q: string) => searchEntries(searchCatalogue, q).map((e) => e.title);
 
 describe("global navigation search", () => {
-  test("team navigates to the guide Team section", () => {
-    expect(first("team")).toMatchObject({ title: "Team", href: "/project/guide#team" });
+  test("team navigates to the competition page while retaining the guide Team section", () => {
+    expect(first("team")).toMatchObject({ title: "Our Team — NASA Space Apps 2026", href: "/competition/team" });
     expect(read("src/components/project-guide.tsx")).toContain('id: "team"');
   });
 
@@ -43,7 +43,7 @@ describe("global navigation search", () => {
   });
 
   test("case-insensitive, partial and typo tolerant; empty results", () => {
-    expect(first("TEAM")?.title).toBe("Team");
+    expect(first("TEAM")?.title).toBe("Our Team — NASA Space Apps 2026");
     expect(first("wearab")?.title).toBe("Wearables");
     expect(titles("cardiovascluar")).toContain("Cardiovascular Health");
     expect(searchEntries(searchCatalogue, "zzzqqq")).toEqual([]);
