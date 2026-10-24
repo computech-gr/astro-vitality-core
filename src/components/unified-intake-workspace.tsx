@@ -620,9 +620,15 @@ export function UnifiedIntakeWorkspace() {
             </p>
           ) : null}
           <p aria-live="polite" className="text-sm text-muted-foreground">
-            Selected: {selection.selected} · Eligible: {selection.eligible} · Excluded: {selection.excluded}
+            Selected: {selection.selected} · Eligible: {selection.eligible} · Excluded:{" "}
+            {selection.excluded}
           </p>
-          <div className="max-w-full overflow-x-auto" role="region" aria-label="Measurement review table" tabIndex={0}>
+          <div
+            className="max-w-full overflow-x-auto"
+            role="region"
+            aria-label="Measurement review table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-xs uppercase text-muted-foreground">
@@ -630,8 +636,18 @@ export function UnifiedIntakeWorkspace() {
                     <span className="block">Review</span>
                     <label className="flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap normal-case">
                       <Checkbox
-                        aria-label={selection.allSelected ? "Deselect All eligible observations" : "Select All eligible observations"}
-                        checked={selection.allSelected ? true : selection.partiallySelected ? "indeterminate" : false}
+                        aria-label={
+                          selection.allSelected
+                            ? "Deselect All eligible observations"
+                            : "Select All eligible observations"
+                        }
+                        checked={
+                          selection.allSelected
+                            ? true
+                            : selection.partiallySelected
+                              ? "indeterminate"
+                              : false
+                        }
                         disabled={selection.eligible === 0 || busy}
                         onCheckedChange={() => setAllSelected(!selection.allSelected)}
                       />
@@ -651,14 +667,14 @@ export function UnifiedIntakeWorkspace() {
                   <tr key={row.key} className="border-b border-border/60 align-top">
                     <td className="py-2 pr-3">
                       <label className="flex min-h-11 min-w-11 cursor-pointer items-center">
-                      <Checkbox
-                        aria-label={`Select ${row.label}`}
-                        disabled={!isIntakeRowEligible(row) || busy}
-                        checked={row.selected}
-                        onCheckedChange={(checked) => {
-                          editRow(row.key, { selected: checked === true });
-                        }}
-                      />
+                        <Checkbox
+                          aria-label={`Select ${row.label}`}
+                          disabled={!isIntakeRowEligible(row) || busy}
+                          checked={row.selected}
+                          onCheckedChange={(checked) => {
+                            editRow(row.key, { selected: checked === true });
+                          }}
+                        />
                       </label>
                     </td>
                     <td className="py-2 pr-3 font-medium">{row.label}</td>

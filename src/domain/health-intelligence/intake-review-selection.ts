@@ -1,4 +1,7 @@
-import { classifyIntakeObservation, type IntakeClassification } from "../health-domains/unified-intake-classification";
+import {
+  classifyIntakeObservation,
+  type IntakeClassification,
+} from "../health-domains/unified-intake-classification";
 
 export interface IntakeReviewRow {
   key: string;
@@ -14,9 +17,13 @@ const SAFE_DECIMAL = /^[-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
 
 /** Selection uses the existing save prerequisites, never scientific approval. */
 export function isIntakeRowEligible(row: IntakeReviewRow): boolean {
-  return row.classification.status === "matched" &&
-    SAFE_DECIMAL.test(row.value.trim()) && Boolean(row.unit.trim()) &&
-    Boolean(row.observedAt) && Number.isFinite(Date.parse(row.observedAt));
+  return (
+    row.classification.status === "matched" &&
+    SAFE_DECIMAL.test(row.value.trim()) &&
+    Boolean(row.unit.trim()) &&
+    Boolean(row.observedAt) &&
+    Number.isFinite(Date.parse(row.observedAt))
+  );
 }
 
 export function intakeSelectionCounts(rows: readonly IntakeReviewRow[]) {
@@ -35,16 +42,27 @@ function unconfirmed<T>(rows: T[]) {
   return { rows, reviewerConfirmed: false as const, duplicateAcknowledged: false as const };
 }
 
-export function setIntakeReviewSelection<T extends IntakeReviewRow>(rows: readonly T[], selected: boolean) {
-  return unconfirmed(rows.map((row) => ({ ...row, selected: selected && isIntakeRowEligible(row) })));
+export function setIntakeReviewSelection<T extends IntakeReviewRow>(
+  rows: readonly T[],
+  selected: boolean,
+) {
+  return unconfirmed(
+    rows.map((row) => ({ ...row, selected: selected && isIntakeRowEligible(row) })),
+  );
 }
 
-export function editIntakeReviewRow<T extends IntakeReviewRow>(rows: readonly T[], key: string, patch: Partial<T>) {
-  return unconfirmed(rows.map((row) => {
-    if (row.key !== key) return row;
-    const next = { ...row, ...patch };
-    next.classification = classifyIntakeObservation(next);
-    next.selected = next.selected && isIntakeRowEligible(next);
-    return next;
-  }));
+export function editIntakeReviewRow<T extends IntakeReviewRow>(
+  rows: readonly T[],
+  key: string,
+  patch: Partial<T>,
+) {
+  return unconfirmed(
+    rows.map((row) => {
+      if (row.key !== key) return row;
+      const next = { ...row, ...patch };
+      next.classification = classifyIntakeObservation(next);
+      next.selected = next.selected && isIntakeRowEligible(next);
+      return next;
+    }),
+  );
 }
