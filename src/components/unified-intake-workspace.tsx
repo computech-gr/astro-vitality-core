@@ -282,14 +282,12 @@ export function UnifiedIntakeWorkspace() {
           if (/\.csv$/i.test(file.name)) {
             const parsed = parseIntakeCsv(await file.text());
             const space = Math.max(0, MAX_ROWS - incoming.length);
-            const batch = parsed.rows
-              .slice(0, space)
-              .map((row) => ({
-                ...row,
-                sourceLabel: `CSV: ${file.name}`,
-                documentName: file.name,
-                documentSha256: hash,
-              }));
+            const batch = parsed.rows.slice(0, space).map((row) => ({
+              ...row,
+              sourceLabel: `CSV: ${file.name}`,
+              documentName: file.name,
+              documentSha256: hash,
+            }));
             incoming.push(...batch);
             count = batch.length;
           } else {
