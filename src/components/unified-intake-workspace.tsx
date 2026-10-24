@@ -357,14 +357,14 @@ export function UnifiedIntakeWorkspace() {
           source: {
             kind: row.sourceKind,
             label: row.sourceLabel,
-            documentName: row.documentName,
-            documentSha256: row.documentSha256,
-            excerpt: row.excerpt || undefined,
+            ...(row.documentName ? { documentName: row.documentName } : {}),
+            ...(row.documentSha256 ? { documentSha256: row.documentSha256 } : {}),
+            ...(row.excerpt ? { excerpt: row.excerpt } : {}),
           },
           provenance,
           quality: {
             reviewerConfirmed: true,
-            duplicateWarningAcknowledged: duplicates.length > 0 || undefined,
+            ...(duplicates.length > 0 ? { duplicateWarningAcknowledged: true } : {}),
           },
           reviewState: "accepted",
           status: "active",
