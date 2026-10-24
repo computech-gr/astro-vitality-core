@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Production synthetic demonstration readiness
+
+- [x] Inspect existing v3 authority, quotas, authorization and live database prerequisites; 561 tests and 81 existing disposable SQL assertions pass. Production-shape reproduction confirms unchanged fixture SQL cannot resolve the existing mission.
+- [x] Report exact proposed scope, risks, disable-first rollback and approval boundary in docs/MEDICAL_V3_PRODUCTION_SYNTHETIC_READINESS.md; no production migration, AI call or persistent approval.
+- [ ] Production activation remains blocked: corrected default-off application/SQL candidate and rollback validation, exact-commit typecheck/build, then explicit owner migration/AI/deployment authorization; unchanged pending SQL is not activation-ready.
+
 ## Unified intake bulk review selection
 
 - [x] Add eligible-only bulk selection, counts and mandatory confirmation resets; 561 tests pass, desktop/390px selection and value-edit resets verified without saving, lint/format/security pass and 99/102 static verifiers pass (three existing owner-evidence blockers). Storage and authorization unchanged; exact-commit CI typecheck/build remains unverified.
