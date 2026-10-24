@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## V3 isolated environment execution
+
+- [x] Verify SHA-256 manifest and apply both additive handoff files byte-identically.
+- [ ] Demonstrate genuine dedicated application, local authentication, Data API, disposable reviewer/evidence and bounded provider access before runtime execution.
+- [ ] Execute loaded desktop/mobile export and Q&A acceptance only after independent isolation attestation; otherwise report infrastructure blockers without using shared services.
+- [ ] Run permitted static, regression, formatting and security checks and report exact-commit Quality/Security status separately.
+
 ## V3 isolated browser acceptance gate
 
 - [x] Verify both additive patch fingerprints before applying.
