@@ -31,7 +31,7 @@ export function MissionExperiencePage() {
   const workflows = identity?.signedIn && active ? workflowsForRole(active.role) : [];
   return (
     <main id="main-content" className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-16 pt-28 lg:px-8">
-      <p className="section-kicker">P33 · Astronaut Experience & Mission Control</p>
+      <p className="section-kicker" data-phase="P33">Astronaut Experience & Mission Control</p>
       <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Mission workspace</h1>
       <p className="mt-4 max-w-3xl text-muted-foreground">Choose a mission task with clear provenance and human oversight. This is a navigation workspace, not a live health-status verdict or a clinical decision system.</p>
       <section aria-label="Identity and access status" className="mt-8 rounded-xl border border-border bg-card p-5" aria-live="polite">

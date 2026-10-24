@@ -130,9 +130,9 @@ export function ProjectGuidePage() {
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-[94rem] px-5 py-14 lg:px-8 lg:py-20">
         <p className="section-kicker">Project guide</p>
-        <h1 className="mt-3 max-w-5xl font-display text-4xl font-semibold leading-tight sm:text-6xl">Every navigation item now has a meaningful destination.</h1>
+        <h1 className="mt-3 max-w-5xl font-display text-4xl font-semibold leading-tight sm:text-6xl">Project Guide — Mission, Science &amp; Technology</h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-muted-foreground">
-          This guide separates public project explanations from the operational mission consoles. It does not invent unimplemented functionality; where a working console exists, the relevant section links directly to it.
+          Explore the mission, scientific references, platform architecture and competition materials. Public documentation is available without signing in; Mission Console tasks may require sign-in and an authorized mission membership. Research references are not clinical approval.
         </p>
 
         <nav aria-label="Project guide sections" className="mt-10 flex flex-wrap gap-2">

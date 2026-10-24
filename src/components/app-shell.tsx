@@ -14,6 +14,9 @@ import {
   Github,
   HeartPulse,
   Menu,
+  Play,
+  Users,
+  FileText,
   Network,
   Orbit,
   RadioTower,
@@ -24,7 +27,7 @@ import {
 
 import { TopicCardGrid } from "@/components/knowledge/technology-index";
 import { NavigationSearch } from "@/components/navigation-search";
-import { competitionTeam } from "@/content/competition-team";
+import { competitionTeam, competitionDocuments } from "@/content/competition-team";
 import { SEARCH_KEYWORDS, SECTION_ENTRIES, dedupeEntries, type SearchEntry } from "@/domain/navigation-search/search";
 import astronautEarthrise from "@/assets/astronaut-earthrise.jpg";
 import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
@@ -407,6 +410,29 @@ export function AppShell() {
               </div>
               <div className="mt-10 inline-flex items-center gap-3 border-l border-signal px-4 py-2 text-xs uppercase text-muted-foreground"><span className="size-1.5 bg-signal shadow-[0_0_12px_var(--signal)]" />Built for NASA Space Apps Challenge 2026</div>
             </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="explore-title" className="border-t border-border bg-deep py-10 lg:py-14">
+          <div className="mx-auto max-w-[94rem] px-5 lg:px-8">
+            <h2 id="explore-title" className="font-display text-2xl font-semibold sm:text-3xl">Explore MITOCHONDRIA</h2>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { label: "Watch the Demo", href: "/competition/demo-video", Icon: Play },
+                { label: "Meet the Team", href: "/competition/team", Icon: Users },
+                { label: "Evaluator Quick Start Guide", href: competitionDocuments[1].url, Icon: FileText },
+                { label: "Explore the Platform", href: "/project/guide#platform-guide", Icon: Network },
+              ].map(({ label, href, Icon }) => (
+                <Button key={label} asChild variant="outline" className="h-auto min-h-16 justify-start gap-3 whitespace-normal px-4 py-4 text-left">
+                  <a href={href} target={isExternal(href) ? "_blank" : undefined} rel={isExternal(href) ? "noopener noreferrer" : undefined}>
+                    <Icon aria-hidden="true" className="size-5 shrink-0 text-primary" />
+                    <span className="min-w-0 flex-1">{label}</span>
+                    {isExternal(href) ? <ExternalLink aria-hidden="true" className="size-4 shrink-0" /> : <ArrowRight aria-hidden="true" className="size-4 shrink-0" />}
+                  </a>
+                </Button>
+              ))}
+            </div>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">Demo, team and documentation are public. Mission Console tasks may require sign-in and an authorized mission membership.</p>
           </div>
         </section>
 

@@ -42,13 +42,13 @@ export function ScientificResearchCandidates() {
           mappings.
         </p>
       </div>
-      <div className="flex flex-wrap gap-3">
-        <label className="flex flex-col gap-1 text-sm">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <label className="flex min-w-0 flex-col gap-1 text-sm">
           Search by source or candidate
           <input
             type="search"
             aria-label="Search provisional scientific proposals"
-            className="rounded border border-border bg-background px-3 py-2"
+            className="w-full min-w-0 rounded border border-border bg-background px-3 py-2"
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -57,10 +57,10 @@ export function ScientificResearchCandidates() {
             placeholder="e.g. WBC"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex min-w-0 flex-col gap-1 text-sm">
           Provisional classification
           <select
-            className="max-w-full rounded border border-border bg-background px-3 py-2"
+            className="w-full min-w-0 max-w-full rounded border border-border bg-background px-3 py-2"
             value={classification}
             onChange={(event) => {
               setClassification(event.target.value);
