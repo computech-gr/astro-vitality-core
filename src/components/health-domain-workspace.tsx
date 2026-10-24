@@ -20,7 +20,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
   const [message, setMessage] = useState("Checking private Crew Self access...");
   useEffect(() => {
     let active = true;
-    void getCloudMissionContext().then((context) => {
+    void getCloudMissionContext().then(async (context) => {
       if (!active) return;
       const allowed = context.signedIn && !context.error ? context.memberships.filter((member): member is typeof member & { crewMemberId: string } => member.role === "crew_self" && Boolean(member.crewMemberId)) : [];
       const missionIds = [...new Set(allowed.map(member => member.missionId))];

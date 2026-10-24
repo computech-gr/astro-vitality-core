@@ -15,7 +15,7 @@ export function AstronautSelfAssessment() {
   const result = useMemo(() => reviewSelfAssessment(answers), [answers]);
   useEffect(() => {
     let active = true;
-    void getCloudMissionContext().then(context => {
+    void getCloudMissionContext().then(async context => {
       if (!active) return;
       const allowed = context.signedIn && !context.error ? context.memberships.filter((m): m is typeof m & { crewMemberId: string } => m.role === "crew_self" && Boolean(m.crewMemberId)) : [];
       const missionIds = [...new Set(allowed.map(m => m.missionId))];
