@@ -12,7 +12,7 @@ const rpc=async(name:string,args:Record<string,unknown>)=>{
  if(!allowed.includes(name)) throw new Error('RPC not allowed by isolated verifier');
  const literal=(v:unknown)=>`'${String(v).replaceAll("'","''")}'`;
  const params=name==='medical_v3_fixture_snapshot'?'':name==='medical_v3_release_ai'?literal(args['p_reservation']):[args['p_mission'],args['p_crew']].map(literal).join(',');
- try{return {data:JSON.parse(sql(`set role authenticated; select set_config('request.jwt.claim.sub','${user}',false); select ${name}(${params})`)),error:null};}catch{return {data:null,error:'Caller-scoped disposable RPC failed'};}
+ try{const value=sql(`set role authenticated; select set_config('request.jwt.claim.sub','${user}',false); select ${name}(${params})`);return {data:name==='medical_v3_release_ai'?null:JSON.parse(value),error:null};}catch{return {data:null,error:'Caller-scoped disposable RPC failed'};}
 };
 const source=await rpc('medical_v3_fixture_snapshot',{});
 const snapshot=await validateSyntheticSnapshot(source.data);
