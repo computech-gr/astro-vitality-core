@@ -734,7 +734,12 @@ export function UnifiedIntakeWorkspace() {
             I reviewed every selected row (label, value, original unit and observation time) and
             confirm it matches the source.
           </label>
-          <Button type="button" disabled={!canSave} onClick={() => void saveAccepted()}>
+          <Button
+            type="button"
+            className="h-auto w-full whitespace-normal py-2 text-center"
+            disabled={!canSave}
+            onClick={() => void saveAccepted()}
+          >
             Save {saveableRows.length} reviewed observation(s) — encrypted, offline
           </Button>
         </section>
