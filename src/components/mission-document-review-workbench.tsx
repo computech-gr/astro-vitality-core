@@ -118,6 +118,17 @@ export function MissionDocumentReviewWorkbench() {
   const boneHints = getUnitPendingBoneHints(text);
   const hasDuplicateMetrics =
     new Set(selected.map((candidate) => candidate.id)).size !== selected.length;
+  const invalidSelectedValues = selected.some(
+    (candidate) => !safeNumber.test(candidate.value.trim()) || !candidate.unit.trim(),
+  );
+  function editCandidate(index: number, patch: Partial<Pick<Candidate, "value" | "unit">>) {
+    setReviewerConfirmed(false);
+    setPreviewVisible(false);
+    setCloudStatus("");
+    setCandidates((previous) =>
+      previous.map((candidate, j) => (j === index ? { ...candidate, ...patch } : candidate)),
+    );
+  }
   const allSelected = candidates.length > 0 && candidates.every((c) => c.selected);
   function setAllReviewed(checked: boolean) {
     setCandidates((previous) => previous.map((candidate) => ({ ...candidate, selected: checked })));
