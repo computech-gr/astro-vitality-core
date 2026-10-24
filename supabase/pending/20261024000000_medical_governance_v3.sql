@@ -85,7 +85,7 @@ BEGIN
  OR (p_type='returned' AND prev.event_type NOT IN ('draft_created','returned'))
  OR (p_type IN ('revoked','superseded') AND prev.event_type<>'approved')))
  THEN RAISE EXCEPTION 'invalid transition'; END IF;
- IF p_type IN ('approved','superseded') THEN
+ IF p_type <> 'revoked' THEN
   SELECT canonical_text,source_ids INTO canonical,ids FROM public.medical_v3_authoritative_evidence(p_mission,p_crew);
   IF canonical IS NULL OR cardinality(ids)<1 THEN RAISE EXCEPTION 'authoritative evidence unavailable'; END IF;
   server_sha:='sha256-'||encode(extensions.digest(convert_to(canonical,'UTF8'),'sha256'),'hex');
@@ -150,3 +150,14 @@ RETURNS void LANGUAGE sql SECURITY DEFINER SET search_path=public AS $$
 $$;
 REVOKE ALL ON FUNCTION public.medical_v3_release_ai(uuid) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.medical_v3_release_ai(uuid) TO authenticated;
+
+-- Caller-scoped AI projection; unavailable until a separately approved source adapter
+-- can attest synthetic provenance and exact metric/value/unit/time from accepted records.
+CREATE OR REPLACE FUNCTION public.medical_v3_ai_evidence(p_mission text,p_crew text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+BEGIN
+ IF NOT public.medical_v3_has_scope(p_mission,p_crew) THEN RAISE EXCEPTION 'access denied'; END IF;
+ RETURN NULL;
+END $$;
+REVOKE ALL ON FUNCTION public.medical_v3_ai_evidence(text,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.medical_v3_ai_evidence(text,text) TO authenticated;
