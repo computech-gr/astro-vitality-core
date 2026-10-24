@@ -1,5 +1,9 @@
 # P20 video evidence closure
 
+## Unified intake bulk review selection
+
+- [ ] Add eligible-only bulk selection, counts and mandatory confirmation resets; test selection rules and mobile interaction, and run existing quality checks without storage or authorization changes.
+
 ## V3 final CI and synthetic demonstration
 
 - [x] Verify supplied manifest, correct clean-checkout sample generation and exact-SHA reporting; 556 tests, 99/102 offline verifiers, formatting/lint/security and zero-finding full-scope Trivy completed.
