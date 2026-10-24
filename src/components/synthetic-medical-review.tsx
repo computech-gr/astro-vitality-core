@@ -80,6 +80,40 @@ export function SyntheticMedicalReview() {
     });
     await refresh();
   };
+  const exportHistory = async () => {
+    if (!snapshot) throw new Error("Load an authorized synthetic source first.");
+    // Re-query the authorized server on every export; never export stale cached events.
+    const current = await history({
+      data: { missionId: snapshot.missionId, crewMemberId: snapshot.crewMemberId },
+    });
+    if (!current.available) throw new Error("Verified review history is unavailable.");
+    const payload = {
+      schema: "mitochondria.synthetic-medical-review-export.v1",
+      research_only: true,
+      synthetic_only: true,
+      not_a_medical_signature: true,
+      exported_at: new Date().toISOString(),
+      mission_id: snapshot.missionId,
+      crew_member_id: snapshot.crewMemberId,
+      current_evidence_sha256: snapshot.sha256,
+      events: current.events,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "mitochondria-synthetic-medical-review-history.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+    setStatus("Synthetic review history exported from a fresh authorized server read; handle as sensitive research data.");
+  };
   const generate = async () => {
     if (!snapshot || !consent) return;
     setConsent(false);
@@ -216,6 +250,17 @@ export function SyntheticMedicalReview() {
               Revoke acknowledgment
             </Button>
           </div>
+          <Button
+            variant="outline"
+            disabled={busy}
+            onClick={() => void run(exportHistory)}
+          >
+            Export authorized synthetic review history (JSON)
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Contains reviewer identifiers, evidence hashes, timestamps and review text.
+            Export is not a clinical signature; store the file securely.
+          </p>
           <ol className="space-y-3 text-sm">
             {events.map((event) => (
               <li key={event.id} className="border-t pt-3">
