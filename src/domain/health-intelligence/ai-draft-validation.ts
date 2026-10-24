@@ -112,6 +112,7 @@ export const AI_DRAFT_INSTRUCTIONS = [
   "Refer to each measurement ONLY by its exact metric code as given, and cite it with its exact observation ID in square brackets, e.g. [obs-0001], on the same line. EVERY line or bullet that mentions a metric code or a value, including questions, MUST contain the bracketed observation ID(s) for it, e.g. 'lab.ctx [obs-0001]'. Never write 'observation ID obs-0001' without brackets. Never use numbered references like [1].",
   "Only restate values exactly as given. Do not name any biomarker, analyte or hormone other than the metric codes provided.",
   "Do not state or imply reference ranges, normal/abnormal status, elevation, deficiency, diagnoses, diseases, causation, treatment, dosing or supplements.",
+  "Lines that mention no metric code and no value (general limitations or questions) are allowed without citations; but if a question or limitation names a metric code, append that metric's observation IDs in brackets to that same line. Prefer writing general questions without metric codes.",
   "Use the sections: Observed evidence; Data limitations; Questions for the qualified medical advisor.",
   "State once that this is AI-generated, unverified and not clinically approved. No names or identities.",
 ].join(" ");
