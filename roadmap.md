@@ -3,10 +3,11 @@
 ## V3 staging security recovery
 
 - [x] Verify and apply both additive patch fingerprints before integration.
-- [ ] Trace and remediate development CVEs with compatible package/lockfile updates and full-scope Trivy.
-- [ ] Prepare independent staging architecture and tested fail-closed target checks; no provisioning before owner approval.
-- [ ] Run permitted tests, lint, formatting, scientific/security checks and inspect automatic validation.
-- [ ] Run desktop/mobile acceptance only after independently verified isolation; exact-final-commit Quality/Security remains required.
+- [x] Resolve all 8 prior HIGH/CRITICAL findings using compatible Bun updates; full-scope/all-severity Trivy reports zero vulnerabilities/secrets.
+- [x] Prepare independent staging architecture and 19 tested fail-closed target checks; no provisioning before owner approval.
+- [x] Run 545 tests, lint 0 errors/13 warnings, formatting and security/scientific checks; details in docs/MEDICAL_V3_STAGING_SECURITY_STATUS.md.
+- [ ] Desktop/mobile acceptance: blocked by missing independent services, owner-approved target/budget and attestation.
+- [ ] Exact-final-commit Quality/Security and production build/typecheck: awaiting matching GitHub workflow evidence.
 
 ## V3 isolated environment execution
 
@@ -14,7 +15,7 @@
 - [ ] Demonstrate genuine isolated application/auth/Data API, reviewer/evidence and bounded provider access: blocked by missing services/runtime and independent attestation; separate staging authorization required.
 - [ ] Execute loaded desktop/mobile export and Q&A acceptance: blocked by genuine isolation, not run or simulated.
 - [x] Run 526 tests, lint, targeted formatting, 98/101 executed verifiers and fresh security scans; report expanded development scan findings in docs/MEDICAL_V3_ISOLATED_EXECUTION_STATUS.md.
-- [ ] Resolve expanded development-dependency scan findings: 7 HIGH/1 CRITICAL; dependency remediation remains separate from the stopped isolation task.
+- [x] Resolve expanded development-dependency findings in staging security recovery; all 8 findings cleared by fresh full-scope Trivy.
 - [ ] Exact-final-commit Quality/Security and full typecheck/build: blocked by unavailable matching public workflow evidence and managed synchronization.
 
 ## V3 isolated browser acceptance gate
