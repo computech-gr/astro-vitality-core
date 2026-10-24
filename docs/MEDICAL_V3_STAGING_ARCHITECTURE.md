@@ -8,15 +8,15 @@ This design does not authorize provisioning, paid resources, production migratio
 
 Use a disposable, owner-approved host or isolated container/network stack, never the shared preview or production project. All application source comes from one exact recorded commit. A clean source staging folder must exclude `.env`, `.git`, cached sessions, dependencies, generated outputs and production configuration; install dependencies from the reviewed lockfile with no production credential inheritance.
 
-| Boundary | Proposed isolated responsibility |
-| --- | --- |
-| App | Dedicated TanStack Start deployment/origin, not port 8080; independent effective browser/server configuration |
-| Auth | Genuine auth service, independently generated issuer/signing keys, audience, test accounts and redirect allowlist |
-| Data API | Genuine JWT-verifying Data API attached only to disposable database; anon/authenticated roles and caller RLS |
-| Database | Dedicated disposable `medical_v3_it`, no production connection, schema or records copied |
-| Provider | Separate server-only OpenAI test credential/project; existing Responses contract, not a substituted gateway |
-| Runner | Dedicated browser sessions at 1280px and 390px, independent authenticated synthetic identities |
-| Network | Default-deny egress; app/Auth/Data API/database allowlist, narrowly approved provider destination |
+| Boundary | Proposed isolated responsibility                                                                                  |
+| -------- | ----------------------------------------------------------------------------------------------------------------- |
+| App      | Dedicated TanStack Start deployment/origin, not port 8080; independent effective browser/server configuration     |
+| Auth     | Genuine auth service, independently generated issuer/signing keys, audience, test accounts and redirect allowlist |
+| Data API | Genuine JWT-verifying Data API attached only to disposable database; anon/authenticated roles and caller RLS      |
+| Database | Dedicated disposable `medical_v3_it`, no production connection, schema or records copied                          |
+| Provider | Separate server-only OpenAI test credential/project; existing Responses contract, not a substituted gateway       |
+| Runner   | Dedicated browser sessions at 1280px and 390px, independent authenticated synthetic identities                    |
+| Network  | Default-deny egress; app/Auth/Data API/database allowlist, narrowly approved provider destination                 |
 
 For local execution, proposed app/Auth/Data API origins use distinct literal IPv4 loopback ports, each explicitly configured and never 8080. No values in this document are a running service endpoint. For externally hosted staging, require separate owner-approved HTTPS origins and independently verified DNS, certificate and service identity. Hostname matching is not attestation. The target guard is read-only string policy; its successful result cannot authorize credentials, provider calls or migration execution.
 

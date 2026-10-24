@@ -15,15 +15,15 @@ Beyond the two manifest files, the requested integration modifies `package.json`
 
 Used targeted Bun updates, without lifecycle scripts or environment-file loading. No incompatible override or unrelated major upgrade was added. Vite remains on 8.1; all transitive major branches are preserved.
 
-| Package | Before → after | Parent path / compatibility |
-| --- | --- | --- |
-| Vite | 8.1.5 → 8.1.6 | Direct dev dependency, compatible observed framework/plugin peer ranges |
-| brace-expansion | 1.1.16 → 1.1.21 | ESLint → minimatch 3.1.5 → brace-expansion `^1.1.7` |
-| brace-expansion | 5.0.8 → 5.0.12 | typescript-eslint → typescript-estree → minimatch 10.2.6 → brace-expansion `^5.0.8`; not forced to 1.x |
-| launch-editor | 2.14.1 → 2.14.2 | framework Vite configuration → devtools-vite → devtools-bundler-core → launch-editor `^2.11.1` |
-| nanoid | 3.3.16 → 3.3.20 | Vite → postcss 8.5.24 → nanoid `^3.3.16`; not forced to 5/6.x |
-| shell-quote | 1.10.0 → 1.12.0 | launch-editor → shell-quote `^1.8.4` |
-| picomatch | hoisted 4.0.5 → 4.0.7 | Resolver consequence of Vite's updated range; existing 4.0.5 branches retained under devtools-bundler-core, tinyglobby and unplugin |
+| Package         | Before → after        | Parent path / compatibility                                                                                                         |
+| --------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Vite            | 8.1.5 → 8.1.6         | Direct dev dependency, compatible observed framework/plugin peer ranges                                                             |
+| brace-expansion | 1.1.16 → 1.1.21       | ESLint → minimatch 3.1.5 → brace-expansion `^1.1.7`                                                                                 |
+| brace-expansion | 5.0.8 → 5.0.12        | typescript-eslint → typescript-estree → minimatch 10.2.6 → brace-expansion `^5.0.8`; not forced to 1.x                              |
+| launch-editor   | 2.14.1 → 2.14.2       | framework Vite configuration → devtools-vite → devtools-bundler-core → launch-editor `^2.11.1`                                      |
+| nanoid          | 3.3.16 → 3.3.20       | Vite → postcss 8.5.24 → nanoid `^3.3.16`; not forced to 5/6.x                                                                       |
+| shell-quote     | 1.10.0 → 1.12.0       | launch-editor → shell-quote `^1.8.4`                                                                                                |
+| picomatch       | hoisted 4.0.5 → 4.0.7 | Resolver consequence of Vite's updated range; existing 4.0.5 branches retained under devtools-bundler-core, tinyglobby and unplugin |
 
 The compatible resolver also removed redundant nested Vite/esbuild 0.27.7 entries and hoisted an existing 4.0.7 picomatch branch. These are lock-graph changes, not a manual lockfile rewrite. Earlier overrides and direct framework pins remain unchanged.
 
@@ -31,16 +31,16 @@ The compatible resolver also removed redundant nested Vite/esbuild 0.27.7 entrie
 
 All eight previously reported HIGH/CRITICAL findings no longer appear:
 
-| Advisory | Previously affected package | Previous severity |
-| --- | --- | --- |
-| CVE-2026-102276 | brace-expansion 1.1.16 | HIGH |
-| CVE-2026-102278 | brace-expansion 1.1.16 | HIGH |
-| CVE-2026-14257 | brace-expansion 1.1.16 | HIGH |
-| CVE-2026-69152 | brace-expansion 1.1.16 | HIGH |
-| CVE-2026-112942 | launch-editor 2.14.1 | HIGH |
-| CVE-2026-67213 | nanoid 3.3.16 | HIGH |
-| CVE-2026-102422 | shell-quote 1.10.0 | CRITICAL |
-| CVE-2026-112942 | Vite 8.1.5 | HIGH |
+| Advisory        | Previously affected package | Previous severity |
+| --------------- | --------------------------- | ----------------- |
+| CVE-2026-102276 | brace-expansion 1.1.16      | HIGH              |
+| CVE-2026-102278 | brace-expansion 1.1.16      | HIGH              |
+| CVE-2026-14257  | brace-expansion 1.1.16      | HIGH              |
+| CVE-2026-69152  | brace-expansion 1.1.16      | HIGH              |
+| CVE-2026-112942 | launch-editor 2.14.1        | HIGH              |
+| CVE-2026-67213  | nanoid 3.3.16               | HIGH              |
+| CVE-2026-102422 | shell-quote 1.10.0          | CRITICAL          |
+| CVE-2026-112942 | Vite 8.1.5                  | HIGH              |
 
 Fresh Trivy 0.66.0 filesystem vulnerability/secret scans explicitly include development dependencies, with no advisory suppression. HIGH/CRITICAL scan: **0 vulnerabilities / 0 secrets**. Additional all-severity scan (`UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL`) at 2026-10-24T22:06:18Z: **0 reported vulnerabilities / 0 secrets**. This is the scanner's current bun.lock inventory, not a universal guarantee of absence of security defects or exploitability proof. No remaining advisory exception is requested.
 
