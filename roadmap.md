@@ -1,5 +1,10 @@
 # P20 video evidence closure
 
+## Production synthetic demonstration readiness
+
+- [ ] Inspect existing v3 authority, quotas, authorization and live database prerequisites; validate required changes locally without activating them.
+- [ ] Report exact production scope, risks, disable-first rollback and explicit owner approval boundary; no migration, AI call or persistent approval before approval.
+
 ## Unified intake bulk review selection
 
 - [x] Add eligible-only bulk selection, counts and mandatory confirmation resets; 561 tests pass, desktop/390px selection and value-edit resets verified without saving, lint/format/security pass and 99/102 static verifiers pass (three existing owner-evidence blockers). Storage and authorization unchanged; exact-commit CI typecheck/build remains unverified.
