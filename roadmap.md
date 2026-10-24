@@ -2,9 +2,9 @@
 
 ## Medical governance v3
 
-- [ ] Verify and apply the supplied foundation; integrate fail-closed governance and stricter AI validation.
-- [ ] Prepare append-only review/RLS and atomic AI quota migration; validate in disposable PostgreSQL only.
-- [ ] Run tests, permitted scientific/security checks and authorized desktop/mobile checks.
+- [x] Verify and apply supplied foundation; add fail-closed APIs and stricter AI validation (see v3 status report for incomplete operational features).
+- [x] Prepare append-only review/RLS and atomic AI quota migration; validate in disposable PostgreSQL only.
+- [x] Run tests, permitted scientific/security checks and authorized desktop/mobile checks; report unresolved verifiers and CI limitations.
 - [ ] Production migration and authoritative evidence adapter require owner approval and a separately authorized server evidence source.
 - [ ] Confirm exact-commit synchronization and Quality/Security workflows; requires managed synchronization and Actions.
 
