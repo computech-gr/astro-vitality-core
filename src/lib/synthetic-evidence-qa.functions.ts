@@ -1,7 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-type PendingRpcClient = {rpc:(name:string,args:Record<string,unknown>)=>PromiseLike<{data:unknown;error:unknown}>};
+type PendingRpcClient = {
+  rpc: (
+    name: string,
+    args: Record<string, unknown>,
+  ) => PromiseLike<{ data: unknown; error: unknown }>;
+};
 
 export const askSyntheticEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -26,7 +31,8 @@ export const askSyntheticEvidence = createServerFn({ method: "POST" })
         process.env["MITO_MEDICAL_TEST_ENVIRONMENT"] === "disposable",
       apiKey: process.env["OPENAI_API_KEY"],
       model: process.env["MITO_MEDICAL_AI_MODEL"],
-      rpc: async (name, args) => await (context.supabase as unknown as PendingRpcClient).rpc(name, args),
+      rpc: async (name, args) =>
+        await (context.supabase as unknown as PendingRpcClient).rpc(name, args),
       providerFetch: fetch,
       now: () => new Date().toISOString(),
     });

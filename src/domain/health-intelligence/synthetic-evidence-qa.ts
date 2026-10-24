@@ -6,7 +6,7 @@ export const QA_QUESTION_LIMIT = 1000;
 export function validateSyntheticQuestion(raw: unknown): string {
   const question = z.string().trim().min(1).max(QA_QUESTION_LIMIT).parse(raw);
   if (
-    [...question].some(c=>c.charCodeAt(0)<32) ||
+    [...question].some((c) => c.charCodeAt(0) < 32) ||
     /[<>]|\b(ignore|override|system prompt|instructions|developer|diagnos\w*|prescrib\w*|treatment|normal range|reference range|real data|upload)\b/i.test(
       question,
     )
