@@ -1,5 +1,13 @@
 # P20 video evidence closure
 
+## Medical governance v3 safe completion
+
+- [x] Verify and apply only the two additive manifest files; preserve all release guards.
+- [ ] Investigate five verifier failures and document the synthetic-only evidence adapter design without introducing trust or transfers.
+- [ ] Run permitted tests, release gates, formatting, security/scientific checks and inspect automatic typecheck/build signals.
+- [ ] Production migration, authoritative evidence source, transfers and activation require separate explicit owner approval.
+- [ ] Verify final saved SHA and exact-commit GitHub CI; requires managed synchronization and Actions.
+
 ## Medical governance v3
 
 - [x] Verify and apply supplied foundation; add fail-closed APIs and stricter AI validation (see v3 status report for incomplete operational features).
