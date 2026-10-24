@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import {
   AI_DRAFT_INSTRUCTIONS,
   AI_DRAFT_SCHEMA,
@@ -135,6 +136,14 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           );
         if (new Set(evidence.map((e) => e.id)).size !== evidence.length)
           return fail("Duplicate evidence IDs", 422);
+        const { data: source, error: sourceError } = await supabase.rpc(
+          "medical_v3_fixture_snapshot",
+        );
+        const snapshot = source as SyntheticEvidenceSnapshot | null;
+        if (sourceError || !snapshot)
+          return fail("Authoritative synthetic evidence unavailable; no data sent", 503);
+        if (snapshot.missionId !== missionId || snapshot.crewMemberId !== crewMemberId)
+          return fail("Synthetic fixture scope mismatch; no data sent", 403);
         // Pending RPC types are intentionally not generated before owner approval.
         const { data: verified, error: verificationError } = await supabase.rpc(
           "medical_v3_ai_evidence",
@@ -145,7 +154,19 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
         );
         if (verificationError || !verified || !Array.isArray(verified))
           return fail("Authoritative synthetic evidence unavailable; no data sent", 503);
-        if (JSON.stringify(verified) !== JSON.stringify(evidence))
+        if (
+          JSON.stringify(verified) !== JSON.stringify(snapshot.evidence) ||
+          evidence.length !== snapshot.evidence.length ||
+          evidence.some((row, index) => {
+            const trusted = snapshot.evidence[index];
+            return (
+              !trusted ||
+              Object.keys(row).some(
+                (key) => row[key as keyof typeof row] !== trusted[key as keyof typeof trusted],
+              )
+            );
+          })
+        )
           return fail("Stale or tampered evidence; no data sent", 422);
         const { data: reservation, error: quotaError } = await supabase.rpc(
           "medical_v3_reserve_ai",
@@ -177,7 +198,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
               store: false,
               max_output_tokens: 1500,
               instructions: AI_DRAFT_INSTRUCTIONS,
-              input: JSON.stringify({ provenance, evidence }),
+              input: JSON.stringify({ provenance: "synthetic", evidence: snapshot.evidence }),
               text: {
                 format: {
                   type: "json_schema",
@@ -207,7 +228,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           }
           const text = renderStructuredDraft(structured) ?? "";
           if (!text || text.length > 12000) return fail("AI draft missing or oversized", 502);
-          const check = validateAIDraft(text, evidence);
+          const check = validateAIDraft(text, snapshot.evidence);
           if (!check.ok)
             return Response.json(
               {

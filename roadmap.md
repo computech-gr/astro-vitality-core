@@ -3,9 +3,11 @@
 ## V3 synthetic completion implementation gate
 
 - [x] Verify and apply both manifest files byte-identically.
-- [x] Run 506 tests, 335 disposable database assertions, formatting, lint, security scan and 99 verifiers; record exact results in docs/MEDICAL_V3_SYNTHETIC_COMPLETION_STATUS.md.
-- [ ] Complete synthetic integration: blocked by the contract's exact `heart_rate` fixture identifier, which is absent from the intake catalog; no remapping or authority changes permitted.
-- [ ] Validate non-production integration and request production approval only after successful acceptance; no production change authorized.
+- [x] Run 509 tests, 51 new-source and 305 existing disposable database assertions, formatting, lint, fresh security scan and 99 verifiers; record exact results in docs/MEDICAL_V3_SYNTHETIC_COMPLETION_STATUS.md.
+- [x] Owner corrected fixture identifier to cv-001 / HR; stage synthetic source/RPCs, v2 canonical evidence, isolated review controls and disable-first rollback.
+- [x] Report staged implementation and authenticated desktop/mobile disabled-state checks without claiming operational acceptance.
+- [ ] Full AI/advisor browser acceptance: blocked by absence of an isolated application environment connected to the disposable database; production stays disabled.
+- [ ] Production approval request: blocked by full acceptance, source/append race proof, authentic private evidence and exact-commit Quality/Security results.
 
 ## V3 verifier recovery and synthetic source decision
 

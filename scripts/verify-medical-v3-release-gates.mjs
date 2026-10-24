@@ -10,7 +10,7 @@ const gates = [
   ['real-data transfer denied', route.includes('if (provenance === "real")')],
   ['server authorization required', route.includes('ground_medical') && route.includes('membershipError')],
   ['server evidence resolver required', route.includes('medical_v3_ai_evidence')],
-  ['server evidence equality required', route.includes('JSON.stringify(verified) !== JSON.stringify(evidence)')],
+  ['server evidence equality required', route.includes('JSON.stringify(verified) !== JSON.stringify(snapshot.evidence)') && route.includes('evidence.length !== snapshot.evidence.length') && route.includes('row[key as keyof typeof row] !== trusted[key as keyof typeof trusted]') && route.includes('evidence: snapshot.evidence')],
   ['atomic quota reservation required', route.includes('medical_v3_reserve_ai')],
   ['quota rejection 429', route.includes('status: 429')],
   ['quota released in finally', route.includes('finally') && route.includes('medical_v3_release_ai')],

@@ -1,4 +1,5 @@
 import { MedicalAdvisorWorkbench } from "@/components/medical-advisor-workbench";
+import { SyntheticMedicalReview } from "@/components/synthetic-medical-review";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -145,6 +146,7 @@ export function AstronautHealthReport() {
           </Link>
         )}
       </section>
+      {identity?.signedIn && <SyntheticMedicalReview />}
       {report && (
         <article className="space-y-5 rounded-lg border bg-card p-5 print:border-0 print:p-0">
           <div className="flex flex-wrap justify-between gap-3 print:hidden">
