@@ -165,7 +165,8 @@ export function BoneHealthEntryPage() {
       <button className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 sm:col-span-2" type="submit" disabled={busy || !authorizedSelection}>{busy ? "Saving…" : supersedesId ? "Save correction" : "Save encrypted record"}</button>
       {message && <p role="status" className="sm:col-span-2">{message}</p>}
     </form>
-    {authorizedSelection && <BoneHealthImport missionId={missionId} crewMemberId={crewMemberId} dataOrigin={dataOrigin || "synthetic"} onImported={async()=>setHistory(await listBoneEntries(missionId,crewMemberId))} />}
+    {authorizedSelection && dataOrigin && <BoneHealthImport missionId={missionId} crewMemberId={crewMemberId} dataOrigin={dataOrigin} onImported={async()=>setHistory(await listBoneEntries(missionId,crewMemberId))} />}
+    {authorizedSelection && !dataOrigin && <p className="mt-8 rounded-xl border border-border p-5 text-sm text-muted-foreground" role="status">Choose the data provenance (synthetic or real) above to enable CSV and document import. Imports never assume a provenance.</p>}
     {authorizedSelection && <section className="mt-8 rounded-xl border border-border p-5" aria-label="Bone research evidence summary">
       <h2 className="text-xl font-semibold">Bone research evidence summary · local only</h2>
       <p className="mt-2 text-sm text-muted-foreground">Read-only synthetic evidence from encrypted local records for the selected mission and crew. Not cloud-synced, not a clinical assessment, and not combined with the cloud evidence summary on other health pages. Records marked erroneous are excluded.</p>

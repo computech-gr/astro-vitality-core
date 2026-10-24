@@ -18,7 +18,7 @@ export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImport
     try {
       const text = await file.text(); const result = parseBoneImport(text);
       setRows(result.candidates); setErrors(result.rejected);
-      setStatus(`${result.candidates.length} candidates require your confirmation. ${result.rejected.length} rows rejected. Nothing has been saved.`);
+      setStatus(`${result.candidates.length} candidates require your confirmation (all start unchecked). ${result.rejected.length} rows rejected. Nothing has been saved.`);
     } catch(e) {setStatus(e instanceof Error ? e.message : "Unable to parse file.");}
   }
   async function commit() {
