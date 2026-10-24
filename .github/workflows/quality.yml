@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Reproduce sealed synthetic release sample
+        run: bun run sample:release
+
       - name: Verify foundation
         run: bun run verify:foundation
 

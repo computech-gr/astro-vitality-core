@@ -27,20 +27,20 @@ const evidence = [
     domain: "cardiovascular",
   },
 ];
-async function fixture() {
+async function fixture(rows = evidence) {
   const canonical = canonicalSyntheticJson({
     schema: "mitochondria.synthetic-evidence.v2",
     provenance: "synthetic",
     missionId: "m1",
     crewMemberId: "c1",
-    observations: evidence,
+    observations: rows,
   });
   return {
     canonical,
     sha256: await syntheticSha256(canonical),
     missionId: "m1",
     crewMemberId: "c1",
-    evidence,
+    evidence: rows,
   };
 }
 const input = {
@@ -59,9 +59,10 @@ async function harness(
     answer?: unknown;
     stale?: boolean;
     releaseFail?: boolean;
+    evidence?: typeof evidence;
   } = {},
 ) {
-  const snapshot = await fixture();
+  const snapshot = await fixture(options.evidence);
   let calls = 0;
   let reads = 0;
   const rpcs: string[] = [];
@@ -83,7 +84,7 @@ async function harness(
           error: null,
         };
       }
-      if (name === "medical_v3_ai_evidence") return { data: evidence, error: null };
+      if (name === "medical_v3_ai_evidence") return { data: snapshot.evidence, error: null };
       if (name === "medical_v3_reserve_ai")
         return { data: { allowed: options.quota ?? true, reservationId: "lease" }, error: null };
       return { data: true, error: options.releaseFail ? "failed" : null };
@@ -163,6 +164,41 @@ describe("authorized synthetic export integrity", () => {
   });
 });
 describe("isolated synthetic Q&A controls", () => {
+  test("two authorized Alex Morgan fixture facts retain exact values, dates and observation citations", async () => {
+    const rows = [
+      evidence[0],
+      {
+        ...evidence[0],
+        id: "synthetic-v3-hr-002",
+        value: "66",
+        time: "2026-10-02T10:00:00Z",
+      },
+    ];
+    const h = await harness({
+      evidence: rows,
+      answer: {
+        statements: rows.map((o) => ({
+          text: exactEvidenceStatement(o),
+          observationId: o.id,
+        })),
+      },
+    });
+    const response = await answerSyntheticQuestion(
+      {
+        ...input,
+        question: "What values were recorded in the two synthetic heart-rate observations?",
+      },
+      h.deps,
+    );
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.citedIds).toEqual(["synthetic-v3-hr-001", "synthetic-v3-hr-002"]);
+    expect(body.text).toBe(
+      "cv-001 recorded 62 bpm at 2026-10-01T10:00:00Z. [synthetic-v3-hr-001]\ncv-001 recorded 66 bpm at 2026-10-02T10:00:00Z. [synthetic-v3-hr-002]",
+    );
+    expect(h.getCalls()).toBe(1);
+    expect(h.rpcs.at(-1)).toBe("medical_v3_release_ai");
+  });
   test("invalid server timestamp withholds output and releases quota", async () => {
     const h = await harness();
     h.deps.now = () => "not-utc";

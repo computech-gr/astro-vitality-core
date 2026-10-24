@@ -27,6 +27,49 @@ const o: UnifiedObservation = {
   reviewState: "accepted",
 };
 describe("medical advisor research draft", () => {
+  test("Alex Morgan two-observation session review requires rationale and becomes stale after correction", () => {
+    const first: UnifiedObservation = {
+      ...o,
+      id: "synthetic-v3-hr-001",
+      missionId: "m1",
+      crewMemberId: "c1",
+      metricId: "cv-001",
+      domain: "cardiovascular",
+      value: "62",
+      originalUnit: "bpm",
+      observedAt: "2026-10-01T10:00:00Z",
+    };
+    const second: UnifiedObservation = {
+      ...first,
+      id: "synthetic-v3-hr-002",
+      value: "66",
+      observedAt: "2026-10-02T10:00:00Z",
+    };
+    const report = buildHealthHistoryReport([first, second], "m1", "c1", "synthetic");
+    const text =
+      "cv-001 recorded 62 bpm at 2026-10-01T10:00:00Z. [synthetic-v3-hr-001]\ncv-001 recorded 66 bpm at 2026-10-02T10:00:00Z. [synthetic-v3-hr-002]";
+    const draft = createAdvisorDraft(report, text, "human-authored");
+    expect(() =>
+      approveAdvisorDraft(draft, report, "Synthetic test reviewer", text, "", true),
+    ).toThrow();
+    const approved = approveAdvisorDraft(
+      draft,
+      report,
+      "Synthetic test reviewer",
+      text,
+      "Checked both exact fixture IDs, values, units and dates; research-only test, not human medical acceptance.",
+      true,
+    );
+    expect(approved.evidenceIds).toEqual(["synthetic-v3-hr-001", "synthetic-v3-hr-002"]);
+    expect(isApprovedForReport(approved, report)).toBe(true);
+    const changed = buildHealthHistoryReport(
+      [{ ...first, value: "63" }, second],
+      "m1",
+      "c1",
+      "synthetic",
+    );
+    expect(isApprovedForReport(approved, changed)).toBe(false);
+  });
   test("only authorized ground medical reviewer may approve", () => {
     const r = buildHealthHistoryReport([o], "m", "c", "synthetic");
     const d = createAdvisorDraft(r, "Hypothesis [obs-0001]", "manual-ai-transfer");

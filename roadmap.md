@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## V3 final CI and synthetic demonstration
+
+- [x] Verify supplied manifest, correct clean-checkout sample generation and exact-SHA reporting; 556 tests, 99/102 offline verifiers, formatting/lint/security and zero-finding full-scope Trivy completed.
+- [x] Execute existing disposable SQL/server synthetic demonstration; 51 synthetic and 30 governance assertions plus FV01 passed; simulated Q&A explicitly distinguished from live AI and blocked browsers in docs/MEDICAL_V3_FINAL_SYNTHETIC_DEMO_AND_CI.md.
+- [ ] Confirm exact-final-commit CI; blocked until matching synchronized GitHub runs exist.
+- [ ] Owner-only release evidence and independent browser infrastructure remain required; no production activation.
+
 ## V3 final release diagnostics
 
 - [x] Verify and apply both manifest files; regenerate the deterministic P20 sample with every existing sealed hash and byte count unchanged.

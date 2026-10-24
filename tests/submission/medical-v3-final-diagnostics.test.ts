@@ -4,6 +4,17 @@ import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 describe("final release evidence boundaries", () => {
+  test("clean CI checkouts generate the ignored sample before checks and tests", () => {
+    for (const workflow of ["quality", "medical-v3-release-gate"]) {
+      const source = readFileSync(`.github/workflows/${workflow}.yml`, "utf8");
+      const generation = source.indexOf("run: bun run sample:release");
+      expect(generation).toBeGreaterThan(-1);
+      expect(generation).toBeLessThan(source.indexOf("run: bun run test"));
+      if (workflow === "medical-v3-release-gate")
+        expect(generation).toBeLessThan(source.indexOf("run: bun run check"));
+    }
+  });
+
   test("deterministic mission-day-127 artifact matches its existing sealed digest and byte count", () => {
     const bytes = readFileSync("data/release/mission-day-127.synthetic.json");
     expect(bytes.byteLength).toBe(868801);
