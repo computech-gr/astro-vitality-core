@@ -7,9 +7,9 @@ export const SYNTHETIC_DEMO_QUESTIONS = [
   "What was recorded in synthetic-v3-hr-002?",
 ] as const;
 export function syntheticDemoMode(flags: {
-  production?: string;
-  isolated?: string;
-  environment?: string;
+  production?: string | undefined;
+  isolated?: string | undefined;
+  environment?: string | undefined;
 }): "production-synthetic" | "disposable" | "disabled" {
   if (flags.production === "true") return "production-synthetic";
   if (flags.isolated === "true" && flags.environment === "disposable") return "disposable";
