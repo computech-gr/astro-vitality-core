@@ -1,4 +1,5 @@
 import { validateSyntheticSnapshot } from "@/domain/health-intelligence/synthetic-review-export";
+import { assertProductionSyntheticRequest } from "@/domain/health-intelligence/production-synthetic-demo";
 import {
   QA_INSTRUCTIONS,
   QA_SCHEMA,
@@ -13,6 +14,7 @@ import {
 
 export interface QaDependencies {
   enabled: boolean;
+  productionSynthetic?: boolean;
   apiKey: string | undefined;
   model?: string | undefined;
   rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
@@ -45,6 +47,13 @@ export async function answerSyntheticQuestion(
   } catch {
     return fail("Invalid or out-of-scope question", 400);
   }
+  if (deps.productionSynthetic) {
+    try {
+      assertProductionSyntheticRequest(data["missionId"], data["crewMemberId"], question);
+    } catch {
+      return fail("Only the approved scope and predefined synthetic questions are allowed", 403);
+    }
+  }
   if (!deps.apiKey) return fail("Existing OpenAI provider is not configured; no data sent", 503);
   const source = await deps.rpc("medical_v3_fixture_snapshot", {});
   if (source.error || !source.data)
@@ -57,6 +66,14 @@ export async function answerSyntheticQuestion(
   }
   if (snapshot.missionId !== data["missionId"] || snapshot.crewMemberId !== data["crewMemberId"])
     return fail("Synthetic scope mismatch", 403);
+  if (deps.productionSynthetic && (
+    snapshot.evidence.length !== 2 || snapshot.evidence.some((o, i) =>
+      o.id !== `synthetic-v3-hr-00${i + 1}` || o.metric !== "cv-001" ||
+      o.domain !== "cardiovascular" || o.unit !== "bpm" ||
+      o.value !== (i === 0 ? "62" : "66") ||
+      o.time !== `2026-10-0${i + 1}T10:00:00Z`
+    )
+  )) return fail("Approved synthetic fixture changed; no data sent", 422);
   const verified = await deps.rpc("medical_v3_ai_evidence", {
     p_mission: snapshot.missionId,
     p_crew: snapshot.crewMemberId,
@@ -91,6 +108,7 @@ export async function answerSyntheticQuestion(
   try {
     const upstream = await deps.providerFetch(MEDICAL_OPENAI_RESPONSES_URL, {
       method: "POST",
+      signal: AbortSignal.timeout(25_000),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${deps.apiKey}` },
       body: JSON.stringify({
         model: deps.model || MEDICAL_OPENAI_DEFAULT_MODEL,

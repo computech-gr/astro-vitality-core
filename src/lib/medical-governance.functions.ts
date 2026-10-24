@@ -23,13 +23,15 @@ type PendingRpcClient = {
 export const getSyntheticMedicalEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
+    if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true" &&
+        process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] !== "true")
       return { available: false as const, snapshot: null };
     const client = context.supabase as unknown as PendingRpcClient;
     const result = await client.rpc("medical_v3_fixture_snapshot", {});
     if (result.error || !result.data)
       throw new Error("Authoritative synthetic source unavailable.");
-    return { available: true as const, snapshot: result.data as SyntheticEvidenceSnapshot };
+    const snapshot = await validateSyntheticSnapshot(result.data);
+    return { available: true as const, snapshot };
   });
 
 export const getMedicalReviewHistory = createServerFn({ method: "POST" })
