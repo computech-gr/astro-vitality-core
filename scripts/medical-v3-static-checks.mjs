@@ -36,9 +36,13 @@ function main() {
     });
     if (result.error || result.status !== 0) failures.push(name);
   }
-  console.log(`Static verifiers: ${names.length - failures.length} passed / ${failures.length} failed`);
+  console.log(
+    `Static verifiers: ${names.length - failures.length} passed / ${failures.length} failed`,
+  );
   if (failures.length) console.error(`Failed checks: ${failures.join(", ")}`);
-  console.log("Not isolation, browser acceptance, scientific approval or production authorization.");
+  console.log(
+    "Not isolation, browser acceptance, scientific approval or production authorization.",
+  );
   process.exitCode = failures.length ? 1 : 0;
 }
 
