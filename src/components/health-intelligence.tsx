@@ -289,7 +289,9 @@ export function HealthIntelligencePage() {
           </Card>
         </section>
 
-        <ScientificResearchCandidates />
+        <div className="min-w-0 [&_label]:min-w-0 [&_label]:w-full sm:[&_label]:flex-1 [&_select]:min-w-0 [&_select]:w-full [&_input]:min-w-0 [&_input]:w-full">
+          <ScientificResearchCandidates />
+        </div>
 
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold">Reviewed v1.1 pattern catalogue</h2>
