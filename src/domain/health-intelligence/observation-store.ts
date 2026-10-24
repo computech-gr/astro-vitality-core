@@ -39,7 +39,8 @@ export function collapseUnifiedObservationVersions(
   const latest = new Map<string, { observation: UnifiedObservation; storedAt: string }>();
   for (const version of versions) {
     const previous = latest.get(version.observation.id);
-    if (!previous || previous.storedAt <= version.storedAt) latest.set(version.observation.id, version);
+    if (!previous || previous.storedAt <= version.storedAt)
+      latest.set(version.observation.id, version);
   }
   return [...latest.values()].map((version) => version.observation);
 }

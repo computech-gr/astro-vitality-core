@@ -263,7 +263,13 @@ export function UnifiedIntakeWorkspace() {
       const hash = await sha256Hex(file);
       const extracted = await extractBoneDocument(file);
       const kind: ObservationSourceKind = extracted.method.includes("ocr") ? "ocr" : "pdf_text";
-      const parsed = parseIntakeText(extracted.text, kind, `Document: ${file.name}`, file.name, hash);
+      const parsed = parseIntakeText(
+        extracted.text,
+        kind,
+        `Document: ${file.name}`,
+        file.name,
+        hash,
+      );
       addRows(
         parsed,
         `Document "${file.name}" extracted on-device (${extracted.method}, ${extracted.pages} page(s), SHA-256 ${hash.slice(0, 12)}…): ${parsed.length} candidate row(s). All start unchecked — review each row.`,
@@ -314,8 +320,7 @@ export function UnifiedIntakeWorkspace() {
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
         findUnifiedDuplicates(history, {
-          metricId:
-            row.classification.status === "matched" ? row.classification.metricId : "",
+          metricId: row.classification.status === "matched" ? row.classification.metricId : "",
           observedAt: row.observedAt,
           value: row.value,
         }),
@@ -323,11 +328,11 @@ export function UnifiedIntakeWorkspace() {
     : [];
   const canSave = Boolean(
     membership &&
-      provenance &&
-      reviewerConfirmed &&
-      saveableRows.length > 0 &&
-      (duplicates.length === 0 || duplicateAcknowledged) &&
-      !busy,
+    provenance &&
+    reviewerConfirmed &&
+    saveableRows.length > 0 &&
+    (duplicates.length === 0 || duplicateAcknowledged) &&
+    !busy,
   );
 
   const domainRouting = useMemo(() => {
@@ -376,9 +381,7 @@ export function UnifiedIntakeWorkspace() {
       setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
-      setHistory(
-        await listUnifiedObservations(membership.missionId, membership.crewMemberId),
-      );
+      setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
       setStatus(
         `${saveableRows.length} observation(s) saved encrypted on this device. Research reference only — not a scientific approval; no cloud records written.`,
       );
@@ -403,10 +406,10 @@ export function UnifiedIntakeWorkspace() {
         <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
           One review workflow for manual entry, CSV, PDF/OCR text, device observations and
           self-assessments. Every measurement is classified individually against the scientific
-          source catalog — exact name and exact unit only. Unknown, ambiguous or
-          unit-mismatched rows stay review-only. Accepted observations are stored encrypted on
-          this device, append-only, and remain research reference only: no clinical thresholds,
-          diagnosis, readiness score or automatic approval. Independent scientific review and
+          source catalog — exact name and exact unit only. Unknown, ambiguous or unit-mismatched
+          rows stay review-only. Accepted observations are stored encrypted on this device,
+          append-only, and remain research reference only: no clinical thresholds, diagnosis,
+          readiness score or automatic approval. Independent scientific review and
           PENDING_NIKOLAS_REVIEW gates are unchanged.
         </p>
       </header>
@@ -452,7 +455,10 @@ export function UnifiedIntakeWorkspace() {
         {!membership ? (
           <p className="text-sm text-muted-foreground">
             Sign in with an authorized crew or ground medical mission membership to record
-            observations. <Link to="/mission/identity" className="underline">Mission identity &amp; sign-in</Link>
+            observations.{" "}
+            <Link to="/mission/identity" className="underline">
+              Mission identity &amp; sign-in
+            </Link>
           </p>
         ) : null}
       </section>
@@ -529,8 +535,8 @@ export function UnifiedIntakeWorkspace() {
         <p className="text-xs text-muted-foreground">
           Documents are processed on this device only. Original files are never uploaded
           automatically; the document name and SHA-256 fingerprint are kept with each row for
-          traceability. Device observations and self-assessments use the same envelope through
-          their own workflows.
+          traceability. Device observations and self-assessments use the same envelope through their
+          own workflows.
         </p>
       </section>
 
@@ -538,9 +544,9 @@ export function UnifiedIntakeWorkspace() {
         <section className="space-y-4 rounded-lg border border-border bg-card p-5">
           <h2 className="text-lg font-semibold">Review each measurement</h2>
           <p className="text-sm text-muted-foreground">
-            Classification is per measurement, not per document — one document can route to
-            several health domains. Only rows matched exactly to the catalog can be selected;
-            everything else remains review-only.
+            Classification is per measurement, not per document — one document can route to several
+            health domains. Only rows matched exactly to the catalog can be selected; everything
+            else remains review-only.
           </p>
           {domainRouting.length ? (
             <p className="text-sm">
@@ -637,16 +643,15 @@ export function UnifiedIntakeWorkspace() {
           </div>
           {reviewOnlyRows.length ? (
             <p className="text-sm text-muted-foreground">
-              {reviewOnlyRows.length} row(s) are review-only and cannot be saved: unknown,
-              ambiguous or unit-mismatched observations never enter storage or domain read
-              models.
+              {reviewOnlyRows.length} row(s) are review-only and cannot be saved: unknown, ambiguous
+              or unit-mismatched observations never enter storage or domain read models.
             </p>
           ) : null}
           {duplicates.length ? (
             <div className="space-y-2 rounded-md border border-border p-3">
               <p className="text-sm font-medium">
-                Possible duplicate: {duplicates.length} stored observation(s) share the same
-                metric, time and value.
+                Possible duplicate: {duplicates.length} stored observation(s) share the same metric,
+                time and value.
               </p>
               <label className="flex items-center gap-2 text-sm">
                 <input
@@ -664,8 +669,8 @@ export function UnifiedIntakeWorkspace() {
               checked={reviewerConfirmed}
               onChange={(event) => setReviewerConfirmed(event.target.checked)}
             />
-            I reviewed every selected row (label, value, original unit and observation time)
-            and confirm it matches the source.
+            I reviewed every selected row (label, value, original unit and observation time) and
+            confirm it matches the source.
           </label>
           <Button type="button" disabled={!canSave} onClick={() => void saveAccepted()}>
             Save {saveableRows.length} reviewed observation(s) — encrypted, offline

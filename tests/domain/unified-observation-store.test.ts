@@ -35,9 +35,9 @@ describe("unified observation envelope validation", () => {
     expect(validateUnifiedObservation(base)).toBeNull();
   });
   test("rejects accepted observations without reviewer confirmation", () => {
-    expect(
-      validateUnifiedObservation({ ...base, quality: { reviewerConfirmed: false } }),
-    ).toBe("Accepted observations require explicit reviewer confirmation.");
+    expect(validateUnifiedObservation({ ...base, quality: { reviewerConfirmed: false } })).toBe(
+      "Accepted observations require explicit reviewer confirmation.",
+    );
   });
   test("rejects missing identity, non-decimal values and empty units", () => {
     expect(validateUnifiedObservation({ ...base, missionId: "" })).toBe(

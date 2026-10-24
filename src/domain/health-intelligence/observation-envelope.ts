@@ -10,12 +10,7 @@ import type { HealthDomainId } from "@/domain/health-domains/registry";
 export const UNIFIED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v1";
 
 export type ObservationSourceKind =
-  | "manual"
-  | "csv"
-  | "pdf_text"
-  | "ocr"
-  | "device"
-  | "self_assessment";
+  "manual" | "csv" | "pdf_text" | "ocr" | "device" | "self_assessment";
 
 export type ObservationReviewState = "pending_review" | "accepted" | "rejected";
 
@@ -67,8 +62,10 @@ export function validateUnifiedObservation(observation: UnifiedObservation): str
   if (!observation.metricId.trim()) return "A canonical catalog metric ID is required.";
   if (!SAFE_DECIMAL.test(observation.value.trim())) return "Value must be a plain decimal number.";
   if (!observation.originalUnit.trim()) return "The original reported unit is required.";
-  if (Number.isNaN(Date.parse(observation.observedAt))) return "Observation time must be a valid date.";
-  if (Number.isNaN(Date.parse(observation.recordedAt))) return "Recording time must be a valid date.";
+  if (Number.isNaN(Date.parse(observation.observedAt)))
+    return "Observation time must be a valid date.";
+  if (Number.isNaN(Date.parse(observation.recordedAt)))
+    return "Recording time must be a valid date.";
   if (observation.provenance !== "synthetic" && observation.provenance !== "real")
     return "Provenance must be explicitly synthetic or real.";
   if (observation.reviewState === "accepted" && !observation.quality.reviewerConfirmed)

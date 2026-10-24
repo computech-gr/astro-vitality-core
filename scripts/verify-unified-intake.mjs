@@ -59,7 +59,11 @@ for (const token of [
 if (workspace.includes("supabase.from(")) fail("workspace must never write to the cloud");
 
 // Classification stays deterministic and review-gated
-for (const token of ["reviewRequired: true", "automaticallyApproved: false", "requiresHumanReview: true"]) {
+for (const token of [
+  "reviewRequired: true",
+  "automaticallyApproved: false",
+  "requiresHumanReview: true",
+]) {
   if (!classification.replace(/\s+/g, " ").includes(token)) fail(`classification missing ${token}`);
 }
 
