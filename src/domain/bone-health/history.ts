@@ -96,7 +96,7 @@ export async function listBoneEntries(missionId: string, crewMemberId: string): 
   const versions = records.filter((record) => record.sourceId === SOURCE && record.mission.missionId === missionId && record.mission.crewMemberId === crewMemberId)
     .map((record) => {
       const payload = record.payload as { entry?: BoneHealthEntry } | null;
-      return payload?.entry ? { entry: payload.entry, storedAt: record.eventTimestamp + ":" + record.id } : null;
+      return payload?.entry ? { entry: payload.entry, storedAt: record.createdAt } : null;
     })
     .filter((version): version is { entry: BoneHealthEntry; storedAt: string } => Boolean(version && !validateBoneEntry(version.entry)));
   return collapseBoneEntryVersions(versions)
