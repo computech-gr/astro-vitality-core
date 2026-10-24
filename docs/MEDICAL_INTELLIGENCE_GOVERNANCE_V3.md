@@ -1,6 +1,7 @@
 # MITOCHONDRIA v3 — durable medical advisor governance: implementation contract
 
 ## Scope and non-negotiable gates
+
 This patch adds a WebCrypto SHA-256 evidence digest helper without changing the existing FNV session-only review flow. It does **not** implement durable sign-off or distributed rate limiting by itself. Those require server-verified data and database authorization, not browser assertions. Complete the following integration in Lovable, using the current repository schema, and do not report persistence as complete unless migration, RLS and end-to-end tests pass.
 
 1. Create an append-only `medical_advisor_review_events` table through a reviewed Supabase migration. Each event: id, mission_id, crew_member_id, provenance, actor_user_id from auth.uid() (never client supplied), event_type (draft_created/returned/approved/revoked/superseded), revision, previous_event_id, evidence_sha256, canonical evidence reference or immutable snapshot, draft and final text, rationale, created_at, model and request metadata (no secrets). Store no real clinical data until explicitly enabled. Do not overwrite or delete history; revoke by a new event.
@@ -13,4 +14,5 @@ This patch adds a WebCrypto SHA-256 evidence digest helper without changing the 
 8. Tests: unauthorized users, cross-mission/crew, stale evidence, revoked roles, concurrent approvals, RLS read/write, idempotency, synthetic/real isolation, tampering, rate-limit concurrency, 429, bad citations, responsive browser. Verify migration policy, full test suite, build, scientific gates and GitHub workflows for final commit.
 
 ## Release gate
+
 Do not run a production migration or enable real-data processing without explicit owner approval. Prepare the migration and report it for approval. This is a governance foundation, NOT a production-ready medical-signature system.
