@@ -261,18 +261,34 @@ check(
   "exact retry idempotency",
 );
 deny(append("approved", null, "10000000-0000-4000-8000-000000000002"), "stale predecessor denied");
-const session = (sql) => new Promise(resolve => {
-  const child=spawn('psql',[...base,'-c',sql],{env}); let output='';
-  child.stdout.on('data',data=>output+=data); child.stderr.on('data',data=>output+=data);
-  child.on('close',code=>resolve({code,output}));
-});
+const session = (sql) =>
+  new Promise((resolve) => {
+    const child = spawn("psql", [...base, "-c", sql], { env });
+    let output = "";
+    child.stdout.on("data", (data) => (output += data));
+    child.stderr.on("data", (data) => (output += data));
+    child.on("close", (code) => resolve({ code, output }));
+  });
 const concurrent = await Promise.all([
   session(append("approved", draft.id, "10000000-0000-4000-8000-000000000003")),
   session(append("approved", draft.id, "10000000-0000-4000-8000-000000000006")),
 ]);
-check(concurrent.filter(r=>r.code===0).length===1,'concurrent approvals create exactly one revision');
-const approved = JSON.parse(run("select to_jsonb(e) from medical_advisor_review_events e where event_type='approved'").split('\n').at(-1));
-deny(append("draft_created",null,"10000000-0000-4000-8000-000000000099").replace(text,'cortisol recorded 62 bpm [synthetic-v3-hr-001]'),'direct RPC unsupported text denied');
+check(
+  concurrent.filter((r) => r.code === 0).length === 1,
+  "concurrent approvals create exactly one revision",
+);
+const approved = JSON.parse(
+  run("select to_jsonb(e) from medical_advisor_review_events e where event_type='approved'")
+    .split("\n")
+    .at(-1),
+);
+deny(
+  append("draft_created", null, "10000000-0000-4000-8000-000000000099").replace(
+    text,
+    "cortisol recorded 62 bpm [synthetic-v3-hr-001]",
+  ),
+  "direct RPC unsupported text denied",
+);
 check(
   JSON.parse(
     run(as(gm) + "select medical_v3_review_history('m1','c1')")
@@ -305,10 +321,21 @@ check(
   ).some((e) => e.verified_current),
   "revoked acknowledgment not current",
 );
-transactionCheck("alter table medical_v3_fixture_sources disable trigger medical_v3_fixture_immutable; update medical_v3_fixture_sources set version='unavailable';"+as(gm)+"select not (medical_v3_review_history('m1','c1') @> '[{\"verified_current\":true}]')",'source outage keeps retained history unverified');
+transactionCheck(
+  "alter table medical_v3_fixture_sources disable trigger medical_v3_fixture_immutable; update medical_v3_fixture_sources set version='unavailable';" +
+    as(gm) +
+    "select not (medical_v3_review_history('m1','c1') @> '[{\"verified_current\":true}]')",
+  "source outage keeps retained history unverified",
+);
 run("delete from medical_ai_quota_reservations");
-const quotaConcurrent=await Promise.all([session(as(gm)+"select medical_v3_reserve_ai('m1','c1')"),session(as(gm)+"select medical_v3_reserve_ai('m1','c1')")]);
-check(quotaConcurrent.filter(r=>r.output.includes('"allowed": true')).length===1,'concurrent quota reservations allow one active lease');
+const quotaConcurrent = await Promise.all([
+  session(as(gm) + "select medical_v3_reserve_ai('m1','c1')"),
+  session(as(gm) + "select medical_v3_reserve_ai('m1','c1')"),
+]);
+check(
+  quotaConcurrent.filter((r) => r.output.includes('"allowed": true')).length === 1,
+  "concurrent quota reservations allow one active lease",
+);
 // Validate disable-first rollback without destroying fixtures/history.
 const rollback = readFileSync(
   "supabase/pending/20261025000000_medical_v3_synthetic_completion.rollback.sql",
