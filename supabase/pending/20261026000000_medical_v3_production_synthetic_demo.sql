@@ -1,6 +1,9 @@
 -- OWNER APPROVAL REQUIRED: standalone alternative to the two older pending v3 files.
 -- Apply ONLY this bundle, never together with those alternatives. No production execution authorized.
 BEGIN;
+-- Serialize candidate applications; hold scope prerequisites through fixture creation.
+SELECT pg_advisory_xact_lock(hashtextextended('medical-v3-production-candidate',0));
+LOCK TABLE public.missions,public.crew_members,public.mission_crew_assignments,public.mission_memberships IN SHARE MODE;
 DO $$ BEGIN
  IF EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
  WHERE n.nspname='public' AND (c.relname LIKE 'medical_v3_%' OR c.relname IN ('medical_advisor_review_events','medical_ai_quota_reservations')))
@@ -272,14 +275,14 @@ INSERT INTO public.medical_v3_fixture_sources
 SELECT 'synthetic-v3-owner-fixture',scope.mission,scope.crew,'mitochondria.synthetic-fixture.v1','synthetic',
  'ce2271260428b152778ad67d1cad36306a7913dd3a4442abe3aa11ea65297148',literal.doc,
  'sha256-'||encode(extensions.digest(convert_to(public.medical_v3_canonical_json(literal.doc),'UTF8'),'sha256'),'hex')
-FROM scope CROSS JOIN literal WHERE (SELECT count(*) FROM scope)=1 ON CONFLICT DO NOTHING;
+FROM scope CROSS JOIN literal WHERE (SELECT count(*) FROM scope)=1;
 INSERT INTO public.medical_v3_fixture_observations
 SELECT x->>'id',s.id,x->>'metric',x->>'domain',x->>'value',x->>'unit',x->>'time',NULL
-FROM public.medical_v3_fixture_sources s CROSS JOIN LATERAL jsonb_array_elements(s.literal_document) x ON CONFLICT DO NOTHING;
+FROM public.medical_v3_fixture_sources s CROSS JOIN LATERAL jsonb_array_elements(s.literal_document) x;
 INSERT INTO public.medical_v3_fixture_receipts
 SELECT o.id||'-test-receipt-1',o.id,1,NULL,'accepted','synthetic_test_fixture_not_human_review',
  s.source_sha256,s.catalog_sha256,'2026-10-24T21:06:00Z'
-FROM public.medical_v3_fixture_observations o JOIN public.medical_v3_fixture_sources s ON s.id=o.source_id ON CONFLICT DO NOTHING;
+FROM public.medical_v3_fixture_observations o JOIN public.medical_v3_fixture_sources s ON s.id=o.source_id;
 
 CREATE OR REPLACE FUNCTION public.medical_v3_authoritative_evidence(p_mission text,p_crew text)
 RETURNS TABLE(canonical_text text,source_ids text[]) LANGUAGE plpgsql STABLE
@@ -440,6 +443,17 @@ DO $$ BEGIN
  IF (SELECT count(*) FROM public.medical_v3_fixture_sources)<>1
  OR (SELECT count(*) FROM public.medical_v3_fixture_observations)<>2
  OR (SELECT count(*) FROM public.medical_v3_fixture_receipts)<>2
+ OR NOT EXISTS(SELECT 1 FROM public.medical_v3_fixture_sources WHERE id='synthetic-v3-owner-fixture'
+ AND mission_id='mission-9d8ce8f3e5554509a0885461f9ad2e1c' AND crew_member_id='crew-9806e7e611f44dc38dac5e23f7740f1a'
+ AND provenance='synthetic' AND source_sha256='sha256-'||encode(extensions.digest(convert_to(public.medical_v3_canonical_json(literal_document),'UTF8'),'sha256'),'hex'))
+ OR EXISTS(SELECT 1 FROM public.medical_v3_fixture_observations WHERE source_id<>'synthetic-v3-owner-fixture'
+ OR metric_id<>'cv-001' OR domain<>'cardiovascular' OR unit<>'bpm' OR supersedes_id IS NOT NULL
+ OR NOT ((id='synthetic-v3-hr-001' AND value='62' AND observed_at='2026-10-01T10:00:00Z')
+ OR (id='synthetic-v3-hr-002' AND value='66' AND observed_at='2026-10-02T10:00:00Z')))
+ OR EXISTS(SELECT 1 FROM public.medical_v3_fixture_receipts r JOIN public.medical_v3_fixture_observations o ON o.id=r.observation_id
+ JOIN public.medical_v3_fixture_sources s ON s.id=o.source_id WHERE r.id<>o.id||'-test-receipt-1' OR r.revision<>1
+ OR r.previous_id IS NOT NULL OR r.decision<>'accepted' OR r.receipt_kind<>'synthetic_test_fixture_not_human_review'
+ OR r.source_sha256<>s.source_sha256 OR r.catalog_sha256<>s.catalog_sha256)
  OR EXISTS(SELECT 1 FROM public.medical_advisor_review_events)
  THEN RAISE EXCEPTION 'unexpected fixture cardinality or persistent review'; END IF;
 END $$;
