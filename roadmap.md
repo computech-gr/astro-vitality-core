@@ -3,8 +3,8 @@
 ## Medical governance v3 safe completion
 
 - [x] Verify and apply only the two additive manifest files; preserve all release guards.
-- [ ] Investigate five verifier failures and document the synthetic-only evidence adapter design without introducing trust or transfers.
-- [ ] Run permitted tests, release gates, formatting, security/scientific checks and inspect automatic typecheck/build signals.
+- [x] Investigate five verifier failures and document synthetic-only evidence adapter design in docs/MEDICAL_V3_SAFE_COMPLETION_REVIEW.md without introducing trust or transfers.
+- [x] Run permitted tests, release gates, formatting, security/scientific checks and inspect automatic typecheck/build signals; report failures rather than bypassing them.
 - [ ] Production migration, authoritative evidence source, transfers and activation require separate explicit owner approval.
 - [ ] Verify final saved SHA and exact-commit GitHub CI; requires managed synchronization and Actions.
 
