@@ -8,10 +8,10 @@ The reproducible P20 artifact is restored and matches its pre-existing sealed ma
 
 Both supplied files were verified before copying and initially applied byte-identically:
 
-| File | Bytes | Supplied SHA-256 |
-| --- | ---: | --- |
-| `docs/MEDICAL_V3_FINAL_RELEASE_DECISION.md` | 2686 | `53ba0bddd6cb6cffaac7be2b0f85f1baf595dce435d4097fb5634d126f83cfdf` |
-| `scripts/medical-v3-release-diagnostics.mjs` | 1874 | `e5327c143d1b9937f51cea55e4809631f9ee463d53529ef9a170ab8ba9f4e6f5` |
+| File                                         | Bytes | Supplied SHA-256                                                   |
+| -------------------------------------------- | ----: | ------------------------------------------------------------------ |
+| `docs/MEDICAL_V3_FINAL_RELEASE_DECISION.md`  |  2686 | `53ba0bddd6cb6cffaac7be2b0f85f1baf595dce435d4097fb5634d126f83cfdf` |
+| `scripts/medical-v3-release-diagnostics.mjs` |  1874 | `e5327c143d1b9937f51cea55e4809631f9ee463d53529ef9a170ab8ba9f4e6f5` |
 
 Necessary integration deviation: the diagnostics chose an empty stderr buffer over meaningful stdout, losing both private-evidence error messages. It now combines nonempty verifier streams and preserves full output instead of truncating it; removed an unused import and formatted only touched files. The supplied decision document is unchanged.
 
