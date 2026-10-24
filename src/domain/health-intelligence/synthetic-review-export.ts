@@ -14,7 +14,7 @@ const event = z.object({
   mission_id: z.string(),
   crew_member_id: z.string(),
   provenance: z.literal("synthetic"),
-  actor_user_id: z.uuid(),
+  actor_user_id: z.string().regex(/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i),
   event_type: z.enum(["draft_created", "returned", "approved", "revoked", "superseded", "stale"]),
   revision: z.number().int().positive(),
   previous_event_id: z.uuid().nullable(),
