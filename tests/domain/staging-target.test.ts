@@ -20,8 +20,13 @@ describe("read-only staging target policy", () => {
     expect(check("http://127.0.0.1:8080", "127.0.0.1", true).status).toBe(2);
   });
   for (const host of [
-    "edocinfo.com", "mitochondria.edocinfo.com", "lovable.app", "x.lovable.app",
-    "lovableproject.com", "x.lovableproject.com", "lovable.app.",
+    "edocinfo.com",
+    "mitochondria.edocinfo.com",
+    "lovable.app",
+    "x.lovable.app",
+    "lovableproject.com",
+    "x.lovableproject.com",
+    "lovable.app.",
   ]) {
     test(`shared domain ${host} is blocked`, () => {
       expect(check(`https://${host}`, host).status).toBe(2);
@@ -43,8 +48,10 @@ describe("read-only staging target policy", () => {
     expect(check("https://other.example.org", "staging.example.org").status).toBe(2);
   });
   for (const origin of [
-    "https://user:password@staging.example.org", "https://staging.example.org/path",
-    "https://staging.example.org?redirect=x", "https://staging.example.org#x",
+    "https://user:password@staging.example.org",
+    "https://staging.example.org/path",
+    "https://staging.example.org?redirect=x",
+    "https://staging.example.org#x",
   ]) {
     test(`non-origin target is blocked: ${origin}`, () => {
       expect(check(origin, "staging.example.org").status).toBe(2);
