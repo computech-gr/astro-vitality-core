@@ -6,7 +6,9 @@ import {
   getSyntheticMedicalEvidence,
   getMedicalReviewHistory,
   appendMedicalReview,
+  exportSyntheticMedicalHistory,
 } from "@/lib/medical-governance.functions";
+import { askSyntheticEvidence } from "@/lib/synthetic-evidence-qa.functions";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
 
@@ -15,6 +17,11 @@ export function SyntheticMedicalReview() {
   const load = useServerFn(getSyntheticMedicalEvidence);
   const history = useServerFn(getMedicalReviewHistory);
   const append = useServerFn(appendMedicalReview);
+  const exportAuthorized = useServerFn(exportSyntheticMedicalHistory);
+  const ask = useServerFn(askSyntheticEvidence);
+  const [question,setQuestion]=useState("");
+  const [qaConsent,setQaConsent]=useState(false);
+  const [answer,setAnswer]=useState("");
   const [snapshot, setSnapshot] = useState<SyntheticEvidenceSnapshot | null>(null);
   const [events, setEvents] = useState<DurableReviewEvent[]>([]);
   const [draft, setDraft] = useState("");
@@ -83,21 +90,9 @@ export function SyntheticMedicalReview() {
   const exportHistory = async () => {
     if (!snapshot) throw new Error("Load an authorized synthetic source first.");
     // Re-query the authorized server on every export; never export stale cached events.
-    const current = await history({
+    const payload = await exportAuthorized({
       data: { missionId: snapshot.missionId, crewMemberId: snapshot.crewMemberId },
     });
-    if (!current.available) throw new Error("Verified review history is unavailable.");
-    const payload = {
-      schema: "mitochondria.synthetic-medical-review-export.v1",
-      research_only: true,
-      synthetic_only: true,
-      not_a_medical_signature: true,
-      exported_at: new Date().toISOString(),
-      mission_id: snapshot.missionId,
-      crew_member_id: snapshot.crewMemberId,
-      current_evidence_sha256: snapshot.sha256,
-      events: current.events,
-    };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json;charset=utf-8",
     });
@@ -138,6 +133,13 @@ export function SyntheticMedicalReview() {
     setDraft(result.draft);
     setFinal(result.draft);
     setStatus("AI draft — unverified, unsaved; independent advisor assessment required.");
+  };
+  const askQuestion=async()=>{
+    if(!snapshot || !qaConsent) return;
+    setQaConsent(false);setAnswer("");
+    const result=await ask({data:{question,consent:true,provenance:"synthetic",missionId:snapshot.missionId,crewMemberId:snapshot.crewMemberId}});
+    if(result.status!==200 || !result.text) throw new Error(result.error??"Synthetic answer rejected.");
+    setAnswer(result.text);
   };
   return (
     <section aria-label="Server synthetic fixture review" className="space-y-3 border-t py-6">
@@ -261,6 +263,14 @@ export function SyntheticMedicalReview() {
             Contains reviewer identifiers, evidence hashes, timestamps and review text.
             Export is not a clinical signature; store the file securely.
           </p>
+          <div className="space-y-2 border-t pt-4">
+            <h3 className="font-semibold">Synthetic evidence Q&amp;A — isolated tests only</h3>
+            <label htmlFor="synthetic-question" className="block text-sm">Question about observed evidence</label>
+            <textarea id="synthetic-question" rows={3} maxLength={1000} value={question} onChange={e=>setQuestion(e.target.value)} className="w-full rounded border bg-background p-2"/>
+            <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={qaConsent} onChange={e=>setQaConsent(e.target.checked)}/>Send this question and only authorized synthetic evidence to OpenAI for this request.</label>
+            <Button disabled={busy || !qaConsent || !question.trim()} onClick={()=>void run(askQuestion)}>Ask synthetic evidence question</Button>
+            {answer && <p className="whitespace-pre-wrap break-words">{answer}</p>}
+          </div>
           <ol className="space-y-3 text-sm">
             {events.map((event) => (
               <li key={event.id} className="border-t pt-3">
