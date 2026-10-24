@@ -4,7 +4,8 @@
 
 - [x] Verify and apply both manifest files byte-identically.
 - [x] Run 506 tests, 335 disposable database assertions, formatting, lint, security scan and 99 verifiers; record exact results in docs/MEDICAL_V3_SYNTHETIC_COMPLETION_STATUS.md.
-- [ ] Complete synthetic integration: blocked by the contract's exact `heart_rate` fixture identifier, which is absent from the intake catalog; no remapping or authority changes permitted.
+- [x] Owner corrected fixture identifier to cv-001 / HR; stage synthetic source/RPCs, v2 canonical evidence, isolated review controls and disable-first rollback.
+- [ ] Complete acceptance and report remaining limitations; production and private-evidence gates remain closed.
 - [ ] Validate non-production integration and request production approval only after successful acceptance; no production change authorized.
 
 ## V3 verifier recovery and synthetic source decision
