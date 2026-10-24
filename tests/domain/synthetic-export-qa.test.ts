@@ -163,9 +163,10 @@ describe("authorized synthetic export integrity", () => {
   });
 });
 describe("isolated synthetic Q&A controls", () => {
-  test("invalid server timestamp withholds output and releases quota",async()=>{
-    const h=await harness();h.deps.now=()=>"not-utc";
-    expect((await answerSyntheticQuestion(input,h.deps)).status).toBe(422);
+  test("invalid server timestamp withholds output and releases quota", async () => {
+    const h = await harness();
+    h.deps.now = () => "not-utc";
+    expect((await answerSyntheticQuestion(input, h.deps)).status).toBe(422);
     expect(h.rpcs.at(-1)).toBe("medical_v3_release_ai");
   });
   test("1000-character question limit and injection fail closed", () => {
