@@ -53,7 +53,7 @@ export function parseBoneImport(text: string): BoneImportReview {
     if (matches.length !== 1 || !rawValue || !Number.isFinite(numeric) || !unit || !source || !observed || !Number.isFinite(Date.parse(observed))) {
       rejected.push(`Row ${i+1}: unmatched/ambiguous variable or invalid value, unit, date, or source.`); continue;
     }
-    candidates.push({variableId:matches[0]!.id,value:numeric,unit,observedAt:new Date(observed).toISOString(),sourceLabel:source,specimen:get(r,"specimen"),assayMethod:get(r,"assay_method"),notes:get(r,"notes"),selected:true});
+    candidates.push({variableId:matches[0]!.id,value:numeric,unit,observedAt:new Date(observed).toISOString(),sourceLabel:source,specimen:get(r,"specimen"),assayMethod:get(r,"assay_method"),notes:get(r,"notes"),selected:false});
   }
   return {candidates,rejected};
 }
