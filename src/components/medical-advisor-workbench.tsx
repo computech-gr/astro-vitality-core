@@ -66,8 +66,15 @@ export function MedicalAdvisorWorkbench({
           })),
         }),
       });
-      const payload = (await response.json()) as { draft?: string; error?: string };
-      if (!response.ok || !payload.draft) throw new Error(payload.error || "AI generation failed.");
+      const payload = (await response.json()) as {
+        draft?: string;
+        error?: string;
+        violations?: string[];
+      };
+      if (!response.ok || !payload.draft)
+        throw new Error(
+          [payload.error || "AI generation failed.", ...(payload.violations ?? [])].join(" · "),
+        );
       const draft = createAdvisorDraft(report, payload.draft, "server-ai");
       setReview(draft);
       setDraftText(payload.draft);
