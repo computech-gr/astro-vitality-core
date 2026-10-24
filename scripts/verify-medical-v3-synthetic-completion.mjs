@@ -1,5 +1,6 @@
 // Destructive ONLY in opted-in disposable PostgreSQL. Never uses managed PG* variables.
 import { execFileSync } from "node:child_process";
+import { readdirSync } from "node:fs";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 const socket = process.env.FV01_PG_SOCKET_DIR;
@@ -15,8 +16,14 @@ let assertions=0;
 const check=(ok,name)=>{if(!ok)throw new Error(name);assertions++;console.log(`PASS: ${name}`);};
 const deny=(sql,name)=>{let failed=false;try{run(sql);}catch{failed=true;}check(failed,name);};
 const transactionCheck=(sql,name)=>{const result=run(`BEGIN;${sql};ROLLBACK;`);check(result.split("\n").includes("t"),name);};
-// Existing harness resets and verifies downstream foundation before this real source migration.
-execFileSync("node",["scripts/verify-medical-governance-v3.mjs"],{env:process.env,stdio:"inherit"});
+// Reconstruct real pending foundation and source, never substitute an evidence resolver.
+const adminBase=base.slice(0,-1).concat('postgres');
+execFileSync('psql',[...adminBase,'-c','drop database if exists medical_v3_it','-c','create database medical_v3_it'],{env,stdio:'pipe'});
+file('tests/integration-pg/stub.sql');
+for(const name of readdirSync('supabase/migrations').filter(name=>name.endsWith('.sql')).sort()) file(`supabase/migrations/${name}`);
+file('supabase/pending/20261024000000_medical_governance_v3.sql');
+file('tests/integration-pg/fv01-setup.sql');
+run(`update mission_memberships set crew_member_id='c1' where user_id='${gm}' and role='ground_medical'`);
 run("update missions set name='MITOCHONDRIA 2026 - Synthetic Demonstration' where id='m1'; update crew_members set display_name='Alex Morgan' where id='c1';");
 file("supabase/pending/20261025000000_medical_v3_synthetic_completion.sql");
 const result=run(as(gm)+"select medical_v3_fixture_snapshot()").split("\n").at(-1);
@@ -61,7 +68,6 @@ deny(append('revoked',approved.id,'10000000-0000-4000-8000-000000000004','sha256
 run(append('revoked',approved.id,'10000000-0000-4000-8000-000000000005'));
 check(!JSON.parse(run(as(gm)+"select medical_v3_review_history('m1','c1')").split('\n').at(-1)).some(e=>e.verified_current),'revoked acknowledgment not current');
 // Validate disable-first rollback without destroying fixtures/history.
-run("BEGIN"); // each psql call has its own session; actual rollback smoke test uses one invocation.
 const rollback=readFileSync('supabase/pending/20261025000000_medical_v3_synthetic_completion.rollback.sql','utf8').replace('BEGIN;','').replace('COMMIT;','');
 transactionCheck(rollback+"select count(*)=0 from medical_v3_authoritative_evidence('m1','c1')",'rollback disables source and preserves history');
 console.log(`Synthetic completion: PASS (${assertions} assertions); no production changes or provider calls.`);
