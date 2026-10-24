@@ -114,6 +114,10 @@ BEGIN
   OR o.value!~'^[0-9]+(\.[0-9]+)?$' OR o.observed_at!~'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
   THEN RETURN; END IF;
   PERFORM o.observed_at::timestamptz;
+  IF o.supersedes_id IS NULL AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(s.literal_document) x
+   WHERE x->>'id'=o.id AND x->>'metric'=o.metric_id AND x->>'domain'=o.domain
+   AND x->>'value'=o.value AND x->>'unit'=o.unit AND x->>'time'=o.observed_at)
+  THEN RETURN; END IF;
   IF (SELECT count(*) FROM public.medical_v3_fixture_observations WHERE supersedes_id=o.id)>1 THEN RETURN; END IF;
   lineage:=ARRAY[o.id]; current_id:=o.supersedes_id;
   WHILE current_id IS NOT NULL LOOP
@@ -122,6 +126,8 @@ BEGIN
    IF NOT FOUND OR parent.source_id<>s.id OR parent.metric_id<>o.metric_id THEN RETURN; END IF;
    lineage:=array_append(lineage,current_id); current_id:=parent.supersedes_id;
   END LOOP;
+  IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(s.literal_document) x WHERE x->>'id'=lineage[cardinality(lineage)])
+  THEN RETURN; END IF;
   -- Every append-only review receipt must have contiguous, same-observation ancestry.
   IF EXISTS(SELECT 1 FROM public.medical_v3_fixture_receipts x LEFT JOIN public.medical_v3_fixture_receipts p ON p.id=x.previous_id
    WHERE x.observation_id=o.id AND ((x.revision=1 AND x.previous_id IS NOT NULL)
@@ -192,3 +198,45 @@ END $$;
 CREATE TRIGGER medical_v3_revoke_digest_guard BEFORE INSERT ON public.medical_advisor_review_events
  FOR EACH ROW EXECUTE FUNCTION public.medical_v3_revoke_digest_guard();
 REVOKE ALL ON FUNCTION public.medical_v3_revoke_digest_guard() FROM PUBLIC,anon,authenticated;
+
+-- Direct authenticated append RPC calls must enforce the same strict fixture citation vocabulary.
+CREATE FUNCTION public.medical_v3_fixture_text_valid(p_text text,p_canonical text) RETURNS boolean
+LANGUAGE plpgsql IMMUTABLE SET search_path=public,pg_temp AS $$
+DECLARE line text; observation jsonb; ids text[]; token text; remainder text;
+BEGIN
+ IF p_canonical IS NULL OR length(trim(p_text))=0 THEN RETURN false; END IF;
+ SELECT array_agg(o->>'id') INTO ids FROM jsonb_array_elements(p_canonical::jsonb->'observations') o;
+ FOR line IN SELECT unnest(string_to_array(p_text,E'\n')) LOOP
+  IF trim(line)='' THEN CONTINUE; END IF;
+  IF line !~ '\[[a-zA-Z0-9:_-]+(\s*[,;]\s*[a-zA-Z0-9:_-]+)*\]' THEN RETURN false; END IF;
+  FOR token IN SELECT unnest(string_to_array(regexp_replace(m[1],'\s','','g'),','))
+   FROM regexp_matches(line,'\[([^\]]+)\]','g') m LOOP
+   IF NOT token=ANY(ids) THEN RETURN false; END IF;
+  END LOOP;
+  remainder:=regexp_replace(line,'\[[^\]]+\]','','g');
+  FOR observation IN SELECT value FROM jsonb_array_elements(p_canonical::jsonb->'observations') LOOP
+   IF position('['||(observation->>'id')||']' IN line)>0 THEN
+    remainder:=replace(remainder,observation->>'metric','');
+    remainder:=replace(remainder,(observation->>'value')||' '||(observation->>'unit'),'');
+    remainder:=replace(remainder,observation->>'time','');
+   END IF;
+  END LOOP;
+  -- Deliberately narrow controlled vocabulary. Unknown biomarkers/ranges/claims fail closed.
+  remainder:=regexp_replace(lower(remainder),'\m(recorded|at|on|value|observation|fixture|synthetic|research|only|unverified|ai|generated|not|clinically|approved|and|is|was|the|evidence|requires|independent|advisor|review)\M','','g');
+  IF remainder ~ '[a-z0-9]' THEN RETURN false; END IF;
+ END LOOP;
+ RETURN true;
+END $$;
+REVOKE ALL ON FUNCTION public.medical_v3_fixture_text_valid(text,text) FROM PUBLIC,anon,authenticated;
+CREATE FUNCTION public.medical_v3_fixture_review_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
+BEGIN
+ IF NEW.event_type<>'revoked' AND (
+ NOT public.medical_v3_fixture_text_valid(NEW.draft_text,NEW.canonical_evidence)
+ OR (length(trim(NEW.final_text))>0 AND NOT public.medical_v3_fixture_text_valid(NEW.final_text,NEW.canonical_evidence)))
+ THEN RAISE EXCEPTION 'unsupported fixture statement or invalid citation'; END IF;
+ RETURN NEW;
+END $$;
+REVOKE ALL ON FUNCTION public.medical_v3_fixture_review_guard() FROM PUBLIC,anon,authenticated;
+CREATE TRIGGER medical_v3_fixture_review_guard BEFORE INSERT ON public.medical_advisor_review_events
+ FOR EACH ROW EXECUTE FUNCTION public.medical_v3_fixture_review_guard();
