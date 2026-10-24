@@ -103,6 +103,7 @@ const navigation: readonly NavigationEntry[] = [
         title: "Measurements",
         items: [
           "Unified Data Intake",
+          "Astronaut Health Report",
           "Live Monitoring",
           "Device Integration Center",
           "Recorded Mission Data",
@@ -332,6 +333,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Mission Workspace") return "/mission/experience";
   if (label === "Daily Readiness Check-in") return "/mission/readiness";
   if (label === "Unified Data Intake") return "/mission/intake";
+  if (label === "Astronaut Health Report") return "/mission/health-report";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
