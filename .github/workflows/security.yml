@@ -22,10 +22,12 @@ jobs:
           persist-credentials: false
       - name: Filesystem vulnerability and secret scan
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0 (immutable release)
+        env:
+          TRIVY_INCLUDE_DEV_DEPS: "true"
         with:
           scan-type: fs
           scan-ref: .
           scanners: vuln,secret
           severity: HIGH,CRITICAL
-          ignore-unfixed: true
+          ignore-unfixed: false
           exit-code: "1"
