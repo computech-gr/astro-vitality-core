@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-09-21T09:00:00Z",
+  "updatedAt": "2026-10-24T06:45:50Z",
   "evidence": [
     {
       "id": "P20-HW-001",
@@ -55,8 +55,8 @@
       "id": "P20-VIDEO-001",
       "title": "Final challenge video",
       "critical": true,
-      "status": "pending_human",
-      "evidence": "Final original challenge video is still human-controlled. Before READY, data/submission/p20-final-external-evidence.v1.json must contain a public URL plus explicit original/rights/licensing and required likeness-consent confirmations."
+      "status": "ready",
+      "evidence": "Team owner confirmation conveyed by Theodore Silvestros on 2026-10-24: The Mitochondria team created the final three-minute demo video, secured rights and licenses for music, images and narration, secured all required likeness consents, and manually played the public video successfully. Public HTTPS page https://mitochondria.edocinfo.com/competition/demo-video and its actual hosted MP4 were verified accessible at 2026-10-24T06:45:50Z; the unchanged 52,121,799-byte asset has a 180-second duration with H.264 video and AAC audio. See data/submission/p20-final-external-evidence.v1.json. This confirmation does not verify official 2026 submission rules or authorize final submission."
     },
     {
       "id": "P20-ATTR-001",

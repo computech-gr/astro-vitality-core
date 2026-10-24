@@ -10,11 +10,13 @@ describe("P20 challenge submission", () => {
     expect(P20_DEMO_STEPS.at(-1)?.minute).toBe("2:40–3:00");
   });
 
-  test("final gate fails closed while final video or official-rules evidence is pending", () => {
+  test("final gate fails closed while official-rules evidence remains pending despite confirmed video", () => {
     const summary = summarizeSubmissionEvidence(evidenceLedger.evidence as SubmissionEvidence[]);
     expect(summary.finalSubmissionReady).toBe(false);
-    expect(summary.pendingHuman).toBeGreaterThanOrEqual(1);
-    expect(summary.pendingExternal).toBeGreaterThanOrEqual(1);
+    expect(summary.pendingHuman).toBe(0);
+    expect(summary.pendingExternal).toBe(1);
+    expect(evidenceLedger.evidence.find((item) => item.id === "P20-VIDEO-001")?.status).toBe("ready");
+    expect(evidenceLedger.evidence.find((item) => item.id === "P20-RULES-001")?.status).toBe("pending_external");
     expect(evidenceLedger.evidence.find((item) => item.id === "P20-RC-001")?.status).toBe("ready");
   });
 

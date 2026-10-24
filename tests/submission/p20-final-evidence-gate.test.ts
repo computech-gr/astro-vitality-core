@@ -5,16 +5,39 @@ const gate = readFileSync("scripts/verify-submission-gate.mjs", "utf8");
 const manifest = readFileSync("scripts/generate-submission-manifest.mjs", "utf8");
 const storyboard = readFileSync("docs/VIDEO_STORYBOARD.md", "utf8");
 const ledger = JSON.parse(readFileSync("data/submission/p20-evidence.v1.json", "utf8"));
+const external = JSON.parse(readFileSync("data/submission/p20-final-external-evidence.v1.json", "utf8"));
 const reproduction = JSON.parse(readFileSync("data/submission/p19-independent-reproduction.v1.json", "utf8"));
 
 describe("P20 final evidence closure", () => {
-  test("records the completed independent reproduction without inventing final video/rules evidence", () => {
+  test("records independent reproduction and owner-confirmed video without inventing rules evidence", () => {
     expect(ledger.evidence.find((item: { id: string }) => item.id === "P20-RC-001")?.status).toBe("ready");
-    expect(ledger.evidence.find((item: { id: string }) => item.id === "P20-VIDEO-001")?.status).toBe("pending_human");
+    expect(ledger.evidence.find((item: { id: string }) => item.id === "P20-VIDEO-001")?.status).toBe("ready");
     expect(ledger.evidence.find((item: { id: string }) => item.id === "P20-RULES-001")?.status).toBe("pending_external");
     expect(reproduction.commit).toBe("a2be5b2c6c02a96d5f164cc005768f9aa1250bb6");
     expect(reproduction.results.dockerSelfHostBuild).toBe("pass");
     expect(reproduction.results.trackedWorktreeClean).toBe(true);
+  });
+
+  test("video closure contains the confirmed public URL, rights, consents and UTC verification timestamp", () => {
+    expect(external.video).toEqual({
+      status: "ready",
+      publicUrl: "https://mitochondria.edocinfo.com/competition/demo-video",
+      originalTeamCreated: true,
+      rightsAndLicensesConfirmed: true,
+      requiredLikenessConsentsConfirmed: true,
+      checkedAt: "2026-10-24T06:45:50Z",
+    });
+  });
+
+  test("official 2026 rules remain unverified", () => {
+    expect(external.official2026SubmissionRules).toEqual({
+      status: "pending_external",
+      officialSourceUrl: null,
+      submissionFieldsRechecked: null,
+      judgingInstructionsRechecked: null,
+      rightsRequirementsRechecked: null,
+      checkedAt: null,
+    });
   });
 
   test("manifest generation fails closed on missing controlled inputs", () => {
