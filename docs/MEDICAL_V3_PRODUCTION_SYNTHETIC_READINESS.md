@@ -22,14 +22,14 @@ The current fixture SQL requires mission status `active` and display name exactl
 
 ## Existing implementation to reuse
 
-| Area | Existing implementation | Assessment |
-| --- | --- | --- |
-| Foundation | `supabase/pending/20261024000000_medical_governance_v3.sql` | Caller-bound roles, append-only history, SHA-256, atomic quotas; not applied |
-| Fixture authority | `supabase/pending/20261025000000_medical_v3_synthetic_completion.sql` | Independently reconstructed canonical v2 fixture evidence; scope assumptions need correction |
-| UI | `src/components/synthetic-medical-review.tsx` | Already separate from the encrypted observation store; currently includes persistent review controls |
-| Draft API | `src/routes/api.medical-ai-draft.ts` | Checks caller, synthetic provenance, authoritative evidence and quota; hardening still required |
-| Q&A | `src/lib/synthetic-evidence-qa.functions.ts`, `src/lib/synthetic-evidence-qa.server.ts` | Exact-fact citations, caller RPCs, post-provider authority recheck and fail-closed quota release; currently disposable-only |
-| Offline review | `src/components/medical-advisor-workbench.tsx` | Session-only, but its generation action submits offline report rows; not the production fixture demonstration path |
+| Area              | Existing implementation                                                                 | Assessment                                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Foundation        | `supabase/pending/20261024000000_medical_governance_v3.sql`                             | Caller-bound roles, append-only history, SHA-256, atomic quotas; not applied                                                |
+| Fixture authority | `supabase/pending/20261025000000_medical_v3_synthetic_completion.sql`                   | Independently reconstructed canonical v2 fixture evidence; scope assumptions need correction                                |
+| UI                | `src/components/synthetic-medical-review.tsx`                                           | Already separate from the encrypted observation store; currently includes persistent review controls                        |
+| Draft API         | `src/routes/api.medical-ai-draft.ts`                                                    | Checks caller, synthetic provenance, authoritative evidence and quota; hardening still required                             |
+| Q&A               | `src/lib/synthetic-evidence-qa.functions.ts`, `src/lib/synthetic-evidence-qa.server.ts` | Exact-fact citations, caller RPCs, post-provider authority recheck and fail-closed quota release; currently disposable-only |
+| Offline review    | `src/components/medical-advisor-workbench.tsx`                                          | Session-only, but its generation action submits offline report rows; not the production fixture demonstration path          |
 
 No pending P36 submission/history migrations are required for this feature. No new users, roles, assignments, public observation policies, uploads or AI provider are necessary.
 
