@@ -4,10 +4,10 @@
 
 Both additive manifest entries matched before application; no existing target was overwritten:
 
-| File | Bytes | Supplied SHA-256 |
-| --- | ---: | --- |
-| `scripts/verify-medical-v3-isolation-readiness.mjs` | 1035 | `1d8e658cb6d0978a48464ebe76fdea7e569af7863b63c90e667e696deea7a048` |
-| `docs/MEDICAL_V3_ISOLATED_EXECUTION_HANDOFF.md` | 3344 | `5acd3a1c4b1494d61f4e80c022f4743f11ad56738afd0bc0f7b30987c898f30b` |
+| File                                                | Bytes | Supplied SHA-256                                                   |
+| --------------------------------------------------- | ----: | ------------------------------------------------------------------ |
+| `scripts/verify-medical-v3-isolation-readiness.mjs` |  1035 | `1d8e658cb6d0978a48464ebe76fdea7e569af7863b63c90e667e696deea7a048` |
+| `docs/MEDICAL_V3_ISOLATED_EXECUTION_HANDOFF.md`     |  3344 | `5acd3a1c4b1494d61f4e80c022f4743f11ad56738afd0bc0f7b30987c898f30b` |
 
 Both files were initially applied byte-identically. The archive supplies a contract and static readiness verifier, not executable authentication, Data API, application provisioning or browser automation. Formatting checks detected failures in both supplied files; only their formatting was subsequently normalized. Post-format SHA-256 values are respectively `5944a4c1364c650177d21757743f42d7741c1aafbafdc455a7a9109ce2494d5f` and `19d19994a8437d61b59d8cdaf9490537507b3984db663469f38bd94f3415ab5a`. No safeguard was removed.
 
@@ -57,16 +57,16 @@ No screenshot, environment attestation or successful synthetic browser receipt e
 
 Fresh Trivy 0.66.0 production-dependency scanning found **0 HIGH/CRITICAL vulnerabilities and 0 secrets**. An additional scan explicitly including development dependencies found **7 HIGH and 1 CRITICAL vulnerability, 0 HIGH/CRITICAL secrets**:
 
-| Package / installed | Advisory | Severity | Fixed versions reported by Trivy |
-| --- | --- | --- | --- |
-| brace-expansion 1.1.16 | CVE-2026-102276 | HIGH | 1.1.19, 2.1.5, 3.0.7, 5.0.10 |
-| brace-expansion 1.1.16 | CVE-2026-102278 | HIGH | 1.1.20, 2.1.6, 3.0.8, 5.0.11 |
-| brace-expansion 1.1.16 | CVE-2026-14257 | HIGH | 1.1.17, 2.1.3, 3.0.3, 5.0.8 |
-| brace-expansion 1.1.16 | CVE-2026-69152 | HIGH | 1.1.18, 2.1.4, 3.0.6, 5.0.9 |
-| launch-editor 2.14.1 | CVE-2026-112942 | HIGH | 2.14.2 |
-| nanoid 3.3.16 | CVE-2026-67213 | HIGH | 3.3.18, 5.1.6 |
-| shell-quote 1.10.0 | CVE-2026-102422 | CRITICAL | 1.11.0 |
-| vite 8.1.5 | CVE-2026-112942 | HIGH | 8.1.6, 8.2.4, 8.3.3, 7.3.7, 6.4.4 |
+| Package / installed    | Advisory        | Severity | Fixed versions reported by Trivy  |
+| ---------------------- | --------------- | -------- | --------------------------------- |
+| brace-expansion 1.1.16 | CVE-2026-102276 | HIGH     | 1.1.19, 2.1.5, 3.0.7, 5.0.10      |
+| brace-expansion 1.1.16 | CVE-2026-102278 | HIGH     | 1.1.20, 2.1.6, 3.0.8, 5.0.11      |
+| brace-expansion 1.1.16 | CVE-2026-14257  | HIGH     | 1.1.17, 2.1.3, 3.0.3, 5.0.8       |
+| brace-expansion 1.1.16 | CVE-2026-69152  | HIGH     | 1.1.18, 2.1.4, 3.0.6, 5.0.9       |
+| launch-editor 2.14.1   | CVE-2026-112942 | HIGH     | 2.14.2                            |
+| nanoid 3.3.16          | CVE-2026-67213  | HIGH     | 3.3.18, 5.1.6                     |
+| shell-quote 1.10.0     | CVE-2026-102422 | CRITICAL | 1.11.0                            |
+| vite 8.1.5             | CVE-2026-112942 | HIGH     | 8.1.6, 8.2.4, 8.3.3, 7.3.7, 6.4.4 |
 
 These expanded-scope findings are reported, not suppressed. Dependencies were not changed during this infrastructure-blocked patch task. A prior production-only clean scan or GitHub success is not evidence of a clean development-dependency inventory.
 
