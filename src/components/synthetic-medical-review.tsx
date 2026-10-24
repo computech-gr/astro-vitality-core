@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ import {
 } from "@/lib/medical-governance.functions";
 import { askSyntheticEvidence } from "@/lib/synthetic-evidence-qa.functions";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
+import { SYNTHETIC_DEMO_QUESTIONS } from "@/domain/health-intelligence/production-synthetic-demo";
+import { validateAIDraft } from "@/domain/health-intelligence/ai-draft-validation";
 import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
 
 /** Separate from offline reports: no observation-store dependency or browser authority. */
@@ -19,7 +21,21 @@ export function SyntheticMedicalReview() {
   const append = useServerFn(appendMedicalReview);
   const exportAuthorized = useServerFn(exportSyntheticMedicalHistory);
   const ask = useServerFn(askSyntheticEvidence);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState<string>(SYNTHETIC_DEMO_QUESTIONS[0]);
+  const [persistent, setPersistent] = useState(false);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const clearSession = () => {
+    setAcknowledged(false); setAnswer(""); setDraft(""); setFinal(""); setRationale("");
+    setConsent(false); setQaConsent(false);
+  };
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (["SIGNED_OUT", "SIGNED_IN", "USER_UPDATED"].includes(event)) {
+        clearSession(); setSnapshot(null); setEvents([]); setPersistent(false);
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
   const [qaConsent, setQaConsent] = useState(false);
   const [answer, setAnswer] = useState("");
   const [snapshot, setSnapshot] = useState<SyntheticEvidenceSnapshot | null>(null);
@@ -37,6 +53,7 @@ export function SyntheticMedicalReview() {
     null,
   );
   const refresh = async () => {
+    clearSession();
     const result = await load();
     if (!result.available || !result.snapshot) {
       setSnapshot(null);
@@ -51,6 +68,7 @@ export function SyntheticMedicalReview() {
         crewMemberId: result.snapshot.crewMemberId,
       },
     });
+    setPersistent(resultHistory.available);
     setEvents(resultHistory.events);
     setStatus(
       "Invented synthetic fixtures — test receipts are not human medical review or scientific approval.",
@@ -61,6 +79,8 @@ export function SyntheticMedicalReview() {
     try {
       await action();
     } catch (error) {
+      clearSession();
+      setSnapshot(null);
       setEvents((previous) => previous.map((event) => ({ ...event, verified_current: false })));
       setStatus(
         error instanceof Error ? error.message : "Request failed; no verified acknowledgment.",
@@ -113,7 +133,15 @@ export function SyntheticMedicalReview() {
   };
   const generate = async () => {
     if (!snapshot || !consent) return;
+    setAcknowledged(false);
     setConsent(false);
+    if (!persistent) {
+      const result = await ask({ data: { question: SYNTHETIC_DEMO_QUESTIONS[0], consent: true, provenance: "synthetic", missionId: snapshot.missionId, crewMemberId: snapshot.crewMemberId } });
+      if (result.status !== 200 || !result.text || result.evidence_sha256 !== snapshot.sha256) throw new Error(result.error ?? "Synthetic draft rejected.");
+      setDraft(result.text); setFinal(result.text);
+      setStatus("Synthetic research draft — unsaved; session-only advisor review.");
+      return;
+    }
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw new Error("Sign in required.");
     const response = await fetch("/api/medical-ai-draft", {
@@ -139,6 +167,7 @@ export function SyntheticMedicalReview() {
   const askQuestion = async () => {
     if (!snapshot || !qaConsent) return;
     setQaConsent(false);
+    setAcknowledged(false);
     setAnswer("");
     const result = await ask({
       data: {
@@ -149,7 +178,7 @@ export function SyntheticMedicalReview() {
         crewMemberId: snapshot.crewMemberId,
       },
     });
-    if (result.status !== 200 || !result.text)
+    if (result.status !== 200 || !result.text || result.evidence_sha256 !== snapshot.sha256)
       throw new Error(result.error ?? "Synthetic answer rejected.");
     setAnswer(result.text);
   };
@@ -195,7 +224,7 @@ export function SyntheticMedicalReview() {
             rows={4}
             maxLength={12000}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => { setDraft(e.target.value); setAcknowledged(false); }}
             className="w-full rounded border bg-background p-2"
           />
           <label htmlFor="synthetic-final" className="block text-sm">
@@ -206,7 +235,7 @@ export function SyntheticMedicalReview() {
             rows={4}
             maxLength={12000}
             value={final}
-            onChange={(e) => setFinal(e.target.value)}
+            onChange={(e) => { setFinal(e.target.value); setAcknowledged(false); }}
             className="w-full rounded border bg-background p-2"
           />
           <label htmlFor="synthetic-rationale" className="block text-sm">
@@ -217,10 +246,20 @@ export function SyntheticMedicalReview() {
             rows={2}
             maxLength={2000}
             value={rationale}
-            onChange={(e) => setRationale(e.target.value)}
+            onChange={(e) => { setRationale(e.target.value); setAcknowledged(false); }}
             className="w-full rounded border bg-background p-2"
           />
-          <div className="flex flex-wrap gap-2">
+          {!persistent && <div className="space-y-2">
+            <Button disabled={busy || !draft.trim() || !final.trim() || !rationale.trim()} onClick={() => void run(async () => {
+              const current = await load();
+              if (!current.available || !current.snapshot || current.snapshot.sha256 !== snapshot.sha256) throw new Error("Evidence or authorization changed; acknowledgment invalidated.");
+              if (!validateAIDraft(final, current.snapshot.evidence).ok) throw new Error("Unsupported statements or citations; acknowledgment rejected.");
+              setAcknowledged(true);
+              setStatus("Session-only synthetic acknowledgment. Not saved, licensed or scientifically approved.");
+            })}>Acknowledge session-only review</Button>
+            {acknowledged && <p role="status">Session-only acknowledgment — not a persistent approval.</p>}
+          </div>}
+          {persistent && <><div className="flex flex-wrap gap-2">
             <Button
               disabled={
                 busy ||
@@ -271,19 +310,15 @@ export function SyntheticMedicalReview() {
             Contains reviewer identifiers, evidence hashes, timestamps and review text. Export is
             not a clinical signature; store the file securely.
           </p>
+          </>}
           <div className="space-y-2 border-t pt-4">
-            <h3 className="font-semibold">Synthetic evidence Q&amp;A — isolated tests only</h3>
+            <h3 className="font-semibold">Synthetic evidence Q&amp;A — research only</h3>
             <label htmlFor="synthetic-question" className="block text-sm">
               Question about observed evidence
             </label>
-            <textarea
-              id="synthetic-question"
-              rows={3}
-              maxLength={1000}
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              className="w-full rounded border bg-background p-2"
-            />
+            <select id="synthetic-question" value={question} onChange={(e) => { setQuestion(e.target.value); setQaConsent(false); setAnswer(""); setAcknowledged(false); }} className="w-full min-w-0 rounded border bg-background p-2">
+              {SYNTHETIC_DEMO_QUESTIONS.map((q) => <option key={q} value={q}>{q}</option>)}
+            </select>
             <label className="flex items-start gap-2 text-sm">
               <input
                 type="checkbox"
