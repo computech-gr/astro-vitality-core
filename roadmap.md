@@ -1,5 +1,14 @@
 # P20 video evidence closure
 
+## V3 isolated browser acceptance gate
+
+- [x] Verify both additive patch fingerprints before applying.
+- [ ] Prove an isolated app, authenticated disposable backend, test identity and bounded OpenAI budget: blocked by missing local auth/Data API services; never use the shared backend.
+- [x] Stop browser/provider execution and deliver executable blocking preflight with precise infrastructure blockers in docs/MEDICAL_V3_ISOLATED_BROWSER_ACCEPTANCE_STATUS.md.
+- [ ] Complete functional browser runner and loaded desktop/mobile acceptance: blocked by unproven isolation; preflight is not acceptance.
+- [x] Run permitted regression/security checks: 526 tests, 97/100 verifiers, formatting, lint 0 errors/13 warnings, zero Trivy HIGH/CRITICAL/secrets; report blocked browser cases separately.
+- [ ] Exact-final-commit Quality/Security and typecheck/build: blocked by unverified managed synchronization; latest public green observed at e06e35a3, not current implementation SHA.
+
 ## V3 export and isolated evidence Q&A
 
 - [x] Verify both supplied baseline/after fingerprints and apply the patch.
