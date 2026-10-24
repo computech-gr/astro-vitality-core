@@ -88,8 +88,12 @@ export function buildSyntheticReviewExport(
   utc.parse(exportedAt);
   const revisions = new Set<number>();
   const ids = new Set<string>();
+  let prior: (typeof events)[number] | undefined;
   for (const e of events) {
     if (
+      e.revision !== (prior?.revision ?? 0) + 1 ||
+      e.previous_event_id !== (prior?.id ?? null) ||
+      (prior !== undefined && Date.parse(e.created_at) < Date.parse(prior.created_at)) ||
       e.mission_id !== snapshot.missionId ||
       e.crew_member_id !== snapshot.crewMemberId ||
       revisions.has(e.revision) ||
@@ -103,6 +107,7 @@ export function buildSyntheticReviewExport(
       throw new Error("Invalid or mismatched authorized review history.");
     revisions.add(e.revision);
     ids.add(e.id);
+    prior = e;
   }
   return {
     schema: "mitochondria.synthetic-medical-review-export.v1",

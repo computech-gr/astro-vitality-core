@@ -124,6 +124,9 @@ export async function answerSyntheticQuestion(
           .map((c) => c.text ?? "")
           .join("") ?? "";
       try {
+        const generatedAt = deps.now();
+        if (!/(?:Z|\+00:00)$/.test(generatedAt) || !Number.isFinite(Date.parse(generatedAt)))
+          throw new Error("Invalid server UTC timestamp");
         const answer = validateSyntheticAnswer(JSON.parse(raw), snapshot.evidence);
         // Re-read authority after the provider returns; source/receipt changes invalidate the answer.
         const current = await deps.rpc("medical_v3_fixture_snapshot", {});
@@ -135,7 +138,7 @@ export async function answerSyntheticQuestion(
             {
               ...answer,
               evidence_sha256: snapshot.sha256,
-              generated_at: deps.now(),
+              generated_at: generatedAt,
               warning: "Unverified synthetic research answer; not clinical advice.",
             },
             { headers },

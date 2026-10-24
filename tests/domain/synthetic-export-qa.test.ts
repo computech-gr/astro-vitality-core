@@ -153,6 +153,8 @@ describe("authorized synthetic export integrity", () => {
       { evidence_sha256: "bad" },
       { created_at: "2026-10-25T20:00:00Z" },
       { provenance: "real" },
+      { revision: 2 },
+      { previous_event_id: "00000000-0000-4000-8000-000000000002" },
       { evidence_sha256: "sha256-" + "a".repeat(64) },
     ])
       expect(() =>
@@ -161,6 +163,11 @@ describe("authorized synthetic export integrity", () => {
   });
 });
 describe("isolated synthetic Q&A controls", () => {
+  test("invalid server timestamp withholds output and releases quota",async()=>{
+    const h=await harness();h.deps.now=()=>"not-utc";
+    expect((await answerSyntheticQuestion(input,h.deps)).status).toBe(422);
+    expect(h.rpcs.at(-1)).toBe("medical_v3_release_ai");
+  });
   test("1000-character question limit and injection fail closed", () => {
     expect(validateSyntheticQuestion("q".repeat(1000))).toHaveLength(1000);
     expect(() => validateSyntheticQuestion("q".repeat(1001))).toThrow();
