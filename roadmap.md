@@ -3,8 +3,8 @@
 ## V3 verifier recovery and synthetic source decision
 
 - [x] Verify before/after manifest fingerprints, apply four patch files, and format only requested touched files and v3 contract.
-- [ ] Run recovered safeguards, full tests, formatting, security/scientific and disposable database checks.
-- [ ] Prepare authoritative synthetic source implementation plan for separate owner decision; no implementation, transfers or activation.
+- [x] Run recovered safeguards, full tests, formatting, security/scientific and disposable database checks.
+- [x] Prepare authoritative synthetic source implementation plan (docs/MEDICAL_V3_SYNTHETIC_SOURCE_IMPLEMENTATION_PLAN.md); no implementation, transfers or activation.
 - [ ] Private restore and owner-risk gates await authentic owner evidence; production migrations and source trust remain unapproved.
 - [ ] Confirm final saved SHA and exact-commit Quality/Security results through managed synchronization and GitHub Actions.
 
