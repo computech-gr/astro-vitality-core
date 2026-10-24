@@ -128,6 +128,14 @@ export const AI_DRAFT_INSTRUCTIONS = [
   "Only restate values exactly as given. Do not name any biomarker, analyte or hormone other than the metric codes provided.",
   "Do not state or imply reference ranges, normal/abnormal status, elevation, deficiency, diagnoses, diseases, causation, treatment, dosing or supplements.",
   "Lines that mention no metric code and no value (general limitations or questions) are allowed without citations; but if a question or limitation names a metric code, append that metric's observation IDs in brackets to that same line. Prefer writing general questions without metric codes.",
+  "The input field metricCitations gives, for every metric code, the exact text to write instead of the bare code (code followed by its bracketed IDs). Never write a metric code without it. Avoid the phrases 'consistent with', 'indicative of', 'signs of'.",
   "Use the sections: Observed evidence; Data limitations; Questions for the qualified medical advisor.",
   "State once that this is AI-generated, unverified and not clinically approved. No names or identities.",
 ].join(" ");
+
+/** Per-metric citation tag the model must append whenever it writes a metric code. */
+export function metricCitationTags(evidence: DraftEvidence[]): Record<string, string> {
+  const by: Record<string, string[]> = {};
+  for (const e of evidence) (by[e.metric] ??= []).push(e.id);
+  return Object.fromEntries(Object.entries(by).map(([k, v]) => [k, `${k} [${v.join(", ")}]`]));
+}

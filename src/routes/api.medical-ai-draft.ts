@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import {
   AI_DRAFT_INSTRUCTIONS,
+  metricCitationTags,
   validateAIDraft,
 } from "@/domain/health-intelligence/ai-draft-validation";
 
@@ -138,7 +139,11 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
               store: false,
               max_output_tokens: 1500,
               instructions: AI_DRAFT_INSTRUCTIONS,
-              input: JSON.stringify({ provenance, evidence }),
+              input: JSON.stringify({
+                provenance,
+                evidence,
+                metricCitations: metricCitationTags(evidence),
+              }),
             }),
           });
           if (!response.ok) return fail("AI provider unavailable; no draft generated", 502);
