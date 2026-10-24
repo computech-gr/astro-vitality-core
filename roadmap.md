@@ -29,3 +29,10 @@
 - [x] Implement audit findings D1-D7 and R1-R12 across Bone Health, Readiness, Documents, Live and Operations.
 - [x] Regression tests, full suite, typecheck, production build, verifiers and browser checks at 1280px/390px.
 - [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
+
+## Unified health intelligence intake
+
+- [x] Apply the foundation patch (classification module, plan doc, tests).
+- [x] Versioned observation envelope, append-only encrypted store, /mission/intake review workspace, navigation and route.
+- [x] Regression tests, full suite, typecheck (tsc), production build, verifiers, security audit and browser checks.
+- [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.

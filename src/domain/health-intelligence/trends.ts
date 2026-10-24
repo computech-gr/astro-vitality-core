@@ -14,7 +14,9 @@ function sampleMagnitude(sample: TrendSample, policy: TrendDetectionPolicy): num
       : undefined;
   }
   if (typeof policy.percentDeltaMagnitude === "number" && typeof sample.percentDelta === "number") {
-    return Math.abs(sample.percentDelta) >= policy.percentDeltaMagnitude ? sample.percentDelta : undefined;
+    return Math.abs(sample.percentDelta) >= policy.percentDeltaMagnitude
+      ? sample.percentDelta
+      : undefined;
   }
   return undefined;
 }
@@ -57,7 +59,11 @@ export function detectSustainedTrend(
     const sign = Math.sign(magnitude);
     const previous = run.at(-1);
     const previousMagnitude = previous ? sampleMagnitude(previous, policy) : undefined;
-    if (previous && typeof previousMagnitude === "number" && Math.sign(previousMagnitude) !== sign) {
+    if (
+      previous &&
+      typeof previousMagnitude === "number" &&
+      Math.sign(previousMagnitude) !== sign
+    ) {
       run = [sample];
     } else {
       run.push(sample);

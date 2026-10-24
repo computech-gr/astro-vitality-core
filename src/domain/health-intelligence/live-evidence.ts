@@ -22,7 +22,13 @@ export interface ScientificMetricSummary {
   latest: ScientificObservation;
   earliest: ScientificObservation;
   previous?: ScientificObservation;
-  baseline?: { mean: number; count: number; start: string; end: string; status: "descriptive_only" };
+  baseline?: {
+    mean: number;
+    count: number;
+    start: string;
+    end: string;
+    status: "descriptive_only";
+  };
   changeFromPrevious?: number;
   status: "quality_blocked" | "insufficient_history" | "descriptive_only";
 }
@@ -65,47 +71,100 @@ export function buildScientificEvidenceReport(input: {
   // Defense in depth: never evaluate a different crew member or mission.
   const unique = new Map<string, ScientificObservation>();
   for (const item of input.observations) {
-    if (item.missionId !== mission.missionId || item.crewMemberId !== mission.crewMemberId) continue;
-    if (!item.metricCode || !item.unit || !Number.isFinite(item.value) || !Number.isFinite(Date.parse(item.observedAt))) continue;
+    if (item.missionId !== mission.missionId || item.crewMemberId !== mission.crewMemberId)
+      continue;
+    if (
+      !item.metricCode ||
+      !item.unit ||
+      !Number.isFinite(item.value) ||
+      !Number.isFinite(Date.parse(item.observedAt))
+    )
+      continue;
     if (!qualityLevels.includes(item.quality)) continue;
     // Same encrypted event may be projected both from local and cloud stores.
     const prior = unique.get(item.id);
-    if (!prior || (prior.location === "local" && item.location === "cloud")) unique.set(item.id, item);
+    if (!prior || (prior.location === "local" && item.location === "cloud"))
+      unique.set(item.id, item);
   }
-  const observations = [...unique.values()].sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+  const observations = [...unique.values()].sort(
+    (a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt),
+  );
   const groups = new Map<string, ScientificObservation[]>();
   for (const item of observations) {
     const key = `${item.metricCode}\u0000${item.unit}`;
     groups.set(key, [...(groups.get(key) ?? []), item]);
   }
-  const metrics: ScientificMetricSummary[] = [...groups.values()].map((samples) => {
-    const latest = samples[samples.length - 1]!; // groups always non-empty
-    const previous = samples.length > 1 ? samples[samples.length - 2] : undefined;
-    const usable = samples.filter((s) => s.quality === "good");
-    // Strictly descriptive, not an approved personal baseline. Avoid including latest sample.
-    const historical = usable.filter((s) => s.id !== latest.id);
-    const baseline = historical.length >= 3 && Date.parse(historical[historical.length - 1]!.observedAt) - Date.parse(historical[0]!.observedAt) >= 86400000
-      ? { mean: historical.reduce((sum, s) => sum + s.value, 0) / historical.length, count: historical.length, start: historical[0]!.observedAt, end: historical[historical.length - 1]!.observedAt, status: "descriptive_only" as const }
-      : undefined;
-    return {
-      metricCode: latest.metricCode, unit: latest.unit, count: samples.length, earliest: samples[0]!, latest,
-      ...(previous ? { previous, changeFromPrevious: latest.value - previous.value } : {}),
-      ...(baseline ? { baseline } : {}),
-      status: latest.quality === "poor" || latest.quality === "unknown" ? "quality_blocked" as const : baseline ? "descriptive_only" as const : "insufficient_history" as const,
-    };
-  }).sort((a, b) => a.metricCode.localeCompare(b.metricCode));
-  const validCodes = new Set(observations.filter((o) => o.quality === "good" || o.quality === "degraded").map((o) => o.metricCode));
-  const patterns: ScientificPatternCoverage[] = REVIEWED_INTELLIGENCE_PATTERNS_V1_1.map((pattern) => {
-    const observedRoles = pattern.roles.filter((role) => role.anyMetricCodes.some((code) => validCodes.has(code))).map((role) => role.role);
-    const missingRoles = pattern.roles.filter((role) => role.required && !observedRoles.includes(role.role)).map((role) => role.role);
-    return {
-      id: pattern.id, name: pattern.displayName,
-      status: pattern.operationalStatus === "research_only" ? "research_only" : missingRoles.length ? "insufficient_evidence" : "evidence_present_not_interpreted",
-      observedRoles, missingRoles, sources: [...pattern.sourceIds],
-    };
-  });
+  const metrics: ScientificMetricSummary[] = [...groups.values()]
+    .map((samples) => {
+      const latest = samples[samples.length - 1]!; // groups always non-empty
+      const previous = samples.length > 1 ? samples[samples.length - 2] : undefined;
+      const usable = samples.filter((s) => s.quality === "good");
+      // Strictly descriptive, not an approved personal baseline. Avoid including latest sample.
+      const historical = usable.filter((s) => s.id !== latest.id);
+      const baseline =
+        historical.length >= 3 &&
+        Date.parse(historical[historical.length - 1]!.observedAt) -
+          Date.parse(historical[0]!.observedAt) >=
+          86400000
+          ? {
+              mean: historical.reduce((sum, s) => sum + s.value, 0) / historical.length,
+              count: historical.length,
+              start: historical[0]!.observedAt,
+              end: historical[historical.length - 1]!.observedAt,
+              status: "descriptive_only" as const,
+            }
+          : undefined;
+      return {
+        metricCode: latest.metricCode,
+        unit: latest.unit,
+        count: samples.length,
+        earliest: samples[0]!,
+        latest,
+        ...(previous ? { previous, changeFromPrevious: latest.value - previous.value } : {}),
+        ...(baseline ? { baseline } : {}),
+        status:
+          latest.quality === "poor" || latest.quality === "unknown"
+            ? ("quality_blocked" as const)
+            : baseline
+              ? ("descriptive_only" as const)
+              : ("insufficient_history" as const),
+      };
+    })
+    .sort((a, b) => a.metricCode.localeCompare(b.metricCode));
+  const validCodes = new Set(
+    observations
+      .filter((o) => o.quality === "good" || o.quality === "degraded")
+      .map((o) => o.metricCode),
+  );
+  const patterns: ScientificPatternCoverage[] = REVIEWED_INTELLIGENCE_PATTERNS_V1_1.map(
+    (pattern) => {
+      const observedRoles = pattern.roles
+        .filter((role) => role.anyMetricCodes.some((code) => validCodes.has(code)))
+        .map((role) => role.role);
+      const missingRoles = pattern.roles
+        .filter((role) => role.required && !observedRoles.includes(role.role))
+        .map((role) => role.role);
+      return {
+        id: pattern.id,
+        name: pattern.displayName,
+        status:
+          pattern.operationalStatus === "research_only"
+            ? "research_only"
+            : missingRoles.length
+              ? "insufficient_evidence"
+              : "evidence_present_not_interpreted",
+        observedRoles,
+        missingRoles,
+        sources: [...pattern.sourceIds],
+      };
+    },
+  );
   return {
-    mission, generatedAt, observations, metrics, patterns,
+    mission,
+    generatedAt,
+    observations,
+    metrics,
+    patterns,
     warnings: [
       "Observations are read-only and scoped to one signed-in crew member and mission.",
       "Historical means are descriptive only: no approved baseline policy, matched context, or clinical threshold is inferred.",

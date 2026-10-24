@@ -7,7 +7,7 @@ const search = readFileSync(resolve("src/domain/navigation-search/search.ts"), "
 
 describe("P36.3A Mission Documents navigation", () => {
   it("shows Mission Documents in the global Health & Intelligence menu, including mobile navigation", () => {
-    expect(shell).toContain('{ title: "Evidence & context", items: ["Mission Documents"');
+    expect(shell.replace(/\s+/g, " ")).toContain('{ title: "Evidence & context", items: [ "Mission Documents"');
     expect(shell).toContain('if (label === "Mission Documents") return "/mission/documents";');
     expect(shell).toContain('group.items.map');
   });
