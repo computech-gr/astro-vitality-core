@@ -5,7 +5,7 @@ This project is an independent participant project for the 2026 NASA Internation
 ## Official 2026 challenge
 
 - Challenge: **Create Health Monitoring Software for Astronauts on Space Missions**
-- Challenge page: https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/
+- Challenge page: https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/
 - 2026 event hub: https://www.spaceappschallenge.org/2026/
 - 2026 participant terms: https://www.spaceappschallenge.org/legal/
 

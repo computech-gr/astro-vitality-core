@@ -5,7 +5,7 @@ This register tracks major public resources that inform The Mitochondria. Inclus
 ## NASA Space Apps Challenge 2026
 
 - NASA International Space Apps Challenge 2026: https://www.spaceappschallenge.org/2026/
-- Official 2026 challenge — Create Health Monitoring Software for Astronauts on Space Missions: https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/
+- Official 2026 challenge — Create Health Monitoring Software for Astronauts on Space Missions: https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/
 - 2026 Participant Terms and Conditions: https://www.spaceappschallenge.org/legal/
 
 ## NASA Human Research Program / Human System Risks
