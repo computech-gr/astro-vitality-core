@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
@@ -13,7 +14,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
   const domain = getHealthDomain(domainId);
   const [catalogQuery, setCatalogQuery] = useState("");
   const draftCatalog = proposedCatalog.entries.filter((item) => item.domain === domainId && (item.id.toLowerCase().includes(catalogQuery.toLowerCase()) || item.name.toLowerCase().includes(catalogQuery.toLowerCase())));
-  const [memberships, setMemberships] = useState<Array<{ missionId: string; crewMemberId: string }>>([]);
+  const [memberships, setMemberships] = useState<Array<{ missionId: string; crewMemberId: string; missionLabel: string }>>([]);
   const [selected, setSelected] = useState("");
   const [report, setReport] = useState<ScientificEvidenceReport | null>(null);
   const [message, setMessage] = useState("Checking private Crew Self access...");
@@ -22,7 +23,10 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
     void getCloudMissionContext().then((context) => {
       if (!active) return;
       const allowed = context.signedIn && !context.error ? context.memberships.filter((member): member is typeof member & { crewMemberId: string } => member.role === "crew_self" && Boolean(member.crewMemberId)) : [];
-      setMemberships(allowed);
+      const missionIds = [...new Set(allowed.map(member => member.missionId))];
+      const { data: missionRows } = missionIds.length ? await supabase.from("missions").select("id, code, name").in("id", missionIds) : { data: [] };
+      const labels = new Map((missionRows ?? []).map(row => [row.id, row.name ?? row.code ?? row.id]));
+      setMemberships(allowed.map(member => ({ ...member, missionLabel: labels.get(member.missionId) ?? member.missionId })));
       setSelected(allowed.length ? `${allowed[0]!.missionId}|${allowed[0]!.crewMemberId}` : "");
       if (!allowed.length) setMessage("Sign in with an active Crew Self mission membership to view private measurements.");
     }).catch(() => { if (active) setMessage("Mission authorization unavailable. No data loaded."); });
@@ -63,7 +67,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
 
     <section className="mt-8 rounded-xl border border-border p-5" aria-label="Private domain evidence">
       <h2 className="text-xl font-semibold">Mission-scoped measurements</h2>
-      {memberships.length > 1 && <label className="mt-3 block text-sm">Active mission <select className="ml-2 rounded-md border border-border bg-background p-2" value={selected} onChange={(event) => setSelected(event.target.value)}>{memberships.map((member) => <option key={`${member.missionId}|${member.crewMemberId}`} value={`${member.missionId}|${member.crewMemberId}`}>{member.missionId}</option>)}</select></label>}
+      {memberships.length > 1 && <label className="mt-3 block text-sm">Active mission <select className="ml-2 rounded-md border border-border bg-background p-2" value={selected} onChange={(event) => setSelected(event.target.value)}>{memberships.map((member) => <option key={`${member.missionId}|${member.crewMemberId}`} value={`${member.missionId}|${member.crewMemberId}`}>{member.missionLabel}</option>)}</select></label>}
       <p className="mt-3 text-sm text-muted-foreground" role="status">{message}</p>
       {report && <section className="mt-4 rounded-lg border border-border p-4" aria-label="Domain research evidence summary">
         <h3 className="font-semibold">Research evidence summary · read-only</h3>
