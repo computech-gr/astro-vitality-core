@@ -45,8 +45,8 @@ type IntakeRow = {
   excerpt: string;
   sourceKind: ObservationSourceKind;
   sourceLabel: string;
-  documentName?: string;
-  documentSha256?: string;
+  documentName?: string | undefined;
+  documentSha256?: string | undefined;
   classification: IntakeClassification;
   selected: boolean;
 };
