@@ -42,4 +42,14 @@ The private restore-evidence and owner-risk gates remain blocked, as does the mi
 - `docs/MEDICAL_V3_ISOLATED_BROWSER_ACCEPTANCE_STATUS.md`.
 - `AGENTS.md` and `roadmap.md`.
 
-Validation results and the latest observed managed SHA are reported separately after checks. Exact-final-commit GitHub synchronization, Quality/Security and production typecheck/build require external managed CI evidence; no local check substitutes for them.
+## Validation results
+
+- Full unit suite: **526 pass / 0 fail**, 113 files, including two new infrastructure stop-gate regressions. No loaded browser scenario was executed.
+- Static browser contract gate and all 11 static medical release guards pass; neither proves runtime acceptance.
+- Scientific/security verifier inventory: **97/100 pass**. `verify-p3663-activation`, `verify-p3664-owner-risk` and `verify-submission-gate` remain blocked by existing authentic/private or missing sealed evidence; no bypass.
+- Repository formatting passes; lint **0 errors / 13 existing warnings**. Security audit passes; fresh Trivy **0 HIGH/CRITICAL vulnerabilities / 0 secrets**.
+- Preflight exits **2 / BLOCKED** as intended. Disposable SQL was not rerun or mutated in this task after the infrastructure stop. Previous 356 SQL assertions are historical evidence, not a new run.
+- Automatic preview validation reports **build OK**. Manual typecheck and production build are prohibited by the sandbox workflow and were not run. Exact-commit GitHub Quality is required to establish them.
+- Public GitHub Quality and Security Scan both succeeded at **`e06e35a3ba7d48a1e18e6070571dcc0dfc732535`**. No workflow matched the managed implementation SHA observed during this task; exact-final-commit sync/CI is unverified. No Git state or workflow dispatch was changed.
+
+The final observed managed SHA is reported in chat after the last documentation update. The platform manages commits and subsequent synchronization; no local result substitutes for exact-commit CI.
