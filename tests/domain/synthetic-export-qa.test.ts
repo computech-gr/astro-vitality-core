@@ -165,13 +165,31 @@ describe("authorized synthetic export integrity", () => {
 });
 describe("isolated synthetic Q&A controls", () => {
   test("two authorized Alex Morgan fixture facts retain exact values, dates and observation citations", async () => {
-    const rows = [evidence[0], {
-      ...evidence[0], id: "synthetic-v3-hr-002", value: "66", time: "2026-10-02T10:00:00Z",
-    }];
-    const h = await harness({ evidence: rows, answer: { statements: rows.map((o) => ({
-      text: exactEvidenceStatement(o), observationId: o.id,
-    })) } });
-    const response = await answerSyntheticQuestion({ ...input, question: "What values were recorded in the two synthetic heart-rate observations?" }, h.deps);
+    const rows = [
+      evidence[0],
+      {
+        ...evidence[0],
+        id: "synthetic-v3-hr-002",
+        value: "66",
+        time: "2026-10-02T10:00:00Z",
+      },
+    ];
+    const h = await harness({
+      evidence: rows,
+      answer: {
+        statements: rows.map((o) => ({
+          text: exactEvidenceStatement(o),
+          observationId: o.id,
+        })),
+      },
+    });
+    const response = await answerSyntheticQuestion(
+      {
+        ...input,
+        question: "What values were recorded in the two synthetic heart-rate observations?",
+      },
+      h.deps,
+    );
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.citedIds).toEqual(["synthetic-v3-hr-001", "synthetic-v3-hr-002"]);
