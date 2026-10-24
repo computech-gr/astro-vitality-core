@@ -19,6 +19,8 @@ jobs:
           bun-version: 1.4.4
       - name: Frozen dependency graph
         run: bun install --frozen-lockfile
+      - name: Reproduce sealed synthetic release sample
+        run: bun run sample:release
       - name: Full repository checks
         run: bun run check
       - name: All static scientific and private-evidence gates

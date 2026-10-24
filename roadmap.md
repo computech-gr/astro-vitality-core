@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## V3 final CI and synthetic demonstration
+
+- [ ] Verify supplied manifest, correct clean-checkout sample generation and exact-SHA reporting, and run full permitted checks.
+- [ ] Execute existing disposable SQL/server synthetic demonstration; distinguish real integrations from simulated provider tests and blocked browsers.
+- [ ] Confirm exact-final-commit CI; blocked until matching synchronized GitHub runs exist.
+- [ ] Owner-only release evidence and independent browser infrastructure remain required; no production activation.
+
 ## V3 final release diagnostics
 
 - [x] Verify and apply both manifest files; regenerate the deterministic P20 sample with every existing sealed hash and byte count unchanged.
