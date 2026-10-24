@@ -30,7 +30,7 @@ function CompetitionTeamPage() {
         <p className="mt-4 max-w-3xl text-lg leading-7"><span className="text-muted-foreground">Challenge: </span>{competitionTeam.challenge}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Button asChild><a href={competitionTeam.officialUrl} target="_blank" rel="noopener noreferrer">Official NASA Team Profile<ExternalLink aria-hidden="true" /></a></Button>
-          <Button asChild variant="outline"><a href={competitionTeam.challengeUrl} target="_blank" rel="noopener noreferrer">Official challenge<ExternalLink aria-hidden="true" /></a></Button>
+          <Button asChild variant="outline"><a href={competitionTeam.challengeUrl} target="_blank" rel="noopener noreferrer">Official NASA Challenge<ExternalLink aria-hidden="true" /></a></Button>
         </div>
 
         <section aria-labelledby="team-members" className="mt-12 border-t border-border pt-8">

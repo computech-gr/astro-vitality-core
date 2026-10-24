@@ -1,5 +1,5 @@
 export const CHALLENGE_2026_URL =
-  "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
+  "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
 export const SPACE_APPS_2026_URL = "https://www.spaceappschallenge.org/2026/";
 export const SPACE_APPS_2026_TERMS_URL = "https://www.spaceappschallenge.org/legal/";
 

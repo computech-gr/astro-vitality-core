@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/sheet";
 
 const NASA_URL = "https://www.spaceappschallenge.org/2026/";
-const CHALLENGE_URL = "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
+const CHALLENGE_URL = "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
 
 type NavigationGroup = {
@@ -115,7 +115,7 @@ const navigation: readonly NavigationEntry[] = [
     href: "/#about",
     description: "Challenge background, open-source documentation and project status.",
     groups: [
-      { title: "Project", items: ["The Challenge", "Our Mission", "Why Autonomous Health", "Long-Duration Spaceflight", "The Mitochondria", "Our Team — NASA Space Apps 2026", "Official NASA Team Profile", "Roadmap"] },
+      { title: "Project", items: ["Official NASA Challenge", "Our Mission", "Why Autonomous Health", "Long-Duration Spaceflight", "The Mitochondria", "Our Team — NASA Space Apps 2026", "Official NASA Team Profile", "Roadmap"] },
       { title: "Competition Materials", items: ["NASA Competition Presentation (PDF)", "NASA Evaluator Quick Start (PDF)", "Master Technical Manual (PDF)", "Watch NASA Demo Video"] },
       { title: "Open source", href: "/#open-source", items: ["Open-Source Mission", "GitHub Repository", "Documentation", "Device Adapter SDK", "Data & Interoperability", "Contributing", "License"] },
       { title: "Governance & references", items: ["Security Policy", "Scientific Approach", "Validation & Limitations", "Challenge Submission", "Resources & References", "NASA Space Apps 2026"] },
@@ -191,7 +191,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Database Schema & Migrations (GitHub)") return `${GITHUB_URL}/tree/main/supabase/migrations`;
   if (label === "Access Rules / RLS (GitHub)") return `${GITHUB_URL}/blob/main/docs/SECURITY_MODEL.md`;
   if (label === "NASA Space Apps 2026") return NASA_URL;
-  if (label === "The Challenge") return CHALLENGE_URL;
+  if (label === "Official NASA Challenge") return CHALLENGE_URL;
   if (label === "Mission Scenario") return "/mission/simulation";
   if (label === "Mission Identity & Sign-in") return "/mission/identity";
   if (label === "Mission & Crew Operations") return "/mission/operations";

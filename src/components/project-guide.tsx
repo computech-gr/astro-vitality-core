@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const NASA_URL = "https://www.spaceappschallenge.org/2026/";
 const CHALLENGE_URL =
-  "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/";
+  "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
 
 const DOCS_URL = GITHUB_URL + "/blob/main/docs/";

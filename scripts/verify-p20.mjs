@@ -35,7 +35,7 @@ if (!String(pkg.scripts?.check ?? "").includes("verify:p20")) failures.push("Ful
 const shell = readFileSync(join(root, "src/components/app-shell.tsx"), "utf8");
 if (!shell.includes('Challenge Submission')) failures.push("About navigation must expose Challenge Submission");
 if (!shell.includes('/mission/submission')) failures.push("Challenge Submission must route to /mission/submission");
-if (!shell.includes('create-health-monitoring-software-for-astronauts-on-space-missions')) failures.push("Mission challenge link must use the official 2026 challenge URL");
+if (!shell.includes('health-monitoring-software')) failures.push("Mission challenge link must use the official 2026 challenge URL");
 
 const docs = readFileSync(join(root, "docs/SUBMISSION_PACKAGE.md"), "utf8").toLowerCase();
 for (const token of ["real physical live-device", "release-candidate", "final original challenge video", "official 2026 submission/judging", "submission:gate"]) {
