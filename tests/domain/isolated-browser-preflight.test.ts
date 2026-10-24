@@ -3,7 +3,9 @@ import { spawnSync } from "node:child_process";
 
 describe("isolated browser infrastructure stop gate", () => {
   test("missing independent isolation configuration stops before runtime acceptance", () => {
-    const result = spawnSync("python3", ["scripts/medical-v3-isolated-browser-preflight.py"], { encoding: "utf8" });
+    const result = spawnSync("python3", ["scripts/medical-v3-isolated-browser-preflight.py"], {
+      encoding: "utf8",
+    });
     expect(result.status).toBe(2);
     expect(result.stdout).toContain("No browser, provider call or database mutation");
   });
