@@ -551,7 +551,7 @@ export function LiveDashboard() {
     setMissionContextSource(context.source);
     const recordedAt = new Date().toISOString();
     const selfCheck = {
-      id: `self-${Date.now()}`,
+      id: `self-${crypto.randomUUID()}`,
       recordedAt,
       state: selfCheckState,
       ...(selfCheckNote.trim() ? { note: selfCheckNote.trim() } : {}),
@@ -1187,8 +1187,10 @@ export function LiveDashboard() {
               </div>
               {state.selfChecks[0] && (
                 <p className="mt-4 text-xs text-muted-foreground">
-                  Last recorded at {formatTime(state.selfChecks[0].recordedAt)} — encrypted locally
-                  for offline continuity and queued for governed sync.
+                  Last recorded: {state.selfChecks[0].state.replaceAll("_", " ")}
+                  {state.selfChecks[0].note ? ` — “${state.selfChecks[0].note}”` : ""} at{" "}
+                  {formatTime(state.selfChecks[0].recordedAt)} — encrypted locally for offline
+                  continuity and queued for governed sync.
                 </p>
               )}
             </CardContent>

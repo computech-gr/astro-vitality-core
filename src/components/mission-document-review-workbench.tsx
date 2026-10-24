@@ -5,7 +5,12 @@ import {
   type MissionIdentitySnapshot,
 } from "@/infrastructure/mission-identity";
 import registry from "../../data/scientific/p36-biomarker-source-registry.v1.json";
-import { getDocumentDomainProjection, getUnitPendingBoneHints, domainForMetric, DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
+import {
+  getDocumentDomainProjection,
+  getUnitPendingBoneHints,
+  domainForMetric,
+  DOMAIN_LABELS,
+} from "@/domain/health-domains/document-domain-projection";
 import { extractBoneDocument } from "@/domain/bone-health/document-extraction";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -96,7 +101,15 @@ export function MissionDocumentReviewWorkbench() {
   const [cloudEnabled, setCloudEnabled] = useState(false);
   const [cloudBusy, setCloudBusy] = useState(false);
   const [cloudStatus, setCloudStatus] = useState("");
-  const [savedHistory, setSavedHistory] = useState<Array<{batchId:string; observedOn:string; createdAt:string; status:string; itemCount:number}>>([]);
+  const [savedHistory, setSavedHistory] = useState<
+    Array<{
+      batchId: string;
+      observedOn: string;
+      createdAt: string;
+      status: string;
+      itemCount: number;
+    }>
+  >([]);
   const [historyStatus, setHistoryStatus] = useState("");
   const [historyBusy, setHistoryBusy] = useState(false);
   const submitBatch = useServerFn(submitSyntheticReviewBatch);
@@ -118,6 +131,17 @@ export function MissionDocumentReviewWorkbench() {
   const boneHints = getUnitPendingBoneHints(text);
   const hasDuplicateMetrics =
     new Set(selected.map((candidate) => candidate.id)).size !== selected.length;
+  const invalidSelectedValues = selected.some(
+    (candidate) => !safeNumber.test(candidate.value.trim()) || !candidate.unit.trim(),
+  );
+  function editCandidate(index: number, patch: Partial<Pick<Candidate, "value" | "unit">>) {
+    setReviewerConfirmed(false);
+    setPreviewVisible(false);
+    setCloudStatus("");
+    setCandidates((previous) =>
+      previous.map((candidate, j) => (j === index ? { ...candidate, ...patch } : candidate)),
+    );
+  }
   const allSelected = candidates.length > 0 && candidates.every((c) => c.selected);
   function setAllReviewed(checked: boolean) {
     setCandidates((previous) => previous.map((candidate) => ({ ...candidate, selected: checked })));
@@ -133,11 +157,18 @@ export function MissionDocumentReviewWorkbench() {
     observationDate &&
     selected.length > 0 &&
     !hasDuplicateMetrics &&
+    !invalidSelectedValues &&
     !busy,
   );
-  const previewObservations = canExport ? selected.map(({ id, label, value, unit, excerpt }) => ({
-    id, label, value, unit, excerpt,
-  })) : [];
+  const previewObservations = canExport
+    ? selected.map(({ id, label, value, unit, excerpt }) => ({
+        id,
+        label,
+        value,
+        unit,
+        excerpt,
+      }))
+    : [];
   function exportReviewedBatch() {
     if (!canExport || !missionId || !crewMemberId || !identity?.userId) return;
     const payload = {
@@ -223,7 +254,11 @@ export function MissionDocumentReviewWorkbench() {
       const result = await listHistory({ data: { missionId, crewMemberId } });
       if (result.ok) {
         setSavedHistory(result.records);
-        setHistoryStatus(result.records.length ? "Saved synthetic reviews, newest observation first." : "No saved synthetic reviews for this astronaut.");
+        setHistoryStatus(
+          result.records.length
+            ? "Saved synthetic reviews, newest observation first."
+            : "No saved synthetic reviews for this astronaut.",
+        );
       } else {
         setSavedHistory([]);
         setHistoryStatus(result.message);
@@ -285,7 +320,9 @@ export function MissionDocumentReviewWorkbench() {
   }
   return (
     <main className="mx-auto w-full min-w-0 max-w-5xl space-y-5 p-6">
-      <h1 className="text-2xl font-bold" data-phase="P36.2A">Mission Document Review</h1>
+      <h1 className="text-2xl font-bold" data-phase="P36.2A">
+        Mission Document Review
+      </h1>
       <p className="text-sm text-muted-foreground">
         Research-only local extraction preview. This stage does not write mission observations,
         upload original documents, generate medical reports, or link a document to a crew identity.
@@ -370,39 +407,83 @@ export function MissionDocumentReviewWorkbench() {
           </button>
         </section>
       )}
-      <section aria-label="Document domain routing preview" className="space-y-2 rounded border p-3">
-        <h2 className="font-semibold" data-phase="P35.6">Document-to-Domain routing preview</h2>
-        <p className="text-sm text-muted-foreground">Based only on exact canonical metric name and unit matches from the existing P36 registry. A single synthetic document can contain several domains. This is a local, read-only suggestion; no classification or link is saved. Unmatched text is not classified.</p>
+      <section
+        aria-label="Document domain routing preview"
+        className="space-y-2 rounded border p-3"
+      >
+        <h2 className="font-semibold" data-phase="P35.6">
+          Document-to-Domain routing preview
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Based only on exact canonical metric name and unit matches from the existing P36 registry.
+          A single synthetic document can contain several domains. This is a local, read-only
+          suggestion; no classification or link is saved. Unmatched text is not classified.
+        </p>
         {domainProjection.length === 0 ? (
           <p className="text-sm">No exact canonical matches yet. No domain can be proposed.</p>
         ) : (
           <ul className="space-y-1 text-sm">
             {domainProjection.map((domain) => (
-              <li key={domain.id} className="flex flex-wrap items-center justify-between gap-2 rounded border p-2">
-                <span>{DOMAIN_LABELS[domain.id]} — {domain.count} matched marker(s), {domain.selectedCount} reviewer-selected</span>
-                <a className="underline" href={domain.path}>Open {DOMAIN_LABELS[domain.id]} reference page</a>
+              <li
+                key={domain.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded border p-2"
+              >
+                <span>
+                  {DOMAIN_LABELS[domain.id]} — {domain.count} matched marker(s),{" "}
+                  {domain.selectedCount} reviewer-selected
+                </span>
+                <a className="underline" href={domain.path}>
+                  Open {DOMAIN_LABELS[domain.id]} reference page
+                </a>
               </li>
             ))}
           </ul>
         )}
         {boneHints.length > 0 && (
-          <div className="space-y-2 rounded border p-3" aria-label="Bone markers awaiting unit review">
-            <h3 className="font-semibold">Bone Health — possible catalog names ({boneHints.length}), unit review required</h3>
-            <p className="text-sm text-muted-foreground">Exact name-only hints from synthetic document text. The bone catalog does not define approved units. These are NOT accepted measurements, NOT selectable, NOT submitted, and do not count toward domain routing.</p>
-            <ul className="space-y-1 text-sm">{boneHints.map((hint, i) => (
-              <li key={`${hint.id}-${i}`} className="rounded border p-2"><strong>{hint.name}</strong> ({hint.id}) — <span className="break-words">{hint.excerpt}</span></li>
-            ))}</ul>
+          <div
+            className="space-y-2 rounded border p-3"
+            aria-label="Bone markers awaiting unit review"
+          >
+            <h3 className="font-semibold">
+              Bone Health — possible catalog names ({boneHints.length}), unit review required
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Exact name-only hints from synthetic document text. The bone catalog does not define
+              approved units. These are NOT accepted measurements, NOT selectable, NOT submitted,
+              and do not count toward domain routing.
+            </p>
+            <ul className="space-y-1 text-sm">
+              {boneHints.map((hint, i) => (
+                <li key={`${hint.id}-${i}`} className="rounded border p-2">
+                  <strong>{hint.name}</strong> ({hint.id}) —{" "}
+                  <span className="break-words">{hint.excerpt}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
-        <p className="text-xs text-muted-foreground">P35.5 IMM/BSC proposals remain PENDING_NIKOLAS_REVIEW and are not eligible for automatic metric matching. This preview does not populate health-domain timelines or authorize cloud writes.</p>
+        <p className="text-xs text-muted-foreground">
+          P35.5 IMM/BSC proposals remain PENDING_NIKOLAS_REVIEW and are not eligible for automatic
+          metric matching. This preview does not populate health-domain timelines or authorize cloud
+          writes.
+        </p>
       </section>
       <section className="space-y-2">
         <h2 className="font-semibold">
           Proposed matches ({candidates.length}) — never auto-approved
         </h2>
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!eligible || candidates.length === 0 || busy} onClick={() => setAllReviewed(!allSelected)}>{allSelected ? "Deselect All" : "Select All"} ({candidates.length})</button>
-          <span className="text-xs text-muted-foreground">Selection is not scientific approval. Review every value and unit before confirming.</span>
+          <button
+            type="button"
+            className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+            disabled={!eligible || candidates.length === 0 || busy}
+            onClick={() => setAllReviewed(!allSelected)}
+          >
+            {allSelected ? "Deselect All" : "Select All"} ({candidates.length})
+          </button>
+          <span className="text-xs text-muted-foreground">
+            Selection is not scientific approval. Review every value and unit before confirming.
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -436,9 +517,28 @@ export function MissionDocumentReviewWorkbench() {
                   </td>
                   <td className="p-2">{c.id}</td>
                   <td className="p-2">{c.label}</td>
-                  <td className="p-2">{(() => { const d = domainForMetric(c.id); return d ? DOMAIN_LABELS[d] : "Unclassified"; })()}</td>
-                  <td className="p-2">{c.value}</td>
-                  <td className="p-2">{c.unit}</td>
+                  <td className="p-2">
+                    {(() => {
+                      const d = domainForMetric(c.id);
+                      return d ? DOMAIN_LABELS[d] : "Unclassified";
+                    })()}
+                  </td>
+                  <td className="p-2">
+                    <input
+                      aria-label={`Value for candidate ${i + 1}`}
+                      className="w-24 rounded border bg-background p-1"
+                      value={c.value}
+                      onChange={(e) => editCandidate(i, { value: e.target.value })}
+                    />
+                  </td>
+                  <td className="p-2">
+                    <input
+                      aria-label={`Unit for candidate ${i + 1}`}
+                      className="w-24 rounded border bg-background p-1"
+                      value={c.unit}
+                      onChange={(e) => editCandidate(i, { unit: e.target.value })}
+                    />
+                  </td>
                   <td className="p-2 max-w-xs break-words">{c.excerpt}</td>
                 </tr>
               ))}
@@ -451,7 +551,9 @@ export function MissionDocumentReviewWorkbench() {
         </p>
       </section>
       <section className="space-y-3 rounded border p-3" aria-label="Synthetic review handoff">
-        <h2 className="font-semibold" data-phase="P36.2B2">Synthetic review handoff (local only)</h2>
+        <h2 className="font-semibold" data-phase="P36.2B2">
+          Synthetic review handoff (local only)
+        </h2>
         <p className="text-sm">
           This is NOT a cloud import, scientific approval or medical record. Only synthetic test
           values are permitted. A separate security-reviewed server-side approval workflow is
@@ -487,6 +589,12 @@ export function MissionDocumentReviewWorkbench() {
             Duplicate metric IDs selected. Select only one observation per metric in this handoff.
           </p>
         )}
+        {invalidSelectedValues && (
+          <p role="alert" className="text-sm">
+            A selected candidate has an invalid value or empty unit after manual correction. Correct
+            it or deselect the row before export.
+          </p>
+        )}
         <button
           type="button"
           className="rounded border px-3 py-2 text-sm disabled:opacity-50"
@@ -503,7 +611,9 @@ export function MissionDocumentReviewWorkbench() {
         aria-label="P36.4 controlled cloud submission"
         className="space-y-3 rounded border p-3"
       >
-        <h2 className="font-semibold" data-phase="P36.4">Synthetic Cloud Submission</h2>
+        <h2 className="font-semibold" data-phase="P36.4">
+          Synthetic Cloud Submission
+        </h2>
         {cloudEnabled ? (
           <>
             <p className="text-sm">
@@ -554,7 +664,9 @@ export function MissionDocumentReviewWorkbench() {
         aria-label="P36.3 local synthetic research preview"
         className="space-y-3 rounded border p-3"
       >
-        <h2 className="font-semibold" data-phase="P36.3">Synthetic research preview (local only)</h2>
+        <h2 className="font-semibold" data-phase="P36.3">
+          Synthetic research preview (local only)
+        </h2>
         <p className="text-sm text-muted-foreground">
           This is a temporary visualization of manually selected synthetic measurements, not a
           clinical interpretation, approved observation, trend or server record. No cloud write.
@@ -562,7 +674,8 @@ export function MissionDocumentReviewWorkbench() {
         <button
           type="button"
           className="rounded border px-3 py-2 text-sm disabled:opacity-50"
-          disabled={!canExport} onClick={() => setPreviewVisible(true)}
+          disabled={!canExport}
+          onClick={() => setPreviewVisible(true)}
         >
           Preview reviewed synthetic measurements ({selected.length})
         </button>
@@ -602,13 +715,57 @@ export function MissionDocumentReviewWorkbench() {
           </div>
         )}
       </section>
-      <section className="space-y-3 rounded border p-3" aria-label="Astronaut saved synthetic reviews">
+      <section
+        className="space-y-3 rounded border p-3"
+        aria-label="Astronaut saved synthetic reviews"
+      >
         <h2 className="font-semibold">Astronaut saved reviews — by observation date</h2>
-        <p className="text-sm text-muted-foreground">Only synthetic pending-review batches saved in Cloud for the currently signed-in Crew Self and selected mission. No original PDFs or scientific approval.</p>
-        <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!eligible || !cloudEnabled || historyBusy} onClick={() => void refreshSavedHistory()}>{historyBusy ? "Loading saved reviews…" : "Refresh saved reviews"}</button>
-        {!cloudEnabled && <p className="text-sm" role="status">Cloud history pending owner-approved activation; nothing is saved to Cloud yet.</p>}
-        <p className="text-sm" role="status">{historyStatus}</p>
-        {savedHistory.length > 0 && <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th className="p-2">Observation date</th><th className="p-2">Saved at</th><th className="p-2">Markers</th><th className="p-2">Review status</th><th className="p-2">Batch ID</th></tr></thead><tbody>{savedHistory.map((record) => <tr key={record.batchId} className="border-t"><td className="p-2">{record.observedOn}</td><td className="p-2">{record.createdAt}</td><td className="p-2">{record.itemCount}</td><td className="p-2">{record.status}</td><td className="p-2 font-mono text-xs">{record.batchId}</td></tr>)}</tbody></table></div>}
+        <p className="text-sm text-muted-foreground">
+          Only synthetic pending-review batches saved in Cloud for the currently signed-in Crew Self
+          and selected mission. No original PDFs or scientific approval.
+        </p>
+        <button
+          type="button"
+          className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+          disabled={!eligible || !cloudEnabled || historyBusy}
+          onClick={() => void refreshSavedHistory()}
+        >
+          {historyBusy ? "Loading saved reviews…" : "Refresh saved reviews"}
+        </button>
+        {!cloudEnabled && (
+          <p className="text-sm" role="status">
+            Cloud history pending owner-approved activation; nothing is saved to Cloud yet.
+          </p>
+        )}
+        <p className="text-sm" role="status">
+          {historyStatus}
+        </p>
+        {savedHistory.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr>
+                  <th className="p-2">Observation date</th>
+                  <th className="p-2">Saved at</th>
+                  <th className="p-2">Markers</th>
+                  <th className="p-2">Review status</th>
+                  <th className="p-2">Batch ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {savedHistory.map((record) => (
+                  <tr key={record.batchId} className="border-t">
+                    <td className="p-2">{record.observedOn}</td>
+                    <td className="p-2">{record.createdAt}</td>
+                    <td className="p-2">{record.itemCount}</td>
+                    <td className="p-2">{record.status}</td>
+                    <td className="p-2 font-mono text-xs">{record.batchId}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
       <button
         type="button"

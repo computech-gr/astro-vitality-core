@@ -17,3 +17,4 @@
 - Public competition team facts live in a browser-safe content module consumed by the team leaf route; the existing global shell owns its only header and the Project Guide retains its Team anchor to avoid duplicated content and navigation.
 - The Project Guide roadmap is rendered only from the browser-safe registry src/content/roadmap-phases.ts, with every linked doc/verifier checked by tests; this keeps phase history evidence-backed and maintained in one place.
 - Responsive presentation changes for frozen Health Intelligence sources belong in its leaf route wrapper; preserve the sealed source fingerprints and scientific classification values.
+- Bone health history is append-only: corrections mark the prior entry erroneous and add a superseding entry via collapseBoneEntryVersions in src/domain/bone-health/history.ts; never rewrite or delete encrypted offline records.
