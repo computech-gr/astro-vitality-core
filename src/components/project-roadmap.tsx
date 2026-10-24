@@ -26,7 +26,7 @@ const BANDS: readonly { label: string; from: number; to: number }[] = [
 const STATUS_STYLE: Record<RoadmapStatus, string> = {
   implemented: "border-primary/40 text-primary",
   review_only: "border-border text-muted-foreground",
-  gate_open: "border-accent/50 text-accent-foreground",
+  gate_open: "border-primary/70 text-foreground",
   referenced_only: "border-dashed border-border text-muted-foreground",
 };
 
