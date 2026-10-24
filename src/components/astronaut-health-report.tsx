@@ -1,3 +1,4 @@
+import { MedicalAdvisorWorkbench } from "@/components/medical-advisor-workbench";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -175,6 +176,19 @@ export function AstronautHealthReport() {
               </div>
             ))}
           </div>
+          <MedicalAdvisorWorkbench
+            key={`${report.missionId}:${report.crewMemberId}:${report.provenance}`}
+            report={report}
+            authorizedMedicalRole={Boolean(
+              identity?.memberships.some(
+                (m) =>
+                  m.missionId === report.missionId &&
+                  m.crewMemberId === report.crewMemberId &&
+                  m.role === "ground_medical",
+              ),
+            )}
+            advisorLabel="Authenticated ground-medical reviewer"
+          />
           <h3 className="font-semibold">Source measurements</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">

@@ -44,3 +44,10 @@
 - [x] /mission/intake: multi-file batch import (20 files, 15 MB each, SHA-256 dedupe, per-file states, rows unchecked).
 - [x] Mobile overflow fix on the intake save button; full tests, typecheck, build, verifiers and browser checks pass.
 - [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
+
+## AI medical advisor review
+
+- [x] Apply the AI Medical Advisor Review patch (5 files, manifest fingerprints verified).
+- [x] /mission/health-report: AI draft capture and session-only advisor review workbench; ground-medical-only approval bound to an evidence fingerprint; no external AI calls, persistence or signed-opinion claims.
+- [x] Full tests, typecheck, production build, scientific/security verifiers and desktop/mobile browser checks pass.
+- [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
