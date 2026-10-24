@@ -1,7 +1,7 @@
 // Destructive ONLY in opted-in disposable PostgreSQL. Never uses managed PG* variables.
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { readdirSync } from "node:fs";
-import { readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 const socket = process.env.FV01_PG_SOCKET_DIR;
 if (!socket?.startsWith("/tmp/") || process.env.FV0143_INCLUDE_PENDING !== "1")
@@ -172,6 +172,10 @@ transactionCheck(
   `alter table medical_v3_fixture_sources disable trigger medical_v3_fixture_immutable;update medical_v3_fixture_sources set source_sha256='tampered';${as(gm)}select medical_v3_ai_evidence('${mission}','${astronaut}') is null`,
   "tampered hash fails closed",
 );
+console.log(execFileSync("bun", ["scripts/test-production-synthetic-server.ts"], { env, encoding: "utf8" }));
+check(run("select count(*)=1 and bool_and(released_at is not null) from medical_ai_quota_reservations") === "t", "server integration released its genuine quota");
+// Reset only the disposable quota test rows before testing the full minute boundary.
+run("delete from medical_ai_quota_reservations");
 const lease = JSON.parse(
   run(as(gm) + `select medical_v3_reserve_ai('${mission}','${astronaut}')`)
     .split("\n")
