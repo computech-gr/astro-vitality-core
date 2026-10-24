@@ -34,10 +34,11 @@ describe("global site header", () => {
   });
 
   test("header section links work from nested routes", () => {
+    const flat = appShell.replace(/\s+/g, " ");
     for (const href of ["/#home", "/mission/experience", "/mission/intelligence", "/#science", "/#technology", "/#open-source", "/#about"]) {
-      expect(appShell).toContain(`href: "${href}"`);
+      expect(flat).toContain(`href: "${href}"`);
     }
-    expect(appShell).toContain('href="/#home" aria-label="The Mitochondria home"');
+    expect(flat).toContain('href="/#home" aria-label="The Mitochondria home"');
   });
 
   test("operational pages rely on the single root header instead of rendering framed duplicate mastheads", () => {
