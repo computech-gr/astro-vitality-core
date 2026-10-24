@@ -36,7 +36,9 @@ const includePending = process.env.FV0143_INCLUDE_PENDING === "1" || migrations.
 const pending =
   includePending && existsSync("supabase/pending")
     ? readdirSync("supabase/pending")
-        .filter((f) => f.endsWith(".sql") && !f.includes("rollback"))
+        // Standalone exact-production-scope alternative has its own destructive verifier.
+        // Never combine it with the older generic v3 migrations in this fixture harness.
+        .filter((f) => f.endsWith(".sql") && !f.includes("rollback") && !f.includes("medical_v3_production_synthetic_demo"))
         .sort()
     : [];
 for (const f of pending) psql(["-f", join("supabase/pending", f)], "fv01_it");
