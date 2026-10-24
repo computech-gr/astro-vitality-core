@@ -37,7 +37,7 @@ deny(as(gm) + append(), /authoritative evidence unavailable/, "production resolv
 check(run(as(gm) + "select medical_v3_ai_evidence('m1','c1') is null").endsWith("t"), "AI source unavailable rather than trusting browser provenance");
 // TEST ONLY authoritative fixture. Never copied to migrations or the production database.
 run(`create table fvtest.medical_evidence(canonical text); insert into fvtest.medical_evidence values ('{"synthetic":true,"observations":[{"id":"obs-a","value":"62"}]}');
- create or replace function medical_v3_authoritative_evidence(text,text) returns table(canonical_text text,source_ids text[])
+ create or replace function medical_v3_authoritative_evidence(p_mission text,p_crew text) returns table(canonical_text text,source_ids text[])
  language sql stable security definer set search_path=public as $$ select canonical,array['obs-a'] from fvtest.medical_evidence $$;`);
 const sha = run("select 'sha256-'||encode(extensions.digest(convert_to(canonical,'UTF8'),'sha256'),'hex') from fvtest.medical_evidence");
 const draft = JSON.parse(run(as(gm) + append("draft_created", "null", sha)).split("\n").at(-1));
