@@ -18,7 +18,7 @@ export interface AdvisorReview {
   advisorIdentity: string | null;
   reviewedAt: string | null;
   rationale: string;
-  source: "manual-ai-transfer" | "human-authored";
+  source: "manual-ai-transfer" | "human-authored" | "server-ai";
 }
 export function canonicalEvidence(report: HealthHistoryReport): string {
   return JSON.stringify({
