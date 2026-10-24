@@ -39,6 +39,15 @@ export function canonicalEvidence(report: HealthHistoryReport): string {
       .sort((a, b) => String(a[0]).localeCompare(String(b[0]))),
   });
 }
+/** SHA-256 digest for future durable review records. Unlike the legacy FNV UI token,
+ * this is collision-resistant; it is NOT a digital signature or server attestation.
+ * Server must independently verify evidence before accepting a durable approval.
+ */
+export async function evidenceSha256(report: HealthHistoryReport): Promise<string> {
+  const data = new TextEncoder().encode(canonicalEvidence(report));
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return `sha256-${Array.from(new Uint8Array(digest), (x) => x.toString(16).padStart(2, "0")).join("")}`;
+}
 /** A deterministic snapshot identifier, not a cryptographic signature. */
 export function evidenceFingerprint(report: HealthHistoryReport): string {
   const s = canonicalEvidence(report);
