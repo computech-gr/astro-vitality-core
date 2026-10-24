@@ -36,3 +36,11 @@
 - [x] Versioned observation envelope, append-only encrypted store, /mission/intake review workspace, navigation and route.
 - [x] Regression tests, full suite, typecheck (tsc), production build, verifiers, security audit and browser checks.
 - [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
+
+## Astronaut health report & multi-file intake
+
+- [x] Apply the Health Report & Batch Intake patch (report module, report page, batch intake, tests, docs).
+- [x] /mission/health-report: deterministic evidence-linked research report, provenance-separated, print/text export, no cloud upload.
+- [x] /mission/intake: multi-file batch import (20 files, 15 MB each, SHA-256 dedupe, per-file states, rows unchecked).
+- [x] Mobile overflow fix on the intake save button; full tests, typecheck, build, verifiers and browser checks pass.
+- [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
