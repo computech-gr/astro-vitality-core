@@ -3,8 +3,9 @@
 ## V3 isolated browser acceptance gate
 
 - [x] Verify both additive patch fingerprints before applying.
-- [ ] Prove an isolated app, authenticated disposable backend, test identity and bounded OpenAI budget before browser execution; never use the shared backend.
-- [ ] Execute loaded export/Q&A desktop/mobile acceptance only after isolation is proven; otherwise deliver fail-closed harness and blockers.
+- [ ] Prove an isolated app, authenticated disposable backend, test identity and bounded OpenAI budget: blocked by missing local auth/Data API services; never use the shared backend.
+- [x] Stop browser/provider execution and deliver executable blocking preflight with precise infrastructure blockers in docs/MEDICAL_V3_ISOLATED_BROWSER_ACCEPTANCE_STATUS.md.
+- [ ] Complete functional browser runner and loaded desktop/mobile acceptance: blocked by unproven isolation; preflight is not acceptance.
 - [ ] Run permitted regression/security checks and report exact-commit CI separately from local signals.
 
 ## V3 export and isolated evidence Q&A
