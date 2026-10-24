@@ -3,9 +3,11 @@
 ## V3 export and isolated evidence Q&A
 
 - [x] Verify both supplied baseline/after fingerprints and apply the patch.
-- [ ] Implement fresh caller-authorized export with server timestamps and validated evidence digests.
-- [ ] Implement synthetic-only consented Q&A using existing OpenAI provider and atomic quotas, with production-disabled gates.
-- [ ] Run isolated controls, full tests, formatting, lint, verifiers/security and available desktop/mobile checks; report CI and activation blockers.
+- [x] Implement fresh caller-authorized export with server timestamps and validated current evidence digest; historic canonical bytes remain unavailable for independent old-hash recomputation.
+- [x] Implement synthetic-only consented Q&A using existing OpenAI provider and real disposable atomic quotas; live isolated test returned 200/two valid citations.
+- [x] Run 523 tests, 356 disposable assertions, formatting, lint, 96/99 verifiers/security and authenticated disabled-state desktop/mobile checks; report in docs/MEDICAL_V3_EXPORT_QA_IMPLEMENTATION_STATUS.md.
+- [ ] Loaded export/Q&A browser acceptance blocked by lack of an isolated app connected to disposable SQL; production activation remains unauthorized.
+- [ ] Exact-final-commit Quality/Security blocked by unverified GitHub synchronization; latest green observed at 13e940f8, not current managed HEAD.
 
 ## V3 synthetic completion implementation gate
 
