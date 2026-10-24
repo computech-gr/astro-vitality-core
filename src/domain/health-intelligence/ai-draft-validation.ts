@@ -200,7 +200,8 @@ export function renderStructuredDraft(raw: unknown): string | null {
       typeof r["text"] !== "string" ||
       !r["text"].trim() ||
       r["text"].length > 1500 ||
-      /[\[\]\n\r\u0000-\u0008]/.test(r["text"]) ||
+      ["[", "]", "\n", "\r"].some((character) => r["text"].includes(character)) ||
+      [...r["text"]].some((character) => character.charCodeAt(0) < 9) ||
       !Array.isArray(r["observationIds"]) ||
       r["observationIds"].length > 120 ||
       r["observationIds"].some((id) => typeof id !== "string" || !ID_TOKEN.test(id)) ||

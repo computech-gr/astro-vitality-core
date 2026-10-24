@@ -12,6 +12,7 @@ const db = "medical_v3_it";
 const run = (sql, database = db) => execFileSync("psql", [...base, "-d", database, "-c", sql], { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 const file = (path) => execFileSync("psql", [...base, "-d", db, "-f", path], { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 run(`drop database if exists ${db}`, "postgres"); run(`create database ${db}`, "postgres");
+run(`alter database ${db} set search_path=public,extensions`, "postgres");
 file("tests/integration-pg/stub.sql");
 for (const name of readdirSync("supabase/migrations").filter((name) => name.endsWith(".sql")).sort()) file(`supabase/migrations/${name}`);
 const migration = "supabase/pending/20261024000000_medical_governance_v3.sql";
