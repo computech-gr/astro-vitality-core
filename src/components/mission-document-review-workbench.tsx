@@ -513,6 +513,12 @@ export function MissionDocumentReviewWorkbench() {
             Duplicate metric IDs selected. Select only one observation per metric in this handoff.
           </p>
         )}
+        {invalidSelectedValues && (
+          <p role="alert" className="text-sm">
+            A selected candidate has an invalid value or empty unit after manual correction. Correct
+            it or deselect the row before export.
+          </p>
+        )}
         <button
           type="button"
           className="rounded border px-3 py-2 text-sm disabled:opacity-50"
