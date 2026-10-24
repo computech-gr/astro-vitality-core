@@ -1,5 +1,13 @@
 # P20 video evidence closure
 
+## V3 staging and exact-commit release gate
+
+- [x] Verify and apply all three manifest files byte-identically before integration.
+- [x] Harden release workflow pins/full-scope checks; 547 tests, 99/102 offline verifiers, lint and Trivy completed without bypassing evidence failures.
+- [ ] Disposable stack/browser acceptance: BLOCKED by missing Docker/Podman, independent Auth/Data API and owner-approved alternative infrastructure.
+- [x] Report integration deviations, checks and blockers in docs/MEDICAL_V3_STAGING_RELEASE_STATUS.md.
+- [ ] Exact-final-commit CI, full typecheck/build and required-check enforcement: awaiting matching GitHub evidence.
+
 ## V3 staging security recovery
 
 - [x] Verify and apply both additive patch fingerprints before integration.
