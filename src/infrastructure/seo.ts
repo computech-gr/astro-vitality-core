@@ -64,6 +64,7 @@ export const NON_INDEXABLE_ROUTES = [
   "/mission/cardiovascular-health",
   "/mission/behavioral-health",
   "/mission/intake",
+  "/mission/health-report",
 ] as const;
 
 export type IndexableRoute = (typeof INDEXABLE_ROUTES)[number];

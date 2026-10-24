@@ -24,6 +24,7 @@ import { Route as MissionDocumentsRouteImport } from './routes/mission.documents
 import { Route as MissionExperienceRouteImport } from './routes/mission.experience'
 import { Route as MissionGroundRouteImport } from './routes/mission.ground'
 import { Route as MissionGuidanceRouteImport } from './routes/mission.guidance'
+import { Route as MissionHealthReportRouteImport } from './routes/mission.health-report'
 import { Route as MissionIdentityRouteImport } from './routes/mission.identity'
 import { Route as MissionImmuneHealthRouteImport } from './routes/mission.immune-health'
 import { Route as MissionIntakeRouteImport } from './routes/mission.intake'
@@ -117,6 +118,11 @@ const MissionGroundRoute = MissionGroundRouteImport.update({
 const MissionGuidanceRoute = MissionGuidanceRouteImport.update({
   id: '/mission/guidance',
   path: '/mission/guidance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionHealthReportRoute = MissionHealthReportRouteImport.update({
+  id: '/mission/health-report',
+  path: '/mission/health-report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionIdentityRoute = MissionIdentityRouteImport.update({
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/mission/experience': typeof MissionExperienceRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
+  '/mission/health-report': typeof MissionHealthReportRoute
   '/mission/identity': typeof MissionIdentityRoute
   '/mission/immune-health': typeof MissionImmuneHealthRoute
   '/mission/intake': typeof MissionIntakeRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/mission/experience': typeof MissionExperienceRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
+  '/mission/health-report': typeof MissionHealthReportRoute
   '/mission/identity': typeof MissionIdentityRoute
   '/mission/immune-health': typeof MissionImmuneHealthRoute
   '/mission/intake': typeof MissionIntakeRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/mission/experience': typeof MissionExperienceRoute
   '/mission/ground': typeof MissionGroundRoute
   '/mission/guidance': typeof MissionGuidanceRoute
+  '/mission/health-report': typeof MissionHealthReportRoute
   '/mission/identity': typeof MissionIdentityRoute
   '/mission/immune-health': typeof MissionImmuneHealthRoute
   '/mission/intake': typeof MissionIntakeRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/mission/experience'
     | '/mission/ground'
     | '/mission/guidance'
+    | '/mission/health-report'
     | '/mission/identity'
     | '/mission/immune-health'
     | '/mission/intake'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/mission/experience'
     | '/mission/ground'
     | '/mission/guidance'
+    | '/mission/health-report'
     | '/mission/identity'
     | '/mission/immune-health'
     | '/mission/intake'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/mission/experience'
     | '/mission/ground'
     | '/mission/guidance'
+    | '/mission/health-report'
     | '/mission/identity'
     | '/mission/immune-health'
     | '/mission/intake'
@@ -429,6 +441,7 @@ export interface RootRouteChildren {
   MissionExperienceRoute: typeof MissionExperienceRoute
   MissionGroundRoute: typeof MissionGroundRoute
   MissionGuidanceRoute: typeof MissionGuidanceRoute
+  MissionHealthReportRoute: typeof MissionHealthReportRoute
   MissionIdentityRoute: typeof MissionIdentityRoute
   MissionImmuneHealthRoute: typeof MissionImmuneHealthRoute
   MissionIntakeRoute: typeof MissionIntakeRoute
@@ -553,6 +566,13 @@ declare module '@tanstack/react-router' {
       path: '/mission/guidance'
       fullPath: '/mission/guidance'
       preLoaderRoute: typeof MissionGuidanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/health-report': {
+      id: '/mission/health-report'
+      path: '/mission/health-report'
+      fullPath: '/mission/health-report'
+      preLoaderRoute: typeof MissionHealthReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/identity': {
@@ -694,6 +714,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionExperienceRoute: MissionExperienceRoute,
   MissionGroundRoute: MissionGroundRoute,
   MissionGuidanceRoute: MissionGuidanceRoute,
+  MissionHealthReportRoute: MissionHealthReportRoute,
   MissionIdentityRoute: MissionIdentityRoute,
   MissionImmuneHealthRoute: MissionImmuneHealthRoute,
   MissionIntakeRoute: MissionIntakeRoute,

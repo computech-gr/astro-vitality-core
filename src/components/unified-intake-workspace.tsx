@@ -248,35 +248,82 @@ export function UnifiedIntakeWorkspace() {
     resetReview();
   };
 
-  const onCsvFile = async (file: File) => {
-    const text = await file.text();
-    const { rows: parsed, skipped } = parseIntakeCsv(text);
-    addRows(
-      parsed,
-      `CSV parsed: ${parsed.length} candidate row(s)${skipped ? `, ${skipped} skipped` : ""}. All start unchecked — review each row.`,
-    );
-  };
-
-  const onDocumentFile = async (file: File) => {
+  const [batchFiles, setBatchFiles] = useState<
+    Array<{ name: string; state: string; count: number }>
+  >([]);
+  const MAX_BATCH_FILES = 20;
+  const MAX_FILE_BYTES = 15 * 1024 * 1024;
+  const processBatch = async (files: File[]) => {
+    if (busy || !files.length) return;
+    if (files.length > MAX_BATCH_FILES) {
+      setStatus(`Select at most ${MAX_BATCH_FILES} files per batch.`);
+      return;
+    }
     setBusy(true);
+    const results: Array<{ name: string; state: string; count: number }> = [];
+    const incoming: IntakeRow[] = [];
+    const hashes = new Set<string>();
     try {
-      const hash = await sha256Hex(file);
-      const extracted = await extractBoneDocument(file);
-      const kind: ObservationSourceKind = extracted.method.includes("ocr") ? "ocr" : "pdf_text";
-      const parsed = parseIntakeText(
-        extracted.text,
-        kind,
-        `Document: ${file.name}`,
-        file.name,
-        hash,
-      );
-      addRows(
-        parsed,
-        `Document "${file.name}" extracted on-device (${extracted.method}, ${extracted.pages} page(s), SHA-256 ${hash.slice(0, 12)}…): ${parsed.length} candidate row(s). All start unchecked — review each row.`,
-      );
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Document extraction failed.");
+      for (const file of files) {
+        let state = "complete";
+        let count = 0;
+        try {
+          if (file.size > MAX_FILE_BYTES || file.size === 0)
+            throw new Error("File is empty or exceeds 15 MB.");
+          if (!/\.(csv|txt|pdf|png|jpe?g)$/i.test(file.name))
+            throw new Error("Unsupported file type.");
+          const hash = await sha256Hex(file);
+          if (hashes.has(hash)) {
+            state = "duplicate file skipped";
+            results.push({ name: file.name, state, count });
+            continue;
+          }
+          hashes.add(hash);
+          if (/\.csv$/i.test(file.name)) {
+            const parsed = parseIntakeCsv(await file.text());
+            const space = Math.max(0, MAX_ROWS - incoming.length);
+            const batch = parsed.rows.slice(0, space).map((row) => ({
+              ...row,
+              sourceLabel: `CSV: ${file.name}`,
+              documentName: file.name,
+              documentSha256: hash,
+            }));
+            incoming.push(...batch);
+            count = batch.length;
+          } else {
+            const extracted = await extractBoneDocument(file);
+            const kind: ObservationSourceKind = extracted.method.includes("ocr")
+              ? "ocr"
+              : "pdf_text";
+            const space = Math.max(0, MAX_ROWS - incoming.length);
+            const batch = parseIntakeText(
+              extracted.text,
+              kind,
+              `Document: ${file.name}`,
+              file.name,
+              hash,
+            ).slice(0, space);
+            incoming.push(...batch);
+            count = batch.length;
+          }
+          if (!count) state = "no matching candidate rows";
+        } catch (error) {
+          state = error instanceof Error ? `failed: ${error.message}` : "failed: unknown error";
+        }
+        results.push({ name: file.name, state, count });
+        setBatchFiles([...results]);
+      }
+      if (incoming.length)
+        addRows(
+          incoming,
+          `Batch processed ${results.length} file(s); ${incoming.length} candidate row(s), all unchecked. Review each row before saving.`,
+        );
+      else
+        setStatus(
+          `Batch processed ${results.length} file(s); no candidate rows. Check per-file results.`,
+        );
     } finally {
+      setBatchFiles([...results]);
       setBusy(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
@@ -516,22 +563,35 @@ export function UnifiedIntakeWorkspace() {
             disabled={busy}
             onClick={() => fileInputRef.current?.click()}
           >
-            Import CSV, PDF or scan (on-device)
+            Import multiple CSV, PDF or scans (on-device)
           </Button>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,.txt,.pdf,image/*"
+            multiple
+            accept=".csv,.txt,.pdf,.png,.jpg,.jpeg"
             className="hidden"
-            aria-label="Import CSV, PDF or scanned document"
+            aria-label="Import multiple CSV, PDF or scanned documents"
             onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (!file) return;
-              if (/\.csv$/i.test(file.name)) void onCsvFile(file);
-              else void onDocumentFile(file);
+              const files = Array.from(event.target.files ?? []);
+              if (files.length) void processBatch(files);
             }}
           />
         </div>
+        {batchFiles.length > 0 && (
+          <div role="status" aria-live="polite" className="space-y-1 text-xs">
+            <strong>Batch processing results</strong>
+            {batchFiles.map((file, i) => (
+              <p key={`${file.name}-${i}`} className="break-all">
+                {file.name}: {file.state} ({file.count} candidate row(s))
+              </p>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Batch limit: 20 files, 15 MB each. Files are processed sequentially on-device; failures
+          are isolated and extracted rows remain unchecked.
+        </p>
         <p className="text-xs text-muted-foreground">
           Documents are processed on this device only. Original files are never uploaded
           automatically; the document name and SHA-256 fingerprint are kept with each row for
@@ -672,7 +732,12 @@ export function UnifiedIntakeWorkspace() {
             I reviewed every selected row (label, value, original unit and observation time) and
             confirm it matches the source.
           </label>
-          <Button type="button" disabled={!canSave} onClick={() => void saveAccepted()}>
+          <Button
+            type="button"
+            className="h-auto w-full whitespace-normal py-2 text-center"
+            disabled={!canSave}
+            onClick={() => void saveAccepted()}
+          >
             Save {saveableRows.length} reviewed observation(s) — encrypted, offline
           </Button>
         </section>
