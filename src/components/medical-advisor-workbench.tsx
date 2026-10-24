@@ -148,6 +148,7 @@ export function MedicalAdvisorWorkbench({
         <Button
           type="button"
           variant="outline"
+          className="h-auto whitespace-normal text-left"
           onClick={draftPrompt}
           disabled={!report.observations.length}
         >

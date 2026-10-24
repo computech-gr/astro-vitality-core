@@ -9,5 +9,14 @@ export const Route = createFileRoute("/mission/health-report")({
       description:
         "Authorized offline research-only astronaut health history and evidence-linked assessment.",
     }),
-  component: AstronautHealthReport,
+  component: HealthReportPage,
 });
+
+// Long observation IDs and citations must wrap on narrow screens instead of scrolling sideways.
+function HealthReportPage() {
+  return (
+    <div className="min-w-0 [overflow-wrap:anywhere]">
+      <AstronautHealthReport />
+    </div>
+  );
+}

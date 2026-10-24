@@ -24,4 +24,8 @@ describe("AI draft validation fails closed", () => {
     expect(validateAIDraft(good + "\nlab.ctx rose to 7.2 pg/mL [obs-0001].", ev).ok).toBe(false));
   test("rejects draft with no citations", () =>
     expect(validateAIDraft("Research note only.", ev).ok).toBe(false));
+  test("accepts grouped citations", () =>
+    expect(validateAIDraft("lab.ctx and lab.p1np recorded [obs-0001, obs-0002].", ev).ok).toBe(true));
+  test("rejects grouped citation containing unknown ID", () =>
+    expect(validateAIDraft("lab.ctx recorded [obs-0001, obs-0404].", ev).ok).toBe(false));
 });
