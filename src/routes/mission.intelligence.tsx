@@ -9,5 +9,5 @@ const description =
 
 export const Route = createFileRoute("/mission/intelligence")({
   head: () => operationalRouteHead({ path: "/mission/intelligence", title, description }),
-  component: HealthIntelligencePage,
+  component: () => <div className="min-w-0 [&_label]:min-w-0 [&_label]:w-full sm:[&_label]:flex-1 [&_select]:min-w-0 [&_select]:w-full [&_input]:min-w-0 [&_input]:w-full"><HealthIntelligencePage /></div>,
 });

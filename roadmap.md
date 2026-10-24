@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Website UX polish & evaluator onboarding
+
+- [x] Apply the seven confirmed presentation fixes and Home evaluator links without changing access or evidence.
+- [x] Verify affected pages at 1280px and 390px; run tests, scientific verifiers, integrity and security checks.
+- [ ] Confirm exact-commit GitHub synchronization, Quality and Security Scan; requires managed synchronization and Actions.
+
 - [x] Verify public video and record owner confirmation without closing official-rules evidence.
 - [x] Regenerate and verify controlled manifest; update regression tests and run permitted checks.
 - [ ] Confirm GitHub synchronization, Quality, Security Scan and exact-commit typecheck/build; awaiting managed synchronization and GitHub Actions execution.

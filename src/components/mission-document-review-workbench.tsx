@@ -285,7 +285,7 @@ export function MissionDocumentReviewWorkbench() {
   }
   return (
     <main className="mx-auto w-full min-w-0 max-w-5xl space-y-5 p-6">
-      <h1 className="text-2xl font-bold">P36.2A — Mission Document Review</h1>
+      <h1 className="text-2xl font-bold" data-phase="P36.2A">Mission Document Review</h1>
       <p className="text-sm text-muted-foreground">
         Research-only local extraction preview. This stage does not write mission observations,
         upload original documents, generate medical reports, or link a document to a crew identity.
@@ -371,7 +371,7 @@ export function MissionDocumentReviewWorkbench() {
         </section>
       )}
       <section aria-label="Document domain routing preview" className="space-y-2 rounded border p-3">
-        <h2 className="font-semibold">P35.6 — Document-to-Domain routing preview</h2>
+        <h2 className="font-semibold" data-phase="P35.6">Document-to-Domain routing preview</h2>
         <p className="text-sm text-muted-foreground">Based only on exact canonical metric name and unit matches from the existing P36 registry. A single synthetic document can contain several domains. This is a local, read-only suggestion; no classification or link is saved. Unmatched text is not classified.</p>
         {domainProjection.length === 0 ? (
           <p className="text-sm">No exact canonical matches yet. No domain can be proposed.</p>
@@ -451,7 +451,7 @@ export function MissionDocumentReviewWorkbench() {
         </p>
       </section>
       <section className="space-y-3 rounded border p-3" aria-label="Synthetic review handoff">
-        <h2 className="font-semibold">P36.2B2 — Synthetic review handoff (local only)</h2>
+        <h2 className="font-semibold" data-phase="P36.2B2">Synthetic review handoff (local only)</h2>
         <p className="text-sm">
           This is NOT a cloud import, scientific approval or medical record. Only synthetic test
           values are permitted. A separate security-reviewed server-side approval workflow is
@@ -503,7 +503,7 @@ export function MissionDocumentReviewWorkbench() {
         aria-label="P36.4 controlled cloud submission"
         className="space-y-3 rounded border p-3"
       >
-        <h2 className="font-semibold">P36.4 — Synthetic Cloud Submission</h2>
+        <h2 className="font-semibold" data-phase="P36.4">Synthetic Cloud Submission</h2>
         {cloudEnabled ? (
           <>
             <p className="text-sm">
@@ -554,7 +554,7 @@ export function MissionDocumentReviewWorkbench() {
         aria-label="P36.3 local synthetic research preview"
         className="space-y-3 rounded border p-3"
       >
-        <h2 className="font-semibold">P36.3 — Synthetic research preview (local only)</h2>
+        <h2 className="font-semibold" data-phase="P36.3">Synthetic research preview (local only)</h2>
         <p className="text-sm text-muted-foreground">
           This is a temporary visualization of manually selected synthetic measurements, not a
           clinical interpretation, approved observation, trend or server record. No cloud write.

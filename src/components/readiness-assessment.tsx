@@ -284,7 +284,6 @@ export function ReadinessAssessment() {
     }`;
   }, [state.vigilanceResult]);
 
-  if (!MISSION) return <div className="mx-auto max-w-3xl p-6 text-foreground" role="status">Sign in and select an authorized crew mission before recording readiness assessments. No placeholder records will be created.</div>;
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="mx-auto max-w-5xl px-5 py-8 lg:px-8">
@@ -311,6 +310,14 @@ export function ReadinessAssessment() {
           </div>
         </section>
 
+        {!MISSION && (
+          <section aria-label="Identity and access status" className="mt-8 rounded-xl border border-border bg-card p-5">
+            <h2 className="font-display text-xl font-semibold">Authorized crew access required</h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground" role="status">Sign in and select an authorized crew mission before recording readiness assessments. No placeholder records will be created.</p>
+            <Button asChild variant="outline" className="mt-4"><a href="/mission/identity">Mission identity &amp; sign-in</a></Button>
+          </section>
+        )}
+        {MISSION && <>
         <h2 id="readiness-flow-heading" className="mt-10 font-display text-2xl font-semibold">
           Daily check-in steps
         </h2>
@@ -609,6 +616,7 @@ export function ReadinessAssessment() {
             </Card>
           )}
         </div>
+        </>}
       </main>
     </div>
   );

@@ -88,7 +88,7 @@ export function BoneHealthEntryPage() {
   return <main className="mx-auto max-w-5xl px-5 py-10 text-foreground">
     <nav aria-label="Astronaut health domains" className="mb-5 flex flex-wrap gap-3 text-sm"><a className="underline" href="/mission/bone-health" aria-current="page">Bone Health</a><a className="underline" href="/mission/immune-health">Immune Changes</a><a className="underline" href="/mission/cardiovascular-health">Cardiovascular Health</a><a className="underline" href="/mission/behavioral-health">Behavioral Health</a></nav>
     <p className="section-kicker">P22.1 · Bone Health</p>
-    <h1 className="mt-2 font-display text-3xl font-semibold">Bone health data entry & history</h1>
+    <h1 className="mt-2 font-display text-4xl font-semibold">Bone Health — Measurements &amp; Reference</h1>
     <p className="mt-3 text-muted-foreground">Research-only measurements. No clinical thresholds, diagnosis, readiness score or automatic “OK” assessment. Stored encrypted on this device; not automatically sent to Ground.</p>
     <form onSubmit={submit} className="mt-8 grid gap-4 rounded-xl border border-border p-5 sm:grid-cols-2">
       <label>Mission<select className={field} value={missionId} onChange={e=>setMissionId(e.target.value)} required disabled={!memberships.length}><option value="">Select authorized mission</option>{[...new Map(memberships.map(m => [m.missionId, m])).values()].map(m=><option key={m.missionId} value={m.missionId}>{m.missionName ?? m.missionCode ?? m.missionId}</option>)}</select></label>

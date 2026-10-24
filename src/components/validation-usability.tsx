@@ -25,7 +25,7 @@ export function ValidationUsabilityPage() {
   const evidenceById = new Map(evidence.map((item) => [item.criterionId, item]));
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-16 pt-28 lg:px-8" id="main-content">
+    <main className="mx-auto min-h-screen w-full min-w-0 max-w-7xl px-5 pb-16 pt-28 [overflow-wrap:anywhere] lg:px-8" id="main-content">
       <div className="max-w-3xl">
         <p className="section-kicker">P18 · Validation & Usability</p>
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Evidence before closure.</h1>
@@ -51,7 +51,7 @@ export function ValidationUsabilityPage() {
             return (
               <Card key={criterion.id}>
                 <CardHeader>
-                  <CardTitle className="flex items-start justify-between gap-4 text-base"><span>{criterion.id} · {criterion.title}</span><span className="font-mono text-[0.65rem] text-muted-foreground">{label[status]}</span></CardTitle>
+                  <CardTitle className="grid min-w-0 gap-2 text-base sm:grid-cols-[minmax(0,1fr)_auto]"><span className="min-w-0">{criterion.id} · {criterion.title}</span><span className="shrink-0 font-mono text-[0.65rem] text-muted-foreground">{label[status]}</span></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm leading-6 text-muted-foreground">
                   <p>{criterion.acceptance}</p>
