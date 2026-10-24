@@ -37,19 +37,42 @@ export function MedicalAdvisorWorkbench({
   useEffect(() => {
     let active = true;
     setSha("");
-    void evidenceSha256(report).then((digest) => { if (active) setSha(digest); }).catch(() => { if (active) setSha(""); });
-    return () => { active = false; };
+    void evidenceSha256(report)
+      .then((digest) => {
+        if (active) setSha(digest);
+      })
+      .catch(() => {
+        if (active) setSha("");
+      });
+    return () => {
+      active = false;
+    };
   }, [report]);
   useEffect(() => {
     let active = true;
     setHistory([]);
     if (!authorizedMedicalRole) return;
     void getHistory({ data: { missionId: report.missionId, crewMemberId: report.crewMemberId } })
-      .then((result) => { if (active) { setHistory(result.events); setHistoryMessage(result.reason); } })
-      .catch(() => { if (active) setHistoryMessage("Persistent history unavailable; no server-verified acknowledgment can be shown."); });
-    return () => { active = false; };
+      .then((result) => {
+        if (active) {
+          setHistory(result.events);
+          setHistoryMessage(result.reason);
+        }
+      })
+      .catch(() => {
+        if (active)
+          setHistoryMessage(
+            "Persistent history unavailable; no server-verified acknowledgment can be shown.",
+          );
+      });
+    return () => {
+      active = false;
+    };
   }, [report.missionId, report.crewMemberId, authorizedMedicalRole, getHistory]);
-  const approved = useMemo(() => authorizedMedicalRole && isApprovedForReport(review, report), [review, report, authorizedMedicalRole]);
+  const approved = useMemo(
+    () => authorizedMedicalRole && isApprovedForReport(review, report),
+    [review, report, authorizedMedicalRole],
+  );
   const draftPrompt = () => {
     const blob = new Blob([buildAIDraftingPrompt(report)], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -144,13 +167,34 @@ export function MedicalAdvisorWorkbench({
       <h3 className="font-semibold">AI research draft — advisor acknowledgment</h3>
       <p className="text-sm">{MEDICAL_ADVISOR_NOTICE}</p>
       <p className="text-xs text-muted-foreground">{historyMessage}</p>
-      <p className="break-all text-xs text-muted-foreground">Evidence SHA-256: {sha || "Unavailable"}. Local digest only; not server attestation.</p>
-      {review && <p className="text-sm font-semibold">{!authorizedMedicalRole ? "REVOKED — reviewer access unavailable" : !isApprovedForReport({ ...review, decision: "approved" }, report) ? "STALE — evidence changed" : approved ? "ADVISOR REVIEWED — session-only, research-only" : "AI DRAFT — unverified"}</p>}
-      {history.map((event) => <div key={event.id} className="border-t py-2 text-xs">
-        <strong>{event.event_type === "approved" && !event.verified_current ? "STALE / UNVERIFIED" : event.event_type.toUpperCase()}</strong>
-        <p>Revision {event.revision} · Actor {event.actor_user_id} · {event.created_at}</p>
-        <p className="break-all">{event.evidence_sha256}</p><p>{event.rationale}</p>
-      </div>)}
+      <p className="break-all text-xs text-muted-foreground">
+        Evidence SHA-256: {sha || "Unavailable"}. Local digest only; not server attestation.
+      </p>
+      {review && (
+        <p className="text-sm font-semibold">
+          {!authorizedMedicalRole
+            ? "REVOKED — reviewer access unavailable"
+            : !isApprovedForReport({ ...review, decision: "approved" }, report)
+              ? "STALE — evidence changed"
+              : approved
+                ? "ADVISOR REVIEWED — session-only, research-only"
+                : "AI DRAFT — unverified"}
+        </p>
+      )}
+      {history.map((event) => (
+        <div key={event.id} className="border-t py-2 text-xs">
+          <strong>
+            {event.event_type === "approved" && !event.verified_current
+              ? "STALE / UNVERIFIED"
+              : event.event_type.toUpperCase()}
+          </strong>
+          <p>
+            Revision {event.revision} · Actor {event.actor_user_id} · {event.created_at}
+          </p>
+          <p className="break-all">{event.evidence_sha256}</p>
+          <p>{event.rationale}</p>
+        </div>
+      ))}
       <p className="text-xs text-muted-foreground">
         Privacy: server AI is available only when configured by the operator and explicitly
         authorized. Exporting the evidence prompt and entering it in a third-party AI tool may

@@ -3,39 +3,79 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
 
-const scope = z.object({ missionId: z.string().min(1).max(100), crewMemberId: z.string().min(1).max(100) }).strict();
+const scope = z
+  .object({ missionId: z.string().min(1).max(100), crewMemberId: z.string().min(1).max(100) })
+  .strict();
 // Generated database types must not be edited for an unapplied migration.
-type PendingRpcClient = { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
+type PendingRpcClient = {
+  rpc: (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+};
 
 export const getMedicalReviewHistory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => scope.parse(data))
   .handler(async ({ data, context }) => {
     if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
-      return { available: false, events: [] as DurableReviewEvent[], reason: "Persistent review history is disabled pending migration approval. Local review remains session-only." };
+      return {
+        available: false,
+        events: [] as DurableReviewEvent[],
+        reason:
+          "Persistent review history is disabled pending migration approval. Local review remains session-only.",
+      };
     const client = context.supabase as unknown as PendingRpcClient;
-    const result = await client.rpc("medical_v3_review_history", { p_mission: data.missionId, p_crew: data.crewMemberId });
-    if (result.error) throw new Error("Review history unavailable or access denied. No verified status can be shown.");
-    return { available: true, events: result.data as DurableReviewEvent[], reason: "Server history; approvals require current authoritative evidence." };
+    const result = await client.rpc("medical_v3_review_history", {
+      p_mission: data.missionId,
+      p_crew: data.crewMemberId,
+    });
+    if (result.error)
+      throw new Error(
+        "Review history unavailable or access denied. No verified status can be shown.",
+      );
+    return {
+      available: true,
+      events: result.data as DurableReviewEvent[],
+      reason: "Server history; approvals require current authoritative evidence.",
+    };
   });
 
 export const appendMedicalReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => scope.extend({
-    type: z.enum(["draft_created", "returned", "approved", "revoked", "superseded"]),
-    previousId: z.uuid().nullable(), requestId: z.uuid(),
-    evidenceSha256: z.string().regex(/^sha256-[a-f0-9]{64}$/),
-    draftText: z.string().min(1).max(12000), finalText: z.string().max(12000), rationale: z.string().min(1).max(2000),
-  }).parse(data))
+  .inputValidator((data: unknown) =>
+    scope
+      .extend({
+        type: z.enum(["draft_created", "returned", "approved", "revoked", "superseded"]),
+        previousId: z.uuid().nullable(),
+        requestId: z.uuid(),
+        evidenceSha256: z.string().regex(/^sha256-[a-f0-9]{64}$/),
+        draftText: z.string().min(1).max(12000),
+        finalText: z.string().max(12000),
+        rationale: z.string().min(1).max(2000),
+      })
+      .parse(data),
+  )
   .handler(async ({ data, context }) => {
     if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
-      throw new Error("Persistence disabled pending owner-approved migration; no review was saved.");
+      throw new Error(
+        "Persistence disabled pending owner-approved migration; no review was saved.",
+      );
     const client = context.supabase as unknown as PendingRpcClient;
     const result = await client.rpc("medical_v3_append_review", {
-      p_mission: data.missionId, p_crew: data.crewMemberId, p_type: data.type,
-      p_previous: data.previousId, p_request: data.requestId, p_sha: data.evidenceSha256,
-      p_draft: data.draftText, p_final: data.finalText, p_rationale: data.rationale,
+      p_mission: data.missionId,
+      p_crew: data.crewMemberId,
+      p_type: data.type,
+      p_previous: data.previousId,
+      p_request: data.requestId,
+      p_sha: data.evidenceSha256,
+      p_draft: data.draftText,
+      p_final: data.finalText,
+      p_rationale: data.rationale,
     });
-    if (result.error) throw new Error("Review not saved: authorization, revision or authoritative evidence verification failed.");
+    if (result.error)
+      throw new Error(
+        "Review not saved: authorization, revision or authoritative evidence verification failed.",
+      );
     return result.data as DurableReviewEvent;
   });

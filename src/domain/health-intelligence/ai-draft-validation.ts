@@ -126,7 +126,8 @@ export function validateAIDraft(text: string, evidence: DraftEvidence[]): DraftV
       : [];
     const decimals = stripped.match(/\d+[.,]\d+/g) ?? [];
     for (const n of [...withUnit, ...decimals])
-      if (!localEvidence.some((e) => e.value === n)) violations.push(`value not in cited evidence: ${n}`);
+      if (!localEvidence.some((e) => e.value === n))
+        violations.push(`value not in cited evidence: ${n}`);
   }
   return { ok: violations.length === 0, violations: [...new Set(violations)], citedIds: cited };
 }
@@ -193,14 +194,20 @@ export function renderStructuredDraft(raw: unknown): string | null {
   for (const row of list) {
     if (!row || typeof row !== "object" || Array.isArray(row)) return null;
     const r = row as Record<string, unknown>;
-    if (Object.keys(r).some((key) => !["section", "text", "observationIds"].includes(key)) ||
+    if (
+      Object.keys(r).some((key) => !["section", "text", "observationIds"].includes(key)) ||
       !["notice", "observed", "limitations", "questions"].includes(String(r["section"])) ||
-      typeof r["text"] !== "string" || !r["text"].trim() || r["text"].length > 1500 ||
-      /[\[\]\n\r\u0000-\u0008]/.test(r["text"]) || !Array.isArray(r["observationIds"]) ||
+      typeof r["text"] !== "string" ||
+      !r["text"].trim() ||
+      r["text"].length > 1500 ||
+      /[\[\]\n\r\u0000-\u0008]/.test(r["text"]) ||
+      !Array.isArray(r["observationIds"]) ||
       r["observationIds"].length > 120 ||
       r["observationIds"].some((id) => typeof id !== "string" || !ID_TOKEN.test(id)) ||
       new Set(r["observationIds"]).size !== r["observationIds"].length ||
-      (r["section"] === "observed" && !r["observationIds"].length)) return null;
+      (r["section"] === "observed" && !r["observationIds"].length)
+    )
+      return null;
   }
   const out: string[] = [];
   for (const key of ["notice", "observed", "limitations", "questions"] as const) {

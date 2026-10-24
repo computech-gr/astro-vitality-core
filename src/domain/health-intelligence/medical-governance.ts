@@ -1,6 +1,7 @@
 /** Browser-safe contract. A client digest is never server attestation. */
 export const MEDICAL_GOVERNANCE_SCHEMA = "mitochondria.medical-governance.v3";
-export type DurableReviewStatus = "draft_created" | "returned" | "approved" | "revoked" | "superseded" | "stale";
+export type DurableReviewStatus =
+  "draft_created" | "returned" | "approved" | "revoked" | "superseded" | "stale";
 export interface DurableReviewEvent {
   id: string;
   mission_id: string;
