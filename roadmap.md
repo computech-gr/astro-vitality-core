@@ -2,7 +2,7 @@
 
 ## Final permission hardening
 
-- [ ] Harden all five tables, owned sequences and v3 function allowlist against inherited production privileges.
+- [x] Harden all five tables, owned sequences and v3 function allowlist against inherited production privileges; 252 disposable SQL assertions pass.
 - [ ] Test production-equivalent ACLs, rollback and quality/security; report new hashes and exact-commit CI.
 - [ ] Production migration, seeding, AI and deployment remain blocked pending explicit authorization.
 

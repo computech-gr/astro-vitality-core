@@ -1,6 +1,6 @@
 # Medical v3 production synthetic demonstration — implementation and approval boundary
 
-Checked 2026-10-24T23:43:00Z. Implementation is prepared; **production migration, seeding, AI and deployment are not authorized and were not performed**. This is an implementation result, not another architecture assessment.
+Checked 2026-10-24T23:51:00Z. Implementation is prepared; **production migration, seeding, AI and deployment are not authorized and were not performed**. This is an implementation result, not another architecture assessment.
 
 ## Exact approval bundle
 
@@ -8,18 +8,33 @@ Apply only `supabase/pending/20261026000000_medical_v3_production_synthetic_demo
 
 Rollback: `supabase/pending/20261026000000_medical_v3_production_synthetic_demo.rollback.sql`.
 
-SHA-256 migration: `9c5e1a975fe3eb66a6a5fb68035f94f4905cf1caf469149fbe689068e3551942`; rollback: `63f289ed419f250dc7def21bbdf59b13c26cabe7cf44611ed2444593768a902f`.
+SHA-256 migration: `3370a34b95e5f8385d587481af4763c8e6541d80c8a0ee81b393cc62409b48cc`; rollback: `1f33ee387540ea8087d44cb3b86400316d6f5578d100505b6aa1cafeaabb97e7`.
 
 The candidate requires the existing mission `mission-9d8ce8f3e5554509a0885461f9ad2e1c`, code `MITO_DEMO_2026`, exact name `MITOCHONDRIA 2026 - Synthetic Demonstration`, status **planning**; crew `crew-9806e7e611f44dc38dac5e23f7740f1a`, exact name **Alex Morgan — Synthetic Astronaut**, active crew/assignment; and active ground-medical membership `63470171-3a22-4075-b197-ac85b90cb0ef`. No identity, role, mission status or existing records change. Runtime rechecks active caller ground-medical membership scoped to that crew, plus the same exact mission/crew prerequisites. Later status/name changes fail closed.
 
 ## Production impact
 
 - Five new RLS-enabled public tables: `medical_advisor_review_events`, `medical_ai_quota_reservations`, `medical_v3_fixture_sources`, `medical_v3_fixture_observations`, `medical_v3_fixture_receipts`.
-- Fifteen distinct v3 functions, seven triggers, one scoped SELECT policy. All public table grants are explicit. No anonymous access; no direct authenticated table access. Caller-scoped security-definer RPCs are the only ordinary access path; no service-role AI client.
+- Fifteen distinct v3 functions, seven triggers, one scoped SELECT policy (no browser table grant). All five tables explicitly revoke ALL (including TRUNCATE) from PUBLIC, anon, authenticated and service_role after ownership normalization. No anonymous access; no direct authenticated table access. Caller-scoped security-definer RPCs are the only ordinary access path; no service-role AI client.
 - Seed exactly one invented source, two observations and two **synthetic_test_fixture_not_human_review** receipts, never a human or scientific approval. The review-event table remains empty. The append RPC is revoked for browser/service roles and a deny-insert trigger prevents persistent review even via privileged ordinary inserts. Rollback retains this deny control.
 - `synthetic-v3-hr-001`: cv-001, cardiovascular, **62 bpm**, `2026-10-01T10:00:00Z`; `synthetic-v3-hr-002`: **66 bpm**, `2026-10-02T10:00:00Z`. Catalog hash, source hash and compact sorted-key canonical v2 SHA-256 are server reconstructed. Local records are never uploaded or promoted into authority.
 - Atomic quotas: **5/user/minute**, **20/mission/minute**, **one active user lease**, **35-second lease**; user-before-mission advisory locks. Release does not refund consumed minute requests. Only quota rows are written during AI usage; advisor reviews stay in memory.
 - Migration holds prerequisite tables in SHARE mode during a short atomic transaction and serializes candidate application with an advisory lock. Existing writes can briefly wait. A prerequisite, namespace or exact seed validation failure rolls back the complete transaction.
+
+## Final production permission hardening
+
+The original fingerprints are superseded by the corrected hashes above. The standalone candidate and rollback explicitly override production default privileges; RLS alone cannot prevent TRUNCATE. Owner-only table access is intentional: no service-role client is needed by the demo.
+
+All 15 v3 functions are owned by `postgres` with `search_path=pg_catalog, public, extensions, pg_temp`. PUBLIC/anon/authenticated/service_role EXECUTE is cleared, then only these four SECURITY DEFINER RPC signatures are granted to authenticated:
+
+- `medical_v3_fixture_snapshot()`
+- `medical_v3_ai_evidence(text,text)`
+- `medical_v3_reserve_ai(text,text)`
+- `medical_v3_release_ai(uuid)`
+
+Helpers, review history, append-review, validation and trigger functions have no external EXECUTE grant. Rollback restores only release(uuid) access. The migration must run as trusted `postgres` or `supabase_admin` and pins object ownership to postgres; ordinary users cannot own these objects. Schema UUID defaults create **zero sequences**. The scoped owned-sequence guard revokes all privileges and normalizes ownership for any dependent sequence without changing unrelated sequences or global default ACLs.
+
+The disposable verifier reproduces permissive production table/function/sequence defaults and additionally PUBLIC inheritance, proves the defaults actually grant TRUNCATE on an unrelated probe, then verifies both migration and rollback. Direct SELECT/INSERT/UPDATE/DELETE/TRUNCATE are denied with actual permission errors for all five tables under anon, authenticated and service_role. All function grants/ownership/search paths and preserved unrelated objects are checked. Caller-scoped evidence/quotas and persistent denial remain unchanged.
 
 ## Independent default-off application capability
 
@@ -32,7 +47,7 @@ Advisor editing/rationale/acknowledgment remains session-only. It re-reads autho
 ## Validation actually executed
 
 - **565 tests passed**, 0 failed, 9,434 assertions, including four new capability/exact-scope/privacy/provider tests and existing stale-evidence/release-failure/citation/consent tests.
-- New candidate/rollback: **48 disposable SQL assertions**, covering wrong-shape atomic abort, exact IDs/62/66 values/hash, RLS/direct table denials, crew/anonymous/cross-mission denial, persistent RPC denial, changed membership/status/name/assignment, tampered evidence, quota limits, reapplication refusal and rollback retention.
+- New candidate/rollback: **252 disposable SQL assertions**, covering wrong-shape atomic abort, exact IDs/62/66 values/hash, RLS/direct table denials, crew/anonymous/cross-mission denial, persistent RPC denial, changed membership/status/name/assignment, tampered evidence, quota limits, reapplication refusal and rollback retention.
 - Genuine disposable SQL → caller-scoped server → atomic quota → **simulated provider** → two exact citations → authority recheck → quota release passed. No live AI credential used, no network provider call.
 - Existing foundation **30**, synthetic completion **51**, and FV01 integration **305** SQL assertions passed. The generic harness excludes this standalone alternative; its dedicated verifier alone applies it to exact production-shaped disposable fixtures.
 - Lint: **0 errors / 13 existing warnings**; formatting, security audit and SEO passed.
@@ -60,7 +75,7 @@ AI usage incurs provider costs; rate quotas are not a lifetime spending cap. App
 
 1. Disable/remove `MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED` first and stop new usage; leave all other Medical activation flags off.
 2. Wait at least **35 seconds** for in-flight leases; then apply the exact rollback SQL only with owner authorization.
-3. Rollback revokes snapshot, evidence, reserve and append access, installs an empty authority resolver, keeps RLS/deny-persistence controls and preserves all five tables/fixtures/quota records. Caller-owned quota release remains available for cleanup. No delete/drop, no cost refund.
+3. Rollback revokes snapshot, evidence, reserve and append access, installs an empty authority resolver, keeps RLS/deny-persistence controls and preserves all five tables/fixtures/quota records. Only caller-owned quota release remains available for cleanup; every other v3 function is revoked from browser/service roles. No delete/drop, no cost refund.
 4. Verify authenticated snapshot/evidence/reserve denials, empty authority, unchanged 1/2/2 fixtures and retained quota/history counts. Re-enabling after rollback requires separately reviewed SQL; do not rerun the creation candidate.
 
 ## Explicit approval instructions — no action until approved
@@ -71,4 +86,4 @@ After exact-final-commit Quality/typecheck/build and Security Scan validation, t
 2. **AI activation separately:** “I approve enabling only MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED for [UTC start/end], with [request/spending cap], using the existing OpenAI provider, exact synthetic fixtures and session-only review. Keep all governance/test switches off.”
 3. **Publish/deployment separately**, if needed to make application changes live; preparation is not deployment authorization. After activation, run the real signed-in synthetic walkthrough under that bounded permission and report results, not assumed acceptance.
 
-No production approval has been requested or granted through a tool. The existing P3663/P3664/P20 gates remain blocking overall release; this candidate does not close them. GitHub main was observed at `a8f406bd2bf2b3d7b93663facd9004776ce96a73`, different from the local saved implementation; exact-final-commit CI and synchronization remain unverified.
+No production approval has been requested or granted through a tool. The existing P3663/P3664/P20 gates remain blocking overall release; this candidate does not close them. Pre-hardening SHA `da96a9017d747473b66efb8f3c1703dae7f5bf8f` was synchronized and Quality/Security passed, including typecheck/build; Medical Release Gate failed solely at the three evidence verifiers. Those results cannot attest this corrected migration. Exact-final-hardening SHA Quality/Security/typecheck/build must be checked after managed synchronization; no manual build/typecheck is claimed.
