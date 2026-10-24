@@ -54,6 +54,7 @@ export function SyntheticMedicalReview() {
     try {
       await action();
     } catch (error) {
+      setEvents((previous) => previous.map((event) => ({ ...event, verified_current: false })));
       setStatus(
         error instanceof Error ? error.message : "Request failed; no verified acknowledgment.",
       );
