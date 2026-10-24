@@ -1,5 +1,13 @@
 # P20 video evidence closure
 
+## Medical governance v3
+
+- [ ] Verify and apply the supplied foundation; integrate fail-closed governance and stricter AI validation.
+- [ ] Prepare append-only review/RLS and atomic AI quota migration; validate in disposable PostgreSQL only.
+- [ ] Run tests, permitted scientific/security checks and authorized desktop/mobile checks.
+- [ ] Production migration and authoritative evidence adapter require owner approval and a separately authorized server evidence source.
+- [ ] Confirm exact-commit synchronization and Quality/Security workflows; requires managed synchronization and Actions.
+
 ## Website UX polish & evaluator onboarding
 
 - [x] Apply the seven confirmed presentation fixes and Home evaluator links without changing access or evidence.
