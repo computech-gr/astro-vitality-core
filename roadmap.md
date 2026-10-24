@@ -11,3 +11,9 @@
 - [x] Update SEO coverage and regression tests.
 - [x] Verify navigation, run permitted checks, and report commit/CI limitations.
 - [ ] Confirm GitHub synchronization and successful typecheck/production build on the exact saved commit; awaiting managed synchronization and GitHub Actions execution.
+
+## Development roadmap reconstruction
+
+- [x] Centralized P0–P47 phase registry with subphases and missing-record list.
+- [x] Searchable, filterable Project Guide roadmap; tests and documentation.
+- [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
