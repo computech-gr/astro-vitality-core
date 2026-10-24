@@ -4,7 +4,7 @@ export const competitionTeam = {
   localEvent: "Nicosia, Cyprus",
   challenge: "Create Health Monitoring Software for Astronauts on Space Missions",
   officialUrl: "https://www.spaceappschallenge.org/2026/find-a-team/the-mitochondria/?tab=details",
-  challengeUrl: "https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/",
+  challengeUrl: "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/",
   members: [
     { name: "Nikolaos Silvestros", role: "Team Owner" },
     { name: "Andriani Christoforou" },
