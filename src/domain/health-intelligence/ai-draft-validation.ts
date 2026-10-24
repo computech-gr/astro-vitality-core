@@ -128,7 +128,7 @@ export const AI_DRAFT_INSTRUCTIONS = [
   "Only restate values exactly as given. Do not name any biomarker, analyte or hormone other than the metric codes provided.",
   "Do not state or imply reference ranges, normal/abnormal status, elevation, deficiency, diagnoses, diseases, causation, treatment, dosing or supplements.",
   "Lines that mention no metric code and no value (general limitations or questions) are allowed without citations; but if a question or limitation names a metric code, append that metric's observation IDs in brackets to that same line. Prefer writing general questions without metric codes.",
-  "The input field metricCitations gives, for every metric code, the exact text to write instead of the bare code (code followed by its bracketed IDs). Never write a metric code without it. Avoid the phrases 'consistent with', 'indicative of', 'signs of'.",
+  "Return JSON statements. Every statement that mentions a metric code, a value or a measurement must list the exact observation IDs it relies on in observationIds; do not put IDs or brackets in the text. Only purely general statements may have an empty observationIds. Avoid the phrases 'consistent with', 'indicative of', 'signs of'.",
   "Use the sections: Observed evidence; Data limitations; Questions for the qualified medical advisor.",
   "State once that this is AI-generated, unverified and not clinically approved. No names or identities.",
 ].join(" ");
@@ -138,4 +138,59 @@ export function metricCitationTags(evidence: DraftEvidence[]): Record<string, st
   const by: Record<string, string[]> = {};
   for (const e of evidence) (by[e.metric] ??= []).push(e.id);
   return Object.fromEntries(Object.entries(by).map(([k, v]) => [k, `${k} [${v.join(", ")}]`]));
+}
+
+/** Strict structured-output schema: each statement carries the observation IDs it relies on. */
+export const AI_DRAFT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["statements"],
+  properties: {
+    statements: {
+      type: "array",
+      maxItems: 40,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["section", "text", "observationIds"],
+        properties: {
+          section: { type: "string", enum: ["observed", "limitations", "questions", "notice"] },
+          text: { type: "string" },
+          observationIds: { type: "array", items: { type: "string" } },
+        },
+      },
+    },
+  },
+} as const;
+
+const SECTION_TITLES = {
+  notice: "Notice",
+  observed: "Observed evidence",
+  limitations: "Data limitations",
+  questions: "Questions for the qualified medical advisor",
+} as const;
+
+/**
+ * Lays out structured statements as text. Statement wording is never changed; each statement's
+ * own model-supplied IDs are appended verbatim, then the whole text is validated fail-closed.
+ * Returns null when the structure itself is invalid.
+ */
+export function renderStructuredDraft(raw: unknown): string | null {
+  if (!raw || typeof raw !== "object") return null;
+  const list = (raw as { statements?: unknown }).statements;
+  if (!Array.isArray(list) || !list.length) return null;
+  const out: string[] = [];
+  for (const key of ["notice", "observed", "limitations", "questions"] as const) {
+    const rows = list.filter(
+      (r) => r && typeof r === "object" && (r as { section?: unknown }).section === key,
+    );
+    if (!rows.length) continue;
+    out.push(SECTION_TITLES[key]);
+    for (const r of rows as Array<{ text?: unknown; observationIds?: unknown }>) {
+      if (typeof r.text !== "string" || !Array.isArray(r.observationIds)) return null;
+      const ids = r.observationIds.filter((x): x is string => typeof x === "string");
+      out.push(`- ${r.text.trim()}${ids.length ? ` [${ids.join(", ")}]` : ""}`);
+    }
+  }
+  return out.join("\n");
 }

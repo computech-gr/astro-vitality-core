@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import {
   AI_DRAFT_INSTRUCTIONS,
-  metricCitationTags,
+  AI_DRAFT_SCHEMA,
+  renderStructuredDraft,
   validateAIDraft,
 } from "@/domain/health-intelligence/ai-draft-validation";
 
@@ -139,24 +140,35 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
               store: false,
               max_output_tokens: 1500,
               instructions: AI_DRAFT_INSTRUCTIONS,
-              input: JSON.stringify({
-                provenance,
-                evidence,
-                metricCitations: metricCitationTags(evidence),
-              }),
+              input: JSON.stringify({ provenance, evidence }),
+              text: {
+                format: {
+                  type: "json_schema",
+                  name: "research_draft",
+                  strict: true,
+                  schema: AI_DRAFT_SCHEMA,
+                },
+              },
             }),
           });
           if (!response.ok) return fail("AI provider unavailable; no draft generated", 502);
           const result = (await response.json()) as {
             output?: Array<{ content?: Array<{ type?: string; text?: string }> }>;
           };
-          const text =
+          const rawText =
             result.output
               ?.flatMap((x) => x.content ?? [])
               .filter((x) => x.type === "output_text")
               .map((x) => x.text ?? "")
               .join("\n")
               .trim() ?? "";
+          let structured: unknown;
+          try {
+            structured = JSON.parse(rawText);
+          } catch {
+            return fail("AI draft was not valid structured output; rejected", 422);
+          }
+          const text = renderStructuredDraft(structured) ?? "";
           if (!text || text.length > 12000) return fail("AI draft missing or oversized", 502);
           const check = validateAIDraft(text, evidence);
           if (!check.ok)
