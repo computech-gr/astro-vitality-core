@@ -1,6 +1,6 @@
 -- OWNER APPROVAL REQUIRED. Stage after 20261024000000; disposable validation only.
 -- New invented fixture literals; NEVER reads offline observations or accepts browser receipts.
-CREATE TABLE public.medical_v3_fixture_sources (
+CREATE TABLE IF NOT EXISTS public.medical_v3_fixture_sources (
  id text PRIMARY KEY, mission_id text NOT NULL REFERENCES public.missions(id),
  crew_member_id text NOT NULL REFERENCES public.crew_members(id),
  version text NOT NULL, provenance text NOT NULL CHECK(provenance='synthetic'),
@@ -10,7 +10,7 @@ CREATE TABLE public.medical_v3_fixture_sources (
 GRANT ALL ON public.medical_v3_fixture_sources TO service_role;
 ALTER TABLE public.medical_v3_fixture_sources ENABLE ROW LEVEL SECURITY;
 -- No browser policies/grants: authenticated RPCs only.
-CREATE TABLE public.medical_v3_fixture_observations (
+CREATE TABLE IF NOT EXISTS public.medical_v3_fixture_observations (
  id text PRIMARY KEY, source_id text NOT NULL REFERENCES public.medical_v3_fixture_sources(id),
  metric_id text NOT NULL, domain text NOT NULL, value text NOT NULL, unit text NOT NULL,
  observed_at text NOT NULL, supersedes_id text REFERENCES public.medical_v3_fixture_observations(id),
@@ -18,7 +18,7 @@ CREATE TABLE public.medical_v3_fixture_observations (
 );
 GRANT ALL ON public.medical_v3_fixture_observations TO service_role;
 ALTER TABLE public.medical_v3_fixture_observations ENABLE ROW LEVEL SECURITY;
-CREATE TABLE public.medical_v3_fixture_receipts (
+CREATE TABLE IF NOT EXISTS public.medical_v3_fixture_receipts (
  id text PRIMARY KEY, observation_id text NOT NULL REFERENCES public.medical_v3_fixture_observations(id),
  revision integer NOT NULL CHECK(revision>0), previous_id text REFERENCES public.medical_v3_fixture_receipts(id),
  decision text NOT NULL CHECK(decision IN ('accepted','rejected','revoked')),
@@ -29,15 +29,18 @@ CREATE TABLE public.medical_v3_fixture_receipts (
 GRANT ALL ON public.medical_v3_fixture_receipts TO service_role;
 ALTER TABLE public.medical_v3_fixture_receipts ENABLE ROW LEVEL SECURITY;
 
+DROP TRIGGER IF EXISTS medical_v3_fixture_immutable ON public.medical_v3_fixture_sources;
 CREATE TRIGGER medical_v3_fixture_immutable BEFORE UPDATE OR DELETE ON public.medical_v3_fixture_sources
  FOR EACH ROW EXECUTE FUNCTION public.medical_v3_immutable();
+DROP TRIGGER IF EXISTS medical_v3_fixture_observation_immutable ON public.medical_v3_fixture_observations;
 CREATE TRIGGER medical_v3_fixture_observation_immutable BEFORE UPDATE OR DELETE ON public.medical_v3_fixture_observations
  FOR EACH ROW EXECUTE FUNCTION public.medical_v3_immutable();
+DROP TRIGGER IF EXISTS medical_v3_fixture_receipt_immutable ON public.medical_v3_fixture_receipts;
 CREATE TRIGGER medical_v3_fixture_receipt_immutable BEFORE UPDATE OR DELETE ON public.medical_v3_fixture_receipts
  FOR EACH ROW EXECUTE FUNCTION public.medical_v3_immutable();
 
 -- Only string/boolean/null and arrays/objects: ASCII key order, compact UTF-8.
-CREATE FUNCTION public.medical_v3_canonical_json(p jsonb) RETURNS text
+CREATE OR REPLACE FUNCTION public.medical_v3_canonical_json(p jsonb) RETURNS text
 LANGUAGE plpgsql IMMUTABLE SET search_path=public,pg_temp AS $$
 DECLARE t text:=jsonb_typeof(p); result text;
 BEGIN
@@ -55,7 +58,7 @@ END $$;
 REVOKE ALL ON FUNCTION public.medical_v3_canonical_json(jsonb) FROM PUBLIC,anon,authenticated;
 
 -- Resolve unique existing owner-approved scope from server database. Names are not supplied by clients.
-CREATE FUNCTION public.medical_v3_fixture_scope() RETURNS TABLE(mission_id text,crew_member_id text)
+CREATE OR REPLACE FUNCTION public.medical_v3_fixture_scope() RETURNS TABLE(mission_id text,crew_member_id text)
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=public,pg_temp AS $$
 BEGIN
  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'authentication required'; END IF;
@@ -85,14 +88,14 @@ INSERT INTO public.medical_v3_fixture_sources
 SELECT 'synthetic-v3-owner-fixture',scope.mission,scope.crew,'mitochondria.synthetic-fixture.v1','synthetic',
  'ce2271260428b152778ad67d1cad36306a7913dd3a4442abe3aa11ea65297148',literal.doc,
  'sha256-'||encode(extensions.digest(convert_to(public.medical_v3_canonical_json(literal.doc),'UTF8'),'sha256'),'hex')
-FROM scope CROSS JOIN literal WHERE (SELECT count(*) FROM scope)=1;
+FROM scope CROSS JOIN literal WHERE (SELECT count(*) FROM scope)=1 ON CONFLICT DO NOTHING;
 INSERT INTO public.medical_v3_fixture_observations
 SELECT x->>'id',s.id,x->>'metric',x->>'domain',x->>'value',x->>'unit',x->>'time',NULL
-FROM public.medical_v3_fixture_sources s CROSS JOIN LATERAL jsonb_array_elements(s.literal_document) x;
+FROM public.medical_v3_fixture_sources s CROSS JOIN LATERAL jsonb_array_elements(s.literal_document) x ON CONFLICT DO NOTHING;
 INSERT INTO public.medical_v3_fixture_receipts
 SELECT o.id||'-test-receipt-1',o.id,1,NULL,'accepted','synthetic_test_fixture_not_human_review',
  s.source_sha256,s.catalog_sha256,'2026-10-24T21:06:00Z'
-FROM public.medical_v3_fixture_observations o JOIN public.medical_v3_fixture_sources s ON s.id=o.source_id;
+FROM public.medical_v3_fixture_observations o JOIN public.medical_v3_fixture_sources s ON s.id=o.source_id ON CONFLICT DO NOTHING;
 
 CREATE OR REPLACE FUNCTION public.medical_v3_authoritative_evidence(p_mission text,p_crew text)
 RETURNS TABLE(canonical_text text,source_ids text[]) LANGUAGE plpgsql STABLE
@@ -172,7 +175,7 @@ END $$;
 REVOKE ALL ON FUNCTION public.medical_v3_ai_evidence(text,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.medical_v3_ai_evidence(text,text) TO authenticated;
 
-CREATE FUNCTION public.medical_v3_fixture_snapshot() RETURNS jsonb
+CREATE OR REPLACE FUNCTION public.medical_v3_fixture_snapshot() RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=public,extensions,pg_temp AS $$
 DECLARE scope record; canonical text;
 BEGIN
@@ -187,7 +190,7 @@ REVOKE ALL ON FUNCTION public.medical_v3_fixture_snapshot() FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.medical_v3_fixture_snapshot() TO authenticated;
 
 -- Revoke must preserve the approved digest even when current source is unavailable.
-CREATE FUNCTION public.medical_v3_revoke_digest_guard() RETURNS trigger
+CREATE OR REPLACE FUNCTION public.medical_v3_revoke_digest_guard() RETURNS trigger
 LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
 BEGIN
  IF NEW.event_type='revoked' AND NOT EXISTS(SELECT 1 FROM public.medical_advisor_review_events p
@@ -195,12 +198,13 @@ BEGIN
  THEN RAISE EXCEPTION 'revocation must bind previous approval digest'; END IF;
  RETURN NEW;
 END $$;
+DROP TRIGGER IF EXISTS medical_v3_revoke_digest_guard ON public.medical_advisor_review_events;
 CREATE TRIGGER medical_v3_revoke_digest_guard BEFORE INSERT ON public.medical_advisor_review_events
  FOR EACH ROW EXECUTE FUNCTION public.medical_v3_revoke_digest_guard();
 REVOKE ALL ON FUNCTION public.medical_v3_revoke_digest_guard() FROM PUBLIC,anon,authenticated;
 
 -- Direct authenticated append RPC calls must enforce the same strict fixture citation vocabulary.
-CREATE FUNCTION public.medical_v3_fixture_text_valid(p_text text,p_canonical text) RETURNS boolean
+CREATE OR REPLACE FUNCTION public.medical_v3_fixture_text_valid(p_text text,p_canonical text) RETURNS boolean
 LANGUAGE plpgsql IMMUTABLE SET search_path=public,pg_temp AS $$
 DECLARE line text; observation jsonb; ids text[]; token text; remainder text;
 BEGIN
@@ -228,7 +232,7 @@ BEGIN
  RETURN true;
 END $$;
 REVOKE ALL ON FUNCTION public.medical_v3_fixture_text_valid(text,text) FROM PUBLIC,anon,authenticated;
-CREATE FUNCTION public.medical_v3_fixture_review_guard() RETURNS trigger
+CREATE OR REPLACE FUNCTION public.medical_v3_fixture_review_guard() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
 BEGIN
  IF NEW.event_type<>'revoked' AND (
@@ -238,5 +242,6 @@ BEGIN
  RETURN NEW;
 END $$;
 REVOKE ALL ON FUNCTION public.medical_v3_fixture_review_guard() FROM PUBLIC,anon,authenticated;
+DROP TRIGGER IF EXISTS medical_v3_fixture_review_guard ON public.medical_advisor_review_events;
 CREATE TRIGGER medical_v3_fixture_review_guard BEFORE INSERT ON public.medical_advisor_review_events
  FOR EACH ROW EXECUTE FUNCTION public.medical_v3_fixture_review_guard();
