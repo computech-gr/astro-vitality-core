@@ -1,0 +1,44 @@
+name: Medical v3 Release Gate
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Frozen dependency graph
+        run: bun install --frozen-lockfile
+      - name: Full repository checks
+        run: |
+          bun run check
+          bun run typecheck
+          bun run lint
+          bun run format:check
+          bun run build
+      - name: Medical release guard
+        run: node scripts/verify-medical-v3-release-gate.mjs
+      - name: Full scope Trivy vulnerabilities and secrets
+        uses: aquasecurity/trivy-action@0.33.1
+        env:
+          TRIVY_INCLUDE_DEV_DEPS: 'true'
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: 'false'
+      - name: Release evidence summary
+        if: always()
+        run: |
+          echo "Checked commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "This workflow does NOT attest staging browser acceptance or private evidence." >> "$GITHUB_STEP_SUMMARY"
