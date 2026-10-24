@@ -25,13 +25,21 @@ export function SyntheticMedicalReview() {
   const [persistent, setPersistent] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const clearSession = () => {
-    setAcknowledged(false); setAnswer(""); setDraft(""); setFinal(""); setRationale("");
-    setConsent(false); setQaConsent(false);
+    setAcknowledged(false);
+    setAnswer("");
+    setDraft("");
+    setFinal("");
+    setRationale("");
+    setConsent(false);
+    setQaConsent(false);
   };
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (["SIGNED_OUT", "SIGNED_IN", "USER_UPDATED"].includes(event)) {
-        clearSession(); setSnapshot(null); setEvents([]); setPersistent(false);
+        clearSession();
+        setSnapshot(null);
+        setEvents([]);
+        setPersistent(false);
       }
     });
     return () => data.subscription.unsubscribe();
@@ -136,9 +144,19 @@ export function SyntheticMedicalReview() {
     setAcknowledged(false);
     setConsent(false);
     if (!persistent) {
-      const result = await ask({ data: { question: SYNTHETIC_DEMO_QUESTIONS[0], consent: true, provenance: "synthetic", missionId: snapshot.missionId, crewMemberId: snapshot.crewMemberId } });
-      if (result.status !== 200 || !result.text || result.evidence_sha256 !== snapshot.sha256) throw new Error(result.error ?? "Synthetic draft rejected.");
-      setDraft(result.text); setFinal(result.text);
+      const result = await ask({
+        data: {
+          question: SYNTHETIC_DEMO_QUESTIONS[0],
+          consent: true,
+          provenance: "synthetic",
+          missionId: snapshot.missionId,
+          crewMemberId: snapshot.crewMemberId,
+        },
+      });
+      if (result.status !== 200 || !result.text || result.evidence_sha256 !== snapshot.sha256)
+        throw new Error(result.error ?? "Synthetic draft rejected.");
+      setDraft(result.text);
+      setFinal(result.text);
       setStatus("Synthetic research draft — unsaved; session-only advisor review.");
       return;
     }
@@ -224,7 +242,10 @@ export function SyntheticMedicalReview() {
             rows={4}
             maxLength={12000}
             value={draft}
-            onChange={(e) => { setDraft(e.target.value); setAcknowledged(false); }}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setAcknowledged(false);
+            }}
             className="w-full rounded border bg-background p-2"
           />
           <label htmlFor="synthetic-final" className="block text-sm">
@@ -235,7 +256,10 @@ export function SyntheticMedicalReview() {
             rows={4}
             maxLength={12000}
             value={final}
-            onChange={(e) => { setFinal(e.target.value); setAcknowledged(false); }}
+            onChange={(e) => {
+              setFinal(e.target.value);
+              setAcknowledged(false);
+            }}
             className="w-full rounded border bg-background p-2"
           />
           <label htmlFor="synthetic-rationale" className="block text-sm">
@@ -246,78 +270,121 @@ export function SyntheticMedicalReview() {
             rows={2}
             maxLength={2000}
             value={rationale}
-            onChange={(e) => { setRationale(e.target.value); setAcknowledged(false); }}
+            onChange={(e) => {
+              setRationale(e.target.value);
+              setAcknowledged(false);
+            }}
             className="w-full rounded border bg-background p-2"
           />
-          {!persistent && <div className="space-y-2">
-            <Button disabled={busy || !draft.trim() || !final.trim() || !rationale.trim()} onClick={() => void run(async () => {
-              const current = await load();
-              if (!current.available || !current.snapshot || current.snapshot.sha256 !== snapshot.sha256) throw new Error("Evidence or authorization changed; acknowledgment invalidated.");
-              if (!validateAIDraft(final, current.snapshot.evidence).ok) throw new Error("Unsupported statements or citations; acknowledgment rejected.");
-              setAcknowledged(true);
-              setStatus("Session-only synthetic acknowledgment. Not saved, licensed or scientifically approved.");
-            })}>Acknowledge session-only review</Button>
-            {acknowledged && <p role="status">Session-only acknowledgment — not a persistent approval.</p>}
-          </div>}
-          {persistent && <><div className="flex flex-wrap gap-2">
-            <Button
-              disabled={
-                busy ||
-                !draft.trim() ||
-                !rationale.trim() ||
-                Boolean(latest && !["revoked", "superseded"].includes(latest.event_type))
-              }
-              onClick={() => void run(() => save("draft_created"))}
-            >
-              Save synthetic draft
-            </Button>
-            <Button
-              disabled={
-                busy ||
-                !latest ||
-                !["draft_created", "returned"].includes(latest.event_type) ||
-                !final.trim() ||
-                !rationale.trim()
-              }
-              onClick={() => void run(() => save("approved"))}
-            >
-              Acknowledge synthetic review
-            </Button>
-            <Button
-              variant="outline"
-              disabled={
-                busy ||
-                !latest ||
-                !["draft_created", "returned"].includes(latest.event_type) ||
-                !rationale.trim()
-              }
-              onClick={() => void run(() => save("returned"))}
-            >
-              Return draft
-            </Button>
-            <Button
-              variant="outline"
-              disabled={busy || latest?.event_type !== "approved" || !rationale.trim()}
-              onClick={() => void run(() => save("revoked"))}
-            >
-              Revoke acknowledgment
-            </Button>
-          </div>
-          <Button variant="outline" disabled={busy} onClick={() => void run(exportHistory)}>
-            Export authorized synthetic review history (JSON)
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Contains reviewer identifiers, evidence hashes, timestamps and review text. Export is
-            not a clinical signature; store the file securely.
-          </p>
-          </>}
+          {!persistent && (
+            <div className="space-y-2">
+              <Button
+                disabled={busy || !draft.trim() || !final.trim() || !rationale.trim()}
+                onClick={() =>
+                  void run(async () => {
+                    const current = await load();
+                    if (
+                      !current.available ||
+                      !current.snapshot ||
+                      current.snapshot.sha256 !== snapshot.sha256
+                    )
+                      throw new Error(
+                        "Evidence or authorization changed; acknowledgment invalidated.",
+                      );
+                    if (!validateAIDraft(final, current.snapshot.evidence).ok)
+                      throw new Error(
+                        "Unsupported statements or citations; acknowledgment rejected.",
+                      );
+                    setAcknowledged(true);
+                    setStatus(
+                      "Session-only synthetic acknowledgment. Not saved, licensed or scientifically approved.",
+                    );
+                  })
+                }
+              >
+                Acknowledge session-only review
+              </Button>
+              {acknowledged && (
+                <p role="status">Session-only acknowledgment — not a persistent approval.</p>
+              )}
+            </div>
+          )}
+          {persistent && (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  disabled={
+                    busy ||
+                    !draft.trim() ||
+                    !rationale.trim() ||
+                    Boolean(latest && !["revoked", "superseded"].includes(latest.event_type))
+                  }
+                  onClick={() => void run(() => save("draft_created"))}
+                >
+                  Save synthetic draft
+                </Button>
+                <Button
+                  disabled={
+                    busy ||
+                    !latest ||
+                    !["draft_created", "returned"].includes(latest.event_type) ||
+                    !final.trim() ||
+                    !rationale.trim()
+                  }
+                  onClick={() => void run(() => save("approved"))}
+                >
+                  Acknowledge synthetic review
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={
+                    busy ||
+                    !latest ||
+                    !["draft_created", "returned"].includes(latest.event_type) ||
+                    !rationale.trim()
+                  }
+                  onClick={() => void run(() => save("returned"))}
+                >
+                  Return draft
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={busy || latest?.event_type !== "approved" || !rationale.trim()}
+                  onClick={() => void run(() => save("revoked"))}
+                >
+                  Revoke acknowledgment
+                </Button>
+              </div>
+              <Button variant="outline" disabled={busy} onClick={() => void run(exportHistory)}>
+                Export authorized synthetic review history (JSON)
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Contains reviewer identifiers, evidence hashes, timestamps and review text. Export
+                is not a clinical signature; store the file securely.
+              </p>
+            </>
+          )}
           <div className="space-y-2 border-t pt-4">
             <h3 className="font-semibold">Synthetic evidence Q&amp;A — research only</h3>
             <label htmlFor="synthetic-question" className="block text-sm">
               Question about observed evidence
             </label>
-            <select id="synthetic-question" value={question} onChange={(e) => { setQuestion(e.target.value); setQaConsent(false); setAnswer(""); setAcknowledged(false); }} className="w-full min-w-0 rounded border bg-background p-2">
-              {SYNTHETIC_DEMO_QUESTIONS.map((q) => <option key={q} value={q}>{q}</option>)}
+            <select
+              id="synthetic-question"
+              value={question}
+              onChange={(e) => {
+                setQuestion(e.target.value);
+                setQaConsent(false);
+                setAnswer("");
+                setAcknowledged(false);
+              }}
+              className="w-full min-w-0 rounded border bg-background p-2"
+            >
+              {SYNTHETIC_DEMO_QUESTIONS.map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
             </select>
             <label className="flex items-start gap-2 text-sm">
               <input

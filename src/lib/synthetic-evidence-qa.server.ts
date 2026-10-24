@@ -66,14 +66,20 @@ export async function answerSyntheticQuestion(
   }
   if (snapshot.missionId !== data["missionId"] || snapshot.crewMemberId !== data["crewMemberId"])
     return fail("Synthetic scope mismatch", 403);
-  if (deps.productionSynthetic && (
-    snapshot.evidence.length !== 2 || snapshot.evidence.some((o, i) =>
-      o.id !== `synthetic-v3-hr-00${i + 1}` || o.metric !== "cv-001" ||
-      o.domain !== "cardiovascular" || o.unit !== "bpm" ||
-      o.value !== (i === 0 ? "62" : "66") ||
-      o.time !== `2026-10-0${i + 1}T10:00:00Z`
-    )
-  )) return fail("Approved synthetic fixture changed; no data sent", 422);
+  if (
+    deps.productionSynthetic &&
+    (snapshot.evidence.length !== 2 ||
+      snapshot.evidence.some(
+        (o, i) =>
+          o.id !== `synthetic-v3-hr-00${i + 1}` ||
+          o.metric !== "cv-001" ||
+          o.domain !== "cardiovascular" ||
+          o.unit !== "bpm" ||
+          o.value !== (i === 0 ? "62" : "66") ||
+          o.time !== `2026-10-0${i + 1}T10:00:00Z`,
+      ))
+  )
+    return fail("Approved synthetic fixture changed; no data sent", 422);
   const verified = await deps.rpc("medical_v3_ai_evidence", {
     p_mission: snapshot.missionId,
     p_crew: snapshot.crewMemberId,

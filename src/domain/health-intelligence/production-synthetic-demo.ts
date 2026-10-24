@@ -15,7 +15,11 @@ export function syntheticDemoMode(flags: {
   if (flags.isolated === "true" && flags.environment === "disposable") return "disposable";
   return "disabled";
 }
-export function assertProductionSyntheticRequest(mission: unknown, crew: unknown, question: string) {
+export function assertProductionSyntheticRequest(
+  mission: unknown,
+  crew: unknown,
+  question: string,
+) {
   if (mission !== PRODUCTION_SYNTHETIC_MISSION || crew !== PRODUCTION_SYNTHETIC_CREW)
     throw new Error("Production synthetic scope mismatch");
   if (!SYNTHETIC_DEMO_QUESTIONS.some((q) => q === question))
