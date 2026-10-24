@@ -13,7 +13,8 @@ async def main():
    page=await context.new_page()
    for route in ROUTES:
     errors=[]
-    page.on('pageerror',lambda e:errors.append(str(e)))
+    on_error=lambda e:errors.append(str(e))
+    page.on('pageerror',on_error)
     response=await page.goto('http://localhost:8080'+route,wait_until='networkidle')
     await page.wait_for_timeout(250)
     state=await page.evaluate('''() => ({title:document.title,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth-innerWidth,robots:[...document.querySelectorAll('meta[name="robots"]')].map(x=>x.content),canonical:[...document.querySelectorAll('link[rel="canonical"]')].map(x=>x.href),brokenImages:[...document.images].filter(i=>!i.complete||!i.naturalWidth).map(i=>i.src)})''')
@@ -67,7 +68,7 @@ async def main():
     assert state['h1']==1,state
     assert not state['brokenImages'],state
     assert not errors,state
-    page.remove_all_listeners('pageerror')
+    page.remove_listener('pageerror',on_error)
     await page.screenshot(path=str(ROOT/(route.replace('/','_')+f'-{width}.png')))
     results.append(state)
    await context.close()
