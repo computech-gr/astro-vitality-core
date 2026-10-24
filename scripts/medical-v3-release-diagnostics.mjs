@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 const checks = [
   { id: 'restore', verifier: 'scripts/verify-p3663-activation.mjs', evidence: 'owner-authenticated restore/activation evidence' },
@@ -9,7 +9,7 @@ const checks = [
 const rows = checks.map(({ id, verifier, evidence }) => {
   if (!existsSync(verifier)) return { id, status: 'ERROR', evidence, reason: 'verifier missing' };
   try { execFileSync(process.execPath, [verifier], { timeout: 30000, stdio: 'pipe', env: { ...process.env, OPENAI_API_KEY: '', SUPABASE_SERVICE_ROLE_KEY: '' } }); return { id, status: 'PASS', evidence }; }
-  catch (e) { return { id, status: 'BLOCKED', evidence, reason: String(e.stderr || e.stdout || e.message).slice(0, 400) }; }
+  catch (e) { return { id, status: 'BLOCKED', evidence, reason: [e.stderr, e.stdout].map(value => String(value || '').trim()).filter(Boolean).join('\n') || String(e.message) }; }
 });
 const summary = { checkedAt: new Date().toISOString(), commit: process.env.GITHUB_SHA || 'local-unverified', checks: rows, complete: rows.every(r => r.status === 'PASS') };
 if (process.argv.includes('--json')) process.stdout.write(JSON.stringify(summary, null, 2) + '\n');

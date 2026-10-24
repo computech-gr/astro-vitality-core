@@ -1,5 +1,13 @@
 # P20 video evidence closure
 
+## V3 final release diagnostics
+
+- [x] Verify and apply both manifest files; regenerate the deterministic P20 sample with every existing sealed hash and byte count unchanged.
+- [ ] Correct diagnostics output regressions, add artifact/diagnostic tests, and run all permitted offline validation and full-scope security scanning.
+- [ ] Owner evidence: BLOCKED until authentic P3663 restore evidence, P3664 explicit risk acknowledgment and P20 official-rules recheck are supplied.
+- [ ] Isolated desktop/mobile acceptance: BLOCKED until independent Auth, Data API, database and application origin are independently verified.
+- [ ] Exact-final-commit Quality, Security Scan, Medical release gate and typecheck/build: awaiting matching GitHub execution evidence.
+
 ## V3 staging and exact-commit release gate
 
 - [x] Verify and apply all three manifest files byte-identically before integration.

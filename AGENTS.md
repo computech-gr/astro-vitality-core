@@ -27,3 +27,4 @@
 - The staging target guard is offline string validation only and must reject shared domains/port and require explicit loopback permission; real service attestation remains separate because hostname matching cannot prove isolation.
 - Security CI scans development dependencies and unfixed findings alongside production dependencies; compatible targeted Bun updates preserve transitive major branches rather than force incompatible overrides.
 - The medical release workflow runs all offline verifiers including private-evidence gates, excludes explicitly service-dependent checks, and reports each validation step even after failures; an exact-commit code check never attests staging acceptance or production authorization.
+- Final release diagnostics preserve verifier failures and their complete output; deterministic release samples must match the existing sealed manifest without changing evidence statuses or hashes, because reproducibility is not owner acceptance.
