@@ -2,6 +2,7 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 ROOT=Path('/tmp/browser/ux-polish')
+ROOT.mkdir(parents=True, exist_ok=True)
 ROUTES=['/','/mission/readiness','/mission/validation','/mission/intelligence','/project/guide','/mission/documents','/mission/experience','/mission/bone-health','/mission/immune-health','/mission/cardiovascular-health','/mission/behavioral-health','/does-not-exist','/technology/nonexistent']
 async def main():
  async with async_playwright() as p:
@@ -17,6 +18,7 @@ async def main():
     await page.wait_for_timeout(250)
     state=await page.evaluate('''() => ({title:document.title,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth-innerWidth,robots:[...document.querySelectorAll('meta[name="robots"]')].map(x=>x.content),canonical:[...document.querySelectorAll('link[rel="canonical"]')].map(x=>x.href),brokenImages:[...document.images].filter(i=>!i.complete||!i.naturalWidth).map(i=>i.src)})''')
     state.update(route=route,width=width,http=response.status,errors=errors)
+    assert state['overflow']==0,state
     assert await page.locator('header').count()==1
     if not route.endswith('nonexistent') and route!='/does-not-exist':
      assert state['canonical']==['https://mitochondria.edocinfo.com'+('/' if route=='/' else route)]
@@ -37,6 +39,7 @@ async def main():
      control=page.get_by_role('combobox',name='Provisional classification')
      await control.locator("option").nth(1).wait_for(state="attached")
      options=await control.locator('option').evaluate_all('(xs)=>xs.map(x=>x.value)')
+     assert set(options)=={'ALL','POTENTIAL_EQUIVALENCE_VERIFY_PROTOCOL','DISTINCT_COMPONENT_OF_BROADER_CATALOG_ENTRY','RELATED_BUT_NOT_INTERCHANGEABLE'}
      await control.select_option(options[1])
      state['classification']=await control.input_value()
      assert state['classification']==options[1]
@@ -45,7 +48,7 @@ async def main():
     if route=='/':
      region=page.get_by_role('region',name='Explore MITOCHONDRIA')
      state['onboarding_links']=await region.locator('a').evaluate_all('(xs)=>xs.map(x=>x.getAttribute("href"))')
-     assert len(state['onboarding_links'])==4
+     assert state['onboarding_links']==['/competition/demo-video','/competition/team','https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf','/project/guide#platform-guide']
      await region.screenshot(path=str(ROOT/f'home-explore-{width}.png'))
     if route in ['/does-not-exist','/technology/nonexistent']:
      assert response.status==404
@@ -54,6 +57,9 @@ async def main():
      assert 'noindex, nofollow' in html
      assert state['title']=='Page not found | The Mitochondria'
      assert state['robots']==['noindex, nofollow'],state
+     await page.get_by_role('link',name='Home',exact=True).click()
+     assert page.url=='http://localhost:8080/'
+     await page.goto('http://localhost:8080'+route,wait_until='networkidle')
      await page.get_by_role('link',name='Project Guide',exact=True).click()
      assert page.url.endswith('/project/guide')
      state['guide_navigation']=True
@@ -61,6 +67,7 @@ async def main():
     assert state['h1']==1,state
     assert not state['brokenImages'],state
     assert not errors,state
+    page.remove_all_listeners('pageerror')
     await page.screenshot(path=str(ROOT/(route.replace('/','_')+f'-{width}.png')))
     results.append(state)
    await context.close()

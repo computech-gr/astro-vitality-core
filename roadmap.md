@@ -2,8 +2,8 @@
 
 ## Website UX polish & evaluator onboarding
 
-- [ ] Apply the seven confirmed presentation fixes and Home evaluator links without changing access or evidence.
-- [ ] Verify affected pages at 1280px and 390px; run tests, scientific verifiers, integrity and security checks.
+- [x] Apply the seven confirmed presentation fixes and Home evaluator links without changing access or evidence.
+- [x] Verify affected pages at 1280px and 390px; run tests, scientific verifiers, integrity and security checks.
 - [ ] Confirm exact-commit GitHub synchronization, Quality and Security Scan; requires managed synchronization and Actions.
 
 - [x] Verify public video and record owner confirmation without closing official-rules evidence.
