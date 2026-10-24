@@ -2,6 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import {
+  MEDICAL_OPENAI_RESPONSES_URL,
+  MEDICAL_OPENAI_DEFAULT_MODEL,
+  MEDICAL_OPENAI_OUTPUT_TOKENS,
+} from "@/domain/health-intelligence/medical-openai-contract";
+import {
   AI_DRAFT_INSTRUCTIONS,
   AI_DRAFT_SCHEMA,
   renderStructuredDraft,
@@ -189,14 +194,14 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 25000);
         try {
-          const response = await fetch("https://api.openai.com/v1/responses", {
+          const response = await fetch(MEDICAL_OPENAI_RESPONSES_URL, {
             method: "POST",
             signal: controller.signal,
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
             body: JSON.stringify({
-              model: process.env["MITO_MEDICAL_AI_MODEL"] || "gpt-4.1-mini",
+              model: process.env["MITO_MEDICAL_AI_MODEL"] || MEDICAL_OPENAI_DEFAULT_MODEL,
               store: false,
-              max_output_tokens: 1500,
+              max_output_tokens: MEDICAL_OPENAI_OUTPUT_TOKENS,
               instructions: AI_DRAFT_INSTRUCTIONS,
               input: JSON.stringify({ provenance: "synthetic", evidence: snapshot.evidence }),
               text: {
@@ -241,7 +246,7 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
             {
               draft: text,
               source: "server-ai",
-              model: process.env["MITO_MEDICAL_AI_MODEL"] || "gpt-4.1-mini",
+              model: process.env["MITO_MEDICAL_AI_MODEL"] || MEDICAL_OPENAI_DEFAULT_MODEL,
               generatedAt: new Date().toISOString(),
               warning: "Unverified AI research draft; independent medical advisor review required.",
             },

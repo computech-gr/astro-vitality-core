@@ -4,6 +4,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import { validateAIDraft } from "@/domain/health-intelligence/ai-draft-validation";
+import {
+  buildSyntheticReviewExport,
+  validateSyntheticSnapshot,
+} from "@/domain/health-intelligence/synthetic-review-export";
 
 const scope = z
   .object({ missionId: z.string().min(1).max(100), crewMemberId: z.string().min(1).max(100) })
@@ -109,4 +113,27 @@ export const appendMedicalReview = createServerFn({ method: "POST" })
         "Review not saved: authorization, revision or authoritative evidence verification failed.",
       );
     return result.data as DurableReviewEvent;
+  });
+
+export const exportSyntheticMedicalHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => scope.parse(data))
+  .handler(async ({ data, context }) => {
+    if (process.env["MITO_MEDICAL_GOVERNANCE_V3_ENABLED"] !== "true")
+      throw new Error("History export disabled; no file generated.");
+    const client = context.supabase as unknown as PendingRpcClient;
+    const source = await client.rpc("medical_v3_fixture_snapshot", {});
+    if (source.error) throw new Error("Authorized evidence unavailable.");
+    const snapshot = await validateSyntheticSnapshot(source.data);
+    if (snapshot.missionId !== data.missionId || snapshot.crewMemberId !== data.crewMemberId)
+      throw new Error("Synthetic export scope mismatch.");
+    const history = await client.rpc("medical_v3_review_history", {
+      p_mission: data.missionId,
+      p_crew: data.crewMemberId,
+    });
+    if (history.error) throw new Error("Authorized history unavailable; export denied.");
+    const check = await client.rpc("medical_v3_fixture_snapshot", {});
+    if (check.error || (await validateSyntheticSnapshot(check.data)).sha256 !== snapshot.sha256)
+      throw new Error("Evidence changed during export; retry with current evidence.");
+    return buildSyntheticReviewExport(snapshot, history.data, new Date().toISOString());
   });
