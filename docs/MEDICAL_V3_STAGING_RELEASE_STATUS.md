@@ -4,11 +4,11 @@
 
 All three archive entries matched both SHA-256 and byte count before copying. All were initially applied byte-identically:
 
-| File | Bytes | Supplied SHA-256 |
-| --- | --- | --- |
-| `scripts/verify-medical-v3-release-gate.mjs` | 870 | `2984675a4402238bd7260512ef187b422b7ed7ef4cc48d3fd3fdaa6c0a7e3a2f` |
-| `.github/workflows/medical-v3-release-gate.yml` | 1302 | `5c3f3e4f60195057e88db5fade81b9b509829746b9f355d42b94fa4d46325ecc` |
-| `docs/MEDICAL_V3_STAGING_AND_RELEASE_EXECUTION.md` | 1968 | `3a43204c7d289f459dec359f39ee593fcf5a4a75f679ca9a4fcca44afa7eb7ca` |
+| File                                               | Bytes | Supplied SHA-256                                                   |
+| -------------------------------------------------- | ----- | ------------------------------------------------------------------ |
+| `scripts/verify-medical-v3-release-gate.mjs`       | 870   | `2984675a4402238bd7260512ef187b422b7ed7ef4cc48d3fd3fdaa6c0a7e3a2f` |
+| `.github/workflows/medical-v3-release-gate.yml`    | 1302  | `5c3f3e4f60195057e88db5fade81b9b509829746b9f355d42b94fa4d46325ecc` |
+| `docs/MEDICAL_V3_STAGING_AND_RELEASE_EXECUTION.md` | 1968  | `3a43204c7d289f459dec359f39ee593fcf5a4a75f679ca9a4fcca44afa7eb7ca` |
 
 The supplied static structure verifier remains byte-identical. Necessary deviations: format the supplied handoff; replace mutable workflow actions and the unsafe old Trivy reference with the repository's immutable checkout/Trivy pins and setup-bun v2.2.0 commit; pin Bun 1.4.4; disable persisted checkout credentials; run individual validation steps after failures (without ignoring their failures); add complete offline verifier execution and tests. No dependency change was necessary.
 
