@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Final permission hardening
+
+- [ ] Harden all five tables, owned sequences and v3 function allowlist against inherited production privileges.
+- [ ] Test production-equivalent ACLs, rollback and quality/security; report new hashes and exact-commit CI.
+- [ ] Production migration, seeding, AI and deployment remain blocked pending explicit authorization.
+
 ## Production synthetic demonstration implementation
 
 - [x] Implement exact-ID pending migration, default-off synthetic capability and session-only demonstration; no production writes or activation.
