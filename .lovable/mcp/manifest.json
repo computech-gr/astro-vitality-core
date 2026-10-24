@@ -26,27 +26,27 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
             "domain": {
+              "description": "Optional domain filter, e.g. laboratory or nutrition_hydration.",
               "type": "string",
-              "minLength": 1,
-              "description": "Optional domain filter, e.g. laboratory or nutrition_hydration."
+              "minLength": 1
             },
             "search": {
+              "description": "Optional case-insensitive substring match on code or display name.",
               "type": "string",
-              "minLength": 1,
-              "description": "Optional case-insensitive substring match on code or display name."
+              "minLength": 1
             },
             "limit": {
+              "description": "Maximum definitions to return. Defaults to 50.",
               "type": "integer",
               "minimum": 1,
-              "maximum": 200,
-              "description": "Maximum definitions to return. Defaults to 50."
+              "maximum": 200
             }
           },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          "additionalProperties": false
         },
         "outputSchema": null
       },
@@ -77,22 +77,22 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
             "missionId": {
+              "description": "Optional mission id filter; defaults to every authorized mission.",
               "type": "string",
-              "minLength": 1,
-              "description": "Optional mission id filter; defaults to every authorized mission."
+              "minLength": 1
             },
             "limit": {
+              "description": "Maximum events to return. Defaults to 50.",
               "type": "integer",
               "minimum": 1,
-              "maximum": 200,
-              "description": "Maximum events to return. Defaults to 50."
+              "maximum": 200
             }
           },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          "additionalProperties": false
         },
         "outputSchema": null
       },
@@ -106,6 +106,7 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
             "missionId": {
@@ -117,8 +118,7 @@
           "required": [
             "missionId"
           ],
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          "additionalProperties": false
         },
         "outputSchema": null
       }
