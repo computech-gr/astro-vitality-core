@@ -5,7 +5,9 @@ const workbench = readFileSync("src/components/mission-document-review-workbench
 
 describe("P36.3 synthetic local preview guardrails", () => {
   it("requires existing review and mission eligibility before preview", () => {
-    expect(workbench).toContain("const previewObservations = canExport ? selected.map");
+    expect(workbench.replace(/\s+/g, " ")).toContain(
+      "const previewObservations = canExport ? selected.map",
+    );
     expect(workbench).toContain("disabled={!canExport}");
     expect(workbench).toContain("onClick={() => setPreviewVisible(true)}");
     expect(workbench).toContain("{previewVisible && canExport && (");
