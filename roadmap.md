@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## V3 export and isolated evidence Q&A
+
+- [x] Verify both supplied baseline/after fingerprints and apply the patch.
+- [ ] Implement fresh caller-authorized export with server timestamps and validated evidence digests.
+- [ ] Implement synthetic-only consented Q&A using existing OpenAI provider and atomic quotas, with production-disabled gates.
+- [ ] Run isolated controls, full tests, formatting, lint, verifiers/security and available desktop/mobile checks; report CI and activation blockers.
+
 ## V3 synthetic completion implementation gate
 
 - [x] Verify and apply both manifest files byte-identically.
