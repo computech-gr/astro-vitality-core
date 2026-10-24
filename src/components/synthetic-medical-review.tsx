@@ -19,9 +19,9 @@ export function SyntheticMedicalReview() {
   const append = useServerFn(appendMedicalReview);
   const exportAuthorized = useServerFn(exportSyntheticMedicalHistory);
   const ask = useServerFn(askSyntheticEvidence);
-  const [question,setQuestion]=useState("");
-  const [qaConsent,setQaConsent]=useState(false);
-  const [answer,setAnswer]=useState("");
+  const [question, setQuestion] = useState("");
+  const [qaConsent, setQaConsent] = useState(false);
+  const [answer, setAnswer] = useState("");
   const [snapshot, setSnapshot] = useState<SyntheticEvidenceSnapshot | null>(null);
   const [events, setEvents] = useState<DurableReviewEvent[]>([]);
   const [draft, setDraft] = useState("");
@@ -107,7 +107,9 @@ export function SyntheticMedicalReview() {
     } finally {
       URL.revokeObjectURL(url);
     }
-    setStatus("Synthetic review history exported from a fresh authorized server read; handle as sensitive research data.");
+    setStatus(
+      "Synthetic review history exported from a fresh authorized server read; handle as sensitive research data.",
+    );
   };
   const generate = async () => {
     if (!snapshot || !consent) return;
@@ -134,11 +136,21 @@ export function SyntheticMedicalReview() {
     setFinal(result.draft);
     setStatus("AI draft — unverified, unsaved; independent advisor assessment required.");
   };
-  const askQuestion=async()=>{
-    if(!snapshot || !qaConsent) return;
-    setQaConsent(false);setAnswer("");
-    const result=await ask({data:{question,consent:true,provenance:"synthetic",missionId:snapshot.missionId,crewMemberId:snapshot.crewMemberId}});
-    if(result.status!==200 || !result.text) throw new Error(result.error??"Synthetic answer rejected.");
+  const askQuestion = async () => {
+    if (!snapshot || !qaConsent) return;
+    setQaConsent(false);
+    setAnswer("");
+    const result = await ask({
+      data: {
+        question,
+        consent: true,
+        provenance: "synthetic",
+        missionId: snapshot.missionId,
+        crewMemberId: snapshot.crewMemberId,
+      },
+    });
+    if (result.status !== 200 || !result.text)
+      throw new Error(result.error ?? "Synthetic answer rejected.");
     setAnswer(result.text);
   };
   return (
@@ -252,23 +264,40 @@ export function SyntheticMedicalReview() {
               Revoke acknowledgment
             </Button>
           </div>
-          <Button
-            variant="outline"
-            disabled={busy}
-            onClick={() => void run(exportHistory)}
-          >
+          <Button variant="outline" disabled={busy} onClick={() => void run(exportHistory)}>
             Export authorized synthetic review history (JSON)
           </Button>
           <p className="text-xs text-muted-foreground">
-            Contains reviewer identifiers, evidence hashes, timestamps and review text.
-            Export is not a clinical signature; store the file securely.
+            Contains reviewer identifiers, evidence hashes, timestamps and review text. Export is
+            not a clinical signature; store the file securely.
           </p>
           <div className="space-y-2 border-t pt-4">
             <h3 className="font-semibold">Synthetic evidence Q&amp;A — isolated tests only</h3>
-            <label htmlFor="synthetic-question" className="block text-sm">Question about observed evidence</label>
-            <textarea id="synthetic-question" rows={3} maxLength={1000} value={question} onChange={e=>setQuestion(e.target.value)} className="w-full rounded border bg-background p-2"/>
-            <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={qaConsent} onChange={e=>setQaConsent(e.target.checked)}/>Send this question and only authorized synthetic evidence to OpenAI for this request.</label>
-            <Button disabled={busy || !qaConsent || !question.trim()} onClick={()=>void run(askQuestion)}>Ask synthetic evidence question</Button>
+            <label htmlFor="synthetic-question" className="block text-sm">
+              Question about observed evidence
+            </label>
+            <textarea
+              id="synthetic-question"
+              rows={3}
+              maxLength={1000}
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              className="w-full rounded border bg-background p-2"
+            />
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={qaConsent}
+                onChange={(e) => setQaConsent(e.target.checked)}
+              />
+              Send this question and only authorized synthetic evidence to OpenAI for this request.
+            </label>
+            <Button
+              disabled={busy || !qaConsent || !question.trim()}
+              onClick={() => void run(askQuestion)}
+            >
+              Ask synthetic evidence question
+            </Button>
             {answer && <p className="whitespace-pre-wrap break-words">{answer}</p>}
           </div>
           <ol className="space-y-3 text-sm">

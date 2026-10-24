@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
-import { MEDICAL_OPENAI_RESPONSES_URL, MEDICAL_OPENAI_DEFAULT_MODEL, MEDICAL_OPENAI_OUTPUT_TOKENS } from "@/domain/health-intelligence/medical-openai-contract";
+import {
+  MEDICAL_OPENAI_RESPONSES_URL,
+  MEDICAL_OPENAI_DEFAULT_MODEL,
+  MEDICAL_OPENAI_OUTPUT_TOKENS,
+} from "@/domain/health-intelligence/medical-openai-contract";
 import {
   AI_DRAFT_INSTRUCTIONS,
   AI_DRAFT_SCHEMA,
