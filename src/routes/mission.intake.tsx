@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { UnifiedIntakeWorkspace } from "@/components/unified-intake-workspace";
 import { operationalRouteHead } from "@/infrastructure/seo";
-// @ts-ignore tsgo 7.0.0-dev drops this valid route from the generated union; tsc and the regenerated routeTree.gen.ts accept it.
 export const Route = createFileRoute("/mission/intake")({
   head: () =>
     operationalRouteHead({
