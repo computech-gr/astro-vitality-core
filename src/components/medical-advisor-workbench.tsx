@@ -41,30 +41,46 @@ export function MedicalAdvisorWorkbench({
     setGenerating(true);
     setMessage("Requesting server-generated research draft...");
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error("Sign in required.");
       const response = await fetch("/api/medical-ai-draft", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
-          missionId: report.missionId, crewMemberId: report.crewMemberId,
-          provenance: report.provenance, consent: aiConsent,
+          missionId: report.missionId,
+          crewMemberId: report.crewMemberId,
+          provenance: report.provenance,
+          consent: aiConsent,
           observations: report.observations.map((o) => ({
-            id: o.id, domain: o.domain, metric: o.metricId,
-            value: o.value, unit: o.originalUnit, time: o.observedAt,
+            id: o.id,
+            domain: o.domain,
+            metric: o.metricId,
+            value: o.value,
+            unit: o.originalUnit,
+            time: o.observedAt,
           })),
         }),
       });
-      const payload = await response.json() as { draft?: string; error?: string };
+      const payload = (await response.json()) as { draft?: string; error?: string };
       if (!response.ok || !payload.draft) throw new Error(payload.error || "AI generation failed.");
       const draft = createAdvisorDraft(report, payload.draft, "server-ai");
       setReview(draft);
       setDraftText(payload.draft);
       setFinalText(payload.draft);
       setReason("");
-      setMessage("Server AI draft received; independent advisor review is required. No clinical approval.");
-    } catch (error) { setMessage(String(error)); }
-    finally { setGenerating(false); }
+      setMessage(
+        "Server AI draft received; independent advisor review is required. No clinical approval.",
+      );
+    } catch (error) {
+      setMessage(String(error));
+    } finally {
+      setGenerating(false);
+    }
   };
   const start = () => {
     try {
@@ -97,18 +113,29 @@ export function MedicalAdvisorWorkbench({
       <h3 className="font-semibold">AI-assisted medical opinion — advisor review</h3>
       <p className="text-sm">{MEDICAL_ADVISOR_NOTICE}</p>
       <p className="text-xs text-muted-foreground">
-        Privacy: server AI is available only when configured by the operator and explicitly authorized. Exporting the evidence prompt and entering it
-        in a third-party AI tool may disclose sensitive medical data. Only do so with explicit
-        authorization and an approved secure service. Never paste identifiable real astronaut data
-        into consumer AI tools.
+        Privacy: server AI is available only when configured by the operator and explicitly
+        authorized. Exporting the evidence prompt and entering it in a third-party AI tool may
+        disclose sensitive medical data. Only do so with explicit authorization and an approved
+        secure service. Never paste identifiable real astronaut data into consumer AI tools.
       </p>
       <div className="print:hidden space-y-2">
         <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" checked={aiConsent} onChange={(e) => setAiConsent(e.target.checked)} />
-          I explicitly authorize sending the selected de-identified observation values to the configured server-side AI provider for a research-only draft. No names or crew identifiers are sent to the AI provider. Real-data processing requires separate server authorization.
+          <input
+            type="checkbox"
+            checked={aiConsent}
+            onChange={(e) => setAiConsent(e.target.checked)}
+          />
+          I explicitly authorize sending the selected de-identified observation values to the
+          configured server-side AI provider for a research-only draft. No names or crew identifiers
+          are sent to the AI provider. Real-data processing requires separate server authorization.
         </label>
-        <Button type="button" onClick={() => void generateWithAI()}
-          disabled={!authorizedMedicalRole || !aiConsent || !report.observations.length || generating}>
+        <Button
+          type="button"
+          onClick={() => void generateWithAI()}
+          disabled={
+            !authorizedMedicalRole || !aiConsent || !report.observations.length || generating
+          }
+        >
           {generating ? "Generating draft..." : "Generate research draft with secure server AI"}
         </Button>
         <Button
