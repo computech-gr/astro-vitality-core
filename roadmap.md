@@ -1,5 +1,13 @@
 # P20 video evidence closure
 
+## V3 staging security recovery
+
+- [x] Verify and apply both additive patch fingerprints before integration.
+- [ ] Trace and remediate development CVEs with compatible package/lockfile updates and full-scope Trivy.
+- [ ] Prepare independent staging architecture and tested fail-closed target checks; no provisioning before owner approval.
+- [ ] Run permitted tests, lint, formatting, scientific/security checks and inspect automatic validation.
+- [ ] Run desktop/mobile acceptance only after independently verified isolation; exact-final-commit Quality/Security remains required.
+
 ## V3 isolated environment execution
 
 - [x] Verify SHA-256 manifest and apply both additive handoff files byte-identically.
