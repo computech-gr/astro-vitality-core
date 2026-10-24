@@ -1,7 +1,7 @@
 # P20 video evidence closure
 
-- [ ] Verify public video and record owner confirmation without closing official-rules evidence.
-- [ ] Regenerate and verify controlled manifest; update regression tests and run permitted checks.
+- [x] Verify public video and record owner confirmation without closing official-rules evidence.
+- [x] Regenerate and verify controlled manifest; update regression tests and run permitted checks.
 - [ ] Confirm GitHub synchronization, Quality, Security Scan and exact-commit typecheck/build; awaiting managed synchronization and GitHub Actions execution.
 
 ## Official team integration
