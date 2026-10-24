@@ -69,7 +69,7 @@ BEGIN
  IF NOT FOUND THEN RAISE EXCEPTION 'mission/crew authorization required'; END IF;
  IF p_type IS NULL OR p_type NOT IN ('draft_created','returned','approved','revoked','superseded')
  OR p_request IS NULL OR p_sha IS NULL OR p_sha !~ '^sha256-[a-f0-9]{64}$'
- OR p_draft IS NULL OR length(p_draft) NOT BETWEEN 1 AND 12000
+ OR p_draft IS NULL OR length(trim(p_draft)) NOT BETWEEN 1 AND 12000
  OR p_final IS NULL OR length(p_final)>12000 OR p_rationale IS NULL OR length(trim(p_rationale)) NOT BETWEEN 1 AND 2000
  THEN RAISE EXCEPTION 'invalid review input'; END IF;
  PERFORM pg_advisory_xact_lock(hashtextextended('medical-review:'||p_mission||':'||p_crew,0));
@@ -81,13 +81,14 @@ BEGIN
  SELECT * INTO prev FROM public.medical_advisor_review_events WHERE mission_id=p_mission AND crew_member_id=p_crew ORDER BY revision DESC LIMIT 1;
  IF prev.id IS DISTINCT FROM p_previous THEN RAISE EXCEPTION 'stale revision'; END IF;
  IF (prev.id IS NULL AND p_type<>'draft_created') OR
- (prev.id IS NOT NULL AND ((p_type='approved' AND prev.event_type NOT IN ('draft_created','returned'))
+ (prev.id IS NOT NULL AND ((p_type='draft_created' AND prev.event_type NOT IN ('revoked','superseded'))
+ OR (p_type='approved' AND (prev.event_type NOT IN ('draft_created','returned') OR length(trim(p_final))=0))
  OR (p_type='returned' AND prev.event_type NOT IN ('draft_created','returned'))
  OR (p_type IN ('revoked','superseded') AND prev.event_type<>'approved')))
  THEN RAISE EXCEPTION 'invalid transition'; END IF;
  IF p_type <> 'revoked' THEN
   SELECT canonical_text,source_ids INTO canonical,ids FROM public.medical_v3_authoritative_evidence(p_mission,p_crew);
-  IF canonical IS NULL OR cardinality(ids)<1 THEN RAISE EXCEPTION 'authoritative evidence unavailable'; END IF;
+  IF canonical IS NULL OR coalesce(cardinality(ids),0)<1 THEN RAISE EXCEPTION 'authoritative evidence unavailable'; END IF;
   server_sha:='sha256-'||encode(extensions.digest(convert_to(canonical,'UTF8'),'sha256'),'hex');
   IF server_sha<>p_sha THEN RAISE EXCEPTION 'stale or tampered evidence'; END IF;
  END IF;
@@ -134,6 +135,7 @@ BEGIN
  -- Global user before mission: deterministic lock ordering; quota commits BEFORE provider call.
  PERFORM pg_advisory_xact_lock(hashtextextended('medical-ai-user:'||actor::text,0));
  PERFORM pg_advisory_xact_lock(hashtextextended('medical-ai-mission:'||p_mission,0));
+ t:=clock_timestamp();
  IF (SELECT count(*) FROM public.medical_ai_quota_reservations WHERE actor_user_id=actor AND reserved_at>t-interval '1 minute')>=5
  OR (SELECT count(*) FROM public.medical_ai_quota_reservations WHERE mission_id=p_mission AND reserved_at>t-interval '1 minute')>=20
  OR EXISTS(SELECT 1 FROM public.medical_ai_quota_reservations WHERE actor_user_id=actor AND released_at IS NULL AND lease_until>t)

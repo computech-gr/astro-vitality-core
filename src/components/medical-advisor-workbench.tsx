@@ -214,12 +214,13 @@ export function MedicalAdvisorWorkbench({
         </label>
         <Button
           type="button"
+          className="h-auto max-w-full whitespace-normal text-left"
           onClick={() => void generateWithAI()}
           disabled={
             !authorizedMedicalRole || !aiConsent || !report.observations.length || generating
           }
         >
-          {generating ? "Generating draft..." : "Generate research draft with secure server AI"}
+          {generating ? "Generating draft..." : "Generate research draft with configured AI provider"}
         </Button>
         <Button
           type="button"
@@ -270,6 +271,7 @@ export function MedicalAdvisorWorkbench({
             />
             <Button
               type="button"
+              className="h-auto max-w-full whitespace-normal text-left"
               onClick={approve}
               disabled={!authorizedMedicalRole || review.decision === "approved"}
             >

@@ -194,14 +194,15 @@ export function renderStructuredDraft(raw: unknown): string | null {
   for (const row of list) {
     if (!row || typeof row !== "object" || Array.isArray(row)) return null;
     const r = row as Record<string, unknown>;
+    const statementText = r["text"];
     if (
       Object.keys(r).some((key) => !["section", "text", "observationIds"].includes(key)) ||
       !["notice", "observed", "limitations", "questions"].includes(String(r["section"])) ||
-      typeof r["text"] !== "string" ||
-      !r["text"].trim() ||
-      r["text"].length > 1500 ||
-      ["[", "]", "\n", "\r"].some((character) => r["text"].includes(character)) ||
-      [...r["text"]].some((character) => character.charCodeAt(0) < 9) ||
+      typeof statementText !== "string" ||
+      !statementText.trim() ||
+      statementText.length > 1500 ||
+      ["[", "]", "\n", "\r"].some((character) => statementText.includes(character)) ||
+      [...statementText].some((character) => character.charCodeAt(0) < 9) ||
       !Array.isArray(r["observationIds"]) ||
       r["observationIds"].length > 120 ||
       r["observationIds"].some((id) => typeof id !== "string" || !ID_TOKEN.test(id)) ||
