@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## V3 synthetic completion implementation gate
+
+- [x] Verify and apply both manifest files byte-identically.
+- [ ] Complete synthetic integration: blocked by the contract's exact `heart_rate` fixture identifier, which is absent from the intake catalog; no remapping or authority changes permitted.
+- [ ] Validate non-production integration and request production approval only after successful acceptance; no production change authorized.
+
 ## V3 verifier recovery and synthetic source decision
 
 - [x] Verify before/after manifest fingerprints, apply four patch files, and format only requested touched files and v3 contract.
