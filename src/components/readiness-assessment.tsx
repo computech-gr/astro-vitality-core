@@ -95,6 +95,7 @@ export function ReadinessAssessment() {
     effort: 50,
     frustration: 20,
   });
+  const [tlxTouched, setTlxTouched] = useState<Set<NasaTlxDimension>>(new Set());
   const [stimulusVisible, setStimulusVisible] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(DEMO_PROTOCOL.durationSeconds);
   const stimulusAtRef = useRef<number | null>(null);
@@ -119,6 +120,16 @@ export function ReadinessAssessment() {
     },
     [],
   );
+
+  useEffect(() => {
+    const warnIfMidFlow = (event: BeforeUnloadEvent) => {
+      const current = stateRef.current;
+      const midFlow = !current.completedAt && (current.step !== "context" || current.trials.length > 0);
+      if (midFlow) event.preventDefault();
+    };
+    window.addEventListener("beforeunload", warnIfMidFlow);
+    return () => window.removeEventListener("beforeunload", warnIfMidFlow);
+  }, []);
 
   function saveCheckIn() {
     if (!MISSION) return;
@@ -410,7 +421,7 @@ export function ReadinessAssessment() {
               <CardContent className="space-y-7">
                 <div>
                   <div className="flex justify-between">
-                    <Label>Fatigue</Label>
+                    <Label htmlFor="fatigue-number">Fatigue</Label>
                     <span className="font-mono text-sm">{fatigue}/10</span>
                   </div>
                   <Slider
@@ -420,6 +431,21 @@ export function ReadinessAssessment() {
                     step={1}
                     value={[fatigue]}
                     onValueChange={(value) => setFatigue(value[0] ?? 0)}
+                    aria-label="Fatigue (0 to 10)"
+                  />
+                  <Input
+                    id="fatigue-number"
+                    type="number"
+                    min={0}
+                    max={10}
+                    step={1}
+                    className="mt-2 w-24"
+                    value={fatigue}
+                    onChange={(event) => {
+                      const next = Number(event.target.value);
+                      if (Number.isFinite(next)) setFatigue(Math.min(10, Math.max(0, Math.round(next))));
+                    }}
+                    aria-label="Fatigue numeric value (0 to 10)"
                   />
                 </div>
                 <div>
@@ -442,7 +468,7 @@ export function ReadinessAssessment() {
                 </div>
                 <div>
                   <div className="flex justify-between">
-                    <Label>Current stress</Label>
+                    <Label htmlFor="stress-number">Current stress</Label>
                     <span className="font-mono text-sm">{stress}/10</span>
                   </div>
                   <Slider
@@ -452,6 +478,21 @@ export function ReadinessAssessment() {
                     step={1}
                     value={[stress]}
                     onValueChange={(value) => setStress(value[0] ?? 0)}
+                    aria-label="Current stress (0 to 10)"
+                  />
+                  <Input
+                    id="stress-number"
+                    type="number"
+                    min={0}
+                    max={10}
+                    step={1}
+                    className="mt-2 w-24"
+                    value={stress}
+                    onChange={(event) => {
+                      const next = Number(event.target.value);
+                      if (Number.isFinite(next)) setStress(Math.min(10, Math.max(0, Math.round(next))));
+                    }}
+                    aria-label="Current stress numeric value (0 to 10)"
                   />
                 </div>
                 {state.issues.length > 0 && (
@@ -598,19 +639,35 @@ export function ReadinessAssessment() {
                           max={100}
                           step={5}
                           value={[tlx[dimension]]}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => {
+                            setTlxTouched((current) => new Set(current).add(dimension));
                             setTlx((current) => ({
                               ...current,
                               [dimension as NasaTlxDimension]: value[0] ?? 0,
-                            }))
-                          }
+                            }));
+                          }}
+                          aria-label={`NASA-TLX ${label} (0 to 100)`}
                         />
+                        {!tlxTouched.has(dimension) && (
+                          <p className="mt-1 text-xs text-muted-foreground">Not rated yet — adjust the slider to rate this dimension.</p>
+                        )}
                       </div>
                     ))}
                   </div>
-                  <Button variant="outline" className="mt-5" onClick={saveWorkload}>
+                  <Button
+                    variant="outline"
+                    className="mt-5"
+                    onClick={saveWorkload}
+                    disabled={tlxTouched.size < 6}
+                  >
                     Record task workload
                   </Button>
+                  {tlxTouched.size < 6 && (
+                    <p className="mt-2 text-xs text-muted-foreground" role="status">
+                      Rate all six dimensions before recording ({tlxTouched.size}/6 rated). Default
+                      slider positions are never recorded as answers.
+                    </p>
+                  )}
                 </div>
                 <p className="text-sm leading-6 text-muted-foreground">
                   No readiness score, psychiatric label, diagnosis or alert is generated. P12 may
