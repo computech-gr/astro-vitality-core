@@ -144,6 +144,7 @@ export function MissionDocumentReviewWorkbench() {
     observationDate &&
     selected.length > 0 &&
     !hasDuplicateMetrics &&
+    !invalidSelectedValues &&
     !busy,
   );
   const previewObservations = canExport ? selected.map(({ id, label, value, unit, excerpt }) => ({
@@ -448,8 +449,22 @@ export function MissionDocumentReviewWorkbench() {
                   <td className="p-2">{c.id}</td>
                   <td className="p-2">{c.label}</td>
                   <td className="p-2">{(() => { const d = domainForMetric(c.id); return d ? DOMAIN_LABELS[d] : "Unclassified"; })()}</td>
-                  <td className="p-2">{c.value}</td>
-                  <td className="p-2">{c.unit}</td>
+                  <td className="p-2">
+                    <input
+                      aria-label={`Value for candidate ${i + 1}`}
+                      className="w-24 rounded border bg-background p-1"
+                      value={c.value}
+                      onChange={(e) => editCandidate(i, { value: e.target.value })}
+                    />
+                  </td>
+                  <td className="p-2">
+                    <input
+                      aria-label={`Unit for candidate ${i + 1}`}
+                      className="w-24 rounded border bg-background p-1"
+                      value={c.unit}
+                      onChange={(e) => editCandidate(i, { unit: e.target.value })}
+                    />
+                  </td>
                   <td className="p-2 max-w-xs break-words">{c.excerpt}</td>
                 </tr>
               ))}
