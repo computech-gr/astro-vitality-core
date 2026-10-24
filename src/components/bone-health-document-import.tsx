@@ -25,14 +25,16 @@ export function BoneHealthDocumentImport({missionId,crewMemberId,dataOrigin,onIm
     finally {setBusy(false);}
   }
   async function save() {
-    if(!missionId.trim()||!crewMemberId.trim()||!date||!Number.isFinite(Date.parse(date))) {setStatus("Mission, crew and examination date are required.");return;}
+    if(!missionId.trim()||!crewMemberId.trim()) {setStatus("Mission and crew are required.");return;}
     const selected=matches.filter(m=>m.selected);
     if(!selected.length){setStatus("Select and verify at least one result.");return;}
+    const rowDate=(m:DocumentMatch)=>m.observedAt&&Number.isFinite(Date.parse(m.observedAt))?m.observedAt:date;
+    if(selected.some(m=>!rowDate(m)||!Number.isFinite(Date.parse(rowDate(m))))) {setStatus("Each selected result needs a valid examination date: set the shared date or a per-row date.");return;}
     setBusy(true);let count=0;
     try {
       for(const m of selected) {
         if(!m.unit.trim()||!Number.isFinite(m.value)) throw new Error("A selected result has an invalid value or unit.");
-        await saveBoneEntry({id:crypto.randomUUID(),missionId:missionId.trim(),crewMemberId:crewMemberId.trim(),variableId:m.variableId,value:m.value,unit:m.unit,observedAt:new Date(date).toISOString(),sourceLabel:source,specimen:m.specimen,assayMethod:m.assayMethod,notes:"Human-confirmed document extraction. No automated clinical interpretation.",dataOrigin});
+        await saveBoneEntry({id:crypto.randomUUID(),missionId:missionId.trim(),crewMemberId:crewMemberId.trim(),variableId:m.variableId,value:m.value,unit:m.unit,observedAt:new Date(rowDate(m)).toISOString(),sourceLabel:source,specimen:m.specimen,assayMethod:m.assayMethod,notes:"Human-confirmed document extraction. No automated clinical interpretation.",dataOrigin});
         count++;
       }
       setMatches([]);setText("");setDraft("");await onImported();setStatus(`${count} confirmed results stored in encrypted append-only history. The original document was not stored.`);
