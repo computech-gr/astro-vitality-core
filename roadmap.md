@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## V3 staging and exact-commit release gate
+
+- [x] Verify and apply all three manifest files byte-identically before integration.
+- [ ] Harden release workflow compatibility and run all permitted validation without bypassing private evidence.
+- [ ] Disposable stack/browser acceptance: stop unless independent container, Auth and Data API infrastructure is available.
+- [ ] Report final SHA, exact-commit CI and isolation blockers.
+
 ## V3 staging security recovery
 
 - [x] Verify and apply both additive patch fingerprints before integration.
