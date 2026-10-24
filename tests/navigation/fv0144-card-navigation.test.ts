@@ -5,6 +5,7 @@ import { join } from "node:path";
 const root = process.cwd();
 const guide = readFileSync(join(root, "src/components/project-guide.tsx"), "utf8");
 const shell = readFileSync(join(root, "src/components/app-shell.tsx"), "utf8");
+const roadmap = readFileSync(join(root, "src/components/project-roadmap.tsx"), "utf8");
 
 const itemLines = guide.split("\n").filter((line) => /^\s*\{ id: "[a-z0-9-]+", title: /.test(line));
 
@@ -29,7 +30,7 @@ describe("FV-01.4.4 card navigation coverage", () => {
     const hrefs = [...guide.matchAll(/href: "([^"]+)"/g)].map((m) => m[1]);
     for (const href of hrefs) {
       if (href.startsWith("#")) {
-        expect(guide).toContain(`id="${href.slice(1)}"`);
+        expect(guide + roadmap).toContain(`id="${href.slice(1)}"`);
       } else if (href.startsWith("/technology/")) {
         expect(readFileSync(join(root, "src/content/technology-topics.ts"), "utf8")).toContain(`"${href.slice(12)}"`);
       } else if (href.startsWith("/#")) {
@@ -56,6 +57,7 @@ describe("FV-01.4.4 card navigation coverage", () => {
   test("external links use safe attributes", () => {
     expect(guide).toContain('rel={link.external ? "noopener noreferrer" : undefined}');
     expect(guide).toContain('rel={item.external ? "noopener noreferrer" : undefined}');
-    expect(guide).toContain('rel="noopener noreferrer"');
+    expect(roadmap).toContain('rel="noopener noreferrer"');
+    expect(roadmap).not.toMatch(/target="_blank"(?![^>]*noopener)/);
   });
 });
