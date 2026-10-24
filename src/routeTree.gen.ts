@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as ApiMedicalAiDraftRouteImport } from './routes/api.medical-ai-draft'
 import { Route as ApiNasaResearchRouteImport } from './routes/api.nasa-research'
 import { Route as CompetitionDemoVideoRouteImport } from './routes/competition.demo-video'
 import { Route as CompetitionTeamRouteImport } from './routes/competition.team'
@@ -59,6 +60,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiMedicalAiDraftRoute = ApiMedicalAiDraftRouteImport.update({
+  id: '/api/medical-ai-draft',
+  path: '/api/medical-ai-draft',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiNasaResearchRoute = ApiNasaResearchRouteImport.update({
   id: '/api/nasa-research',
   path: '/api/nasa-research',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/medical-ai-draft': typeof ApiMedicalAiDraftRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/competition/team': typeof CompetitionTeamRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/medical-ai-draft': typeof ApiMedicalAiDraftRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/competition/team': typeof CompetitionTeamRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/medical-ai-draft': typeof ApiMedicalAiDraftRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/competition/team': typeof CompetitionTeamRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/api/medical-ai-draft'
     | '/api/nasa-research'
     | '/competition/demo-video'
     | '/competition/team'
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/api/medical-ai-draft'
     | '/api/nasa-research'
     | '/competition/demo-video'
     | '/competition/team'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
+    | '/api/medical-ai-draft'
     | '/api/nasa-research'
     | '/competition/demo-video'
     | '/competition/team'
@@ -429,6 +441,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiMedicalAiDraftRoute: typeof ApiMedicalAiDraftRoute
   ApiNasaResearchRoute: typeof ApiNasaResearchRoute
   CompetitionDemoVideoRoute: typeof CompetitionDemoVideoRoute
   CompetitionTeamRoute: typeof CompetitionTeamRoute
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       path: '/.well-known/oauth-protected-resource'
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/medical-ai-draft': {
+      id: '/api/medical-ai-draft'
+      path: '/api/medical-ai-draft'
+      fullPath: '/api/medical-ai-draft'
+      preLoaderRoute: typeof ApiMedicalAiDraftRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/nasa-research': {
@@ -702,6 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiMedicalAiDraftRoute: ApiMedicalAiDraftRoute,
   ApiNasaResearchRoute: ApiNasaResearchRoute,
   CompetitionDemoVideoRoute: CompetitionDemoVideoRoute,
   CompetitionTeamRoute: CompetitionTeamRoute,
