@@ -51,7 +51,28 @@ No screenshot, environment attestation or successful synthetic browser receipt e
 - No manual typecheck or production build was run: the sandbox workflow reserves those for automatic validation and exact-commit GitHub Actions. Automatic preview log reported `build OK`; this does not establish full production build/typecheck or acceptance.
 - No disposable SQL test or live-provider verifier was rerun after the isolation stop. Prior SQL results are historical only.
 
-The static scientific/security inventory, fresh scanner results and exact-final-commit public CI observation are recorded after their completion in the final validation section.
+### Scientific and security inventory
+
+105 verifier scripts were inventoried: **98 passed, 3 failed, 4 skipped**. Skipped scripts require PostgreSQL execution or remote authentication and were not executed after the safe stop. Failures remain unchanged: `verify-p3663-activation.mjs` requires authentic private restore evidence; `verify-p3664-owner-risk.mjs` requires authentic private owner-risk acknowledgment; `verify-submission-gate.mjs` requires missing sealed `data/release/mission-day-127.synthetic.json`. No evidence was fabricated and no gate weakened.
+
+Fresh Trivy 0.66.0 production-dependency scanning found **0 HIGH/CRITICAL vulnerabilities and 0 secrets**. An additional scan explicitly including development dependencies found **7 HIGH and 1 CRITICAL vulnerability, 0 HIGH/CRITICAL secrets**:
+
+| Package / installed | Advisory | Severity | Fixed versions reported by Trivy |
+| --- | --- | --- | --- |
+| brace-expansion 1.1.16 | CVE-2026-102276 | HIGH | 1.1.19, 2.1.5, 3.0.7, 5.0.10 |
+| brace-expansion 1.1.16 | CVE-2026-102278 | HIGH | 1.1.20, 2.1.6, 3.0.8, 5.0.11 |
+| brace-expansion 1.1.16 | CVE-2026-14257 | HIGH | 1.1.17, 2.1.3, 3.0.3, 5.0.8 |
+| brace-expansion 1.1.16 | CVE-2026-69152 | HIGH | 1.1.18, 2.1.4, 3.0.6, 5.0.9 |
+| launch-editor 2.14.1 | CVE-2026-112942 | HIGH | 2.14.2 |
+| nanoid 3.3.16 | CVE-2026-67213 | HIGH | 3.3.18, 5.1.6 |
+| shell-quote 1.10.0 | CVE-2026-102422 | CRITICAL | 1.11.0 |
+| vite 8.1.5 | CVE-2026-112942 | HIGH | 8.1.6, 8.2.4, 8.3.3, 7.3.7, 6.4.4 |
+
+These expanded-scope findings are reported, not suppressed. Dependencies were not changed during this infrastructure-blocked patch task. A prior production-only clean scan or GitHub success is not evidence of a clean development-dependency inventory.
+
+Content leaf metadata was inspected without changes: normal content responses contain the required tags. The existing unknown `technology.$topic` not-found response lacks description/Open Graph/Twitter tags; this unrelated exception was not modified.
+
+Public GitHub checks were green for the earlier base SHA `830c2f2c5a8b2c609dba6237417b7532c280825c`, not for this patch. Requests for subsequent managed SHAs returned 422/404; exact-final-commit synchronization and Quality/Security remain **unverified**. No prior green run is attributed to the changed files.
 
 ## Remaining gates and next environment
 

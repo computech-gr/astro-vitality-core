@@ -3,9 +3,11 @@
 ## V3 isolated environment execution
 
 - [x] Verify SHA-256 manifest and apply both additive handoff files byte-identically.
-- [ ] Demonstrate genuine dedicated application, local authentication, Data API, disposable reviewer/evidence and bounded provider access before runtime execution.
-- [ ] Execute loaded desktop/mobile export and Q&A acceptance only after independent isolation attestation; otherwise report infrastructure blockers without using shared services.
-- [ ] Run permitted static, regression, formatting and security checks and report exact-commit Quality/Security status separately.
+- [ ] Demonstrate genuine isolated application/auth/Data API, reviewer/evidence and bounded provider access: blocked by missing services/runtime and independent attestation; separate staging authorization required.
+- [ ] Execute loaded desktop/mobile export and Q&A acceptance: blocked by genuine isolation, not run or simulated.
+- [x] Run 526 tests, lint, targeted formatting, 98/101 executed verifiers and fresh security scans; report expanded development scan findings in docs/MEDICAL_V3_ISOLATED_EXECUTION_STATUS.md.
+- [ ] Resolve expanded development-dependency scan findings: 7 HIGH/1 CRITICAL; dependency remediation remains separate from the stopped isolation task.
+- [ ] Exact-final-commit Quality/Security and full typecheck/build: blocked by unavailable matching public workflow evidence and managed synchronization.
 
 ## V3 isolated browser acceptance gate
 
