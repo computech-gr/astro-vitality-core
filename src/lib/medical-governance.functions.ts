@@ -23,7 +23,8 @@ export const getSyntheticMedicalEvidence = createServerFn({ method: "POST" })
       return { available: false as const, snapshot: null };
     const client = context.supabase as unknown as PendingRpcClient;
     const result = await client.rpc("medical_v3_fixture_snapshot", {});
-    if (result.error || !result.data) throw new Error("Authoritative synthetic source unavailable.");
+    if (result.error || !result.data)
+      throw new Error("Authoritative synthetic source unavailable.");
     return { available: true as const, snapshot: result.data as SyntheticEvidenceSnapshot };
   });
 
@@ -77,15 +78,19 @@ export const appendMedicalReview = createServerFn({ method: "POST" })
     const client = context.supabase as unknown as PendingRpcClient;
     if (data.type !== "revoked") {
       const source = await client.rpc("medical_v3_fixture_snapshot", {});
-      if (source.error || !source.data) throw new Error("Authoritative synthetic source unavailable.");
+      if (source.error || !source.data)
+        throw new Error("Authoritative synthetic source unavailable.");
       const snapshot = source.data as SyntheticEvidenceSnapshot;
       if (
         snapshot.missionId !== data.missionId ||
         snapshot.crewMemberId !== data.crewMemberId ||
         snapshot.sha256 !== data.evidenceSha256
-      ) throw new Error("Stale or mismatched synthetic evidence.");
-      if (!validateAIDraft(data.draftText, snapshot.evidence).ok ||
-          (data.finalText.trim() && !validateAIDraft(data.finalText, snapshot.evidence).ok))
+      )
+        throw new Error("Stale or mismatched synthetic evidence.");
+      if (
+        !validateAIDraft(data.draftText, snapshot.evidence).ok ||
+        (data.finalText.trim() && !validateAIDraft(data.finalText, snapshot.evidence).ok)
+      )
         throw new Error("Invalid evidence citations or unsupported statements; review rejected.");
     }
     const result = await client.rpc("medical_v3_append_review", {

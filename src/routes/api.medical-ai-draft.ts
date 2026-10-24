@@ -159,8 +159,11 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
           evidence.length !== snapshot.evidence.length ||
           evidence.some((row, index) => {
             const trusted = snapshot.evidence[index];
-            return !trusted || Object.keys(row).some(
-              (key) => row[key as keyof typeof row] !== trusted[key as keyof typeof trusted],
+            return (
+              !trusted ||
+              Object.keys(row).some(
+                (key) => row[key as keyof typeof row] !== trusted[key as keyof typeof trusted],
+              )
             );
           })
         )
