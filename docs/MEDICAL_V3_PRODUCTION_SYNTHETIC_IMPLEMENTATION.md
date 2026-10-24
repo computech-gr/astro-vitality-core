@@ -1,6 +1,6 @@
 # Medical v3 production synthetic demonstration — implementation and approval boundary
 
-Checked 2026-10-24T23:51:00Z. Implementation is prepared; **production migration, seeding, AI and deployment are not authorized and were not performed**. This is an implementation result, not another architecture assessment.
+Checked 2026-10-24T23:53:00Z. Implementation is prepared; **production migration, seeding, AI and deployment are not authorized and were not performed**. This is an implementation result, not another architecture assessment.
 
 ## Exact approval bundle
 
@@ -49,10 +49,10 @@ Advisor editing/rationale/acknowledgment remains session-only. It re-reads autho
 - **565 tests passed**, 0 failed, 9,434 assertions, including four new capability/exact-scope/privacy/provider tests and existing stale-evidence/release-failure/citation/consent tests.
 - New candidate/rollback: **252 disposable SQL assertions**, covering wrong-shape atomic abort, exact IDs/62/66 values/hash, RLS/direct table denials, crew/anonymous/cross-mission denial, persistent RPC denial, changed membership/status/name/assignment, tampered evidence, quota limits, reapplication refusal and rollback retention.
 - Genuine disposable SQL → caller-scoped server → atomic quota → **simulated provider** → two exact citations → authority recheck → quota release passed. No live AI credential used, no network provider call.
-- Existing foundation **30**, synthetic completion **51**, and FV01 integration **305** SQL assertions passed. The generic harness excludes this standalone alternative; its dedicated verifier alone applies it to exact production-shaped disposable fixtures.
+- Fresh existing foundation **30** and synthetic completion **51** SQL assertions passed alongside the hardened candidate (333 fresh assertions total). Prior FV01 integration **305** SQL assertions passed; not rerun in this hardening pass. The generic harness excludes this standalone alternative; its dedicated verifier alone applies it to exact production-shaped disposable fixtures.
 - Lint: **0 errors / 13 existing warnings**; formatting, security audit and SEO passed.
 - All static scientific/security release verifiers: **99/102 passed**. Remaining failures: P3663 authentic restore evidence, P3664 owner-risk acknowledgment and P20 official-rules confirmation. No verifier, seal or scientific status weakened.
-- Trivy 0.66 refreshed its advisory database at 23:39 UTC, full-scope development/unfixed vulnerability and secret scan: **0 vulnerabilities / 0 secrets**.
+- Fresh Trivy 0.66 full-scope development/unfixed vulnerability and secret scans: **0 vulnerabilities / 0 secrets**.
 - Automatic preview validation reported **build OK**, after correcting an exact-optional-property typing issue. Manual project typecheck/build execution is prohibited here and was not run. This does not replace exact-commit GitHub Actions validation.
 - Public signed-out health-report page rendered with correct title and no horizontal overflow. This is not authenticated synthetic browser acceptance; production activation and real Auth/Data API isolated acceptance were not attempted.
 

@@ -3,7 +3,8 @@
 ## Final permission hardening
 
 - [x] Harden all five tables, owned sequences and v3 function allowlist against inherited production privileges; 252 disposable SQL assertions pass.
-- [ ] Test production-equivalent ACLs, rollback and quality/security; report new hashes and exact-commit CI.
+- [x] Test production-equivalent ACLs/rollback (252 assertions), existing governance/completion (81), 565 tests, lint/format/security, fresh zero-finding Trivy and 99/102 static checks; new hashes recorded in implementation handoff.
+- [ ] Exact-final-hardening GitHub Quality/Security and typecheck/build: awaiting matching completed runs.
 - [ ] Production migration, seeding, AI and deployment remain blocked pending explicit authorization.
 
 ## Production synthetic demonstration implementation
