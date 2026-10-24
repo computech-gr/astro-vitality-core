@@ -58,7 +58,7 @@ async def main():
      assert 'noindex, nofollow' in html
      assert state['title']=='Page not found | The Mitochondria'
      assert state['robots']==['noindex, nofollow'],state
-     await page.get_by_role('link',name='Home',exact=True).click()
+     await page.get_by_role('link',name='Home',exact=True).last.click()
      assert page.url=='http://localhost:8080/'
      await page.goto('http://localhost:8080'+route,wait_until='networkidle')
      await page.get_by_role('link',name='Project Guide',exact=True).click()
