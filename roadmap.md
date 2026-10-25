@@ -2,6 +2,7 @@
 
 ## Medical v3 schema / seed separation
 
+- [ ] Apply only owner-approved schema SHA 2024f9023006ba4b8134919f1efb7c8f7c550a19668681d5a6a673b53dc6affc once after live prerequisites/atomicity checks; read back five tables, 15 functions, ACLs/RLS, quota safeguards and migration history, then stop without seeding or activation.
 - [x] Prepare schema-only candidate, atomic exact-scope data seed and separately authorized non-destructive rollback/recovery; preserve approved originals.
 - [x] Validate fingerprints, hostile production-default privileges, idempotency, missing prerequisites, failure rollback, quotas and existing security suites in disposable SQL: 863 SQL assertions and 565 tests pass.
 - [x] Report exact artifacts/results and separate schema/seed approval scopes in docs/MEDICAL_V3_SPLIT_MIGRATION_AND_SEED.md; production execution and all activations remain unauthorized.
