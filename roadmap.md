@@ -2,7 +2,8 @@
 
 ## Medical v3 schema / seed separation
 
-- [ ] Apply only owner-approved schema SHA 2024f9023006ba4b8134919f1efb7c8f7c550a19668681d5a6a673b53dc6affc once after live prerequisites/atomicity checks; read back five tables, 15 functions, ACLs/RLS, quota safeguards and migration history, then stop without seeding or activation.
+- [x] Schema committed once as drizzle/migrations/0011_medical_v3_synthetic_schema_only.sql, journal id 12; verified five empty tables/RLS, 15 hardened functions, application-role CRUD/TRUNCATE denials, four-RPC allowlist, persistence trigger and quota definitions.
+- [ ] STOPPED: submitted SQL accidentally added one leading space on lines 10 and 350; recorded SHA eb0921ca3155d4e15c9cfb2d60996de85ef53a04956634970ea1a4fc75ffe237 differs from approved SHA. Snapshot definition hash consequently differs and exact seed dependency check will refuse. No correction, rollback, seed or activation without new explicit owner authorization.
 - [x] Prepare schema-only candidate, atomic exact-scope data seed and separately authorized non-destructive rollback/recovery; preserve approved originals.
 - [x] Validate fingerprints, hostile production-default privileges, idempotency, missing prerequisites, failure rollback, quotas and existing security suites in disposable SQL: 863 SQL assertions and 565 tests pass.
 - [x] Report exact artifacts/results and separate schema/seed approval scopes in docs/MEDICAL_V3_SPLIT_MIGRATION_AND_SEED.md; production execution and all activations remain unauthorized.
