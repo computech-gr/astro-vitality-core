@@ -3,11 +3,12 @@
 ## Permanent synthetic research AI
 
 - [x] Correct attributable CI PostgreSQL 16/MAINTAIN mismatch by using an independent PostgreSQL 17 container; immutable SQL is unchanged and 588 tests/formatting pass. Replacement exact-revision CI remains pending synchronization.
-- [ ] Production workflow blocked by mandatory exact-final CI and requested interpretation incompatibility: current Q&A permits only exact observation facts, not HR comparison, limitations or additional-data prose. Do not weaken validators or substitute a different generating question without explicit scope resolution; no production actions executed.
+- [x] Owner resolved the initial-generation contract: use only the existing predefined factual question/schema for the exact two observations; do not add interpretation or retry.
 - [x] Implement versioned default-off policy, atomic rolling quotas/monthly reservations, owner administration, provider reconciliation and safe legacy transition.
 - [x] Validate 588 tests, 156 permanent-policy disposable SQL assertions plus 593 legacy assertions, security/format/lint, zero-finding Trivy and signed-in browser denial; document rollout in docs/MEDICAL_V3_PERMANENT_SYNTHETIC_RESEARCH.md.
-- [ ] Exact-final Quality/Security/typecheck/production build wait for synchronized GitHub CI; inspected revision has no matching runs.
-- [ ] Production schema/publication/activation wait for separate owner authorization; provider admin synchronization waits for supported administrative credentials and an owner-confirmed dedicated project.
+- [x] Exact implementation revision 076474dde1312113196285477bcc9d74211806e3 / tree 28b95cde8072cc173b52fd514d4be850bf3e90df synchronized to canonical main; Quality 40168449888 including PostgreSQL 17 SQL suites/typecheck/build and Security Scan 40168449890 passed. Fresh local 588 tests and 749 disposable SQL assertions passed.
+- [x] Owner-authorized permanent schema applied once as 0013_medical_research_policy.sql; bytes match a6646b3ea160261a096038537778c0a89265062ac10d3932246593f5c95b535e and production journal id 14. Five empty RLS tables, all 11 independently matched functions, denied application TRUNCATE/legacy admission and unchanged exact fixtures/persistence denial verified.
+- [ ] Authorized deployment/provisioning/activation and one factual generation stop at trusted provisioning transport: existing medical_research_provision requires postgres/supabase_admin; available data tools do not support privileged write-function SELECT execution, restricted shell cannot invoke it, and a migration or direct inserts cannot substitute. Owner SQL Editor execution of the existing provisioning function is required; no new endpoint/grant/bypass, deployment, activation or provider request occurred. Optional provider reporting may remain degraded as explicitly authorized.
 
 ## Synthetic research activation review
 
