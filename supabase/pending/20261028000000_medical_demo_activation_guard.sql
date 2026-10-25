@@ -153,9 +153,13 @@ BEGIN
  IF r.actor_id IS DISTINCT FROM auth.uid() OR r.nonce_sha IS DISTINCT FROM encode(extensions.digest(p_nonce,'sha256'),'hex')
  OR r.finished_at IS NOT NULL OR r.outcome IS DISTINCT FROM 'dispatched' OR r.dispatched_at IS NULL
  OR a.active_attempt IS DISTINCT FROM p_attempt THEN RETURN false; END IF;
- IF p_usage IS NOT NULL AND (p_usage<0 OR p_usage>100000) THEN
- UPDATE public.medical_demo_authorization SET enabled=false,disabled_at=clock_timestamp() WHERE singleton;
+ IF p_usage IS NOT NULL AND (p_usage<0 OR p_usage>76440) THEN
  p_usage:=NULL;
+ END IF;
+ IF p_usage IS NULL THEN
+ UPDATE public.medical_demo_authorization SET enabled=false,disabled_at=COALESCE(disabled_at,clock_timestamp()) WHERE singleton;
+ INSERT INTO public.medical_demo_control_audit(action,actor_id,reference)
+ VALUES('accounting_failed_closed',auth.uid(),'unverifiable usage; permanent holds retained');
  END IF;
  UPDATE public.medical_demo_attempts SET finished_at=clock_timestamp(),usage_microusd=p_usage,
  outcome=CASE WHEN p_usage IS NULL THEN 'unknown' ELSE 'complete' END WHERE id=p_attempt;

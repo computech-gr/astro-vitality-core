@@ -3,6 +3,7 @@ import { assertProductionSyntheticRequest } from "@/domain/health-intelligence/p
 import {
   boundedSyntheticPayload,
   syntheticUsageMicrousd,
+  SYNTHETIC_PRODUCTION_TRANSPORT_BLOCKER,
 } from "@/domain/health-intelligence/synthetic-activation-policy";
 import {
   reserveSyntheticAttempt,
@@ -63,6 +64,10 @@ export async function answerSyntheticQuestion(
     } catch {
       return fail("Only the approved scope and predefined synthetic questions are allowed", 403);
     }
+    // A database permit and external fetch cannot share a transaction here.
+    // Deny before evidence reads, reservation or transmission; flags/owner acknowledgment
+    // cannot override absent hard billing and outbound serialization guarantees.
+    return fail(SYNTHETIC_PRODUCTION_TRANSPORT_BLOCKER, 503);
   }
   if (!deps.apiKey) return fail("Existing OpenAI provider is not configured; no data sent", 503);
   const source = await deps.rpc("medical_v3_fixture_snapshot", {});

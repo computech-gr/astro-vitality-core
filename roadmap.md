@@ -2,6 +2,8 @@
 
 ## Complete synthetic AI activation guard
 
+- [x] Final hardening: unconditional production transmission denial, both serialized SQL disable race orderings, accounting-failure shutdown, 577 tests/103 guard SQL assertions and refreshed security/fingerprints; no activation.
+
 - [x] Prepare default-off pending schema, retaining-disable recovery, caller-scoped server integration and exact-scope authorization instructions; production and existing fixtures untouched.
 - [x] Exercise attempts, cost holds, concurrency, expiry, emergency disable, authorization and recovery in disposable SQL and automated server tests.
 - [x] Report immutable artifact fingerprints, security validation, unavailable final exact-commit CI and separate approvals in docs/MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md.

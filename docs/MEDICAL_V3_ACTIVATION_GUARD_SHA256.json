@@ -3,8 +3,8 @@
   "scope": "Pending synthetic activation guard candidate; no production authorization",
   "artifacts": {
     "src/domain/health-intelligence/synthetic-activation-policy.ts": {
-      "sha256": "4419236aa656264ad295c33a7982361d087703ca4d49c6b2378fa22787745f94",
-      "bytes": 1348
+      "sha256": "8010f0fbd9bb4f44c3eefa92479e22961660b84a2128704ecf89212d6734e532",
+      "bytes": 1870
     },
     "src/lib/synthetic-activation-guard.server.ts": {
       "sha256": "35bfccc822d12607e151d312280d201767fc05587dd7e55742d5418729c423c3",
@@ -15,8 +15,8 @@
       "bytes": 986
     },
     "src/lib/synthetic-evidence-qa.server.ts": {
-      "sha256": "b1ef703ed6c89bb50d82c9791e1ed1772f5866cabf497c2ecbb935afcdca1691",
-      "bytes": 9128
+      "sha256": "507ff089f7d1a36785b1d7c256dd7e5a208bd27443dc5ad2b2e0b49b62f87769",
+      "bytes": 9482
     },
     "src/routes/api.medical-ai-draft.ts": {
       "sha256": "da925f68b93ec4bd9609fa10cf26752b415435b8741cc3711fc796d4747e9603",
@@ -27,44 +27,44 @@
       "bytes": 17184
     },
     "tests/domain/production-synthetic-demo.test.ts": {
-      "sha256": "b02d8636cc5b79466683ae5e2667f3f4d51cab72e803818e50a01b58eaaaa960",
-      "bytes": 4827
+      "sha256": "246520af325d5578d2b39cbe9fed160204b26e68db8176befb4947297b9dac76",
+      "bytes": 4803
     },
     "tests/domain/synthetic-activation-guard.test.ts": {
-      "sha256": "4cb4c8a8cd2827eb2a6228eaf3eaef1f3f77c2d1ee39bc8a37dbacd2956e5057",
-      "bytes": 2534
+      "sha256": "a0b86c5ead4ab9024e5e6aa597e3e4573a56ef895c75f6cc91f03ef49ad76650",
+      "bytes": 3756
     },
     "scripts/test-production-synthetic-server.ts": {
       "sha256": "464ac2898d114528c01f1fdfea630b9cf67cff0595caa3ecca68bef83cf854a0",
       "bytes": 3857
     },
     "scripts/test-synthetic-activation-server.ts": {
-      "sha256": "d48700ceb09f24d1399869c5cf8b6c7a996daff1c6f154c6048261cfa4d759cf",
-      "bytes": 3928
+      "sha256": "56452a2f7813fba39d6b9123910a71469e6c1cb2d8edd2d8afd3fa9155105499",
+      "bytes": 3873
     },
     "scripts/verify-synthetic-activation-guard.mjs": {
-      "sha256": "f6d814d0ef6453eb203f73225622cb81dab71d7b2c295f00f6e420065a8b6617",
-      "bytes": 12467
+      "sha256": "36e2af4599687014faed367eba9db5d9b2e6cb7bdfad1fea560106fb7f9d172b",
+      "bytes": 15374
     },
     "scripts/medical-v3-static-checks.mjs": {
       "sha256": "2f7f6271e0fd7961eff8fe9f0db0361c8532aab1fda1b7eea6e9ae9230277021",
       "bytes": 2067
     },
     "supabase/pending/20261028000000_medical_demo_activation_guard.sql": {
-      "sha256": "b6568e2233c9feef338a8c0d26eba3510bcaf17185ad7d3e9a7233d59aef25fd",
-      "bytes": 15615
+      "sha256": "a12164a0e9d47b398bd4eaad35ca446a84c815511afd7c95605a87aa85adcbc1",
+      "bytes": 15839
     },
     "supabase/pending/20261028000000_medical_demo_activation_guard.rollback.sql": {
       "sha256": "b95473edf8f0cfd15b8cf5093a57a531931660281f113025636a35e8b8f2c49e",
       "bytes": 659
     },
     "AGENTS.md": {
-      "sha256": "519fc59183f0a484e2bc27d74aefd070db9b44dd4ccbd07d7b1f7dfeba00b0cd",
-      "bytes": 7266
+      "sha256": "a14d092434a8a72d97f8b1e327040303deac2d4c30748c4c7e5dd2316070d258",
+      "bytes": 7332
     },
     "roadmap.md": {
-      "sha256": "d285ef843038ebdb075eb71eb9fbeaf68f0c43da3cfc4e342d3e9e750ae0a525",
-      "bytes": 17765
+      "sha256": "56392c14fb660956b323490032731f6ac8d01ac6c532745b4daa733f47435f76",
+      "bytes": 17995
     }
   }
 }
