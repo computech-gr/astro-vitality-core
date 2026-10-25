@@ -34,7 +34,7 @@ export const askSyntheticEvidence = createServerFn({ method: "POST" })
     const response = await answerSyntheticQuestion(data, {
       enabled: mode !== "disabled",
       productionSynthetic: mode === "production-synthetic",
-      permanentResearch: process.env['MITO_MEDICAL_RESEARCH_POLICY_ENABLED'] === 'true',
+      permanentResearch: process.env["MITO_MEDICAL_RESEARCH_POLICY_ENABLED"] === "true",
       apiKey: process.env["OPENAI_API_KEY"],
       model: process.env["MITO_MEDICAL_AI_MODEL"],
       rpc: async (name, args) =>
