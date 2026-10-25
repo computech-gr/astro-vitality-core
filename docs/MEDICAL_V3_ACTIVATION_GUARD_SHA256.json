@@ -1,0 +1,70 @@
+{
+  "algorithm": "SHA-256",
+  "scope": "Pending synthetic activation guard candidate; no production authorization",
+  "artifacts": {
+    "src/domain/health-intelligence/synthetic-activation-policy.ts": {
+      "sha256": "4419236aa656264ad295c33a7982361d087703ca4d49c6b2378fa22787745f94",
+      "bytes": 1348
+    },
+    "src/lib/synthetic-activation-guard.server.ts": {
+      "sha256": "35bfccc822d12607e151d312280d201767fc05587dd7e55742d5418729c423c3",
+      "bytes": 1537
+    },
+    "src/lib/synthetic-activation-control.functions.ts": {
+      "sha256": "1c7869ebab10406c02537b1a54d4f0d4cd0224c84879bbcfddbe0d85ebd980d4",
+      "bytes": 986
+    },
+    "src/lib/synthetic-evidence-qa.server.ts": {
+      "sha256": "b1ef703ed6c89bb50d82c9791e1ed1772f5866cabf497c2ecbb935afcdca1691",
+      "bytes": 9128
+    },
+    "src/routes/api.medical-ai-draft.ts": {
+      "sha256": "da925f68b93ec4bd9609fa10cf26752b415435b8741cc3711fc796d4747e9603",
+      "bytes": 11603
+    },
+    "src/components/synthetic-medical-review.tsx": {
+      "sha256": "1ed22f527568427672bb81aed384bb6c26966a9a9f50f7c223180c71f49c81b4",
+      "bytes": 17184
+    },
+    "tests/domain/production-synthetic-demo.test.ts": {
+      "sha256": "b02d8636cc5b79466683ae5e2667f3f4d51cab72e803818e50a01b58eaaaa960",
+      "bytes": 4827
+    },
+    "tests/domain/synthetic-activation-guard.test.ts": {
+      "sha256": "4cb4c8a8cd2827eb2a6228eaf3eaef1f3f77c2d1ee39bc8a37dbacd2956e5057",
+      "bytes": 2534
+    },
+    "scripts/test-production-synthetic-server.ts": {
+      "sha256": "464ac2898d114528c01f1fdfea630b9cf67cff0595caa3ecca68bef83cf854a0",
+      "bytes": 3857
+    },
+    "scripts/test-synthetic-activation-server.ts": {
+      "sha256": "d48700ceb09f24d1399869c5cf8b6c7a996daff1c6f154c6048261cfa4d759cf",
+      "bytes": 3928
+    },
+    "scripts/verify-synthetic-activation-guard.mjs": {
+      "sha256": "f6d814d0ef6453eb203f73225622cb81dab71d7b2c295f00f6e420065a8b6617",
+      "bytes": 12467
+    },
+    "scripts/medical-v3-static-checks.mjs": {
+      "sha256": "2f7f6271e0fd7961eff8fe9f0db0361c8532aab1fda1b7eea6e9ae9230277021",
+      "bytes": 2067
+    },
+    "supabase/pending/20261028000000_medical_demo_activation_guard.sql": {
+      "sha256": "b6568e2233c9feef338a8c0d26eba3510bcaf17185ad7d3e9a7233d59aef25fd",
+      "bytes": 15615
+    },
+    "supabase/pending/20261028000000_medical_demo_activation_guard.rollback.sql": {
+      "sha256": "b95473edf8f0cfd15b8cf5093a57a531931660281f113025636a35e8b8f2c49e",
+      "bytes": 659
+    },
+    "AGENTS.md": {
+      "sha256": "519fc59183f0a484e2bc27d74aefd070db9b44dd4ccbd07d7b1f7dfeba00b0cd",
+      "bytes": 7266
+    },
+    "roadmap.md": {
+      "sha256": "d285ef843038ebdb075eb71eb9fbeaf68f0c43da3cfc4e342d3e9e750ae0a525",
+      "bytes": 17765
+    }
+  }
+}
