@@ -220,37 +220,94 @@ run(
 value(`select medical_research_resolve('${id}','unknown-recovery-test')`);
 config();
 // Independently exercise current per-minute quotas, rollback, stale admission and both pause orderings.
-run("delete from medical_research_attempts;delete from medical_ai_quota_reservations;update medical_research_policy set active_attempt=NULL;");
-run(`insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '${actor}','mission-9d8ce8f3e5554509a0885461f9ad2e1c','crew-9806e7e611f44dc38dac5e23f7740f1a',clock_timestamp() from generate_series(1,5)`);
-check(!reserve().allowed,'five user requests per minute retained');
+run(
+  "delete from medical_research_attempts;delete from medical_ai_quota_reservations;update medical_research_policy set active_attempt=NULL;",
+);
+run(
+  `insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '${actor}','mission-9d8ce8f3e5554509a0885461f9ad2e1c','crew-9806e7e611f44dc38dac5e23f7740f1a',clock_timestamp() from generate_series(1,5)`,
+);
+check(!reserve().allowed, "five user requests per minute retained");
 run("delete from medical_ai_quota_reservations;");
-run("insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '00000000-0000-0000-0000-0000000000b1','mission-9d8ce8f3e5554509a0885461f9ad2e1c','crew-9806e7e611f44dc38dac5e23f7740f1a',clock_timestamp() from generate_series(1,20)");
-check(!reserve().allowed,'twenty mission requests per minute retained');
+run(
+  "insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '00000000-0000-0000-0000-0000000000b1','mission-9d8ce8f3e5554509a0885461f9ad2e1c','crew-9806e7e611f44dc38dac5e23f7740f1a',clock_timestamp() from generate_series(1,20)",
+);
+check(!reserve().allowed, "twenty mission requests per minute retained");
 run("delete from medical_ai_quota_reservations;");
-key=nonce();
-deny(`BEGIN;${caller}select medical_research_reserve('${sha}','${key}');DO $$BEGIN RAISE EXCEPTION 'late reserve';END$$;COMMIT;`,'late reservation failure atomically rolls back quota and hold');
-check(state().heldMicrousd===0,'partial reserve consumes no hold');
-let expired=reserve(key);
-run(`update medical_research_attempts set reserved_at=clock_timestamp()-interval '31 seconds' where id='${expired.attemptId}'`);
-check(value(`select medical_research_dispatch('${expired.attemptId}','${sha}','${key}')`)==='f','stale reservation permit expires without lifetime expiry');
+key = nonce();
+deny(
+  `BEGIN;${caller}select medical_research_reserve('${sha}','${key}');DO $$BEGIN RAISE EXCEPTION 'late reserve';END$$;COMMIT;`,
+  "late reservation failure atomically rolls back quota and hold",
+);
+check(state().heldMicrousd === 0, "partial reserve consumes no hold");
+let expired = reserve(key);
+run(
+  `update medical_research_attempts set reserved_at=clock_timestamp()-interval '31 seconds' where id='${expired.attemptId}'`,
+);
+check(
+  value(`select medical_research_dispatch('${expired.attemptId}','${sha}','${key}')`) === "f",
+  "stale reservation permit expires without lifetime expiry",
+);
 value("select medical_research_pause('expired-permit')");
-run(`update medical_research_attempts set reserved_at=clock_timestamp()-interval '3 minutes' where id='${expired.attemptId}'`);
-value(`select medical_research_resolve('${expired.attemptId}','expired-permit-recovery')`);config();
-run("delete from medical_ai_quota_reservations;");key=nonce();let racing=reserve(key);
-const waitLock=async(marker)=>{for(let i=0;i<100;i++){if(run(`select exists(select 1 from pg_stat_activity where pid<>pg_backend_pid() and query like '%${marker}%' and wait_event='PgSleep')`)==='t')return;await new Promise(r=>setTimeout(r,5));}throw Error('race lock unavailable');};
-const pausing=parallel(`BEGIN;${caller}select medical_research_pause('v2-pause-first');select pg_sleep(0.4);COMMIT;`);
-await waitLock('v2-pause-first');
-const blocked=await parallel(caller+`select medical_research_dispatch('${racing.attemptId}','${sha}','${key}')`);
-check((await pausing).code===0&&blocked.out.trim().endsWith('f'),'pause-first serializes and denies racing dispatch');
-run(`update medical_research_attempts set reserved_at=clock_timestamp()-interval '3 minutes' where id='${racing.attemptId}'`);value(`select medical_research_resolve('${racing.attemptId}','race-recovery-retained')`);config();run("delete from medical_ai_quota_reservations;");
-key=nonce();racing=reserve(key);
-const permitting=parallel(`BEGIN;${caller}select medical_research_dispatch('${racing.attemptId}','${sha}','${key}');select pg_sleep(0.4);COMMIT; -- v2-permit-first`);
-await waitLock('v2-permit-first');const afterPermit=parallel(caller+"select medical_research_pause('v2-after-permit')");
-check((await permitting).code===0&&(await afterPermit).code===0,'permit-first and pause serialize with documented residual risk');
-check(value(`select medical_research_dispatch('${racing.attemptId}','${sha}','${key}')`)==='f','no new permit after pause');
-value(`select medical_research_finish('${racing.attemptId}',2000,100,100,'success','mock','${key}')`);config();
-run("update medical_research_attempts set month=(date_trunc('month',clock_timestamp() at time zone 'UTC')-interval '1 month')::date,reserved_at=clock_timestamp()-interval '1 month';delete from medical_ai_quota_reservations;");
-check(state().heldMicrousd===0,'UTC monthly rollover retains history but starts fresh budget');
+run(
+  `update medical_research_attempts set reserved_at=clock_timestamp()-interval '3 minutes' where id='${expired.attemptId}'`,
+);
+value(`select medical_research_resolve('${expired.attemptId}','expired-permit-recovery')`);
+config();
+run("delete from medical_ai_quota_reservations;");
+key = nonce();
+let racing = reserve(key);
+const waitLock = async (marker) => {
+  for (let i = 0; i < 100; i++) {
+    if (
+      run(
+        `select exists(select 1 from pg_stat_activity where pid<>pg_backend_pid() and query like '%${marker}%' and wait_event='PgSleep')`,
+      ) === "t"
+    )
+      return;
+    await new Promise((r) => setTimeout(r, 5));
+  }
+  throw Error("race lock unavailable");
+};
+const pausing = parallel(
+  `BEGIN;${caller}select medical_research_pause('v2-pause-first');select pg_sleep(0.4);COMMIT;`,
+);
+await waitLock("v2-pause-first");
+const blocked = await parallel(
+  caller + `select medical_research_dispatch('${racing.attemptId}','${sha}','${key}')`,
+);
+check(
+  (await pausing).code === 0 && blocked.out.trim().endsWith("f"),
+  "pause-first serializes and denies racing dispatch",
+);
+run(
+  `update medical_research_attempts set reserved_at=clock_timestamp()-interval '3 minutes' where id='${racing.attemptId}'`,
+);
+value(`select medical_research_resolve('${racing.attemptId}','race-recovery-retained')`);
+config();
+run("delete from medical_ai_quota_reservations;");
+key = nonce();
+racing = reserve(key);
+const permitting = parallel(
+  `BEGIN;${caller}select medical_research_dispatch('${racing.attemptId}','${sha}','${key}');select pg_sleep(0.4);COMMIT; -- v2-permit-first`,
+);
+await waitLock("v2-permit-first");
+const afterPermit = parallel(caller + "select medical_research_pause('v2-after-permit')");
+check(
+  (await permitting).code === 0 && (await afterPermit).code === 0,
+  "permit-first and pause serialize with documented residual risk",
+);
+check(
+  value(`select medical_research_dispatch('${racing.attemptId}','${sha}','${key}')`) === "f",
+  "no new permit after pause",
+);
+value(
+  `select medical_research_finish('${racing.attemptId}',2000,100,100,'success','mock','${key}')`,
+);
+config();
+run(
+  "update medical_research_attempts set month=(date_trunc('month',clock_timestamp() at time zone 'UTC')-interval '1 month')::date,reserved_at=clock_timestamp()-interval '1 month';delete from medical_ai_quota_reservations;",
+);
+check(state().heldMicrousd === 0, "UTC monthly rollover retains history but starts fresh budget");
 run("delete from medical_ai_quota_reservations;");
 key = nonce();
 let r = reserve(key);
@@ -281,7 +338,7 @@ deny(
   "browser cannot fabricate provider recorded cost",
 );
 run(
-    "set role service_role;select set_config('request.jwt.claim.role','service_role',false);select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',1000000,100,20,1,clock_timestamp(),'22a72429-1674-4174-9b27-ba63db3c0279')",
+  "set role service_role;select set_config('request.jwt.claim.role','service_role',false);select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',1000000,100,20,1,clock_timestamp(),'22a72429-1674-4174-9b27-ba63db3c0279')",
 );
 deny(
   "set role service_role;select set_config('request.jwt.claim.role','service_role',false);select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',1,1,1,1,clock_timestamp(),'22a72429-1674-4174-9b27-ba63db3c0279')",
