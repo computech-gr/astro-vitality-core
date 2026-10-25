@@ -54,7 +54,7 @@ test("production refuses sensitive free text before any RPC or provider call", a
   expect(response.status).toBe(403);
   expect(calls).toBe(0);
 });
-test("62/66 authoritative production facts, 25-second timeout and exact citations", async () => {
+test("production stays fail-closed even with valid 62/66 evidence and enabled flags", async () => {
   const evidence = [62, 66].map((n, i) => ({
     id: `synthetic-v3-hr-00${i + 1}`,
     metric: "cv-001",
@@ -125,16 +125,16 @@ test("62/66 authoritative production facts, 25-second timeout and exact citation
     question: questions[0],
   };
   const response = await answerSyntheticQuestion(input, deps);
-  expect(response.status).toBe(200);
-  expect((await response.json()).citedIds).toEqual(["synthetic-v3-hr-001", "synthetic-v3-hr-002"]);
-  expect(sent).toBe(1);
-  expect(released).toBe(1);
+  expect(response.status).toBe(503);
+  expect((await response.json()).error).toContain("serialized outbound");
+  expect(sent).toBe(0);
+  expect(released).toBe(0);
   const timeout = await answerSyntheticQuestion(input, {
     ...deps,
     providerFetch: (async () => {
       throw new DOMException("Timeout", "TimeoutError");
     }) as typeof fetch,
   });
-  expect(timeout.status).toBe(502);
-  expect(released).toBe(2);
+  expect(timeout.status).toBe(503);
+  expect(released).toBe(0);
 });

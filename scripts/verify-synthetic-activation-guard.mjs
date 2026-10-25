@@ -164,9 +164,9 @@ console.log(
 );
 check(
   run(
-    "select attempts=1 and held_microusd=100000 and active_attempt is null from medical_demo_authorization",
+    "select attempts=0 and held_microusd=0 and active_attempt is null from medical_demo_authorization",
   ) === "t",
-  "server integration reconciles without refunding hold",
+  "production hard block consumes no provider attempt or cost hold",
 );
 run(
   "update medical_demo_authorization set attempts=0,held_microusd=0;delete from medical_demo_attempts;delete from medical_ai_quota_reservations;",

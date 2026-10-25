@@ -1,4 +1,8 @@
 /** USD micro-units. Holds are never refunded, even after usage reconciliation. */
+/** No configuration switch can attest these missing infrastructure guarantees. */
+export const SYNTHETIC_PRODUCTION_TRANSPORT_BLOCKER =
+  "Production synthetic AI denied: guaranteed provider billing and serialized outbound emergency-stop infrastructure are unavailable.";
+
 export const SYNTHETIC_ACTIVATION_POLICY = {
   model: "gpt-4.1-mini-2025-04-14",
   attempts: 10,
@@ -33,9 +37,9 @@ export function syntheticUsageMicrousd(usage: unknown): number | null {
     !Number.isSafeInteger(output) ||
     input < 0 ||
     output < 0 ||
-    input > 6144 ||
-    output > 1500
+    input > SYNTHETIC_ACTIVATION_POLICY.maxRequestBytes + SYNTHETIC_ACTIVATION_POLICY.inputOverheadTokens ||
+    output > SYNTHETIC_ACTIVATION_POLICY.outputTokens
   )
     return null;
-  return input * 10 + output * 10;
+  return input * SYNTHETIC_ACTIVATION_POLICY.inputMicrousdPerToken + output * SYNTHETIC_ACTIVATION_POLICY.outputMicrousdPerToken;
 }

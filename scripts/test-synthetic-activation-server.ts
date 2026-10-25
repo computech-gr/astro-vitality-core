@@ -1,4 +1,4 @@
-// Genuine disposable caller SQL and simulated provider, never production/live AI.
+// Production hard-block acceptance; disposable SQL is available but must not be called.
 import { execFileSync } from "node:child_process";
 import { answerSyntheticQuestion } from "../src/lib/synthetic-evidence-qa.server";
 import {
@@ -113,11 +113,11 @@ const result = await answerSyntheticQuestion(
 );
 const body = await result.json();
 if (
-  result.status !== 200 ||
-  sent !== 1 ||
-  body.citedIds.join(",") !== "synthetic-v3-hr-001,synthetic-v3-hr-002"
+  result.status !== 503 ||
+  sent !== 0 ||
+  !String(body.error).includes("serialized outbound")
 )
   throw Error(`Server guard integration failed: ${result.status}`);
 console.log(
-  "PASS: real disposable caller authority -> lifetime cost/attempt hold -> nonce dispatch -> simulated bounded provider -> exact citations -> real SQL reconciliation. Not live AI or production/browser acceptance.",
+  "PASS: enabled production path denies before any provider transmission; no toggle substitutes for missing hard guarantees. No live AI, production writes or browser acceptance.",
 );
