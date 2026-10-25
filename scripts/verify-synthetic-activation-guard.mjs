@@ -13,12 +13,14 @@ const caller=`set role authenticated;select set_config('request.jwt.claim.sub','
 const migration=readFileSync('supabase/pending/20261028000000_medical_demo_activation_guard.sql','utf8');
 const rollback=readFileSync('supabase/pending/20261028000000_medical_demo_activation_guard.rollback.sql','utf8');
 // Existing verifier leaves retaining-disabled schema; restore only inside this disposable DB.
-run(readFileSync('drizzle/migrations/0011_medical_v3_synthetic_schema_only.sql','utf8').split('CREATE OR REPLACE FUNCTION public.medical_v3_fixture_scope()')[1] ? "select 1" : "select 1");
 // Restore exact committed functions/ACL by extracting CREATE definitions from the immutable migration.
 const schema=readFileSync('drizzle/migrations/0011_medical_v3_synthetic_schema_only.sql','utf8');
 const scopeDef=schema.match(/CREATE OR REPLACE FUNCTION public\.medical_v3_fixture_scope\(\)[\s\S]*?END \$\$;/)?.[0];
 if(!scopeDef)throw Error('scope definition unavailable');
-run(scopeDef);
+const authorityDef=schema.match(/CREATE OR REPLACE FUNCTION public\.medical_v3_authoritative_evidence\(p_mission text,p_crew text\)[\s\S]*?END \$\$;/)?.[0];
+if(!authorityDef)throw Error('authority definition unavailable');
+run(scopeDef+';'+authorityDef);
+run('ALTER FUNCTION medical_v3_authoritative_evidence(text,text) SET search_path=pg_catalog,public,extensions,pg_temp');
 run(`ALTER FUNCTION medical_v3_fixture_scope() OWNER TO postgres;ALTER FUNCTION medical_v3_fixture_scope() SET search_path=pg_catalog,public,extensions,pg_temp;
  GRANT EXECUTE ON FUNCTION medical_v3_fixture_snapshot(),medical_v3_ai_evidence(text,text),medical_v3_reserve_ai(text,text) TO authenticated;
  INSERT INTO auth.users(id) VALUES('${actor}') ON CONFLICT DO NOTHING;
@@ -37,7 +39,7 @@ const nonce='a'.repeat(64);
 const reserve=()=>JSON.parse(run(caller+`select medical_demo_reserve('${sha}','${nonce}')`).split('\n').at(-1));
 check(reserve().allowed===false,'default-off empty authorization denies');
 deny(caller+`select medical_demo_authorize(now(),now()+interval '30 minutes','${actor}','owner-approval-ref','${sha}')`,'authenticated cannot activate');
-run(`select medical_demo_authorize(clock_timestamp()+interval '0.1 seconds',clock_timestamp()+interval '30 minutes 0.1 seconds','${actor}','owner-approval-ref','${sha}')` .replace("clock_timestamp()+interval '30 minutes 0.1 seconds'","t+interval '30 minutes'").replace("clock_timestamp()+interval '0.1 seconds'","t") .replace('select medical_demo_authorize','with x as (select clock_timestamp()+interval \'0.1 seconds\' t) select medical_demo_authorize')+' from x');
+run(`with x as (select clock_timestamp()+interval '0.1 seconds' t) select medical_demo_authorize(t,t+interval '30 minutes','${actor}','owner-approval-ref','${sha}') from x`);
 run('select pg_sleep(0.15)');
 deny(`select medical_demo_authorize(now()+interval '1 minute',now()+interval '31 minutes','${actor}','second-window','${sha}')`,'authorization cannot reset lifetime counters');
 const parallel=sql=>new Promise(resolve=>{const p=spawn('psql',[...base,'-c',sql],{env});let out='';p.stdout.on('data',v=>out+=v);p.on('close',code=>resolve({code,out}));});
