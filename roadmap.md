@@ -3,7 +3,8 @@
 ## Synthetic tab state patch
 
 - [x] Compare the supplied component with current source and apply scoped restoration with account/hash isolation and synthetic-only storage safeguards.
-- [ ] Run full tests, lint/security and inspect automatic typecheck/build signals; verify restoration without provider generation.
+- [x] 608 tests pass; lint has 0 errors/13 pre-existing warnings; security audit/P16 and formatting pass; automatic typecheck/build signal is build OK. Dependency audit reports existing moderate and low esbuild advisories; dependencies unchanged.
+- [ ] Signed-in loaded restoration verification is blocked: the local preview returns Authoritative synthetic source unavailable for the requesting owner's session; no configuration changes or provider generation performed.
 
 ## First permanent synthetic provider failure
 
