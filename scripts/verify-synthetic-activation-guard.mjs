@@ -70,6 +70,10 @@ run(`ALTER FUNCTION medical_v3_fixture_scope() OWNER TO postgres;ALTER FUNCTION 
  INSERT INTO auth.users(id) VALUES('${actor}') ON CONFLICT DO NOTHING;
  UPDATE mission_memberships SET user_id='${actor}' WHERE id='63470171-3a22-4075-b197-ac85b90cb0ef';
  DELETE FROM medical_ai_quota_reservations;`);
+run("GRANT EXECUTE ON FUNCTION medical_v3_reserve_ai(text,text) TO service_role");
+deny(`BEGIN;${migration}COMMIT;`, "guard refuses weakened existing function ACL dependencies");
+run("REVOKE EXECUTE ON FUNCTION medical_v3_reserve_ai(text,text) FROM service_role");
+check(run("select to_regclass('medical_demo_authorization') is null")==="t", "dependency failure creates no guard objects");
 deny(
   `BEGIN;${migration}DO $$BEGIN RAISE EXCEPTION 'late fail';END$$;COMMIT;`,
   "late schema failure rolls back all guard objects",

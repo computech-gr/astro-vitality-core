@@ -17,7 +17,7 @@ None of these bytes or migration history was changed. Existing production seed s
 
 | Artifact                                                                     | SHA-256                                                            |
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `supabase/pending/20261028000000_medical_demo_activation_guard.sql`          | `6c0ad397073469d432a3888143e30a0e718d480654454a2bc70a52aabd408dd8` |
+| `supabase/pending/20261028000000_medical_demo_activation_guard.sql`          | `b6568e2233c9feef338a8c0d26eba3510bcaf17185ad7d3e9a7233d59aef25fd` |
 | `supabase/pending/20261028000000_medical_demo_activation_guard.rollback.sql` | `b95473edf8f0cfd15b8cf5093a57a531931660281f113025636a35e8b8f2c49e` |
 
 The schema adds three locked-down operational tables and seven functions without altering the existing fifteen v3 functions/five tables. No fixture inserts or activation calls execute in the migration. An empty authorization table defaults off. No application role receives table CRUD or TRUNCATE. Only reserve, dispatch, finish and operator disable are authenticated RPCs; activation is trusted SQL-only. These operational audit records are not clinical approvals and contain no real observations, prompts, generated text or medical rationale.
@@ -51,7 +51,7 @@ Authenticated direct RPC calls can consume their own attempts with a caller-chos
 
 - Full Bun suite: **576 passed, zero failed**, across 121 files.
 - Existing production-equivalent disposable SQL: **484 assertions passed**.
-- New guard disposable SQL: **87 assertions passed**, including eight concurrent reserves, early/NULL completion, nonce mismatch, replay, independent budget exhaustion, ten-attempt cap, expiry between reserve/dispatch, operator access denial, unknown-outcome retention and repeatable retaining-disable.
+- New guard disposable SQL: **95 assertions passed**, including exact fifteen-function dependency/ACL refusal, eight concurrent reserves, early/NULL completion, nonce mismatch, replay, independent budget exhaustion, ten-attempt cap, both minute quotas, expiry between reserve/dispatch, operator access denial, revoked membership, unknown-outcome retention and repeatable retaining-disable.
 - Genuine disposable caller SQL → guard → simulated bounded provider → exact observation citations → real reconciliation: passed. This is neither live AI nor signed-in production/browser acceptance.
 - Lint: zero errors, thirteen existing warnings. Security boundary audit passed.
 - Fresh Trivy full-scope development/unfixed vulnerability and secret scan: **zero vulnerabilities, zero secrets**.
