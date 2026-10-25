@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Complete synthetic AI activation guard
+
+- [ ] Prepare default-off pending schema, retaining-disable recovery, caller-scoped server integration and exact-scope authorization instructions; do not touch production or existing fixtures.
+- [ ] Exercise attempts, cost holds, concurrency, expiry, emergency disable, authorization and recovery in disposable SQL and automated server tests.
+- [ ] Report immutable artifact fingerprints, available security validation, exact-commit CI evidence and separate production/deployment/activation approvals.
+
 ## Medical v3 schema / seed separation
 
 - [x] Persist only the independently attested snapshot dependency hash in the seed and retaining-disable artifacts; keep original approved and actual committed schema fingerprints distinct.
