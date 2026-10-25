@@ -25,12 +25,7 @@ export const getResearchAdministration = createServerFn({ method: "POST" })
       status: researchStatusSchema.parse(result.data),
       audit: audit.error
         ? []
-        : (audit.data as Array<{
-            at: string;
-            actor_id: string | null;
-            action: string;
-            details: Record<string, unknown>;
-          }>),
+        : z.array(z.object({at:z.string(),actor_id:z.string().nullable(),action:z.string()})).parse(audit.data),
       configurationEnabled: process.env["MITO_MEDICAL_RESEARCH_POLICY_ENABLED"] === "true",
       adminCredentialConfigured: Boolean(process.env["OPENAI_ADMIN_API_KEY"]),
       generationCredentialConfigured: Boolean(process.env["OPENAI_API_KEY"]),
