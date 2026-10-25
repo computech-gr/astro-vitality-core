@@ -119,6 +119,9 @@ run(
   `with x as (select clock_timestamp()+interval '0.1 seconds' t) select medical_demo_authorize(t,t+interval '30 minutes','${actor}','owner-approval-ref','${sha}') from x`,
 );
 run("select pg_sleep(0.15)");
+console.log(execFileSync("bun", ["scripts/test-synthetic-activation-server.ts"], { env, encoding: "utf8" }));
+check(run("select attempts=1 and held_microusd=100000 and active_attempt is null from medical_demo_authorization")==="t", "server integration reconciles without refunding hold");
+run("update medical_demo_authorization set attempts=0,held_microusd=0;delete from medical_demo_attempts;delete from medical_ai_quota_reservations;");
 deny(
   `select medical_demo_authorize(now()+interval '1 minute',now()+interval '31 minutes','${actor}','second-window','${sha}')`,
   "authorization cannot reset lifetime counters",
