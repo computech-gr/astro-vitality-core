@@ -2,8 +2,10 @@
 
 ## First permanent synthetic provider failure
 
-- [x] Inspect the failed attempt, published logs and request path; verify OpenAI model metadata without generation. Dispatch permission committed, but the broad exception path retained no provider HTTP status, error code or request ID; no proven request-contract correction is established.
-- [ ] Provider settlement/reconciliation is blocked by missing historical provider request evidence and administrative usage/cost access with verified project attribution. Retain the unresolved attempt and USD 0.10 hold, keep policy paused, and do not resolve/resume or generate again until this dependency is supplied.
+- [x] Inspect the failed attempt, published logs and request path; verify OpenAI model metadata without generation. Dispatch permission committed, but the broad exception path retained no provider HTTP status, error code or request ID.
+- [x] Root cause reproduced in workerd: the global `fetch` was injected as an object property and invoked as a method, raising "Illegal invocation" before any socket opened (local stand-in received 0 requests; the wrapped call received 1). Fixed with a wrapper and global-receiver invocation; added sanitized structured diagnostics and 7 tests.
+- [ ] Exact-revision Quality/Security CI on the diagnostic correction, then publish; awaiting managed GitHub synchronization.
+- [ ] Provider settlement remains application-evidenced only (runtime reproduction, 40 ms failure, no request ID); OpenAI-side request/usage evidence for 2026-10-25 06:26 UTC is unavailable without the owner's OpenAI dashboard or an administrative usage credential. Retain the unresolved attempt and USD 0.10 hold, keep policy paused; do not resolve/resume or generate until supplied.
 
 ## Permanent synthetic research AI
 
