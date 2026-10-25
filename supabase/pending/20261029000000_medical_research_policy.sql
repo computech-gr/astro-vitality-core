@@ -55,6 +55,7 @@ CREATE FUNCTION public.medical_research_is_owner() RETURNS boolean LANGUAGE sql 
 -- Trusted SQL-only provisioning, separate activation approval, never inferred from a mission role.
 CREATE FUNCTION public.medical_research_provision(p_owner uuid,p_sha text) RETURNS void LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,public,extensions,pg_temp AS $$
 DECLARE snap jsonb; BEGIN
+ PERFORM pg_advisory_xact_lock(hashtextextended('medical-research-provision',0));
  IF current_user NOT IN ('postgres','supabase_admin') OR p_owner IS NULL OR EXISTS(SELECT 1 FROM public.medical_research_policy) THEN RAISE EXCEPTION 'trusted once-only provisioning required'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.mission_memberships WHERE user_id=p_owner AND active AND role='ground_medical' AND mission_id='mission-9d8ce8f3e5554509a0885461f9ad2e1c') THEN RAISE EXCEPTION 'owner identity missing'; END IF;
  PERFORM set_config('request.jwt.claim.sub','22a72429-1674-4174-9b27-ba63db3c0279',true);
@@ -142,7 +143,7 @@ DECLARE p public.medical_research_policy; r public.medical_research_attempts; BE
 END $$;
 -- Caller is verified owner; only server invokes this with provider metadata, never browser input.
 CREATE FUNCTION public.medical_research_record_sync(p_month date,p_project text,p_cost bigint,p_input bigint,p_output bigint,p_requests bigint) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,extensions,pg_temp AS $$ BEGIN
- IF NOT public.medical_research_is_owner() OR p_month IS NULL OR p_month<>date_trunc('month',clock_timestamp() AT TIME ZONE 'UTC')::date OR p_cost IS NULL OR p_cost<0 OR p_input IS NULL OR p_input<0 OR p_output IS NULL OR p_output<0 OR p_requests IS NULL OR p_requests<0 THEN RAISE EXCEPTION 'invalid owner synchronization'; END IF;
+ IF current_setting('request.jwt.claim.role',true) IS DISTINCT FROM 'service_role' OR p_month IS NULL OR p_month<>date_trunc('month',clock_timestamp() AT TIME ZONE 'UTC')::date OR p_cost IS NULL OR p_cost<0 OR p_input IS NULL OR p_input<0 OR p_output IS NULL OR p_output<0 OR p_requests IS NULL OR p_requests<0 THEN RAISE EXCEPTION 'invalid privileged synchronization'; END IF;
  PERFORM 1 FROM public.medical_research_policy WHERE singleton AND provider_project=p_project FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'project mismatch'; END IF;
  INSERT INTO public.medical_research_provider_sync(month,project_id,recorded_microusd,provider_input_tokens,provider_output_tokens,provider_requests) VALUES(p_month,p_project,p_cost,p_input,p_output,p_requests) ON CONFLICT(month) DO UPDATE SET recorded_microusd=greatest(medical_research_provider_sync.recorded_microusd,excluded.recorded_microusd),provider_input_tokens=excluded.provider_input_tokens,provider_output_tokens=excluded.provider_output_tokens,provider_requests=excluded.provider_requests,synchronized_at=clock_timestamp();
