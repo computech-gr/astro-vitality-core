@@ -15,6 +15,19 @@ export const getSyntheticActivationStatus = createServerFn({ method: "POST" })
         args: Record<string, unknown>,
       ) => PromiseLike<{ data: unknown; error: unknown }>;
     };
+    const permanent = process.env["MITO_MEDICAL_RESEARCH_POLICY_ENABLED"] === "true";
+    if (permanent) {
+      const { researchStatusSchema } =
+        await import("@/domain/health-intelligence/synthetic-research-policy");
+      const result = await client.rpc("medical_research_status", {});
+      const parsed = researchStatusSchema.safeParse(result.data);
+      return {
+        configurationEnabled,
+        revision: revision && /^[a-f0-9]{40}$/.test(revision) ? revision : null,
+        guard: null,
+        research: !result.error && parsed.success ? parsed.data : null,
+      };
+    }
     const result = await client.rpc("medical_demo_status", {});
     const parsed = z
       .object({
@@ -34,6 +47,7 @@ export const getSyntheticActivationStatus = createServerFn({ method: "POST" })
       // Operator-supplied deployment label, not independent proof of deployed Git bytes.
       revision: revision && /^[a-f0-9]{40}$/.test(revision) ? revision : null,
       guard: !result.error && parsed.success ? parsed.data : null,
+      research: null,
     };
   });
 
@@ -50,7 +64,12 @@ export const emergencyDisableSyntheticAI = createServerFn({ method: "POST" })
     const client = context.supabase as unknown as {
       rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ error: unknown }>;
     };
-    const result = await client.rpc("medical_demo_disable", { p_ref: data.reference });
+    const result = await client.rpc(
+      process.env["MITO_MEDICAL_RESEARCH_POLICY_ENABLED"] === "true"
+        ? "medical_research_pause"
+        : "medical_demo_disable",
+      { p_ref: data.reference },
+    );
     if (result.error)
       throw new Error(
         "Emergency disable not confirmed; use trusted SQL retaining-disable procedure.",

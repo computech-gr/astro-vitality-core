@@ -16,6 +16,7 @@ import { Route as ApiMedicalAiDraftRouteImport } from './routes/api.medical-ai-d
 import { Route as ApiNasaResearchRouteImport } from './routes/api.nasa-research'
 import { Route as CompetitionDemoVideoRouteImport } from './routes/competition.demo-video'
 import { Route as CompetitionTeamRouteImport } from './routes/competition.team'
+import { Route as MissionAiAdministrationRouteImport } from './routes/mission.ai-administration'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
 import { Route as MissionBehavioralHealthRouteImport } from './routes/mission.behavioral-health'
 import { Route as MissionBoneHealthRouteImport } from './routes/mission.bone-health'
@@ -78,6 +79,11 @@ const CompetitionDemoVideoRoute = CompetitionDemoVideoRouteImport.update({
 const CompetitionTeamRoute = CompetitionTeamRouteImport.update({
   id: '/competition/team',
   path: '/competition/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionAiAdministrationRoute = MissionAiAdministrationRouteImport.update({
+  id: '/mission/ai-administration',
+  path: '/mission/ai-administration',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionAlertsRoute = MissionAlertsRouteImport.update({
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/competition/team': typeof CompetitionTeamRoute
+  '/mission/ai-administration': typeof MissionAiAdministrationRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/competition/team': typeof CompetitionTeamRoute
+  '/mission/ai-administration': typeof MissionAiAdministrationRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
   '/competition/team': typeof CompetitionTeamRoute
+  '/mission/ai-administration': typeof MissionAiAdministrationRoute
   '/mission/alerts': typeof MissionAlertsRoute
   '/mission/behavioral-health': typeof MissionBehavioralHealthRoute
   '/mission/bone-health': typeof MissionBoneHealthRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/api/nasa-research'
     | '/competition/demo-video'
     | '/competition/team'
+    | '/mission/ai-administration'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/nasa-research'
     | '/competition/demo-video'
     | '/competition/team'
+    | '/mission/ai-administration'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/api/nasa-research'
     | '/competition/demo-video'
     | '/competition/team'
+    | '/mission/ai-administration'
     | '/mission/alerts'
     | '/mission/behavioral-health'
     | '/mission/bone-health'
@@ -445,6 +457,7 @@ export interface RootRouteChildren {
   ApiNasaResearchRoute: typeof ApiNasaResearchRoute
   CompetitionDemoVideoRoute: typeof CompetitionDemoVideoRoute
   CompetitionTeamRoute: typeof CompetitionTeamRoute
+  MissionAiAdministrationRoute: typeof MissionAiAdministrationRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
   MissionBehavioralHealthRoute: typeof MissionBehavioralHealthRoute
   MissionBoneHealthRoute: typeof MissionBoneHealthRoute
@@ -523,6 +536,13 @@ declare module '@tanstack/react-router' {
       path: '/competition/team'
       fullPath: '/competition/team'
       preLoaderRoute: typeof CompetitionTeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/ai-administration': {
+      id: '/mission/ai-administration'
+      path: '/mission/ai-administration'
+      fullPath: '/mission/ai-administration'
+      preLoaderRoute: typeof MissionAiAdministrationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission/alerts': {
@@ -726,6 +746,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNasaResearchRoute: ApiNasaResearchRoute,
   CompetitionDemoVideoRoute: CompetitionDemoVideoRoute,
   CompetitionTeamRoute: CompetitionTeamRoute,
+  MissionAiAdministrationRoute: MissionAiAdministrationRoute,
   MissionAlertsRoute: MissionAlertsRoute,
   MissionBehavioralHealthRoute: MissionBehavioralHealthRoute,
   MissionBoneHealthRoute: MissionBoneHealthRoute,
