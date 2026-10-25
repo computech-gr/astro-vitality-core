@@ -270,6 +270,126 @@ export type Database = {
           },
         ]
       }
+      medical_demo_attempts: {
+        Row: {
+          actor_id: string
+          dispatched_at: string | null
+          evidence_sha: string
+          finished_at: string | null
+          hold_microusd: number
+          id: string
+          nonce_sha: string
+          outcome: string
+          quota_id: string
+          reserved_at: string
+          usage_microusd: number | null
+        }
+        Insert: {
+          actor_id: string
+          dispatched_at?: string | null
+          evidence_sha: string
+          finished_at?: string | null
+          hold_microusd?: number
+          id?: string
+          nonce_sha: string
+          outcome?: string
+          quota_id: string
+          reserved_at?: string
+          usage_microusd?: number | null
+        }
+        Update: {
+          actor_id?: string
+          dispatched_at?: string | null
+          evidence_sha?: string
+          finished_at?: string | null
+          hold_microusd?: number
+          id?: string
+          nonce_sha?: string
+          outcome?: string
+          quota_id?: string
+          reserved_at?: string
+          usage_microusd?: number | null
+        }
+        Relationships: []
+      }
+      medical_demo_authorization: {
+        Row: {
+          active_attempt: string | null
+          actor_id: string
+          attempts: number
+          authorization_ref: string
+          authorized_at: string
+          disabled_at: string | null
+          disabled_by: string | null
+          enabled: boolean
+          ends_at: string
+          evidence_sha: string
+          held_microusd: number
+          membership_id: string
+          operator_id: string
+          singleton: boolean
+          starts_at: string
+        }
+        Insert: {
+          active_attempt?: string | null
+          actor_id: string
+          attempts?: number
+          authorization_ref: string
+          authorized_at?: string
+          disabled_at?: string | null
+          disabled_by?: string | null
+          enabled?: boolean
+          ends_at: string
+          evidence_sha: string
+          held_microusd?: number
+          membership_id: string
+          operator_id: string
+          singleton?: boolean
+          starts_at: string
+        }
+        Update: {
+          active_attempt?: string | null
+          actor_id?: string
+          attempts?: number
+          authorization_ref?: string
+          authorized_at?: string
+          disabled_at?: string | null
+          disabled_by?: string | null
+          enabled?: boolean
+          ends_at?: string
+          evidence_sha?: string
+          held_microusd?: number
+          membership_id?: string
+          operator_id?: string
+          singleton?: boolean
+          starts_at?: string
+        }
+        Relationships: []
+      }
+      medical_demo_control_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          at: string
+          id: string
+          reference: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          at?: string
+          id?: string
+          reference: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          at?: string
+          id?: string
+          reference?: string
+        }
+        Relationships: []
+      }
       medical_v3_fixture_observations: {
         Row: {
           domain: string
@@ -1113,6 +1233,31 @@ export type Database = {
         Args: { p_event: Json; p_idempotency_key: string }
         Returns: Json
       }
+      medical_demo_authorize: {
+        Args: {
+          p_end: string
+          p_operator: string
+          p_ref: string
+          p_sha: string
+          p_start: string
+        }
+        Returns: undefined
+      }
+      medical_demo_disable: { Args: { p_ref: string }; Returns: undefined }
+      medical_demo_dispatch: {
+        Args: { p_attempt: string; p_nonce: string; p_sha: string }
+        Returns: boolean
+      }
+      medical_demo_finish: {
+        Args: { p_attempt: string; p_nonce: string; p_usage: number }
+        Returns: boolean
+      }
+      medical_demo_reserve: {
+        Args: { p_nonce: string; p_sha: string }
+        Returns: Json
+      }
+      medical_demo_scope: { Args: never; Returns: boolean }
+      medical_demo_status: { Args: never; Returns: Json }
       medical_v3_ai_evidence: {
         Args: { p_crew: string; p_mission: string }
         Returns: Json
