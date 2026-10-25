@@ -174,7 +174,11 @@ export function MedicalAdvisorWorkbench({
           value={draftText}
           onChange={(e) => setDraftText(e.target.value)}
         />
-        <Button type="button" onClick={start} disabled={!report.observations.length}>
+        <Button
+          type="button"
+          onClick={start}
+          disabled={!report.observations.length || !draftText.trim()}
+        >
           Capture unverified draft
         </Button>
         {review && (
