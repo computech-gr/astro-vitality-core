@@ -4,7 +4,8 @@
 
 - [x] Read-only production verification: exact fixtures, scope membership, fifteen function fingerprints/allowlist, five RLS tables, persistence denial and existing minute quotas; pending lifetime/window/disable guard absent.
 - [x] Verify current source SHA 853ba6a6bbf5d90b3a3bdfa648add44b4d692b84: Quality (including typecheck/production build) and Security Scan passed; published server revision and effective flag values remain unattested.
-- [ ] Activation remains NO-GO: review the plan, resolve mandatory billing/outbound-stop guarantees in a separately reviewed implementation, and approve exact schema/recovery, deployment and activation window before any production changes or provider calls.
+- [x] Plan reviewed and approved for default-off investigation only; 13 focused Bun tests passed. No application code, SQL, flags or provider requests changed.
+- [ ] Activation remains NO-GO: independently supported billing/outbound-stop guarantees remain unavailable in existing infrastructure; further implementation requires those guarantees, followed by exact schema/recovery, deployment and window approvals. Published server revision/effective flags and provider configuration remain unattested.
 
 ## Complete synthetic AI activation guard
 
