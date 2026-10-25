@@ -1,25 +1,15 @@
 # Medical v3 production implementation and deployment checklist
 
-## 1. Verified baseline and deployment difference
+## 1. Verified baseline and production differences
 
-Inspected 25 October 2026. Implementation baseline: `8fdba5e6e023c9fe75ed8d0f65d16bb0f7a87eeb`. This is the current tested source, **not a future activation implementation commit**.
+Inspected 25 October 2026. Baseline `8fdba5e6e023c9fe75ed8d0f65d16bb0f7a87eeb`, not a future activation commit.
 
-- [Quality 40163880158](https://github.com/computech-gr/astro-vitality-core/actions/runs/40163880158): successful, including tests, typecheck, lint, formatting and production build.
-- [Security Scan 40163880144](https://github.com/computech-gr/astro-vitality-core/actions/runs/40163880144): successful vulnerability/secret scan.
-- Medical v3 Release Gate 40163880153 fails its scientific/private-evidence step. P3663, P3664 and P20 remain BLOCKED; this is not a substitute for Quality/Security and is not changed by this plan.
-- Fresh focused safety tests: 13 passed, 49 expectations. The guard report records historical 577 tests and 103 guard SQL assertions; these were not freshly rerun for this planning task.
-
-| Area | Verified production | Tested repository candidate / required delta |
-|---|---|---|
-| Fixtures | One source, two non-human receipts, exact 62/66 bpm observations; zero reservations/review events | Preserve all rows; no reseeding |
-| Scope | Existing active ground-medical membership matches fixed account/mission/crew | Recheck at authorization, reservation and dispatch |
-| Existing v3 | Fifteen function hashes match guard prerequisites; five postgres-owned RLS tables; four authenticated RPCs | Preserve all definitions and journal entries |
-| Activation guard | Zero `medical_demo_*` tables/functions | Add three operational tables/six functions; initially empty/off |
-| Lifetime/window/stop | Guard absent | Ten nonrefundable attempts, fixed 30-minute window, SQL-serialized disable |
-| Server deployment | Public site returns 200; HTML metadata names `853ba6a6bbf5d90b3a3bdfa648add44b4d692b84` | Metadata does not attest server code or effective flags. Publish approved exact implementation and record its deployment evidence |
-| Provider transmission | Effective production flags/server revision not attested | Current source unconditionally denies production Q&A before RPC/fetch. Flags or SQL alone cannot make it operational |
-
-Live base table ACLs also include the infrastructure `sandbox_exec` role with SELECT/INSERT. This is not an application-role grant; preserve it and document the trusted infrastructure boundary. Owner/infrastructure privilege is outside protection against application callers.
+- [Quality 40163880158](https://github.com/computech-gr/astro-vitality-core/actions/runs/40163880158) passed tests/typecheck/lint/format/production build; [Security 40163880144](https://github.com/computech-gr/astro-vitality-core/actions/runs/40163880144) passed. Fresh focused tests: 13 passed/49 expectations. Historical report: 577 tests/103 guard SQL assertions, not freshly rerun.
+- Production: one synthetic source/two receipts, exact 62/66 bpm observations, active fixed ground-medical membership, zero reservations/review events. Fifteen base function hashes match prerequisites; five postgres-owned RLS tables. Guard tables/functions absent.
+- Candidate adds three operational tables/six functions for ten attempts, fixed window and SQL-serialized stop. Source still unconditionally denies production transmission: migration/flags alone cannot unblock it.
+- Public site returns 200; HTML metadata names `853ba6a6bbf5d90b3a3bdfa648add44b4d692b84`, not proof of served server code/flags. Approved publication must attest exact implementation/configuration.
+- Live base ACLs include trusted infrastructure `sandbox_exec` SELECT/INSERT; preserve/document this non-application boundary.
+- Release Gate 40163880153 fails scientific/private evidence. P3663/P3664/P20 stay BLOCKED; they are independent of this demo and Quality/Security.
 
 ## 2. Exact artifacts — no substitution
 
