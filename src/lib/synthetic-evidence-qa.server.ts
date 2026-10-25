@@ -3,8 +3,9 @@ import { assertProductionSyntheticRequest } from "@/domain/health-intelligence/p
 import {
   boundedSyntheticPayload,
   syntheticUsageMicrousd,
-  SYNTHETIC_PRODUCTION_TRANSPORT_BLOCKER,
+  SYNTHETIC_GUARD_VERSION,
 } from "@/domain/health-intelligence/synthetic-activation-policy";
+import { assertSyntheticTokenBudget, assertSyntheticOutputBudget } from "./synthetic-token-budget.server";
 import {
   reserveSyntheticAttempt,
   permitSyntheticTransmission,
@@ -64,10 +65,14 @@ export async function answerSyntheticQuestion(
     } catch {
       return fail("Only the approved scope and predefined synthetic questions are allowed", 403);
     }
-    // A database permit and external fetch cannot share a transaction here.
-    // Deny before evidence reads, reservation or transmission; flags/owner acknowledgment
-    // cannot override absent hard billing and outbound serialization guarantees.
-    return fail(SYNTHETIC_PRODUCTION_TRANSPORT_BLOCKER, 503);
+    try {
+      const guard = await deps.rpc("medical_demo_status", {});
+      const status = guard.data as { version?: string; eligible?: boolean } | null;
+      if (guard.error || status?.version !== SYNTHETIC_GUARD_VERSION || status.eligible !== true)
+        return fail("Synthetic guard absent, disabled, expired or unavailable; no data sent", 503);
+    } catch {
+      return fail("Synthetic guard unavailable; no data sent", 503);
+    }
   }
   if (!deps.apiKey) return fail("Existing OpenAI provider is not configured; no data sent", 503);
   const source = await deps.rpc("medical_v3_fixture_snapshot", {});
@@ -139,6 +144,7 @@ export async function answerSyntheticQuestion(
     providerBody = deps.productionSynthetic
       ? boundedSyntheticPayload(payload)
       : JSON.stringify(payload);
+    if (deps.productionSynthetic) assertSyntheticTokenBudget(providerBody);
   } catch {
     return fail("Input exceeds reserved spending bounds; no data sent", 413);
   }
@@ -167,6 +173,7 @@ export async function answerSyntheticQuestion(
   let result: Response;
   let usage: number | null = null;
   try {
+    // SQL disable denies later permits. A prior permit may transmit after disable commits.
     if (attempt) await permitSyntheticTransmission(deps.rpc, attempt, snapshot.sha256, nonce);
     const upstream = await deps.providerFetch(MEDICAL_OPENAI_RESPONSES_URL, {
       method: "POST",
@@ -196,6 +203,7 @@ export async function answerSyntheticQuestion(
           .filter((c) => c.type === "output_text")
           .map((c) => c.text ?? "")
           .join("") ?? "";
+      if (attempt) assertSyntheticOutputBudget(raw);
       try {
         const generatedAt = deps.now();
         if (!/(?:Z|\+00:00)$/.test(generatedAt) || !Number.isFinite(Date.parse(generatedAt)))
