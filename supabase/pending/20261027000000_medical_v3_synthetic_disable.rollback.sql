@@ -25,7 +25,8 @@ DO $rollback_guard$ BEGIN
  ) expected(signature,sha) LEFT JOIN pg_proc p ON p.oid=to_regprocedure(expected.signature)
  WHERE p.oid IS NULL OR p.proowner<>'postgres'::regrole
  OR p.proconfig IS DISTINCT FROM ARRAY['search_path=pg_catalog, public, extensions, pg_temp']
- OR (p.proname<>'medical_v3_authoritative_evidence' AND encode(extensions.digest(convert_to(pg_get_functiondef(p.oid),'UTF8'),'sha256'),'hex')<>expected.sha)
+ OR (encode(extensions.digest(convert_to(pg_get_functiondef(p.oid),'UTF8'),'sha256'),'hex')<>expected.sha
+ AND NOT (p.proname='medical_v3_authoritative_evidence' AND encode(extensions.digest(convert_to(pg_get_functiondef(p.oid),'UTF8'),'sha256'),'hex')='976002bb31a7874cf6ca0c002a6e503765bcbd7cd4e812cbcff8c078ad57ade2'))
  OR has_function_privilege('anon',p.oid,'EXECUTE') OR has_function_privilege('service_role',p.oid,'EXECUTE')
  )
  THEN RAISE EXCEPTION 'approved schema function fingerprint/permission dependency mismatch'; END IF;
