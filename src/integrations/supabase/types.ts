@@ -140,6 +140,283 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_advisor_review_events: {
+        Row: {
+          actor_user_id: string
+          canonical_evidence: string | null
+          created_at: string
+          crew_member_id: string
+          draft_text: string
+          event_type: string
+          evidence_sha256: string
+          final_text: string
+          id: string
+          mission_id: string
+          model_metadata: Json
+          previous_event_id: string | null
+          provenance: string
+          rationale: string
+          request_id: string
+          request_sha256: string
+          revision: number
+          source_record_ids: string[]
+        }
+        Insert: {
+          actor_user_id: string
+          canonical_evidence?: string | null
+          created_at?: string
+          crew_member_id: string
+          draft_text: string
+          event_type: string
+          evidence_sha256: string
+          final_text: string
+          id?: string
+          mission_id: string
+          model_metadata?: Json
+          previous_event_id?: string | null
+          provenance?: string
+          rationale: string
+          request_id: string
+          request_sha256: string
+          revision: number
+          source_record_ids?: string[]
+        }
+        Update: {
+          actor_user_id?: string
+          canonical_evidence?: string | null
+          created_at?: string
+          crew_member_id?: string
+          draft_text?: string
+          event_type?: string
+          evidence_sha256?: string
+          final_text?: string
+          id?: string
+          mission_id?: string
+          model_metadata?: Json
+          previous_event_id?: string | null
+          provenance?: string
+          rationale?: string
+          request_id?: string
+          request_sha256?: string
+          revision?: number
+          source_record_ids?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_advisor_review_events_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_advisor_review_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_advisor_review_events_previous_event_id_fkey"
+            columns: ["previous_event_id"]
+            isOneToOne: false
+            referencedRelation: "medical_advisor_review_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_ai_quota_reservations: {
+        Row: {
+          actor_user_id: string
+          crew_member_id: string
+          id: string
+          lease_until: string
+          mission_id: string
+          released_at: string | null
+          reserved_at: string
+        }
+        Insert: {
+          actor_user_id: string
+          crew_member_id: string
+          id?: string
+          lease_until?: string
+          mission_id: string
+          released_at?: string | null
+          reserved_at?: string
+        }
+        Update: {
+          actor_user_id?: string
+          crew_member_id?: string
+          id?: string
+          lease_until?: string
+          mission_id?: string
+          released_at?: string | null
+          reserved_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_ai_quota_reservations_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_ai_quota_reservations_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_v3_fixture_observations: {
+        Row: {
+          domain: string
+          id: string
+          metric_id: string
+          observed_at: string
+          source_id: string
+          supersedes_id: string | null
+          unit: string
+          value: string
+        }
+        Insert: {
+          domain: string
+          id: string
+          metric_id: string
+          observed_at: string
+          source_id: string
+          supersedes_id?: string | null
+          unit: string
+          value: string
+        }
+        Update: {
+          domain?: string
+          id?: string
+          metric_id?: string
+          observed_at?: string
+          source_id?: string
+          supersedes_id?: string | null
+          unit?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_v3_fixture_observations_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "medical_v3_fixture_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_v3_fixture_observations_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "medical_v3_fixture_observations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_v3_fixture_receipts: {
+        Row: {
+          catalog_sha256: string
+          decision: string
+          id: string
+          observation_id: string
+          previous_id: string | null
+          receipt_kind: string
+          reviewed_at: string
+          revision: number
+          source_sha256: string
+        }
+        Insert: {
+          catalog_sha256: string
+          decision: string
+          id: string
+          observation_id: string
+          previous_id?: string | null
+          receipt_kind: string
+          reviewed_at: string
+          revision: number
+          source_sha256: string
+        }
+        Update: {
+          catalog_sha256?: string
+          decision?: string
+          id?: string
+          observation_id?: string
+          previous_id?: string | null
+          receipt_kind?: string
+          reviewed_at?: string
+          revision?: number
+          source_sha256?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_v3_fixture_receipts_observation_id_fkey"
+            columns: ["observation_id"]
+            isOneToOne: false
+            referencedRelation: "medical_v3_fixture_observations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_v3_fixture_receipts_previous_id_fkey"
+            columns: ["previous_id"]
+            isOneToOne: false
+            referencedRelation: "medical_v3_fixture_receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_v3_fixture_sources: {
+        Row: {
+          catalog_sha256: string
+          crew_member_id: string
+          id: string
+          literal_document: Json
+          mission_id: string
+          provenance: string
+          source_sha256: string
+          version: string
+        }
+        Insert: {
+          catalog_sha256: string
+          crew_member_id: string
+          id: string
+          literal_document: Json
+          mission_id: string
+          provenance: string
+          source_sha256: string
+          version: string
+        }
+        Update: {
+          catalog_sha256?: string
+          crew_member_id?: string
+          id?: string
+          literal_document?: Json
+          mission_id?: string
+          provenance?: string
+          source_sha256?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_v3_fixture_sources_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_v3_fixture_sources_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_bootstrap_control: {
         Row: {
           armed_at: string
@@ -834,6 +1111,60 @@ export type Database = {
       }
       ingest_mission_event: {
         Args: { p_event: Json; p_idempotency_key: string }
+        Returns: Json
+      }
+      medical_v3_ai_evidence: {
+        Args: { p_crew: string; p_mission: string }
+        Returns: Json
+      }
+      medical_v3_append_review: {
+        Args: {
+          p_crew: string
+          p_draft: string
+          p_final: string
+          p_mission: string
+          p_previous: string
+          p_rationale: string
+          p_request: string
+          p_sha: string
+          p_type: string
+        }
+        Returns: Json
+      }
+      medical_v3_authoritative_evidence: {
+        Args: { p_crew: string; p_mission: string }
+        Returns: {
+          canonical_text: string
+          source_ids: string[]
+        }[]
+      }
+      medical_v3_canonical_json: { Args: { p: Json }; Returns: string }
+      medical_v3_fixture_scope: {
+        Args: never
+        Returns: {
+          crew_member_id: string
+          mission_id: string
+        }[]
+      }
+      medical_v3_fixture_snapshot: { Args: never; Returns: Json }
+      medical_v3_fixture_text_valid: {
+        Args: { p_canonical: string; p_text: string }
+        Returns: boolean
+      }
+      medical_v3_has_scope: {
+        Args: { p_crew: string; p_mission: string }
+        Returns: boolean
+      }
+      medical_v3_release_ai: {
+        Args: { p_reservation: string }
+        Returns: undefined
+      }
+      medical_v3_reserve_ai: {
+        Args: { p_crew: string; p_mission: string }
+        Returns: Json
+      }
+      medical_v3_review_history: {
+        Args: { p_crew: string; p_mission: string }
         Returns: Json
       }
       mission_role_conflict: {
