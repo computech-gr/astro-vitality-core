@@ -116,7 +116,8 @@ BEGIN
  SELECT * INTO a FROM public.medical_demo_authorization WHERE singleton FOR UPDATE;
  SELECT * INTO r FROM public.medical_demo_attempts WHERE id=p_attempt FOR UPDATE;
  IF r.actor_id IS DISTINCT FROM auth.uid() OR r.nonce_sha IS DISTINCT FROM encode(extensions.digest(p_nonce,'sha256'),'hex')
- OR r.finished_at IS NOT NULL THEN RETURN false; END IF;
+ OR r.finished_at IS NOT NULL OR r.outcome IS DISTINCT FROM 'dispatched' OR r.dispatched_at IS NULL
+ OR a.active_attempt IS DISTINCT FROM p_attempt THEN RETURN false; END IF;
  IF p_usage IS NOT NULL AND (p_usage<0 OR p_usage>100000) THEN
  UPDATE public.medical_demo_authorization SET enabled=false,disabled_at=clock_timestamp() WHERE singleton;
  p_usage:=NULL;
