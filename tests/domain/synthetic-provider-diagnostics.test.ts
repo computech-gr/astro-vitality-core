@@ -172,11 +172,13 @@ test("illegal invocation is classified as provably not transmitted", () => {
 });
 
 test("malformed provider JSON fails at the parse stage without logging the body", async () => {
-  const r = await run((async () =>
-    new Response("not json 62 bpm", {
-      status: 200,
-      headers: { "x-request-id": "req_parse" },
-    })) as typeof fetch);
+  const r = await run(
+    (async () =>
+      new Response("not json 62 bpm", {
+        status: 200,
+        headers: { "x-request-id": "req_parse" },
+      })) as typeof fetch,
+  );
   expect(r.response.status).toBe(502);
   const e = r.events[0]!;
   expect(e.failureStage).toBe("provider_response_parse");

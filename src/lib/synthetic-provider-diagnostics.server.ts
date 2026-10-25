@@ -94,7 +94,8 @@ export function transmissionAfterException(
   cls: ExceptionClass,
 ): TransmissionState {
   if (stage === "dispatch_permit") return "not_attempted";
-  if (stage === "provider_transmit") return cls === "illegal_invocation" ? "not_transmitted" : "unknown";
+  if (stage === "provider_transmit")
+    return cls === "illegal_invocation" ? "not_transmitted" : "unknown";
   return "responded";
 }
 
