@@ -2,9 +2,10 @@
 
 ## Medical v3 schema / seed separation
 
-- [ ] Prepare schema-only candidate, atomic exact-scope data seed and separately authorized non-destructive rollback/recovery; preserve approved originals.
-- [ ] Validate fingerprints, hostile production-default privileges, idempotency, missing prerequisites, failure rollback, quotas and existing security suites in disposable SQL.
-- [ ] Report exact artifacts/results and separate schema/seed approval scopes; production execution and all activations remain unauthorized.
+- [x] Prepare schema-only candidate, atomic exact-scope data seed and separately authorized non-destructive rollback/recovery; preserve approved originals.
+- [x] Validate fingerprints, hostile production-default privileges, idempotency, missing prerequisites, failure rollback, quotas and existing security suites in disposable SQL: 863 SQL assertions and 565 tests pass.
+- [x] Report exact artifacts/results and separate schema/seed approval scopes in docs/MEDICAL_V3_SPLIT_MIGRATION_AND_SEED.md; production execution and all activations remain unauthorized.
+- [ ] Execute only after new separate owner approvals; seed transport acceptance of the exact atomic DO statement remains undocumented/unverified and must stop safely on rejection.
 
 ## Final permission hardening
 
