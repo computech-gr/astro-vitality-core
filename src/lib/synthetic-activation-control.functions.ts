@@ -7,16 +7,28 @@ export const getSyntheticActivationStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const revision = process.env["MITO_MEDICAL_DEPLOYMENT_REVISION"];
-    const configurationEnabled = process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] === "true";
+    const configurationEnabled =
+      process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] === "true";
     const client = context.supabase as unknown as {
-      rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
+      rpc: (
+        name: string,
+        args: Record<string, unknown>,
+      ) => PromiseLike<{ data: unknown; error: unknown }>;
     };
     const result = await client.rpc("medical_demo_status", {});
-    const parsed = z.object({
-      version: z.literal(SYNTHETIC_GUARD_VERSION), enabled: z.boolean(), eligible: z.boolean(),
-      attempts: z.number().int().min(0).max(10), heldMicrousd: z.number().int().min(0).max(1_000_000),
-      startsAt: z.string().nullable(), endsAt: z.string().nullable(), operatorId: z.uuid().nullable(),
-    }).strict().safeParse(result.data);
+    const parsed = z
+      .object({
+        version: z.literal(SYNTHETIC_GUARD_VERSION),
+        enabled: z.boolean(),
+        eligible: z.boolean(),
+        attempts: z.number().int().min(0).max(10),
+        heldMicrousd: z.number().int().min(0).max(1_000_000),
+        startsAt: z.string().nullable(),
+        endsAt: z.string().nullable(),
+        operatorId: z.uuid().nullable(),
+      })
+      .strict()
+      .safeParse(result.data);
     return {
       configurationEnabled,
       // Operator-supplied deployment label, not independent proof of deployed Git bytes.

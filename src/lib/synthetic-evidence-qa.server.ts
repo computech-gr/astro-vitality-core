@@ -5,7 +5,10 @@ import {
   syntheticUsageMicrousd,
   SYNTHETIC_GUARD_VERSION,
 } from "@/domain/health-intelligence/synthetic-activation-policy";
-import { assertSyntheticTokenBudget, assertSyntheticOutputBudget } from "./synthetic-token-budget.server";
+import {
+  assertSyntheticTokenBudget,
+  assertSyntheticOutputBudget,
+} from "./synthetic-token-budget.server";
 import {
   reserveSyntheticAttempt,
   permitSyntheticTransmission,

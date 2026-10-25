@@ -9,7 +9,10 @@ import {
   exportSyntheticMedicalHistory,
 } from "@/lib/medical-governance.functions";
 import { askSyntheticEvidence } from "@/lib/synthetic-evidence-qa.functions";
-import { emergencyDisableSyntheticAI, getSyntheticActivationStatus } from "@/lib/synthetic-activation-control.functions";
+import {
+  emergencyDisableSyntheticAI,
+  getSyntheticActivationStatus,
+} from "@/lib/synthetic-activation-control.functions";
 import { OctagonX } from "lucide-react";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import { SYNTHETIC_DEMO_QUESTIONS } from "@/domain/health-intelligence/production-synthetic-demo";
@@ -26,7 +29,9 @@ export function SyntheticMedicalReview() {
   const disableAI = useServerFn(emergencyDisableSyntheticAI);
   const activationStatus = useServerFn(getSyntheticActivationStatus);
   const generationEpoch = useRef(0);
-  const [guardStatus, setGuardStatus] = useState<Awaited<ReturnType<typeof activationStatus>> | null>(null);
+  const [guardStatus, setGuardStatus] = useState<Awaited<
+    ReturnType<typeof activationStatus>
+  > | null>(null);
   const [question, setQuestion] = useState<string>(SYNTHETIC_DEMO_QUESTIONS[0]);
   const [persistent, setPersistent] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -247,14 +252,24 @@ export function SyntheticMedicalReview() {
       <p role="status" className="break-words text-sm">
         {status}
       </p>
-      {guardStatus && <dl className="grid gap-1 text-sm">
-        <div>Production AI: {guardStatus.configurationEnabled ? "configured" : "off"}</div>
-        <div>Guard: {guardStatus.guard?.version ?? "unavailable"}</div>
-        <div>Attempts: {guardStatus.guard?.attempts ?? 0} / 10 · Estimated holds: USD {((guardStatus.guard?.heldMicrousd ?? 0) / 1_000_000).toFixed(2)} / 1.00</div>
-        <div className="break-all">UTC window: {guardStatus.guard?.startsAt ?? "not authorized"} — {guardStatus.guard?.endsAt ?? "not authorized"}</div>
-        <div className="break-all">Operator: {guardStatus.guard?.operatorId ?? "not authorized"}</div>
-        <div className="break-all">Deployment label: {guardStatus.revision ?? "unattested"}</div>
-      </dl>}
+      {guardStatus && (
+        <dl className="grid gap-1 text-sm">
+          <div>Production AI: {guardStatus.configurationEnabled ? "configured" : "off"}</div>
+          <div>Guard: {guardStatus.guard?.version ?? "unavailable"}</div>
+          <div>
+            Attempts: {guardStatus.guard?.attempts ?? 0} / 10 · Estimated holds: USD{" "}
+            {((guardStatus.guard?.heldMicrousd ?? 0) / 1_000_000).toFixed(2)} / 1.00
+          </div>
+          <div className="break-all">
+            UTC window: {guardStatus.guard?.startsAt ?? "not authorized"} —{" "}
+            {guardStatus.guard?.endsAt ?? "not authorized"}
+          </div>
+          <div className="break-all">
+            Operator: {guardStatus.guard?.operatorId ?? "not authorized"}
+          </div>
+          <div className="break-all">Deployment label: {guardStatus.revision ?? "unattested"}</div>
+        </dl>
+      )}
       {snapshot && (
         <>
           <p className="break-all text-xs">Server canonical SHA-256: {snapshot.sha256}</p>

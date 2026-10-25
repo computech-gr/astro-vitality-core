@@ -16,7 +16,7 @@
 - [x] Prepare default-off pending schema, retaining-disable recovery, caller-scoped server integration and exact-scope authorization instructions; production and existing fixtures untouched.
 - [x] Exercise attempts, cost holds, concurrency, expiry, emergency disable, authorization and recovery in disposable SQL and automated server tests.
 - [x] Report immutable artifact fingerprints, security validation, unavailable final exact-commit CI and separate approvals in docs/MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md.
-- [ ] Activation remains NO-GO pending independently supported provider worst-case billing controls, strict outbound kill ordering, successful synchronized-commit CI and separate schema/deployment/window/operator authorizations; no production writes or staging provisioning are authorized.
+- [x] Prior hard-guarantee policy superseded by explicit owner practical-control approval; final implementation/report below retain separate production authorizations.
 
 ## Medical v3 schema / seed separation
 

@@ -1,5 +1,8 @@
 import { expect, test } from "bun:test";
-import { assertSyntheticTokenBudget, assertSyntheticOutputBudget } from "../../src/lib/synthetic-token-budget.server";
+import {
+  assertSyntheticTokenBudget,
+  assertSyntheticOutputBudget,
+} from "../../src/lib/synthetic-token-budget.server";
 
 test("local tokenizer enforces 6144 input tokens including conservative framing", () => {
   expect(assertSyntheticTokenBudget("hello")).toBe(2049);

@@ -113,7 +113,11 @@ const result = await answerSyntheticQuestion(
   },
 );
 const body = await result.json();
-if (result.status !== 200 || sent !== 1 || body.citedIds?.join(",") !== "synthetic-v3-hr-001,synthetic-v3-hr-002")
+if (
+  result.status !== 200 ||
+  sent !== 1 ||
+  body.citedIds?.join(",") !== "synthetic-v3-hr-001,synthetic-v3-hr-002"
+)
   throw Error(`Server guard integration failed: ${result.status}`);
 console.log(
   "PASS: enabled production path reserves, dispatches, validates exact citations and reconciles using disposable SQL and simulated provider. No live AI, production writes or browser acceptance.",
