@@ -31,7 +31,10 @@ const run = (sql) =>
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
 const file = (path) =>
-  execFileSync("psql", [...base, "--single-transaction", "-f", path], { env, stdio: ["ignore", "pipe", "pipe"] });
+  execFileSync("psql", [...base, "--single-transaction", "-f", path], {
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 const gm = "00000000-0000-0000-0000-0000000000a2",
   crew = "00000000-0000-0000-0000-0000000000b1";
 const as = (uid) =>
@@ -191,28 +194,61 @@ check(
   ) === "t",
   "production-equivalent permissive defaults actually applied",
 );
-deny(`BEGIN;${schemaSql}DO $$ BEGIN RAISE EXCEPTION 'injected late DDL failure'; END $$;COMMIT;`, "late schema failure aborts all DDL and ACL changes");
-check(run("select to_regclass('public.medical_ai_quota_reservations') is null") === "t", "late schema failure leaves no namespace");
+deny(
+  `BEGIN;${schemaSql}DO $$ BEGIN RAISE EXCEPTION 'injected late DDL failure'; END $$;COMMIT;`,
+  "late schema failure aborts all DDL and ACL changes",
+);
+check(
+  run("select to_regclass('public.medical_ai_quota_reservations') is null") === "t",
+  "late schema failure leaves no namespace",
+);
 file(migration);
 verifyPermissions();
 deny(as(gm) + "select medical_v3_fixture_snapshot()", "schema-only snapshot fails closed");
-deny(as(gm) + `select medical_v3_reserve_ai('${mission}','${astronaut}')`, "schema-only quota cannot reserve without evidence");
-check(run("select count(*) from medical_ai_quota_reservations") === "0", "no quota rows before seed");
+deny(
+  as(gm) + `select medical_v3_reserve_ai('${mission}','${astronaut}')`,
+  "schema-only quota cannot reserve without evidence",
+);
+check(
+  run("select count(*) from medical_ai_quota_reservations") === "0",
+  "no quota rows before seed",
+);
 // Rollback is safe even in the schema-only partial-completion state.
 run(`BEGIN;${readFileSync(rollbackPath, "utf8")};ROLLBACK;`);
 verifyPermissions();
-deny(`BEGIN;update missions set status='active' where id='${mission}';${seedSql};COMMIT;`, "seed rechecks locked current mission prerequisite");
-for (const marker of ["INSERT INTO public.medical_v3_fixture_observations", "INSERT INTO public.medical_v3_fixture_receipts", " IF (SELECT count(*) FROM public.medical_v3_fixture_sources)<>1"]) {
-  deny(seedSql.replace(marker, `RAISE EXCEPTION 'injected seed failure';\n${marker}`), `atomic seed rollback at ${marker}`);
-  check(run("select (select count(*) from medical_v3_fixture_sources)=0 and (select count(*) from medical_v3_fixture_observations)=0 and (select count(*) from medical_v3_fixture_receipts)=0") === "t", "failed seed retains empty schema");
+deny(
+  `BEGIN;update missions set status='active' where id='${mission}';${seedSql};COMMIT;`,
+  "seed rechecks locked current mission prerequisite",
+);
+for (const marker of [
+  "INSERT INTO public.medical_v3_fixture_observations",
+  "INSERT INTO public.medical_v3_fixture_receipts",
+  " IF (SELECT count(*) FROM public.medical_v3_fixture_sources)<>1",
+]) {
+  deny(
+    seedSql.replace(marker, `RAISE EXCEPTION 'injected seed failure';\n${marker}`),
+    `atomic seed rollback at ${marker}`,
+  );
+  check(
+    run(
+      "select (select count(*) from medical_v3_fixture_sources)=0 and (select count(*) from medical_v3_fixture_observations)=0 and (select count(*) from medical_v3_fixture_receipts)=0",
+    ) === "t",
+    "failed seed retains empty schema",
+  );
 }
-deny(`BEGIN;alter function medical_v3_demo_deny_persistence() rename to medical_v3_changed;${seedSql};COMMIT;`, "changed dependency denies seed");
+deny(
+  `BEGIN;alter function medical_v3_demo_deny_persistence() rename to medical_v3_changed;${seedSql};COMMIT;`,
+  "changed dependency denies seed",
+);
 deny(`set role authenticated;${seedSql}`, "authenticated cannot seed");
 deny(`set role service_role;${seedSql}`, "service role cannot seed");
 file(seedPath);
 deny(seedSql, "second seed refused without mutation");
 // Existing rows, even exact partial rows, are never repaired automatically.
-deny(`BEGIN;alter table medical_v3_fixture_receipts disable trigger medical_v3_fixture_receipt_immutable;delete from medical_v3_fixture_receipts where id='synthetic-v3-hr-002-test-receipt-1';${seedSql};COMMIT;`, "partial seed state refuses repair");
+deny(
+  `BEGIN;alter table medical_v3_fixture_receipts disable trigger medical_v3_fixture_receipt_immutable;delete from medical_v3_fixture_receipts where id='synthetic-v3-hr-002-test-receipt-1';${seedSql};COMMIT;`,
+  "partial seed state refuses repair",
+);
 verifyPermissions();
 permissionDenied(as(gm) + "select medical_v3_has_scope('m1','c1')", "internal scope helper denied");
 permissionDenied(as(gm) + "select medical_v3_review_history('m1','c1')", "history RPC denied");
