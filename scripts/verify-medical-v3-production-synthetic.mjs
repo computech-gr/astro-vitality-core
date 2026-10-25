@@ -161,11 +161,18 @@ run(`insert into missions(id,code,name,status) values('${mission}','MITO_DEMO_20
 insert into crew_members(id,display_name,status) values('${astronaut}','Alex Morgan — Synthetic Astronaut','active');
 insert into mission_crew_assignments(mission_id,crew_member_id,status) values('${mission}','${astronaut}','active');
 insert into mission_memberships(id,mission_id,user_id,crew_member_id,role,active) values('63470171-3a22-4075-b197-ac85b90cb0ef','${mission}','${gm}','${astronaut}','ground_medical',true)`);
-const migration = "supabase/pending/20261027000000_medical_v3_synthetic_schema.sql";
+const migration = "drizzle/migrations/0011_medical_v3_synthetic_schema_only.sql";
 const seedPath = "supabase/pending/20261027000000_medical_v3_synthetic_seed.sql";
 const rollbackPath = "supabase/pending/20261027000000_medical_v3_synthetic_disable.rollback.sql";
 const schemaSql = readFileSync(migration, "utf8");
 const seedSql = readFileSync(seedPath, "utf8");
+const originalSnapshotHash = "cf2b070aa6f7e899efebbc976c2ba08bd1d56e6d277d416b02f0e3d8d82e5795";
+const committedSnapshotHash = "acd4eb5c7bf3bb6495f3ebd78cdb1bf576c16ba71184bc226461f92c33e79259";
+check(
+  createHash("sha256").update(schemaSql).digest("hex") ===
+    "eb0921ca3155d4e15c9cfb2d60996de85ef53a04956634970ea1a4fc75ffe237",
+  "reconstruct only the exact committed schema, never apply it to production",
+);
 deny(seedSql, "seed before schema denied");
 
 // Atomic prerequisite failure must leave no v3 namespace.
@@ -249,6 +256,18 @@ deny(
 deny(
   `BEGIN;alter table medical_advisor_review_events disable trigger medical_v3_demo_deny_persistence;${seedSql};COMMIT;`,
   "disabled persistent-review guard denies seed",
+);
+deny(
+  seedSql.replace(committedSnapshotHash, originalSnapshotHash),
+  "original seed refuses committed formatting variant",
+);
+const snapshotDefinition = run("select pg_get_functiondef('medical_v3_fixture_snapshot()'::regprocedure)");
+const originalDefinition = snapshotDefinition.replace("\n  'sha256'", "\n 'sha256'");
+check(originalDefinition !== snapshotDefinition, "snapshot indentation reconciliation is concrete");
+deny(`BEGIN;${originalDefinition};${seedSql};COMMIT;`, "reconciled seed refuses original snapshot hash");
+deny(
+  `BEGIN;${snapshotDefinition.replace("DECLARE scope", "DECLARE  scope")};${seedSql};COMMIT;`,
+  "reconciled seed refuses unrelated whitespace drift",
 );
 file(seedPath);
 deny(seedSql, "second seed refused without mutation");
@@ -390,6 +409,14 @@ try {
   failed = true;
 }
 check(failed, "reapplication refuses existing namespace");
+transactionCheck(
+  `delete from medical_ai_quota_reservations; insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '${crew}','${mission}','${astronaut}',clock_timestamp() from generate_series(1,20);${as(gm)}select (medical_v3_reserve_ai('${mission}','${astronaut}')->>'allowed')::boolean=false`,
+  "21st mission request denied even with no prior caller requests",
+);
+const committedSnapshot = run(as(gm) + "select medical_v3_fixture_snapshot()::text").split("\n").at(-1);
+const originalSnapshot = run(`BEGIN;${originalDefinition};${as(gm)}select medical_v3_fixture_snapshot()::text;ROLLBACK;`)
+  .split("\n").find((line) => line.startsWith("{"));
+check(committedSnapshot === originalSnapshot, "original and committed definitions return identical complete evidence JSON and hash");
 file(rollbackPath);
 file(rollbackPath);
 check(true, "disable rollback is safely repeatable");
