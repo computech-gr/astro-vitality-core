@@ -245,11 +245,15 @@ value(
 check(!state().eligible, "required reporting stale fails closed");
 deny(
   caller +
-    "select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',0,0,0,0)",
+    "select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',0,0,0,0,clock_timestamp(),'22a72429-1674-4174-9b27-ba63db3c0279')",
   "browser cannot fabricate provider recorded cost",
 );
 run(
-    "set role service_role;select set_config('request.jwt.claim.role','service_role',false);select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',600000,100,20,1)",
+  "set role service_role;select set_config('request.jwt.claim.role','service_role',false);select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',600000,100,20,1,clock_timestamp(),'22a72429-1674-4174-9b27-ba63db3c0279')",
+);
+deny(
+  "set role service_role;select set_config('request.jwt.claim.role','service_role',false);select medical_research_record_sync(date_trunc('month',now() at time zone 'UTC')::date,'proj_test',1,1,1,1,clock_timestamp(),'22a72429-1674-4174-9b27-ba63db3c0279')",
+  "regressing provider snapshot cannot refresh timestamp",
 );
 check(state().recordedMicrousd === 600000, "privileged recorded costs separated");
 check(state().remainingMicrousd === 0, "recorded costs plus holds fail closed");

@@ -260,7 +260,10 @@ function Administration() {
               <h2 className="text-xl font-semibold">Provider & consumption</h2>
               <dl className="space-y-3 text-sm">
                 {[
-                  ["Requests", s.attempts],
+                  ["Reserved attempts", s.attempts],
+                  ["Dispatch permits", s.dispatchedRequests],
+                  ["Provider reported requests", s.providerRequests ?? "Unavailable"],
+                  ["Estimated token cost", usd(s.estimatedUsageMicrousd)],
                   ["Input tokens", s.inputTokens],
                   ["Output tokens", s.outputTokens],
                   ["Failed / unresolved requests", s.failures],

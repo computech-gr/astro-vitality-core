@@ -10,7 +10,8 @@ export const runtimeExclusions = Object.freeze({
   "verify-medical-v3-production-synthetic.mjs": "Disposable exact-scope database required",
   "verify-synthetic-activation-guard.mjs":
     "Disposable PostgreSQL concurrency and guard schema required",
-  "verify-synthetic-research-policy.mjs": "Disposable PostgreSQL permanent-policy assertions required",
+  "verify-synthetic-research-policy.mjs":
+    "Disposable PostgreSQL permanent-policy assertions required",
   "verify-remote-auth-config.mjs": "Independent authenticated services required",
   "verify-medical-v3-staging-target.mjs": "Owner-approved staging configuration required",
 });

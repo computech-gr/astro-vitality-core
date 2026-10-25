@@ -267,7 +267,7 @@ export function SyntheticMedicalReview() {
                 {guardStatus.research.enabled ? "enabled" : "paused"}
               </div>
               <div>
-                Requests this month: {guardStatus.research.attempts} · Remaining internal budget:
+                Attempts this month: {guardStatus.research.attempts} · Remaining internal budget:
                 USD {(guardStatus.research.remainingMicrousd / 1_000_000).toFixed(2)}
               </div>
               <div>
