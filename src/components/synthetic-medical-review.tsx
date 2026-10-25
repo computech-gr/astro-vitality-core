@@ -9,6 +9,8 @@ import {
   exportSyntheticMedicalHistory,
 } from "@/lib/medical-governance.functions";
 import { askSyntheticEvidence } from "@/lib/synthetic-evidence-qa.functions";
+import { emergencyDisableSyntheticAI } from "@/lib/synthetic-activation-control.functions";
+import { OctagonX } from "lucide-react";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import { SYNTHETIC_DEMO_QUESTIONS } from "@/domain/health-intelligence/production-synthetic-demo";
 import { validateAIDraft } from "@/domain/health-intelligence/ai-draft-validation";
@@ -21,6 +23,7 @@ export function SyntheticMedicalReview() {
   const append = useServerFn(appendMedicalReview);
   const exportAuthorized = useServerFn(exportSyntheticMedicalHistory);
   const ask = useServerFn(askSyntheticEvidence);
+  const disableAI = useServerFn(emergencyDisableSyntheticAI);
   const [question, setQuestion] = useState<string>(SYNTHETIC_DEMO_QUESTIONS[0]);
   const [persistent, setPersistent] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -209,6 +212,23 @@ export function SyntheticMedicalReview() {
       </p>
       <Button disabled={busy} onClick={() => void run(refresh)}>
         Load authorized synthetic fixture
+      </Button>
+      <Button
+        variant="destructive"
+        onClick={() =>
+          void disableAI({ data: { reference: "operator-emergency-disable" } })
+            .then(() => {
+              clearSession();
+              setStatus("Synthetic AI disabled; already permitted requests may still complete.");
+            })
+            .catch(() =>
+              setStatus(
+                "Emergency disable not confirmed; use the authorized SQL disable procedure.",
+              ),
+            )
+        }
+      >
+        <OctagonX aria-hidden="true" /> Emergency disable AI
       </Button>
       <p role="status" className="break-words text-sm">
         {status}

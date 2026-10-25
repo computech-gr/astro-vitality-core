@@ -26,6 +26,12 @@ export const Route = createFileRoute("/api/medical-ai-draft")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Production uses only bounded predefined synthetic Q&A; legacy draft cannot bypass its guard.
+        if (
+          process.env["MITO_MEDICAL_TEST_ENVIRONMENT"] !== "disposable" ||
+          process.env["MITO_MEDICAL_PRODUCTION_SYNTHETIC_AI_ENABLED"] === "true"
+        )
+          return fail("Production medical drafts disabled; use authorized synthetic Q&A", 503);
         if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY)
           return fail("Request too large", 413);
         const origin = request.headers.get("origin");

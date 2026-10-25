@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## Complete synthetic AI activation guard
+
+- [x] Prepare default-off pending schema, retaining-disable recovery, caller-scoped server integration and exact-scope authorization instructions; production and existing fixtures untouched.
+- [x] Exercise attempts, cost holds, concurrency, expiry, emergency disable, authorization and recovery in disposable SQL and automated server tests.
+- [x] Report immutable artifact fingerprints, security validation, unavailable final exact-commit CI and separate approvals in docs/MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md.
+- [ ] Activation remains NO-GO pending independently supported provider worst-case billing controls, strict outbound kill ordering, successful synchronized-commit CI and separate schema/deployment/window/operator authorizations; no production writes or staging provisioning are authorized.
+
 ## Medical v3 schema / seed separation
 
 - [x] Persist only the independently attested snapshot dependency hash in the seed and retaining-disable artifacts; keep original approved and actual committed schema fingerprints distinct.
