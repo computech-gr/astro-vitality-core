@@ -1,5 +1,10 @@
 # P20 video evidence closure
 
+## Synthetic status presentation
+
+- [x] Separate permanent-policy status from legacy guard status, sanitize access/service failures and identify revision metadata without changing admission.
+- [ ] Run focused/full tests, security, lint/formatting and automatic typecheck/build checks; verify the read-only status response.
+
 ## Synthetic tab state patch
 
 - [x] Compare the supplied component with current source and apply scoped restoration with account/hash isolation and synthetic-only storage safeguards.
