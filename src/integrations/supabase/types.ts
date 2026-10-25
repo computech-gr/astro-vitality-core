@@ -390,6 +390,174 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_research_attempts: {
+        Row: {
+          actor_id: string
+          dispatched_at: string | null
+          estimated_usage_microusd: number | null
+          evidence_sha: string
+          finished_at: string | null
+          hold_microusd: number
+          id: string
+          input_tokens: number | null
+          month: string
+          nonce_sha: string
+          outcome: string
+          output_tokens: number | null
+          provider_request_id: string | null
+          quota_id: string
+          reserved_at: string
+        }
+        Insert: {
+          actor_id: string
+          dispatched_at?: string | null
+          estimated_usage_microusd?: number | null
+          evidence_sha: string
+          finished_at?: string | null
+          hold_microusd?: number
+          id?: string
+          input_tokens?: number | null
+          month: string
+          nonce_sha: string
+          outcome?: string
+          output_tokens?: number | null
+          provider_request_id?: string | null
+          quota_id: string
+          reserved_at?: string
+        }
+        Update: {
+          actor_id?: string
+          dispatched_at?: string | null
+          estimated_usage_microusd?: number | null
+          evidence_sha?: string
+          finished_at?: string | null
+          hold_microusd?: number
+          id?: string
+          input_tokens?: number | null
+          month?: string
+          nonce_sha?: string
+          outcome?: string
+          output_tokens?: number | null
+          provider_request_id?: string | null
+          quota_id?: string
+          reserved_at?: string
+        }
+        Relationships: []
+      }
+      medical_research_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          at: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          at?: string
+          details: Json
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          at?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      medical_research_owners: {
+        Row: {
+          granted_at: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      medical_research_policy: {
+        Row: {
+          active_attempt: string | null
+          budget_microusd: number
+          enabled: boolean
+          evidence_sha: string
+          provider_project: string | null
+          revision: number
+          rolling_limit: number
+          rolling_seconds: number
+          singleton: boolean
+          sync_required: boolean
+          updated_at: string
+        }
+        Insert: {
+          active_attempt?: string | null
+          budget_microusd?: number
+          enabled?: boolean
+          evidence_sha: string
+          provider_project?: string | null
+          revision?: number
+          rolling_limit?: number
+          rolling_seconds?: number
+          singleton?: boolean
+          sync_required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          active_attempt?: string | null
+          budget_microusd?: number
+          enabled?: boolean
+          evidence_sha?: string
+          provider_project?: string | null
+          revision?: number
+          rolling_limit?: number
+          rolling_seconds?: number
+          singleton?: boolean
+          sync_required?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      medical_research_provider_sync: {
+        Row: {
+          month: string
+          project_id: string
+          provider_input_tokens: number
+          provider_output_tokens: number
+          provider_requests: number
+          recorded_microusd: number
+          reported_until: string
+          synchronized_at: string
+        }
+        Insert: {
+          month: string
+          project_id: string
+          provider_input_tokens: number
+          provider_output_tokens: number
+          provider_requests: number
+          recorded_microusd: number
+          reported_until: string
+          synchronized_at?: string
+        }
+        Update: {
+          month?: string
+          project_id?: string
+          provider_input_tokens?: number
+          provider_output_tokens?: number
+          provider_requests?: number
+          recorded_microusd?: number
+          reported_until?: string
+          synchronized_at?: string
+        }
+        Relationships: []
+      }
       medical_v3_fixture_observations: {
         Row: {
           domain: string
@@ -1258,6 +1426,64 @@ export type Database = {
       }
       medical_demo_scope: { Args: never; Returns: boolean }
       medical_demo_status: { Args: never; Returns: Json }
+      medical_research_audit_log: { Args: never; Returns: Json }
+      medical_research_configure: {
+        Args: {
+          p_budget: number
+          p_enabled: boolean
+          p_limit: number
+          p_project: string
+          p_ref: string
+          p_revision: number
+          p_seconds: number
+          p_sync: boolean
+        }
+        Returns: undefined
+      }
+      medical_research_dispatch: {
+        Args: { p_attempt: string; p_nonce: string; p_sha: string }
+        Returns: boolean
+      }
+      medical_research_finish: {
+        Args: {
+          p_attempt: string
+          p_input: number
+          p_nonce: string
+          p_outcome: string
+          p_output: number
+          p_request: string
+          p_usage: number
+        }
+        Returns: boolean
+      }
+      medical_research_is_owner: { Args: never; Returns: boolean }
+      medical_research_pause: { Args: { p_ref: string }; Returns: undefined }
+      medical_research_provision: {
+        Args: { p_owner: string; p_sha: string }
+        Returns: undefined
+      }
+      medical_research_record_sync: {
+        Args: {
+          p_actor: string
+          p_cost: number
+          p_input: number
+          p_month: string
+          p_output: number
+          p_project: string
+          p_requests: number
+          p_until: string
+        }
+        Returns: undefined
+      }
+      medical_research_reserve: {
+        Args: { p_nonce: string; p_sha: string }
+        Returns: Json
+      }
+      medical_research_resolve: {
+        Args: { p_attempt: string; p_ref: string }
+        Returns: undefined
+      }
+      medical_research_status: { Args: never; Returns: Json }
       medical_v3_ai_evidence: {
         Args: { p_crew: string; p_mission: string }
         Returns: Json

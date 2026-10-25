@@ -92,6 +92,13 @@
       "when": 1792906347180,
       "tag": "0012_medical_demo_activation_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792909198639,
+      "tag": "0013_medical_research_policy",
+      "breakpoints": true
     }
   ]
 }
