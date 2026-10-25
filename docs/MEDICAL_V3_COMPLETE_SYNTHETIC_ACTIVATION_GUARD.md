@@ -61,7 +61,7 @@ Authenticated direct RPC calls can consume their own attempts with a caller-chos
 
 ## CI evidence
 
-Historical exact commit `42182940f8c3b34c78683dd2a96f7a04194c7315`: Quality success run `40146765145`, Security Scan success run `40146765193`. These are baseline evidence **only**, not validation of this guard. No matching public runs existed for inspected intermediate guard checkout `54e09db81db4f318361609f8ee5eb6b149f7ac70`. Managed checkout commits change as edits are saved; final synchronized-commit Quality/Security/typecheck/production build must be verified after saving. No workflows were triggered or claimed passed for the changed code.
+Historical exact commit `42182940f8c3b34c78683dd2a96f7a04194c7315`: Quality success run `40146765145`, Security Scan success run `40146765193`. These are baseline evidence **only**, not validation of this guard. The last inspected candidate checkout was `279f823477995c8a53e9a77c951602debeebcfb9`; its exact-SHA GitHub workflow lookup returned zero matching runs. Independent inspection of intermediate checkout `8d833ad745c9b8d1f871b5a36ac80cd705db8ab7` found zero matching runs and GitHub could not resolve that local commit for check-runs; the local managed remote is not the public GitHub remote. Managed checkout commits change as edits are saved, so these are inspected intermediate SHAs, not a claimed immutable final synchronized SHA. Final synchronized-commit Quality/Security/typecheck/production build remain unverified. No workflows were triggered or claimed passed for the changed code.
 
 ## Separate approvals and owner procedure (not authorized now)
 
