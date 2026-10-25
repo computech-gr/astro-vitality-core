@@ -140,6 +140,11 @@ check(
   "eight concurrent reserve callers yield exactly one attempt",
 );
 const id = run("select active_attempt from medical_demo_authorization");
+check(run(caller + `select medical_demo_finish('${id}',0,'${nonce}')`).split("\n").at(-1)==="f", "early completion cannot release an undispatched hold");
+check(run(caller + `select medical_demo_dispatch(NULL,'${sha}',NULL)`).split("\n").at(-1)==="f", "NULL dispatch rejected");
+check(run(caller + `select medical_demo_finish(NULL,0,NULL)`).split("\n").at(-1)==="f", "NULL completion rejected");
+deny(caller + `select medical_demo_reserve('${sha}',NULL)`, "NULL nonce reserve denied");
+check(run(caller + `select medical_demo_dispatch('${id}','${sha}','${"b".repeat(64)}')`).split("\n").at(-1)==="f", "wrong nonce denies transmission");
 check(
   run(caller + `select medical_demo_dispatch('${id}','${sha}','${nonce}')`)
     .split("\n")
@@ -189,6 +194,9 @@ run(
 );
 const pending = reserve();
 check(pending.allowed === true, "reserved before disable");
+run("update medical_demo_authorization set ends_at=clock_timestamp()-interval '1 second'");
+check(run(caller + `select medical_demo_dispatch('${pending.attemptId}','${sha}','${nonce}')`).split("\n").at(-1)==="f", "expiry between reserve and dispatch denies provider permit");
+run("update medical_demo_authorization set ends_at=clock_timestamp()+interval '30 minutes'");
 deny(
   `set role authenticated;select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-0000000000b1',false);select medical_demo_disable('unauthorized')`,
   "unauthorized operator denied",
