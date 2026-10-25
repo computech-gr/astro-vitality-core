@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Medical v3 schema / seed separation
+
+- [ ] Prepare schema-only candidate, atomic exact-scope data seed and separately authorized non-destructive rollback/recovery; preserve approved originals.
+- [ ] Validate fingerprints, hostile production-default privileges, idempotency, missing prerequisites, failure rollback, quotas and existing security suites in disposable SQL.
+- [ ] Report exact artifacts/results and separate schema/seed approval scopes; production execution and all activations remain unauthorized.
+
 ## Final permission hardening
 
 - [x] Harden all five tables, owned sequences and v3 function allowlist against inherited production privileges; 252 disposable SQL assertions pass.
