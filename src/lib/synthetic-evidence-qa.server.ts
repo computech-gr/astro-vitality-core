@@ -152,8 +152,10 @@ export async function answerSyntheticQuestion(
         model?: string;
       };
       usage = syntheticUsageMicrousd(body.usage);
-      if (attempt && (usage === null || body.model !== syntheticProviderModel))
+      if (attempt && (usage === null || body.model !== syntheticProviderModel)) {
+        usage = null;
         throw new Error("Pinned model or bounded usage could not be confirmed");
+      }
       const raw =
         body.output
           ?.flatMap((o) => o.content ?? [])

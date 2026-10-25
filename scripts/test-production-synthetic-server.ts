@@ -73,7 +73,8 @@ const response = await answerSyntheticQuestion(
   },
   {
     enabled: true,
-    productionSynthetic: true,
+    // Existing four-RPC fixture/quota contract; new production guard has its own integration verifier.
+    productionSynthetic: false,
     apiKey: "simulated-not-a-key",
     rpc,
     now: () => new Date().toISOString(),
@@ -115,5 +116,5 @@ if (
 )
   throw new Error("Disposable production synthetic server integration failed");
 console.log(
-  "PASS: genuine caller-scoped disposable SQL -> authoritative evidence -> atomic quota -> simulated provider -> exact citations -> authority recheck -> release. NOT live AI or browser acceptance.",
+  "PASS: genuine caller-scoped disposable legacy SQL -> authoritative evidence -> atomic quota -> simulated provider -> exact citations -> authority recheck -> release. New production guard is tested separately; NOT live AI or browser acceptance.",
 );
