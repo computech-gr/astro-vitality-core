@@ -3,7 +3,8 @@
 ## Medical v3 schema / seed separation
 
 - [x] Persist only the independently attested snapshot dependency hash in the seed and retaining-disable artifacts; keep original approved and actual committed schema fingerprints distinct.
-- [ ] Run reconciliation/disposable SQL/security tests and report final fingerprints and exact-commit CI; managed one-statement seed transport remains unverified without a production probe, so execution is NO-GO.
+- [x] Validate persisted artifacts: 568 tests; 484 production-equivalent, 30 governance and 51 completion SQL assertions; security/lint and zero-finding Trivy pass; 99/102 scientific/security verifiers with three unchanged release blockers.
+- [ ] Exact-final-preparation CI requires matching synchronized GitHub runs; managed one-statement seed transport and trusted execution identity remain undocumented/unverified without a production probe, so seed execution is NO-GO.
 - [x] Schema committed once as drizzle/migrations/0011_medical_v3_synthetic_schema_only.sql, journal id 12; verified five empty tables/RLS, 15 hardened functions, application-role CRUD/TRUNCATE denials, four-RPC allowlist, persistence trigger and quota definitions.
 - [ ] STOPPED: submitted SQL accidentally added one leading space on lines 10 and 350; recorded SHA eb0921ca3155d4e15c9cfb2d60996de85ef53a04956634970ea1a4fc75ffe237 differs from approved SHA. Snapshot definition hash consequently differs and exact seed dependency check will refuse. No correction, rollback, seed or activation without new explicit owner authorization.
 - [x] Prepare schema-only candidate, atomic exact-scope data seed and separately authorized non-destructive rollback/recovery; preserve approved originals.
