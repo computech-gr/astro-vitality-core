@@ -110,6 +110,12 @@ const sha = JSON.parse(
     .at(-1),
 ).sha256;
 const nonce = "a".repeat(64);
+check(run(caller + "select medical_demo_status()->>'version'").split("\n").at(-1) === "synthetic-practical-v1", "caller status reports reviewed policy version");
+check(run(caller + "select medical_demo_status()->>'eligible'").split("\n").at(-1) === "false", "empty authorization status is ineligible");
+check(run("select count(*)=7 from pg_proc where pronamespace='public'::regnamespace and proname like 'medical_demo_%'") === "t", "seven exact guard functions including status");
+for (const role of ["anon", "service_role"])
+  check(run(`select not has_function_privilege('${role}','medical_demo_status()','EXECUTE')`) === "t", role + " status access denied");
+deny(`set role authenticated;select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-0000000000b1',false);select medical_demo_status()`, "wrong account cannot inspect operational status");
 const reserve = () =>
   JSON.parse(
     run(caller + `select medical_demo_reserve('${sha}','${nonce}')`)
