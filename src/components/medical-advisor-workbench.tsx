@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getMedicalReviewHistory } from "@/lib/medical-governance.functions";
 import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import type { HealthHistoryReport } from "@/domain/health-intelligence/health-history-report";
 import {
@@ -28,8 +27,6 @@ export function MedicalAdvisorWorkbench({
   const [reason, setReason] = useState("");
   const [review, setReview] = useState<AdvisorReview | null>(null);
   const [message, setMessage] = useState("");
-  const [aiConsent, setAiConsent] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const [sha, setSha] = useState("");
   const [history, setHistory] = useState<DurableReviewEvent[]>([]);
   const [historyMessage, setHistoryMessage] = useState("Persistent history has not been verified.");
@@ -81,60 +78,6 @@ export function MedicalAdvisorWorkbench({
     a.download = "mitochondria-ai-draft-input-RESEARCH-ONLY.txt";
     a.click();
     URL.revokeObjectURL(url);
-  };
-  const generateWithAI = async () => {
-    if (!authorizedMedicalRole || !aiConsent || generating) return;
-    setGenerating(true);
-    setAiConsent(false);
-    setMessage("Requesting server-generated research draft...");
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error("Sign in required.");
-      const response = await fetch("/api/medical-ai-draft", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          missionId: report.missionId,
-          crewMemberId: report.crewMemberId,
-          provenance: report.provenance,
-          consent: aiConsent,
-          observations: report.observations.map((o) => ({
-            id: o.id,
-            domain: o.domain,
-            metric: o.metricId,
-            value: o.value,
-            unit: o.originalUnit,
-            time: o.observedAt,
-          })),
-        }),
-      });
-      const payload = (await response.json()) as {
-        draft?: string;
-        error?: string;
-        violations?: string[];
-      };
-      if (!response.ok || !payload.draft)
-        throw new Error(
-          [payload.error || "AI generation failed.", ...(payload.violations ?? [])].join(" · "),
-        );
-      const draft = createAdvisorDraft(report, payload.draft, "server-ai");
-      setReview(draft);
-      setDraftText(payload.draft);
-      setFinalText(payload.draft);
-      setReason("");
-      setMessage(
-        "Server AI draft received; independent advisor review is required. No clinical approval.",
-      );
-    } catch (error) {
-      setMessage(String(error));
-    } finally {
-      setGenerating(false);
-    }
   };
   const start = () => {
     try {
@@ -202,28 +145,15 @@ export function MedicalAdvisorWorkbench({
         secure service. Never paste identifiable real astronaut data into consumer AI tools.
       </p>
       <div className="print:hidden space-y-2">
-        <label className="flex items-start gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={aiConsent}
-            onChange={(e) => setAiConsent(e.target.checked)}
-          />
-          I explicitly authorize sending the selected de-identified observation values to the
-          configured server-side AI provider for a research-only draft. No names or crew identifiers
-          are sent to the AI provider. Real-data processing requires separate server authorization.
-        </label>
-        <Button
-          type="button"
-          className="h-auto max-w-full whitespace-normal text-left"
-          onClick={() => void generateWithAI()}
-          disabled={
-            !authorizedMedicalRole || !aiConsent || !report.observations.length || generating
-          }
-        >
-          {generating
-            ? "Generating draft..."
-            : "Generate research draft with configured AI provider"}
-        </Button>
+        <p className="text-sm text-muted-foreground" role="status">
+          Automated generation through the legacy research-draft endpoint is unavailable in
+          production. It is intentionally disabled to prevent stuck processing and unguarded
+          requests. Use the authorized Synthetic Research AI factual Q&amp;A above instead.
+          This section only captures an existing draft for session-only advisor review.
+        </p>
+        <a className="inline-block text-sm underline underline-offset-4" href="#synthetic-research-qa">
+          Go to Synthetic Research AI — factual Q&amp;A
+        </a>
         <Button
           type="button"
           variant="outline"
