@@ -207,8 +207,8 @@ for (const marker of ["INSERT INTO public.medical_v3_fixture_observations", "INS
   check(run("select (select count(*) from medical_v3_fixture_sources)=0 and (select count(*) from medical_v3_fixture_observations)=0 and (select count(*) from medical_v3_fixture_receipts)=0") === "t", "failed seed retains empty schema");
 }
 deny(`BEGIN;alter function medical_v3_demo_deny_persistence() rename to medical_v3_changed;${seedSql};COMMIT;`, "changed dependency denies seed");
-permissionDenied(`set role authenticated;${seedSql}`, "authenticated cannot seed");
-permissionDenied(`set role service_role;${seedSql}`, "service role cannot seed");
+deny(`set role authenticated;${seedSql}`, "authenticated cannot seed");
+deny(`set role service_role;${seedSql}`, "service role cannot seed");
 file(seedPath);
 deny(seedSql, "second seed refused without mutation");
 // Existing rows, even exact partial rows, are never repaired automatically.
