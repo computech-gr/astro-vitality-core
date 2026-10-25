@@ -2,9 +2,10 @@
 
 ## Permanent synthetic research AI
 
-- [ ] Implement versioned default-off policy, atomic rolling quotas/monthly reservations, owner administration, provider reconciliation and safe legacy transition.
-- [ ] Validate tests, disposable SQL security, lint/security and browser denial; document rollout and exact-revision CI results.
-- [ ] Production schema/publication/activation wait for separate owner authorization; provider admin synchronization waits for supported administrative credentials.
+- [x] Implement versioned default-off policy, atomic rolling quotas/monthly reservations, owner administration, provider reconciliation and safe legacy transition.
+- [x] Validate 588 tests, 156 permanent-policy disposable SQL assertions plus 593 legacy assertions, security/format/lint, zero-finding Trivy and signed-in browser denial; document rollout in docs/MEDICAL_V3_PERMANENT_SYNTHETIC_RESEARCH.md.
+- [ ] Exact-final Quality/Security/typecheck/production build wait for synchronized GitHub CI; inspected revision has no matching runs.
+- [ ] Production schema/publication/activation wait for separate owner authorization; provider admin synchronization waits for supported administrative credentials and an owner-confirmed dedicated project.
 
 ## Synthetic research activation review
 

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +51,7 @@ function Administration() {
     [project, setProject] = useState(""),
     [requireSync, setRequireSync] = useState(false),
     [reference, setReference] = useState("");
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     const v = await load();
     setView(v);
     setBudget(String(v.status.budgetMicrousd / 1000000));
@@ -59,7 +59,7 @@ function Administration() {
     setSeconds(String(v.status.rollingSeconds ?? 1800));
     setProject(v.status.providerProject ?? "");
     setRequireSync(v.status.syncRequired ?? false);
-  };
+  }, [load]);
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
     setMessage("");
@@ -72,8 +72,11 @@ function Administration() {
     }
   };
   useEffect(() => {
-    void run(refresh);
-  }, []);
+    setBusy(true);
+    void refresh()
+      .catch((e: unknown) => setMessage(e instanceof Error ? e.message : "Operation unavailable"))
+      .finally(() => setBusy(false));
+  }, [refresh]);
   const save = async (enabled: boolean) => {
     if (!view?.status.revision) throw new Error("Policy not provisioned");
     await configure({
