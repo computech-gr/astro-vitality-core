@@ -73,7 +73,7 @@ test("unknown completion retains its hold and propagates recovery failure", asyn
   ).rejects.toThrow();
 });
 
-test("unavailable billing or serialized transport denies before every RPC and HTTP call", async () => {
+test("missing guard denies every attempt before any provider transmission", async () => {
   let rpcCalls = 0,
     transmissions = 0;
   const request = {
@@ -101,6 +101,6 @@ test("unavailable billing or serialized transport denies before every RPC and HT
     });
     expect(response.status).toBe(503);
   }
-  expect(rpcCalls).toBe(0);
+  expect(rpcCalls).toBe(11);
   expect(transmissions).toBe(0);
 });

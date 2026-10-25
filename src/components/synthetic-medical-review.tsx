@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import {
   exportSyntheticMedicalHistory,
 } from "@/lib/medical-governance.functions";
 import { askSyntheticEvidence } from "@/lib/synthetic-evidence-qa.functions";
-import { emergencyDisableSyntheticAI } from "@/lib/synthetic-activation-control.functions";
+import { emergencyDisableSyntheticAI, getSyntheticActivationStatus } from "@/lib/synthetic-activation-control.functions";
 import { OctagonX } from "lucide-react";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import { SYNTHETIC_DEMO_QUESTIONS } from "@/domain/health-intelligence/production-synthetic-demo";
@@ -24,10 +24,14 @@ export function SyntheticMedicalReview() {
   const exportAuthorized = useServerFn(exportSyntheticMedicalHistory);
   const ask = useServerFn(askSyntheticEvidence);
   const disableAI = useServerFn(emergencyDisableSyntheticAI);
+  const activationStatus = useServerFn(getSyntheticActivationStatus);
+  const generationEpoch = useRef(0);
+  const [guardStatus, setGuardStatus] = useState<Awaited<ReturnType<typeof activationStatus>> | null>(null);
   const [question, setQuestion] = useState<string>(SYNTHETIC_DEMO_QUESTIONS[0]);
   const [persistent, setPersistent] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const clearSession = () => {
+    generationEpoch.current++;
     setAcknowledged(false);
     setAnswer("");
     setDraft("");
@@ -43,6 +47,7 @@ export function SyntheticMedicalReview() {
         setSnapshot(null);
         setEvents([]);
         setPersistent(false);
+        setGuardStatus(null);
       }
     });
     return () => data.subscription.unsubscribe();
@@ -65,6 +70,7 @@ export function SyntheticMedicalReview() {
   );
   const refresh = async () => {
     clearSession();
+    setGuardStatus(await activationStatus());
     const result = await load();
     if (!result.available || !result.snapshot) {
       setSnapshot(null);
@@ -147,6 +153,7 @@ export function SyntheticMedicalReview() {
     setAcknowledged(false);
     setConsent(false);
     if (!persistent) {
+      const epoch = generationEpoch.current;
       const result = await ask({
         data: {
           question: SYNTHETIC_DEMO_QUESTIONS[0],
@@ -156,11 +163,13 @@ export function SyntheticMedicalReview() {
           crewMemberId: snapshot.crewMemberId,
         },
       });
+      if (generationEpoch.current !== epoch) return;
       if (result.status !== 200 || !result.text || result.evidence_sha256 !== snapshot.sha256)
         throw new Error(result.error ?? "Synthetic draft rejected.");
       setDraft(result.text);
       setFinal(result.text);
       setStatus("Synthetic research draft — unsaved; session-only advisor review.");
+      setGuardStatus(await activationStatus());
       return;
     }
     const { data } = await supabase.auth.getSession();
@@ -190,6 +199,7 @@ export function SyntheticMedicalReview() {
     setQaConsent(false);
     setAcknowledged(false);
     setAnswer("");
+    const epoch = generationEpoch.current;
     const result = await ask({
       data: {
         question,
@@ -199,9 +209,11 @@ export function SyntheticMedicalReview() {
         crewMemberId: snapshot.crewMemberId,
       },
     });
+    if (generationEpoch.current !== epoch) return;
     if (result.status !== 200 || !result.text || result.evidence_sha256 !== snapshot.sha256)
       throw new Error(result.error ?? "Synthetic answer rejected.");
     setAnswer(result.text);
+    setGuardStatus(await activationStatus());
   };
   return (
     <section aria-label="Server synthetic fixture review" className="space-y-3 border-t py-6">
@@ -215,24 +227,34 @@ export function SyntheticMedicalReview() {
       </Button>
       <Button
         variant="destructive"
-        onClick={() =>
+        onClick={() => {
+          clearSession();
           void disableAI({ data: { reference: "operator-emergency-disable" } })
             .then(() => {
               clearSession();
               setStatus("Synthetic AI disabled; already permitted requests may still complete.");
+              void activationStatus().then(setGuardStatus);
             })
             .catch(() =>
               setStatus(
                 "Emergency disable not confirmed; use the authorized SQL disable procedure.",
               ),
-            )
-        }
+            );
+        }}
       >
         <OctagonX aria-hidden="true" /> Emergency disable AI
       </Button>
       <p role="status" className="break-words text-sm">
         {status}
       </p>
+      {guardStatus && <dl className="grid gap-1 text-sm">
+        <div>Production AI: {guardStatus.configurationEnabled ? "configured" : "off"}</div>
+        <div>Guard: {guardStatus.guard?.version ?? "unavailable"}</div>
+        <div>Attempts: {guardStatus.guard?.attempts ?? 0} / 10 · Estimated holds: USD {((guardStatus.guard?.heldMicrousd ?? 0) / 1_000_000).toFixed(2)} / 1.00</div>
+        <div className="break-all">UTC window: {guardStatus.guard?.startsAt ?? "not authorized"} — {guardStatus.guard?.endsAt ?? "not authorized"}</div>
+        <div className="break-all">Operator: {guardStatus.guard?.operatorId ?? "not authorized"}</div>
+        <div className="break-all">Deployment label: {guardStatus.revision ?? "unattested"}</div>
+      </dl>}
       {snapshot && (
         <>
           <p className="break-all text-xs">Server canonical SHA-256: {snapshot.sha256}</p>
