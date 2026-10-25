@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from '@tanstack/react-router';
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -230,6 +231,7 @@ export function SyntheticMedicalReview() {
       <Button disabled={busy} onClick={() => void run(refresh)}>
         Load authorized synthetic fixture
       </Button>
+      <Button asChild variant="outline"><Link to="/mission/ai-administration">AI Administration & Usage</Link></Button>
       <Button
         variant="destructive"
         onClick={() => {
@@ -256,6 +258,11 @@ export function SyntheticMedicalReview() {
         <dl className="grid gap-1 text-sm">
           <div>Production AI: {guardStatus.configurationEnabled ? "configured" : "off"}</div>
           <div>Guard: {guardStatus.guard?.version ?? "unavailable"}</div>
+          {guardStatus.research ? <>
+            <div>Policy: {guardStatus.research.version} · {guardStatus.research.enabled ? 'enabled' : 'paused'}</div>
+            <div>Requests this month: {guardStatus.research.attempts} · Remaining internal budget: USD {(guardStatus.research.remainingMicrousd / 1_000_000).toFixed(2)}</div>
+            <div>Rolling quota: {guardStatus.research.rollingLimit} / {guardStatus.research.rollingSeconds} seconds</div>
+          </> : <>
           <div>
             Attempts: {guardStatus.guard?.attempts ?? 0} / 10 · Estimated holds: USD{" "}
             {((guardStatus.guard?.heldMicrousd ?? 0) / 1_000_000).toFixed(2)} / 1.00
@@ -267,6 +274,7 @@ export function SyntheticMedicalReview() {
           <div className="break-all">
             Operator: {guardStatus.guard?.operatorId ?? "not authorized"}
           </div>
+          </>}
           <div className="break-all">Deployment label: {guardStatus.revision ?? "unattested"}</div>
         </dl>
       )}

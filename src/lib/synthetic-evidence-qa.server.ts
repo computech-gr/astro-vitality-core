@@ -1,4 +1,6 @@
 import { validateSyntheticSnapshot } from "@/domain/health-intelligence/synthetic-review-export";
+import { researchStatus, reserveResearch, dispatchResearch, finishResearch } from './synthetic-research-guard.server';
+import { classifyProviderFailure, providerFailureMessages } from '@/domain/health-intelligence/synthetic-research-policy';
 import { assertProductionSyntheticRequest } from "@/domain/health-intelligence/production-synthetic-demo";
 import {
   boundedSyntheticPayload,
@@ -30,6 +32,7 @@ import {
 export interface QaDependencies {
   enabled: boolean;
   productionSynthetic?: boolean;
+  permanentResearch?: boolean;
   apiKey: string | undefined;
   model?: string | undefined;
   rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
@@ -69,10 +72,15 @@ export async function answerSyntheticQuestion(
       return fail("Only the approved scope and predefined synthetic questions are allowed", 403);
     }
     try {
+      if (deps.permanentResearch) {
+        if (!(await researchStatus(deps.rpc)).eligible)
+          return fail('Permanent research policy paused, budget exhausted or unavailable; no data sent', 503);
+      } else {
       const guard = await deps.rpc("medical_demo_status", {});
       const status = guard.data as { version?: string; eligible?: boolean } | null;
       if (guard.error || status?.version !== SYNTHETIC_GUARD_VERSION || status.eligible !== true)
         return fail("Synthetic guard absent, disabled, expired or unavailable; no data sent", 503);
+      }
     } catch {
       return fail("Synthetic guard unavailable; no data sent", 503);
     }
@@ -156,7 +164,9 @@ export async function answerSyntheticQuestion(
   let attempt: string | null = null;
   try {
     if (deps.productionSynthetic)
-      attempt = await reserveSyntheticAttempt(deps.rpc, snapshot.sha256, nonce);
+      attempt = deps.permanentResearch
+        ? await reserveResearch(deps.rpc, snapshot.sha256, nonce)
+        : await reserveSyntheticAttempt(deps.rpc, snapshot.sha256, nonce);
   } catch {
     return fail("Synthetic authorization, quota or spending cap denied; no data sent", 429);
   }
@@ -175,27 +185,45 @@ export async function answerSyntheticQuestion(
     );
   let result: Response;
   let usage: number | null = null;
+  let tokens: {input:number;output:number}|null = null;
+  let outcome = 'unknown';
+  let providerRequest: string|null = null;
   try {
     // SQL disable denies later permits. A prior permit may transmit after disable commits.
-    if (attempt) await permitSyntheticTransmission(deps.rpc, attempt, snapshot.sha256, nonce);
+    if (attempt) {
+      if (deps.permanentResearch) await dispatchResearch(deps.rpc, attempt, snapshot.sha256, nonce);
+      else await permitSyntheticTransmission(deps.rpc, attempt, snapshot.sha256, nonce);
+    }
     const upstream = await deps.providerFetch(MEDICAL_OPENAI_RESPONSES_URL, {
       method: "POST",
       signal: AbortSignal.timeout(25_000),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${deps.apiKey}` },
       body: providerBody,
     });
-    if (!upstream.ok)
+    providerRequest = upstream.headers.get('x-request-id');
+    if (!upstream.ok) {
+      if (deps.permanentResearch) {
+        const errorBody = await upstream.json().catch(()=>null) as {error?:{code?:unknown}}|null;
+        const condition = classifyProviderFailure(upstream.status,errorBody?.error?.code);
+        outcome = condition;
+        result = fail(providerFailureMessages[condition], condition==='credit_exhausted'||condition==='spend_limit'?402:condition==='rate_limit'?429:502);
+      } else
       result = fail(
         "OpenAI provider request failed; no answer accepted",
         upstream.status === 429 ? 429 : upstream.status === 403 ? 403 : 502,
       );
-    else {
+    } else {
       const body = (await upstream.json()) as {
         output?: Array<{ content?: Array<{ type?: string; text?: string }> }>;
         usage?: unknown;
         model?: string;
       };
       usage = syntheticUsageMicrousd(body.usage);
+      if (usage !== null) {
+        const u = body.usage as {input_tokens:number;output_tokens:number};
+        tokens = {input:u.input_tokens,output:u.output_tokens};
+        outcome = 'invalid_answer';
+      }
       if (attempt && (usage === null || body.model !== syntheticProviderModel)) {
         usage = null;
         throw new Error("Pinned model or bounded usage could not be confirmed");
@@ -217,7 +245,8 @@ export async function answerSyntheticQuestion(
         const fresh = current.error ? null : await validateSyntheticSnapshot(current.data);
         if (!fresh || fresh.sha256 !== snapshot.sha256)
           result = fail("Evidence changed during generation; answer rejected", 422);
-        else
+        else {
+          outcome = 'success';
           result = Response.json(
             {
               ...answer,
@@ -227,16 +256,19 @@ export async function answerSyntheticQuestion(
             },
             { headers },
           );
+        }
       } catch {
         result = fail("Invalid citations or unsupported answer; rejected", 422);
       }
     }
   } catch {
+    outcome = 'provider_outage';
     result = fail("OpenAI request failed; no answer accepted", 502);
   } finally {
     if (attempt) {
       try {
-        await finishSyntheticAttempt(deps.rpc, attempt, usage, nonce);
+        if (deps.permanentResearch) await finishResearch(deps.rpc, attempt, usage, tokens, outcome, providerRequest, nonce);
+        else await finishSyntheticAttempt(deps.rpc, attempt, usage, nonce);
       } catch {
         result = fail(
           "Spending reconciliation unconfirmed; answer withheld and hold retained",
