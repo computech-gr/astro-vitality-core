@@ -23,6 +23,8 @@ Live base table ACLs also include the infrastructure `sandbox_exec` role with SE
 
 ## 2. Exact artifacts — no substitution
 
+Full checklist, queries and recovery details: `docs/MEDICAL_V3_PRODUCTION_ACTIVATION_DEPLOYMENT_CHECKLIST.md`.
+
 | File | SHA-256 |
 |---|---|
 | `supabase/pending/20261028000000_medical_demo_activation_guard.sql` | `a12164a0e9d47b398bd4eaad35ca446a84c815511afd7c95605a87aa85adcbc1` |
@@ -32,16 +34,16 @@ Both fingerprints rechecked. Schema is multiple PostgreSQL statements, **not the
 
 Immutable audit facts remain distinct: approved base schema `2024f9023006ba4b8134919f1efb7c8f7c550a19668681d5a6a673b53dc6affc`; committed base schema `eb0921ca3155d4e15c9cfb2d60996de85ef53a04956634970ea1a4fc75ffe237`, journal ID 12. Seed `131502bd285c5714586220f05f2f2a0da43c383a88b92dd5372ef0ea811095e1` is already executed: do not rerun. Old base retaining-disable `e7eb66b4e676aac6b410ca18aaa3ac2758e4ec8bbc7ef809f681415b96cf09b3` is not the new guard recovery artifact.
 
-## 3. Smallest implementation change set — approval to prepare, not execute
+## 3. Smallest implementation change set — approval to prepare only
 
-1. Retain `/mission/health-report`, `SyntheticMedicalReview`, authenticated `askSyntheticEvidence` and direct OpenAI Responses integration. No new AI endpoint, privileged API, service-role client or legacy draft activation.
-2. In `src/lib/synthetic-evidence-qa.server.ts`, retain exact synthetic scope/question validation; replace the unconditional transport denial **only after item 4's explicit policy decision** with verified guard-presence/default-off checks. Route all production requests through existing reserve → dispatch → one fetch → finish. Missing RPC/configuration, stale evidence, revoked scope or unconfirmed accounting deny generation. Keep disposable mode inaccessible in production.
-3. In `src/domain/health-intelligence/synthetic-activation-policy.ts`, retain ten irreversible USD 0.10 holds (USD 1.00 ledger ceiling), 4096 UTF-8 request bytes, 1500 output tokens and conservative USD 10/million input/output accounting. Add model-specific input token validation with a hard input cap of 6144; reject unsupported framing/model/pricing. The existing byte-plus-overhead estimate alone is not a proven tokenizer bound. Pin an available OpenAI model and record dated pricing; any model/policy change requires recalculated limits, new fingerprints and tests. No tools/images/files, `store:false`, one raw fetch, 25-second timeout, no automatic retry.
-4. **Required owner policy decision before removing the hard denial:** the requested practical stop and conservative accounting differ from the previously mandatory absolute billing/outbound guarantees. Explicitly approve a narrowly scoped replacement of that rule for this synthetic demo: stop means “no new SQL dispatch permits after disable commits”; USD 1.00 means nonrefundable conservative reservations, not independently guaranteed final provider billing. Update the project rule, blocker documentation and tests only in that separately reviewed change. General risk willingness, this plan's approval or a flag is insufficient. If the absolute guarantees remain mandatory, retain the denial: the current direct-provider architecture cannot deliver them.
-5. Keep the existing Emergency disable AI button callable while generation is busy. Database disable and dispatch take the same authorization row lock. Disable-first rejects dispatch; dispatch-first creates at most one unresolved permit (global active-attempt lock). That request **can start after disable commits**, complete or be billed after timeout/expiry. Do not claim physical outbound serialization. Unknown outcomes retain attempts/holds/concurrency indefinitely; recovery disables, never resets.
-6. Keep server-authoritative evidence checks before reserve/dispatch and after response. Exact IDs, values and timestamps must match. Permit only the existing three predefined questions and exact fact-template citations. This produces real provider-generated structured research text, not free-form medical interpretation. Keep legacy `/api/medical-ai-draft` production-denied, real-data AI denied, persistent-review/history-export disabled and acknowledgment session-only.
-7. Add non-secret revision/policy/guard-state attestation to the existing authenticated console flow (not a new endpoint). Show effective authorization/counts/window/operator to authorized users without exposing nonce, key, prompts or privileged data. Replace misleading persistence actions with session-only review in production synthetic mode; preserve disposable workflows.
-8. Test the actual proposed enabled path, not just today's blocked path: fake-provider success with exact citations, unauthorized scope/real data, eight concurrent reservations, ten lifetime holds, both minute quotas, token/cost exhaustion, both stop orderings including permitted-before-disable HTTP delay, expiry between reserve/dispatch, timeout, unknown usage, provider failure, replay and transaction rollback. Update the guard verifier/server tests and architecture rule. Run full Bun tests, disposable production-equivalent SQL/security tests and exact-final-SHA Quality/Security with typecheck/build. No production writes or live generation during preparation.
+1. Reuse `/mission/health-report`, `SyntheticMedicalReview`, authenticated `askSyntheticEvidence` and existing direct OpenAI Responses integration. No new endpoint, privileged API or legacy draft activation.
+2. In `src/lib/synthetic-evidence-qa.server.ts`, replace the unconditional production denial **only after an explicit policy decision**, then enforce default-off guard presence and reserve → dispatch → one fetch → finish. Missing configuration/RPCs, revoked scope, stale evidence or unknown accounting fail closed.
+3. In `src/domain/health-intelligence/synthetic-activation-policy.ts`, retain ten nonrefundable USD 0.10 holds, USD 1.00 reservation ceiling, 4096 UTF-8 request bytes, 1500 output tokens and conservative USD 10/million input/output accounting. Add model-specific validation capped at 6144 input tokens; reject unsupported model/framing/pricing. Verify availability and dated pricing before pinning; model changes require new fingerprints/tests. No tools/files/images, `store:false`, 25-second timeout, no retries.
+4. **Explicit policy decision:** practical stop means no new SQL dispatch permits after disable commits, not guaranteed physical outbound serialization. USD 1.00 is a conservative ledger ceiling, not guaranteed final provider billing. Approve a narrowly scoped replacement of the previous mandatory hard-guarantee rule before preparing any unblock. Risk willingness, plan approval or flags alone cannot remove the denial. If absolute guarantees remain required, retain it.
+5. Keep the emergency button usable while generation is busy. Same-row database locking serializes disable/dispatch: disable-first denies; dispatch-first leaves at most one unresolved permit that can start after disable/expiry and remain billed after timeout. Unknown outcomes permanently retain attempts/holds/concurrency; recovery disables, never resets. The existing architecture cannot guarantee a hard billed ceiling or atomic SQL/HTTP start.
+6. Preserve authoritative evidence checks before reservation/dispatch and after response, exact IDs/62/66 bpm/timestamps, three predefined questions and exact fact-template citations. Real provider generation is structured research text, not free medical interpretation. Keep real-data AI, legacy production drafts, persistent review/history export and clinical activation denied; acknowledgment stays session-only.
+7. Add non-secret revision/policy/guard-state attestation through the existing authenticated flow, no new endpoint. Show window/counts/operator, never nonce/key/prompts. Make production review controls session-only; preserve disposable workflows.
+8. Test the proposed enabled path with simulated provider and disposable SQL: exact citations, unauthorized/real input, eight concurrent reservations, ten holds, both quotas, token/cost exhaustion, both stop orderings including delayed HTTP after permit, expiry, timeout, unknown usage, failure, replay and atomic rollback. Update server tests/verifier/architecture rule; full tests/security and exact-final-SHA Quality/Security/typecheck/build are required before approval. Today's blocked-path tests do not certify the future implementation.
 
 ## 4. Deployment sequence and separate approvals
 
@@ -54,69 +56,9 @@ Immutable audit facts remain distinct: approved base schema `2024f9023006ba4b813
 
 No independent staging environment is required. Failed/uncertain migration, deployment attestation, authorization or generation stops the sequence; do not retry writes blindly.
 
-## 5. Production verification and activation SQL (review-only)
+## 5. Exact verification queries and authorization template
 
-Run SELECT-only checks in the trusted SQL Editor before/after authorized operations. Never call reserve/dispatch for a “read-only test.”
-
-```sql
-SELECT current_user, session_user;
-SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id;
-SELECT id, metric_id, value, unit, observed_at
-FROM public.medical_v3_fixture_observations ORDER BY id;
-SELECT count(*) AS persistent_events FROM public.medical_advisor_review_events;
-SELECT id, user_id, mission_id, crew_member_id, role, active
-FROM public.mission_memberships
-WHERE id='63470171-3a22-4075-b197-ac85b90cb0ef';
-SELECT c.relname, c.relrowsecurity, pg_get_userbyid(c.relowner) AS owner,
- r.role, has_table_privilege(r.role,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') AS any_access
-FROM pg_class c CROSS JOIN (VALUES ('anon'),('authenticated'),('service_role')) r(role)
-WHERE c.relnamespace='public'::regnamespace AND
- (c.relname LIKE 'medical_demo_%' OR c.relname IN
- ('medical_advisor_review_events','medical_ai_quota_reservations',
- 'medical_v3_fixture_sources','medical_v3_fixture_observations','medical_v3_fixture_receipts'));
-SELECT p.oid::regprocedure AS signature, pg_get_userbyid(p.proowner) AS owner,
- p.proconfig, p.prosecdef,
- encode(extensions.digest(convert_to(pg_get_functiondef(p.oid),'UTF8'),'sha256'),'hex') AS sha,
- has_function_privilege('authenticated',p.oid,'EXECUTE') AS authenticated_execute,
- has_function_privilege('anon',p.oid,'EXECUTE') AS anon_execute,
- has_function_privilege('service_role',p.oid,'EXECUTE') AS service_execute
-FROM pg_proc p WHERE p.pronamespace='public'::regnamespace
- AND (p.proname LIKE 'medical_v3_%' OR p.proname LIKE 'medical_demo_%');
-SELECT tablename, policyname, roles, cmd, qual, with_check
-FROM pg_policies WHERE schemaname='public'
- AND (tablename LIKE 'medical_demo_%' OR tablename IN
- ('medical_advisor_review_events','medical_ai_quota_reservations',
- 'medical_v3_fixture_sources','medical_v3_fixture_observations','medical_v3_fixture_receipts'));
-SELECT tgname, tgenabled, pg_get_triggerdef(oid)
-FROM pg_trigger WHERE tgrelid='public.medical_advisor_review_events'::regclass
- AND NOT tgisinternal;
-```
-
-Require unchanged fifteen base hashes; new six function definitions must match independently generated disposable fingerprints of the final approved SQL. Authenticated allowlist: four existing v3 RPCs plus guard reserve/dispatch/finish/disable only; anon/service execute false. All eight tables must be RLS, postgres-owned, application access including TRUNCATE false; no application RLS policies grant direct access. Verify policy catalog and denial trigger definitions against the approved SQL, not only counts.
-
-After schema exists, inspect operational state without mutating it:
-
-```sql
-SELECT starts_at, ends_at, enabled, attempts, held_microusd, active_attempt,
- operator_id, evidence_sha, disabled_at,
- enabled AND clock_timestamp()>=starts_at AND clock_timestamp()<ends_at AS window_valid
-FROM public.medical_demo_authorization;
-SELECT id, outcome, hold_microusd, usage_microusd, dispatched_at, finished_at
-FROM public.medical_demo_attempts ORDER BY reserved_at;
-SELECT action, at, reference FROM public.medical_demo_control_audit ORDER BY at;
-```
-
-Before activation all three tables must be empty. Obtain canonical digest from the existing signed-in fixture load and independently validate it against caller-scoped database reconstruction; the authorization function reconstructs again. Only after approval D, substitute approved values into **one** trusted call:
-
-```sql
--- TEMPLATE ONLY: do not run with placeholders or before approval D.
-SELECT public.medical_demo_authorize(
- '<approved-start-UTC>'::timestamptz, '<approved-end-UTC>'::timestamptz,
- '<approved-scoped-operator-UUID>'::uuid, '<approved-reference>',
- '<independently-verified-sha256-digest>');
-```
-
-Actor is fixed in SQL: `22a72429-1674-4174-9b27-ba63db3c0279`; mission `mission-9d8ce8f3e5554509a0885461f9ad2e1c`; crew `crew-9806e7e611f44dc38dac5e23f7740f1a`. No second authorization, reset or quota refill is permitted.
+The complete review-only SQL checklist is in `docs/MEDICAL_V3_PRODUCTION_ACTIVATION_DEPLOYMENT_CHECKLIST.md`, section 5. It includes identity, immutable migration journal, exact observations/membership, eight table ACL/RLS checks, fifteen base plus six guard function hashes/allowlists, policies, persistence trigger, authorization window/holds/attempt audit, and the trusted one-lifetime `medical_demo_authorize` template. No reserve/dispatch test is read-only. Require empty guard tables before activation and zero persistent review events throughout. All operator/time/digest values require separate approval; no activation values are invented.
 
 ## 6. Rollback / emergency recovery
 
