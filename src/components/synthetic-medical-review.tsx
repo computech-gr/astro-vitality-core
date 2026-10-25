@@ -68,7 +68,7 @@ export function SyntheticMedicalReview() {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(
-    "Production synthetic fixture review is disabled pending separate authorization.",
+    "Select Load authorized synthetic fixture to check current server authorization. No AI request is sent by loading evidence.",
   );
   const latest = events.reduce<DurableReviewEvent | null>(
     (a, b) => (!a || b.revision > a.revision ? b : a),
@@ -223,10 +223,11 @@ export function SyntheticMedicalReview() {
   };
   return (
     <section aria-label="Server synthetic fixture review" className="space-y-3 border-t py-6">
-      <h2 className="text-xl font-semibold">Synthetic fixture — server review</h2>
+      <h2 className="text-xl font-semibold">Synthetic Research AI — Factual Q&amp;A</h2>
       <p className="text-sm text-muted-foreground">
-        Research-only demonstration. Separate from encrypted offline observations. No legal
-        signature, clinical certification or scientific approval.
+        Research-only demonstration using server-authorized synthetic evidence. Load the fixture,
+        choose a predefined factual question, and explicitly consent before any AI request.
+        Separate from encrypted offline observations; no clinical approval.
       </p>
       <Button disabled={busy} onClick={() => void run(refresh)}>
         Load authorized synthetic fixture
@@ -303,6 +304,44 @@ export function SyntheticMedicalReview() {
               </li>
             ))}
           </ul>
+          <div id="synthetic-research-qa" className="scroll-mt-28 space-y-2 rounded-lg border p-4">
+            <h3 className="font-semibold">Synthetic evidence Q&amp;A — research only</h3>
+            <label htmlFor="synthetic-question" className="block text-sm">
+              Question about observed evidence
+            </label>
+            <select
+              id="synthetic-question"
+              value={question}
+              onChange={(e) => {
+                setQuestion(e.target.value);
+                setQaConsent(false);
+                setAnswer("");
+                setAcknowledged(false);
+              }}
+              className="w-full min-w-0 rounded border bg-background p-2"
+            >
+              {SYNTHETIC_DEMO_QUESTIONS.map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
+            </select>
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={qaConsent}
+                onChange={(e) => setQaConsent(e.target.checked)}
+              />
+              Send this question and only authorized synthetic evidence to OpenAI for this request.
+            </label>
+            <Button
+              disabled={busy || !qaConsent || !question.trim()}
+              onClick={() => void run(askQuestion)}
+            >
+              Ask synthetic evidence question
+            </Button>
+            {answer && <p className="whitespace-pre-wrap break-words">{answer}</p>}
+          </div>
           <label className="flex items-start gap-2 text-sm">
             <input
               type="checkbox"
@@ -444,44 +483,6 @@ export function SyntheticMedicalReview() {
               </p>
             </>
           )}
-          <div className="space-y-2 border-t pt-4">
-            <h3 className="font-semibold">Synthetic evidence Q&amp;A — research only</h3>
-            <label htmlFor="synthetic-question" className="block text-sm">
-              Question about observed evidence
-            </label>
-            <select
-              id="synthetic-question"
-              value={question}
-              onChange={(e) => {
-                setQuestion(e.target.value);
-                setQaConsent(false);
-                setAnswer("");
-                setAcknowledged(false);
-              }}
-              className="w-full min-w-0 rounded border bg-background p-2"
-            >
-              {SYNTHETIC_DEMO_QUESTIONS.map((q) => (
-                <option key={q} value={q}>
-                  {q}
-                </option>
-              ))}
-            </select>
-            <label className="flex items-start gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={qaConsent}
-                onChange={(e) => setQaConsent(e.target.checked)}
-              />
-              Send this question and only authorized synthetic evidence to OpenAI for this request.
-            </label>
-            <Button
-              disabled={busy || !qaConsent || !question.trim()}
-              onClick={() => void run(askQuestion)}
-            >
-              Ask synthetic evidence question
-            </Button>
-            {answer && <p className="whitespace-pre-wrap break-words">{answer}</p>}
-          </div>
           <ol className="space-y-3 text-sm">
             {events.map((event) => (
               <li key={event.id} className="border-t pt-3">

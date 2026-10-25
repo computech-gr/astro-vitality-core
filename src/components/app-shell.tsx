@@ -110,7 +110,10 @@ const navigation: readonly NavigationEntry[] = [
           "Offline Mission Mode",
         ],
       },
-      { title: "Ground operations", items: ["Ground & Research Console", "Mission Scenario"] },
+      {
+        title: "Ground operations",
+        items: ["Ground & Research Console", "Mission Scenario", "AI Administration & Usage"],
+      },
     ],
   },
   {
@@ -135,6 +138,7 @@ const navigation: readonly NavigationEntry[] = [
         title: "Research intelligence",
         items: [
           "Health Intelligence",
+          "Synthetic Research AI",
           "Explainable Alerts",
           "Action Guidance",
           "NASA Scientific Evidence",
@@ -328,6 +332,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "NASA Space Apps 2026") return NASA_URL;
   if (label === "Official NASA Challenge") return CHALLENGE_URL;
   if (label === "Mission Scenario") return "/mission/simulation";
+  if (label === "AI Administration & Usage") return "/mission/ai-administration";
   if (label === "Mission Identity & Sign-in") return "/mission/identity";
   if (label === "Mission & Crew Operations") return "/mission/operations";
   if (label === "Mission Workspace") return "/mission/experience";
@@ -339,6 +344,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Recorded Mission Data") return "/mission/records";
   if (label === "Mission Documents") return "/mission/documents";
   if (label === "Health Intelligence") return "/mission/intelligence";
+  if (label === "Synthetic Research AI") return "/mission/health-report#synthetic-research-qa";
   if (label === "NASA Scientific Evidence") return "/mission/nasa-evidence";
   if (label === "Bone Health") return "/mission/bone-health";
   if (label === "Immune Changes") return "/mission/immune-health";
