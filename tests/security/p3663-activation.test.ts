@@ -13,7 +13,8 @@ describe('P36.6.3 governed activation',()=>{
  it('never automatically changes Cloud or enables flag',()=>{
   expect(script).not.toContain('supabase-js');
   expect(script).not.toContain('execSync');
-  expect(doc).toContain('Keep `P36_CLOUD_SUBMISSION_ENABLED` **OFF**');
-  expect(doc).toContain('MISSION_TEST');
+  expect(doc).toContain('Keep feature flags unchanged');
+  expect(doc).toContain('no clinical activation');
+  expect(doc).toContain('BLOCKED');
  });
 });
