@@ -112,11 +112,7 @@ const result = await answerSyntheticQuestion(
   },
 );
 const body = await result.json();
-if (
-  result.status !== 503 ||
-  sent !== 0 ||
-  !String(body.error).includes("serialized outbound")
-)
+if (result.status !== 503 || sent !== 0 || !String(body.error).includes("serialized outbound"))
   throw Error(`Server guard integration failed: ${result.status}`);
 console.log(
   "PASS: enabled production path denies before any provider transmission; no toggle substitutes for missing hard guarantees. No live AI, production writes or browser acceptance.",

@@ -37,9 +37,14 @@ export function syntheticUsageMicrousd(usage: unknown): number | null {
     !Number.isSafeInteger(output) ||
     input < 0 ||
     output < 0 ||
-    input > SYNTHETIC_ACTIVATION_POLICY.maxRequestBytes + SYNTHETIC_ACTIVATION_POLICY.inputOverheadTokens ||
+    input >
+      SYNTHETIC_ACTIVATION_POLICY.maxRequestBytes +
+        SYNTHETIC_ACTIVATION_POLICY.inputOverheadTokens ||
     output > SYNTHETIC_ACTIVATION_POLICY.outputTokens
   )
     return null;
-  return input * SYNTHETIC_ACTIVATION_POLICY.inputMicrousdPerToken + output * SYNTHETIC_ACTIVATION_POLICY.outputMicrousdPerToken;
+  return (
+    input * SYNTHETIC_ACTIVATION_POLICY.inputMicrousdPerToken +
+    output * SYNTHETIC_ACTIVATION_POLICY.outputMicrousdPerToken
+  );
 }

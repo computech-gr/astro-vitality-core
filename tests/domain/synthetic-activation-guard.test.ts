@@ -1,6 +1,10 @@
 import { expect, test } from "bun:test";
 import { answerSyntheticQuestion } from "../../src/lib/synthetic-evidence-qa.server";
-import { PRODUCTION_SYNTHETIC_MISSION,PRODUCTION_SYNTHETIC_CREW,SYNTHETIC_DEMO_QUESTIONS } from "../../src/domain/health-intelligence/production-synthetic-demo";
+import {
+  PRODUCTION_SYNTHETIC_MISSION,
+  PRODUCTION_SYNTHETIC_CREW,
+  SYNTHETIC_DEMO_QUESTIONS,
+} from "../../src/domain/health-intelligence/production-synthetic-demo";
 import {
   boundedSyntheticPayload,
   syntheticUsageMicrousd,
@@ -69,12 +73,34 @@ test("unknown completion retains its hold and propagates recovery failure", asyn
   ).rejects.toThrow();
 });
 
-test("unavailable billing or serialized transport denies before every RPC and HTTP call",async()=>{
- let rpcCalls=0,transmissions=0;
- const request={missionId:PRODUCTION_SYNTHETIC_MISSION,crewMemberId:PRODUCTION_SYNTHETIC_CREW,question:SYNTHETIC_DEMO_QUESTIONS[0],consent:true,provenance:'synthetic'};
- for(let retry=0;retry<11;retry++){
- const response=await answerSyntheticQuestion(request,{enabled:true,productionSynthetic:true,apiKey:'simulated-only',model:p.model,rpc:async()=>{rpcCalls++;throw Error('must not run');},providerFetch:(async()=>{transmissions++;throw new DOMException('timeout','TimeoutError');}) as typeof fetch,now:()=>new Date().toISOString()});
- expect(response.status).toBe(503);
- }
- expect(rpcCalls).toBe(0);expect(transmissions).toBe(0);
+test("unavailable billing or serialized transport denies before every RPC and HTTP call", async () => {
+  let rpcCalls = 0,
+    transmissions = 0;
+  const request = {
+    missionId: PRODUCTION_SYNTHETIC_MISSION,
+    crewMemberId: PRODUCTION_SYNTHETIC_CREW,
+    question: SYNTHETIC_DEMO_QUESTIONS[0],
+    consent: true,
+    provenance: "synthetic",
+  };
+  for (let retry = 0; retry < 11; retry++) {
+    const response = await answerSyntheticQuestion(request, {
+      enabled: true,
+      productionSynthetic: true,
+      apiKey: "simulated-only",
+      model: p.model,
+      rpc: async () => {
+        rpcCalls++;
+        throw Error("must not run");
+      },
+      providerFetch: (async () => {
+        transmissions++;
+        throw new DOMException("timeout", "TimeoutError");
+      }) as typeof fetch,
+      now: () => new Date().toISOString(),
+    });
+    expect(response.status).toBe(503);
+  }
+  expect(rpcCalls).toBe(0);
+  expect(transmissions).toBe(0);
 });

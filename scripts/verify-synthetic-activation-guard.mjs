@@ -238,7 +238,10 @@ check(
   "failure never refunds attempts/budget",
 );
 // Controlled resets are exclusively disposable adversarial test setup, never recovery instructions.
-check(run("select not enabled and active_attempt is not null from medical_demo_authorization")==="t", "unknown accounting disables and retains active hold");
+check(
+  run("select not enabled and active_attempt is not null from medical_demo_authorization") === "t",
+  "unknown accounting disables and retains active hold",
+);
 run("update medical_demo_authorization set enabled=true,active_attempt=NULL;");
 for (let i = 1; i < 10; i++) {
   run(
@@ -280,15 +283,31 @@ deny(
   "unauthorized operator denied",
 );
 // Deterministic interleaving: wait until the disabling transaction holds the row and sleeps.
-const disabling=parallel(`BEGIN;${caller}select medical_demo_disable('race-disable-first');select pg_sleep(0.5);COMMIT;`);
-let lockObserved=false;
-for(let i=0;i<100;i++){
- if(run("select exists(select 1 from pg_stat_activity where pid<>pg_backend_pid() and query like '%race-disable-first%' and wait_event='PgSleep')")==="t"){lockObserved=true;break;}
- await new Promise(resolve=>setTimeout(resolve,5));
+const disabling = parallel(
+  `BEGIN;${caller}select medical_demo_disable('race-disable-first');select pg_sleep(0.5);COMMIT;`,
+);
+let lockObserved = false;
+for (let i = 0; i < 100; i++) {
+  if (
+    run(
+      "select exists(select 1 from pg_stat_activity where pid<>pg_backend_pid() and query like '%race-disable-first%' and wait_event='PgSleep')",
+    ) === "t"
+  ) {
+    lockObserved = true;
+    break;
+  }
+  await new Promise((resolve) => setTimeout(resolve, 5));
 }
-check(lockObserved,"disable transaction holds lock before racing dispatch");
-const racedDispatch=await parallel(caller+`select medical_demo_dispatch('${pending.attemptId}','${sha}','${nonce}')`);
-check((await disabling).code===0 && racedDispatch.code===0 && racedDispatch.out.trim().endsWith('f'),"disable-first transaction serializes and denies racing dispatch");
+check(lockObserved, "disable transaction holds lock before racing dispatch");
+const racedDispatch = await parallel(
+  caller + `select medical_demo_dispatch('${pending.attemptId}','${sha}','${nonce}')`,
+);
+check(
+  (await disabling).code === 0 &&
+    racedDispatch.code === 0 &&
+    racedDispatch.out.trim().endsWith("f"),
+  "disable-first transaction serializes and denies racing dispatch",
+);
 check(
   run(caller + `select medical_demo_dispatch('${pending.attemptId}','${sha}','${nonce}')`)
     .split("\n")
@@ -297,21 +316,48 @@ check(
 );
 check(reserve().allowed === false, "operator disable immediately denies without deployment");
 // Dispatch-first is an authorized permit, NOT proof of an outbound send; demonstrate the limitation.
-run("update medical_demo_authorization set enabled=true,active_attempt=NULL;update medical_ai_quota_reservations set released_at=clock_timestamp(),reserved_at=clock_timestamp()-interval '2 minutes'");
-const permitted=reserve();
-const dispatching=parallel(`BEGIN;${caller}select medical_demo_dispatch('${permitted.attemptId}','${sha}','${nonce}');select pg_sleep(0.5);COMMIT; -- race-dispatch-first`);
-let permitObserved=false;
-for(let i=0;i<100;i++){
- if(run("select exists(select 1 from pg_stat_activity where pid<>pg_backend_pid() and query like '%race-dispatch-first%' and wait_event='PgSleep')")==="t"){permitObserved=true;break;}
- await new Promise(resolve=>setTimeout(resolve,5));
+run(
+  "update medical_demo_authorization set enabled=true,active_attempt=NULL;update medical_ai_quota_reservations set released_at=clock_timestamp(),reserved_at=clock_timestamp()-interval '2 minutes'",
+);
+const permitted = reserve();
+const dispatching = parallel(
+  `BEGIN;${caller}select medical_demo_dispatch('${permitted.attemptId}','${sha}','${nonce}');select pg_sleep(0.5);COMMIT; -- race-dispatch-first`,
+);
+let permitObserved = false;
+for (let i = 0; i < 100; i++) {
+  if (
+    run(
+      "select exists(select 1 from pg_stat_activity where pid<>pg_backend_pid() and query like '%race-dispatch-first%' and wait_event='PgSleep')",
+    ) === "t"
+  ) {
+    permitObserved = true;
+    break;
+  }
+  await new Promise((resolve) => setTimeout(resolve, 5));
 }
-check(permitObserved,"dispatch-first transaction holds lock before disable");
-const laterDisable=parallel(caller+"select medical_demo_disable('race-after-permit')");
-check((await dispatching).code===0 && (await laterDisable).code===0,"dispatch-first permit and later disable serialize without deadlock");
-check(run(caller+`select medical_demo_dispatch('${permitted.attemptId}','${sha}','${nonce}')`).trim().endsWith('f'),"no second permit after disable takes effect");
-run(caller+`select medical_demo_finish('${permitted.attemptId}',76441,'${nonce}')`);
-check(run("select not enabled and active_attempt is not null from medical_demo_authorization")==="t","over-bound accounting fails closed even after disable");
-check(run(`select outcome='unknown' and usage_microusd is null from medical_demo_attempts where id='${permitted.attemptId}'`)==="t","unverifiable cost is never recorded as bounded usage");
+check(permitObserved, "dispatch-first transaction holds lock before disable");
+const laterDisable = parallel(caller + "select medical_demo_disable('race-after-permit')");
+check(
+  (await dispatching).code === 0 && (await laterDisable).code === 0,
+  "dispatch-first permit and later disable serialize without deadlock",
+);
+check(
+  run(caller + `select medical_demo_dispatch('${permitted.attemptId}','${sha}','${nonce}')`)
+    .trim()
+    .endsWith("f"),
+  "no second permit after disable takes effect",
+);
+run(caller + `select medical_demo_finish('${permitted.attemptId}',76441,'${nonce}')`);
+check(
+  run("select not enabled and active_attempt is not null from medical_demo_authorization") === "t",
+  "over-bound accounting fails closed even after disable",
+);
+check(
+  run(
+    `select outcome='unknown' and usage_microusd is null from medical_demo_attempts where id='${permitted.attemptId}'`,
+  ) === "t",
+  "unverifiable cost is never recorded as bounded usage",
+);
 run(`BEGIN;${rollback}COMMIT;`);
 run(`BEGIN;${rollback}COMMIT;`);
 deny(
