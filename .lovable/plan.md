@@ -24,7 +24,7 @@ Both fingerprints rechecked. Schema is multiple PostgreSQL statements, **not the
 
 Immutable audit facts remain distinct: approved base schema `2024f9023006ba4b8134919f1efb7c8f7c550a19668681d5a6a673b53dc6affc`; committed base schema `eb0921ca3155d4e15c9cfb2d60996de85ef53a04956634970ea1a4fc75ffe237`, journal ID 12. Seed `131502bd285c5714586220f05f2f2a0da43c383a88b92dd5372ef0ea811095e1` is already executed: do not rerun. Old base retaining-disable `e7eb66b4e676aac6b410ca18aaa3ac2758e4ec8bbc7ef809f681415b96cf09b3` is not the new guard recovery artifact.
 
-## 3. Smallest implementation change set — approval to prepare only
+## 3. Implementation — preparation only
 
 1. Reuse `/mission/health-report`, `SyntheticMedicalReview`, authenticated `askSyntheticEvidence` and existing direct OpenAI Responses integration. No new endpoint, privileged API or legacy draft activation.
 2. In `src/lib/synthetic-evidence-qa.server.ts`, replace the unconditional production denial **only after an explicit policy decision**, then enforce default-off guard presence and reserve → dispatch → one fetch → finish. Missing configuration/RPCs, revoked scope, stale evidence or unknown accounting fail closed.
