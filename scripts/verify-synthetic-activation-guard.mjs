@@ -17,7 +17,7 @@ const rollback=readFileSync('supabase/pending/20261028000000_medical_demo_activa
 const schema=readFileSync('drizzle/migrations/0011_medical_v3_synthetic_schema_only.sql','utf8');
 const scopeDef=schema.match(/CREATE OR REPLACE FUNCTION public\.medical_v3_fixture_scope\(\)[\s\S]*?END \$\$;/)?.[0];
 if(!scopeDef)throw Error('scope definition unavailable');
-const authorityDef=schema.match(/CREATE OR REPLACE FUNCTION public\.medical_v3_authoritative_evidence\(p_mission text,p_crew text\)[\s\S]*?END \$\$;/)?.[0];
+const authorityDef=schema.slice(schema.lastIndexOf('CREATE OR REPLACE FUNCTION public.medical_v3_authoritative_evidence')).match(/^CREATE OR REPLACE FUNCTION[\s\S]*?END \$\$;/)?.[0];
 if(!authorityDef)throw Error('authority definition unavailable');
 run(scopeDef+';'+authorityDef);
 run('ALTER FUNCTION medical_v3_authoritative_evidence(text,text) SET search_path=pg_catalog,public,extensions,pg_temp');
