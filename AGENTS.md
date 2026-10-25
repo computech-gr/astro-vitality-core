@@ -32,3 +32,4 @@
 - CI generates ignored deterministic release samples before checks/tests and validates their sealed bytes; exact-commit reporting paginates runs and selects the newest run before its attempt number so stale successful runs cannot hide newer failures.
 
 - The standalone production synthetic SQL overrides inherited ACLs on every v3 table, owned sequence and function, exposes only the four caller-scoped synthetic RPCs, and pins trusted ownership/search paths; RLS alone cannot guard TRUNCATE.
+- The split synthetic candidate keeps schema and non-destructive disable SQL in pending files and seeds through one privileged data-only DO statement via the managed query tool, never an application endpoint; independent approvals and exact dependency checks prevent partial completion from granting authority.

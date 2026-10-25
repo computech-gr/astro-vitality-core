@@ -1,6 +1,6 @@
 // Destructive ONLY in opted-in disposable PostgreSQL. Never uses managed PG* variables.
 import { execFileSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 const socket = process.env.FV01_PG_SOCKET_DIR;
@@ -31,7 +31,10 @@ const run = (sql) =>
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
 const file = (path) =>
-  execFileSync("psql", [...base, "-f", path], { env, stdio: ["ignore", "pipe", "pipe"] });
+  execFileSync("psql", [...base, "--single-transaction", "-f", path], {
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 const gm = "00000000-0000-0000-0000-0000000000a2",
   crew = "00000000-0000-0000-0000-0000000000b1";
 const as = (uid) =>
@@ -158,7 +161,13 @@ run(`insert into missions(id,code,name,status) values('${mission}','MITO_DEMO_20
 insert into crew_members(id,display_name,status) values('${astronaut}','Alex Morgan — Synthetic Astronaut','active');
 insert into mission_crew_assignments(mission_id,crew_member_id,status) values('${mission}','${astronaut}','active');
 insert into mission_memberships(id,mission_id,user_id,crew_member_id,role,active) values('63470171-3a22-4075-b197-ac85b90cb0ef','${mission}','${gm}','${astronaut}','ground_medical',true)`);
-const migration = "supabase/pending/20261026000000_medical_v3_production_synthetic_demo.sql";
+const migration = "supabase/pending/20261027000000_medical_v3_synthetic_schema.sql";
+const seedPath = "supabase/pending/20261027000000_medical_v3_synthetic_seed.sql";
+const rollbackPath = "supabase/pending/20261027000000_medical_v3_synthetic_disable.rollback.sql";
+const schemaSql = readFileSync(migration, "utf8");
+const seedSql = readFileSync(seedPath, "utf8");
+deny(seedSql, "seed before schema denied");
+
 // Atomic prerequisite failure must leave no v3 namespace.
 run(`update missions set status='active' where id='${mission}'`);
 let failed = false;
@@ -185,7 +194,69 @@ check(
   ) === "t",
   "production-equivalent permissive defaults actually applied",
 );
+deny(
+  `BEGIN;${schemaSql}DO $$ BEGIN RAISE EXCEPTION 'injected late DDL failure'; END $$;COMMIT;`,
+  "late schema failure aborts all DDL and ACL changes",
+);
+check(
+  run("select to_regclass('public.medical_ai_quota_reservations') is null") === "t",
+  "late schema failure leaves no namespace",
+);
 file(migration);
+verifyPermissions();
+deny(as(gm) + "select medical_v3_fixture_snapshot()", "schema-only snapshot fails closed");
+deny(
+  as(gm) + `select medical_v3_reserve_ai('${mission}','${astronaut}')`,
+  "schema-only quota cannot reserve without evidence",
+);
+check(
+  run("select count(*) from medical_ai_quota_reservations") === "0",
+  "no quota rows before seed",
+);
+// Rollback is safe even in the schema-only partial-completion state.
+run(`BEGIN;${readFileSync(rollbackPath, "utf8")};ROLLBACK;`);
+verifyPermissions();
+deny(
+  `BEGIN;update missions set status='active' where id='${mission}';${seedSql};COMMIT;`,
+  "seed rechecks locked current mission prerequisite",
+);
+for (const marker of [
+  "INSERT INTO public.medical_v3_fixture_observations",
+  "INSERT INTO public.medical_v3_fixture_receipts",
+  " IF (SELECT count(*) FROM public.medical_v3_fixture_sources)<>1",
+]) {
+  deny(
+    seedSql.replace(marker, `RAISE EXCEPTION 'injected seed failure';\n${marker}`),
+    `atomic seed rollback at ${marker}`,
+  );
+  check(
+    run(
+      "select (select count(*) from medical_v3_fixture_sources)=0 and (select count(*) from medical_v3_fixture_observations)=0 and (select count(*) from medical_v3_fixture_receipts)=0",
+    ) === "t",
+    "failed seed retains empty schema",
+  );
+}
+deny(
+  `BEGIN;alter function medical_v3_demo_deny_persistence() rename to medical_v3_changed;${seedSql};COMMIT;`,
+  "changed dependency denies seed",
+);
+deny(`set role authenticated;${seedSql}`, "authenticated cannot seed");
+deny(`set role service_role;${seedSql}`, "service role cannot seed");
+deny(
+  `BEGIN;grant truncate on medical_v3_fixture_sources to authenticated;${seedSql};COMMIT;`,
+  "drifted TRUNCATE privilege denies seed",
+);
+deny(
+  `BEGIN;alter table medical_advisor_review_events disable trigger medical_v3_demo_deny_persistence;${seedSql};COMMIT;`,
+  "disabled persistent-review guard denies seed",
+);
+file(seedPath);
+deny(seedSql, "second seed refused without mutation");
+// Existing rows, even exact partial rows, are never repaired automatically.
+deny(
+  `BEGIN;alter table medical_v3_fixture_receipts disable trigger medical_v3_fixture_receipt_immutable;delete from medical_v3_fixture_receipts where id='synthetic-v3-hr-002-test-receipt-1';${seedSql};COMMIT;`,
+  "partial seed state refuses repair",
+);
 verifyPermissions();
 permissionDenied(as(gm) + "select medical_v3_has_scope('m1','c1')", "internal scope helper denied");
 permissionDenied(as(gm) + "select medical_v3_review_history('m1','c1')", "history RPC denied");
@@ -308,6 +379,10 @@ check(
   run("select count(*) from medical_advisor_review_events") === "0",
   "persistent review table remains empty",
 );
+deny(
+  `insert into medical_advisor_review_events(mission_id,crew_member_id,actor_user_id,event_type,revision,request_id,request_sha256,evidence_sha256,draft_text,final_text,rationale) values('${mission}','${astronaut}','${gm}','draft_created',1,gen_random_uuid(),'test','${snapshot.sha256}','draft','','test')`,
+  "trusted direct insert cannot persist advisor review",
+);
 failed = false;
 try {
   file(migration);
@@ -315,7 +390,10 @@ try {
   failed = true;
 }
 check(failed, "reapplication refuses existing namespace");
-file("supabase/pending/20261026000000_medical_v3_production_synthetic_demo.rollback.sql");
+file(rollbackPath);
+file(rollbackPath);
+check(true, "disable rollback is safely repeatable");
+deny(seedSql, "seed cannot reactivate rolled-back schema");
 verifyPermissions(true);
 check(
   run(
