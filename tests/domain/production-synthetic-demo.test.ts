@@ -87,15 +87,18 @@ test("62/66 authoritative production facts, 25-second timeout and exact citation
     rpc: async (name: string) => {
       if (name === "medical_v3_fixture_snapshot") return { data: snapshot, error: null };
       if (name === "medical_v3_ai_evidence") return { data: evidence, error: null };
-      if (name === "medical_v3_reserve_ai")
-        return { data: { allowed: true, reservationId: "lease" }, error: null };
+      if (name === "medical_demo_reserve")
+        return { data: { allowed: true, attemptId: "lease" }, error: null };
+      if (name === "medical_demo_dispatch") return { data: true, error: null };
       released++;
-      return { data: null, error: null };
+      return { data: true, error: null };
     },
     providerFetch: (async (_url: unknown, init?: RequestInit) => {
       sent++;
       expect(init?.signal).toBeInstanceOf(AbortSignal);
       return Response.json({
+        model: "gpt-4.1-mini-2025-04-14",
+        usage: { input_tokens: 1000, output_tokens: 500 },
         output: [
           {
             content: [
