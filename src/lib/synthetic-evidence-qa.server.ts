@@ -1,5 +1,7 @@
 import { validateSyntheticSnapshot } from "@/domain/health-intelligence/synthetic-review-export";
 import { assertProductionSyntheticRequest } from "@/domain/health-intelligence/production-synthetic-demo";
+import { boundedSyntheticPayload, syntheticUsageMicrousd } from "@/domain/health-intelligence/synthetic-activation-policy";
+import { reserveSyntheticAttempt, permitSyntheticTransmission, finishSyntheticAttempt, syntheticProviderModel } from "./synthetic-activation-guard.server";
 import {
   QA_INSTRUCTIONS,
   QA_SCHEMA,
@@ -99,7 +101,25 @@ export async function answerSyntheticQuestion(
     )
   )
     return fail("Stale evidence; no data sent", 422);
-  const lease = await deps.rpc("medical_v3_reserve_ai", {
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+  const payload = {
+    model: deps.productionSynthetic ? syntheticProviderModel : deps.model || MEDICAL_OPENAI_DEFAULT_MODEL,
+    store: false,
+    max_output_tokens: MEDICAL_OPENAI_OUTPUT_TOKENS,
+    instructions: QA_INSTRUCTIONS,
+    input: JSON.stringify({ question, provenance: "synthetic", evidence: snapshot.evidence }),
+    text: { format: { type: "json_schema", name: "synthetic_evidence_answer", strict: true, schema: QA_SCHEMA } },
+  };
+  let providerBody: string;
+  try { providerBody = deps.productionSynthetic ? boundedSyntheticPayload(payload) : JSON.stringify(payload); }
+  catch { return fail("Input exceeds reserved spending bounds; no data sent", 413); }
+  if (deps.productionSynthetic && deps.model && deps.model !== syntheticProviderModel)
+    return fail("Configured model does not match the pinned spending policy", 503);
+  let attempt: string | null = null;
+  try {
+    if (deps.productionSynthetic) attempt = await reserveSyntheticAttempt(deps.rpc, snapshot.sha256, nonce);
+  } catch { return fail("Synthetic authorization, quota or spending cap denied; no data sent", 429); }
+  const lease = attempt ? { data: { allowed: true, reservationId: attempt }, error: null } : await deps.rpc("medical_v3_reserve_ai", {
     p_mission: snapshot.missionId,
     p_crew: snapshot.crewMemberId,
   });
@@ -111,26 +131,14 @@ export async function answerSyntheticQuestion(
       { status: 429, headers: { ...headers, "Retry-After": "60" } },
     );
   let result: Response;
+  let usage: number | null = null;
   try {
+    if (attempt) await permitSyntheticTransmission(deps.rpc, attempt, snapshot.sha256, nonce);
     const upstream = await deps.providerFetch(MEDICAL_OPENAI_RESPONSES_URL, {
       method: "POST",
       signal: AbortSignal.timeout(25_000),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${deps.apiKey}` },
-      body: JSON.stringify({
-        model: deps.model || MEDICAL_OPENAI_DEFAULT_MODEL,
-        store: false,
-        max_output_tokens: MEDICAL_OPENAI_OUTPUT_TOKENS,
-        instructions: QA_INSTRUCTIONS,
-        input: JSON.stringify({ question, provenance: "synthetic", evidence: snapshot.evidence }),
-        text: {
-          format: {
-            type: "json_schema",
-            name: "synthetic_evidence_answer",
-            strict: true,
-            schema: QA_SCHEMA,
-          },
-        },
-      }),
+      body: providerBody,
     });
     if (!upstream.ok)
       result = fail(
@@ -140,7 +148,12 @@ export async function answerSyntheticQuestion(
     else {
       const body = (await upstream.json()) as {
         output?: Array<{ content?: Array<{ type?: string; text?: string }> }>;
+        usage?: unknown;
+        model?: string;
       };
+      usage = syntheticUsageMicrousd(body.usage);
+      if (attempt && (usage === null || body.model !== syntheticProviderModel))
+        throw new Error("Pinned model or bounded usage could not be confirmed");
       const raw =
         body.output
           ?.flatMap((o) => o.content ?? [])
@@ -174,10 +187,15 @@ export async function answerSyntheticQuestion(
   } catch {
     result = fail("OpenAI request failed; no answer accepted", 502);
   } finally {
+    if (attempt) {
+      try { await finishSyntheticAttempt(deps.rpc, attempt, usage, nonce); }
+      catch { result = fail("Spending reconciliation unconfirmed; answer withheld and hold retained", 503); }
+    } else {
     const released = await deps.rpc("medical_v3_release_ai", {
       p_reservation: quota.reservationId,
     });
     if (released.error) result = fail("Quota release could not be confirmed; answer withheld", 503);
+    }
   }
   return result;
 }
