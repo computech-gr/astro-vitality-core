@@ -2,6 +2,8 @@
 
 ## Complete synthetic AI activation guard
 
+- [ ] Final hardening: block unsupported production transmission, test serialized SQL disable races and accounting failures, refresh fingerprints/security and verify available exact-GitHub-commit CI without activation.
+
 - [x] Prepare default-off pending schema, retaining-disable recovery, caller-scoped server integration and exact-scope authorization instructions; production and existing fixtures untouched.
 - [x] Exercise attempts, cost holds, concurrency, expiry, emergency disable, authorization and recovery in disposable SQL and automated server tests.
 - [x] Report immutable artifact fingerprints, security validation, unavailable final exact-commit CI and separate approvals in docs/MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md.
