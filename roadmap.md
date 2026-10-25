@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Permanent synthetic research AI
+
+- [ ] Implement versioned default-off policy, atomic rolling quotas/monthly reservations, owner administration, provider reconciliation and safe legacy transition.
+- [ ] Validate tests, disposable SQL security, lint/security and browser denial; document rollout and exact-revision CI results.
+- [ ] Production schema/publication/activation wait for separate owner authorization; provider admin synchronization waits for supported administrative credentials.
+
 ## Synthetic research activation review
 
 - [x] Implement owner-approved practical controls: version-matched guard/status, token bounds, enabled-path/race tests; 579 tests and 593 disposable SQL assertions, security audit/format/lint and zero-finding Trivy. Revised artifacts in MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md; no production execution.
