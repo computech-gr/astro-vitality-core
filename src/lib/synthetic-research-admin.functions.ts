@@ -135,6 +135,8 @@ export const synchronizeResearchCosts = createServerFn({ method: "POST" })
         p_input: totals.inputTokens,
         p_output: totals.outputTokens,
         p_requests: totals.requests,
+        p_until: totals.reportedUntil,
+        p_actor: context.userId,
       });
       if (r.error) throw new Error("Report could not be recorded");
       return {

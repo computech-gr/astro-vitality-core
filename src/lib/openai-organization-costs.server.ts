@@ -6,6 +6,7 @@ export interface ProviderTotals {
   inputTokens: number;
   outputTokens: number;
   requests: number;
+  reportedUntil: string;
 }
 export async function readOpenAIOrganizationTotals(
   key: string,
@@ -23,6 +24,7 @@ export async function readOpenAIOrganizationTotals(
     inputTokens: 0,
     outputTokens: 0,
     requests: 0,
+    reportedUntil: new Date(end * 1000).toISOString(),
   };
   for (const kind of ["costs", "usage/completions"] as const) {
     let cursor: string | null = null;

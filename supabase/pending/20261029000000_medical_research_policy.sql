@@ -43,7 +43,7 @@ CREATE INDEX medical_research_attempt_actor_time ON public.medical_research_atte
 CREATE TABLE public.medical_research_provider_sync(
  month date PRIMARY KEY, project_id text NOT NULL, recorded_microusd bigint NOT NULL CHECK(recorded_microusd>=0),
  provider_input_tokens bigint NOT NULL, provider_output_tokens bigint NOT NULL, provider_requests bigint NOT NULL,
- synchronized_at timestamptz NOT NULL DEFAULT clock_timestamp());
+ synchronized_at timestamptz NOT NULL DEFAULT clock_timestamp(), reported_until timestamptz NOT NULL);
 GRANT ALL ON public.medical_research_provider_sync TO postgres;
 REVOKE ALL ON public.medical_research_provider_sync FROM PUBLIC,anon,authenticated,service_role;
 ALTER TABLE public.medical_research_provider_sync ENABLE ROW LEVEL SECURITY;
@@ -76,7 +76,7 @@ DECLARE p public.medical_research_policy; held bigint; recorded bigint; synced t
  used:=held+coalesce(recorded,0);
  RETURN jsonb_build_object('version','synthetic-research-v2','owner',public.medical_research_is_owner(),'enabled',coalesce(p.enabled,false),
  'eligible',coalesce(scoped AND p.enabled AND p.active_attempt IS NULL AND used+100000<=p.budget_microusd AND (NOT p.sync_required OR synced>clock_timestamp()-interval '1 hour') AND (SELECT count(*) FROM public.medical_research_attempts WHERE actor_id=auth.uid() AND reserved_at>clock_timestamp()-make_interval(secs=>p.rolling_seconds))<p.rolling_limit,false),
- 'attempts',requests,'heldMicrousd',held,'budgetMicrousd',coalesce(p.budget_microusd,0),'remainingMicrousd',greatest(0,coalesce(p.budget_microusd,0)-used),'recordedMicrousd',recorded,'synchronizedAt',synced,'inputTokens',it,'outputTokens',ot,'failures',failures,'rollingLimit',p.rolling_limit,'rollingSeconds',p.rolling_seconds,'providerProject',p.provider_project,'syncRequired',p.sync_required,'activeAttempt',p.active_attempt,'revision',p.revision,'month',m);
+ 'attempts',requests,'dispatchedRequests',(SELECT count(*) FROM public.medical_research_attempts WHERE month=m AND dispatched_at IS NOT NULL),'providerRequests',(SELECT provider_requests FROM public.medical_research_provider_sync WHERE month=m AND project_id=p.provider_project),'estimatedUsageMicrousd',(SELECT coalesce(sum(estimated_usage_microusd),0) FROM public.medical_research_attempts WHERE month=m),'heldMicrousd',held,'budgetMicrousd',coalesce(p.budget_microusd,0),'remainingMicrousd',greatest(0,coalesce(p.budget_microusd,0)-used),'recordedMicrousd',recorded,'synchronizedAt',synced,'inputTokens',it,'outputTokens',ot,'failures',failures,'rollingLimit',p.rolling_limit,'rollingSeconds',p.rolling_seconds,'providerProject',p.provider_project,'syncRequired',p.sync_required,'activeAttempt',p.active_attempt,'revision',p.revision,'month',m);
 END $$;
 CREATE FUNCTION public.medical_research_configure(p_enabled boolean,p_budget bigint,p_limit integer,p_seconds integer,p_project text,p_sync boolean,p_revision bigint,p_ref text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,extensions,pg_temp AS $$
 DECLARE p public.medical_research_policy; BEGIN
@@ -142,12 +142,13 @@ DECLARE p public.medical_research_policy; r public.medical_research_attempts; BE
  INSERT INTO public.medical_research_audit(actor_id,action,details) VALUES(auth.uid(),'unresolved_hold_retained',jsonb_build_object('attempt',p_attempt,'reference',p_ref));
 END $$;
 -- Caller is verified owner; only server invokes this with provider metadata, never browser input.
-CREATE FUNCTION public.medical_research_record_sync(p_month date,p_project text,p_cost bigint,p_input bigint,p_output bigint,p_requests bigint) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,extensions,pg_temp AS $$ BEGIN
- IF current_setting('request.jwt.claim.role',true) IS DISTINCT FROM 'service_role' OR p_month IS NULL OR p_month<>date_trunc('month',clock_timestamp() AT TIME ZONE 'UTC')::date OR p_cost IS NULL OR p_cost<0 OR p_input IS NULL OR p_input<0 OR p_output IS NULL OR p_output<0 OR p_requests IS NULL OR p_requests<0 THEN RAISE EXCEPTION 'invalid privileged synchronization'; END IF;
+CREATE FUNCTION public.medical_research_record_sync(p_month date,p_project text,p_cost bigint,p_input bigint,p_output bigint,p_requests bigint,p_until timestamptz,p_actor uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,extensions,pg_temp AS $$ BEGIN
+ IF coalesce(nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'role',current_setting('request.jwt.claim.role',true)) IS DISTINCT FROM 'service_role' OR NOT EXISTS(SELECT 1 FROM public.medical_research_owners WHERE user_id=p_actor) OR p_until IS NULL OR NOT isfinite(p_until) OR p_until>clock_timestamp() OR p_until<p_month::timestamptz OR p_month IS NULL OR p_month<>date_trunc('month',clock_timestamp() AT TIME ZONE 'UTC')::date OR p_cost IS NULL OR p_cost<0 OR p_input IS NULL OR p_input<0 OR p_output IS NULL OR p_output<0 OR p_requests IS NULL OR p_requests<0 THEN RAISE EXCEPTION 'invalid privileged synchronization'; END IF;
  PERFORM 1 FROM public.medical_research_policy WHERE singleton AND provider_project=p_project FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'project mismatch'; END IF;
- INSERT INTO public.medical_research_provider_sync(month,project_id,recorded_microusd,provider_input_tokens,provider_output_tokens,provider_requests) VALUES(p_month,p_project,p_cost,p_input,p_output,p_requests) ON CONFLICT(month) DO UPDATE SET recorded_microusd=greatest(medical_research_provider_sync.recorded_microusd,excluded.recorded_microusd),provider_input_tokens=excluded.provider_input_tokens,provider_output_tokens=excluded.provider_output_tokens,provider_requests=excluded.provider_requests,synchronized_at=clock_timestamp();
- INSERT INTO public.medical_research_audit(actor_id,action,details) VALUES(auth.uid(),'provider_synchronized',jsonb_build_object('project',p_project,'month',p_month,'recorded_microusd',p_cost));
+ IF EXISTS(SELECT 1 FROM public.medical_research_provider_sync WHERE month=p_month AND (reported_until>=p_until OR recorded_microusd>p_cost OR provider_input_tokens>p_input OR provider_output_tokens>p_output OR provider_requests>p_requests)) THEN RAISE EXCEPTION 'stale or regressing provider snapshot'; END IF;
+ INSERT INTO public.medical_research_provider_sync(month,project_id,recorded_microusd,provider_input_tokens,provider_output_tokens,provider_requests,reported_until) VALUES(p_month,p_project,p_cost,p_input,p_output,p_requests,p_until) ON CONFLICT(month) DO UPDATE SET recorded_microusd=excluded.recorded_microusd,provider_input_tokens=excluded.provider_input_tokens,provider_output_tokens=excluded.provider_output_tokens,provider_requests=excluded.provider_requests,synchronized_at=clock_timestamp(),reported_until=excluded.reported_until;
+ INSERT INTO public.medical_research_audit(actor_id,action,details) VALUES(p_actor,'provider_synchronized',jsonb_build_object('project',p_project,'month',p_month,'recorded_microusd',p_cost));
 END $$;
 CREATE FUNCTION public.medical_research_audit_log() RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,extensions,pg_temp AS $$ BEGIN
  IF NOT public.medical_research_is_owner() THEN RAISE EXCEPTION 'owner denied'; END IF;
@@ -159,5 +160,5 @@ DO $acl$ DECLARE r record; BEGIN
 END $acl$;
 GRANT EXECUTE ON FUNCTION public.medical_research_is_owner(),public.medical_research_status(),public.medical_research_configure(boolean,bigint,integer,integer,text,boolean,bigint,text),public.medical_research_pause(text),public.medical_research_reserve(text,text),public.medical_research_dispatch(uuid,text,text),public.medical_research_finish(uuid,bigint,integer,integer,text,text,text),public.medical_research_resolve(uuid,text),public.medical_research_audit_log() TO authenticated;
 -- Metadata writes are privileged server work after caller-scoped ownership verification.
-GRANT EXECUTE ON FUNCTION public.medical_research_record_sync(date,text,bigint,bigint,bigint,bigint) TO service_role;
+GRANT EXECUTE ON FUNCTION public.medical_research_record_sync(date,text,bigint,bigint,bigint,bigint,timestamptz,uuid) TO service_role;
 REVOKE ALL ON FUNCTION public.medical_demo_authorize(timestamptz,timestamptz,uuid,text,text),public.medical_demo_reserve(text,text),public.medical_demo_dispatch(uuid,text,text) FROM PUBLIC,anon,authenticated,service_role;
