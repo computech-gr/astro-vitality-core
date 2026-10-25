@@ -242,8 +242,14 @@ deny(
 );
 deny(`set role authenticated;${seedSql}`, "authenticated cannot seed");
 deny(`set role service_role;${seedSql}`, "service role cannot seed");
-deny(`BEGIN;grant truncate on medical_v3_fixture_sources to authenticated;${seedSql};COMMIT;`, "drifted TRUNCATE privilege denies seed");
-deny(`BEGIN;alter table medical_advisor_review_events disable trigger medical_v3_demo_deny_persistence;${seedSql};COMMIT;`, "disabled persistent-review guard denies seed");
+deny(
+  `BEGIN;grant truncate on medical_v3_fixture_sources to authenticated;${seedSql};COMMIT;`,
+  "drifted TRUNCATE privilege denies seed",
+);
+deny(
+  `BEGIN;alter table medical_advisor_review_events disable trigger medical_v3_demo_deny_persistence;${seedSql};COMMIT;`,
+  "disabled persistent-review guard denies seed",
+);
 file(seedPath);
 deny(seedSql, "second seed refused without mutation");
 // Existing rows, even exact partial rows, are never repaired automatically.
@@ -373,7 +379,10 @@ check(
   run("select count(*) from medical_advisor_review_events") === "0",
   "persistent review table remains empty",
 );
-deny(`insert into medical_advisor_review_events(mission_id,crew_member_id,actor_user_id,event_type,revision,request_id,request_sha256,evidence_sha256,draft_text,final_text,rationale) values('${mission}','${astronaut}','${gm}','draft_created',1,gen_random_uuid(),'test','${snapshot.sha256}','draft','','test')`, "trusted direct insert cannot persist advisor review");
+deny(
+  `insert into medical_advisor_review_events(mission_id,crew_member_id,actor_user_id,event_type,revision,request_id,request_sha256,evidence_sha256,draft_text,final_text,rationale) values('${mission}','${astronaut}','${gm}','draft_created',1,gen_random_uuid(),'test','${snapshot.sha256}','draft','','test')`,
+  "trusted direct insert cannot persist advisor review",
+);
 failed = false;
 try {
   file(migration);
