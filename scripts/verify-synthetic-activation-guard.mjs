@@ -119,9 +119,18 @@ run(
   `with x as (select clock_timestamp()+interval '0.1 seconds' t) select medical_demo_authorize(t,t+interval '30 minutes','${actor}','owner-approval-ref','${sha}') from x`,
 );
 run("select pg_sleep(0.15)");
-console.log(execFileSync("bun", ["scripts/test-synthetic-activation-server.ts"], { env, encoding: "utf8" }));
-check(run("select attempts=1 and held_microusd=100000 and active_attempt is null from medical_demo_authorization")==="t", "server integration reconciles without refunding hold");
-run("update medical_demo_authorization set attempts=0,held_microusd=0;delete from medical_demo_attempts;delete from medical_ai_quota_reservations;");
+console.log(
+  execFileSync("bun", ["scripts/test-synthetic-activation-server.ts"], { env, encoding: "utf8" }),
+);
+check(
+  run(
+    "select attempts=1 and held_microusd=100000 and active_attempt is null from medical_demo_authorization",
+  ) === "t",
+  "server integration reconciles without refunding hold",
+);
+run(
+  "update medical_demo_authorization set attempts=0,held_microusd=0;delete from medical_demo_attempts;delete from medical_ai_quota_reservations;",
+);
 deny(
   `select medical_demo_authorize(now()+interval '1 minute',now()+interval '31 minutes','${actor}','second-window','${sha}')`,
   "authorization cannot reset lifetime counters",
@@ -143,11 +152,31 @@ check(
   "eight concurrent reserve callers yield exactly one attempt",
 );
 const id = run("select active_attempt from medical_demo_authorization");
-check(run(caller + `select medical_demo_finish('${id}',0,'${nonce}')`).split("\n").at(-1)==="f", "early completion cannot release an undispatched hold");
-check(run(caller + `select medical_demo_dispatch(NULL,'${sha}',NULL)`).split("\n").at(-1)==="f", "NULL dispatch rejected");
-check(run(caller + `select medical_demo_finish(NULL,0,NULL)`).split("\n").at(-1)==="f", "NULL completion rejected");
+check(
+  run(caller + `select medical_demo_finish('${id}',0,'${nonce}')`)
+    .split("\n")
+    .at(-1) === "f",
+  "early completion cannot release an undispatched hold",
+);
+check(
+  run(caller + `select medical_demo_dispatch(NULL,'${sha}',NULL)`)
+    .split("\n")
+    .at(-1) === "f",
+  "NULL dispatch rejected",
+);
+check(
+  run(caller + `select medical_demo_finish(NULL,0,NULL)`)
+    .split("\n")
+    .at(-1) === "f",
+  "NULL completion rejected",
+);
 deny(caller + `select medical_demo_reserve('${sha}',NULL)`, "NULL nonce reserve denied");
-check(run(caller + `select medical_demo_dispatch('${id}','${sha}','${"b".repeat(64)}')`).split("\n").at(-1)==="f", "wrong nonce denies transmission");
+check(
+  run(caller + `select medical_demo_dispatch('${id}','${sha}','${"b".repeat(64)}')`)
+    .split("\n")
+    .at(-1) === "f",
+  "wrong nonce denies transmission",
+);
 check(
   run(caller + `select medical_demo_dispatch('${id}','${sha}','${nonce}')`)
     .split("\n")
@@ -198,7 +227,12 @@ run(
 const pending = reserve();
 check(pending.allowed === true, "reserved before disable");
 run("update medical_demo_authorization set ends_at=clock_timestamp()-interval '1 second'");
-check(run(caller + `select medical_demo_dispatch('${pending.attemptId}','${sha}','${nonce}')`).split("\n").at(-1)==="f", "expiry between reserve and dispatch denies provider permit");
+check(
+  run(caller + `select medical_demo_dispatch('${pending.attemptId}','${sha}','${nonce}')`)
+    .split("\n")
+    .at(-1) === "f",
+  "expiry between reserve and dispatch denies provider permit",
+);
 run("update medical_demo_authorization set ends_at=clock_timestamp()+interval '30 minutes'");
 deny(
   `set role authenticated;select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-0000000000b1',false);select medical_demo_disable('unauthorized')`,

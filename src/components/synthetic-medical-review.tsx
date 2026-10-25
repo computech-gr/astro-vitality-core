@@ -213,10 +213,21 @@ export function SyntheticMedicalReview() {
       <Button disabled={busy} onClick={() => void run(refresh)}>
         Load authorized synthetic fixture
       </Button>
-      <Button variant="destructive" onClick={() => void disableAI({ data: { reference: "operator-emergency-disable" } }).then(() => {
-        clearSession();
-        setStatus("Synthetic AI disabled; already permitted requests may still complete.");
-      }).catch(() => setStatus("Emergency disable not confirmed; use the authorized SQL disable procedure."))}>
+      <Button
+        variant="destructive"
+        onClick={() =>
+          void disableAI({ data: { reference: "operator-emergency-disable" } })
+            .then(() => {
+              clearSession();
+              setStatus("Synthetic AI disabled; already permitted requests may still complete.");
+            })
+            .catch(() =>
+              setStatus(
+                "Emergency disable not confirmed; use the authorized SQL disable procedure.",
+              ),
+            )
+        }
+      >
         <OctagonX aria-hidden="true" /> Emergency disable AI
       </Button>
       <p role="status" className="break-words text-sm">
