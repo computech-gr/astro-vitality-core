@@ -97,16 +97,29 @@ jobs:
       - name: Permanent synthetic policy disposable SQL security
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y postgresql postgresql-contrib
-          PG_BIN="$(pg_config --bindir)"
+          sudo apt-get install -y postgresql-client
           mkdir -p /tmp/mito-ci/socket /tmp/production-synthetic
-          sudo chown -R postgres:postgres /tmp/mito-ci
-          sudo -u postgres "$PG_BIN/initdb" -D /tmp/mito-ci/data -A trust -U postgres
-          sudo -u postgres "$PG_BIN/pg_ctl" -D /tmp/mito-ci/data -l /tmp/mito-ci/server.log -o '-k /tmp/mito-ci/socket -p 55432 -h ""' start
+          # Immutable migrations use MAINTAIN, introduced in PostgreSQL 17.
+          # Independent disposable socket only; never a managed database target.
+          chmod 777 /tmp/mito-ci/socket
+          docker run --detach --name mito-sql --network none \
+            -e POSTGRES_HOST_AUTH_METHOD=trust \
+            -v /tmp/mito-ci/socket:/var/run/postgresql \
+            postgres:17 -c listen_addresses='' -c port=55432
+          ready=false
+          for attempt in $(seq 1 60); do
+            if pg_isready -h /tmp/mito-ci/socket -p 55432 -U postgres; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then docker logs mito-sql; exit 1; fi
           export FV01_PG_SOCKET_DIR=/tmp/mito-ci/socket FV0143_INCLUDE_PENDING=1
           node scripts/verify-medical-v3-production-synthetic.mjs
           node scripts/verify-synthetic-activation-guard.mjs
           node scripts/verify-synthetic-research-policy.mjs
+          docker stop mito-sql
 
       - name: Typecheck
         run: bun run typecheck

@@ -2,6 +2,8 @@
 
 ## Permanent synthetic research AI
 
+- [x] Correct attributable CI PostgreSQL 16/MAINTAIN mismatch by using an independent PostgreSQL 17 container; immutable SQL is unchanged and 588 tests/formatting pass. Replacement exact-revision CI remains pending synchronization.
+- [ ] Production workflow blocked by mandatory exact-final CI and requested interpretation incompatibility: current Q&A permits only exact observation facts, not HR comparison, limitations or additional-data prose. Do not weaken validators or substitute a different generating question without explicit scope resolution; no production actions executed.
 - [x] Implement versioned default-off policy, atomic rolling quotas/monthly reservations, owner administration, provider reconciliation and safe legacy transition.
 - [x] Validate 588 tests, 156 permanent-policy disposable SQL assertions plus 593 legacy assertions, security/format/lint, zero-finding Trivy and signed-in browser denial; document rollout in docs/MEDICAL_V3_PERMANENT_SYNTHETIC_RESEARCH.md.
 - [ ] Exact-final Quality/Security/typecheck/production build wait for synchronized GitHub CI; inspected revision has no matching runs.
