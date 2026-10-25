@@ -2,12 +2,13 @@
 
 ## Synthetic research activation review
 
-- [ ] Implement owner-approved practical-control policy: version-matched guard/status, token bounds, enabled-path tests, disposable SQL/security validation, refreshed fingerprints and exact-commit CI report; no production execution.
+- [x] Implement owner-approved practical controls: version-matched guard/status, token bounds, enabled-path/race tests; 579 tests and 593 disposable SQL assertions, security audit/format/lint and zero-finding Trivy. Revised artifacts in MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md; no production execution.
+- [ ] Final exact-commit Quality/Security/typecheck/build require completed synchronized GitHub runs; prior green baseline is not certification.
 - [x] Deliver one concrete production implementation/deployment checklist with exact artifacts, commit/CI evidence, verification SQL, retaining-disable recovery and four separate approval gates; no execution authorized. Actual pending guard defines six functions, correcting the report's seven-function count.
 - [x] Read-only production verification: exact fixtures, scope membership, fifteen function fingerprints/allowlist, five RLS tables, persistence denial and existing minute quotas; pending lifetime/window/disable guard absent.
 - [x] Verify current source SHA 853ba6a6bbf5d90b3a3bdfa648add44b4d692b84: Quality (including typecheck/production build) and Security Scan passed; published server revision and effective flag values remain unattested.
 - [x] Plan reviewed and approved for default-off investigation only; 13 focused Bun tests passed. No application code, SQL, flags or provider requests changed.
-- [ ] Activation remains NO-GO: independently supported billing/outbound-stop guarantees remain unavailable in existing infrastructure; further implementation requires those guarantees, followed by exact schema/recovery, deployment and window approvals. Published server revision/effective flags and provider configuration remain unattested.
+- [ ] Production schema/recovery, deployment and final UTC activation/operator authorization remain separate; current provider model/pricing and deployed revision/configuration need approved verification. Owner-approved practical accounting/permit semantics supersede the prior absolute guarantees; no independent staging requirement.
 
 ## Complete synthetic AI activation guard
 
