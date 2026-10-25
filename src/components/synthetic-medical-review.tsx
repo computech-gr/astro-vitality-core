@@ -19,6 +19,9 @@ import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/syn
 import { SYNTHETIC_DEMO_QUESTIONS } from "@/domain/health-intelligence/production-synthetic-demo";
 import { validateAIDraft } from "@/domain/health-intelligence/ai-draft-validation";
 import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
+import {
+  SYNTHETIC_TAB_CACHE_KEY, readSyntheticTabState, writeSyntheticTabState,
+} from "@/domain/health-intelligence/synthetic-tab-state";
 
 /** Separate from offline reports: no observation-store dependency or browser authority. */
 export function SyntheticMedicalReview() {
@@ -30,6 +33,14 @@ export function SyntheticMedicalReview() {
   const disableAI = useServerFn(emergencyDisableSyntheticAI);
   const activationStatus = useServerFn(getSyntheticActivationStatus);
   const generationEpoch = useRef(0);
+  const authorizationEpoch = useRef(0);
+  const ownerRef = useRef<string | null>(null);
+  const snapshotRef = useRef<SyntheticEvidenceSnapshot | null>(null);
+  const refreshRef = useRef<(() => Promise<void>) | null>(null);
+  const [cacheReady, setCacheReady] = useState(false);
+  const clearCache = () => {
+    try { sessionStorage.removeItem(SYNTHETIC_TAB_CACHE_KEY); } catch { /* Optional storage. */ }
+  };
   const [guardStatus, setGuardStatus] = useState<Awaited<
     ReturnType<typeof activationStatus>
   > | null>(null);
@@ -46,18 +57,6 @@ export function SyntheticMedicalReview() {
     setConsent(false);
     setQaConsent(false);
   };
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (["SIGNED_OUT", "SIGNED_IN", "USER_UPDATED"].includes(event)) {
-        clearSession();
-        setSnapshot(null);
-        setEvents([]);
-        setPersistent(false);
-        setGuardStatus(null);
-      }
-    });
-    return () => data.subscription.unsubscribe();
-  }, []);
   const [qaConsent, setQaConsent] = useState(false);
   const [answer, setAnswer] = useState("");
   const [snapshot, setSnapshot] = useState<SyntheticEvidenceSnapshot | null>(null);
@@ -75,33 +74,106 @@ export function SyntheticMedicalReview() {
     null,
   );
   const refresh = async () => {
-    clearSession();
-    setGuardStatus(await activationStatus());
-    const result = await load();
-    if (!result.available || !result.snapshot) {
-      setSnapshot(null);
-      setEvents([]);
-      setStatus("Synthetic source disabled; no persistent acknowledgment available.");
-      return;
+    const epoch = ++authorizationEpoch.current;
+    setCacheReady(false);
+    setConsent(false);
+    setQaConsent(false);
+    setAcknowledged(false);
+    // Hide cached work until this read reauthorizes it; retain in-memory text on same-scope focus.
+    setSnapshot(null);
+    try {
+      const auth = await supabase.auth.getUser();
+      if (authorizationEpoch.current !== epoch) return;
+      const userId = auth.data.user?.id;
+      if (auth.error || !userId) throw new Error("Sign in required to restore synthetic work.");
+      if (ownerRef.current && ownerRef.current !== userId) {
+        clearSession(); clearCache(); snapshotRef.current = null;
+      }
+      ownerRef.current = userId;
+      const result = await load();
+      if (authorizationEpoch.current !== epoch) return;
+      if (!result.available || !result.snapshot)
+        throw new Error("Synthetic source disabled; no cached work authorized.");
+      const current = result.snapshot;
+      const [resultHistory, guard, verifiedAuth] = await Promise.all([
+        history({ data: { missionId: current.missionId, crewMemberId: current.crewMemberId } }),
+        activationStatus(), supabase.auth.getUser(),
+      ]);
+      if (authorizationEpoch.current !== epoch) return;
+      if (verifiedAuth.error || verifiedAuth.data.user?.id !== userId)
+        throw new Error("Account changed; synthetic work invalidated.");
+      const previous = snapshotRef.current;
+      if (previous && (previous.sha256 !== current.sha256 || previous.missionId !== current.missionId ||
+          previous.crewMemberId !== current.crewMemberId)) {
+        clearSession(); clearCache();
+      }
+      if (!previous) {
+        const cached = readSyntheticTabState(sessionStorage, userId, current);
+        if (cached) {
+          setQuestion(cached.question); setAnswer(cached.answer);
+          setDraft(cached.draft); setFinal(cached.final);
+        }
+      }
+      snapshotRef.current = current;
+      setSnapshot(current);
+      setPersistent(resultHistory.available);
+      setEvents(resultHistory.events);
+      setGuardStatus(guard);
+      setCacheReady(true);
+      setStatus("Authorized synthetic fixture; retained text is unverified local work, not consent or medical approval.");
+    } catch (error) {
+      if (authorizationEpoch.current !== epoch) return;
+      clearSession(); clearCache(); snapshotRef.current = null;
+      setSnapshot(null); setEvents([]); setPersistent(false); setGuardStatus(null);
+      setStatus(error instanceof Error ? error.message : "Synthetic authorization failed.");
     }
-    setSnapshot(result.snapshot);
-    const resultHistory = await history({
-      data: {
-        missionId: result.snapshot.missionId,
-        crewMemberId: result.snapshot.crewMemberId,
-      },
-    });
-    setPersistent(resultHistory.available);
-    setEvents(resultHistory.events);
-    setStatus(
-      "Invented synthetic fixtures — test receipts are not human medical review or scientific approval.",
-    );
   };
+  refreshRef.current = refresh;
+  useEffect(() => {
+    const invalidate = () => {
+      authorizationEpoch.current++;
+      ownerRef.current = null;
+      snapshotRef.current = null;
+      clearCache(); clearSession(); setCacheReady(false);
+      setSnapshot(null); setEvents([]); setPersistent(false); setGuardStatus(null);
+    };
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      const nextOwner = session?.user.id;
+      if (event === "SIGNED_OUT" || event === "USER_UPDATED" ||
+          (ownerRef.current && nextOwner !== ownerRef.current)) invalidate();
+      // SIGNED_IN on refocus is not necessarily an account change.
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        setConsent(false); setQaConsent(false); setAcknowledged(false); setCacheReady(false);
+        setSnapshot(null);
+        queueMicrotask(() => { void refreshRef.current?.(); });
+      }
+    });
+    const refocus = () => {
+      if (document.visibilityState === "visible") void refreshRef.current?.();
+    };
+    window.addEventListener("focus", refocus);
+    document.addEventListener("visibilitychange", refocus);
+    void refreshRef.current?.();
+    return () => {
+      authorizationEpoch.current++; generationEpoch.current++;
+      data.subscription.unsubscribe();
+      window.removeEventListener("focus", refocus);
+      document.removeEventListener("visibilitychange", refocus);
+    };
+  }, []);
+  useEffect(() => {
+    if (!cacheReady || !snapshot || !ownerRef.current) return;
+    writeSyntheticTabState(sessionStorage, ownerRef.current, snapshot, { question, answer, draft, final });
+  }, [cacheReady, snapshot, question, answer, draft, final]);
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
     try {
       await action();
     } catch (error) {
+      authorizationEpoch.current++;
+      setCacheReady(false);
+      snapshotRef.current = null;
+      clearCache();
       clearSession();
       setSnapshot(null);
       setEvents((previous) => previous.map((event) => ({ ...event, verified_current: false })));
@@ -238,6 +310,10 @@ export function SyntheticMedicalReview() {
       <Button
         variant="destructive"
         onClick={() => {
+          authorizationEpoch.current++;
+          setCacheReady(false);
+          snapshotRef.current = null;
+          clearCache();
           clearSession();
           void disableAI({ data: { reference: "operator-emergency-disable" } })
             .then(() => {
