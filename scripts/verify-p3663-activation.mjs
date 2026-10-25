@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Offline pre-deployment gate. Never connects to or modifies a database.
+// Offline recovery-evidence gate. Never connects to or modifies a database.
+// Journal IDs 7-9 are owner-provided live observations, NOT independently verified by this script.
 // Usage: node scripts/verify-p3663-activation.mjs /private/path/restore-evidence.json
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -14,8 +15,8 @@ const migrations = names.map((path,i) => {
   try {
     const sha256=createHash('sha256').update(readFileSync(path)).digest('hex');
     if (!sha256.startsWith(expected[i])) errors.push(`Fingerprint mismatch: ${path}`);
-    return {order:i+14,path,sha256};
-  } catch {errors.push(`Missing: ${path}`);return {order:i+14,path,sha256:null};}
+    return {reportedLiveJournalId:i+7,path,sha256};
+  } catch {errors.push(`Missing: ${path}`);return {reportedLiveJournalId:i+7,path,sha256:null};}
 });
 for(const path of ['supabase/pending/20261018000000_p364_synthetic_submission.rollback.sql','supabase/pending/20261019000000_p365_synthetic_review_history.rollback.sql']){
   try {readFileSync(path);} catch {errors.push(`Missing rollback: ${path}`);}
