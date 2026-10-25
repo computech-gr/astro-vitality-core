@@ -39,11 +39,14 @@ export const askSyntheticEvidence = createServerFn({ method: "POST" })
       model: process.env["MITO_MEDICAL_AI_MODEL"],
       rpc: async (name, args) =>
         await (context.supabase as unknown as PendingRpcClient).rpc(name, args),
-      providerFetch: fetch,
+      // Wrapped: passing the bare global fetch as an object property makes workerd throw
+      // "Illegal invocation" before transmission (attempt 92baf58e… on 2026-10-25).
+      providerFetch: (input, init) => fetch(input, init),
       now: () => new Date().toISOString(),
     });
     const body = (await response.json()) as {
       error?: string;
+      correlationId?: string;
       text?: string;
       citedIds?: string[];
       evidence_sha256?: string;
