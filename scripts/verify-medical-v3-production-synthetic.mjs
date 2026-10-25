@@ -261,10 +261,15 @@ deny(
   seedSql.replace(committedSnapshotHash, originalSnapshotHash),
   "original seed refuses committed formatting variant",
 );
-const snapshotDefinition = run("select pg_get_functiondef('medical_v3_fixture_snapshot()'::regprocedure)");
+const snapshotDefinition = run(
+  "select pg_get_functiondef('medical_v3_fixture_snapshot()'::regprocedure)",
+);
 const originalDefinition = snapshotDefinition.replace("\n  'sha256'", "\n 'sha256'");
 check(originalDefinition !== snapshotDefinition, "snapshot indentation reconciliation is concrete");
-deny(`BEGIN;${originalDefinition};${seedSql};COMMIT;`, "reconciled seed refuses original snapshot hash");
+deny(
+  `BEGIN;${originalDefinition};${seedSql};COMMIT;`,
+  "reconciled seed refuses original snapshot hash",
+);
 deny(
   `BEGIN;${snapshotDefinition.replace("DECLARE scope", "DECLARE  scope")};${seedSql};COMMIT;`,
   "reconciled seed refuses unrelated whitespace drift",
@@ -413,10 +418,18 @@ transactionCheck(
   `delete from medical_ai_quota_reservations; insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '${crew}','${mission}','${astronaut}',clock_timestamp() from generate_series(1,20);${as(gm)}select (medical_v3_reserve_ai('${mission}','${astronaut}')->>'allowed')::boolean=false`,
   "21st mission request denied even with no prior caller requests",
 );
-const committedSnapshot = run(as(gm) + "select medical_v3_fixture_snapshot()::text").split("\n").at(-1);
-const originalSnapshot = run(`BEGIN;${originalDefinition};${as(gm)}select medical_v3_fixture_snapshot()::text;ROLLBACK;`)
-  .split("\n").find((line) => line.startsWith("{"));
-check(committedSnapshot === originalSnapshot, "original and committed definitions return identical complete evidence JSON and hash");
+const committedSnapshot = run(as(gm) + "select medical_v3_fixture_snapshot()::text")
+  .split("\n")
+  .at(-1);
+const originalSnapshot = run(
+  `BEGIN;${originalDefinition};${as(gm)}select medical_v3_fixture_snapshot()::text;ROLLBACK;`,
+)
+  .split("\n")
+  .find((line) => line.startsWith("{"));
+check(
+  committedSnapshot === originalSnapshot,
+  "original and committed definitions return identical complete evidence JSON and hash",
+);
 file(rollbackPath);
 file(rollbackPath);
 check(true, "disable rollback is safely repeatable");

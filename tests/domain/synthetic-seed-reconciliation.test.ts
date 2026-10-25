@@ -22,7 +22,9 @@ test("seed reconciliation changes exactly one pin and preserves every other byte
   expect(hash(seed)).toBe("131502bd285c5714586220f05f2f2a0da43c383a88b92dd5372ef0ea811095e1");
   expect(seed.split(committedPin)).toHaveLength(2);
   expect(seed.includes(originalPin)).toBe(false);
-  expect(hash(seed.replace(committedPin, originalPin))).toBe("39f18901515d5adbf8942bd88b20723b8ded215d53f07f2d076f3cbcb51c6343");
+  expect(hash(seed.replace(committedPin, originalPin))).toBe(
+    "39f18901515d5adbf8942bd88b20723b8ded215d53f07f2d076f3cbcb51c6343",
+  );
   expect((seed.match(/^DO \$seed\$/gm) ?? []).length).toBe(1);
   expect(seed.trimEnd().endsWith("END $seed$;")).toBe(true);
 });
@@ -31,5 +33,7 @@ test("retaining-disable reconciliation changes exactly one pin without altering 
   const rollback = readFileSync(`${prefix}disable.rollback.sql`, "utf8");
   expect(hash(rollback)).toBe("e7eb66b4e676aac6b410ca18aaa3ac2758e4ec8bbc7ef809f681415b96cf09b3");
   expect(rollback.split(committedPin)).toHaveLength(2);
-  expect(hash(rollback.replace(committedPin, originalPin))).toBe("40f19bba27c5ba8b42535416ab1eefa22d40b34e29b952f6b91ce6580cab1a21");
+  expect(hash(rollback.replace(committedPin, originalPin))).toBe(
+    "40f19bba27c5ba8b42535416ab1eefa22d40b34e29b952f6b91ce6580cab1a21",
+  );
 });
