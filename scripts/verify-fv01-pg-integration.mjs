@@ -42,7 +42,8 @@ const pending =
           (f) =>
             f.endsWith(".sql") &&
             !f.includes("rollback") &&
-            !f.includes("medical_v3_production_synthetic_demo"),
+            !f.includes("medical_v3_production_synthetic_demo") &&
+            !f.startsWith("20261027000000_medical_v3_synthetic_"),
         )
         .sort()
     : [];
