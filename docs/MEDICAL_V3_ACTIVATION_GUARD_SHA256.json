@@ -1,70 +1,156 @@
 {
   "algorithm": "SHA-256",
-  "scope": "Pending synthetic activation guard candidate; no production authorization",
+  "scope": "Owner-approved practical synthetic research guard candidate; no production authorization",
+  "historicalHardGuaranteeCandidate": {
+    "algorithm": "SHA-256",
+    "scope": "Pending synthetic activation guard candidate; no production authorization",
+    "artifacts": {
+      "src/domain/health-intelligence/synthetic-activation-policy.ts": {
+        "sha256": "8010f0fbd9bb4f44c3eefa92479e22961660b84a2128704ecf89212d6734e532",
+        "bytes": 1870
+      },
+      "src/lib/synthetic-activation-guard.server.ts": {
+        "sha256": "35bfccc822d12607e151d312280d201767fc05587dd7e55742d5418729c423c3",
+        "bytes": 1537
+      },
+      "src/lib/synthetic-activation-control.functions.ts": {
+        "sha256": "1c7869ebab10406c02537b1a54d4f0d4cd0224c84879bbcfddbe0d85ebd980d4",
+        "bytes": 986
+      },
+      "src/lib/synthetic-evidence-qa.server.ts": {
+        "sha256": "507ff089f7d1a36785b1d7c256dd7e5a208bd27443dc5ad2b2e0b49b62f87769",
+        "bytes": 9482
+      },
+      "src/routes/api.medical-ai-draft.ts": {
+        "sha256": "da925f68b93ec4bd9609fa10cf26752b415435b8741cc3711fc796d4747e9603",
+        "bytes": 11603
+      },
+      "src/components/synthetic-medical-review.tsx": {
+        "sha256": "1ed22f527568427672bb81aed384bb6c26966a9a9f50f7c223180c71f49c81b4",
+        "bytes": 17184
+      },
+      "tests/domain/production-synthetic-demo.test.ts": {
+        "sha256": "246520af325d5578d2b39cbe9fed160204b26e68db8176befb4947297b9dac76",
+        "bytes": 4803
+      },
+      "tests/domain/synthetic-activation-guard.test.ts": {
+        "sha256": "a0b86c5ead4ab9024e5e6aa597e3e4573a56ef895c75f6cc91f03ef49ad76650",
+        "bytes": 3756
+      },
+      "scripts/test-production-synthetic-server.ts": {
+        "sha256": "464ac2898d114528c01f1fdfea630b9cf67cff0595caa3ecca68bef83cf854a0",
+        "bytes": 3857
+      },
+      "scripts/test-synthetic-activation-server.ts": {
+        "sha256": "56452a2f7813fba39d6b9123910a71469e6c1cb2d8edd2d8afd3fa9155105499",
+        "bytes": 3873
+      },
+      "scripts/verify-synthetic-activation-guard.mjs": {
+        "sha256": "36e2af4599687014faed367eba9db5d9b2e6cb7bdfad1fea560106fb7f9d172b",
+        "bytes": 15374
+      },
+      "scripts/medical-v3-static-checks.mjs": {
+        "sha256": "2f7f6271e0fd7961eff8fe9f0db0361c8532aab1fda1b7eea6e9ae9230277021",
+        "bytes": 2067
+      },
+      "supabase/pending/20261028000000_medical_demo_activation_guard.sql": {
+        "sha256": "a12164a0e9d47b398bd4eaad35ca446a84c815511afd7c95605a87aa85adcbc1",
+        "bytes": 15839
+      },
+      "supabase/pending/20261028000000_medical_demo_activation_guard.rollback.sql": {
+        "sha256": "b95473edf8f0cfd15b8cf5093a57a531931660281f113025636a35e8b8f2c49e",
+        "bytes": 659
+      },
+      "AGENTS.md": {
+        "sha256": "a14d092434a8a72d97f8b1e327040303deac2d4c30748c4c7e5dd2316070d258",
+        "bytes": 7332
+      },
+      "roadmap.md": {
+        "sha256": "56392c14fb660956b323490032731f6ac8d01ac6c532745b4daa733f47435f76",
+        "bytes": 17995
+      }
+    }
+  },
   "artifacts": {
     "src/domain/health-intelligence/synthetic-activation-policy.ts": {
-      "sha256": "8010f0fbd9bb4f44c3eefa92479e22961660b84a2128704ecf89212d6734e532",
-      "bytes": 1870
+      "sha256": "612d8ea22d14598be5830b3a6422ec59305f326e3a509946b274227e25b1afc5",
+      "bytes": 1708
     },
     "src/lib/synthetic-activation-guard.server.ts": {
       "sha256": "35bfccc822d12607e151d312280d201767fc05587dd7e55742d5418729c423c3",
       "bytes": 1537
     },
     "src/lib/synthetic-activation-control.functions.ts": {
-      "sha256": "1c7869ebab10406c02537b1a54d4f0d4cd0224c84879bbcfddbe0d85ebd980d4",
-      "bytes": 986
+      "sha256": "20f4e2381a8c59ec390d9d4bc7d4888262128e9f1cdc0deb050f428663c6e9f2",
+      "bytes": 2407
     },
     "src/lib/synthetic-evidence-qa.server.ts": {
-      "sha256": "507ff089f7d1a36785b1d7c256dd7e5a208bd27443dc5ad2b2e0b49b62f87769",
-      "bytes": 9482
+      "sha256": "904c951dfec424f695e434ab2682d2fb1229edf112114187f99eac4f17a08c87",
+      "bytes": 9932
     },
     "src/routes/api.medical-ai-draft.ts": {
       "sha256": "da925f68b93ec4bd9609fa10cf26752b415435b8741cc3711fc796d4747e9603",
       "bytes": 11603
     },
     "src/components/synthetic-medical-review.tsx": {
-      "sha256": "1ed22f527568427672bb81aed384bb6c26966a9a9f50f7c223180c71f49c81b4",
-      "bytes": 17184
+      "sha256": "010b3b11e916de45675a8044222f52a85a8dcd1cc32a6d386bbdbc0e85301788",
+      "bytes": 18829
     },
     "tests/domain/production-synthetic-demo.test.ts": {
-      "sha256": "246520af325d5578d2b39cbe9fed160204b26e68db8176befb4947297b9dac76",
-      "bytes": 4803
+      "sha256": "58a442920feb74eeda39f049908f42402ec65f47d13f211c96a4ca35be78f12e",
+      "bytes": 7214
     },
     "tests/domain/synthetic-activation-guard.test.ts": {
-      "sha256": "a0b86c5ead4ab9024e5e6aa597e3e4573a56ef895c75f6cc91f03ef49ad76650",
-      "bytes": 3756
+      "sha256": "c78b1b81332ff789d05cb47ec69f30a2dd12c36fef9b3e3b2a6e921bfcfd871f",
+      "bytes": 3743
     },
     "scripts/test-production-synthetic-server.ts": {
       "sha256": "464ac2898d114528c01f1fdfea630b9cf67cff0595caa3ecca68bef83cf854a0",
       "bytes": 3857
     },
     "scripts/test-synthetic-activation-server.ts": {
-      "sha256": "56452a2f7813fba39d6b9123910a71469e6c1cb2d8edd2d8afd3fa9155105499",
-      "bytes": 3873
+      "sha256": "a22cc5921b729e7d2231664778c0b8e66a89dcce31f68489cb4b2b9e670c36f6",
+      "bytes": 3952
     },
     "scripts/verify-synthetic-activation-guard.mjs": {
-      "sha256": "36e2af4599687014faed367eba9db5d9b2e6cb7bdfad1fea560106fb7f9d172b",
-      "bytes": 15374
+      "sha256": "5197d5759ac4b303004a3b536132d9d3d1bdb614aaf03a4d5dcbe3db31f93e30",
+      "bytes": 16325
     },
     "scripts/medical-v3-static-checks.mjs": {
       "sha256": "2f7f6271e0fd7961eff8fe9f0db0361c8532aab1fda1b7eea6e9ae9230277021",
       "bytes": 2067
     },
     "supabase/pending/20261028000000_medical_demo_activation_guard.sql": {
-      "sha256": "a12164a0e9d47b398bd4eaad35ca446a84c815511afd7c95605a87aa85adcbc1",
-      "bytes": 15839
+      "sha256": "f796b9c84d7bf17ffc18cd75cab61bcc313e0c60fb395332f5f392b345779e9a",
+      "bytes": 16894
     },
     "supabase/pending/20261028000000_medical_demo_activation_guard.rollback.sql": {
       "sha256": "b95473edf8f0cfd15b8cf5093a57a531931660281f113025636a35e8b8f2c49e",
       "bytes": 659
     },
     "AGENTS.md": {
-      "sha256": "a14d092434a8a72d97f8b1e327040303deac2d4c30748c4c7e5dd2316070d258",
-      "bytes": 7332
+      "sha256": "bbc3cae8574cd24e04cd08ecfebde826db90f6b8bf02a15eaba1cfd267a7abcd",
+      "bytes": 7707
     },
     "roadmap.md": {
-      "sha256": "56392c14fb660956b323490032731f6ac8d01ac6c532745b4daa733f47435f76",
-      "bytes": 17995
+      "sha256": "0dbdf43e7af3522f8e93af8ce2ee871d11f35f6115a6d77de30984334772cce7",
+      "bytes": 19622
+    },
+    "src/lib/synthetic-token-budget.server.ts": {
+      "sha256": "69fb04340fe246278be147b5c45fb3c87b968919240b6d6c6e8636cfb0c90aa1",
+      "bytes": 949
+    },
+    "tests/domain/synthetic-token-budget.test.ts": {
+      "sha256": "806937598665576e15f9d174bce4a18919dc431fc7d9248185692fa2f3a6c640",
+      "bytes": 606
+    },
+    "package.json": {
+      "sha256": "b337b964843c7816d5e183ae0c9bcd320eb04ed45a4209dd4d44a8e67e84880c",
+      "bytes": 10102
+    },
+    "bun.lock": {
+      "sha256": "0eda6263ed444bf65d214f57b9fd7dc0b780897c918dc4b34cfb6d7fa6c1eeac",
+      "bytes": 231373
     }
   }
 }

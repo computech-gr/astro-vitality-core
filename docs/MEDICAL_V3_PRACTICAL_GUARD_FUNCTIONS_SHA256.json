@@ -1,0 +1,33 @@
+{
+  "scope": "Disposable applied revised pending schema; function definitions unaffected by retaining-disable ACL changes",
+  "functions": [
+    {
+      "sha256": "e805e4775b0ba98a4f07691d6548c870e69c6f0a6ca1f01598cd854303dd7ea8",
+      "signature": "medical_demo_authorize(timestamp with time zone,timestamp with time zone,uuid,text,text)"
+    },
+    {
+      "sha256": "3fb119f95b468600b8dd8f99c36f9fa730bddb3ea9dced3e1806a2f208108126",
+      "signature": "medical_demo_disable(text)"
+    },
+    {
+      "sha256": "191d289c09a812e7214d0f3e6ba8b1894f2090d65adb90c26099c0b65e58e418",
+      "signature": "medical_demo_dispatch(uuid,text,text)"
+    },
+    {
+      "sha256": "6a390afe441d9ffdb7d212cc225fd7c8f931575d9d5d6babfc5d59eff04c57cd",
+      "signature": "medical_demo_finish(uuid,bigint,text)"
+    },
+    {
+      "sha256": "f85339f472469895897965a96b705af4c58c5232270e676d005454d14fa67544",
+      "signature": "medical_demo_reserve(text,text)"
+    },
+    {
+      "sha256": "cf418845a357b92412fdc65b73c715f2528ffe8d14e7ba4bdab2e8efa6587b64",
+      "signature": "medical_demo_scope()"
+    },
+    {
+      "sha256": "02a094643fcb88131f9ee199442b92f7b6a7f3635dd3184f01ac48725fd73c2a",
+      "signature": "medical_demo_status()"
+    }
+  ]
+}

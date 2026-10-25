@@ -108,6 +108,22 @@ BEGIN
  INSERT INTO public.medical_demo_control_audit(action,actor_id,reference) VALUES('authorized',p_operator,p_ref);
 END $$;
 
+-- Read-only caller-scoped deployment/policy attestation; no nonce or medical content.
+CREATE FUNCTION public.medical_demo_status() RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,extensions,pg_temp AS $$
+DECLARE a public.medical_demo_authorization; scoped boolean;
+BEGIN
+ SELECT * INTO a FROM public.medical_demo_authorization WHERE singleton;
+ scoped:=public.medical_demo_scope();
+ IF scoped IS DISTINCT FROM true AND (auth.uid() IS NULL OR auth.uid() IS DISTINCT FROM a.operator_id)
+ THEN RAISE EXCEPTION 'scope denied'; END IF;
+ RETURN jsonb_build_object('version','synthetic-practical-v1','enabled',COALESCE(a.enabled,false),
+ 'eligible',COALESCE(scoped AND a.enabled AND clock_timestamp()>=a.starts_at AND clock_timestamp()<a.ends_at
+ AND a.attempts<10 AND a.held_microusd+100000<=1000000 AND a.active_attempt IS NULL,false),
+ 'attempts',COALESCE(a.attempts,0),'heldMicrousd',COALESCE(a.held_microusd,0),
+ 'startsAt',a.starts_at,'endsAt',a.ends_at,'operatorId',a.operator_id);
+END $$;
+
 CREATE FUNCTION public.medical_demo_reserve(p_sha text,p_nonce text) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,extensions,pg_temp AS $$
 DECLARE a public.medical_demo_authorization; q jsonb; id uuid; snapshot jsonb;
@@ -190,4 +206,4 @@ DO $acl$ DECLARE f record; t text; BEGIN
  EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC,anon,authenticated,service_role',f.sig);
  END LOOP;
 END $acl$;
-GRANT EXECUTE ON FUNCTION public.medical_demo_reserve(text,text),public.medical_demo_dispatch(uuid,text,text),public.medical_demo_finish(uuid,bigint,text),public.medical_demo_disable(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.medical_demo_status(),public.medical_demo_reserve(text,text),public.medical_demo_dispatch(uuid,text,text),public.medical_demo_finish(uuid,bigint,text),public.medical_demo_disable(text) TO authenticated;

@@ -2,11 +2,13 @@
 
 ## Synthetic research activation review
 
+- [x] Implement owner-approved practical controls: version-matched guard/status, token bounds, enabled-path/race tests; 579 tests and 593 disposable SQL assertions, security audit/format/lint and zero-finding Trivy. Revised artifacts in MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md; no production execution.
+- [ ] Final exact-commit Quality/Security/typecheck/build require completed synchronized GitHub runs; prior green baseline is not certification.
 - [x] Deliver one concrete production implementation/deployment checklist with exact artifacts, commit/CI evidence, verification SQL, retaining-disable recovery and four separate approval gates; no execution authorized. Actual pending guard defines six functions, correcting the report's seven-function count.
 - [x] Read-only production verification: exact fixtures, scope membership, fifteen function fingerprints/allowlist, five RLS tables, persistence denial and existing minute quotas; pending lifetime/window/disable guard absent.
 - [x] Verify current source SHA 853ba6a6bbf5d90b3a3bdfa648add44b4d692b84: Quality (including typecheck/production build) and Security Scan passed; published server revision and effective flag values remain unattested.
 - [x] Plan reviewed and approved for default-off investigation only; 13 focused Bun tests passed. No application code, SQL, flags or provider requests changed.
-- [ ] Activation remains NO-GO: independently supported billing/outbound-stop guarantees remain unavailable in existing infrastructure; further implementation requires those guarantees, followed by exact schema/recovery, deployment and window approvals. Published server revision/effective flags and provider configuration remain unattested.
+- [ ] Production schema/recovery, deployment and final UTC activation/operator authorization remain separate; current provider model/pricing and deployed revision/configuration need approved verification. Owner-approved practical accounting/permit semantics supersede the prior absolute guarantees; no independent staging requirement.
 
 ## Complete synthetic AI activation guard
 
@@ -15,7 +17,7 @@
 - [x] Prepare default-off pending schema, retaining-disable recovery, caller-scoped server integration and exact-scope authorization instructions; production and existing fixtures untouched.
 - [x] Exercise attempts, cost holds, concurrency, expiry, emergency disable, authorization and recovery in disposable SQL and automated server tests.
 - [x] Report immutable artifact fingerprints, security validation, unavailable final exact-commit CI and separate approvals in docs/MEDICAL_V3_COMPLETE_SYNTHETIC_ACTIVATION_GUARD.md.
-- [ ] Activation remains NO-GO pending independently supported provider worst-case billing controls, strict outbound kill ordering, successful synchronized-commit CI and separate schema/deployment/window/operator authorizations; no production writes or staging provisioning are authorized.
+- [x] Prior hard-guarantee policy superseded by explicit owner practical-control approval; final implementation/report below retain separate production authorizations.
 
 ## Medical v3 schema / seed separation
 

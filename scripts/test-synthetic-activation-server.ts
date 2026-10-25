@@ -1,4 +1,4 @@
-// Production hard-block acceptance; disposable SQL is available but must not be called.
+// Enabled production candidate exercised only against disposable SQL and a simulated provider.
 import { execFileSync } from "node:child_process";
 import { answerSyntheticQuestion } from "../src/lib/synthetic-evidence-qa.server";
 import {
@@ -16,6 +16,7 @@ const rpc = async (name: string, args: Record<string, unknown>) => {
     medical_demo_reserve: ["p_sha", "p_nonce"],
     medical_demo_dispatch: ["p_attempt", "p_sha", "p_nonce"],
     medical_demo_finish: ["p_attempt", "p_usage", "p_nonce"],
+    medical_demo_status: [],
   };
   const keys = order[name];
   if (!keys) throw Error("RPC not allowed");
@@ -112,8 +113,12 @@ const result = await answerSyntheticQuestion(
   },
 );
 const body = await result.json();
-if (result.status !== 503 || sent !== 0 || !String(body.error).includes("serialized outbound"))
+if (
+  result.status !== 200 ||
+  sent !== 1 ||
+  body.citedIds?.join(",") !== "synthetic-v3-hr-001,synthetic-v3-hr-002"
+)
   throw Error(`Server guard integration failed: ${result.status}`);
 console.log(
-  "PASS: enabled production path denies before any provider transmission; no toggle substitutes for missing hard guarantees. No live AI, production writes or browser acceptance.",
+  "PASS: enabled production path reserves, dispatches, validates exact citations and reconciles using disposable SQL and simulated provider. No live AI, production writes or browser acceptance.",
 );

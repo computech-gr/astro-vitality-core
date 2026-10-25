@@ -54,7 +54,7 @@ test("production refuses sensitive free text before any RPC or provider call", a
   expect(response.status).toBe(403);
   expect(calls).toBe(0);
 });
-test("production stays fail-closed even with valid 62/66 evidence and enabled flags", async () => {
+test("production uses the approved guard for exact 62/66 evidence and handles timeout without retry", async () => {
   const evidence = [62, 66].map((n, i) => ({
     id: `synthetic-v3-hr-00${i + 1}`,
     metric: "cv-001",
@@ -85,6 +85,8 @@ test("production stays fail-closed even with valid 62/66 evidence and enabled fl
     apiKey: "test-only",
     now: () => "2026-10-25T00:00:00Z",
     rpc: async (name: string) => {
+      if (name === "medical_demo_status")
+        return { data: { version: "synthetic-practical-v1", eligible: true }, error: null };
       if (name === "medical_v3_fixture_snapshot") return { data: snapshot, error: null };
       if (name === "medical_v3_ai_evidence") return { data: evidence, error: null };
       if (name === "medical_demo_reserve")
@@ -125,16 +127,83 @@ test("production stays fail-closed even with valid 62/66 evidence and enabled fl
     question: questions[0],
   };
   const response = await answerSyntheticQuestion(input, deps);
-  expect(response.status).toBe(503);
-  expect((await response.json()).error).toContain("serialized outbound");
-  expect(sent).toBe(0);
-  expect(released).toBe(0);
+  expect(response.status).toBe(200);
+  expect((await response.json()).citedIds).toEqual(["synthetic-v3-hr-001", "synthetic-v3-hr-002"]);
+  expect(sent).toBe(1);
+  expect(released).toBe(1);
   const timeout = await answerSyntheticQuestion(input, {
     ...deps,
     providerFetch: (async () => {
       throw new DOMException("Timeout", "TimeoutError");
     }) as typeof fetch,
   });
-  expect(timeout.status).toBe(503);
-  expect(released).toBe(0);
+  expect(timeout.status).toBe(502);
+  expect(released).toBe(2);
+  for (const eligible of [false, true]) {
+    let dispatches = 0,
+      sends = 0;
+    const denied = await answerSyntheticQuestion(input, {
+      ...deps,
+      rpc: async (name: string) => {
+        if (name === "medical_demo_status")
+          return { data: { version: "synthetic-practical-v1", eligible }, error: null };
+        if (name === "medical_demo_dispatch") {
+          dispatches++;
+          return { data: false, error: null };
+        }
+        return deps.rpc(name);
+      },
+      providerFetch: (async () => {
+        sends++;
+        return Response.json({});
+      }) as typeof fetch,
+    });
+    expect(denied.status).toBe(eligible ? 502 : 503);
+    expect(dispatches).toBe(eligible ? 1 : 0);
+    expect(sends).toBe(0);
+  }
+  // A permit committed before disable may still start HTTP; this is accepted, not cancellation.
+  let disabled = false,
+    sendsAfterDisable = 0;
+  const raced = await answerSyntheticQuestion(input, {
+    ...deps,
+    rpc: async (name: string) => {
+      if (name === "medical_demo_dispatch") {
+        disabled = true;
+        return { data: true, error: null };
+      }
+      return deps.rpc(name);
+    },
+    providerFetch: (async (url, init) => {
+      if (disabled) sendsAfterDisable++;
+      return deps.providerFetch(url, init);
+    }) as typeof fetch,
+  });
+  expect(raced.status).toBe(200);
+  expect(sendsAfterDisable).toBe(1);
+  let completionUsage: unknown = "unset",
+    retryCalls = 0;
+  const failed = await answerSyntheticQuestion(input, {
+    ...deps,
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      if (name === "medical_demo_finish") {
+        completionUsage = args["p_usage"];
+        return { data: true, error: null };
+      }
+      return deps.rpc(name);
+    },
+    providerFetch: (async () => {
+      retryCalls++;
+      return Response.json({}, { status: 429 });
+    }) as typeof fetch,
+  });
+  expect(failed.status).toBe(429);
+  expect(retryCalls).toBe(1);
+  expect(completionUsage).toBeNull();
+  const unconfirmed = await answerSyntheticQuestion(input, {
+    ...deps,
+    rpc: async (name: string) =>
+      name === "medical_demo_finish" ? { data: false, error: null } : deps.rpc(name),
+  });
+  expect(unconfirmed.status).toBe(503);
 });
