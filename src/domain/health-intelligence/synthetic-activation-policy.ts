@@ -24,9 +24,18 @@ export function boundedSyntheticPayload(payload: unknown): string {
 export function syntheticUsageMicrousd(usage: unknown): number | null {
   if (!usage || typeof usage !== "object") return null;
   const value = usage as Record<string, unknown>;
-  const input = value["input_tokens"], output = value["output_tokens"];
-  if (typeof input !== "number" || typeof output !== "number" ||
-      !Number.isSafeInteger(input) || !Number.isSafeInteger(output) || input < 0 || output < 0 ||
-      input > 6144 || output > 1500) return null;
+  const input = value["input_tokens"],
+    output = value["output_tokens"];
+  if (
+    typeof input !== "number" ||
+    typeof output !== "number" ||
+    !Number.isSafeInteger(input) ||
+    !Number.isSafeInteger(output) ||
+    input < 0 ||
+    output < 0 ||
+    input > 6144 ||
+    output > 1500
+  )
+    return null;
   return input * 10 + output * 10;
 }
