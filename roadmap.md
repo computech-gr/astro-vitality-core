@@ -2,6 +2,7 @@
 
 ## Synthetic research activation review
 
+- [x] Deliver one concrete production implementation/deployment checklist with exact artifacts, commit/CI evidence, verification SQL, retaining-disable recovery and four separate approval gates; no execution authorized. Actual pending guard defines six functions, correcting the report's seven-function count.
 - [x] Read-only production verification: exact fixtures, scope membership, fifteen function fingerprints/allowlist, five RLS tables, persistence denial and existing minute quotas; pending lifetime/window/disable guard absent.
 - [x] Verify current source SHA 853ba6a6bbf5d90b3a3bdfa648add44b4d692b84: Quality (including typecheck/production build) and Security Scan passed; published server revision and effective flag values remain unattested.
 - [x] Plan reviewed and approved for default-off investigation only; 13 focused Bun tests passed. No application code, SQL, flags or provider requests changed.
