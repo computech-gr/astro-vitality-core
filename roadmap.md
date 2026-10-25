@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Synthetic status presentation
+
+- [x] Separate permanent-policy status from legacy guard status, sanitize access/service failures and identify revision metadata without changing admission.
+- [x] 613 tests pass; 58 offline verifiers pass; security audit/P16 and formatting pass; lint has 0 errors/13 existing warnings; automatic compilation reports build OK. Existing moderate/low esbuild advisories remain; service-dependent checks and exact-revision CI are unverified.
+- [x] Signed-in read-only response reports research mode and sanitized access_denied with null status; no raw database detail returned. P3663/P3664 and competition submission remain BLOCKED; no generation or deployment performed.
+
 ## Synthetic tab state patch
 
 - [x] Compare the supplied component with current source and apply scoped restoration with account/hash isolation and synthetic-only storage safeguards.

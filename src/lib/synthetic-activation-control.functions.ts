@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { SYNTHETIC_GUARD_VERSION } from "@/domain/health-intelligence/synthetic-activation-policy";
+import { operatorDeploymentRevision, syntheticStatusFailure } from "@/domain/health-intelligence/synthetic-status";
 
 export const getSyntheticActivationStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -19,16 +20,20 @@ export const getSyntheticActivationStatus = createServerFn({ method: "POST" })
     if (permanent) {
       const { researchStatusSchema } =
         await import("@/domain/health-intelligence/synthetic-research-policy");
-      const result = await client.rpc("medical_research_status", {});
+      const result = await Promise.resolve(client.rpc("medical_research_status", {}))
+        .catch((error: unknown) => ({ data: null, error }));
       const parsed = researchStatusSchema.safeParse(result.data);
       return {
+        mode: "research" as const,
+        statusFailure: syntheticStatusFailure(result.error, parsed.success),
         configurationEnabled,
-        revision: revision && /^[a-f0-9]{40}$/.test(revision) ? revision : null,
+        revision: operatorDeploymentRevision(revision),
         guard: null,
         research: !result.error && parsed.success ? parsed.data : null,
       };
     }
-    const result = await client.rpc("medical_demo_status", {});
+    const result = await Promise.resolve(client.rpc("medical_demo_status", {}))
+      .catch((error: unknown) => ({ data: null, error }));
     const parsed = z
       .object({
         version: z.literal(SYNTHETIC_GUARD_VERSION),
@@ -43,9 +48,11 @@ export const getSyntheticActivationStatus = createServerFn({ method: "POST" })
       .strict()
       .safeParse(result.data);
     return {
+      mode: "legacy" as const,
+      statusFailure: syntheticStatusFailure(result.error, parsed.success),
       configurationEnabled,
       // Operator-supplied deployment label, not independent proof of deployed Git bytes.
-      revision: revision && /^[a-f0-9]{40}$/.test(revision) ? revision : null,
+      revision: operatorDeploymentRevision(revision),
       guard: !result.error && parsed.success ? parsed.data : null,
       research: null,
     };

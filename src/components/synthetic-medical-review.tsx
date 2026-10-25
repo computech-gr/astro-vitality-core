@@ -18,6 +18,7 @@ import { OctagonX } from "lucide-react";
 import type { SyntheticEvidenceSnapshot } from "@/domain/health-intelligence/synthetic-evidence";
 import { SYNTHETIC_DEMO_QUESTIONS } from "@/domain/health-intelligence/production-synthetic-demo";
 import { validateAIDraft } from "@/domain/health-intelligence/ai-draft-validation";
+import { SYNTHETIC_STATUS_MESSAGES } from "@/domain/health-intelligence/synthetic-status";
 import type { DurableReviewEvent } from "@/domain/health-intelligence/medical-governance";
 import {
   SYNTHETIC_TAB_CACHE_KEY, readSyntheticTabState, writeSyntheticTabState,
@@ -345,13 +346,16 @@ export function SyntheticMedicalReview() {
       {guardStatus && (
         <dl className="grid gap-1 text-sm">
           <div>Production AI: {guardStatus.configurationEnabled ? "configured" : "off"}</div>
-          <div>Guard: {guardStatus.guard?.version ?? "unavailable"}</div>
-          {guardStatus.research ? (
+          {guardStatus.statusFailure && (
+            <div role="status">{SYNTHETIC_STATUS_MESSAGES[guardStatus.statusFailure]}</div>
+          )}
+          {guardStatus.mode === "research" ? guardStatus.research ? (
             <>
               <div>
                 Policy: {guardStatus.research.version} ·{" "}
                 {guardStatus.research.enabled ? "enabled" : "paused"}
               </div>
+              <div>Request eligibility: {guardStatus.research.eligible ? "eligible" : "not eligible"}</div>
               <div>
                 Attempts this month: {guardStatus.research.attempts} · Remaining internal budget:
                 USD {(guardStatus.research.remainingMicrousd / 1_000_000).toFixed(2)}
@@ -361,8 +365,9 @@ export function SyntheticMedicalReview() {
                 {guardStatus.research.rollingSeconds} seconds
               </div>
             </>
-          ) : (
+          ) : <div>Research policy: unavailable</div> : guardStatus.guard ? (
             <>
+              <div>Guard: {guardStatus.guard.version} · {guardStatus.guard.enabled ? "enabled" : "disabled"}</div>
               <div>
                 Attempts: {guardStatus.guard?.attempts ?? 0} / 10 · Estimated holds: USD{" "}
                 {((guardStatus.guard?.heldMicrousd ?? 0) / 1_000_000).toFixed(2)} / 1.00
@@ -375,8 +380,9 @@ export function SyntheticMedicalReview() {
                 Operator: {guardStatus.guard?.operatorId ?? "not authorized"}
               </div>
             </>
-          )}
-          <div className="break-all">Deployment label: {guardStatus.revision ?? "unattested"}</div>
+          ) : <div>Legacy guard: unavailable</div>}
+          <div className="break-all">Operator-supplied deployment revision: {guardStatus.revision ?? "not supplied or invalid"}</div>
+          <div className="text-muted-foreground">Revision metadata is not independent deployment attestation.</div>
         </dl>
       )}
       {snapshot && (
