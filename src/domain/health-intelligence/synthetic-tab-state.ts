@@ -29,15 +29,15 @@ export function readSyntheticTabState(
     const saved: unknown = JSON.parse(raw);
     if (!saved || typeof saved !== "object" || Array.isArray(saved)) throw new Error("Invalid cache");
     const row = saved as Record<string, unknown>;
-    if (row.userId !== userId || row.sha256 !== snapshot.sha256 ||
-        row.missionId !== snapshot.missionId || row.crewMemberId !== snapshot.crewMemberId)
+    if (row["userId"] !== userId || row["sha256"] !== snapshot.sha256 ||
+        row["missionId"] !== snapshot.missionId || row["crewMemberId"] !== snapshot.crewMemberId)
       throw new Error("Stale cache");
     return {
-      question: typeof row.question === "string" && SYNTHETIC_DEMO_QUESTIONS.some((q) => q === row.question)
-        ? row.question : SYNTHETIC_DEMO_QUESTIONS[0],
-      answer: safeSyntheticText(row.answer, snapshot),
-      draft: safeSyntheticText(row.draft, snapshot),
-      final: safeSyntheticText(row.final, snapshot),
+      question: typeof row["question"] === "string" && SYNTHETIC_DEMO_QUESTIONS.some((q) => q === row["question"])
+        ? row["question"] : SYNTHETIC_DEMO_QUESTIONS[0],
+      answer: safeSyntheticText(row["answer"], snapshot),
+      draft: safeSyntheticText(row["draft"], snapshot),
+      final: safeSyntheticText(row["final"], snapshot),
     };
   } catch {
     try { store.removeItem(SYNTHETIC_TAB_CACHE_KEY); } catch { /* Storage is optional. */ }

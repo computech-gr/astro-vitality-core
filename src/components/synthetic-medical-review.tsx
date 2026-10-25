@@ -75,6 +75,7 @@ export function SyntheticMedicalReview() {
   );
   const refresh = async () => {
     const epoch = ++authorizationEpoch.current;
+    generationEpoch.current++;
     setCacheReady(false);
     setConsent(false);
     setQaConsent(false);
@@ -108,7 +109,8 @@ export function SyntheticMedicalReview() {
         clearSession(); clearCache();
       }
       if (!previous) {
-        const cached = readSyntheticTabState(sessionStorage, userId, current);
+        let cached = null;
+        try { cached = readSyntheticTabState(sessionStorage, userId, current); } catch { /* Optional storage. */ }
         if (cached) {
           setQuestion(cached.question); setAnswer(cached.answer);
           setDraft(cached.draft); setFinal(cached.final);
@@ -130,6 +132,8 @@ export function SyntheticMedicalReview() {
   };
   refreshRef.current = refresh;
   useEffect(() => {
+    const authEpoch = authorizationEpoch;
+    const requestEpoch = generationEpoch;
     const invalidate = () => {
       authorizationEpoch.current++;
       ownerRef.current = null;
@@ -143,6 +147,7 @@ export function SyntheticMedicalReview() {
           (ownerRef.current && nextOwner !== ownerRef.current)) invalidate();
       // SIGNED_IN on refocus is not necessarily an account change.
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        authorizationEpoch.current++; generationEpoch.current++;
         setConsent(false); setQaConsent(false); setAcknowledged(false); setCacheReady(false);
         setSnapshot(null);
         queueMicrotask(() => { void refreshRef.current?.(); });
@@ -155,7 +160,7 @@ export function SyntheticMedicalReview() {
     document.addEventListener("visibilitychange", refocus);
     void refreshRef.current?.();
     return () => {
-      authorizationEpoch.current++; generationEpoch.current++;
+      authEpoch.current++; requestEpoch.current++;
       data.subscription.unsubscribe();
       window.removeEventListener("focus", refocus);
       document.removeEventListener("visibilitychange", refocus);
@@ -163,7 +168,9 @@ export function SyntheticMedicalReview() {
   }, []);
   useEffect(() => {
     if (!cacheReady || !snapshot || !ownerRef.current) return;
-    writeSyntheticTabState(sessionStorage, ownerRef.current, snapshot, { question, answer, draft, final });
+    try {
+      writeSyntheticTabState(sessionStorage, ownerRef.current, snapshot, { question, answer, draft, final });
+    } catch { /* Optional storage. */ }
   }, [cacheReady, snapshot, question, answer, draft, final]);
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
@@ -228,10 +235,10 @@ export function SyntheticMedicalReview() {
   };
   const generate = async () => {
     if (!snapshot || !consent) return;
+    const epoch = generationEpoch.current;
     setAcknowledged(false);
     setConsent(false);
     if (!persistent) {
-      const epoch = generationEpoch.current;
       const result = await ask({
         data: {
           question: SYNTHETIC_DEMO_QUESTIONS[0],
@@ -251,6 +258,7 @@ export function SyntheticMedicalReview() {
       return;
     }
     const { data } = await supabase.auth.getSession();
+    if (generationEpoch.current !== epoch) return;
     if (!data.session) throw new Error("Sign in required.");
     const response = await fetch("/api/medical-ai-draft", {
       method: "POST",
@@ -267,6 +275,7 @@ export function SyntheticMedicalReview() {
       }),
     });
     const result = (await response.json()) as { draft?: string; error?: string };
+    if (generationEpoch.current !== epoch) return;
     if (!response.ok || !result.draft) throw new Error(result.error ?? "Draft rejected.");
     setDraft(result.draft);
     setFinal(result.draft);
