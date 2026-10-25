@@ -1,0 +1,18 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+/** Existing signed-in operator only, independently enforced by the database. Never enables AI. */
+export const emergencyDisableSyntheticAI = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ reference: z.string().min(1).max(200) }).strict().parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const client = context.supabase as unknown as {
+      rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ error: unknown }>;
+    };
+    const result = await client.rpc("medical_demo_disable", { p_ref: data.reference });
+    if (result.error) throw new Error("Emergency disable not confirmed; use trusted SQL retaining-disable procedure.");
+    return { disabled: true as const };
+  });
