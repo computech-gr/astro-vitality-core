@@ -14,7 +14,7 @@ DO $rollback_guard$ BEGIN
  ('medical_v3_demo_deny_persistence()','fc8af47f69fed63f79c4a01c7aa7cb8de1fdf57076782f529c4576a72ddb2d2a'),
  ('medical_v3_fixture_review_guard()','474873a8ee0526d169098c86b605cd12a28bfc0e80cb7c5888bae20b250609cb'),
  ('medical_v3_fixture_scope()','8386d985c574893fa585aa2e74a4dff1e512e2ef00c2161c41552d2eb5cad516'),
- ('medical_v3_fixture_snapshot()','cf2b070aa6f7e899efebbc976c2ba08bd1d56e6d277d416b02f0e3d8d82e5795'),
+ ('medical_v3_fixture_snapshot()','acd4eb5c7bf3bb6495f3ebd78cdb1bf576c16ba71184bc226461f92c33e79259'),
  ('medical_v3_fixture_text_valid(text,text)','66aaa98209b6b28c57769ab33ca13331df140b0ce56a17cf337e5d4ccd81188f'),
  ('medical_v3_has_scope(text,text)','c148287452342ef3a77128b87b2687283bfc24829361b76edaca1ac9d482b4d3'),
  ('medical_v3_immutable()','38dc4f0f9925cce745796c163c5a2ee189cf5d99e29c668c0541f6de39d7c9b4'),
