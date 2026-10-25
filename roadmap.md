@@ -1,5 +1,10 @@
 # P20 video evidence closure
 
+## First permanent synthetic provider failure
+
+- [x] Inspect the failed attempt, published logs and request path; verify OpenAI model metadata without generation. Dispatch permission committed, but the broad exception path retained no provider HTTP status, error code or request ID; no proven request-contract correction is established.
+- [ ] Provider settlement/reconciliation is blocked by missing historical provider request evidence and administrative usage/cost access with verified project attribution. Retain the unresolved attempt and USD 0.10 hold, keep policy paused, and do not resolve/resume or generate again until this dependency is supplied.
+
 ## Permanent synthetic research AI
 
 - [x] Correct attributable CI PostgreSQL 16/MAINTAIN mismatch by using an independent PostgreSQL 17 container; immutable SQL is unchanged and 588 tests/formatting pass. Replacement exact-revision CI remains pending synchronization.
