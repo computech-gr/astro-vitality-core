@@ -109,6 +109,7 @@ const reserve = () =>
       .split("\n")
       .at(-1),
   );
+deny(`set role authenticated;select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-0000000000b1',false);select medical_demo_reserve('${sha}','${nonce}')`, "other authenticated account cannot reserve");
 check(reserve().allowed === false, "default-off empty authorization denies");
 deny(
   caller +
@@ -119,6 +120,19 @@ run(
   `with x as (select clock_timestamp()+interval '0.1 seconds' t) select medical_demo_authorize(t,t+interval '30 minutes','${actor}','owner-approval-ref','${sha}') from x`,
 );
 run("select pg_sleep(0.15)");
+deny(caller + `select medical_demo_reserve('sha256-changed','${nonce}')`, "altered evidence digest cannot reserve");
+run("update mission_memberships set active=false where id='63470171-3a22-4075-b197-ac85b90cb0ef'");
+deny(caller + `select medical_demo_reserve('${sha}','${nonce}')`, "revoked membership cannot reserve");
+run("update mission_memberships set active=true where id='63470171-3a22-4075-b197-ac85b90cb0ef'");
+const quotaMission='mission-9d8ce8f3e5554509a0885461f9ad2e1c';
+const quotaCrew='crew-9806e7e611f44dc38dac5e23f7740f1a';
+run(`insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '${actor}','${quotaMission}','${quotaCrew}',clock_timestamp() from generate_series(1,5)`);
+check(reserve().allowed===false,"five user requests per minute block guard without consuming lifetime holds");
+run("delete from medical_ai_quota_reservations");
+run(`insert into medical_ai_quota_reservations(actor_user_id,mission_id,crew_member_id,released_at) select '00000000-0000-0000-0000-0000000000b1','${quotaMission}','${quotaCrew}',clock_timestamp() from generate_series(1,20)`);
+check(reserve().allowed===false,"twenty mission requests per minute block guard");
+check(run("select attempts=0 and held_microusd=0 from medical_demo_authorization")==="t","quota denials have no provider attempt or cost hold");
+run("delete from medical_ai_quota_reservations");
 console.log(
   execFileSync("bun", ["scripts/test-synthetic-activation-server.ts"], { env, encoding: "utf8" }),
 );
