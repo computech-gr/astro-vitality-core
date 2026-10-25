@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Synthetic research activation review
+
+- [x] Read-only production verification: exact fixtures, scope membership, fifteen function fingerprints/allowlist, five RLS tables, persistence denial and existing minute quotas; pending lifetime/window/disable guard absent.
+- [x] Verify current source SHA 853ba6a6bbf5d90b3a3bdfa648add44b4d692b84: Quality (including typecheck/production build) and Security Scan passed; published server revision and effective flag values remain unattested.
+- [ ] Activation remains NO-GO: review the plan, resolve mandatory billing/outbound-stop guarantees in a separately reviewed implementation, and approve exact schema/recovery, deployment and activation window before any production changes or provider calls.
+
 ## Complete synthetic AI activation guard
 
 - [x] Final hardening: unconditional production transmission denial, both serialized SQL disable race orderings, accounting-failure shutdown, 577 tests/103 guard SQL assertions and refreshed security/fingerprints; no activation.
