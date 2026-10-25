@@ -54,3 +54,11 @@ References: [Costs API](https://developers.openai.com/api/reference/resources/ad
 7. Emergency pause through owner page blocks new permits. If application pause fails, separately authorized retaining-pause SQL disables access while retaining attempts/holds/audit. Unknown outcomes require provider-side investigation, paused recovery after the minimum wait and explicit owner resume; never delete/reset ledgers or restore legacy access.
 
 No further deployment approval was requested or executed during implementation; steps above describe future separately authorized rollout, not actions already performed.
+
+## Incident: attempt 92baf58e-8389-4843-a0b0-29e12b29a288 (2026-10-25)
+
+- Dispatch permit committed `06:26:32.871921Z`; attempt finished `06:26:32.912322Z` as `provider_outage`, no provider request ID, USD 0.10 hold retained, policy paused.
+- Defect: `askSyntheticEvidence` injected `providerFetch: fetch`; the guard called `deps.providerFetch(...)`, so workerd raised `TypeError: Illegal invocation` synchronously. The broad `catch` discarded it and returned the generic 502. Bun/Node tests use injected mocks and do not enforce the receiver.
+- Reproduction: workerd (compatibility date 2025-09-01) against a local loopback stand-in — unbound method call failed in 0 ms with 0 requests received; wrapped call reached the stand-in once. No OpenAI traffic.
+- Correction: wrapper `(input, init) => fetch(input, init)` plus `Reflect.apply(..., globalThis, ...)`; structured `mitochondria.synthetic_provider` server log with correlation/attempt IDs, stage, failure stage, transmission state, HTTP status, sanitized request ID/error code/type, exception class/name and timings. Keys, headers, prompts, medical values and provider bodies are never logged. Failure responses return only the correlation ID.
+- Settlement: application evidence indicates the request was never transmitted, but OpenAI-side evidence was not obtained. Hold and unresolved attempt are retained; audited recovery (`medical_research_resolve`) and resume are deferred until owner provider-side confirmation and deployment of the correction.

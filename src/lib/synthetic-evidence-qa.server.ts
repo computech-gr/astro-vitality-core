@@ -36,6 +36,11 @@ import {
   MEDICAL_OPENAI_DEFAULT_MODEL,
   MEDICAL_OPENAI_OUTPUT_TOKENS,
 } from "@/domain/health-intelligence/medical-openai-contract";
+import {
+  createProviderDiagnostics,
+  defaultDiagnosticLog,
+  type ProviderDiagnosticEvent,
+} from "./synthetic-provider-diagnostics.server";
 
 export interface QaDependencies {
   enabled: boolean;
@@ -46,6 +51,10 @@ export interface QaDependencies {
   rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
   providerFetch: typeof fetch;
   now: () => string;
+  /** Sanitized structured diagnostics sink; defaults to server console. */
+  diagnosticLog?: (event: ProviderDiagnosticEvent) => void;
+  correlationId?: () => string;
+  clock?: () => number;
 }
 const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 /** Called only after authentication. Injected RPC is the caller's RLS client, never admin. */
@@ -202,27 +211,42 @@ export async function answerSyntheticQuestion(
   let tokens: { input: number; output: number } | null = null;
   let outcome = "unknown";
   let providerRequest: string | null = null;
+  const correlationId = deps.correlationId?.() ?? crypto.randomUUID();
+  const diag = createProviderDiagnostics(correlationId, attempt, deps.clock);
+  const failWithId = (error: string, status: number) =>
+    Response.json({ error, correlationId }, { status, headers });
   try {
     // SQL disable denies later permits. A prior permit may transmit after disable commits.
     if (attempt) {
       if (deps.permanentResearch) await dispatchResearch(deps.rpc, attempt, snapshot.sha256, nonce);
       else await permitSyntheticTransmission(deps.rpc, attempt, snapshot.sha256, nonce);
     }
-    const upstream = await deps.providerFetch(MEDICAL_OPENAI_RESPONSES_URL, {
-      method: "POST",
-      signal: AbortSignal.timeout(25_000),
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${deps.apiKey}` },
-      body: providerBody,
-    });
+    diag.stage("provider_transmit");
+    // Invoke with the global receiver: workerd rejects fetch called as a method of another
+    // object ("Illegal invocation") before any network transmission.
+    const upstream = await Reflect.apply(deps.providerFetch, globalThis, [
+      MEDICAL_OPENAI_RESPONSES_URL,
+      {
+        method: "POST",
+        signal: AbortSignal.timeout(25_000),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${deps.apiKey}` },
+        body: providerBody,
+      },
+    ]);
+    diag.stage("provider_status");
     providerRequest = upstream.headers.get("x-request-id");
+    diag.response(upstream.status, providerRequest);
     if (!upstream.ok) {
+      diag.stage("provider_error_body");
+      const errorBody = (await upstream.json().catch(() => null)) as {
+        error?: { code?: unknown };
+      } | null;
+      diag.providerError(errorBody);
+      diag.fail("provider_status");
       if (deps.permanentResearch) {
-        const errorBody = (await upstream.json().catch(() => null)) as {
-          error?: { code?: unknown };
-        } | null;
         const condition = classifyProviderFailure(upstream.status, errorBody?.error?.code);
         outcome = condition;
-        result = fail(
+        result = failWithId(
           providerFailureMessages[condition],
           condition === "credit_exhausted" || condition === "spend_limit"
             ? 402
@@ -231,16 +255,18 @@ export async function answerSyntheticQuestion(
               : 502,
         );
       } else
-        result = fail(
+        result = failWithId(
           "OpenAI provider request failed; no answer accepted",
           upstream.status === 429 ? 429 : upstream.status === 403 ? 403 : 502,
         );
     } else {
+      diag.stage("provider_response_parse");
       const body = (await upstream.json()) as {
         output?: Array<{ content?: Array<{ type?: string; text?: string }> }>;
         usage?: unknown;
         model?: string;
       };
+      diag.stage("usage_validation");
       usage = syntheticUsageMicrousd(body.usage);
       if (usage !== null) {
         const u = body.usage as { input_tokens: number; output_tokens: number };
@@ -257,19 +283,24 @@ export async function answerSyntheticQuestion(
           .filter((c) => c.type === "output_text")
           .map((c) => c.text ?? "")
           .join("") ?? "";
+      diag.stage("output_budget");
       if (attempt) assertSyntheticOutputBudget(raw);
       try {
+        diag.stage("answer_validation");
         const generatedAt = deps.now();
         if (!/(?:Z|\+00:00)$/.test(generatedAt) || !Number.isFinite(Date.parse(generatedAt)))
           throw new Error("Invalid server UTC timestamp");
         const answer = validateSyntheticAnswer(JSON.parse(raw), snapshot.evidence);
         // Re-read authority after the provider returns; source/receipt changes invalidate the answer.
+        diag.stage("evidence_recheck");
         const current = await deps.rpc("medical_v3_fixture_snapshot", {});
         const fresh = current.error ? null : await validateSyntheticSnapshot(current.data);
-        if (!fresh || fresh.sha256 !== snapshot.sha256)
-          result = fail("Evidence changed during generation; answer rejected", 422);
-        else {
+        if (!fresh || fresh.sha256 !== snapshot.sha256) {
+          diag.fail();
+          result = failWithId("Evidence changed during generation; answer rejected", 422);
+        } else {
           outcome = "success";
+          diag.stage("complete");
           result = Response.json(
             {
               ...answer,
@@ -280,21 +311,25 @@ export async function answerSyntheticQuestion(
             { headers },
           );
         }
-      } catch {
-        result = fail("Invalid citations or unsupported answer; rejected", 422);
+      } catch (error) {
+        diag.exception(error);
+        result = failWithId("Invalid citations or unsupported answer; rejected", 422);
       }
     }
-  } catch {
+  } catch (error) {
+    diag.exception(error);
     outcome = "provider_outage";
-    result = fail("OpenAI request failed; no answer accepted", 502);
+    result = failWithId("OpenAI request failed; no answer accepted", 502);
   } finally {
     if (attempt) {
       try {
         if (deps.permanentResearch)
           await finishResearch(deps.rpc, attempt, usage, tokens, outcome, providerRequest, nonce);
         else await finishSyntheticAttempt(deps.rpc, attempt, usage, nonce);
-      } catch {
-        result = fail(
+      } catch (error) {
+        diag.stage("finish");
+        diag.exception(error);
+        result = failWithId(
           "Spending reconciliation unconfirmed; answer withheld and hold retained",
           503,
         );
@@ -304,7 +339,12 @@ export async function answerSyntheticQuestion(
         p_reservation: quota.reservationId,
       });
       if (released.error)
-        result = fail("Quota release could not be confirmed; answer withheld", 503);
+        result = failWithId("Quota release could not be confirmed; answer withheld", 503);
+    }
+    try {
+      (deps.diagnosticLog ?? defaultDiagnosticLog)(diag.event(outcome));
+    } catch {
+      // Diagnostics must never change spending, hold or answer outcomes.
     }
   }
   return result;
