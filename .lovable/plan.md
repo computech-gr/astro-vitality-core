@@ -14,7 +14,7 @@ Inspected 25 October 2026. Implementation baseline: `8fdba5e6e023c9fe75ed8d0f65d
 | Fixtures | One source, two non-human receipts, exact 62/66 bpm observations; zero reservations/review events | Preserve all rows; no reseeding |
 | Scope | Existing active ground-medical membership matches fixed account/mission/crew | Recheck at authorization, reservation and dispatch |
 | Existing v3 | Fifteen function hashes match guard prerequisites; five postgres-owned RLS tables; four authenticated RPCs | Preserve all definitions and journal entries |
-| Activation guard | Zero `medical_demo_*` tables/functions | Add three operational tables/seven functions; initially empty/off |
+| Activation guard | Zero `medical_demo_*` tables/functions | Add three operational tables/six functions; initially empty/off |
 | Lifetime/window/stop | Guard absent | Ten nonrefundable attempts, fixed 30-minute window, SQL-serialized disable |
 | Server deployment | Public site returns 200; HTML metadata names `853ba6a6bbf5d90b3a3bdfa648add44b4d692b84` | Metadata does not attest server code or effective flags. Publish approved exact implementation and record its deployment evidence |
 | Provider transmission | Effective production flags/server revision not attested | Current source unconditionally denies production Q&A before RPC/fetch. Flags or SQL alone cannot make it operational |
@@ -28,7 +28,7 @@ Live base table ACLs also include the infrastructure `sandbox_exec` role with SE
 | `supabase/pending/20261028000000_medical_demo_activation_guard.sql` | `a12164a0e9d47b398bd4eaad35ca446a84c815511afd7c95605a87aa85adcbc1` |
 | `supabase/pending/20261028000000_medical_demo_activation_guard.rollback.sql` | `b95473edf8f0cfd15b8cf5093a57a531931660281f113025636a35e8b8f2c49e` |
 
-Both fingerprints rechecked. Schema is multiple PostgreSQL statements, **not the seed's single DO block**: use a documented atomic migration transaction with atomic journal recording. Do not submit statement-by-statement through the SQL Editor. Stop if transport cannot preserve bytes/atomicity. Seven functions: `scope`, `authorize`, `reserve`, `dispatch`, `finish`, `disable` (all prefixed `medical_demo_`): **six named functions in the actual file**. The previous report's seven-function count is incorrect; acceptance must require exactly these six, not invent a seventh. Three tables are `medical_demo_authorization`, `medical_demo_attempts`, `medical_demo_control_audit`.
+Both fingerprints rechecked. Schema is multiple PostgreSQL statements, **not the seed's single DO block**: use a documented atomic migration transaction with atomic journal recording. Do not submit statement-by-statement through the SQL Editor. Stop if transport cannot preserve bytes/atomicity. Functions: `scope`, `authorize`, `reserve`, `dispatch`, `finish`, `disable` (all prefixed `medical_demo_`): **six named functions in the actual file**. The previous report's seven-function count is incorrect; acceptance must require exactly these six, not invent a seventh. Three tables are `medical_demo_authorization`, `medical_demo_attempts`, `medical_demo_control_audit`.
 
 Immutable audit facts remain distinct: approved base schema `2024f9023006ba4b8134919f1efb7c8f7c550a19668681d5a6a673b53dc6affc`; committed base schema `eb0921ca3155d4e15c9cfb2d60996de85ef53a04956634970ea1a4fc75ffe237`, journal ID 12. Seed `131502bd285c5714586220f05f2f2a0da43c383a88b92dd5372ef0ea811095e1` is already executed: do not rerun. Old base retaining-disable `e7eb66b4e676aac6b410ca18aaa3ac2758e4ec8bbc7ef809f681415b96cf09b3` is not the new guard recovery artifact.
 
@@ -82,6 +82,14 @@ SELECT p.oid::regprocedure AS signature, pg_get_userbyid(p.proowner) AS owner,
  has_function_privilege('service_role',p.oid,'EXECUTE') AS service_execute
 FROM pg_proc p WHERE p.pronamespace='public'::regnamespace
  AND (p.proname LIKE 'medical_v3_%' OR p.proname LIKE 'medical_demo_%');
+SELECT tablename, policyname, roles, cmd, qual, with_check
+FROM pg_policies WHERE schemaname='public'
+ AND (tablename LIKE 'medical_demo_%' OR tablename IN
+ ('medical_advisor_review_events','medical_ai_quota_reservations',
+ 'medical_v3_fixture_sources','medical_v3_fixture_observations','medical_v3_fixture_receipts'));
+SELECT tgname, tgenabled, pg_get_triggerdef(oid)
+FROM pg_trigger WHERE tgrelid='public.medical_advisor_review_events'::regclass
+ AND NOT tgisinternal;
 ```
 
 Require unchanged fifteen base hashes; new six function definitions must match independently generated disposable fingerprints of the final approved SQL. Authenticated allowlist: four existing v3 RPCs plus guard reserve/dispatch/finish/disable only; anon/service execute false. All eight tables must be RLS, postgres-owned, application access including TRUNCATE false; no application RLS policies grant direct access. Verify policy catalog and denial trigger definitions against the approved SQL, not only counts.
