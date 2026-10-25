@@ -13,7 +13,38 @@ BEGIN
  AND mm.id='63470171-3a22-4075-b197-ac85b90cb0ef' AND mm.active AND mm.role='ground_medical')
  THEN RAISE EXCEPTION 'exact existing synthetic scope/membership prerequisite unavailable'; END IF;
  LOCK TABLE public.medical_v3_fixture_sources,public.medical_v3_fixture_observations,public.medical_v3_fixture_receipts,public.medical_ai_quota_reservations,public.medical_advisor_review_events IN EXCLUSIVE MODE;
--- DEPENDENCY_GUARD
+ IF (SELECT count(*) FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname LIKE 'medical_v3_%')<>15
+ OR EXISTS(SELECT 1 FROM (VALUES
+ ('medical_v3_ai_evidence(text,text)','2a05f596a8f41bf01c83c746825c57e263bd66f7a1ab7b047d07479211814f3c'),
+ ('medical_v3_append_review(text,text,text,uuid,uuid,text,text,text,text)','a51fded09798a5160266da717635f2caba39d0e976b1291eb4bc37c8076e4364'),
+ ('medical_v3_authoritative_evidence(text,text)','1c8841cad5ea4b24b6e56b9a8b42235c8cb4b4b4d2a3f65b83651ce50477ee1b'),
+ ('medical_v3_canonical_json(jsonb)','f9a132bc5ec06e2224ff7b445ebbaffca6510ef3852883ebbe76fcb7bebb7703'),
+ ('medical_v3_demo_deny_persistence()','fc8af47f69fed63f79c4a01c7aa7cb8de1fdf57076782f529c4576a72ddb2d2a'),
+ ('medical_v3_fixture_review_guard()','474873a8ee0526d169098c86b605cd12a28bfc0e80cb7c5888bae20b250609cb'),
+ ('medical_v3_fixture_scope()','8386d985c574893fa585aa2e74a4dff1e512e2ef00c2161c41552d2eb5cad516'),
+ ('medical_v3_fixture_snapshot()','cf2b070aa6f7e899efebbc976c2ba08bd1d56e6d277d416b02f0e3d8d82e5795'),
+ ('medical_v3_fixture_text_valid(text,text)','66aaa98209b6b28c57769ab33ca13331df140b0ce56a17cf337e5d4ccd81188f'),
+ ('medical_v3_has_scope(text,text)','c148287452342ef3a77128b87b2687283bfc24829361b76edaca1ac9d482b4d3'),
+ ('medical_v3_immutable()','38dc4f0f9925cce745796c163c5a2ee189cf5d99e29c668c0541f6de39d7c9b4'),
+ ('medical_v3_release_ai(uuid)','72158ae5041f85cd33a0bd426589a103b569eec572b24ef3e922817a077089e0'),
+ ('medical_v3_reserve_ai(text,text)','a3eb019ac109de2be781e3c934db6b89ad418bef81675d07cb617c17ef952d92'),
+ ('medical_v3_review_history(text,text)','ebfce4dc7e4fe9f5f48d05df4734f1d5e5434ff61a7d42f9b2d69c8906c17e1a'),
+ ('medical_v3_revoke_digest_guard()','57da107c15b5142bc954d520b463ae4043391c528ac17da3c1a633f4c2b63da4')
+ ) expected(signature,sha) LEFT JOIN pg_proc p ON p.oid=to_regprocedure(expected.signature)
+ WHERE p.oid IS NULL OR p.proowner<>'postgres'::regrole
+ OR p.proconfig IS DISTINCT FROM ARRAY['search_path=pg_catalog, public, extensions, pg_temp']
+ OR encode(extensions.digest(convert_to(pg_get_functiondef(p.oid),'UTF8'),'sha256'),'hex')<>expected.sha
+ OR has_function_privilege('anon',p.oid,'EXECUTE') OR has_function_privilege('service_role',p.oid,'EXECUTE')
+ OR has_function_privilege('authenticated',p.oid,'EXECUTE') IS DISTINCT FROM (p.proname IN ('medical_v3_fixture_snapshot','medical_v3_ai_evidence','medical_v3_reserve_ai','medical_v3_release_ai')))
+ THEN RAISE EXCEPTION 'approved schema function fingerprint/permission dependency mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname IN ('medical_advisor_review_events','medical_ai_quota_reservations','medical_v3_fixture_sources','medical_v3_fixture_observations','medical_v3_fixture_receipts'))<>5
+ OR EXISTS(SELECT 1 FROM pg_class c CROSS JOIN (VALUES ('anon'),('authenticated'),('service_role')) roles(name)
+ WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('medical_advisor_review_events','medical_ai_quota_reservations','medical_v3_fixture_sources','medical_v3_fixture_observations','medical_v3_fixture_receipts') AND
+ (c.relowner<>'postgres'::regrole OR NOT c.relrowsecurity OR has_table_privilege(roles.name,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')))
+ THEN RAISE EXCEPTION 'approved schema table owner/RLS/permission dependency mismatch'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='public.medical_advisor_review_events'::regclass
+ AND tgname='medical_v3_demo_deny_persistence' AND tgenabled='O' AND tgfoid='public.medical_v3_demo_deny_persistence()'::regprocedure)
+ THEN RAISE EXCEPTION 'persistent denial dependency unavailable'; END IF;
  IF EXISTS(SELECT 1 FROM public.medical_v3_fixture_sources) OR EXISTS(SELECT 1 FROM public.medical_v3_fixture_observations) OR EXISTS(SELECT 1 FROM public.medical_v3_fixture_receipts) OR EXISTS(SELECT 1 FROM public.medical_ai_quota_reservations) OR EXISTS(SELECT 1 FROM public.medical_advisor_review_events) THEN RAISE EXCEPTION 'seed requires empty approved tables; rerun or partial completion denied'; END IF;
 -- No users, assignments or roles are created. Missing existing scope yields no source.
 WITH scope AS (
