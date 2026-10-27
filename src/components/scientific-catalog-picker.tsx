@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type Entry = { id: string; name: string; status: string };
 
@@ -11,17 +12,20 @@ export function ScientificCatalogPicker({ entries }: { entries: readonly Entry[]
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState("");
   const [active, setActive] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const activeRef = useRef<HTMLLIElement>(null);
   const filtered = useMemo(() => entries.filter(e => `${e.id} ${e.name}`.toLowerCase().includes(query.toLowerCase())), [entries, query]);
   const selected = entries.find(e => e.id === selectedId);
+  useEffect(() => { if (open) activeRef.current?.scrollIntoView({ block: "nearest" }); }, [open, active, query]);
   const choose = (e: Entry) => { setSelectedId(e.id); setQuery(""); setOpen(false); setActive(0); };
   return <div className="mt-4">
     <label htmlFor={`${id}-input`} className="block text-sm font-medium">Explore scientific reference variables</label>
     <div className="relative mt-2">
-      <input id={`${id}-input`} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={`${id}-list`} aria-activedescendant={open && filtered[active] ? `${id}-${filtered[active].id}` : undefined}
+      <input ref={inputRef} id={`${id}-input`} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={`${id}-list`} aria-activedescendant={open && filtered[active] ? `${id}-${filtered[active].id}` : undefined}
         className="w-full rounded-md border border-border bg-background p-3 pr-12 text-sm"
         placeholder="Search by name or catalog ID" autoComplete="off"
         value={open ? query : selected ? `${selected.id} · ${selected.name}` : ""}
-        onFocus={() => setOpen(true)} onChange={e => { setQuery(e.target.value); setActive(0); setOpen(true); }}
+        onFocus={() => setOpen(true)} onClick={() => setOpen(true)} onChange={e => { setQuery(e.target.value); setActive(0); setOpen(true); }}
         onBlur={() => { setOpen(false); setQuery(""); }}
         onKeyDown={e => {
           if (e.key === "Escape") { setOpen(false); setQuery(""); }
@@ -31,15 +35,15 @@ export function ScientificCatalogPicker({ entries }: { entries: readonly Entry[]
           else if (e.key === "End" && open) { e.preventDefault(); setActive(Math.max(0, filtered.length - 1)); }
           else if (e.key === "Enter" && open && filtered[active]) { e.preventDefault(); choose(filtered[active]); }
         }}/>
-      <button type="button" aria-label={open ? "Close scientific catalog options" : "Show scientific catalog options"} aria-expanded={open} aria-controls={`${id}-list`}
+      <Button variant="ghost" type="button" aria-label={open ? "Close scientific catalog options" : "Show scientific catalog options"} aria-expanded={open} aria-controls={`${id}-list`}
         className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md border-l border-border text-muted-foreground hover:text-foreground"
-        onMouseDown={e => e.preventDefault()} onClick={() => { setOpen(v => !v); setQuery(""); setActive(0); }}>
+        onMouseDown={e => e.preventDefault()} onClick={() => { const next = !open; inputRef.current?.focus(); setOpen(next); setQuery(""); setActive(0); }}>
         <svg aria-hidden="true" viewBox="0 0 24 24" className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-      </button>
+      </Button>
     </div>
     <p className="mt-2 text-xs text-muted-foreground" role="status">{entries.length} reference entries · owner-reported verbal scientific review · formal reconciliation pending</p>
     {open && <ul id={`${id}-list`} role="listbox" aria-label="Scientific reference variables" className="mt-2 max-h-64 overflow-y-auto rounded-md border border-border bg-popover text-popover-foreground">
-      {filtered.length ? filtered.map((e, i) => <li key={e.id} id={`${id}-${e.id}`} role="option" aria-selected={e.id === selectedId}
+      {filtered.length ? filtered.map((e, i) => <li ref={active === i ? activeRef : undefined} key={e.id} id={`${id}-${e.id}`} role="option" aria-selected={e.id === selectedId}
         className={`cursor-pointer border-b border-border px-3 py-2 text-sm ${active === i ? "bg-accent text-accent-foreground" : ""}`}
         onMouseEnter={() => setActive(i)} onMouseDown={event => { event.preventDefault(); choose(e); }}>
         {e.id} · {e.name}

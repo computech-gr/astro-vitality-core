@@ -1,4 +1,5 @@
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { Button } from "@/components/ui/button";
 import {
   filterCatalogVariables,
   moveActiveIndex,
@@ -32,9 +33,11 @@ export function BoneVariableCombobox<T extends ComboboxVariable>({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeRef = useRef<HTMLLIElement>(null);
   const selected = resolveCatalogSelection(variables, value);
   const options = useMemo(() => filterCatalogVariables(variables, query), [variables, query]);
   const activeOption = active >= 0 ? options[active] : undefined;
+  useEffect(() => { if (open) activeRef.current?.scrollIntoView({ block: "nearest" }); }, [open, active, query]);
 
   function commit(id: string | undefined) {
     const match = resolveCatalogSelection(variables, id);
@@ -95,13 +98,14 @@ export function BoneVariableCombobox<T extends ComboboxVariable>({
         aria-expanded={open}
         aria-controls={listId}
         aria-describedby={statusId}
-        aria-activedescendant={activeOption ? `${listId}-${activeOption.id}` : undefined}
+        aria-activedescendant={open && activeOption ? `${listId}-${activeOption.id}` : undefined}
         value={open ? query : selected ? variableLabel(selected) : query}
         placeholder="Search by name or catalog ID"
         onFocus={() => {
           setOpen(true);
           setActive(-1);
         }}
+        onClick={() => setOpen(true)}
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
@@ -114,17 +118,18 @@ export function BoneVariableCombobox<T extends ComboboxVariable>({
           setActive(-1);
         }}
       />
-      <button
+      <Button
+        variant="ghost"
         type="button"
         aria-label={open ? "Close handbook variable options" : "Show handbook variable options"}
         aria-expanded={open}
         aria-controls={listId}
         className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md border-l border-border text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         onMouseDown={(event) => event.preventDefault()}
-        onClick={() => { setOpen(!open); setQuery(""); setActive(-1); }}
+        onClick={() => { const next = !open; inputRef.current?.focus(); setOpen(next); setQuery(""); setActive(-1); }}
       >
         <svg aria-hidden="true" viewBox="0 0 24 24" className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-      </button>
+      </Button>
       </div>
       <p id={statusId} className="sr-only" role="status" aria-live="polite">
         {statusText}
@@ -143,6 +148,7 @@ export function BoneVariableCombobox<T extends ComboboxVariable>({
           ) : (
             options.map((v, i) => (
               <li
+                ref={i === active ? activeRef : undefined}
                 key={v.id}
                 id={`${listId}-${v.id}`}
                 role="option"
