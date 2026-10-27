@@ -15,9 +15,15 @@ const entrySource = readFileSync("src/components/bone-health-entry.tsx", "utf8")
 
 describe("bone variable combobox", () => {
   test("filters by name and by catalog ID, case-insensitively", () => {
-    expect(filterCatalogVariables(BONE_HEALTH_VARIABLES, first.name.toUpperCase())).toContainEqual(first);
-    expect(filterCatalogVariables(BONE_HEALTH_VARIABLES, first.id.toLowerCase())).toContainEqual(first);
-    expect(filterCatalogVariables(BONE_HEALTH_VARIABLES, "  ").length).toBe(BONE_HEALTH_VARIABLES.length);
+    expect(filterCatalogVariables(BONE_HEALTH_VARIABLES, first.name.toUpperCase())).toContainEqual(
+      first,
+    );
+    expect(filterCatalogVariables(BONE_HEALTH_VARIABLES, first.id.toLowerCase())).toContainEqual(
+      first,
+    );
+    expect(filterCatalogVariables(BONE_HEALTH_VARIABLES, "  ").length).toBe(
+      BONE_HEALTH_VARIABLES.length,
+    );
   });
   test("non-matching query yields empty list", () => {
     expect(filterCatalogVariables(BONE_HEALTH_VARIABLES, "zz-no-such-variable-zz")).toEqual([]);
