@@ -108,6 +108,7 @@ async def main():
         await combo.press("Enter")
         assert await page.locator("#picker-test").get_attribute("data-submitted") is None
         await combo.fill("")
+        await combo.press("Escape")
         await page.get_by_label("Authorized scope").uncheck()
         await combo.click()
         assert await page.get_by_role("option").count() == 0
