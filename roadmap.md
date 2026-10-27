@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Bone reported metadata comboboxes
+
+- [ ] Replace unit, specimen and method inputs with editable accessible pickers and authorized scoped suggestions.
+- [ ] Add focused safety and interaction tests; run permitted project checks and verify browser controls without saving records.
+- [ ] Report existing gate failures and exact-revision typecheck/build verification limits; no database or migration changes.
+
 ## Bone correction time and lab suggestions
 
 - [x] Apply supplied files with precise unchanged-instant retention and scoped editable source suggestions.
