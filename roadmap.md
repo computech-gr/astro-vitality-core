@@ -4,7 +4,8 @@
 
 - [x] Compare and apply supplied files, preserving scientific source bytes and authorization.
 - [x] Verify signed-in reference selection, keyboard/mouse controls and narrow-screen overflow without saving measurements.
-- [ ] Finish final tests, security and automatic compilation checks; report existing verifier and dependency findings.
+- [x] 621 tests, signed-in keyboard/mouse checks at desktop/mobile sizes, lint (0 errors/13 existing warnings), formatting and security audit pass; automatic preview compilation reports build OK.
+- [ ] Full typecheck/production-build exact-revision CI remains unverified. Offline verifiers report 98/102 pass: existing P22 coverage check expects the removed pre-combobox implementation; P3663/P3664/P20 remain blocked. Dependency audit reports two moderate/one low advisory; no dependency or gate changes authorized.
 
 ## Synthetic status presentation
 
