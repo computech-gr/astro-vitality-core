@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { ScientificCatalogPicker } from "@/components/scientific-catalog-picker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
 import {
-  HEALTH_DOMAINS,
   getHealthDomain,
   projectDomainEvidence,
   type HealthDomainId,
@@ -112,18 +112,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
             ? "Scientific domain review pending. Existing evidence is displayed without clinical inference."
             : "Bone handbook mapping available. Clinical validation and approved thresholds are not established."}
       </p>
-      <nav aria-label="Astronaut health domains" className="mt-6 flex flex-wrap gap-2">
-        {HEALTH_DOMAINS.map((item) => (
-          <a
-            key={item.id}
-            href={item.path}
-            aria-current={item.id === domainId ? "page" : undefined}
-            className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
-          >
-            {item.title}
-          </a>
-        ))}
-      </nav>
+      <HealthDomainNavigation current={domainId} />
       {domainId === "cardiovascular" && <CardiovascularHandbookReference />}
       {(domainId === "immune" || domainId === "behavioral") && (
         <section
