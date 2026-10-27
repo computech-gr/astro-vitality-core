@@ -7,6 +7,7 @@ import {
 } from "@/infrastructure/mission-identity";
 import { BoneHealthImport } from "@/components/bone-health-import";
 import { BoneHandbookReference } from "@/components/scientific-handbook-reference";
+import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
 import { boneUnitSuggestions } from "@/domain/bone-health/unit-suggestions";
 import {
@@ -133,7 +134,6 @@ export function BoneHealthEntryPage() {
           (m.role === "crew_self" && m.crewMemberId === crewMemberId)),
     );
   const [variableId, setVariableId] = useState<string>(BONE_HEALTH_VARIABLES[0].id);
-  const [variableQuery, setVariableQuery] = useState("");
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
   const [observedAt, setObservedAt] = useState("");
@@ -166,13 +166,6 @@ export function BoneHealthEntryPage() {
       active = false;
     };
   }, [missionId, crewMemberId, authorizedSelection]);
-  const filteredVariables = useMemo(() => {
-    const query = variableQuery.trim().toLowerCase();
-    if (!query) return BONE_HEALTH_VARIABLES;
-    return BONE_HEALTH_VARIABLES.filter(
-      (v) => v.id.toLowerCase().includes(query) || v.name.toLowerCase().includes(query),
-    );
-  }, [variableQuery]);
   const unitSuggestions = useMemo(() => boneUnitSuggestions(variableId), [variableId]);
   const observedAtUtc =
     observedAt && Number.isFinite(Date.parse(observedAt)) ? new Date(observedAt).toISOString() : "";
@@ -364,34 +357,12 @@ export function BoneHealthEntryPage() {
           </p>
         )}
         <div className="sm:col-span-2">
-          <label htmlFor="bone-variable-search">Search handbook variables</label>
-          <input
-            id="bone-variable-search"
-            className={`${field} mt-1`}
-            type="search"
-            value={variableQuery}
-            onChange={(e) => setVariableQuery(e.target.value)}
-            placeholder="Filter by name or catalog ID"
+          <BoneVariableCombobox
+            variables={BONE_HEALTH_VARIABLES}
+            value={variableId}
+            onChange={setVariableId}
+            className={field}
           />
-          <label className="mt-2 block">
-            Handbook variable
-            <select
-              className={`${field} mt-1`}
-              value={variableId}
-              onChange={(e) => setVariableId(e.target.value)}
-            >
-              {filteredVariables.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name} ({v.id})
-                </option>
-              ))}
-              {!filteredVariables.some((v) => v.id === variableId) && (
-                <option value={variableId}>
-                  {BONE_HEALTH_VARIABLES.find((v) => v.id === variableId)?.name} ({variableId})
-                </option>
-              )}
-            </select>
-          </label>
         </div>
         <label>
           Result
