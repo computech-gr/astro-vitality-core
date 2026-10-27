@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Health-domain navigation UX
+
+- [ ] Compare supplied files and apply shared styled navigation without replacing newer Bone Health behavior.
+- [ ] Audit other domain picker reuse and measurement-entry prerequisites without activating entries.
+- [ ] Add focused navigation tests, verify keyboard/mouse at desktop/mobile widths, and run permitted checks; report full typecheck/build CI limits.
+
 ## Bone reported metadata comboboxes
 
 - [x] Replace unit, specimen and method inputs with editable accessible pickers and authorized mission/crew/provenance/variable-scoped suggestions; preserve custom text and existing correction/save behavior.
