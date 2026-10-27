@@ -83,10 +83,11 @@ export function BoneVariableCombobox<T extends ComboboxVariable>({
       <p className="text-xs text-muted-foreground" data-testid="bone-variable-selected">
         Selected: {selected ? variableLabel(selected) : "none"}
       </p>
+      <div className="relative mt-1">
       <input
         ref={inputRef}
         id={inputId}
-        className={`${className} mt-1`}
+        className={`${className} pr-12`}
         type="text"
         role="combobox"
         autoComplete="off"
@@ -113,6 +114,18 @@ export function BoneVariableCombobox<T extends ComboboxVariable>({
           setActive(-1);
         }}
       />
+      <button
+        type="button"
+        aria-label={open ? "Close handbook variable options" : "Show handbook variable options"}
+        aria-expanded={open}
+        aria-controls={listId}
+        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md border-l border-border text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => { setOpen(!open); setQuery(""); setActive(-1); }}
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      </div>
       <p id={statusId} className="sr-only" role="status" aria-live="polite">
         {statusText}
       </p>
