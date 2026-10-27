@@ -9,7 +9,8 @@ import { BoneHealthImport } from "@/components/bone-health-import";
 import { BoneHandbookReference } from "@/components/scientific-handbook-reference";
 import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BoneSourceCombobox } from "@/components/bone-source-combobox";
-import { utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
+import { resolveBoneObservationInstant, utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
+import { persistBoneCorrection, scopedBoneSources } from "@/domain/bone-health/correction";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
 import { boneUnitSuggestions } from "@/domain/bone-health/unit-suggestions";
 import {
@@ -139,6 +140,8 @@ export function BoneHealthEntryPage() {
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
   const [observedAt, setObservedAt] = useState("");
+  const [originalObservedAt, setOriginalObservedAt] = useState<string | null>(null);
+  const [observationTimeEdited, setObservationTimeEdited] = useState(false);
   const [sourceLabel, setSourceLabel] = useState("");
   const [specimen, setSpecimen] = useState("");
   const [assayMethod, setAssayMethod] = useState("");
@@ -169,8 +172,7 @@ export function BoneHealthEntryPage() {
     };
   }, [missionId, crewMemberId, authorizedSelection]);
   const unitSuggestions = useMemo(() => boneUnitSuggestions(variableId), [variableId]);
-  const observedAtUtc =
-    observedAt && Number.isFinite(Date.parse(observedAt)) ? new Date(observedAt).toISOString() : "";
+  const observedAtUtc = resolveBoneObservationInstant(observedAt, supersedesId ? originalObservedAt : null, observationTimeEdited);
   const pendingDuplicates = useMemo(() => {
     if (!observedAtUtc || !value.trim() || !Number.isFinite(Number(value))) return [];
     return findPotentialDuplicates(history, {
@@ -199,7 +201,7 @@ export function BoneHealthEntryPage() {
         variableId,
         value: Number(value),
         unit: unit.trim(),
-        observedAt: new Date(observedAt).toISOString(),
+        observedAt: observedAtUtc,
         sourceLabel: sourceLabel.trim(),
         specimen: specimen.trim(),
         assayMethod: assayMethod.trim(),
@@ -207,12 +209,7 @@ export function BoneHealthEntryPage() {
         dataOrigin,
         ...(supersedesId ? { supersedesId } : {}),
       };
-      await saveBoneEntry(entry);
-      if (supersedesId) {
-        const original = history.find((row) => row.id === supersedesId);
-        if (original && original.status !== "erroneous")
-          await markBoneEntryErroneous(original, "Superseded by a corrected record.");
-      }
+      await persistBoneCorrection(entry, supersedesId ? history.find(row => row.id === supersedesId) : undefined, saveBoneEntry, markBoneEntryErroneous);
       setHistory(await listBoneEntries(entry.missionId, entry.crewMemberId));
       setValue("");
       setNotes("");
@@ -253,6 +250,8 @@ export function BoneHealthEntryPage() {
     setValue(String(row.value));
     setUnit(row.unit);
     setObservedAt(utcIsoToLocalDatetimeInput(row.observedAt));
+    setOriginalObservedAt(row.observedAt);
+    setObservationTimeEdited(false);
     setSourceLabel(row.sourceLabel);
     setSpecimen(row.specimen);
     setAssayMethod(row.assayMethod);
@@ -410,7 +409,7 @@ export function BoneHealthEntryPage() {
             className={field}
             type="datetime-local"
             value={observedAt}
-            onChange={(e) => setObservedAt(e.target.value)}
+            onChange={(e) => { setObservedAt(e.target.value); setObservationTimeEdited(true); }}
             required
             aria-describedby="bone-observed-at-tz"
           />
@@ -422,7 +421,7 @@ export function BoneHealthEntryPage() {
         <BoneSourceCombobox
           value={sourceLabel}
           onChange={setSourceLabel}
-          sources={history.filter((row) => row.missionId === missionId && row.crewMemberId === crewMemberId && row.dataOrigin === dataOrigin).map((row) => row.sourceLabel)}
+          sources={authorizedSelection ? scopedBoneSources(history, missionId, crewMemberId, dataOrigin) : []}
           className={field}
         />
         <label>
