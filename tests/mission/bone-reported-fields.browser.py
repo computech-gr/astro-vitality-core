@@ -56,12 +56,12 @@ async def main():
         assert await unit.input_value() in ["mg/dL", "mmol/L"]
         form = page.locator("form").first
         await form.screenshot(path=str(OUT / "actual-form.png"))
-        print("Actual signed-in form PASS: unit hints, custom specimen/method, variable-change retention, visible chevrons; no save")
+        print("Actual form PASS (session restored; no authorized mission membership): unit hints, custom specimen/method, variable-change retention, visible chevrons; no save")
 
         # The standalone synthetic harness mounts the real component and scoping helper, not a mock UI.
         await page.evaluate("""async () => {
-          const React = await import('/node_modules/.vite/deps/react.js');
-          const {createRoot} = await import('/node_modules/.vite/deps/react-dom_client.js');
+          const {default: React} = await import('/node_modules/.vite/deps/react.js');
+          const {default: ReactDOMClient} = await import('/node_modules/.vite/deps/react-dom_client.js');
           const {BoneReportedFieldCombobox} = await import('/src/components/bone-reported-field-combobox.tsx');
           const {boneReportedFieldSuggestions} = await import('/src/domain/bone-health/reported-field-suggestions.ts');
           const host = document.createElement('div'); host.id='picker-test'; document.body.replaceChildren(host);
@@ -77,7 +77,7 @@ async def main():
               React.createElement('input',{'aria-label':'Unrelated form field',value:updates,onChange:()=>setUpdates(updates+1)}),
               React.createElement('input',{'aria-label':'Authorized scope',type:'checkbox',checked:authorized,onChange:()=>setAuthorized(!authorized)}));
           }
-          createRoot(host).render(React.createElement(Harness));
+          ReactDOMClient.createRoot(host).render(React.createElement(Harness));
         }""")
         combo = page.get_by_role("combobox", name="Assay / method", exact=True)
         await combo.click()
