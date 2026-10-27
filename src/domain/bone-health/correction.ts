@@ -8,8 +8,13 @@ export async function persistBoneCorrection(
   mark: (entry: BoneHealthEntry, reason: string) => Promise<void>,
 ): Promise<void> {
   await save(entry);
-  if (original && original.status !== "erroneous")
-    await mark(original, "Superseded by a corrected record.");
+  if (original && original.status !== "erroneous") {
+    try {
+      await mark(original, "Superseded by a corrected record.");
+    } catch {
+      throw new Error("Correction entry saved, but the original status update failed. Both records are retained; review history before retrying.");
+    }
+  }
 }
 
 export function scopedBoneSources(
