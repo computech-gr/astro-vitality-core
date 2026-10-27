@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Scientific catalog UX and review trace
+
+- [x] Compare and apply supplied files, preserving scientific source bytes and authorization.
+- [x] Verify signed-in reference selection, keyboard/mouse controls and narrow-screen overflow without saving measurements.
+- [ ] Finish final tests, security and automatic compilation checks; report existing verifier and dependency findings.
+
 ## Synthetic status presentation
 
 - [x] Separate permanent-policy status from legacy guard status, sanitize access/service failures and identify revision metadata without changing admission.

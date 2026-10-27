@@ -41,3 +41,4 @@
 - Server code that injects `fetch` as a dependency must pass a wrapper and invoke it with the global receiver; workerd throws "Illegal invocation" (before transmission) when the bare global `fetch` is called as a method of another object, which Node-based tests cannot detect.
 - Synthetic tab convenience storage accepts only exact server-authorized fixture fact lines, binds account/scope/hash, and reauthorizes on remount/refocus; arbitrary manual text, rationale, consent and acknowledgment stay memory-only to prevent unencrypted medical-data or approval persistence.
 - Synthetic activation status exposes explicit policy mode and sanitized diagnostic categories only; unavailable reads never imply eligibility and operator revision metadata never attests deployed bytes.
+- Scientific reference pickers keep selection in component memory only and never promote source statuses; owner review provenance remains separate from operational authorization.
