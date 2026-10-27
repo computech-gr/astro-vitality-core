@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## Health-domain navigation UX
+
+- [x] Apply supplied navigation-only replacements; restore the missing Bone import and use Button-as-link controls with a verified 2px offset focus ring. All newer Bone fields and correction logic preserved.
+- [x] Audit: Immune/Behavioral already use searchable reference pickers; Cardiovascular has a handbook reference but no equivalent picker. All three remain read-only and require domain-specific validation, documented catalog reconciliation and authorization before measurement entry.
+- [x] 651 tests pass; four links, active states, keyboard/pointer navigation and focus verified at 1280px/390px with no overflow or runtime errors. Lint: 0 errors/13 existing warnings; formatting, security, catalog/freeze/Bone mapping and SEO checks pass; automatic compilation build OK.
+- [ ] Full typecheck/production-build exact-revision CI remains unverified; no manual build/typecheck run under platform rules. Existing dependency audit findings (2 moderate/1 low) and P3663/P3664/P20 evidence blockers remain unchanged; no database, migrations, activation or publication.
+
 ## Bone reported metadata comboboxes
 
 - [x] Replace unit, specimen and method inputs with editable accessible pickers and authorized mission/crew/provenance/variable-scoped suggestions; preserve custom text and existing correction/save behavior.

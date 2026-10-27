@@ -9,6 +9,7 @@ import { BoneHealthImport } from "@/components/bone-health-import";
 import { BoneHandbookReference } from "@/components/scientific-handbook-reference";
 import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BoneSourceCombobox } from "@/components/bone-source-combobox";
+import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { BoneReportedFieldCombobox } from "@/components/bone-reported-field-combobox";
 import { resolveBoneObservationInstant, utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
 import { persistBoneCorrection, scopedBoneSources } from "@/domain/bone-health/correction";
@@ -279,20 +280,7 @@ export function BoneHealthEntryPage() {
   const field = "w-full rounded-md border border-border bg-background px-3 py-2 text-foreground";
   return (
     <main className="mx-auto max-w-5xl px-5 py-10 text-foreground">
-      <nav aria-label="Astronaut health domains" className="mb-5 flex flex-wrap gap-3 text-sm">
-        <a className="underline" href="/mission/bone-health" aria-current="page">
-          Bone Health
-        </a>
-        <a className="underline" href="/mission/immune-health">
-          Immune Changes
-        </a>
-        <a className="underline" href="/mission/cardiovascular-health">
-          Cardiovascular Health
-        </a>
-        <a className="underline" href="/mission/behavioral-health">
-          Behavioral Health
-        </a>
-      </nav>
+      <HealthDomainNavigation current="bone" />
       <p className="section-kicker">P22.1 · Bone Health</p>
       <h1 className="mt-2 font-display text-4xl font-semibold">
         Bone Health — Measurements &amp; Reference
