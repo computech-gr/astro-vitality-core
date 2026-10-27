@@ -60,8 +60,10 @@ async def main():
 
         # The standalone synthetic harness mounts the real component and scoping helper, not a mock UI.
         await page.evaluate("""async () => {
-          const {default: React} = await import('/node_modules/.vite/deps/react.js');
-          const {default: ReactDOMClient} = await import('/node_modules/.vite/deps/react-dom_client.js');
+          const source = await (await fetch('/src/components/bone-reported-field-combobox.tsx')).text();
+          const version = source.match(/react\.js\?v=([a-z0-9]+)/)[1];
+          const {default: React} = await import('/node_modules/.vite/deps/react.js?v='+version);
+          const {default: ReactDOMClient} = await import('/node_modules/.vite/deps/react-dom_client.js?v='+version);
           const {BoneReportedFieldCombobox} = await import('/src/components/bone-reported-field-combobox.tsx');
           const {boneReportedFieldSuggestions} = await import('/src/domain/bone-health/reported-field-suggestions.ts');
           const host = document.createElement('div'); host.id='picker-test'; document.body.replaceChildren(host);
