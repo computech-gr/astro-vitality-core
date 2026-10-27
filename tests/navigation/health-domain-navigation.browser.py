@@ -31,6 +31,7 @@ async def main():
                     link = nav.get_by_role("link", name=target_title, exact=True)
                     assert await link.evaluate("el => el === document.activeElement")
                     assert await link.evaluate("el => el.matches(':focus-visible')")
+                    print("Focus styles", await link.evaluate("el => ({outline:getComputedStyle(el).outline,shadow:getComputedStyle(el).boxShadow,classes:el.className})"))
                     assert await link.evaluate("el => parseFloat(getComputedStyle(el).outlineWidth) >= 2")
                     await link.press("Tab")
                 await current.focus()
