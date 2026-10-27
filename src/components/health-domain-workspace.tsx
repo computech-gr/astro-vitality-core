@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ScientificCatalogPicker } from "@/components/scientific-catalog-picker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
@@ -17,13 +18,7 @@ import { CardiovascularHandbookReference } from "@/components/scientific-handboo
 
 export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }) {
   const domain = getHealthDomain(domainId);
-  const [catalogQuery, setCatalogQuery] = useState("");
-  const draftCatalog = proposedCatalog.entries.filter(
-    (item) =>
-      item.domain === domainId &&
-      (item.id.toLowerCase().includes(catalogQuery.toLowerCase()) ||
-        item.name.toLowerCase().includes(catalogQuery.toLowerCase())),
-  );
+  const draftCatalog = proposedCatalog.entries.filter((item) => item.domain === domainId);
   const [memberships, setMemberships] = useState<
     Array<{ missionId: string; crewMemberId: string; missionLabel: string }>
   >([]);
@@ -135,40 +130,14 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
           className="mt-7 rounded-xl border border-border p-5"
           aria-label="Scientific draft catalog"
         >
-          <h2 className="text-xl font-semibold">
-            Scientific proposal catalog · {domainId === "immune" ? "IMM" : "BSC"}
-          </h2>
+          <h2 className="text-xl font-semibold">Scientific reference catalog · {domainId === "immune" ? "IMM" : "BSC"}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Claude scientific draft v1.0 (18 Oct 2026). All entries are PENDING_NIKOLAS_REVIEW.
-            These are reference proposals only: not approved measurements, ingestion mappings,
-            diagnostic rules or clinical thresholds. Matrix v1.1 is unchanged.
+            MITOCHONDRIA scientific reference proposals, with supporting Nikolas handbook sources.
+            The project owner reports that Nikolas completed verbal review of these entries.
+            Formal per-entry reconciliation and signed reviewer confirmation are not yet recorded;
+            operational measurement activation and clinical validation are separate.
           </p>
-          <label className="mt-4 block text-sm" htmlFor="scientific-catalog-search">
-            Search proposed measurements
-          </label>
-          <input
-            id="scientific-catalog-search"
-            className="mt-2 w-full rounded-md border border-border bg-background p-2 text-sm"
-            type="search"
-            value={catalogQuery}
-            onChange={(event) => setCatalogQuery(event.target.value)}
-            placeholder="Search name or catalog ID"
-          />
-          <p className="mt-2 text-xs text-muted-foreground" role="status">
-            {draftCatalog.length} proposed entries · no scientific approval
-          </p>
-          <div className="mt-3 max-h-80 overflow-y-auto rounded-md border border-border">
-            <ul className="divide-y divide-border">
-              {draftCatalog.map((item) => (
-                <li className="p-3 text-sm" key={item.id}>
-                  <span className="font-semibold">{item.id}</span> · {item.name}
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    PENDING_NIKOLAS_REVIEW · not active
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ScientificCatalogPicker entries={draftCatalog} />
           <p className="mt-3 text-sm">
             Synthetic document review remains a separate, human-controlled process.{" "}
             <a className="underline" href="/mission/documents">
@@ -284,7 +253,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
               </div>
             )}
             <p className="mt-3 text-xs text-muted-foreground">
-              Scientific catalog proposals remain PENDING_NIKOLAS_REVIEW. Device readings are
+              Scientific catalog entries remain inactive for operational ingestion pending documented reconciliation. Device readings are
               included only if they already exist in this authorized evidence projection; pending
               offline sync is not treated as cloud-confirmed.
             </p>
