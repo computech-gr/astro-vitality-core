@@ -3,7 +3,9 @@
 ## Bone correction time and lab suggestions
 
 - [x] Apply supplied files with precise unchanged-instant retention and scoped editable source suggestions.
-- [ ] Validate UTC+2/UTC-5, DST, failed-save ordering, browser controls and final project checks.
+- [x] 635 tests pass, including UTC+2/UTC-5, unchanged precise instants, DST and failed/partial-save ordering; actual-form editable source controls and isolated synthetic keyboard/mouse suggestions pass without persistence.
+- [x] Lint (0 errors/13 existing warnings), formatting and security audit pass; automatic preview compilation reports build OK. Offline verifiers remain 98/102 with existing P22 coverage/P3663/P3664/P20 failures; dependency audit retains two moderate/one low advisory.
+- [ ] Full typecheck/production-build exact-revision CI and authorized saved-record browser correction remain unverified; no database, migration, provider or deployment changes performed.
 
 ## Scientific catalog UX and review trace
 
