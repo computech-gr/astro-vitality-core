@@ -79,6 +79,9 @@ async def main():
           }
           ReactDOMClient.createRoot(host).render(React.createElement(Harness));
         }""")
+        await page.wait_for_timeout(500)
+        print("Harness diagnostics:", errors)
+        print("Harness host:", await page.locator("#picker-test").count())
         combo = page.get_by_role("combobox", name="Assay / method", exact=True)
         await combo.click()
         assert await page.get_by_role("option").count() == 2
