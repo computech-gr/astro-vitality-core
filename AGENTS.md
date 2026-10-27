@@ -43,3 +43,4 @@
 - Synthetic activation status exposes explicit policy mode and sanitized diagnostic categories only; unavailable reads never imply eligibility and operator revision metadata never attests deployed bytes.
 - Scientific reference pickers keep selection in component memory only and never promote source statuses; owner review provenance remains separate from operational authorization.
 - Bone correction forms retain the persisted observation instant until the datetime field is edited, and append the correction successfully before marking the original erroneous; source suggestions are authorized mission/crew/provenance scoped.
+- Bone reported metadata pickers share an editable combobox and pure scoped suggestion module; historical hints require current authorization and exact mission/crew/provenance/variable matches, while typing and filtering never normalize or replace reported values.

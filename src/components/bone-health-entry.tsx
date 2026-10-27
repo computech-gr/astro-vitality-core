@@ -9,10 +9,11 @@ import { BoneHealthImport } from "@/components/bone-health-import";
 import { BoneHandbookReference } from "@/components/scientific-handbook-reference";
 import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BoneSourceCombobox } from "@/components/bone-source-combobox";
+import { BoneReportedFieldCombobox } from "@/components/bone-reported-field-combobox";
 import { resolveBoneObservationInstant, utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
 import { persistBoneCorrection, scopedBoneSources } from "@/domain/bone-health/correction";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
-import { boneUnitSuggestions } from "@/domain/bone-health/unit-suggestions";
+import { boneReportedFieldSuggestions } from "@/domain/bone-health/reported-field-suggestions";
 import {
   findPotentialDuplicates,
   listBoneEntries,
@@ -171,7 +172,9 @@ export function BoneHealthEntryPage() {
       active = false;
     };
   }, [missionId, crewMemberId, authorizedSelection]);
-  const unitSuggestions = useMemo(() => boneUnitSuggestions(variableId), [variableId]);
+  const reportedSuggestions = useMemo(() => boneReportedFieldSuggestions(history, {
+    authorized: authorizedSelection, missionId, crewMemberId, dataOrigin, variableId,
+  }), [history, authorizedSelection, missionId, crewMemberId, dataOrigin, variableId]);
   const observedAtUtc = resolveBoneObservationInstant(observedAt, supersedesId ? originalObservedAt : null, observationTimeEdited);
   const pendingDuplicates = useMemo(() => {
     if (!observedAtUtc || !value.trim() || !Number.isFinite(Number(value))) return [];
@@ -376,33 +379,9 @@ export function BoneHealthEntryPage() {
             required
           />
         </label>
-        <div>
-          <label>
-            Unit (as reported)
-            <input
-              className={field}
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-              placeholder="e.g. pg/mL"
-              required
-            />
-          </label>
-          {unitSuggestions.length > 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Handbook source units (not approved, non-binding):{" "}
-              {unitSuggestions.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  type="button"
-                  className="ml-1 underline"
-                  onClick={() => setUnit(suggestion)}
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </p>
-          )}
-        </div>
+        <BoneReportedFieldCombobox label="Unit (as reported)" value={unit} onChange={setUnit}
+          suggestions={reportedSuggestions.unit} className={field} required
+          description="Handbook and historical units are non-binding, not scientifically approved. No unit conversion." />
         <label>
           Observed at (device local time)
           <input
@@ -424,18 +403,10 @@ export function BoneHealthEntryPage() {
           sources={authorizedSelection ? scopedBoneSources(history, missionId, crewMemberId, dataOrigin) : []}
           className={field}
         />
-        <label>
-          Specimen / modality
-          <input className={field} value={specimen} onChange={(e) => setSpecimen(e.target.value)} />
-        </label>
-        <label>
-          Assay / method
-          <input
-            className={field}
-            value={assayMethod}
-            onChange={(e) => setAssayMethod(e.target.value)}
-          />
-        </label>
+        <BoneReportedFieldCombobox label="Specimen / modality" value={specimen} onChange={setSpecimen}
+          suggestions={reportedSuggestions.specimen} className={field} />
+        <BoneReportedFieldCombobox label="Assay / method" value={assayMethod} onChange={setAssayMethod}
+          suggestions={reportedSuggestions.assayMethod} className={field} />
         <label>
           Data provenance
           <select
