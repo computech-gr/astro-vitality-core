@@ -8,6 +8,8 @@ import {
 import { BoneHealthImport } from "@/components/bone-health-import";
 import { BoneHandbookReference } from "@/components/scientific-handbook-reference";
 import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
+import { BoneSourceCombobox } from "@/components/bone-source-combobox";
+import { utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
 import { boneUnitSuggestions } from "@/domain/bone-health/unit-suggestions";
 import {
@@ -250,7 +252,7 @@ export function BoneHealthEntryPage() {
     setVariableId(row.variableId);
     setValue(String(row.value));
     setUnit(row.unit);
-    setObservedAt(row.observedAt.slice(0, 16));
+    setObservedAt(utcIsoToLocalDatetimeInput(row.observedAt));
     setSourceLabel(row.sourceLabel);
     setSpecimen(row.specimen);
     setAssayMethod(row.assayMethod);
@@ -417,15 +419,12 @@ export function BoneHealthEntryPage() {
             {observedAtUtc ? ` Stored value: ${observedAtUtc}` : ""}
           </span>
         </label>
-        <label>
-          Lab / original source
-          <input
-            className={field}
-            value={sourceLabel}
-            onChange={(e) => setSourceLabel(e.target.value)}
-            required
-          />
-        </label>
+        <BoneSourceCombobox
+          value={sourceLabel}
+          onChange={setSourceLabel}
+          sources={history.filter((row) => row.missionId === missionId && row.crewMemberId === crewMemberId && row.dataOrigin === dataOrigin).map((row) => row.sourceLabel)}
+          className={field}
+        />
         <label>
           Specimen / modality
           <input className={field} value={specimen} onChange={(e) => setSpecimen(e.target.value)} />
