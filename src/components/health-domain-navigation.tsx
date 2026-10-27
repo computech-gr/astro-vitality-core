@@ -10,7 +10,7 @@ export function HealthDomainNavigation({ current }: { current: HealthDomainId })
           key={item.id}
           asChild
           variant="ghost"
-          className={`h-auto whitespace-normal rounded-md border px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+          className={`h-auto whitespace-normal rounded-md border px-3 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
             item.id === current
               ? "border-primary bg-primary/10 font-semibold text-foreground"
               : "border-border text-foreground hover:bg-muted"
