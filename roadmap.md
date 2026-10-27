@@ -2,9 +2,10 @@
 
 ## Bone reported metadata comboboxes
 
-- [ ] Replace unit, specimen and method inputs with editable accessible pickers and authorized scoped suggestions.
-- [ ] Add focused safety and interaction tests; run permitted project checks and verify browser controls without saving records.
-- [ ] Report existing gate failures and exact-revision typecheck/build verification limits; no database or migration changes.
+- [x] Replace unit, specimen and method inputs with editable accessible pickers and authorized mission/crew/provenance/variable-scoped suggestions; preserve custom text and existing correction/save behavior.
+- [x] 646 tests pass; actual-form controls and isolated synthetic keyboard/mouse, retention and authorization-loss checks pass without saving records. Lint has 0 errors/13 existing warnings; formatting/security audit pass; automatic compilation reports build OK.
+- [x] Offline package verifiers: 58/60 pass; existing P22 coverage assumption and P20 submission gate fail unchanged. Private P3663/P3664/P20 evidence diagnostics remain BLOCKED. Dependency audit retains 2 moderate/1 low advisory; no dependencies, database or migrations changed.
+- [ ] Exact-revision typecheck/production-build CI and authorized-history browser flow remain unverified: managed CI evidence unavailable and the restored requesting account has no authorized Bone Health mission membership.
 
 ## Bone correction time and lab suggestions
 
