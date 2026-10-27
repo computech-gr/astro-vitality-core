@@ -47,6 +47,14 @@ describe("bone correction time and source picker", () => {
     await persistBoneCorrection({ ...original, id: "correction", supersedesId: original.id }, original, async entry => { events.push(entry.id); }, async entry => { events.push(`mark:${entry.id}`); });
     expect(events).toEqual(["correction", "mark:original"]);
   });
+  test("partial status failure truthfully reports the retained correction", async () => {
+    const saved: string[] = [];
+    await expect(persistBoneCorrection({ ...original, id: "correction", supersedesId: original.id }, original,
+      async entry => { saved.push(entry.id); }, async () => { throw new Error("Status write failed"); },
+    )).rejects.toThrow("Correction entry saved, but the original status update failed");
+    expect(saved).toEqual(["correction"]);
+    expect(original.status).toBeUndefined();
+  });
   for (const [field, value] of [["missionId", "mission-2"], ["crewMemberId", "crew-2"], ["dataOrigin", "real"]] as const) {
     test(`source suggestions exclude different ${field}`, () => {
       expect(scopedBoneSources([original, { ...original, [field]: value, sourceLabel: "Excluded Lab" }], "mission-1", "crew-1", "synthetic")).toEqual(["Demo Lab"]);
