@@ -1,5 +1,10 @@
 # P20 video evidence closure
 
+## Bone correction time and lab suggestions
+
+- [x] Apply supplied files with precise unchanged-instant retention and scoped editable source suggestions.
+- [ ] Validate UTC+2/UTC-5, DST, failed-save ordering, browser controls and final project checks.
+
 ## Scientific catalog UX and review trace
 
 - [x] Compare and apply supplied files, preserving scientific source bytes and authorization.
