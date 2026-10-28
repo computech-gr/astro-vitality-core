@@ -28,6 +28,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
     onChange({ ...review, rows: selectBoneReviewRows(review.rows, checked, profile) });
   }
   return <div className="mt-3 space-y-3">
+    {review.diagnostics && <p className="text-sm text-muted-foreground" role="status">Extraction: {review.diagnostics.method} · {review.diagnostics.pages} page(s) · {review.diagnostics.matched} matched · {review.diagnostics.held} held for manual review · {review.diagnostics.rejected} rejected · Source file: {review.diagnostics.sourceName}</p>}
     {review.errors.length > 0 && <div role="alert"><strong>Errors / warnings ({review.errors.length})</strong><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
     {review.text && <details>
       <summary>View extracted source text (read-only)</summary>

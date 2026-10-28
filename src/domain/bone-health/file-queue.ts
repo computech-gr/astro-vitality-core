@@ -6,8 +6,10 @@ import { findPotentialDuplicates, validateBoneEntry, type BoneHealthEntry } from
 export const BONE_FILE_ACCEPT = ".csv,.pdf,.png,.jpg,.jpeg,.webp";
 export const MAX_BONE_FILES = 10;
 export const BONE_FILE_TIMEOUT_MS = 90_000;
-export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean };
-export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string };
+export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean; page?: number };
+/** P33: per-file extraction diagnostics for the human review panel. */
+export type ReviewDiagnostics = { method: string; pages: number; matched: number; held: number; rejected: number; warnings: number; sourceName: string };
+export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string; diagnostics?: ReviewDiagnostics };
 export type QueueItem = {
   id: string; name: string; kind: string; file: File | undefined;
   status: "queued" | "processing" | "review" | "error" | "cancelled";
