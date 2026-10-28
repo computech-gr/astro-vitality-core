@@ -28,6 +28,9 @@ async def main():
             export async function saveBoneEntry(row){if(window.boneTest.fail)throw new Error('Synthetic write failure');window.boneTest.writes.push('save');window.boneTest.rows.push({...row})};
             export async function markBoneEntryErroneous(row){window.boneTest.writes.push('mark');window.boneTest.rows=window.boneTest.rows.map(r=>r.id===row.id?{...r,status:'erroneous'}:r)}`;
           const adapters = {'/src/infrastructure/mission-identity.ts':identity, '/src/domain/bone-health/history.ts':history, '/src/integrations/supabase/client.ts':'export const supabase={};'};
+          // Peripheral import tools remain outside this form-only synthetic test.
+          adapters['/src/components/bone-health-import.tsx']='export function BoneHealthImport(){return null}';
+          adapters['/src/components/scientific-handbook-reference.tsx']='export function BoneHandbookReference(){return null}';
           const modules={};
           source = source.replace(/from\s+(["'])([^"']+)\1/g, (whole, quote, path) => {
             const adapter=adapters[path.split('?')[0]];
@@ -57,7 +60,7 @@ async def main():
         await source.fill("Astronaut custom lab")
         await page.get_by_role("combobox", name="Specimen / modality", exact=True).fill("Custom specimen")
         await page.get_by_role("combobox", name="Assay / method", exact=True).fill("Custom assay")
-        await page.get_by_label("Data provenance", exact=True).select_option("synthetic")
+        await form.locator('select').filter(has=page.locator('option[value="synthetic"]')).select_option("synthetic")
         notes = "Original notes\nExact unicode α and punctuation."
         await page.get_by_label("Notes", exact=True).fill(notes)
         await page.get_by_role("button", name="Save encrypted record", exact=True).click()
