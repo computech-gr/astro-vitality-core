@@ -125,6 +125,7 @@ async def main():
             overflow = await page.locator('.report-table').evaluate_all('(tables)=>tables.flatMap(t=>[...t.querySelectorAll("th,td")]).filter(c=>c.scrollWidth>c.clientWidth+1).length')
             assert overflow == 0, overflow
         await page.emulate_media(media='print')
+        print("colors", await page.locator(".report-history-table td").first.evaluate("e=>({td:getComputedStyle(e).color,table:getComputedStyle(e.closest("table")).color,article:getComputedStyle(e.closest("article")).color})"))
         # Match A4 printable width for layout measurement, independent of mobile width.
         await page.set_viewport_size({'width':703,'height':1800})
         assert await page.locator('.report-history-table').evaluate('t=>t.scrollWidth<=t.clientWidth+1')
