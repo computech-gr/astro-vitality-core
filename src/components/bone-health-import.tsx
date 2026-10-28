@@ -6,11 +6,13 @@ import { offlineOcrCacheReady } from "@/domain/bone-health/ocr-readiness";
 import { BoneHealthDocumentImport } from "./bone-health-document-import";
 import { BoneFileQueue, BONE_FILE_ACCEPT, MAX_BONE_FILES, reviewedBoneEntries, duplicateBoneImportIds, persistReviewedBoneEntries, type QueueItem, type FileReview } from "@/domain/bone-health/file-queue";
 import { listBoneEntries, saveBoneEntry } from "@/domain/bone-health/history";
+import { authorizeBoneImport, clearRetainedBoneImport, watchBoneImportSignOut } from "@/domain/bone-health/import-authorization";
+import { retainBoneImport, restoreBoneImport, type ImportScope } from "@/domain/bone-health/import-session";
 
 export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImported }: {
   missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic"; onImported: () => Promise<void>;
 }) {
-  // A new scope mounts a fresh queue; no pending review crosses mission/crew/provenance.
+  // Every mount freshly authorizes the exact scope before restoring synthetic-only review.
   return <ScopedBoneImport key={`${missionId}:${crewMemberId}:${dataOrigin}`} {...{missionId, crewMemberId, dataOrigin, onImported}} />;
 }
 function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
@@ -26,17 +28,54 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
   const [offlineStatus, setOfflineStatus] = useState("");
   const [checking, setChecking] = useState(false);
   const [duplicateConfirmed, setDuplicateConfirmed] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
+  const currentScope = useRef<ImportScope | null>(null);
   useEffect(() => {
     alive.current = true;
-    queue.current = new BoneFileQueue(setItems);
-    return () => { alive.current = false; queue.current?.dispose(); queue.current = null; };
-  }, []);
+    watchBoneImportSignOut();
+    let epoch = 0;
+    const retain = (next: QueueItem[]) => {
+      setItems(next);
+      if (currentScope.current?.dataOrigin === "synthetic") {
+        try { retainBoneImport(window.sessionStorage, currentScope.current, next); } catch { clearRetainedBoneImport(); }
+      }
+    };
+    queue.current = new BoneFileQueue(retain);
+    const refresh = async () => {
+      const ticket = ++epoch;
+      setAuthorized(false); setDuplicateConfirmed(false);
+      try {
+        const scope = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
+        if (!alive.current || ticket !== epoch) return;
+        if (currentScope.current && currentScope.current.userId !== scope.userId) {
+          clearRetainedBoneImport(); queue.current?.dispose(); queue.current = new BoneFileQueue(retain);
+        }
+        const initial = !currentScope.current || currentScope.current.userId !== scope.userId;
+        currentScope.current = scope;
+        if (dataOrigin === "real") clearRetainedBoneImport();
+        else if (initial) queue.current?.restore(restoreBoneImport(window.sessionStorage, scope));
+        else for (const item of queue.current?.items ?? []) if (item.review) queue.current?.update(item.id, { ...item.review, rows: item.review.rows.map(row => ({ ...row, selected: false })) });
+        setAuthorized(true);
+      } catch {
+        if (!alive.current || ticket !== epoch) return;
+        currentScope.current = null; clearRetainedBoneImport(); queue.current?.dispose(); queue.current = new BoneFileQueue(retain); setItems([]);
+        setStatus("Import authorization unavailable or scope denied. Retained review cleared; nothing saved.");
+      }
+    };
+    const focus = () => { if (document.visibilityState !== "hidden") void refresh(); };
+    const subscription = subscribeMissionIdentity(focus);
+    window.addEventListener("focus", focus); document.addEventListener("visibilitychange", focus);
+    void refresh();
+    return () => { alive.current = false; epoch++; currentScope.current = null; subscription(); window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); queue.current?.dispose(); queue.current = null; };
+  }, [missionId, crewMemberId, dataOrigin]);
   function update(id: string, review: FileReview) { if (saving.current) return; setDuplicateConfirmed(false); queue.current?.update(id, review); }
   async function commit() {
-    if (saving.current) return;
+    if (saving.current || !authorized) return;
     saving.current = true; setBusy(true);
     let saved = 0;
     try {
+      const scope = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
+      if (!alive.current || scope.userId !== currentScope.current?.userId) throw new Error("Account or scope changed; nothing saved.");
       const entries = reviewedBoneEntries(items.flatMap(item => item.review?.rows ?? []), { missionId, crewMemberId, dataOrigin });
       if (!entries.length) throw new Error("Select and verify at least one measurement.");
       const history = await listBoneEntries(missionId, crewMemberId);
@@ -45,6 +84,8 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
       if (duplicates.length && !duplicateConfirmed) throw new Error(`${duplicates.length} potential duplicate(s). Compare history and confirm duplicates before saving.`);
       await persistReviewedBoneEntries(entries, async entry => {
         if (!alive.current) throw new Error("Scope changed; remaining rows were not saved.");
+        const fresh = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
+        if (!alive.current || fresh.userId !== scope.userId) throw new Error("Authorization changed; remaining rows were not saved.");
         await saveBoneEntry(entry);
       }, id => {
         saved++;
@@ -110,6 +151,8 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
         </Button>
       </details>
 
+    <fieldset disabled={!authorized} className="min-w-0 border-0 p-0">
+    {!authorized && <p role="status" className="mt-3 text-sm">Verifying import authorization…</p>}
     <div className="mt-4 flex flex-wrap items-center gap-3">
       <input ref={picker} type="file" multiple accept={BONE_FILE_ACCEPT} className="hidden" aria-label="Laboratory files" disabled={busy || items.length >= MAX_BONE_FILES} onChange={event => {
         const skipped = queue.current?.add(Array.from(event.currentTarget.files ?? [])) ?? 0;
@@ -139,7 +182,8 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
             <Button type="button" size="icon" variant="ghost" disabled={busy} aria-label={`Remove ${item.name}`} title={`Remove ${item.name}`} onClick={() => { queue.current?.remove(item.id); setDuplicateConfirmed(false); }}><X aria-hidden="true" /></Button>
           </div>
         </div>
-        {item.review && <BoneHealthDocumentImport review={item.review} fileId={item.id} disabled={busy} onChange={review => update(item.id, review)} />}
+        {!item.file && <p className="mt-2 text-sm">Re-select original file to reprocess</p>}
+        {item.review && <BoneHealthDocumentImport review={item.review} fileId={item.id} disabled={busy || !authorized} onChange={review => update(item.id, review)} />}
       </li>)}
     </ul>
     {items.some(item => item.review?.rows.some(row => !row.saved)) && <div className="mt-4 space-y-3">
@@ -147,5 +191,6 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
       <Button type="button" disabled={busy || !items.some(item => item.review?.rows.some(row => row.selected && !row.saved))} onClick={() => void commit()}>{busy ? "Saving…" : "Confirm selected results and save"}</Button>
     </div>}
     <p role="status" className="mt-3 text-sm">{status}</p>
+    </fieldset>
   </section>;
 }
