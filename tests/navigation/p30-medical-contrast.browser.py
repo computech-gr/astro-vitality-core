@@ -70,7 +70,7 @@ async def check_p30(page, context, modules):
       const {buildHealthHistoryReport}=await import('/src/domain/health-intelligence/health-history-report.ts');
       const o={schema:'mitochondria.unified-observation.v1',id:'SYNTHETIC-P30-OBS',missionId:'SYNTHETIC-P30',crewMemberId:'SYNTHETIC-CREW',metricId:'cv-001',domain:'cardiovascular',value:'62',originalUnit:'bpm',observedAt:'2026-10-01T10:00:00Z',recordedAt:'2026-10-01T10:00:00Z',source:{kind:'manual',label:'SYNTHETIC'},provenance:'synthetic',quality:{reviewerConfirmed:true},reviewState:'accepted'};
       const host=document.createElement('article');host.className='report-print';document.body.replaceChildren(host);
-      const root=Client.createRoot(host);window.p30Render=empty=>root.render(React.createElement(MedicalAdvisorWorkbench,{report:buildHealthHistoryReport(empty?[]:[o],o.missionId,o.crewMemberId,'synthetic'),authorizedMedicalRole:false,advisorLabel:'SYNTHETIC presentation only'}));
+      const root=Client.createRoot(host);window.p30Render=empty=>root.render(React.createElement(MedicalAdvisorWorkbench,{key:String(empty),report:buildHealthHistoryReport(empty?[]:[o],o.missionId,o.crewMemberId,'synthetic'),authorizedMedicalRole:false,advisorLabel:'SYNTHETIC presentation only'}));
       window.p30Render(true);
     }''')
     export = page.get_by_role('button', name='Export de-identified evidence prompt (manual transfer)', exact=True)
