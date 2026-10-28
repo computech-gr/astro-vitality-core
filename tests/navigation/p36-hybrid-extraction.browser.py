@@ -79,9 +79,9 @@ async def main():
             assert await rows.count() == 5, await rows.count()
             assert await page.locator('input[type=checkbox]:checked').count() == 0
             assert await page.get_by_text('AI-assisted suggestion — unverified', exact=True).count() == 5
-            # Collection date must not appear as an observation date.
+            # P36.4: explicit source collection timestamp is prefilled (unchecked, unsaved).
             body = await page.text_content('main')
-            assert '2026-10-14' not in body, body[:600]
+            assert body.count('2026-10-14T07:35') >= 5, body[:600]  # P36.4: source-PDF collection date prefilled
             assert await page.get_by_role('button', name='Confirm selected results and save').is_disabled()
             section = page.locator('section[aria-label="Shared observation date for this file"]')
             await section.locator('input[type=datetime-local]').fill('2026-10-14T07:35')
