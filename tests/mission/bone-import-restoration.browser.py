@@ -24,7 +24,7 @@ async def main():
       source=source.replace(/import\.meta\.hot = [^;]+;/,'');
       source='const $RefreshSig$=()=>()=>{}; const $RefreshReg$=()=>{};\n'+source;
       if(name==='form.js')window.reactVersion=source.match(/react\.js\?v=([a-z0-9]+)/)[1];
-      if(name==='form.js') source=source.replace(/import[^;]*from \"\/src\/domain\/bone-health\/import-authorization.ts[^\"]*\";/,'const authorizeBoneImport=async scope=>{if(window.fileTest.denied)throw new Error(\"denied\");return {...scope,userId:\"synthetic-user\"};};const clearRetainedBoneImport=()=>sessionStorage.removeItem(\"mitochondria.bone-import.synthetic.v1\");const watchBoneImportSignOut=()=>{};').replace(/import[^;]*from \"\/src\/infrastructure\/mission-identity.ts\";/,'const subscribeMissionIdentity=listener=>{window.fileTest.refresh=listener;return ()=>{};};');
+      if(name==='form.js') source=source.replace(/import[^;]*from \"\/src\/domain\/bone-health\/import-authorization.ts[^\"]*\";/,'const authorizeBoneImport=async scope=>{if(window.fileTest.delay)await new Promise(r=>setTimeout(r,window.fileTest.delay));if(window.fileTest.denied)throw new Error(\"denied\");return {...scope,userId:\"synthetic-user\"};};const clearRetainedBoneImport=()=>sessionStorage.removeItem(\"mitochondria.bone-import.synthetic.v1\");const watchBoneImportSignOut=()=>{};').replace(/import[^;]*from \"\/src\/infrastructure\/mission-identity.ts\";/,'const subscribeMissionIdentity=listener=>{window.fileTest.refresh=listener;return ()=>{};};');
       source=source.replace(/from\s+(["'])([^"']+)\1/g,(whole,q,path)=>{
         let target=path.startsWith('/src/domain/bone-health/history.ts')?'/__files/history.js':path.startsWith('/src/domain/bone-health/file-queue.ts')?'/__files/queue.js':path;
         return 'from '+JSON.stringify(target.startsWith('/')?location.origin+target:target);
@@ -92,6 +92,16 @@ async def main():
   assert await page.evaluate('window.fileTest.flashes.length')==0
   assert await csv_item.get_by_label('Unit (as reported)').input_value()=='edited-unit'
   await page.evaluate('window.fileTest.observer.disconnect()')
+  await csv_item.get_by_role('button',name='Close').click()
+  await page.screenshot(path=str(OUT/'compact-review-desktop.png'))
+  await page.set_viewport_size({'width':390,'height':844})
+  table_region=csv_item.get_by_role('region',name='Scrollable imported measurement table')
+  await table_region.scroll_into_view_if_needed(); await table_region.focus(); await table_region.press('ArrowRight')
+  await page.wait_for_timeout(100)
+  assert await table_region.evaluate('(e)=>e.scrollLeft')>0
+  await page.screenshot(path=str(OUT/'compact-review-mobile.png'))
+  assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+  await page.set_viewport_size({'width':1280,'height':1800})
   await page.evaluate('window.fileTest.root.unmount();window.fileTest.render()')
   await button.wait_for(); await page.wait_for_timeout(250)
   assert await page.get_by_role('checkbox',name='I verified').count()==3
@@ -125,7 +135,7 @@ async def main():
   assert await page.get_by_role('heading',name='scan.png').count()==0
   cursors=await page.evaluate('''()=>{const h=document.createElement('div');h.innerHTML='<div role="menuitem" class="cursor-default">Menu</div><button disabled>Disabled</button><label for="test-choice">Clickable</label><input id="test-choice" type="checkbox"><input type="file" disabled><div role="option" data-disabled>Disabled option</div>';document.body.append(h);const c=[...h.children].map(e=>getComputedStyle(e).cursor);h.remove();return c;}''')
   assert cursors==['pointer','not-allowed','pointer','pointer','not-allowed','not-allowed'],cursors
-  await page.evaluate('window.fileTest.denied=true;window.fileTest.refresh()'); await page.wait_for_timeout(250)
+  await page.evaluate('window.fileTest.delay=100;window.fileTest.denied=true;window.dispatchEvent(new Event("focus"))'); await page.wait_for_timeout(250)
   assert await page.get_by_role('checkbox',name='I verified').count()==0
   assert await page.evaluate('sessionStorage.getItem("mitochondria.bone-import.synthetic.v1")') is None
   print(json.dumps({'passed':['single picker','keyboard file chooser','mixed multiple-file selection','CSV corrected-text recheck','PDF table corrected-text recheck and errors','real PDF selectable text extraction','OCR unavailable handled independently','silent tab return preserves live review without flashing','per-file bulk confirmation and unverify','keyboard disclosure','edits invalidate verification','remount preserves edits','denied restoration clears cache','partial-save remount receipts and safe retry','desktop/mobile no overflow','global enabled/disabled cursors'], 'scope':'synthetic in-memory history/authorization adapter, not encrypted-storage/auth acceptance','page_errors':errors}))
