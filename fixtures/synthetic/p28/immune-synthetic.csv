@@ -1,0 +1,6 @@
+variable,value,unit,observed_at,source,specimen,assay_method,notes
+IMM-001,6.1,10^9/L,2026-10-01T09:00:00Z,SYNTHETIC Demo Lab,whole blood,,SYNTHETIC TEST DATA - not a real astronaut measurement
+IMM-002,3.4,10^9/L,2026-10-01T09:00:00Z,SYNTHETIC Demo Lab,whole blood,,SYNTHETIC TEST DATA - not a real astronaut measurement
+IMM-003,1.9,10^9/L,2026-10-01T09:00:00Z,SYNTHETIC Demo Lab,whole blood,,SYNTHETIC TEST DATA - not a real astronaut measurement
+IMM-007,1.2,mg/L,2026-10-01T09:00:00Z,SYNTHETIC Demo Lab,serum,,SYNTHETIC TEST DATA - not a real astronaut measurement
+IMM-030,72,nmol/L,2026-10-01T09:00:00Z,SYNTHETIC Demo Lab,serum,,SYNTHETIC TEST DATA - not a real astronaut measurement

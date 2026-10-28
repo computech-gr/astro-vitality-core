@@ -1,0 +1,5 @@
+variable,value,unit,observed_at,source,specimen,assay_method,notes
+BSC-001,6.5,h,2026-10-03T07:00:00Z,SYNTHETIC Demo Sleep Log,,,SYNTHETIC TEST DATA - not a real astronaut measurement
+BSC-002,88,%,2026-10-03T07:00:00Z,SYNTHETIC Demo Sleep Log,,,SYNTHETIC TEST DATA - not a real astronaut measurement
+BSC-004,14,min,2026-10-03T07:00:00Z,SYNTHETIC Demo Sleep Log,,,SYNTHETIC TEST DATA - not a real astronaut measurement
+BSC-015,4,score,2026-10-03T07:00:00Z,SYNTHETIC Demo Self-Report,,,SYNTHETIC TEST DATA - not a real astronaut measurement

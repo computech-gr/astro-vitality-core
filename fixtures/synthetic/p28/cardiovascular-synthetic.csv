@@ -1,0 +1,6 @@
+variable,value,unit,observed_at,source,specimen,assay_method,notes
+cv-001,62,bpm,2026-10-02T08:00:00Z,SYNTHETIC Demo Device,,,SYNTHETIC TEST DATA - not a real astronaut measurement
+cv-005,118,mmHg,2026-10-02T08:00:00Z,SYNTHETIC Demo Device,,,SYNTHETIC TEST DATA - not a real astronaut measurement
+cv-006,76,mmHg,2026-10-02T08:00:00Z,SYNTHETIC Demo Device,,,SYNTHETIC TEST DATA - not a real astronaut measurement
+cv-027,48,ms,2026-10-02T08:00:00Z,SYNTHETIC Demo Device,,,SYNTHETIC TEST DATA - not a real astronaut measurement
+cv-065,98,%,2026-10-02T08:00:00Z,SYNTHETIC Demo Device,,,SYNTHETIC TEST DATA - not a real astronaut measurement
