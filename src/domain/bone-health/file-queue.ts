@@ -6,8 +6,10 @@ import { findPotentialDuplicates, validateBoneEntry, type BoneHealthEntry } from
 export const BONE_FILE_ACCEPT = ".csv,.pdf,.png,.jpg,.jpeg,.webp";
 export const MAX_BONE_FILES = 10;
 export const BONE_FILE_TIMEOUT_MS = 90_000;
-export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean };
-export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string };
+export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean; page?: number | undefined };
+/** P33: per-file extraction diagnostics for the human review panel. */
+export type ReviewDiagnostics = { method: string; pages: number; matched: number; held: number; rejected: number; warnings: number; sourceName: string };
+export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string; diagnostics?: ReviewDiagnostics };
 export type QueueItem = {
   id: string; name: string; kind: string; file: File | undefined;
   status: "queued" | "processing" | "review" | "error" | "cancelled";
@@ -30,8 +32,15 @@ export async function processBoneFile(file: File, signal: AbortSignal, profile: 
   }
   const result = await extractBoneDocument(file, signal);
   signal.throwIfAborted();
-  const parsed = parseBoneCorrectedText(result.text, file.name, profile);
-  return { rows: parsed.matches.map(row => ({ ...row, id: crypto.randomUUID() })), errors: [...result.warnings, ...parsed.errors], text: result.text, method: `${result.method} · ${result.pages} page(s)` };
+  const parsed = parseBoneCorrectedText(result.text, file.name, profile, result.linePages);
+  const heldMessages = parsed.held.map(row => `Held for manual review (line ${row.line}${row.page ? `, page ${row.page}` : ""}): ${row.reason} — "${row.snippet.slice(0, 120)}"`);
+  return {
+    rows: parsed.matches.map(row => ({ ...row, id: crypto.randomUUID() })),
+    errors: [...result.warnings, ...parsed.errors, ...heldMessages],
+    text: result.text,
+    method: `${result.method} · ${result.pages} page(s)`,
+    diagnostics: { method: result.method, pages: result.pages, matched: parsed.matches.length, held: parsed.held.length, rejected: parsed.errors.length, warnings: result.warnings.length, sourceName: file.name },
+  };
 }
 
 /** One active parser/OCR job; cancellation never publishes late results. */

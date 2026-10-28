@@ -28,6 +28,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
     onChange({ ...review, rows: selectBoneReviewRows(review.rows, checked, profile) });
   }
   return <div className="mt-3 space-y-3">
+    {review.diagnostics && <p className="text-sm text-muted-foreground" role="status">Extraction: {review.diagnostics.method} · {review.diagnostics.pages} page(s) · {review.diagnostics.matched} matched · {review.diagnostics.held} held for manual review · {review.diagnostics.rejected} rejected · Source file: {review.diagnostics.sourceName}</p>}
     {review.errors.length > 0 && <div role="alert"><strong>Errors / warnings ({review.errors.length})</strong><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
     {review.text && <details>
       <summary>View extracted source text (read-only)</summary>
@@ -68,6 +69,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
           {<tr id={`${detailsId}-${row.id}`} hidden={!expanded.includes(row.id)} key={`${row.id}-details`}><td colSpan={6} className="p-3"><fieldset disabled={disabled || row.saved}>
             <legend className="sr-only">Details for {row.variableId}</legend>
             {row.rawLine && <p className="mb-2 break-words text-xs text-muted-foreground">Original line: {row.rawLine}</p>}
+            {row.page !== undefined && <p className="mb-2 text-xs text-muted-foreground">Page {row.page} of the original document.</p>}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm">Value<input aria-label={`Value ${fileId} ${index + 1}`} type="number" step="any" className="mt-1 w-full rounded border border-input bg-background p-2" value={Number.isFinite(row.value) ? row.value : ""} onChange={event => edit(row.id, {value:event.target.value === "" ? NaN : Number(event.target.value), selected:false})} /></label>
           <label className="text-sm">Unit (as reported)<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.unit} onChange={event => edit(row.id, {unit:event.target.value, selected:false})} /></label>

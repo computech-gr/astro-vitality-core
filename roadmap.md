@@ -1,3 +1,9 @@
+# P33 Universal Medical Document Intelligence
+
+- [ ] Apply P33 patch (universal-document-rows, document-extraction, tests) and complete the full contract: PDF.js geometry reconstruction, header-aware tables, reviewed aliases only, unit validation without conversion, held-for-review ambiguity, diagnostics, page/source traceability.
+- [ ] Regression fixtures: reconstructed P28 PDFs (Immune 5, Cardiovascular 5, Behavioral 4 — originals were never committed to the repository), P33 edge-case PDF, existing Bone fixture; unit + end-to-end PDF tests; browser upload tests in all four modules.
+- [ ] Full checks: tests, typecheck, lint, format, security audit, build; document unverified items. No migrations, RLS, AI, release-gate or publishing changes.
+
 # P20 video evidence closure
 
 ## P30 Medical Report and Advisor screen contrast
@@ -305,3 +311,4 @@
 - [x] /mission/health-report: AI draft capture and session-only advisor review workbench; ground-medical-only approval bound to an evidence fingerprint; no external AI calls, persistence or signed-opinion claims.
 - [x] Full tests, typecheck, production build, scientific/security verifiers and desktop/mobile browser checks pass.
 - [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
+- [x] P33 universal medical document intelligence: geometry PDF parsing, header-aware catalog matching, 14/14 synthetic P28 rows recognized, fail-closed unsupported layouts, 737 tests, browser upload regression for all four domains. Original P28/P32 PDFs unavailable — fixtures are synthetic reconstructions. OCR offline-device proof, authenticated storage acceptance and exact-revision CI remain open.
