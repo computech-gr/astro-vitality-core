@@ -110,6 +110,7 @@ async def check_p30(page, context, modules):
 
 
 async def check_control(control, background, foreground):
+    await control.page.wait_for_timeout(250)
     colors = await control.evaluate('e=>{const s=getComputedStyle(e);return [s.backgroundColor,s.color]}')
     assert colors == [background, foreground], colors
 
