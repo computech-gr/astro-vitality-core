@@ -1,5 +1,10 @@
 # P20 video evidence closure
 
+## P22 visible verification and shared observation timestamp
+
+- [ ] Compare supplied replacement; retain unrelated parsing and authorization fixes, make bulk verification permanently visible and require explicit confirmed timestamps for missing unsaved dates only.
+- [ ] Run focused/full tests, lint/security/formatting and desktop/mobile browser restoration checks; report managed typecheck/build evidence and remaining limitations separately.
+
 ## Compact Bone import review
 
 - [x] Compare both supplied replacements and integrate compact table/silent tab return; add shared existing-validation eligibility, explicit confirmation, accessible disclosures/keyboard table scrolling and save-time authorization-loss guards.
