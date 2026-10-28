@@ -18,6 +18,7 @@ async def main():
           source = source.replace(/import\.meta\.hot = [^;]+;/, '');
           source = 'const $RefreshSig$=()=>()=>{}; const $RefreshReg$=()=>{};\n'+source;
           const version = source.match(/react\.js\?v=([a-z0-9]+)/)[1];
+          window.boneReactVersion=version;
           const {default: React} = await import('/node_modules/.vite/deps/react.js?v='+version);
           const {default: Client} = await import('/node_modules/.vite/deps/react-dom_client.js?v='+version);
           window.boneTest = {rows: [], writes: [], fail: false};
@@ -37,8 +38,8 @@ async def main():
           return modules;
         }''')
         await page.evaluate(r'''async () => {
-          const {default: React}=await import('/node_modules/.vite/deps/react.js?v=65c22575');
-          const {default: Client}=await import('/node_modules/.vite/deps/react-dom_client.js?v=65c22575');
+          const {default: React}=await import('/node_modules/.vite/deps/react.js?v='+window.boneReactVersion);
+          const {default: Client}=await import('/node_modules/.vite/deps/react-dom_client.js?v='+window.boneReactVersion);
           const {BoneHealthEntryPage} = await import('/__bone_ux_test/form.js');
           const host=document.createElement('div'); document.body.replaceChildren(host);
           Client.createRoot(host).render(React.createElement(BoneHealthEntryPage));
@@ -51,7 +52,7 @@ async def main():
             assert await combo.input_value() == "", label
         await page.get_by_label("Result", exact=True).fill("12")
         await page.get_by_role("combobox", name="Unit (as reported)", exact=True).fill("pg/mL")
-        await page.get_by_label("Observed at (device local time)", exact=True).fill("2026-10-28T08:49")
+        await form.locator('input[type="datetime-local"]').fill("2026-10-28T08:49")
         source = form.get_by_role("combobox", name="Lab / original source", exact=True)
         await source.fill("Astronaut custom lab")
         await page.get_by_role("combobox", name="Specimen / modality", exact=True).fill("Custom specimen")
@@ -70,8 +71,9 @@ async def main():
         await cancel.press("Enter")
         assert await page.evaluate("JSON.stringify(window.boneTest)") == before
         assert await form.get_by_role("button", name="Save correction", exact=True).count() == 0
-        for label in ["Notes", "Result", "Observed at (device local time)"]:
+        for label in ["Notes", "Result"]:
             assert await page.get_by_label(label, exact=True).input_value() == ""
+        assert await form.locator('input[type="datetime-local"]').input_value() == ""
         await page.get_by_role("button", name="Correct", exact=True).click()
         await page.get_by_label("Result", exact=True).fill("13")
         await page.evaluate("window.boneTest.fail=true")
