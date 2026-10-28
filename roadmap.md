@@ -1,3 +1,9 @@
+# P36.5 Mission/astronaut report export
+
+- [x] Authorized display-name cover and immutable IDs; exact sanitized PDF/TXT basename; separate Print and local-only A4 PDF generation.
+- [ ] Run identity/pagination regressions, full tests, lint/security and desktop/mobile downloads; document genuine authenticated and Chrome/Edge acceptance limitations.
+- [ ] Exact-revision full typecheck/production-build CI requires managed synchronized execution; no migrations, RLS, AI, gate changes or publishing.
+
 # P36 Automatic Hybrid AI Medical Document Extraction
 
 - [x] One shared hybrid pipeline for all four health domains: deterministic local parsing first, automatic server-side AI assistance when incomplete/ambiguous; no AI button, no per-document approval, no auto-save of AI output.
