@@ -85,7 +85,7 @@ async def run_domain(page, profile, fixture, expected, needs_date, screenshot=Fa
     assert await rows.count() == expected, await rows.count()
     if needs_date:
         section = page.locator('section[aria-label="Shared observation date for this file"]')
-        await section.locator('input[type=datetime-local]').fill('2026-10-01T09:00:00')
+        await section.locator('input[type=datetime-local]').fill('2026-10-01T09:00')
         await section.locator('input[type=checkbox]').check()  # explicit confirmation auto-applies
     await page.get_by_role('checkbox', name=re.compile('^Verify All')).check()
     await page.get_by_role('button', name='Confirm selected results and save').click()
