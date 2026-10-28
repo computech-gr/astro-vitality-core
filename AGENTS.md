@@ -45,3 +45,4 @@
 - Bone correction forms retain the persisted observation instant until the datetime field is edited, and append the correction successfully before marking the original erroneous; source suggestions are authorized mission/crew/provenance scoped.
 - Bone reported metadata pickers share an editable combobox and pure scoped suggestion module; historical hints require current authorization and exact mission/crew/provenance/variable matches, while typing and filtering never normalize or replace reported values.
 - Health-domain leaf workspaces share registry-driven navigation using Button-as-link controls; consistent active/focus states must not introduce domain ingestion or catalog activation.
+- Bone file imports use a scope-keyed memory-only queue and the existing CSV/document parsers; prevalidated stable-ID reviewed rows receive immediate save receipts so partial failures cannot resubmit the successful prefix.

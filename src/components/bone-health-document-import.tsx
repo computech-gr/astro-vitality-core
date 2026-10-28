@@ -17,7 +17,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
       <summary>Review extracted text</summary>
       <label htmlFor={`text-${fileId}`} className="mt-2 block text-sm">Review and correct extracted text (local only)</label>
       <textarea id={`text-${fileId}`} rows={6} maxLength={100000} disabled={disabled || hasSaved} className="mt-2 w-full rounded border border-input bg-background p-2 text-sm" value={review.text} onChange={event => onChange({ ...review, text: event.target.value, rows: review.rows.map(row => ({ ...row, selected: false })) })} />
-      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved} onClick={() => onChange({ ...review, rows: suggestBoneDocumentMatches(review.text, review.rows[0]?.sourceLabel ?? "Reviewed document").map(row => ({ ...row, id: crypto.randomUUID() })) })}>Recheck corrected text</Button>
+      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved} onClick={() => onChange({ ...review, rows: suggestBoneDocumentMatches(review.text, "").map(row => ({ ...row, id: crypto.randomUUID() })) })}>Recheck corrected text</Button>
     </details>}
     <h4 className="font-medium">Human measurement review</h4>
     {!review.rows.length && <p className="text-sm text-muted-foreground">No catalog-matched measurements. Correct extracted text or use manual entry; nothing saved.</p>}

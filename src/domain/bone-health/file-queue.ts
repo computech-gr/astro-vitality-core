@@ -8,7 +8,7 @@ export const BONE_FILE_TIMEOUT_MS = 90_000;
 export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean };
 export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string };
 export type QueueItem = {
-  id: string; name: string; kind: string; file?: File;
+  id: string; name: string; kind: string; file: File | undefined;
   status: "queued" | "processing" | "review" | "error" | "cancelled";
   detail: string; review?: FileReview;
 };
@@ -35,7 +35,7 @@ export async function processBoneFile(file: File, signal: AbortSignal): Promise<
 /** One active parser/OCR job; cancellation never publishes late results. */
 export class BoneFileQueue {
   items: QueueItem[] = [];
-  private controller?: AbortController;
+  private controller: AbortController | undefined;
   private running = false;
   private disposed = false;
   constructor(private changed: (items: QueueItem[]) => void, private process = processBoneFile) {}
@@ -70,7 +70,12 @@ export class BoneFileQueue {
         item.status = "processing"; item.detail = "Processing locally; no upload"; this.publish();
         const timeout = setTimeout(() => controller.abort(new Error("Local processing timed out after 90 seconds. Use CSV or manual entry.")), BONE_FILE_TIMEOUT_MS);
         try {
-          const review = await this.process(item.file, controller.signal);
+          const process = this.process(item.file, controller.signal);
+          const review = await new Promise<FileReview>((resolve, reject) => {
+            const abort = () => reject(controller.signal.reason ?? new Error("Cancelled"));
+            controller.signal.addEventListener("abort", abort, { once: true });
+            process.then(resolve, reject).finally(() => controller.signal.removeEventListener("abort", abort));
+          });
           controller.signal.throwIfAborted();
           if (item.status === "processing" && !this.disposed) {
             item.review = review; item.status = "review"; item.detail = `${review.method} · ${review.rows.length} unchecked measurement(s)`;
