@@ -66,7 +66,7 @@ async def main():
   await shared.fill('2026-10-28T09:18')
   expected_iso=await page.evaluate("new Date(2026,9,28,9,18).toISOString()")
   assert await confirmation.is_checked() is False
-  assert await initial_pdf.get_by_text(expected_iso,exact=True).count()==1  # only the UTC preview, nothing applied yet
+  assert await initial_pdf.get_by_role('cell',name=expected_iso,exact=True).count()==0  # nothing applied before confirmation
   await page.screenshot(path=str(OUT/'shared-date-confirmation-desktop.png'))
   await page.set_viewport_size({'width':390,'height':844})
   await shared.scroll_into_view_if_needed()
