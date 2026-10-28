@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Compact Bone import review
+
+- [x] Compare both supplied replacements and integrate compact table/silent tab return; add shared existing-validation eligibility, explicit confirmation, accessible disclosures/keyboard table scrolling and save-time authorization-loss guards.
+- [x] Focused tests: 26 pass; full tests: 679 pass/9867 assertions. Synthetic-adapter desktop/mobile keyboard, bulk verification, edit invalidation, no-flash refocus, remount approval reset, delayed denial, PDF/CSV/OCR and partial-save retry pass with no page errors. Lint: 0 errors/13 existing warnings; security/formatting and Bone/SEO verifiers pass; managed compilation reports build OK.
+- [ ] Exact-revision typecheck/production-build CI and authenticated encrypted-storage acceptance remain unverified; managed execution evidence and independently authorized test services are unavailable. Dependency audit retains 2 moderate/1 low advisories. No database, migrations, AI configuration or release-gate changes.
+
 ## Bone corrected-text parsing and safe restoration
 
 - [x] Parse exact-ID/name report rows, tab/pipe tables and corrected CSV with explicit errors; preserve custom reported units without conversion or an invented unit whitelist.

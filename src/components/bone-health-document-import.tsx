@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { Fragment, useId, useState } from "react";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
 import { parseBoneCorrectedText } from "@/domain/bone-health/document-extraction";
+import { boneReviewIssue, selectBoneReviewRows } from "@/domain/bone-health/review-selection";
 import type { FileReview, ReviewRow } from "@/domain/bone-health/file-queue";
 
 /** Per-file human review only. The parent queue owns selection and scoped persistence. */
@@ -10,24 +12,46 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
   function edit(id: string, patch: Partial<ReviewRow>) {
     onChange({ ...review, rows: review.rows.map(row => row.id === id && !row.saved ? { ...row, ...patch } : row) });
   }
+  const detailsId = useId();
+  const [corrected, setCorrected] = useState(false);
+  const [expanded, setExpanded] = useState<string[]>([]);
   const hasSaved = review.rows.some(row => row.saved);
+  const unsaved = review.rows.filter(row => !row.saved);
+  const eligible = unsaved.filter(row => boneReviewIssue(row) === null);
+  const allVerified = eligible.length > 0 && eligible.every(row => row.selected);
+  function verifyAll(checked: boolean) {
+    onChange({ ...review, rows: selectBoneReviewRows(review.rows, checked) });
+  }
   return <div className="mt-3 space-y-3">
     {review.errors.length > 0 && <div role="alert"><strong>Errors / warnings ({review.errors.length})</strong><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
     {review.text && <details>
       <summary>Review extracted text</summary>
       <label htmlFor={`text-${fileId}`} className="mt-2 block text-sm">Review and correct extracted text (local only)</label>
-      <textarea id={`text-${fileId}`} rows={6} maxLength={100000} disabled={disabled || hasSaved} className="mt-2 w-full rounded border border-input bg-background p-2 text-sm" value={review.text} onChange={event => onChange({ ...review, text: event.target.value, rows: review.rows.map(row => ({ ...row, selected: false })) })} />
-      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved} onClick={() => {
+      <textarea id={`text-${fileId}`} rows={6} maxLength={100000} disabled={disabled || hasSaved} className="mt-2 w-full rounded border border-input bg-background p-2 text-sm" value={review.text} onChange={event => { setCorrected(true); onChange({ ...review, text: event.target.value, rows: review.rows.map(row => ({ ...row, selected: false })) }); }} />
+      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved || !corrected} onClick={() => {
+        setCorrected(false);
         const result = parseBoneCorrectedText(review.text, review.rows[0]?.sourceLabel ?? "");
         onChange({ ...review, errors: result.errors, rows: result.matches.map(row => ({ ...row, id: crypto.randomUUID() })) });
       }}>Recheck corrected text</Button>
     </details>}
     <h4 className="font-medium">Human measurement review</h4>
     {!review.rows.length && <p className="text-sm text-muted-foreground">No catalog-matched measurements. Correct extracted text or use manual entry; nothing saved.</p>}
-    <div className="space-y-3">
-      {review.rows.map((row, index) => <fieldset key={row.id} disabled={disabled || row.saved} className="border border-border p-3">
-        <legend className="px-1 text-sm">{BONE_HEALTH_VARIABLES.find(variable => variable.id === row.variableId)?.name} · {row.variableId}{row.saved ? " · Saved" : ""}</legend>
-        {row.rawLine && <p className="mb-2 break-words text-xs text-muted-foreground">Original line: {row.rawLine}</p>}
+    {unsaved.length > 0 && <p className="text-sm text-muted-foreground">{eligible.length} eligible · {unsaved.length - eligible.length} require corrections · {eligible.filter(row => row.selected).length} verified</p>}
+    {eligible.length > 0 && <label className="flex items-start gap-2 text-sm rounded border border-border p-3"><input type="checkbox" disabled={disabled} checked={allVerified} onChange={event => verifyAll(event.target.checked)} /><span>{allVerified ? "Unverify All" : "Verify All"} — {eligible.length} eligible unsaved measurement(s) in this file. I personally compared each value, unit, date and source with the original report. This is not scientific or medical approval.</span></label>}
+    <div role="region" aria-label="Scrollable imported measurement table" tabIndex={0} className="overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring">
+      <table className="w-full min-w-[620px] text-sm">
+        <caption className="sr-only">Imported measurements for human review</caption>
+        <thead><tr className="border-b border-border text-left"><th scope="col" className="p-2">Verified</th><th scope="col" className="p-2">Variable</th><th scope="col" className="p-2">Value</th><th scope="col" className="p-2">Unit</th><th scope="col" className="p-2">Date</th><th scope="col" className="p-2">Review</th></tr></thead>
+        <tbody>{review.rows.map((row, index) => <Fragment key={row.id}>
+          <tr key={`${row.id}-summary`} className="border-b border-border">
+            <td className="p-2"><input type="checkbox" checked={row.selected} aria-label={`I verified ${row.variableId}, measurement ${index + 1}, against the original report`} disabled={disabled || row.saved || boneReviewIssue(row) !== null} onChange={event => edit(row.id, {selected:event.target.checked})} /></td>
+            <td className="p-2">{BONE_HEALTH_VARIABLES.find(variable => variable.id === row.variableId)?.name} <span className="text-muted-foreground">({row.variableId})</span>{row.saved && <span className="block text-muted-foreground">Saved</span>}{!row.saved && boneReviewIssue(row) && <span className="block text-destructive">{boneReviewIssue(row)}</span>}</td>
+            <td className="p-2">{Number.isFinite(row.value) ? row.value : "Missing"}</td><td className="p-2">{row.unit}</td><td className="p-2">{row.observedAt || "Missing"}</td>
+            <td className="p-2"><Button type="button" variant="outline" size="sm" aria-label={`${expanded.includes(row.id) ? "Close" : "Details / edit"} ${row.variableId}, measurement ${index + 1}`} aria-controls={`${detailsId}-${row.id}`} aria-expanded={expanded.includes(row.id)} onClick={() => setExpanded(current => current.includes(row.id) ? current.filter(id => id !== row.id) : [...current, row.id])}>{expanded.includes(row.id) ? "Close" : "Details / edit"}</Button></td>
+          </tr>
+          {<tr id={`${detailsId}-${row.id}`} hidden={!expanded.includes(row.id)} key={`${row.id}-details`}><td colSpan={6} className="p-3"><fieldset disabled={disabled || row.saved}>
+            <legend className="sr-only">Details for {row.variableId}</legend>
+            {row.rawLine && <p className="mb-2 break-words text-xs text-muted-foreground">Original line: {row.rawLine}</p>}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm">Value<input aria-label={`Value ${fileId} ${index + 1}`} type="number" step="any" className="mt-1 w-full rounded border border-input bg-background p-2" value={Number.isFinite(row.value) ? row.value : ""} onChange={event => edit(row.id, {value:event.target.value === "" ? NaN : Number(event.target.value), selected:false})} /></label>
           <label className="text-sm">Unit (as reported)<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.unit} onChange={event => edit(row.id, {unit:event.target.value, selected:false})} /></label>
@@ -37,8 +61,9 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
           <label className="text-sm">Assay / method<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.assayMethod} onChange={event => edit(row.id, {assayMethod:event.target.value, selected:false})} /></label>
           <label className="text-sm sm:col-span-2">Notes<textarea className="mt-1 w-full rounded border border-input bg-background p-2" value={row.notes} onChange={event => edit(row.id, {notes:event.target.value, selected:false})} /></label>
         </div>
-        <label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" checked={row.selected} onChange={event => edit(row.id, {selected:event.target.checked})} />I verified this measurement, unit, date and source against the original.</label>
-      </fieldset>)}
+          </fieldset></td></tr>}
+        </Fragment>)}</tbody>
+      </table>
     </div>
   </div>;
 }
