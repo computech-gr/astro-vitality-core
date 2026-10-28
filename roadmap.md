@@ -1,3 +1,9 @@
+# P33 Universal Medical Document Intelligence
+
+- [ ] Apply P33 patch (universal-document-rows, document-extraction, tests) and complete the full contract: PDF.js geometry reconstruction, header-aware tables, reviewed aliases only, unit validation without conversion, held-for-review ambiguity, diagnostics, page/source traceability.
+- [ ] Regression fixtures: reconstructed P28 PDFs (Immune 5, Cardiovascular 5, Behavioral 4 — originals were never committed to the repository), P33 edge-case PDF, existing Bone fixture; unit + end-to-end PDF tests; browser upload tests in all four modules.
+- [ ] Full checks: tests, typecheck, lint, format, security audit, build; document unverified items. No migrations, RLS, AI, release-gate or publishing changes.
+
 # P20 video evidence closure
 
 ## P30 Medical Report and Advisor screen contrast

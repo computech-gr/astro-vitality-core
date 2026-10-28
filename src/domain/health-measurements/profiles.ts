@@ -24,6 +24,10 @@ export interface MeasurementProfile {
   catalogStatusNote: string;
   csvExample: string;
   unitSuggestions(variableId: string): string[];
+  /** P33: exact catalog-defined unit when the source catalog binds one (cardiovascular).
+   * Null/undefined means the catalog defines no approved unit; reported units are
+   * then preserved as-is and never converted. */
+  catalogUnit?(variableId: string): string | null;
 }
 
 const cardiovascularUnits = new Map(
