@@ -101,7 +101,7 @@ async def check_p30(page, context, modules):
         assert d.suggested_filename == 'mitochondria-ai-draft-input-RESEARCH-ONLY.txt'
         txt = Path(await d.path()).read_text()
         assert 'SYNTHETIC-P30-OBS' in txt and '62' in txt, txt[:300]
-        status = await page.get_by_role('status').first.inner_text()
+        status = await page.locator('p[role=status][aria-live=polite]').inner_text()
         assert 'download requested' in status and 'No data was sent to an AI service' in status, status
         print(f'PASS {width}: TXT download {len(txt)} chars, status shown, link/button spacing ok')
         assert await capture.is_disabled()
