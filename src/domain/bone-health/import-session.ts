@@ -5,7 +5,7 @@ export const BONE_IMPORT_SESSION_KEY = BONE_MEASUREMENT_PROFILE.sessionKey;
 export const MAX_BONE_SESSION_CHARS = 500_000;
 export type ImportScope = { userId: string; missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic" };
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
-type StoredRow = { id: string; variableId: string; value: number | null; unit: string; observedAt: string; sourceLabel: string; specimen: string; assayMethod: string; notes: string; rawLine?: string; saved?: boolean };
+type StoredRow = { id: string; variableId: string; value: number | null; unit: string; observedAt: string; sourceLabel: string; specimen: string; assayMethod: string; notes: string; rawLine?: string; saved?: boolean; provenance?: string };
 type StoredItem = { id: string; name: string; kind: string; status: string; detail: string; review?: { text: string; method: string; errors: string[]; rows: StoredRow[] } };
 const string = (value: unknown, limit: number): value is string => typeof value === "string" && value.length <= limit;
 
@@ -18,7 +18,7 @@ export function retainBoneImport(storage: StorageLike, scope: ImportScope, items
     id: item.id, name: item.name, kind: item.kind, status: item.status, detail: item.detail,
     ...(item.review ? { review: { text: item.review.text, method: item.review.method, errors: item.review.errors, rows: item.review.rows.map(row => ({
       id: row.id, variableId: row.variableId, value: Number.isFinite(row.value) ? row.value : null, unit: row.unit, observedAt: row.observedAt,
-      sourceLabel: row.sourceLabel, specimen: row.specimen, assayMethod: row.assayMethod, notes: row.notes, rawLine: row.rawLine, saved: row.saved === true,
+      sourceLabel: row.sourceLabel, specimen: row.specimen, assayMethod: row.assayMethod, notes: row.notes, rawLine: row.rawLine, saved: row.saved === true, provenance: row.provenance,
     })) } } : {}),
   })) });
   if (payload.length > MAX_BONE_SESSION_CHARS) { storage.removeItem(BONE_IMPORT_SESSION_KEY); return; }
@@ -43,8 +43,9 @@ export function restoreBoneImport(storage: StorageLike, scope: ImportScope, prof
         if (!string(r.text, 100000) || !string(r.method, 300) || !Array.isArray(r.errors) || r.errors.length > 250 || r.errors.some((e: unknown) => !string(e, 2000)) || !Array.isArray(r.rows) || r.rows.length > 200) throw new Error("Invalid review");
         review = { text: r.text, method: r.method, errors: r.errors, rows: r.rows.map((row: StoredRow) => {
           if (!string(row.id, 100) || !profile.variables.some(v => v.id === row.variableId) || (row.value !== null && (typeof row.value !== "number" || !Number.isFinite(row.value))) ||
-              ["unit", "observedAt", "sourceLabel", "specimen", "assayMethod", "notes"].some(key => !string(row[key as keyof StoredRow], key === "notes" ? 10000 : 1000)) || (row.rawLine !== undefined && !string(row.rawLine, 10000))) throw new Error("Invalid row");
-          return { id: row.id as string, variableId: row.variableId as string, value: row.value === null ? NaN : row.value as number, unit: row.unit as string, observedAt: row.observedAt as string, sourceLabel: row.sourceLabel as string, specimen: row.specimen as string, assayMethod: row.assayMethod as string, notes: row.notes as string, ...(row.rawLine ? { rawLine: row.rawLine as string } : {}), saved: row.saved === true, selected: false };
+              ["unit", "observedAt", "sourceLabel", "specimen", "assayMethod", "notes"].some(key => !string(row[key as keyof StoredRow], key === "notes" ? 10000 : 1000)) || (row.rawLine !== undefined && !string(row.rawLine, 10000)) ||
+              (row.provenance !== undefined && row.provenance !== "local" && row.provenance !== "ai")) throw new Error("Invalid row");
+          return { id: row.id as string, variableId: row.variableId as string, value: row.value === null ? NaN : row.value as number, unit: row.unit as string, observedAt: row.observedAt as string, sourceLabel: row.sourceLabel as string, specimen: row.specimen as string, assayMethod: row.assayMethod as string, notes: row.notes as string, ...(row.rawLine ? { rawLine: row.rawLine as string } : {}), saved: row.saved === true, selected: false, ...(row.provenance === "ai" || row.provenance === "local" ? { provenance: row.provenance } : {}) };
         }) };
       }
       return { id: item.id, name: item.name, kind: item.kind, file: undefined, status: review ? "review" : item.status === "cancelled" ? "cancelled" : "error", detail: item.status === "queued" || item.status === "processing" ? "Local processing interrupted; original file is no longer available." : item.detail, ...(review ? { review } : {}) };

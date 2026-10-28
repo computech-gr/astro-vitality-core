@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { BONE_IMPORT_CSV_TEMPLATE } from "@/domain/bone-health/import";
 import { offlineOcrCacheReady } from "@/domain/bone-health/ocr-readiness";
 import { BoneHealthDocumentImport } from "./bone-health-document-import";
-import { BoneFileQueue, processBoneFile, BONE_FILE_ACCEPT, MAX_BONE_FILES, reviewedBoneEntries, duplicateBoneImportIds, persistReviewedBoneEntries, type QueueItem, type FileReview } from "@/domain/bone-health/file-queue";
+import { BoneFileQueue, BONE_FILE_ACCEPT, MAX_BONE_FILES, reviewedBoneEntries, duplicateBoneImportIds, persistReviewedBoneEntries, type QueueItem, type FileReview } from "@/domain/bone-health/file-queue";
+import { processBoneFileWithAi, requestAiExtraction } from "@/domain/medical-document/hybrid-extraction";
+import { supabase } from "@/integrations/supabase/client";
 import { listBoneEntries, saveBoneEntry } from "@/domain/bone-health/history";
 import { authorizeBoneImport, clearRetainedBoneImport, watchBoneImportSignOut } from "@/domain/bone-health/import-authorization";
 import { retainBoneImport, restoreBoneImport, type ImportScope } from "@/domain/bone-health/import-session";
@@ -43,7 +45,21 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
         try { retainBoneImport(window.sessionStorage, currentScope.current, next, profile); } catch { clearRetainedBoneImport(); }
       }
     };
-    const process = (file: File, signal: AbortSignal) => processBoneFile(file, signal, profile);
+    // P36: local parsing first; when incomplete, the configured server-side AI
+    // extraction is invoked automatically for the authorized scope. No AI button,
+    // no per-document approval step, and AI output never auto-saves.
+    const process = (file: File, signal: AbortSignal) => processBoneFileWithAi(file, signal, profile, async ({ text, pageCount, localSummary, signal: aiSignal }) => {
+      const scope = currentScope.current;
+      if (!scope || scope.missionId !== missionId || scope.crewMemberId !== crewMemberId || scope.dataOrigin !== dataOrigin)
+        return { status: "unavailable" as const, reason: "Import scope is not authorized." };
+      const { data } = await supabase.auth.getSession();
+      if (aiSignal.aborted) throw aiSignal.reason ?? new Error("Cancelled");
+      if (!data.session?.access_token) return { status: "unavailable" as const, reason: "Sign-in session unavailable." };
+      return requestAiExtraction(
+        { missionId, crewMemberId, provenance: dataOrigin, domain: profile.domainId, text, pageCount, localSummary },
+        { accessToken: data.session.access_token, signal: aiSignal },
+      );
+    });
     queue.current = new BoneFileQueue(retain, process);
     const refresh = async (silent = false) => {
       const ticket = ++epoch;

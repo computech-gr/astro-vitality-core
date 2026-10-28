@@ -1,3 +1,11 @@
+# P36 Automatic Hybrid AI Medical Document Extraction
+
+- [x] One shared hybrid pipeline for all four health domains: deterministic local parsing first, automatic server-side AI assistance when incomplete/ambiguous; no AI button, no per-document approval, no auto-save of AI output.
+- [x] Authenticated default-deny endpoint `/api/medical-document-extraction` with existing mission/crew access policy, provider/model allowlist (Lovable AI Gateway `openai/gpt-6-astra` or existing OpenAI contract), bounds, streaming provider call, content-free audit; master gate `P36_DOCUMENT_AI_ENABLED` and separate `P36_REAL_DOCUMENT_AI_ENABLED` are unset everywhere (endpoint answers 503, sends nothing).
+- [x] Actual Challenge 02 PDF regression: deterministic parser 0 matches (trigger), live provider call returned all 5 expected synthetic immune values with collection date never promoted to observation time; validator/merge hold unknown catalogs, unit mismatches, conflicts and uncertainties.
+- [x] 785 tests pass (35 new); typecheck clean; lint 0 errors on changed files; security audit PASS; desktop/mobile browser upload verified with synthetic adapters (unavailable path + stubbed-server wiring). See docs/P36_HYBRID_AI_EXTRACTION.md.
+- [ ] Authenticated Crew Self/Ground Medical encrypted-storage acceptance, physical-device offline OCR and exact-revision GitHub CI remain unverified; P3663/P3664/P20 gates unchanged. No migrations, RLS, AI-configuration, gate changes or publishing.
+
 # P35 Clinical Lab Parser and Access Audit
 
 - [x] Actual clinical PDF: five exact Immune candidates, original Unicode units, source/page evidence, human-confirmed dates; P34/four-domain actual PDF uploads pass.

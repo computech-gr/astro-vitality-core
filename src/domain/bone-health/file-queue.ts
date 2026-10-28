@@ -6,10 +6,10 @@ import { findPotentialDuplicates, validateBoneEntry, type BoneHealthEntry } from
 export const BONE_FILE_ACCEPT = ".csv,.pdf,.png,.jpg,.jpeg,.webp";
 export const MAX_BONE_FILES = 10;
 export const BONE_FILE_TIMEOUT_MS = 90_000;
-export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean; page?: number | undefined };
+export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean; page?: number | undefined; provenance?: "local" | "ai"; reviewRequired?: boolean };
 /** P33: per-file extraction diagnostics for the human review panel. */
 export type ReviewDiagnostics = { method: string; pages: number; matched: number; held: number; rejected: number; warnings: number; sourceName: string };
-export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string; diagnostics?: ReviewDiagnostics };
+export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string; diagnostics?: ReviewDiagnostics; aiStatus?: string };
 export type QueueItem = {
   id: string; name: string; kind: string; file: File | undefined;
   status: "queued" | "processing" | "review" | "error" | "cancelled";
@@ -79,7 +79,7 @@ export class BoneFileQueue {
         const item = this.items.find(item => item.status === "queued");
         if (!item?.file) break;
         const controller = new AbortController(); this.controller = controller;
-        item.status = "processing"; item.detail = "Processing locally; no upload"; this.publish();
+        item.status = "processing"; item.detail = "Processing locally; if incomplete, bounded extracted text may be sent to the authorized AI extraction service — never the original file"; this.publish();
         const timeout = setTimeout(() => controller.abort(new Error("Local processing timed out after 90 seconds. Use CSV or manual entry.")), BONE_FILE_TIMEOUT_MS);
         try {
           const process = this.process(item.file, controller.signal);
