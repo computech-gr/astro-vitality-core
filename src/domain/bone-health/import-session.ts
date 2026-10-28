@@ -5,7 +5,7 @@ export const BONE_IMPORT_SESSION_KEY = BONE_MEASUREMENT_PROFILE.sessionKey;
 export const MAX_BONE_SESSION_CHARS = 500_000;
 export type ImportScope = { userId: string; missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic" };
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
-type StoredRow = { id: string; variableId: string; value: number | null; unit: string; observedAt: string; sourceLabel: string; specimen: string; assayMethod: string; notes: string; rawLine?: string; saved?: boolean };
+type StoredRow = { id: string; variableId: string; value: number | null; unit: string; observedAt: string; sourceLabel: string; specimen: string; assayMethod: string; notes: string; rawLine?: string; saved?: boolean; provenance?: string };
 type StoredItem = { id: string; name: string; kind: string; status: string; detail: string; review?: { text: string; method: string; errors: string[]; rows: StoredRow[] } };
 const string = (value: unknown, limit: number): value is string => typeof value === "string" && value.length <= limit;
 
@@ -18,7 +18,7 @@ export function retainBoneImport(storage: StorageLike, scope: ImportScope, items
     id: item.id, name: item.name, kind: item.kind, status: item.status, detail: item.detail,
     ...(item.review ? { review: { text: item.review.text, method: item.review.method, errors: item.review.errors, rows: item.review.rows.map(row => ({
       id: row.id, variableId: row.variableId, value: Number.isFinite(row.value) ? row.value : null, unit: row.unit, observedAt: row.observedAt,
-      sourceLabel: row.sourceLabel, specimen: row.specimen, assayMethod: row.assayMethod, notes: row.notes, rawLine: row.rawLine, saved: row.saved === true,
+      sourceLabel: row.sourceLabel, specimen: row.specimen, assayMethod: row.assayMethod, notes: row.notes, rawLine: row.rawLine, saved: row.saved === true, provenance: row.provenance,
     })) } } : {}),
   })) });
   if (payload.length > MAX_BONE_SESSION_CHARS) { storage.removeItem(BONE_IMPORT_SESSION_KEY); return; }
