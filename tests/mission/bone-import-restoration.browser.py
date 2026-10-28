@@ -5,7 +5,8 @@ OUT=Path('/tmp/browser/bone-restoration'); OUT.mkdir(parents=True,exist_ok=True)
 async def main():
  async with async_playwright() as p:
   browser=await p.chromium.launch(headless=True)
-  page=await browser.new_page(viewport={'width':1280,'height':1800})
+  context=await browser.new_context(viewport={'width':1280,'height':1800})
+  page=await context.new_page()
   errors=[]
   page.on('pageerror',lambda e:errors.append(str(e)))
   await page.goto('http://localhost:8080/mission/bone-health',wait_until='networkidle')
