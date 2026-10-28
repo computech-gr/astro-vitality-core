@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, mock, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { execSync } from "node:child_process";
 
 const memoryRecords: Array<Record<string, unknown>> = [];
 mock.module("@/infrastructure/offline", () => ({
@@ -247,7 +248,6 @@ describe("P28 unified health & device report", () => {
   });
 
   test("fixtures are not served or auto-imported by the app", () => {
-    const { execSync } = require("node:child_process") as typeof import("node:child_process");
     const hits = execSync("rg -l 'fixtures/synthetic/p28' src public || true", { cwd: join(import.meta.dir, "../.."), encoding: "utf8" });
     expect(hits.trim()).toBe("");
   });

@@ -159,7 +159,7 @@ function normalizeBound(value: string | undefined, end: boolean): number | null 
 }
 
 /** Wearable vs device badge from declared adapter identity/tags only. */
-export function deviceBadge(source: { adapterId?: string }, tags: readonly string[]): ReportSourceBadge {
+export function deviceBadge(source: { adapterId?: string | undefined }, tags: readonly string[]): ReportSourceBadge {
   if (source.adapterId && WEARABLE_ADAPTERS.has(source.adapterId)) return "wearable";
   if (tags.includes("wearable") || tags.includes("source:wearable")) return "wearable";
   return "device";
