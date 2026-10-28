@@ -29,6 +29,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
   }
   return <div className="mt-3 space-y-3">
     {review.diagnostics && <p className="text-sm text-muted-foreground" role="status">Extraction: {review.diagnostics.method} · {review.diagnostics.pages} page(s) · {review.diagnostics.matched} matched · {review.diagnostics.held} held for manual review · {review.diagnostics.rejected} rejected · Source file: {review.diagnostics.sourceName}</p>}
+    {review.aiStatus && <p className="text-sm text-muted-foreground" role="status">{review.aiStatus}</p>}
     {review.errors.length > 0 && <div role="alert"><strong>Errors / warnings ({review.errors.length})</strong><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
     {review.text && <details>
       <summary>View extracted source text (read-only)</summary>
@@ -62,7 +63,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
         <tbody>{review.rows.map((row, index) => <Fragment key={row.id}>
           <tr key={`${row.id}-summary`} className="border-b border-border">
             <td className="p-2"><input type="checkbox" checked={row.selected} aria-label={`I verified ${row.variableId}, measurement ${index + 1}, against the original report`} disabled={disabled || row.saved || boneReviewIssue(row, profile) !== null} onChange={event => edit(row.id, {selected:event.target.checked})} /></td>
-            <td className="p-2">{profile.variables.find(variable => variable.id === row.variableId)?.name} <span className="text-muted-foreground">({row.variableId})</span>{row.saved && <span className="block text-muted-foreground">Saved</span>}{!row.saved && boneReviewIssue(row, profile) && <span className="block text-destructive">{boneReviewIssue(row, profile)}</span>}</td>
+            <td className="p-2">{profile.variables.find(variable => variable.id === row.variableId)?.name} <span className="text-muted-foreground">({row.variableId})</span>{row.provenance === "ai" && <span className="block text-muted-foreground">AI-assisted suggestion — unverified</span>}{row.saved && <span className="block text-muted-foreground">Saved</span>}{!row.saved && boneReviewIssue(row, profile) && <span className="block text-destructive">{boneReviewIssue(row, profile)}</span>}</td>
             <td className="p-2">{Number.isFinite(row.value) ? row.value : "Missing"}</td><td className="p-2">{row.unit}</td><td className="p-2">{row.observedAt || "Missing"}</td>
             <td className="p-2"><Button type="button" variant="outline" size="sm" aria-label={`${expanded.includes(row.id) ? "Close" : "Details / edit"} ${row.variableId}, measurement ${index + 1}`} aria-controls={`${detailsId}-${row.id}`} aria-expanded={expanded.includes(row.id)} onClick={() => setExpanded(current => current.includes(row.id) ? current.filter(id => id !== row.id) : [...current, row.id])}>{expanded.includes(row.id) ? "Close" : "Details / edit"}</Button></td>
           </tr>
