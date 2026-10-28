@@ -54,14 +54,16 @@ async def main():
         # Scenario B: stubbed server envelope (UI wiring only, not real AI).
         # A synthetic future-dated session lets the component attempt the call;
         # the network route is intercepted, so no real provider is contacted.
-        await page.evaluate('''() => {
-          const key = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+        storage_key = await page.evaluate(
+            "() => Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) || 'sb-cifbkafjelizzgyvmbzp-auth-token'")
+        await page.evaluate('''([key]) => {
           localStorage.setItem(key, JSON.stringify({
             access_token: 'synthetic-ui-token', refresh_token: 'synthetic', token_type: 'bearer',
-            expires_at: Math.floor(Date.now() / 1000) + 3600,
+            expires_at: Math.floor(Date.now() / 1000) + 3600, expires_in: 3600,
             user: { id: 'synthetic-user', aud: 'authenticated', role: 'authenticated' },
           }));
-        }''')
+        }''', [storage_key])
+        print('session injected under', storage_key)
         await page.route('**/api/medical-document-extraction', lambda route: route.fulfill(
             status=200, content_type='application/json', body=json.dumps(ENVELOPE)))
         for width, height in [(1280, 1800), (390, 844)]:
