@@ -100,15 +100,17 @@ export function extractUniversalDocumentRows(
     const line = original.trim();
     const page = linePages?.[index];
     if (!line) { header = null; continue; }
+    const cells = splitCells(line);
+    // Header detection runs first: a header naming a reference-interval column
+    // must bind the table, while the same words in a data row refuse the row.
+    const detected = detectHeader(cells);
+    if (detected) { header = detected; continue; }
     const idMatch = line.match(idPattern);
     // Comparison symbols or reference-interval prose are never measurements.
     if (/[<>≤≥]/.test(line) || /\b(?:reference range|reference interval|normal range)\b/i.test(line)) {
       if (idMatch) held.push({ line: index + 1, reason: "comparison symbols or reference-interval content; never a measurement", snippet: line, page });
       continue;
     }
-    const cells = splitCells(line);
-    const detected = detectHeader(cells);
-    if (detected) { header = detected; continue; }
     if (header) {
       // Header-mapped table row: columns bind by position, in any order.
       const columnOf = (col: Column) => header!.indexOf(col);
@@ -152,7 +154,9 @@ export function extractUniversalDocumentRows(
         let observedAt = "";
         const context: string[] = [];
         if (dateCell) {
-          const strict = strictIsoDateTime(dateCell);
+          // Wrapped date cells may rejoin with inner spaces; only a complete
+          // strict ISO datetime with timezone may prefill, never a bare date.
+          const strict = strictIsoDateTime(dateCell.replace(/\s+/g, ""));
           if (strict) observedAt = strict;
           else context.push(`Reported date "${dateCell}" is not a complete timestamp; observation time requires review`);
         }
