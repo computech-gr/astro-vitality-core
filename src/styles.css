@@ -72,15 +72,13 @@
   body { margin: 0; background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); letter-spacing: 0; }
   ::selection { background: var(--color-primary); color: var(--color-primary-foreground); }
   a, button { outline-offset: 4px; }
-  /* Interactive affordance across all modules; disabled controls stay non-actionable. */
-  a[href]:not([aria-disabled="true"]), button:not(:disabled):not([aria-disabled="true"]),
-  [role="button"]:not([aria-disabled="true"]):not(:disabled),
-  [role="link"]:not([aria-disabled="true"]), summary, select:not(:disabled),
-  input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled) {
-    cursor: pointer;
-  }
-  button:disabled, select:disabled, input:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 }
+
+/* Unlayered so menu cursor-default utilities cannot override affordances. */
+:is(a[href], button, summary, select, input[type="file"], input[type="checkbox"], input[type="radio"], input[type="button"], input[type="submit"], input[type="reset"], input[type="range"], label[for], label:has(input), [role="button"], [role="link"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="slider"], [aria-haspopup], [tabindex]):not(:disabled):not([aria-disabled="true"]):not([data-disabled]):not([inert]):not([inert] *):not(input:not([type="file"], [type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"], [type="range"])):not(textarea) { cursor: pointer; }
+input[type="file"]::file-selector-button { cursor: pointer; }
+:is(:disabled, [aria-disabled="true"], [data-disabled], [inert], [inert] *, label:has(:disabled), label:has([aria-disabled="true"])), input[type="file"]:disabled::file-selector-button { cursor: not-allowed; }
+label[for]:has(+ :disabled) { cursor: not-allowed; }
 
 @utility section-kicker {
   display: flex;

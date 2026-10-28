@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Unified Bone file import UX
+
+- [x] Unified memory-only 10-file serial queue, cancellation/90-second timeout, independent OCR cache check and explicit per-measurement review; successful append-only saves receive stable-ID receipts and duplicates remain scope/provenance bound.
+- [x] Desktop/mobile mixed-file selection, real CSV/PDF-text parsing, OCR failure, keyboard/cursors, correction safeguards and partial-save retry passed with synthetic history adapters; lint 0 errors/13 warnings, security/formatting and six affected verifiers passed. Automatic compilation reports build OK.
+- [ ] Exact-revision CI typecheck/production build and authenticated encrypted-storage acceptance remain unverified; existing P22 coverage assumption, three dependency advisories and P3663/P3664/P20 owner-evidence blockers remain unchanged.
+
 ## Bone notes, cancellation and cursor UX
 
 - [x] Compare supplied patch with latest source; retain original correction notes and add non-persisting Cancel beside Save correction, preserving scoped editable metadata.

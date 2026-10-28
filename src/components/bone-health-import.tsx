@@ -1,118 +1,72 @@
+import { useEffect, useRef, useState } from "react";
+import { Upload, X, Ban } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BONE_IMPORT_CSV_TEMPLATE } from "@/domain/bone-health/import";
+import { offlineOcrCacheReady } from "@/domain/bone-health/ocr-readiness";
 import { BoneHealthDocumentImport } from "./bone-health-document-import";
-import { useState } from "react";
-import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
-import {
-  BONE_IMPORT_CSV_TEMPLATE,
-  parseBoneImport,
-  type BoneImportCandidate,
-} from "@/domain/bone-health/import";
-import { saveBoneEntry } from "@/domain/bone-health/history";
+import { BoneFileQueue, BONE_FILE_ACCEPT, MAX_BONE_FILES, reviewedBoneEntries, duplicateBoneImportIds, persistReviewedBoneEntries, type QueueItem, type FileReview } from "@/domain/bone-health/file-queue";
+import { listBoneEntries, saveBoneEntry } from "@/domain/bone-health/history";
 
-export function BoneHealthImport({
-  missionId,
-  crewMemberId,
-  dataOrigin,
-  onImported,
-}: {
-  missionId: string;
-  crewMemberId: string;
-  dataOrigin: "real" | "synthetic";
-  onImported: () => Promise<void>;
+export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImported }: {
+  missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic"; onImported: () => Promise<void>;
 }) {
-  const [rows, setRows] = useState<BoneImportCandidate[]>([]);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [status, setStatus] = useState("");
+  // A new scope mounts a fresh queue; no pending review crosses mission/crew/provenance.
+  return <ScopedBoneImport key={`${missionId}:${crewMemberId}:${dataOrigin}`} {...{missionId, crewMemberId, dataOrigin, onImported}} />;
+}
+function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
+  missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic"; onImported: () => Promise<void>;
+}) {
+  const [items, setItems] = useState<QueueItem[]>([]);
+  const queue = useRef<BoneFileQueue | null>(null);
+  const picker = useRef<HTMLInputElement>(null);
+  const alive = useRef(true);
+  const saving = useRef(false);
   const [busy, setBusy] = useState(false);
-  async function load(file: File) {
-    setRows([]);
-    setErrors([]);
-    setStatus("");
-    if (file.size > 2_000_000) {
-      setStatus("File too large (2 MB maximum).");
-      return;
-    }
-    if (!/\.csv$/i.test(file.name)) {
-      setStatus(
-        "Supported structured import: CSV. PDF/images require manual transcription until reviewed OCR is implemented.",
-      );
-      return;
-    }
-    try {
-      const text = await file.text();
-      const result = parseBoneImport(text);
-      setRows(result.candidates);
-      setErrors(result.rejected);
-      setStatus(
-        `${result.candidates.length} candidates require your confirmation (all start unchecked). ${result.rejected.length} rows rejected. Nothing has been saved.`,
-      );
-    } catch (e) {
-      setStatus(e instanceof Error ? e.message : "Unable to parse file.");
-    }
-  }
+  const [status, setStatus] = useState("");
+  const [offlineStatus, setOfflineStatus] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [duplicateConfirmed, setDuplicateConfirmed] = useState(false);
+  useEffect(() => {
+    alive.current = true;
+    queue.current = new BoneFileQueue(setItems);
+    return () => { alive.current = false; queue.current?.dispose(); queue.current = null; };
+  }, []);
+  function update(id: string, review: FileReview) { if (saving.current) return; setDuplicateConfirmed(false); queue.current?.update(id, review); }
   async function commit() {
-    if (!missionId.trim() || !crewMemberId.trim()) {
-      setStatus("Mission and crew identifiers required.");
-      return;
-    }
-    const chosen = rows.filter((r) => r.selected);
-    if (!chosen.length) {
-      setStatus("Select at least one row.");
-      return;
-    }
-    setBusy(true);
+    if (saving.current) return;
+    saving.current = true; setBusy(true);
     let saved = 0;
     try {
-      for (const r of chosen) {
-        await saveBoneEntry({
-          id: crypto.randomUUID(),
-          missionId: missionId.trim(),
-          crewMemberId: crewMemberId.trim(),
-          variableId: r.variableId,
-          value: r.value,
-          unit: r.unit,
-          observedAt: r.observedAt,
-          sourceLabel: r.sourceLabel,
-          specimen: r.specimen,
-          assayMethod: r.assayMethod,
-          notes: `Imported from user-reviewed CSV. ${r.notes}`.trim(),
-          dataOrigin,
-        });
+      const entries = reviewedBoneEntries(items.flatMap(item => item.review?.rows ?? []), { missionId, crewMemberId, dataOrigin });
+      if (!entries.length) throw new Error("Select and verify at least one measurement.");
+      const history = await listBoneEntries(missionId, crewMemberId);
+      if (!alive.current) return;
+      const duplicates = duplicateBoneImportIds(entries, history);
+      if (duplicates.length && !duplicateConfirmed) throw new Error(`${duplicates.length} potential duplicate(s). Compare history and confirm duplicates before saving.`);
+      await persistReviewedBoneEntries(entries, async entry => {
+        if (!alive.current) throw new Error("Scope changed; remaining rows were not saved.");
+        await saveBoneEntry(entry);
+      }, id => {
         saved++;
-      }
-      setRows([]);
-      await onImported();
-      setStatus(
-        `${saved} results saved to encrypted append-only history. No health interpretation was performed.`,
-      );
-    } catch (e) {
-      setStatus(
-        `${saved} saved before error: ${e instanceof Error ? e.message : "Unknown error"}. Check history before retrying to avoid duplicates.`,
-      );
-      if (saved) await onImported();
+        for (const item of queue.current?.items ?? []) if (item.review) queue.current?.update(item.id, { ...item.review, rows: item.review.rows.map(row => row.id === id ? { ...row, selected: false, saved: true } : row) });
+      });
+      if (alive.current) setStatus(`${saved} results saved to encrypted append-only history. Original files were not stored.`);
+    } catch (error) {
+      if (alive.current) setStatus(`${saved} saved. ${error instanceof Error ? error.message : "Save failed"} Successful rows cannot be selected again; remaining rows still require review.`);
     } finally {
-      setBusy(false);
+      if (saved && alive.current) { try { await onImported(); } catch { setStatus(`${saved} saved; history refresh failed. Successful rows remain locked against retry.`); } }
+      saving.current = false;
+      if (alive.current) { setBusy(false); setDuplicateConfirmed(false); }
     }
   }
   function downloadTemplate() {
-    const blob = new Blob([BONE_IMPORT_CSV_TEMPLATE], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "bone-health-import-template.csv";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    const url = URL.createObjectURL(new Blob([BONE_IMPORT_CSV_TEMPLATE], {type:"text/csv;charset=utf-8"}));
+    const link = document.createElement("a"); link.href = url; link.download = "bone-health-import-template.csv"; link.click(); URL.revokeObjectURL(url);
   }
-  return (
-    <section className="mt-8 rounded-xl border border-border p-5">
-      <h2 className="text-xl font-semibold">Import laboratory results</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        CSV results can be mapped to the 63 research variables and reviewed before encrypted
-        storage. No automatic medical interpretation. The mission, crew and real/synthetic selection
-        above apply to every imported row.
-      </p>
-      <details className="mt-4 rounded-lg border border-border p-4" open>
+  return <section className="mt-8 border-t border-border pt-6" aria-label="Import laboratory results">
+    <h2 className="text-xl font-semibold">Import laboratory results</h2>
+    <p className="mt-2 text-sm text-muted-foreground">Local only · {dataOrigin} · no original file upload or storage. Compare extracted measurements with the report before saving.</p>
+      <details className="mt-4 rounded-lg border border-border p-4">
         <summary className="cursor-pointer font-semibold">CSV format guide</summary>
         <p className="mt-3 text-sm">
           Use a UTF-8 comma-separated <code>.csv</code> file, one measurement per row. The first row
@@ -147,99 +101,51 @@ export function BoneHealthImport({
           file picker limit. Rows with unknown or ambiguous variables, missing required fields or
           invalid dates are rejected. All accepted rows remain subject to your review before saving.
         </p>
-        <button
+        <Button
           type="button"
           onClick={downloadTemplate}
           className="mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
         >
           Download blank CSV template
-        </button>
+        </Button>
       </details>
-      <label className="mt-4 block">
-        Choose CSV
-        <input
-          className="mt-2 block w-full"
-          type="file"
-          accept=".csv,text/csv"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void load(f);
-            e.currentTarget.value = "";
-          }}
-        />
-      </label>
-      <BoneHealthDocumentImport
-        missionId={missionId}
-        crewMemberId={crewMemberId}
-        dataOrigin={dataOrigin}
-        onImported={onImported}
-      />
-      {status && (
-        <p role="status" className="mt-3 text-sm">
-          {status}
-        </p>
-      )}
-      {errors.length > 0 && (
-        <details className="mt-3 text-sm">
-          <summary>Rejected rows ({errors.length})</summary>
-          <ul className="list-disc pl-5">
-            {errors.map((e, i) => (
-              <li key={i}>{e}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-      {rows.length > 0 && (
-        <>
-          <div className="mt-4 max-h-80 overflow-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr>
-                  <th>Use</th>
-                  <th>Variable</th>
-                  <th>Value</th>
-                  <th>Date</th>
-                  <th>Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={i} className="border-t">
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={r.selected}
-                        aria-label={`Import row ${i + 1}`}
-                        onChange={(e) =>
-                          setRows((prev) =>
-                            prev.map((x, j) =>
-                              j === i ? { ...x, selected: e.target.checked } : x,
-                            ),
-                          )
-                        }
-                      />
-                    </td>
-                    <td>{BONE_HEALTH_VARIABLES.find((v) => v.id === r.variableId)?.name}</td>
-                    <td>
-                      {r.value} {r.unit}
-                    </td>
-                    <td>{r.observedAt.slice(0, 10)}</td>
-                    <td>{r.sourceLabel}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+    <div className="mt-4 flex flex-wrap items-center gap-3">
+      <input ref={picker} type="file" multiple accept={BONE_FILE_ACCEPT} className="hidden" aria-label="Laboratory files" disabled={busy || items.length >= MAX_BONE_FILES} onChange={event => {
+        const skipped = queue.current?.add(Array.from(event.currentTarget.files ?? [])) ?? 0;
+        setStatus(skipped ? `${skipped} file(s) not added: maximum ${MAX_BONE_FILES}. Remove files to make room.` : "Files queued locally. Nothing saved.");
+        event.currentTarget.value = "";
+      }} />
+      <Button type="button" disabled={busy || items.length >= MAX_BONE_FILES} onClick={() => picker.current?.click()}><Upload aria-hidden="true" />Choose laboratory files</Button>
+      <span className="text-sm text-muted-foreground">CSV, PDF, PNG, JPG, JPEG, WebP · up to 10 files · one processed at a time</span>
+    </div>
+    <p className="mt-2 text-xs text-muted-foreground">CSV: 2 MB; documents: 12 MB, PDFs: 12 pages; images: 20 megapixels. Each job has a 90-second limit.</p>
+    <p className="mt-3 text-sm">OCR is needed for images and scanned PDF pages, not CSV or selectable-text PDF pages. First OCR use may need internet for language resources.</p>
+    <div className="mt-3 flex flex-wrap items-center gap-3">
+      <Button type="button" variant="outline" disabled={checking} onClick={async () => {
+        setChecking(true);
+        try { const ready = await offlineOcrCacheReady(); if (alive.current) setOfflineStatus(ready ? "OCR assets found in local cache; execution and airplane-mode readiness are not verified." : "OCR assets are not fully cached. Images/scanned pages may fail offline; CSV and selectable-text PDFs remain available."); }
+        catch { if (alive.current) setOfflineStatus("OCR cache check unavailable. This does not block CSV or selectable-text PDFs."); }
+        finally { if (alive.current) setChecking(false); }
+      }}>{checking ? "Checking…" : "Check offline OCR readiness"}</Button>
+      <span role="status" className="text-sm text-muted-foreground">{offlineStatus}</span>
+    </div>
+    <ul className="mt-4 space-y-3" aria-label="File processing queue">
+      {items.map(item => <li key={item.id} className="border-b border-border pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0"><h3 className="break-all font-semibold">{item.name}</h3><p className="text-sm">{item.kind} · {item.status}</p><p role="status" className="text-sm text-muted-foreground">{item.detail}</p></div>
+          <div className="flex shrink-0 gap-1">
+            {(item.status === "queued" || item.status === "processing") && <Button type="button" size="icon" variant="outline" disabled={busy} aria-label={`Cancel ${item.name}`} title={`Cancel ${item.name}`} onClick={() => queue.current?.cancel(item.id)}><Ban aria-hidden="true" /></Button>}
+            <Button type="button" size="icon" variant="ghost" disabled={busy} aria-label={`Remove ${item.name}`} title={`Remove ${item.name}`} onClick={() => { queue.current?.remove(item.id); setDuplicateConfirmed(false); }}><X aria-hidden="true" /></Button>
           </div>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void commit()}
-            className="mt-4 rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
-          >
-            {busy ? "Saving…" : "Confirm selected results and save"}
-          </button>
-        </>
-      )}
-    </section>
-  );
+        </div>
+        {item.review && <BoneHealthDocumentImport review={item.review} fileId={item.id} disabled={busy} onChange={review => update(item.id, review)} />}
+      </li>)}
+    </ul>
+    {items.some(item => item.review?.rows.some(row => !row.saved)) && <div className="mt-4 space-y-3">
+      <label className="flex items-start gap-2 text-sm"><input type="checkbox" disabled={busy} checked={duplicateConfirmed} onChange={event => setDuplicateConfirmed(event.target.checked)} />I compared potential duplicates with history and confirm any repeated measurements.</label>
+      <Button type="button" disabled={busy || !items.some(item => item.review?.rows.some(row => row.selected && !row.saved))} onClick={() => void commit()}>{busy ? "Saving…" : "Confirm selected results and save"}</Button>
+    </div>}
+    <p role="status" className="mt-3 text-sm">{status}</p>
+  </section>;
 }

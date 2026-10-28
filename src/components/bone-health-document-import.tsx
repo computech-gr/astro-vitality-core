@@ -1,287 +1,41 @@
-import { useState } from "react";
-import { offlineOcrCacheReady } from "@/domain/bone-health/ocr-readiness";
+import { Button } from "@/components/ui/button";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
-import {
-  extractBoneDocument,
-  suggestBoneDocumentMatches,
-  type DocumentMatch,
-} from "@/domain/bone-health/document-extraction";
-import { saveBoneEntry } from "@/domain/bone-health/history";
+import { suggestBoneDocumentMatches } from "@/domain/bone-health/document-extraction";
+import type { FileReview, ReviewRow } from "@/domain/bone-health/file-queue";
 
-export function BoneHealthDocumentImport({
-  missionId,
-  crewMemberId,
-  dataOrigin,
-  onImported,
-}: {
-  missionId: string;
-  crewMemberId: string;
-  dataOrigin: "real" | "synthetic";
-  onImported: () => Promise<void>;
+/** Per-file human review only. The parent queue owns selection and scoped persistence. */
+export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }: {
+  review: FileReview; fileId: string; disabled: boolean; onChange: (review: FileReview) => void;
 }) {
-  const [matches, setMatches] = useState<DocumentMatch[]>([]);
-  const [text, setText] = useState("");
-  const [draft, setDraft] = useState("");
-  const [date, setDate] = useState("");
-  const [status, setStatus] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [source, setSource] = useState("");
-  const [offlineStatus, setOfflineStatus] = useState("");
-  async function load(file: File) {
-    setMatches([]);
-    setText("");
-    setDraft("");
-    setSource(file.name);
-    setBusy(true);
-    setStatus("Extracting locally; no upload…");
-    try {
-      const result = await extractBoneDocument(file);
-      setText(result.text);
-      setDraft(result.text);
-      const suggested = suggestBoneDocumentMatches(result.text, file.name);
-      setMatches(suggested);
-      setStatus(
-        `${result.method}: ${result.pages} page(s), ${suggested.length} conservative suggestions. All unchecked. ${result.warnings.join(" ")} Edit extracted text or use manual entry for unmatched values.`,
-      );
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Unable to extract document.");
-    } finally {
-      setBusy(false);
-    }
+  function edit(id: string, patch: Partial<ReviewRow>) {
+    onChange({ ...review, rows: review.rows.map(row => row.id === id && !row.saved ? { ...row, ...patch } : row) });
   }
-  async function save() {
-    if (!missionId.trim() || !crewMemberId.trim()) {
-      setStatus("Mission and crew are required.");
-      return;
-    }
-    const selected = matches.filter((m) => m.selected);
-    if (!selected.length) {
-      setStatus("Select and verify at least one result.");
-      return;
-    }
-    const rowDate = (m: DocumentMatch) =>
-      m.observedAt && Number.isFinite(Date.parse(m.observedAt)) ? m.observedAt : date;
-    if (selected.some((m) => !rowDate(m) || !Number.isFinite(Date.parse(rowDate(m))))) {
-      setStatus(
-        "Each selected result needs a valid examination date: set the shared date or a per-row date.",
-      );
-      return;
-    }
-    setBusy(true);
-    let count = 0;
-    try {
-      for (const m of selected) {
-        if (!m.unit.trim() || !Number.isFinite(m.value))
-          throw new Error("A selected result has an invalid value or unit.");
-        await saveBoneEntry({
-          id: crypto.randomUUID(),
-          missionId: missionId.trim(),
-          crewMemberId: crewMemberId.trim(),
-          variableId: m.variableId,
-          value: m.value,
-          unit: m.unit,
-          observedAt: new Date(rowDate(m)).toISOString(),
-          sourceLabel: source,
-          specimen: m.specimen,
-          assayMethod: m.assayMethod,
-          notes: "Human-confirmed document extraction. No automated clinical interpretation.",
-          dataOrigin,
-        });
-        count++;
-      }
-      setMatches([]);
-      setText("");
-      setDraft("");
-      await onImported();
-      setStatus(
-        `${count} confirmed results stored in encrypted append-only history. The original document was not stored.`,
-      );
-    } catch (error) {
-      setStatus(
-        `${count} stored before failure: ${error instanceof Error ? error.message : "Unknown error"}. Check history before retrying.`,
-      );
-      if (count) await onImported();
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <section className="mt-6 rounded-xl border border-border p-5">
-      <h3 className="font-semibold">PDF & scanned medical report extraction (experimental)</h3>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Runs on this device. Selectable PDF text is supported; scanned PDFs and images use on-device
-        OCR (browser TextDetector or Tesseract fallback). First use may require downloading OCR
-        language resources; offline availability is not guaranteed until those resources are cached.
-        No automatic medical decisions. No original report upload or storage. Always compare results
-        with the report before saving.
-      </p>
-      <div className="mt-3 flex items-center gap-3">
-        <button
-          type="button"
-          className="rounded border px-3 py-2 text-sm"
-          onClick={() => {
-            void offlineOcrCacheReady().then((ready) =>
-              setOfflineStatus(
-                ready
-                  ? "OCR assets found in local browser cache (not a complete airplane-mode test)."
-                  : "OCR assets are not fully cached. Scanned reports may require internet access.",
-              ),
-            );
-          }}
-        >
-          Check offline OCR readiness
-        </button>
-        <span role="status" className="text-xs text-muted-foreground">
-          {offlineStatus}
-        </span>
-      </div>
-      <input
-        className="mt-3 block w-full"
-        type="file"
-        accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*"
-        disabled={busy}
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) void load(file);
-          e.currentTarget.value = "";
-        }}
-      />
-      <p role="status" className="mt-2 text-sm">
-        {status}
-      </p>
-      {text && (
-        <div className="mt-3 space-y-2">
-          <label className="block text-sm" htmlFor="bone-extracted-text">
-            Review and correct extracted text (local only)
-          </label>
-          <textarea
-            id="bone-extracted-text"
-            className="w-full rounded border bg-background p-2 font-mono text-xs"
-            rows={6}
-            maxLength={100000}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            aria-describedby="bone-extracted-note"
-          />
-          <p id="bone-extracted-note" className="text-xs text-muted-foreground">
-            Compare every number and unit with the original report. Editing this text does not save
-            medical results.
-          </p>
-          <button
-            type="button"
-            disabled={busy}
-            className="rounded border px-3 py-2 text-sm"
-            onClick={() => {
-              setMatches(suggestBoneDocumentMatches(draft, source));
-              setStatus(
-                "Suggestions refreshed from reviewed text. All candidates are unchecked; confirm values and units against the original report.",
-              );
-            }}
-          >
-            Recheck corrected text
-          </button>
+  const hasSaved = review.rows.some(row => row.saved);
+  return <div className="mt-3 space-y-3">
+    {review.errors.length > 0 && <details><summary>Errors / warnings ({review.errors.length})</summary><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></details>}
+    {review.text && <details>
+      <summary>Review extracted text</summary>
+      <label htmlFor={`text-${fileId}`} className="mt-2 block text-sm">Review and correct extracted text (local only)</label>
+      <textarea id={`text-${fileId}`} rows={6} maxLength={100000} disabled={disabled || hasSaved} className="mt-2 w-full rounded border border-input bg-background p-2 text-sm" value={review.text} onChange={event => onChange({ ...review, text: event.target.value, rows: review.rows.map(row => ({ ...row, selected: false })) })} />
+      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved} onClick={() => onChange({ ...review, rows: suggestBoneDocumentMatches(review.text, "").map(row => ({ ...row, id: crypto.randomUUID() })) })}>Recheck corrected text</Button>
+    </details>}
+    <h4 className="font-medium">Human measurement review</h4>
+    {!review.rows.length && <p className="text-sm text-muted-foreground">No catalog-matched measurements. Correct extracted text or use manual entry; nothing saved.</p>}
+    <div className="space-y-3">
+      {review.rows.map((row, index) => <fieldset key={row.id} disabled={disabled || row.saved} className="border border-border p-3">
+        <legend className="px-1 text-sm">{BONE_HEALTH_VARIABLES.find(variable => variable.id === row.variableId)?.name} · {row.variableId}{row.saved ? " · Saved" : ""}</legend>
+        {row.rawLine && <p className="mb-2 break-words text-xs text-muted-foreground">Original line: {row.rawLine}</p>}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-sm">Value<input aria-label={`Value ${fileId} ${index + 1}`} type="number" step="any" className="mt-1 w-full rounded border border-input bg-background p-2" value={Number.isFinite(row.value) ? row.value : ""} onChange={event => edit(row.id, {value:event.target.value === "" ? NaN : Number(event.target.value), selected:false})} /></label>
+          <label className="text-sm">Unit (as reported)<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.unit} onChange={event => edit(row.id, {unit:event.target.value, selected:false})} /></label>
+          <label className="text-sm">Observation date / time (ISO 8601)<input className="mt-1 w-full rounded border border-input bg-background p-2" placeholder="2026-10-28T07:18:00Z" value={row.observedAt} onChange={event => edit(row.id, {observedAt:event.target.value, selected:false})} /></label>
+          <label className="text-sm">Lab / original source<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.sourceLabel} onChange={event => edit(row.id, {sourceLabel:event.target.value, selected:false})} /></label>
+          <label className="text-sm">Specimen / modality<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.specimen} onChange={event => edit(row.id, {specimen:event.target.value, selected:false})} /></label>
+          <label className="text-sm">Assay / method<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.assayMethod} onChange={event => edit(row.id, {assayMethod:event.target.value, selected:false})} /></label>
+          <label className="text-sm sm:col-span-2">Notes<textarea className="mt-1 w-full rounded border border-input bg-background p-2" value={row.notes} onChange={event => edit(row.id, {notes:event.target.value, selected:false})} /></label>
         </div>
-      )}
-      {matches.length > 0 && (
-        <>
-          <label className="mt-3 block text-sm">
-            Shared examination date (verify against original; used for rows without their own date)
-            <input
-              className="mt-1 block rounded border p-2"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </label>
-          <div className="mt-3 max-h-72 overflow-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr>
-                  <th>Confirm</th>
-                  <th>Variable</th>
-                  <th>Value</th>
-                  <th>Unit</th>
-                  <th>Date (optional override)</th>
-                  <th>Original line</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matches.map((m, i) => (
-                  <tr className="border-t" key={i}>
-                    <td>
-                      <input
-                        aria-label={`Confirm extracted result ${i + 1}`}
-                        type="checkbox"
-                        checked={m.selected}
-                        onChange={(e) =>
-                          setMatches((prev) =>
-                            prev.map((x, j) =>
-                              i === j ? { ...x, selected: e.target.checked } : x,
-                            ),
-                          )
-                        }
-                      />
-                    </td>
-                    <td>{BONE_HEALTH_VARIABLES.find((v) => v.id === m.variableId)?.name}</td>
-                    <td>
-                      <input
-                        className="w-24 rounded border p-1"
-                        type="number"
-                        step="any"
-                        value={m.value}
-                        onChange={(e) =>
-                          setMatches((prev) =>
-                            prev.map((x, j) =>
-                              i === j ? { ...x, value: Number(e.target.value) } : x,
-                            ),
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="w-24 rounded border p-1"
-                        value={m.unit}
-                        onChange={(e) =>
-                          setMatches((prev) =>
-                            prev.map((x, j) => (i === j ? { ...x, unit: e.target.value } : x)),
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        aria-label={`Examination date for result ${i + 1}`}
-                        className="rounded border p-1"
-                        type="date"
-                        value={m.observedAt}
-                        onChange={(e) =>
-                          setMatches((prev) =>
-                            prev.map((x, j) =>
-                              i === j ? { ...x, observedAt: e.target.value } : x,
-                            ),
-                          )
-                        }
-                      />
-                    </td>
-                    <td className="max-w-60 truncate" title={m.rawLine}>
-                      {m.rawLine}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <button
-            type="button"
-            disabled={busy}
-            className="mt-3 rounded bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
-            onClick={() => void save()}
-          >
-            Save confirmed results
-          </button>
-        </>
-      )}
-    </section>
-  );
+        <label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" checked={row.selected} onChange={event => edit(row.id, {selected:event.target.checked})} />I verified this measurement, unit, date and source against the original.</label>
+      </fieldset>)}
+    </div>
+  </div>;
 }

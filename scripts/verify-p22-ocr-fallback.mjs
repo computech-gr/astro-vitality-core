@@ -2,7 +2,7 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 const read = (p) => fs.readFileSync(p, "utf8");
 const domain = read("src/domain/bone-health/document-extraction.ts");
-const ui = read("src/components/bone-health-document-import.tsx");
+const ui = read("src/components/bone-health-import.tsx");
 const pkg = JSON.parse(read("package.json"));
 assert.ok(pkg.dependencies["tesseract.js"]);
 assert.match(domain, /import\("tesseract.js"\)/);
@@ -14,7 +14,7 @@ assert.match(domain, /selected:false/);
 assert.match(domain, /ids.size !== 1/);
 assert.match(
   ui,
-  /First use may require downloading OCR\s+language resources/,
+  /First OCR use may need internet for language resources/,
   "OCR first-use network warning must remain visible across JSX whitespace",
 );
 assert.match(ui, /saveBoneEntry/);
