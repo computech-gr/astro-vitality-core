@@ -85,6 +85,7 @@ export const CARDIOVASCULAR_MEASUREMENT_PROFILE: MeasurementProfile = {
     const unit = cardiovascularUnits.get(id);
     return unit ? [unit] : [];
   },
+  catalogUnit: (id) => cardiovascularUnits.get(id) || null,
 };
 
 export const BEHAVIORAL_MEASUREMENT_PROFILE: MeasurementProfile = {
