@@ -73,7 +73,7 @@ async def check_p30(page, context, modules):
       const root=Client.createRoot(host);window.p30Render=empty=>root.render(React.createElement(MedicalAdvisorWorkbench,{key:String(empty),report:buildHealthHistoryReport(empty?[]:[o],o.missionId,o.crewMemberId,'synthetic'),authorizedMedicalRole:false,advisorLabel:'SYNTHETIC presentation only'}));
       window.p30Render(true);
     }''')
-    export = page.get_by_role('button', name='Export de-identified evidence prompt (manual transfer)', exact=True)
+    export = page.get_by_role('button', name='Download research evidence prompt (.txt — manual transfer)', exact=True)
     capture = page.get_by_role('button', name='Capture unverified draft', exact=True)
     for width, height in [(1280, 1800), (390, 844)]:
         await page.set_viewport_size({'width': width, 'height': height})
@@ -87,6 +87,23 @@ async def check_p30(page, context, modules):
         await page.evaluate('()=>window.p30Render(false)')
         await page.wait_for_timeout(100)
         await check_control(export, 'rgb(239, 248, 255)', 'rgb(18, 62, 99)')
+        link = page.get_by_role('link', name='Go to Synthetic Research AI — factual Q&A')
+        lb, eb = await link.bounding_box(), await export.bounding_box()
+        overlap = not (lb['x']+lb['width'] <= eb['x'] or eb['x']+eb['width'] <= lb['x'] or lb['y']+lb['height'] <= eb['y'] or eb['y']+eb['height'] <= lb['y'])
+        assert not overlap, (lb, eb)
+        if width >= 1280:
+            assert eb['x'] - (lb['x']+lb['width']) >= 20 and abs(eb['y']+eb['height']/2 - (lb['y']+lb['height']/2)) < 12, (lb, eb)
+        else:
+            assert eb['x']+eb['width'] <= width and (eb['x'] - (lb['x']+lb['width']) >= 20 or eb['y'] - (lb['y']+lb['height']) >= 10), (lb, eb)
+        async with page.expect_download() as dl:
+            await export.click()
+        d = await dl.value
+        assert d.suggested_filename == 'mitochondria-ai-draft-input-RESEARCH-ONLY.txt'
+        txt = Path(await d.path()).read_text()
+        assert 'SYNTHETIC-P30-OBS' in txt and '62' in txt, txt[:300]
+        status = await page.locator('p[role=status][aria-live=polite]').inner_text()
+        assert 'download requested' in status and 'No data was sent to an AI service' in status, status
+        print(f'PASS {width}: TXT download {len(txt)} chars, status shown, link/button spacing ok')
         assert await capture.is_disabled()
         await export.focus()
         await export.press('Tab')

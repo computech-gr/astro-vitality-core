@@ -71,13 +71,31 @@ export function MedicalAdvisorWorkbench({
     [review, report, authorizedMedicalRole],
   );
   const draftPrompt = () => {
-    const blob = new Blob([buildAIDraftingPrompt(report)], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "mitochondria-ai-draft-input-RESEARCH-ONLY.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+    if (!report.observations.length) {
+      setMessage("No included observations are available to export.");
+      return;
+    }
+    let url: string | null = null;
+    try {
+      const content = buildAIDraftingPrompt(report);
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "mitochondria-ai-draft-input-RESEARCH-ONLY.txt";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      // Keep the object URL alive long enough for the browser to start the download.
+      const downloadUrl = url;
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 60_000);
+      url = null;
+      setMessage("Evidence prompt download requested. Check your browser downloads for mitochondria-ai-draft-input-RESEARCH-ONLY.txt. No data was sent to an AI service. Only transfer with explicit authorization.");
+    } catch (error) {
+      if (url) URL.revokeObjectURL(url);
+      setMessage(`Evidence prompt export failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   };
   const start = () => {
     try {
@@ -151,18 +169,20 @@ export function MedicalAdvisorWorkbench({
           requests. Use the authorized Synthetic Research AI factual Q&amp;A above instead.
           This section only captures an existing draft for session-only advisor review.
         </p>
-        <a className="inline-block text-sm underline underline-offset-4" href="#synthetic-research-qa">
-          Go to Synthetic Research AI — factual Q&amp;A
-        </a>
-        <Button
-          type="button"
-          variant="outline"
-          className="medical-action-secondary h-auto whitespace-normal text-left"
-          onClick={draftPrompt}
-          disabled={!report.observations.length}
-        >
-          Export de-identified evidence prompt (manual transfer)
-        </Button>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <a className="inline-block text-sm underline underline-offset-4" href="#synthetic-research-qa">
+            Go to Synthetic Research AI — factual Q&amp;A
+          </a>
+          <Button
+            type="button"
+            variant="outline"
+            className="medical-action-secondary h-auto max-w-full whitespace-normal text-left"
+            onClick={draftPrompt}
+            disabled={!report.observations.length}
+          >
+            Download research evidence prompt (.txt — manual transfer)
+          </Button>
+        </div>
         <label className="block text-sm" htmlFor="ai-medical-draft">
           AI-generated English draft (paste after authorized processing)
         </label>
@@ -222,7 +242,7 @@ export function MedicalAdvisorWorkbench({
             )}
           </>
         )}
-        <p role="status" className="text-xs">
+        <p role="status" aria-live="polite" className="text-xs">
           {message}
         </p>
       </div>
