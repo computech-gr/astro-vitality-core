@@ -19,4 +19,4 @@ assert.match(ui,/selected:event.target.checked/);
 assert.match(catalog,/bone-063/);
 assert.equal(pkg.scripts['verify:p22:medical-mapping'],'node scripts/verify-p22-medical-mapping.mjs');
 assert.ok(pkg.scripts.check.includes('verify:p22:medical-mapping'));
-console.log('P22.4 PASS: strict catalog mapping, editable local text review, opt-in persistence; no clinical activation. OCR remains browser-dependent.');
+console.log('P22.4 PASS: strict catalog mapping, read-only source text with per-row edits, opt-in persistence; no clinical activation. OCR remains browser-dependent.');
