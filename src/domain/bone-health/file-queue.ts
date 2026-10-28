@@ -79,7 +79,7 @@ export class BoneFileQueue {
         const item = this.items.find(item => item.status === "queued");
         if (!item?.file) break;
         const controller = new AbortController(); this.controller = controller;
-        item.status = "processing"; item.detail = "Processing locally; no upload"; this.publish();
+        item.status = "processing"; item.detail = "Processing locally; if incomplete, bounded extracted text may be sent to the authorized AI extraction service — never the original file"; this.publish();
         const timeout = setTimeout(() => controller.abort(new Error("Local processing timed out after 90 seconds. Use CSV or manual entry.")), BONE_FILE_TIMEOUT_MS);
         try {
           const process = this.process(item.file, controller.signal);
