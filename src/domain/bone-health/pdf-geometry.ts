@@ -42,11 +42,16 @@ export function reconstructGeometryLines(items: PdfTextItem[]): GeometryLine[] {
     const typicalHeight = median(pageItems.map((item) => item.height), 10);
     const lineTolerance = Math.max(2, typicalHeight * 0.6);
     const sorted = [...pageItems].sort((a, b) => b.y - a.y || a.x - b.x);
+    // Chain by adjacent-item distance: wrapped rows with vertically centered
+    // cells span a y-band taller than one line tolerance, so each item is
+    // compared to the previous item, not to the line's first item.
     const rawLines: Array<{ y: number; items: PdfTextItem[] }> = [];
+    let previousY: number | null = null;
     for (const item of sorted) {
       const last = rawLines[rawLines.length - 1];
-      if (last && Math.abs(last.y - item.y) <= lineTolerance) last.items.push(item);
+      if (last && previousY !== null && Math.abs(previousY - item.y) <= lineTolerance) last.items.push(item);
       else rawLines.push({ y: item.y, items: [item] });
+      previousY = item.y;
     }
     const pageLines: Array<{ page: number; y: number; cells: WorkingCell[] }> = rawLines.map(({ y, items: lineItems }) => {
       const cells: WorkingCell[] = [];
