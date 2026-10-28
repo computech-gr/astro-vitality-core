@@ -266,7 +266,7 @@ export function AstronautHealthReport() {
         </div>
       )}
       {report && unified && (
-        <article className="report-print space-y-5 rounded-lg border bg-card p-5 print:border-0 print:bg-transparent print:p-0">
+        <article className="report-print space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
           <div className="flex flex-wrap justify-between gap-3 print:hidden">
             <Button onClick={printReport}>Print / Save as PDF</Button>
             <Button variant="outline" onClick={exportText}>
@@ -283,7 +283,7 @@ export function AstronautHealthReport() {
             </span>
             <span>Generated {unified.generatedAt} UTC · not a diagnosis</span>
           </div>
-          <div className="space-y-1">
+          <div className="report-cover space-y-1">
             <p className="text-xs font-semibold tracking-widest text-muted-foreground">
               MITOCHONDRIA
             </p>
@@ -301,13 +301,13 @@ export function AstronautHealthReport() {
               {unified.filters.sources.map((s) => REPORT_SOURCE_LABELS[s]).join(", ")}
             </p>
           </div>
-          <p className="rounded border p-3 text-sm font-semibold">{REPORT_DISCLAIMER}</p>
+          <p className="report-disclaimer rounded-md border p-3 text-sm font-semibold">{REPORT_DISCLAIMER}</p>
 
           <section aria-label="Domain overview" className="report-avoid-break space-y-2">
             <h3 className="font-semibold">Domain overview</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 print:grid-cols-3">
               {unified.summaries.map((s) => (
-                <div key={s.badge} className="report-avoid-break rounded-lg border p-3">
+                <div key={s.badge} className="report-domain-card report-avoid-break rounded-lg border p-3">
                   <p className="text-xs text-muted-foreground">{REPORT_SOURCE_LABELS[s.badge]}</p>
                   <p className="text-2xl font-semibold tabular-nums">{s.included}</p>
                   <p className="text-xs">
@@ -340,7 +340,15 @@ export function AstronautHealthReport() {
               </p>
             ) : (
               <div className="overflow-x-auto print:overflow-visible">
-                <table className="report-table w-full text-left text-xs">
+                <table className="report-table report-history-table w-full table-fixed text-left text-xs">
+                  <colgroup>
+                    <col className="report-col-date" />
+                    <col className="report-col-source" />
+                    <col className="report-col-metric" />
+                    <col className="report-col-result" />
+                    <col className="report-col-status" />
+                    <col className="report-col-evidence" />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Date (UTC)</th>
@@ -354,7 +362,12 @@ export function AstronautHealthReport() {
                   <tbody>
                     {unified.rows.map((r) => (
                       <tr key={`${r.badge}:${r.recordId}`} className="border-t align-top">
-                        <td className="py-2 pr-2 tabular-nums">{r.observedAt}</td>
+                        <td className="report-date-cell py-2 pr-2 tabular-nums">
+                          <time dateTime={r.observedAt}>
+                            <span className="block">{r.observedAt.slice(0, 10)}</span>
+                            <span className="block">{r.observedAt.slice(11)}</span>
+                          </time>
+                        </td>
                         <td className="pr-2">
                           <span className="rounded border px-1.5 py-0.5 font-medium">
                             {REPORT_SOURCE_LABELS[r.badge]}
@@ -372,9 +385,9 @@ export function AstronautHealthReport() {
                         <td className="pr-2">
                           {r.provenance} · {r.status}
                         </td>
-                        <td className="break-all">
+                        <td className="report-evidence-cell">
                           {r.sourceLabel}
-                          <span className="block text-muted-foreground">
+                          <span className="report-evidence-id block text-muted-foreground">
                             ID {r.recordId} · {r.evidence}
                           </span>
                           {r.qualityNote && (
@@ -394,7 +407,13 @@ export function AstronautHealthReport() {
             {unified.exclusions.length === 0 ? (
               <p className="text-sm text-muted-foreground">None in this selection.</p>
             ) : (
-              <table className="report-table w-full text-left text-xs">
+              <table className="report-table report-exclusions-table w-full table-fixed text-left text-xs">
+                <colgroup>
+                  <col className="report-col-exclusion-status" />
+                  <col className="report-col-exclusion-source" />
+                  <col className="report-col-exclusion-id" />
+                  <col className="report-col-exclusion-reason" />
+                </colgroup>
                 <thead>
                   <tr>
                     <th>Status</th>
@@ -432,7 +451,7 @@ export function AstronautHealthReport() {
                 </strong>{" "}
                 {f.text}
                 {f.observationIds.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="report-evidence-id text-xs text-muted-foreground">
                     Evidence IDs: {f.observationIds.join(", ")}
                   </p>
                 )}

@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## P29 Medical Report menu and A4 fit
+
+- [x] Apply supplied navigation and report presentation changes; complete missing 17/10/16/12/13/32% history columns, cover/evidence classes, exclusion widths and lossless date line breaks. Semantic paper tokens replace supplied hardcoded utilities; fix dark-mode table contrast and overlapping fixed print furniture. Report logic is unchanged.
+- [x] Real desktop Enter/mobile pointer navigation passes. Browser-only synthetic adapters render 64 included/4 excluded records into 15-page A4 PDFs from desktop and mobile; all 60 long IDs, Greek/English text, units and millisecond timestamps retained inside page bounds. No runtime errors; inspected first two rasterized PDF pages. This is Chromium PDF/presentation verification, not authenticated encrypted-storage acceptance or manual printer-dialog approval.
+- [x] Full tests: 715 pass/10032 assertions/141 files. Lint: 0 errors/12 existing warnings. Formatting, security boundary audit, SEO/global header pass; offline package verifiers 55/59, with four pre-existing P22 source-pattern failures in unchanged files. Dependency audit reports two moderate/one low existing advisories; no dependencies changed. Managed preview compilation reports build OK.
+- [ ] Exact-revision full typecheck and production build remain unverified: successful synchronized GitHub execution evidence is unavailable; platform disallows manual build/typecheck. No database, permission, AI, gate or publication changes.
+
 ## P22 visible verification and shared observation timestamp
 
 - [x] Compare supplied replacement; preserve parsing/authorization fixes. Deviations: retain Verify All for empty/saved-only reviews, strictly reject invalid calendar timestamps, bind confirmation to current file/rows, and add pure-helper regression tests.
