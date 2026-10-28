@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Bone corrected-text parsing and safe restoration
+
+- [ ] Parse supported report tables and corrected CSV with explicit validation errors.
+- [ ] Restore bounded synthetic review queues only after fresh scoped authorization; reset approvals and require original-file reselection.
+- [ ] Run regression/full tests, browser checks, lint/security and inspect managed compilation; report unavailable exact-revision typecheck/build evidence.
+
 ## Bone import role access patch
 
 - [x] Compare and apply the supplied import-access presentation patch without overwriting unrelated changes.
