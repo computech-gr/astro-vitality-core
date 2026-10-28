@@ -84,8 +84,6 @@ export async function requestAiExtraction(
   };
 }
 
-// Resolved lazily to keep this module free of a static profiles import cycle.
-import { MEASUREMENT_PROFILES } from "@/domain/health-measurements/profiles";
 function requestProfile(request: AiExtractionRequest): MeasurementProfile {
   return MEASUREMENT_PROFILES[request.domain];
 }
