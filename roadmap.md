@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## P22 visible verification and shared observation timestamp
+
+- [x] Compare supplied replacement; preserve parsing/authorization fixes. Deviations: retain Verify All for empty/saved-only reviews, strictly reject invalid calendar timestamps, bind confirmation to current file/rows, and add pure-helper regression tests.
+- [x] Focused tests: 29 pass; full tests: 686 pass/9897 assertions. Lint: 0 errors/13 existing warnings; security/formatting and Bone/SEO checks pass. Synthetic-adapter browser covers desktop/mobile, keyboard, shared-date confirmation, real two-page tab switching, no-flash review, remount reset and partial-save receipts; no page errors.
+- [ ] Exact-revision typecheck/production-build CI and authenticated encrypted-storage acceptance remain unverified; managed CI evidence unavailable. Automatic compilation is OK; dependency audit retains 2 moderate/1 low advisory. Database, migrations, AI settings and release gates unchanged.
+
 ## Compact Bone import review
 
 - [x] Compare both supplied replacements and integrate compact table/silent tab return; add shared existing-validation eligibility, explicit confirmation, accessible disclosures/keyboard table scrolling and save-time authorization-loss guards.

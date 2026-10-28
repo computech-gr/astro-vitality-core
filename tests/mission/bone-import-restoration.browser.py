@@ -1,11 +1,12 @@
-import asyncio, json
+import asyncio, json, re
 from pathlib import Path
 from playwright.async_api import async_playwright
 OUT=Path('/tmp/browser/bone-restoration'); OUT.mkdir(parents=True,exist_ok=True)
 async def main():
  async with async_playwright() as p:
   browser=await p.chromium.launch(headless=True)
-  page=await browser.new_page(viewport={'width':1280,'height':1800})
+  context=await browser.new_context(viewport={'width':1280,'height':1800})
+  page=await context.new_page()
   errors=[]
   page.on('pageerror',lambda e:errors.append(str(e)))
   await page.goto('http://localhost:8080/mission/bone-health',wait_until='networkidle')
@@ -50,8 +51,38 @@ async def main():
   await page.get_by_role('status').filter(has_text='CSV parsing').wait_for()
   await page.get_by_role('status').filter(has_text='PDF selectable text').wait_for(timeout=30000)
   assert await page.get_by_role('status').filter(has_text='Required CSV headers').count()==1
-  assert await page.get_by_role('checkbox',name='I verified').count()==3
+  assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==3
   assert await page.locator('input[type=checkbox]:checked').count()==0
+  # Shared dates are explicit, file-only, calendar-valid and never bulk verification.
+  initial_pdf=page.locator('li').filter(has=page.get_by_role('heading',name='synthetic.pdf',exact=True))
+  assert await initial_pdf.get_by_role('checkbox',name='Verify All').is_visible()
+  assert await initial_pdf.get_by_role('checkbox',name='Verify All').is_disabled()
+  assert await initial_pdf.get_by_text('Complete the required fields first',exact=False).count()==1
+  shared=initial_pdf.get_by_label('Report observation time (ISO 8601 with timezone)')
+  confirmation=initial_pdf.get_by_role('checkbox',name='I verified that this exact observation time')
+  apply_date=initial_pdf.get_by_role('button',name='Apply date to missing rows only')
+  await shared.fill('2026-02-30T07:18:00Z'); await confirmation.check()
+  assert await apply_date.is_disabled()
+  await shared.fill('2026-10-28T09:18:00+02:00')
+  assert await confirmation.is_checked() is False
+  assert await apply_date.is_disabled()
+  await page.screenshot(path=str(OUT/'shared-date-confirmation-desktop.png'))
+  await page.set_viewport_size({'width':390,'height':844})
+  await shared.scroll_into_view_if_needed()
+  await page.screenshot(path=str(OUT/'shared-date-confirmation-mobile.png'))
+  assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+  await page.set_viewport_size({'width':1280,'height':1800})
+  await confirmation.focus(); await confirmation.press('Space')
+  await apply_date.click()
+  assert await initial_pdf.get_by_text('2026-10-28T09:18:00+02:00',exact=True).count()==2
+  assert await initial_pdf.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).evaluate_all('(els)=>els.every(e=>!e.checked)')
+  assert await page.locator('li').filter(has=page.get_by_role('heading',name='results.csv',exact=True)).get_by_role('cell',name='2026-10-28T07:18:00.000Z',exact=True).count()==1
+  await page.screenshot(path=str(OUT/'shared-date-desktop.png'))
+  await page.set_viewport_size({'width':390,'height':844})
+  await initial_pdf.get_by_role('checkbox',name='Verify All').scroll_into_view_if_needed()
+  await page.screenshot(path=str(OUT/'shared-date-mobile.png'))
+  assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+  await page.set_viewport_size({'width':1280,'height':1800})
   # Corrected-text recheck accepts table IDs and CSV and exposes unsupported rows.
   pdf_item=page.locator('li').filter(has=page.get_by_role('heading',name='synthetic.pdf',exact=True))
   await pdf_item.get_by_text('Review extracted text',exact=True).click()
@@ -62,26 +93,26 @@ async def main():
   assert await pdf_item.get_by_role('alert').count()==1
   await text.fill('Catalog ID | Result | Unit\nbone-002 | 42.5 | nmol\nbone-003 | 3.1 | nmol')
   await pdf_item.get_by_role('button',name='Recheck corrected text').click()
-  assert await pdf_item.get_by_role('checkbox',name='I verified').count()==2
+  assert await pdf_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==2
   await text.fill('variable,value,unit,observed_at,source\nbone-002,42.5,nmol,2026-10-28T07:18:00Z,Synthetic lab\nbone-003,3.1,nmol,2026-10-28T07:18:00Z,Synthetic lab')
   await pdf_item.get_by_role('button',name='Recheck corrected text').click()
-  assert await pdf_item.get_by_role('checkbox',name='I verified').count()==2
+  assert await pdf_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==2
   await page.get_by_role('button',name='Check offline OCR readiness').click()
   await page.get_by_role('status').filter(has_text='CSV and selectable-text PDFs remain available').wait_for()
   # Bulk confirmation is explicit and scoped to this file; invalid rows cannot be selected.
   csv_item=page.locator('li').filter(has=page.get_by_role('heading',name='results.csv',exact=True))
   bulk=csv_item.get_by_role('checkbox',name='Verify All')
   await bulk.focus(); await bulk.press('Space')
-  assert await csv_item.get_by_role('checkbox',name='I verified').is_checked()
-  assert await pdf_item.get_by_role('checkbox',name='I verified').first.is_checked() is False
+  assert await csv_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).is_checked()
+  assert await pdf_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).first.is_checked() is False
   await csv_item.get_by_role('checkbox',name='Unverify All').press('Space')
-  assert await csv_item.get_by_role('checkbox',name='I verified').is_checked() is False
+  assert await csv_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).is_checked() is False
   details=csv_item.get_by_role('button',name='Details / edit')
   await details.focus(); await details.press('Enter')
   assert await csv_item.get_by_role('button',name='Close').get_attribute('aria-expanded')=='true'
   await csv_item.get_by_role('checkbox',name='Verify All').check()
   await csv_item.get_by_label('Unit (as reported)').fill('edited-unit')
-  assert await csv_item.get_by_role('checkbox',name='I verified').is_checked() is False
+  assert await csv_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).is_checked() is False
   await csv_item.get_by_role('checkbox',name='Verify All').check()
   await pdf_item.get_by_role('checkbox',name='Verify All').check()
   # Same-account tab return preserves the live human review with no authorization flash.
@@ -92,8 +123,16 @@ async def main():
   await page.wait_for_timeout(400)
   assert await page.evaluate('window.fileTest.authCalls')==1, await page.evaluate('window.fileTest.authCalls')
   await page.evaluate('window.fileTest.delay=0')
-  assert await page.get_by_role('checkbox',name='I verified').count()==3
-  assert await page.get_by_role('checkbox',name='I verified').evaluate_all('(els)=>els.every(e=>e.checked)')
+  # Switch to a real second browser page and back, rather than only dispatching events.
+  other_tab=await page.context.new_page()
+  await other_tab.goto('http://localhost:8080/',wait_until='domcontentloaded')
+  await other_tab.bring_to_front()
+  await page.bring_to_front(); await page.wait_for_timeout(450)
+  await other_tab.close()
+  await page.evaluate('window.fileTest.refresh()')
+  await page.wait_for_timeout(250)
+  assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==3
+  assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).evaluate_all('(els)=>els.every(e=>e.checked)')
   assert await page.evaluate('window.fileTest.flashes.length')==0
   assert await csv_item.get_by_label('Unit (as reported)').input_value()=='edited-unit'
   await page.evaluate('window.fileTest.observer.disconnect()')
@@ -109,21 +148,24 @@ async def main():
   await page.set_viewport_size({'width':1280,'height':1800})
   await page.evaluate('window.fileTest.root.unmount();window.fileTest.render()')
   await button.wait_for(); await page.wait_for_timeout(250)
-  assert await page.get_by_role('checkbox',name='I verified').count()==3
+  assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==3
   assert await page.get_by_text('Re-select original file to reprocess',exact=True).count()>=3
   assert await page.locator('input[type=checkbox]:checked').count()==0
-  for cb in await page.get_by_role('checkbox',name='I verified').all(): await cb.check()
+  for cb in await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).all(): await cb.check()
   await page.get_by_role('button',name='Confirm selected results and save').click()
   await page.get_by_role('status').filter(has_text='1 saved. Synthetic save failure').wait_for()
   assert await page.evaluate('window.fileTest.writes.length')==1
-  assert await page.get_by_role('checkbox',name='I verified').first.is_disabled()
+  assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).first.is_disabled()
   await page.evaluate('window.fileTest.root.unmount();window.fileTest.render()'); await page.wait_for_timeout(250)
-  assert await page.get_by_role('checkbox',name='I verified').first.is_disabled()
-  for cb in (await page.get_by_role('checkbox',name='I verified').all())[1:]: await cb.check()
+  assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).first.is_disabled()
+  for cb in (await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).all())[1:]: await cb.check()
   await page.evaluate('window.fileTest.failAt=0')
   await page.get_by_role('button',name='Confirm selected results and save').click()
   await page.get_by_role('status').filter(has_text='2 results saved').wait_for()
   assert await page.evaluate('new Set(window.fileTest.writes.map(r=>r.id)).size')==3
+  assert await csv_item.get_by_role('checkbox',name='Verify All').is_visible()
+  assert await csv_item.get_by_role('checkbox',name='Verify All').is_disabled()
+  assert await csv_item.get_by_text('No unsaved measurements in this file.',exact=False).count()==1
   await page.screenshot(path=str(OUT/'desktop.png'))
   await page.set_viewport_size({'width':390,'height':844})
   await button.scroll_into_view_if_needed()
@@ -141,7 +183,7 @@ async def main():
   cursors=await page.evaluate('''()=>{const h=document.createElement('div');h.innerHTML='<div role="menuitem" class="cursor-default">Menu</div><button disabled>Disabled</button><label for="test-choice">Clickable</label><input id="test-choice" type="checkbox"><input type="file" disabled><div role="option" data-disabled>Disabled option</div>';document.body.append(h);const c=[...h.children].map(e=>getComputedStyle(e).cursor);h.remove();return c;}''')
   assert cursors==['pointer','not-allowed','pointer','pointer','not-allowed','not-allowed'],cursors
   await page.evaluate('window.fileTest.delay=100;window.fileTest.denied=true;window.dispatchEvent(new Event("focus"))'); await page.wait_for_timeout(250)
-  assert await page.get_by_role('checkbox',name='I verified').count()==0
+  assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==0
   assert await page.evaluate('sessionStorage.getItem("mitochondria.bone-import.synthetic.v1")') is None
   print(json.dumps({'passed':['single picker','keyboard file chooser','mixed multiple-file selection','CSV corrected-text recheck','PDF table corrected-text recheck and errors','real PDF selectable text extraction','OCR unavailable handled independently','silent tab return preserves live review without flashing','paired tab-return events coalesce into one authorization','per-file bulk confirmation and unverify','keyboard disclosure','edits invalidate verification','remount preserves edits','denied restoration clears cache','partial-save remount receipts and safe retry','desktop/mobile no overflow','global enabled/disabled cursors'], 'scope':'synthetic in-memory history/authorization adapter, not encrypted-storage/auth acceptance','page_errors':errors}))
   await browser.close()
