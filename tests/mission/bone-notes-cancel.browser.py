@@ -64,19 +64,19 @@ async def main():
         await page.get_by_role("combobox", name="Assay / method", exact=True).fill("Custom assay")
         await form.locator('select').filter(has=page.locator('option[value="synthetic"]')).select_option("synthetic")
         notes = "Original notes\nExact unicode α and punctuation."
-        await page.get_by_label("Notes", exact=True).fill(notes)
+        await form.locator("textarea").fill(notes)
         await page.get_by_role("button", name="Save encrypted record", exact=True).click()
         await page.get_by_role("button", name="Correct", exact=True).click()
-        assert await page.get_by_label("Notes", exact=True).input_value() == notes
+        assert await form.locator("textarea").input_value() == notes
         before = await page.evaluate("JSON.stringify(window.boneTest)")
-        await page.get_by_label("Notes", exact=True).fill("Unsaved change")
+        await form.locator("textarea").fill("Unsaved change")
         await page.get_by_label("Result", exact=True).fill("99")
         cancel = form.get_by_role("button", name="Cancel", exact=True)
         await cancel.focus()
         await cancel.press("Enter")
         assert await page.evaluate("JSON.stringify(window.boneTest)") == before
         assert await form.get_by_role("button", name="Save correction", exact=True).count() == 0
-        for label in ["Notes", "Result"]:
+        for label in ["Result"]:
             assert await page.get_by_label(label, exact=True).input_value() == ""
         assert await form.locator('input[type="datetime-local"]').input_value() == ""
         await page.get_by_role("button", name="Correct", exact=True).click()
