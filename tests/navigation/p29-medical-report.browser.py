@@ -103,6 +103,8 @@ async def main():
           const host=document.createElement('div');document.body.replaceChildren(host);
           Client.createRoot(host).render(React.createElement(AstronautHealthReport));
         }''')
+        await page.wait_for_timeout(700)
+        print("fixture errors",errors,"options",await page.locator("#report-crew").inner_text())
         await page.get_by_label('Authorized mission and crew').select_option('SYNTHETIC-P29|SYNTHETIC-CREW')
         await page.locator('.report-history-table tbody tr').nth(63).wait_for()
         assert await page.locator('.report-history-table tbody tr').count() == 64
