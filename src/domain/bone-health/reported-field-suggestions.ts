@@ -1,5 +1,5 @@
 import type { BoneHealthEntry } from "./history";
-import { boneUnitSuggestions } from "./unit-suggestions";
+import { BONE_MEASUREMENT_PROFILE, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 
 export type BoneReportedField = "unit" | "specimen" | "assayMethod";
 
@@ -14,6 +14,7 @@ export function filterReportedSuggestions(values: readonly string[], query: stri
 export function boneReportedFieldSuggestions(
   history: readonly BoneHealthEntry[],
   scope: { authorized: boolean; missionId: string; crewMemberId: string; dataOrigin: string; variableId: string },
+  profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE,
 ): Record<BoneReportedField, string[]> {
   const rows = scope.authorized && scope.missionId && scope.crewMemberId &&
     (scope.dataOrigin === "synthetic" || scope.dataOrigin === "real")
@@ -22,7 +23,7 @@ export function boneReportedFieldSuggestions(
       row.variableId === scope.variableId && row.status !== "erroneous")
     : [];
   return {
-    unit: filterReportedSuggestions([...boneUnitSuggestions(scope.variableId), ...rows.map(row => row.unit)], ""),
+    unit: filterReportedSuggestions([...profile.unitSuggestions(scope.variableId), ...rows.map(row => row.unit)], ""),
     specimen: filterReportedSuggestions(rows.map(row => row.specimen), ""),
     assayMethod: filterReportedSuggestions(rows.map(row => row.assayMethod), ""),
   };

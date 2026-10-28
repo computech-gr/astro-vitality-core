@@ -1,7 +1,7 @@
-import { BONE_HEALTH_VARIABLES } from "./catalog";
+import { BONE_MEASUREMENT_PROFILE, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 import type { QueueItem } from "./file-queue";
 
-export const BONE_IMPORT_SESSION_KEY = "mitochondria.bone-import.synthetic.v1";
+export const BONE_IMPORT_SESSION_KEY = BONE_MEASUREMENT_PROFILE.sessionKey;
 export const MAX_BONE_SESSION_CHARS = 500_000;
 export type ImportScope = { userId: string; missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic" };
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -10,7 +10,8 @@ type StoredItem = { id: string; name: string; kind: string; status: string; deta
 const string = (value: unknown, limit: number): value is string => typeof value === "string" && value.length <= limit;
 
 /** Explicit allowlist: never serialize files, approval flags, authorization or consent. */
-export function retainBoneImport(storage: StorageLike, scope: ImportScope, items: QueueItem[]) {
+export function retainBoneImport(storage: StorageLike, scope: ImportScope, items: QueueItem[], profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE) {
+  const BONE_IMPORT_SESSION_KEY = profile.sessionKey;
   if (scope.dataOrigin !== "synthetic" || !scope.userId || !scope.missionId || !scope.crewMemberId) { storage.removeItem(BONE_IMPORT_SESSION_KEY); return; }
   if (items.some(item => item.review && (item.review.text.length > 100000 || item.review.rows.length > 200 || item.review.errors.length > 250))) { storage.removeItem(BONE_IMPORT_SESSION_KEY); return; }
   const payload = JSON.stringify({ version: 1, scope, items: items.slice(0, 10).map(item => ({
@@ -25,7 +26,8 @@ export function retainBoneImport(storage: StorageLike, scope: ImportScope, items
 }
 
 /** The caller must freshly authorize this exact scope before calling. Storage is not authority. */
-export function restoreBoneImport(storage: StorageLike, scope: ImportScope): QueueItem[] {
+export function restoreBoneImport(storage: StorageLike, scope: ImportScope, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): QueueItem[] {
+  const BONE_IMPORT_SESSION_KEY = profile.sessionKey;
   try {
     const raw = storage.getItem(BONE_IMPORT_SESSION_KEY);
     if (!raw) return [];
@@ -40,7 +42,7 @@ export function restoreBoneImport(storage: StorageLike, scope: ImportScope): Que
         const r = item.review;
         if (!string(r.text, 100000) || !string(r.method, 300) || !Array.isArray(r.errors) || r.errors.length > 250 || r.errors.some((e: unknown) => !string(e, 2000)) || !Array.isArray(r.rows) || r.rows.length > 200) throw new Error("Invalid review");
         review = { text: r.text, method: r.method, errors: r.errors, rows: r.rows.map((row: StoredRow) => {
-          if (!string(row.id, 100) || !BONE_HEALTH_VARIABLES.some(v => v.id === row.variableId) || (row.value !== null && (typeof row.value !== "number" || !Number.isFinite(row.value))) ||
+          if (!string(row.id, 100) || !profile.variables.some(v => v.id === row.variableId) || (row.value !== null && (typeof row.value !== "number" || !Number.isFinite(row.value))) ||
               ["unit", "observedAt", "sourceLabel", "specimen", "assayMethod", "notes"].some(key => !string(row[key as keyof StoredRow], key === "notes" ? 10000 : 1000)) || (row.rawLine !== undefined && !string(row.rawLine, 10000))) throw new Error("Invalid row");
           return { id: row.id as string, variableId: row.variableId as string, value: row.value === null ? NaN : row.value as number, unit: row.unit as string, observedAt: row.observedAt as string, sourceLabel: row.sourceLabel as string, specimen: row.specimen as string, assayMethod: row.assayMethod as string, notes: row.notes as string, ...(row.rawLine ? { rawLine: row.rawLine as string } : {}), saved: row.saved === true, selected: false };
         }) };
