@@ -113,7 +113,11 @@ export function mergeAiSuggestions(
   const seenAi = new Set<string>();
   for (const row of checked) {
     const label = `AI suggestion "${row.reportedAnalyte}" (${row.catalogId}, page ${row.sourcePage})`;
-    if (row.status === "held") {
+    // A missing observation date is the normal review state (deterministic rows
+    // also arrive without dates; humans confirm them). Only other hold reasons
+    // keep the row out of the review table.
+    const dateOnlyHold = row.reasons.length === 1 && row.reasons[0] === "Observation date requires manual confirmation";
+    if (row.status === "held" && !dateOnlyHold) {
       heldMessages.push(`Held for manual review (${label}): ${row.reasons.join("; ")} — "${row.evidenceSnippet.slice(0, 120)}"`);
       continue;
     }

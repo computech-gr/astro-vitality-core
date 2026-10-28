@@ -76,14 +76,12 @@ describe("P36 Challenge 02 actual PDF regression", () => {
       expect(row.status).toBe("held");
       expect(row.reasons).toEqual(["Observation date requires manual confirmation"]);
     }
+    // Missing-date holds are the normal review state: rows enter the review
+    // table unchecked, exactly like deterministic rows without dates.
     const merge = mergeAiSuggestions(parsed.matches.map(m => ({ ...m, id: "local" })), rows, profile, "P36_CHALLENGE_02_ORIGINAL.pdf");
-    // Held rows surface as review messages; promotion to rows requires status "review".
-    expect(merge.added).toHaveLength(0);
-    expect(merge.heldMessages).toHaveLength(5);
-    const reviewRows = rows.map(row => ({ ...row, status: "review" as const, reasons: [] }));
-    const promoted = mergeAiSuggestions([], reviewRows, profile, "P36_CHALLENGE_02_ORIGINAL.pdf");
-    expect(promoted.added.map(r => [r.variableId, r.value, r.unit])).toEqual(expected);
-    for (const row of promoted.added) {
+    expect(merge.heldMessages).toHaveLength(0);
+    expect(merge.added.map(r => [r.variableId, r.value, r.unit])).toEqual(expected);
+    for (const row of merge.added) {
       expect(row.selected).toBe(false);
       expect(row.provenance).toBe("ai");
       // Collection 2026-10-14 07:35 UTC is never silently the observation time.
