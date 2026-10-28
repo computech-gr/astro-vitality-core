@@ -49,6 +49,8 @@ async def main():
         assert await page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         print('PASS: desktop Enter and mobile pointer reach the existing Medical Report route')
 
+        await page.wait_for_load_state('networkidle')
+        assert errors == [], errors
         # Use the exact compiled report component, real pure report builders and CSS.
         # Replace only identity/read adapters and unrelated advisor/AI panels in this
         # disposable page. This never grants authority to the actual application.
@@ -95,7 +97,13 @@ async def main():
           modules['report.js']=source;
           return modules;
         }''')
+        await page.close()
+        page = await context.new_page()
+        page.on('pageerror', lambda e: errors.append(str(e)))
+        await page.route('http://localhost:8080/__p29_fixture', lambda route: route.fulfill(content_type='text/html', body='<html><head><link rel="stylesheet" href="/src/styles.css"></head><body></body></html>'))
+        await page.goto('http://localhost:8080/__p29_fixture', wait_until='networkidle')
         await page.route('**/__p29_presentation/*', lambda route: route.fulfill(status=200, content_type='text/javascript', body=modules[route.request.url.rsplit('/', 1)[-1]]))
+        await page.evaluate("v => window.p29Version=v", re.search(r'react\.js\?v=([a-z0-9]+)', modules['report.js']).group(1))
         await page.evaluate(r'''async () => {
           const {default:React}=await import('/node_modules/.vite/deps/react.js?v='+window.p29Version);
           const {default:Client}=await import('/node_modules/.vite/deps/react-dom_client.js?v='+window.p29Version);
@@ -104,7 +112,6 @@ async def main():
           Client.createRoot(host).render(React.createElement(AstronautHealthReport));
         }''')
         await page.wait_for_timeout(700)
-        print("fixture errors",errors,"options",await page.locator("#report-crew").inner_text())
         await page.get_by_label('Authorized mission and crew').select_option('SYNTHETIC-P29|SYNTHETIC-CREW')
         await page.locator('.report-history-table tbody tr').nth(63).wait_for()
         assert await page.locator('.report-history-table tbody tr').count() == 64
@@ -122,7 +129,7 @@ async def main():
         await page.pdf(path=str(OUT/'report-a4.pdf'), format='A4', prefer_css_page_size=True, print_background=True, display_header_footer=False)
         await page.set_viewport_size({'width':390,'height':844})
         await page.pdf(path=str(OUT/'report-a4-from-mobile.pdf'), format='A4', prefer_css_page_size=True, print_background=True)
-        ids=await page.evaluate('window.p29Ids')
+        ids=['SYNTHETIC-P29-'+str(i).zfill(3)+'-'+'abcdef0123456789'*8 for i in range(60)]
         assert errors == [], errors
         await browser.close()
 
