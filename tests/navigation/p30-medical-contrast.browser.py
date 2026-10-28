@@ -73,7 +73,7 @@ async def check_p30(page, context, modules):
       const root=Client.createRoot(host);window.p30Render=empty=>root.render(React.createElement(MedicalAdvisorWorkbench,{key:String(empty),report:buildHealthHistoryReport(empty?[]:[o],o.missionId,o.crewMemberId,'synthetic'),authorizedMedicalRole:false,advisorLabel:'SYNTHETIC presentation only'}));
       window.p30Render(true);
     }''')
-    export = page.get_by_role('button', name='Export de-identified evidence prompt (manual transfer)', exact=True)
+    export = page.get_by_role('button', name='Download research evidence prompt (.txt — manual transfer)', exact=True)
     capture = page.get_by_role('button', name='Capture unverified draft', exact=True)
     for width, height in [(1280, 1800), (390, 844)]:
         await page.set_viewport_size({'width': width, 'height': height})
