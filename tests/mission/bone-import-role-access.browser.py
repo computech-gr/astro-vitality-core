@@ -71,6 +71,9 @@ async def main():
         # Ground medical can select only crew in its authorized missions; scope change drops queue.
         await identity([{'missionId':m,'crewMemberId':None,'role':'ground_medical'} for m in ['role-mission','other-mission']])
         await provenance.select_option('synthetic')
+        await page.set_input_files('input[type=file]', {'name':'scope-results.csv','mimeType':'text/csv','buffer':csv})
+        await page.get_by_role('status').filter(has_text='CSV parsing').wait_for()
+        assert await page.locator('fieldset').count()==1
         await page.locator('form select').nth(0).select_option('other-mission')
         await page.wait_for_timeout(200)
         assert await page.locator('form select').nth(1).input_value()=='other-mission-crew'

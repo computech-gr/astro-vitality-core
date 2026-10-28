@@ -3,8 +3,9 @@
 ## Bone import role access patch
 
 - [x] Compare and apply the supplied import-access presentation patch without overwriting unrelated changes.
-- [ ] Verify Crew Self/Ground Medical provenance-gated import, unauthorized/scope denial and queue reset; run full tests, lint and security checks.
-- [ ] Confirm automatic compilation and report unavailable full typecheck/production-build evidence separately.
+- [x] Synthetic-adapter browser checks pass for Crew Self/Ground Medical import before correction, explicit provenance, denied roles, crew isolation and scope/provenance queue reset; desktop/mobile, existing OCR/partial-save and correction runners pass.
+- [x] 662 tests pass; lint reports 0 errors/13 existing warnings; security audit, formatting and Bone entry/import/document/SEO verifiers pass. Dependency audit retains 2 moderate/1 low advisories; automatic compilation reports build OK.
+- [ ] Full typecheck/production-build evidence and authenticated role/encrypted-storage acceptance remain unverified; these require managed validation and authorized test sessions. No database, migrations, AI, deployment or release-gate changes.
 
 ## Unified Bone file import UX
 
