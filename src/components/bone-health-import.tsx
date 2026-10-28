@@ -42,9 +42,9 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
       }
     };
     queue.current = new BoneFileQueue(retain);
-    const refresh = async () => {
+    const refresh = async (silent = false) => {
       const ticket = ++epoch;
-      setAuthorized(false); setDuplicateConfirmed(false);
+      if (!silent) { setAuthorized(false); setDuplicateConfirmed(false); }
       try {
         const scope = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
         if (!alive.current || ticket !== epoch) return;
@@ -55,16 +55,20 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
         currentScope.current = scope;
         if (dataOrigin === "real") clearRetainedBoneImport();
         else if (initial) queue.current?.restore(restoreBoneImport(window.sessionStorage, scope));
-        else for (const item of queue.current?.items ?? []) if (item.review) queue.current?.update(item.id, { ...item.review, rows: item.review.rows.map(row => ({ ...row, selected: false })) });
+        else if (!silent) for (const item of queue.current?.items ?? []) if (item.review) queue.current?.update(item.id, { ...item.review, rows: item.review.rows.map(row => ({ ...row, selected: false })) });
+        setStatus(previous => previous.startsWith("Import authorization unavailable") ? "" : previous);
         setAuthorized(true);
       } catch {
         if (!alive.current || ticket !== epoch) return;
+        setAuthorized(false); setDuplicateConfirmed(false);
         currentScope.current = null; clearRetainedBoneImport(); queue.current?.dispose(); queue.current = new BoneFileQueue(retain); setItems([]);
         setStatus("Import authorization unavailable or scope denied. Retained review cleared; nothing saved.");
       }
     };
-    const focus = () => { if (document.visibilityState !== "hidden") void refresh(); };
-    const subscription = subscribeMissionIdentity(focus);
+    // Revalidate silently on return, without flashing an unauthorized state or
+    // replaying persisted review. Commit still requires fresh authorization.
+    const focus = () => { if (document.visibilityState !== "hidden") void refresh(true); };
+    const subscription = subscribeMissionIdentity(() => void refresh());
     window.addEventListener("focus", focus); document.addEventListener("visibilitychange", focus);
     void refresh();
     return () => { alive.current = false; epoch++; currentScope.current = null; subscription(); window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); queue.current?.dispose(); queue.current = null; };
