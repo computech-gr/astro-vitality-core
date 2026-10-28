@@ -2,8 +2,9 @@
 
 ## P22 visible verification and shared observation timestamp
 
-- [ ] Compare supplied replacement; retain unrelated parsing and authorization fixes, make bulk verification permanently visible and require explicit confirmed timestamps for missing unsaved dates only.
-- [ ] Run focused/full tests, lint/security/formatting and desktop/mobile browser restoration checks; report managed typecheck/build evidence and remaining limitations separately.
+- [x] Compare supplied replacement; preserve parsing/authorization fixes. Deviations: retain Verify All for empty/saved-only reviews, strictly reject invalid calendar timestamps, bind confirmation to current file/rows, and add pure-helper regression tests.
+- [x] Focused tests: 29 pass; full tests: 686 pass/9897 assertions. Lint: 0 errors/13 existing warnings; security/formatting and Bone/SEO checks pass. Synthetic-adapter browser covers desktop/mobile, keyboard, shared-date confirmation, real two-page tab switching, no-flash review, remount reset and partial-save receipts; no page errors.
+- [ ] Exact-revision typecheck/production-build CI and authenticated encrypted-storage acceptance remain unverified; managed CI evidence unavailable. Automatic compilation is OK; dependency audit retains 2 moderate/1 low advisory. Database, migrations, AI settings and release gates unchanged.
 
 ## Compact Bone import review
 

@@ -66,6 +66,12 @@ async def main():
   await shared.fill('2026-10-28T09:18:00+02:00')
   assert await confirmation.is_checked() is False
   assert await apply_date.is_disabled()
+  await page.screenshot(path=str(OUT/'shared-date-confirmation-desktop.png'))
+  await page.set_viewport_size({'width':390,'height':844})
+  await shared.scroll_into_view_if_needed()
+  await page.screenshot(path=str(OUT/'shared-date-confirmation-mobile.png'))
+  assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+  await page.set_viewport_size({'width':1280,'height':1800})
   await confirmation.focus(); await confirmation.press('Space')
   await apply_date.click()
   assert await initial_pdf.get_by_text('2026-10-28T09:18:00+02:00',exact=True).count()==2
@@ -123,6 +129,8 @@ async def main():
   await other_tab.bring_to_front()
   await page.bring_to_front(); await page.wait_for_timeout(450)
   await other_tab.close()
+  await page.evaluate('window.fileTest.refresh()')
+  await page.wait_for_timeout(250)
   assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==3
   assert await page.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).evaluate_all('(els)=>els.every(e=>e.checked)')
   assert await page.evaluate('window.fileTest.flashes.length')==0
