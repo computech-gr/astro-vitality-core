@@ -158,7 +158,7 @@ export function parseBoneCorrectedText(text: string, source: string, profile: Me
     }
     const tableLine = line.replace(/\s*[|\t]\s*/g, " ").trim();
     const normalized = normalizedLabel(tableLine);
-    const candidates = profile.variables.flatMap(v => [v.id, ...catalogLabels(v.name)].map(label => ({v, label})))
+    const candidates = profile.variables.flatMap(v => [normalizedLabel(v.id), ...catalogLabels(v.name)].map(label => ({v, label})))
       .filter(({label}) => normalized.startsWith(label) && /[\s:=–—-]/.test(normalized.charAt(label.length)));
     const ids = new Set(candidates.map(c => c.v.id));
     if (ids.size !== 1) {
