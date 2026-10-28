@@ -1,7 +1,8 @@
 # P36.5 Mission/astronaut report export
 
 - [x] Authorized display-name cover and immutable IDs; exact sanitized PDF/TXT basename; separate Print and local-only A4 PDF generation.
-- [ ] Run identity/pagination regressions, full tests, lint/security and desktop/mobile downloads; document genuine authenticated and Chrome/Edge acceptance limitations.
+- [x] Five export regressions / 794 full tests pass; lint 0 errors/12 warnings, security boundary audit passes. Actual desktop/mobile Chromium clicks download identical 15-page A4 PDFs and correctly named TXT; existing print regressions pass. See docs/P36_5_ACCEPTANCE_RESULTS.md.
+- [ ] Genuine populated crew acceptance blocked by requesting account having no authorized crew; branded Chrome/Edge unavailable. Existing 2 moderate/1 low dependency advisories and 3 unrelated formatting failures remain.
 - [ ] Exact-revision full typecheck/production-build CI requires managed synchronized execution; no migrations, RLS, AI, gate changes or publishing.
 
 # P36 Automatic Hybrid AI Medical Document Extraction
