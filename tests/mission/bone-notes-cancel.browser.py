@@ -10,6 +10,7 @@ async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page(viewport={"width": 1280, "height": 1800})
+        page.on('pageerror', lambda error: print('Browser error:', str(error)))
         await page.goto("http://localhost:8080/mission/bone-health", wait_until="networkidle")
         await page.route("**/__bone_ux_test/*", lambda route: route.fulfill(status=200, content_type="text/javascript", body=modules[route.request.url.rsplit("/", 1)[-1]]))
         modules = await page.evaluate(r'''async () => {
@@ -31,6 +32,7 @@ async def main():
           // Peripheral import tools remain outside this form-only synthetic test.
           adapters['/src/components/bone-health-import.tsx']='export function BoneHealthImport(){return null}';
           adapters['/src/components/scientific-handbook-reference.tsx']='export function BoneHandbookReference(){return null}';
+          adapters['/src/components/health-domain-navigation.tsx']='export function HealthDomainNavigation(){return null}';
           const modules={};
           source = source.replace(/from\s+(["'])([^"']+)\1/g, (whole, quote, path) => {
             const adapter=adapters[path.split('?')[0]];
