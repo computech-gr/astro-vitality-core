@@ -50,7 +50,7 @@ export function strictIsoDateTime(value: string): string {
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : "";
 }
 
-type Column = "id" | "analyte" | "result" | "unit" | "date" | "reference" | "specimen";
+type Column = "id" | "analyte" | "result" | "unit" | "date" | "reference" | "specimen" | "ignore";
 /** Reviewed header labels only (English + Greek); unknown labels never map a column. */
 const HEADER_LABELS: Record<Column, readonly string[]> = {
   id: ["id", "code", "catalog id", "test id", "test code", "variable", "κωδικός"],
