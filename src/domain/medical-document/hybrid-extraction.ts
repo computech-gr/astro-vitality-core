@@ -172,6 +172,33 @@ export function mergeAiSuggestions(
   return { added, heldMessages, duplicates };
 }
 
+/** Apply one unambiguous source collection instant to eligible AI suggestions.
+ * This is an editable proposal, not a verified clinical observation or save.
+ * A row with a conflicting explicit date or AI uncertainty is never modified. */
+export function prefillSharedCollectionDate(
+  added: ReviewRow[], checked: CheckedSuggestion[], sharedCollection: string | null,
+): ReviewRow[] {
+  if (!sharedCollection || !isBoneSharedObservationTimestamp(sharedCollection)) return added;
+  const byId = new Map<string, CheckedSuggestion[]>();
+  for (const suggestion of checked) {
+    const list = byId.get(suggestion.catalogId) ?? [];
+    list.push(suggestion);
+    byId.set(suggestion.catalogId, list);
+  }
+  return added.map(row => {
+    if (row.observedAt || row.saved || row.provenance !== "ai") return row;
+    const candidates = (byId.get(row.variableId) ?? []).filter(s => s.value === row.value && s.reportedUnit === row.unit);
+    if (candidates.length !== 1) return row;
+    const candidate = candidates[0]!;
+    if (candidate.uncertainty.length || candidate.reasons.some(reason => reason !== "Observation date requires manual confirmation")) return row;
+    if (candidate.observedAt && candidate.observedAt !== sharedCollection) return row;
+    return {
+      ...row, observedAt: sharedCollection, selected: false,
+      notes: `${row.notes} Editable observation time proposed from the report's explicitly labelled shared specimen collection timestamp (${sharedCollection}); verify applicability before saving.`,
+    };
+  });
+}
+
 /** Shared one-pass pipeline for all four domains: local parse, then automatic AI
  * assistance when incomplete. AI failure never fails the file or discards local
  * results; it is reported visibly instead. */
@@ -203,14 +230,11 @@ export async function processBoneFileWithAi(
     return { ...review, aiStatus: `AI-assisted extraction unavailable: ${ai.reason} Deployment administrator: check P36_DOCUMENT_AI_ENABLED, P36_AI_PROVIDER and server-side provider credentials. Local results and held rows retained.` };
   const merge = mergeAiSuggestions(review.rows, ai.rows, profile, file.name);
   const sharedCollection = explicitSharedCollectionTimestamp(review.text);
-  // Prefill only AI rows explicitly associated with collection metadata, and
-  // only when the source has exactly one unambiguous labelled UTC collection.
-  // Remain unchecked and editable; user verification is still mandatory.
-  const collectionIds = new Set(ai.rows.filter(row => row.dateKind === "collection").map(row => row.catalogId));
-  const datedRows = merge.added.map(row => sharedCollection && collectionIds.has(row.variableId) && !row.observedAt
-    ? { ...row, observedAt: sharedCollection, selected: false,
-        notes: `${row.notes} Observation field prefilled from explicit shared specimen collection timestamp (${sharedCollection}); confirm that collection time is appropriate for this measurement before verification.` }
-    : row);
+  // P36.3: use independently verified source-document metadata rather than
+  // trusting the AI provider to assign dateKind="collection" to every analyte.
+  // Explicit conflicting row timestamps remain untouched; no report/issue dates
+  // or unlabelled timestamps can supply this fallback.
+  const datedRows = prefillSharedCollectionDate(merge.added, ai.rows, sharedCollection);
   const parts = [
     `AI-assisted extraction (${ai.provider}/${ai.model}): ${merge.added.length} unchecked suggestion(s) added`,
     merge.duplicates ? `${merge.duplicates} duplicate(s) skipped` : "",
