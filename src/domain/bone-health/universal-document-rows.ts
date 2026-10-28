@@ -53,11 +53,11 @@ export function strictIsoDateTime(value: string): string {
 type Column = "id" | "analyte" | "result" | "unit" | "date" | "reference" | "specimen" | "ignore";
 /** Reviewed header labels only (English + Greek); unknown labels never map a column. */
 const HEADER_LABELS: Record<Exclude<Column, "ignore">, readonly string[]> = {
-  id: ["id", "code", "catalog id", "test id", "test code", "variable", "κωδικός"],
+  id: ["id", "code", "catalog id", "test id", "test code", "variable", "variable id", "κωδικός"],
   analyte: ["analyte", "test", "parameter", "measurement", "metric", "εξέταση"],
   result: ["result", "value", "reading", "αποτέλεσμα", "τιμή"],
   unit: ["unit", "units", "μονάδα"],
-  date: ["date", "collected", "collection date", "observed", "observation date", "timestamp", "ημερομηνία"],
+  date: ["date", "collected", "collection date", "observed", "observation date", "observation utc", "timestamp", "ημερομηνία"],
   reference: ["reference", "reference range", "reference interval", "normal range", "range", "ref range", "τιμές αναφοράς"],
   specimen: ["specimen", "sample", "modality", "δείγμα"],
 };
@@ -136,7 +136,7 @@ export function extractUniversalDocumentRows(
           continue;
         }
         const analyte = normalize(get("analyte"));
-        if (!analyte || !catalogLabelsMatch(variable.name, analyte)) {
+        if (analyte && !catalogLabelsMatch(variable.name, analyte)) {
           held.push({ line: index + 1, reason: "catalog ID/analyte mismatch; manual review required", snippet: line, page });
           continue;
         }
