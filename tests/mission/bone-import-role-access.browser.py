@@ -71,9 +71,9 @@ async def main():
         # Ground medical can select only crew in its authorized missions; scope change drops queue.
         await identity([{'missionId':m,'crewMemberId':None,'role':'ground_medical'} for m in ['role-mission','other-mission']])
         await provenance.select_option('synthetic')
-        await page.get_by_label('Mission',exact=True).select_option('other-mission')
+        await page.locator('form select').nth(0).select_option('other-mission')
         await page.wait_for_timeout(200)
-        assert await page.get_by_label('Crew member',exact=True).input_value()=='other-mission-crew'
+        assert await page.locator('form select').nth(1).input_value()=='other-mission-crew'
         assert await page.locator('fieldset').count()==0
         for role in ['observer','mission_control']:
             await identity([{'missionId':'role-mission','crewMemberId':'role-mission-crew','role':role}])
@@ -81,7 +81,7 @@ async def main():
             assert await picker.count()==0
             assert await page.get_by_role('button',name='Save encrypted record',exact=True).is_disabled()
         await identity([{'missionId':'role-mission','crewMemberId':'role-mission-crew','role':'crew_self'}])
-        crew_values=await page.get_by_label('Crew member',exact=True).locator('option').evaluate_all('(options)=>options.map(o=>o.value)')
+        crew_values=await page.locator('form select').nth(1).locator('option').evaluate_all('(options)=>options.map(o=>o.value)')
         assert 'other-mission-crew' not in crew_values
         await provenance.select_option('synthetic')
         await access.screenshot(path=str(OUT/'desktop.png'))
