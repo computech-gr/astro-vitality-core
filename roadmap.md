@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## P29 Medical Report menu and A4 fit
+
+- [ ] Apply supplied navigation and report presentation changes; complete missing column widths and cover styles without changing report logic.
+- [ ] Verify desktop/mobile navigation and populated multi-page A4 PDF with long IDs and Greek/English text using isolated synthetic presentation inputs.
+- [ ] Run full tests, lint, formatting and security checks; inspect managed typecheck/build evidence and report any limitations. No database, permission, AI, gate or publication changes.
+
 ## P22 visible verification and shared observation timestamp
 
 - [x] Compare supplied replacement; preserve parsing/authorization fixes. Deviations: retain Verify All for empty/saved-only reviews, strictly reject invalid calendar timestamps, bind confirmation to current file/rows, and add pure-helper regression tests.

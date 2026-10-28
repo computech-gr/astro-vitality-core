@@ -132,7 +132,7 @@ const navigation: readonly NavigationEntry[] = [
       },
       {
         title: "Health domains",
-        items: ["Bone Health", "Cardiovascular Health", "Immune Changes", "Behavioral Health"],
+        items: ["Bone Health", "Cardiovascular Health", "Immune Changes", "Behavioral Health", "Medical Report"],
       },
       {
         title: "Research intelligence",
@@ -338,7 +338,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Mission Workspace") return "/mission/experience";
   if (label === "Daily Readiness Check-in") return "/mission/readiness";
   if (label === "Unified Data Intake") return "/mission/intake";
-  if (label === "Astronaut Health Report") return "/mission/health-report";
+  if (label === "Astronaut Health Report" || label === "Medical Report") return "/mission/health-report";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
