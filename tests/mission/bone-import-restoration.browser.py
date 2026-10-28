@@ -90,7 +90,7 @@ async def main():
   await pdf_item.get_by_text('View extracted source text (read-only)',exact=True).click()
   assert await pdf_item.get_by_role('button',name='Recheck corrected text').count()==0
   assert await pdf_item.get_by_role('textbox',name=re.compile(r'^Extracted source text')).get_attribute('readonly') is not None
-  await pdf_item.get_by_role('button',name=re.compile(r'Details / edit')).first.click()
+  await pdf_item.get_by_role('button',name='Details / edit').first.click()
   row_date=pdf_item.get_by_label('Observation date / time (device local time)').first
   assert await row_date.get_attribute('type')=='datetime-local'
   assert await row_date.input_value()=='2026-10-28T09:18'
