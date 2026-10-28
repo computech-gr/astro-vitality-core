@@ -25,9 +25,9 @@ HARNESS = r'''async()=>{
   // In-memory history adapter: saveBoneEntry/listBoneEntries only.
   let hist=strip(await (await fetch('/src/domain/bone-health/history.ts')).text());
   hist=hist.replace(/import[^;]*from "\/src\/infrastructure\/offline[^;]*;/,'const persistOfflineMissionEvent=async()=>{}; const getOfflineMissionStore=()=>({list:async()=>[]});');
-  hist=hist.replace('export async function saveBoneEntry(entry)','async function originalSave(entry)');
+  hist=hist.replace(/export async function saveBoneEntry\s*\(/,'async function originalSave(');
   hist+='\nexport async function saveBoneEntry(entry){ window.p33.writes.push(entry); }';
-  hist=hist.replace('export async function listBoneEntries(','async function originalList(');
+  hist=hist.replace(/export async function listBoneEntries\s*\(/,'async function originalList(');
   hist+='\nexport async function listBoneEntries(){return window.p33.writes;}';
   modules['history.js']=hist;
   // Synthetic authorization stub: always the same signed-in synthetic user.
