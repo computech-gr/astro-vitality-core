@@ -55,7 +55,7 @@ async def main():
             await provenance.focus()
             await provenance.select_option('synthetic')
             await picker.wait_for()
-            assert await page.locator('form').get_by_label('Data provenance',exact=True).input_value()=='synthetic'
+            assert await page.locator('form select').filter(has=page.locator('option[value="synthetic"]')).input_value()=='synthetic'
             assert await picker.evaluate('(el)=>getComputedStyle(el).cursor')=='pointer'
             await picker.focus()
             async with page.expect_file_chooser() as fc: await picker.press('Enter')
