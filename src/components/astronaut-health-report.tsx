@@ -22,6 +22,8 @@ import {
   type UnifiedReportInputs,
 } from "@/domain/health-intelligence/unified-health-report";
 import { loadUnifiedReportInputs } from "@/domain/health-intelligence/unified-health-report-loader";
+import { reportExportBasename } from "@/domain/health-intelligence/report-export-identity";
+import { createReportPdf, downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -41,6 +43,9 @@ export function AstronautHealthReport() {
     "Select an authorized crew member to load locally stored observations.",
   );
   const userRef = useRef<string | undefined>(undefined);
+  const reportRef = useRef<HTMLElement | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportStatus, setExportStatus] = useState("");
 
   // Fresh server-backed identity on mount, auth change and tab return.
   // The visible report stays while revalidating; it is cleared immediately
@@ -93,6 +98,8 @@ export function AstronautHealthReport() {
                       key: `${m.missionId}|${m.crewMemberId}`,
                       missionId: m.missionId,
                       crewMemberId: m.crewMemberId,
+                      missionName: m.missionName?.trim() || m.missionCode?.trim() || null,
+                      crewDisplayName: m.crewDisplayName?.trim() || null,
                       label: `${m.missionName ?? m.missionCode ?? m.missionId} — ${m.crewDisplayName ?? m.crewMemberId}`,
                     },
                   ]
@@ -156,17 +163,38 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
-  const printReport = () => window.print();
-  const exportText = () => {
-    if (!report || !unified) return;
-    const text = `${unifiedReportPlainText(unified)}\n\n${healthReportPlainText(report)}`;
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "mitochondria-astronaut-health-research-report.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+  const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
+  const currentExport = useRef({ unified, userId: identity?.userId });
+  currentExport.current = { unified, userId: identity?.userId };
+  const performExport = async (kind: "pdf" | "text" | "print") => {
+    if (!member || !report || !unified || exporting) return;
+    const snapshot = currentExport.current;
+    const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
+    setExporting(true);
+    setExportStatus(kind === "pdf" ? "Preparing A4 PDF locally…" : "Checking authorized report scope…");
+    try {
+      const fresh = await loadMissionIdentity();
+      const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && fresh.memberships.some(m =>
+        m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"));
+      if (!authorized || !stillCurrent()) throw new Error("Report authorization or selection changed. Export cancelled.");
+      if (kind === "print") {
+        const previous = document.title;
+        try { document.title = exportName; window.print(); } finally { document.title = previous; }
+      } else if (kind === "text") {
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthReportPlainText(report)}`;
+        downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
+      } else {
+        if (!reportRef.current) throw new Error("Report is unavailable.");
+        const blob = await createReportPdf(reportRef.current, exportName);
+        const after = await loadMissionIdentity();
+        if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>
+          m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled.");
+        downloadReportBlob(blob, `${exportName}.pdf`);
+      }
+      setExportStatus(kind === "print" ? "Print dialog requested." : `${kind === "pdf" ? "PDF" : "Evidence TXT"} download requested. No medical data was uploaded.`);
+    } catch (error) {
+      setExportStatus(error instanceof Error ? error.message : "Export failed. No file downloaded.");
+    } finally { setExporting(false); }
   };
   const toggleSource = (badge: ReportSourceBadge) =>
     setSources((current) =>
@@ -179,7 +207,7 @@ export function AstronautHealthReport() {
         <h1 className="text-3xl font-bold">Astronaut Health History &amp; Research Assessment</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Unified Bone, Immune, Cardiovascular, Behavioral, wearable and device records from
-          authorized encrypted local storage only. Use Print / Save as PDF for an A4 PDF; nothing
+          authorized encrypted local storage only; nothing
           is uploaded.
         </p>
       </header>
@@ -266,20 +294,22 @@ export function AstronautHealthReport() {
         </div>
       )}
       {report && unified && (
-        <article className="report-print medical-report-ui space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
+        <article ref={reportRef} className="report-print medical-report-ui space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
           <div className="flex flex-wrap justify-between gap-3 print:hidden">
-            <Button className="medical-action-primary" onClick={printReport}>Print / Save as PDF</Button>
-            <Button className="medical-action-secondary" variant="outline" onClick={exportText}>
+            <Button className="medical-action-primary" disabled={exporting} onClick={() => void performExport("pdf")}>Download PDF</Button>
+            <Button className="medical-action-secondary" variant="outline" disabled={exporting} onClick={() => void performExport("print")}>Print</Button>
+            <Button className="medical-action-secondary" variant="outline" disabled={exporting} onClick={() => void performExport("text")}>
               Export evidence text
             </Button>
           </div>
+          <p className="print:hidden text-xs text-muted-foreground" role="status" aria-live="polite">{exportStatus}</p>
           <div className="report-print-header hidden print:flex">
             <span>MITOCHONDRIA · Unified Health &amp; Device Report</span>
             <span>RESEARCH USE ONLY · {unified.scope.provenance.toUpperCase()}</span>
           </div>
           <div className="report-print-footer hidden print:flex">
             <span>
-              {unified.scope.missionId} / {unified.scope.crewMemberId}
+              {member?.missionName ?? unified.scope.missionId} / {member?.crewDisplayName ?? unified.scope.crewMemberId}
             </span>
             <span>Generated {unified.generatedAt} UTC · not a diagnosis</span>
           </div>
@@ -289,8 +319,9 @@ export function AstronautHealthReport() {
             </p>
             <h2 className="text-xl font-semibold">Unified Health &amp; Device Report</h2>
             <p className="text-sm">
-              Mission: {unified.scope.missionId} · Crew: {unified.scope.crewMemberId}
+              Mission: {member?.missionName ?? unified.scope.missionId} · Astronaut: {member?.crewDisplayName ?? "Crew identity unavailable"}
             </p>
+            <p className="text-xs text-muted-foreground">Mission ID: {unified.scope.missionId} · Crew ID: {unified.scope.crewMemberId}</p>
             <p className="text-sm">
               Provenance: {unified.scope.provenance.toUpperCase()} · Generated (UTC):{" "}
               {unified.generatedAt}
