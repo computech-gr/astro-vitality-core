@@ -69,13 +69,17 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
     // replaying persisted review. Commit still requires fresh authorization.
     // Browsers may emit both focus and visibilitychange for a single tab return.
     // Coalesce these signals; retain the mounted review UI while reauthorizing.
+    // An in-flight silent check absorbs duplicate signals; a short window
+    // after completion absorbs the paired focus/visibilitychange event.
+    let silentInFlight = false;
     let lastFocusRefresh = 0;
     const focus = () => {
-      if (document.visibilityState === "hidden") return;
+      if (document.visibilityState === "hidden" || silentInFlight) return;
       const now = Date.now();
       if (now - lastFocusRefresh < 1200) return;
       lastFocusRefresh = now;
-      void refresh(true);
+      silentInFlight = true;
+      void refresh(true).finally(() => { silentInFlight = false; });
     };
     const subscription = subscribeMissionIdentity(() => void refresh());
     window.addEventListener("focus", focus); document.addEventListener("visibilitychange", focus);

@@ -133,7 +133,7 @@ export function parseBoneCorrectedText(text: string, source: string): { matches:
     // PDF text often uses whitespace columns: ID, analyte, value, unit, specimen.
     // Only a catalog ID at the beginning of a row may trigger this path.
     // Metadata (e.g. Report ID) and prose containing an ID are never measurements.
-    const idRow = line.trim().match(/^(bone-\d{3})\s+(.+)$/i);
+    const idRow = line.replace(/\s*[|\t]\s*/g, " ").trim().match(/^(bone-\d{3})\s+(.+)$/i);
     if (idRow) {
       const variable = BONE_HEALTH_VARIABLES.find(v => v.id.toLowerCase() === idRow[1].toLowerCase());
       if (!variable) { errors.push(`Line ${index + 1}: unknown catalog ID.`); continue; }
