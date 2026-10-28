@@ -11,7 +11,8 @@ async def main():
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page(viewport={"width": 1280, "height": 1800})
         await page.goto("http://localhost:8080/mission/bone-health", wait_until="networkidle")
-        await page.evaluate(r'''async () => {
+        await page.route("**/__bone_ux_test/*", lambda route: route.fulfill(status=200, content_type="text/javascript", body=modules[route.request.url.rsplit("/", 1)[-1]]))
+        modules = await page.evaluate(r'''async () => {
           let source = await (await fetch('/src/components/bone-health-entry.tsx')).text();
           source = source.slice(0, source.indexOf('import * as RefreshRuntime'));
           source = source.replace(/import\.meta\.hot = [^;]+;/, '');
@@ -26,11 +27,19 @@ async def main():
             export async function saveBoneEntry(row){if(window.boneTest.fail)throw new Error('Synthetic write failure');window.boneTest.writes.push('save');window.boneTest.rows.push({...row})};
             export async function markBoneEntryErroneous(row){window.boneTest.writes.push('mark');window.boneTest.rows=window.boneTest.rows.map(r=>r.id===row.id?{...r,status:'erroneous'}:r)}`;
           const adapters = {'/src/infrastructure/mission-identity.ts':identity, '/src/domain/bone-health/history.ts':history, '/src/integrations/supabase/client.ts':'export const supabase={};'};
+          const modules={};
           source = source.replace(/from\s+(["'])([^"']+)\1/g, (whole, quote, path) => {
             const adapter=adapters[path.split('?')[0]];
-            return 'from '+JSON.stringify(adapter ? 'data:text/javascript,'+encodeURIComponent(adapter) : path.startsWith('/') ? location.origin+path : path);
+            if(adapter) modules[path.split('/').pop()]=adapter;
+            return 'from '+JSON.stringify(adapter ? location.origin+'/__bone_ux_test/'+path.split('/').pop() : path.startsWith('/') ? location.origin+path : path);
           });
-          const {BoneHealthEntryPage} = await import(URL.createObjectURL(new Blob([source], {type:'text/javascript'})));
+          modules['form.js']=source;
+          return modules;
+        }''')
+        await page.evaluate(r'''async () => {
+          const {default: React}=await import('/node_modules/.vite/deps/react.js?v=65c22575');
+          const {default: Client}=await import('/node_modules/.vite/deps/react-dom_client.js?v=65c22575');
+          const {BoneHealthEntryPage} = await import('/__bone_ux_test/form.js');
           const host=document.createElement('div'); document.body.replaceChildren(host);
           Client.createRoot(host).render(React.createElement(BoneHealthEntryPage));
         }''')
