@@ -92,7 +92,7 @@ function requestProfile(request: AiExtractionRequest): MeasurementProfile {
  * editable observation field for measurements belonging to that specimen.
  * Never use issued/reported/printed dates, ambiguous times or the current time. */
 export function explicitSharedCollectionTimestamp(text: string): string | null {
-  const dates = [...text.matchAll(/\bCOLLECTION\s+DATE\s*[:-]?\s*(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})\b/gi)];
+  const dates = [...text.matchAll(/\b(?:SPECIMEN\s+)?COLLECTION\s+DATE\s*[:-]?\s*(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})\b/gi)];
   const times = [...text.matchAll(/\bCOLLECTION\s+TIME\s*[:-]?\s*([01]?\d|2[0-3]):([0-5]\d)\s*(UTC|GMT)\b/gi)];
   if (dates.length !== 1 || times.length !== 1) return null;
   const date = dates[0]!; const time = times[0]!;
@@ -101,6 +101,39 @@ export function explicitSharedCollectionTimestamp(text: string): string | null {
   const candidate = new Date(Date.UTC(year, month, day, Number(time[1]), Number(time[2])));
   if (candidate.getUTCFullYear() !== year || candidate.getUTCMonth() !== month || candidate.getUTCDate() !== day) return null;
   return candidate.toISOString().replace(".000Z", "Z");
+}
+
+/** PDF geometry reconstruction is optimized for analyte rows, not two-column
+ * header metadata. Read the original selectable PDF text items independently,
+ * locally, if the reconstructed review text lost the collection header. No
+ * provider call, no upload, no persistence. */
+export async function sourceCollectionTimestamp(file: File, reviewText: string, signal: AbortSignal): Promise<string | null> {
+  const geometryTimestamp = explicitSharedCollectionTimestamp(reviewText);
+  if (!/\.pdf$/i.test(file.name)) return geometryTimestamp;
+  try {
+    signal.throwIfAborted();
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const bytes = await file.arrayBuffer();
+    signal.throwIfAborted();
+    const task = pdfjs.getDocument({ data: new Uint8Array(bytes), isEvalSupported: false });
+    try {
+      const document = await task.promise;
+      if (document.numPages > 12) return null;
+      const parts: string[] = [];
+      for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber++) {
+        signal.throwIfAborted();
+        const content = await (await document.getPage(pageNumber)).getTextContent();
+        parts.push(content.items.filter((item): item is typeof item & {str: string} => "str" in item).map(item => item.str).join(" "));
+      }
+      const rawTimestamp = explicitSharedCollectionTimestamp(parts.join("\n"));
+      // A conflicting interpretation must not be silently promoted to a measurement date.
+      if (geometryTimestamp && rawTimestamp && geometryTimestamp !== rawTimestamp) return null;
+      return rawTimestamp ?? geometryTimestamp;
+    } finally { await task.destroy(); }
+  } catch (error) {
+    if (signal.aborted) throw error;
+    return geometryTimestamp;
+  }
 }
 
 export type AiMerge = { added: ReviewRow[]; heldMessages: string[]; duplicates: number };
@@ -229,7 +262,7 @@ export async function processBoneFileWithAi(
   if (ai.status === "unavailable")
     return { ...review, aiStatus: `AI-assisted extraction unavailable: ${ai.reason} Deployment administrator: check P36_DOCUMENT_AI_ENABLED, P36_AI_PROVIDER and server-side provider credentials. Local results and held rows retained.` };
   const merge = mergeAiSuggestions(review.rows, ai.rows, profile, file.name);
-  const sharedCollection = explicitSharedCollectionTimestamp(review.text);
+  const sharedCollection = await sourceCollectionTimestamp(file, review.text, signal);
   // P36.3: use independently verified source-document metadata rather than
   // trusting the AI provider to assign dateKind="collection" to every analyte.
   // Explicit conflicting row timestamps remain untouched; no report/issue dates
