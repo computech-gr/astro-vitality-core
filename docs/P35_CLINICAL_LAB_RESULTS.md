@@ -9,13 +9,13 @@
 
 ## Actual PDF.js extraction
 
-| Catalog ID | Result | Exact PDF.js unit | Page | Observation date |
-| --- | --- | --- | --- | --- |
-| IMM-001 | 6.2 | 10³/μL | 1 | Missing; human confirmation required |
-| IMM-002 | 3.4 | 10³/μL | 1 | Missing; human confirmation required |
-| IMM-003 | 2.1 | 10³/μL | 1 | Missing; human confirmation required |
-| IMM-006 | 1.62 | ratio | 1 | Missing; human confirmation required |
-| IMM-007 | 1.8 | mg/L | 1 | Missing; human confirmation required |
+| Catalog ID | Result | Exact PDF.js unit | Page | Observation date                     |
+| ---------- | ------ | ----------------- | ---- | ------------------------------------ |
+| IMM-001    | 6.2    | 10³/μL            | 1    | Missing; human confirmation required |
+| IMM-002    | 3.4    | 10³/μL            | 1    | Missing; human confirmation required |
+| IMM-003    | 2.1    | 10³/μL            | 1    | Missing; human confirmation required |
+| IMM-006    | 1.62   | ratio             | 1    | Missing; human confirmation required |
+| IMM-007    | 1.8    | mg/L              | 1    | Missing; human confirmation required |
 
 Five matched, zero held/rejected for this supplied PDF. Its exact text uses Greek μ U+03BC, unlike the contract's micro sign µ U+00B5. Neither superscripts nor the actual mu character are converted. Reference intervals are retained in raw-line evidence, never measurements.
 
