@@ -86,7 +86,7 @@ async def main():
           const adapters={
             '/src/infrastructure/mission-identity.ts':identity,
             '/src/domain/health-intelligence/unified-health-report-loader.ts':'export async function loadUnifiedReportInputs(){return '+JSON.stringify({domainEntries,unifiedObservations:[],deviceRecords})+'}',
-            '/node_modules/.vite/deps/@tanstack_react-router.js':'export function Link(){return null}',
+            '/node_modules/@tanstack/react-router/dist/esm/index.dev.js':'export function Link(){return null}',
             '/src/components/medical-advisor-workbench.tsx':'export function MedicalAdvisorWorkbench(){return null}',
             '/src/components/synthetic-medical-review.tsx':'export function SyntheticMedicalReview(){return null}'};
           const modules={};
