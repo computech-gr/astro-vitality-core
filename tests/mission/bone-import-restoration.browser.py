@@ -96,7 +96,7 @@ async def main():
   await page.screenshot(path=str(OUT/'compact-review-desktop.png'))
   await page.set_viewport_size({'width':390,'height':844})
   table_region=csv_item.get_by_role('region',name='Scrollable imported measurement table')
-  await table_region.scroll_into_view_if_needed(); await table_region.focus(); await table_region.press('ArrowRight')
+  await page.screenshot(path=str(OUT/'mobile-debug.png')); print('regions',await page.get_by_role('region').all_text_contents()); await table_region.scroll_into_view_if_needed(); await table_region.focus(); await table_region.press('ArrowRight')
   await page.wait_for_timeout(100)
   assert await table_region.evaluate('(e)=>e.scrollLeft')>0
   await page.screenshot(path=str(OUT/'compact-review-mobile.png'))
