@@ -142,7 +142,7 @@ export function AstronautHealthReport() {
             provenance,
           )
         : null,
-    [inputs, member?.missionId, member?.crewMemberId, provenance],
+    [inputs, member, provenance],
   );
   const unified = useMemo(
     () =>
@@ -153,7 +153,7 @@ export function AstronautHealthReport() {
             { from: from || undefined, to: to || undefined, sources },
           )
         : null,
-    [inputs, member?.missionId, member?.crewMemberId, provenance, from, to, sources],
+    [inputs, member, provenance, from, to, sources],
   );
 
   const printReport = () => window.print();
