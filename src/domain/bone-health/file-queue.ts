@@ -1,5 +1,5 @@
 import { parseBoneImport, type BoneImportCandidate } from "./import";
-import { extractBoneDocument, suggestBoneDocumentMatches } from "./document-extraction";
+import { extractBoneDocument, parseBoneCorrectedText } from "./document-extraction";
 import { findPotentialDuplicates, validateBoneEntry, type BoneHealthEntry } from "./history";
 
 export const BONE_FILE_ACCEPT = ".csv,.pdf,.png,.jpg,.jpeg,.webp";
@@ -25,11 +25,12 @@ export async function processBoneFile(file: File, signal: AbortSignal): Promise<
     const text = await file.text();
     signal.throwIfAborted();
     const result = parseBoneImport(text);
-    return { rows: result.candidates.map(row => ({ ...row, id: crypto.randomUUID() })), errors: result.rejected, text: "", method: "CSV parsing" };
+    return { rows: result.candidates.map(row => ({ ...row, id: crypto.randomUUID() })), errors: result.rejected.length ? result.rejected : result.candidates.length ? [] : ["CSV contains no measurement rows."], text, method: "CSV parsing" };
   }
   const result = await extractBoneDocument(file, signal);
   signal.throwIfAborted();
-  return { rows: suggestBoneDocumentMatches(result.text, file.name).map(row => ({ ...row, id: crypto.randomUUID() })), errors: result.warnings, text: result.text, method: `${result.method} · ${result.pages} page(s)` };
+  const parsed = parseBoneCorrectedText(result.text, file.name);
+  return { rows: parsed.matches.map(row => ({ ...row, id: crypto.randomUUID() })), errors: [...result.warnings, ...parsed.errors], text: result.text, method: `${result.method} · ${result.pages} page(s)` };
 }
 
 /** One active parser/OCR job; cancellation never publishes late results. */
@@ -39,6 +40,7 @@ export class BoneFileQueue {
   private running = false;
   private disposed = false;
   constructor(private changed: (items: QueueItem[]) => void, private process = processBoneFile) {}
+  restore(items: QueueItem[]) { this.items = items; this.publish(); }
   private publish() { if (!this.disposed) this.changed([...this.items]); }
   add(files: File[]) {
     const available = MAX_BONE_FILES - this.items.length;

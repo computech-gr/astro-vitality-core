@@ -1,5 +1,5 @@
 import { BONE_HEALTH_VARIABLES } from "./catalog";
-import type { BoneImportCandidate } from "./import";
+import { parseBoneImport, type BoneImportCandidate } from "./import";
 
 import { getLocalOcrAssets } from "./ocr-readiness";
 
@@ -112,25 +112,49 @@ function catalogLabels(name: string): string[] {
 const resultPattern = /^\s*(?:[:=]|[-–—]|\s)+\s*([+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;|]+)(?:\s|$)/;
 
 export function suggestBoneDocumentMatches(text: string, source: string): DocumentMatch[] {
+  return parseBoneCorrectedText(text, source).matches;
+}
+
+/** Supported layouts: exact ID/name + value + reported unit, pipe/tab tables, or template CSV. */
+export function parseBoneCorrectedText(text: string, source: string): { matches: DocumentMatch[]; errors: string[] } {
+  if (text.length > 100000) return { matches: [], errors: ["Extracted text exceeds 100,000 characters."] };
+  if (/^\s*variable\s*,/i.test(text)) {
+    try {
+      const parsed = parseBoneImport(text);
+      return { matches: parsed.candidates.map(row => ({ ...row, rawLine: "Corrected CSV", reviewRequired: true })), errors: parsed.rejected.length ? parsed.rejected : parsed.candidates.length ? [] : ["CSV contains no measurement rows."] };
+    } catch (error) { return { matches: [], errors: [error instanceof Error ? error.message : "Invalid CSV."] }; }
+  }
   const lines = text.split(/\r?\n/).slice(0, 1000);
   const found: DocumentMatch[] = [];
-  for (const line of lines) {
+  const errors: string[] = [];
+  for (const [index, line] of lines.entries()) {
     // Refuse report lines with comparison symbols, reference intervals or multi-result layouts.
     if (/[<>≤≥]/.test(line) || /\b(?:reference range|reference interval|normal range)\b/i.test(line)) continue;
-    const normalized = normalizedLabel(line);
-    const candidates = BONE_HEALTH_VARIABLES.flatMap(v => catalogLabels(v.name).map(label => ({v, label})))
+    const tableLine = line.replace(/\s*[|\t]\s*/g, " ").trim();
+    const normalized = normalizedLabel(tableLine);
+    const candidates = BONE_HEALTH_VARIABLES.flatMap(v => [v.id, ...catalogLabels(v.name)].map(label => ({v, label})))
       .filter(({label}) => normalized.startsWith(label) && /[\s:=–—-]/.test(normalized.charAt(label.length)));
     const ids = new Set(candidates.map(c => c.v.id));
-    if (ids.size !== 1) continue; // matches.length !== 1 is equivalent here // Ambiguous labels are never auto-mapped.
-    const chosen = candidates.sort((a,b) => b.label.length - a.label.length)[0]!;
+    if (ids.size !== 1) {
+      if (/\bbone-\d+\b/i.test(line)) errors.push(`Line ${index + 1}: unknown or ambiguous catalog ID.`);
+      continue; // Ambiguous labels are never auto-mapped.
+    }
+    const chosen = candidates.sort((a,b) => b.label.length - a.label.length)[0];
+    if (!chosen) continue;
     // Match against original line using the same Unicode-normalized label length.
-    const original = line.normalize("NFKC").trim();
+    const original = tableLine.normalize("NFKC").trim();
     const remainder = original.slice(chosen.label.length);
     const parsed = remainder.match(resultPattern);
-    if (!parsed) continue;
-    const value = Number(parsed[1]!.replace(",", "."));
-    if (!Number.isFinite(value)) continue;
-    found.push({variableId:chosen.v.id,value,unit:parsed[2]!,observedAt:"",sourceLabel:source,specimen:"",assayMethod:"",notes:"Extracted from document; human verified.",selected:false,rawLine:line,reviewRequired:true});
+    if (!parsed?.[1] || !parsed[2]) { errors.push(`Line ${index + 1}: finite numeric value and reported unit are required.`); continue; }
+    const value = Number(parsed[1].replace(",", "."));
+    const unit = parsed[2];
+    if (!Number.isFinite(value) || !/[\p{L}%µμ]/u.test(unit) || /[<>≤≥|]/.test(unit)) { errors.push(`Line ${index + 1}: invalid value or reported unit.`); continue; }
+    // Do not consume additional numeric columns as a result or infer reference intervals.
+    const tail = remainder.slice((parsed.index ?? 0) + parsed[0].length).trim();
+    if (tail && /\d/.test(tail)) { errors.push(`Line ${index + 1}: unsupported extra numeric columns; use corrected CSV with explicit fields.`); continue; }
+    found.push({variableId:chosen.v.id,value,unit,observedAt:"",sourceLabel:source,specimen:"",assayMethod:"",notes:"Extracted from document; requires human review.",selected:false,rawLine:line,reviewRequired:true});
   }
-  return found.slice(0,100);
+  if (!found.length && !errors.length) errors.push("No supported laboratory rows found. Use exact catalog ID/name followed by value and unit, a tab/pipe table, or the CSV template. Dates and source require human review.");
+  if (found.length > 100) errors.push("Maximum 100 document results; remaining rows were not imported.");
+  return { matches: found.slice(0,100), errors };
 }

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
-import { suggestBoneDocumentMatches } from "@/domain/bone-health/document-extraction";
+import { parseBoneCorrectedText } from "@/domain/bone-health/document-extraction";
 import type { FileReview, ReviewRow } from "@/domain/bone-health/file-queue";
 
 /** Per-file human review only. The parent queue owns selection and scoped persistence. */
@@ -12,12 +12,15 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
   }
   const hasSaved = review.rows.some(row => row.saved);
   return <div className="mt-3 space-y-3">
-    {review.errors.length > 0 && <details><summary>Errors / warnings ({review.errors.length})</summary><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></details>}
+    {review.errors.length > 0 && <div role="alert"><strong>Errors / warnings ({review.errors.length})</strong><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
     {review.text && <details>
       <summary>Review extracted text</summary>
       <label htmlFor={`text-${fileId}`} className="mt-2 block text-sm">Review and correct extracted text (local only)</label>
       <textarea id={`text-${fileId}`} rows={6} maxLength={100000} disabled={disabled || hasSaved} className="mt-2 w-full rounded border border-input bg-background p-2 text-sm" value={review.text} onChange={event => onChange({ ...review, text: event.target.value, rows: review.rows.map(row => ({ ...row, selected: false })) })} />
-      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved} onClick={() => onChange({ ...review, rows: suggestBoneDocumentMatches(review.text, "").map(row => ({ ...row, id: crypto.randomUUID() })) })}>Recheck corrected text</Button>
+      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved} onClick={() => {
+        const result = parseBoneCorrectedText(review.text, review.rows[0]?.sourceLabel ?? "");
+        onChange({ ...review, errors: result.errors, rows: result.matches.map(row => ({ ...row, id: crypto.randomUUID() })) });
+      }}>Recheck corrected text</Button>
     </details>}
     <h4 className="font-medium">Human measurement review</h4>
     {!review.rows.length && <p className="text-sm text-muted-foreground">No catalog-matched measurements. Correct extracted text or use manual entry; nothing saved.</p>}
