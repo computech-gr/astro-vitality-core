@@ -31,6 +31,7 @@ Five matched, zero held/rejected for this supplied PDF. Its exact text uses Gree
 - Focused document/profile/access suite: **75 passed, 0 failed, 245 assertions, 18 files**.
 - Full suite: **750 passed, 0 failed, 10,134 assertions, 149 files**. Established deterministic release samples were generated using the existing generator; sealed evidence was not rewritten.
 - Lint: **0 errors, 12 existing warnings**.
+- Formatting: changed Markdown passes formatting; the repository-wide check fails on the pre-existing `docs/P34_REAL_PDF_REGRESSION.md` formatting issue. That unrelated report was not changed.
 - Security-boundary audit: **PASS**. Dependency audit: **2 moderate and 1 low existing advisories**, no dependency changes.
 - Managed compilation initially identified an exact-optional-property type issue; it was corrected. Latest automatic signal: **build OK**. Separate manually executed full typecheck and production build were not run because platform instructions prohibit them. Exact synchronized GitHub typecheck/production-build validation is unavailable and is **not claimed**.
 - Chromium actual PDF.js uploads: supplied P35 PDF at desktop 1280×1800 and mobile 390×844, five exact candidates, no page errors or horizontal overflow; empty dates block verification/save, entering a date alone still blocks it, explicit date confirmation does not check rows, separate human verification is required. Saving was exercised with synthetic in-memory history adapters only.
@@ -43,7 +44,7 @@ Five matched, zero held/rejected for this supplied PDF. Its exact text uses Gree
 
 Supplied files: new `src/domain/bone-health/clinical-lab-rows.ts`, integrated `src/domain/bone-health/document-extraction.ts`, `tests/documents/p35-clinical-lab.test.ts`, actual `fixtures/synthetic/p35/realistic-clinical-lab.pdf`, `docs/P35_IMPLEMENTATION_CONTRACT.md`.
 
-Contract completion additionally changes `src/components/health-domain-workspace.tsx`, `src/components/scientific-handbook-reference.tsx`, `src/domain/health-measurements/profiles.ts`, `AGENTS.md`, `roadmap.md`, and adds `tests/documents/p35-real-pdf-regression.test.ts`, `tests/mission/p35-access-contract.test.ts`, `tests/navigation/p35-clinical-lab.browser.py`, `fixtures/synthetic/p35/README.md`, and this report. Supplied starter matcher was hardened rather than copied verbatim: no non-null assertions, longest complete alias selection, explicit held diagnostics and unit-binding checks. The actual PDF and supplied contract are byte-preserved.
+Contract completion additionally changes `src/components/health-domain-workspace.tsx`, `src/components/scientific-handbook-reference.tsx`, `src/domain/health-measurements/profiles.ts`, `AGENTS.md`, `roadmap.md`, and adds `tests/documents/p35-real-pdf-regression.test.ts`, `tests/mission/p35-access-contract.test.ts`, `tests/navigation/p35-clinical-lab.browser.py`, `fixtures/synthetic/p35/README.md`, and this report. Supplied starter matcher was hardened rather than copied verbatim: no non-null assertions, longest complete alias selection, explicit held diagnostics and unit-binding checks. The actual PDF is byte-preserved; the supplied contract differs only in Markdown formatter whitespace, not requirements.
 
 ## Remaining limitations
 
