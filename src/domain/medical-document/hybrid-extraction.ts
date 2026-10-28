@@ -185,7 +185,7 @@ export async function processBoneFileWithAi(
   if (ai.status === "denied")
     return { ...review, aiStatus: `AI-assisted extraction not authorized: ${ai.reason} Local results and held rows retained.` };
   if (ai.status === "unavailable")
-    return { ...review, aiStatus: `AI-assisted extraction unavailable: ${ai.reason} Local results and held rows retained.` };
+    return { ...review, aiStatus: `AI-assisted extraction unavailable: ${ai.reason} Deployment administrator: check P36_DOCUMENT_AI_ENABLED, P36_AI_PROVIDER and server-side provider credentials. Local results and held rows retained.` };
   const merge = mergeAiSuggestions(review.rows, ai.rows, profile, file.name);
   const parts = [
     `AI-assisted extraction (${ai.provider}/${ai.model}): ${merge.added.length} unchecked suggestion(s) added`,
