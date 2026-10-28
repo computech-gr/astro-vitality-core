@@ -43,7 +43,7 @@ async def main():
             section=page.locator('section[aria-label="Shared observation date for this file"]')
             await section.locator('input[type=datetime-local]').fill('2026-10-28T08:15')
             assert await page.get_by_role('checkbox',name='Verify All',exact=False).is_disabled()
-            await section.locator('input[type=checkbox]').check()
+            await section.locator('input[type=checkbox]').click()
             assert await checks.evaluate_all('(els)=>els.every(e=>!e.checked)')
             await page.get_by_role('checkbox',name='Verify All',exact=False).check()
             await page.get_by_role('button',name='Confirm selected results and save').click()
