@@ -3,7 +3,7 @@
  * an untrusted suggestion layer: every row is re-validated against the domain
  * catalog, merged without overwriting deterministic results, and stays unchecked
  * until a human verifies and explicitly saves. Nothing here persists anything. */
-import type { MeasurementProfile } from "@/domain/health-measurements/profiles";
+import { MEASUREMENT_PROFILES, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 import { processBoneFile, type FileReview, type ReviewRow } from "@/domain/bone-health/file-queue";
 import { isBoneSharedObservationTimestamp } from "@/domain/bone-health/review-selection";
 import {
