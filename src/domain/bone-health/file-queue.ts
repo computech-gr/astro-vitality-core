@@ -102,7 +102,7 @@ export function reviewedBoneEntries(rows: ReviewRow[], scope: Pick<BoneHealthEnt
 export function duplicateBoneImportIds(entries: BoneHealthEntry[], history: BoneHealthEntry[]): string[] {
   const seen = [...history];
   return entries.filter(entry => {
-    const duplicate = findPotentialDuplicates(seen.filter(row => row.dataOrigin === entry.dataOrigin && row.missionId === entry.missionId && row.crewMemberId === entry.crewMemberId), entry).length > 0;
+    const duplicate = findPotentialDuplicates(seen.filter(row => row.dataOrigin === entry.dataOrigin && row.missionId === entry.missionId && row.crewMemberId === entry.crewMemberId).map(row => ({ ...row, observedAt: new Date(row.observedAt).toISOString() })), { ...entry, observedAt: new Date(entry.observedAt).toISOString() }).length > 0;
     seen.push(entry); return duplicate;
   }).map(entry => entry.id);
 }

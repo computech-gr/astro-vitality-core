@@ -47,6 +47,12 @@ describe("Bone local multi-file queue", () => {
     expect(duplicateBoneImportIds(entries,[])).toEqual(['second']);
     expect(duplicateBoneImportIds(entries.slice(0,1),[{...entries[0],...scope,id:'other',crewMemberId:'other',variableId:row.variableId,value:row.value,unit:row.unit,observedAt:row.observedAt,sourceLabel:row.sourceLabel,specimen:'',assayMethod:'',notes:''}])).toEqual([]);
   });
+  test("duplicate checks compare equivalent instants without rewriting reported timestamps", () => {
+    const entries = reviewedBoneEntries([row], scope);
+    const history = reviewedBoneEntries([{ ...row, id: 'prior', observedAt: '2026-10-28T09:18:00+02:00' }], scope);
+    expect(duplicateBoneImportIds(entries, history)).toEqual(['stable']);
+    expect(history[0]?.observedAt).toBe('2026-10-28T09:18:00+02:00');
+  });
   test("partial failure records success immediately and retries only unsaved stable IDs", async () => {
     const rows=[row,{...row,id:'second'}]; const receipts:string[]=[]; const writes:string[]=[];
     await expect(persistReviewedBoneEntries(reviewedBoneEntries(rows,scope),async entry=>{if(entry.id==='second')throw new Error('failed');writes.push(entry.id)},id=>{receipts.push(id); const r=rows.find(row=>row.id===id);if(r)r.saved=true})).rejects.toThrow('failed');
