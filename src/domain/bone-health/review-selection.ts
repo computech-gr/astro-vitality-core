@@ -29,3 +29,21 @@ export function applyBoneSharedObservationTimestamp(rows: ReviewRow[], timestamp
   return rows.map(row => !row.saved && !row.observedAt.trim()
     ? { ...row, observedAt: timestamp, selected: false } : row);
 }
+/** Strict native `datetime-local` value (device local time) to UTC ISO; rejects rollover. */
+export function boneLocalInputToIso(local: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(local);
+  if (!match) return "";
+  const [y, mo, d, h, mi, s] = match.slice(1).map(part => Number(part ?? 0));
+  const date = new Date(y!, mo! - 1, d!, h!, mi!, s ?? 0);
+  if (date.getFullYear() !== y || date.getMonth() !== mo! - 1 || date.getDate() !== d || date.getHours() !== h || date.getMinutes() !== mi) return "";
+  return date.toISOString();
+}
+
+/** UTC/offset ISO to native `datetime-local` display in device local time; invalid values display empty. */
+export function boneIsoToLocalInput(iso: string): string {
+  if (!isBoneSharedObservationTimestamp(iso)) return "";
+  const date = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const seconds = date.getSeconds() ? `:${pad(date.getSeconds())}` : "";
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}${seconds}`;
+}

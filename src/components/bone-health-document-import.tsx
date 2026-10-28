@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Fragment, useId, useState } from "react";
 import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
-import { parseBoneCorrectedText } from "@/domain/bone-health/document-extraction";
-import { applyBoneSharedObservationTimestamp, isBoneSharedObservationTimestamp, boneReviewIssue, selectBoneReviewRows } from "@/domain/bone-health/review-selection";
+import { applyBoneSharedObservationTimestamp, boneIsoToLocalInput, boneLocalInputToIso, boneReviewIssue, selectBoneReviewRows } from "@/domain/bone-health/review-selection";
 import type { FileReview, ReviewRow } from "@/domain/bone-health/file-queue";
 
 /** Per-file human review only. The parent queue owns selection and scoped persistence. */
@@ -13,16 +12,15 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
     onChange({ ...review, rows: review.rows.map(row => row.id === id && !row.saved ? { ...row, ...patch } : row) });
   }
   const detailsId = useId();
-  const [corrected, setCorrected] = useState(false);
   const [expanded, setExpanded] = useState<string[]>([]);
-  const [sharedObservedAt, setSharedObservedAt] = useState("");
+  const [sharedLocal, setSharedLocal] = useState("");
   const [confirmedRows, setConfirmedRows] = useState("");
-  const hasSaved = review.rows.some(row => row.saved);
   const unsaved = review.rows.filter(row => !row.saved);
   const eligible = unsaved.filter(row => boneReviewIssue(row) === null);
   const allVerified = eligible.length > 0 && eligible.every(row => row.selected);
   const missingDates = unsaved.filter(row => !row.observedAt.trim());
-  const validSharedDate = isBoneSharedObservationTimestamp(sharedObservedAt);
+  const sharedObservedAt = boneLocalInputToIso(sharedLocal);
+  const validSharedDate = sharedObservedAt !== "";
   const confirmationScope = JSON.stringify([fileId, sharedObservedAt, review.rows]);
   const confirmSharedDate = confirmedRows === confirmationScope;
   function verifyAll(checked: boolean) {
@@ -31,25 +29,21 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
   return <div className="mt-3 space-y-3">
     {review.errors.length > 0 && <div role="alert"><strong>Errors / warnings ({review.errors.length})</strong><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
     {review.text && <details>
-      <summary>Review extracted text</summary>
-      <label htmlFor={`text-${fileId}`} className="mt-2 block text-sm">Review and correct extracted text (local only)</label>
-      <textarea id={`text-${fileId}`} rows={6} maxLength={100000} disabled={disabled || hasSaved} className="mt-2 w-full rounded border border-input bg-background p-2 text-sm" value={review.text} onChange={event => { setCorrected(true); onChange({ ...review, text: event.target.value, rows: review.rows.map(row => ({ ...row, selected: false })) }); }} />
-      <Button type="button" variant="outline" className="mt-2" disabled={disabled || hasSaved || !corrected} onClick={() => {
-        setCorrected(false);
-        const result = parseBoneCorrectedText(review.text, review.rows[0]?.sourceLabel ?? "");
-        onChange({ ...review, errors: result.errors, rows: result.matches.map(row => ({ ...row, id: crypto.randomUUID() })) });
-      }}>Recheck corrected text</Button>
+      <summary>View extracted source text (read-only)</summary>
+      <p className="mt-2 text-sm text-muted-foreground">For comparison with the original report only. To correct a measurement, use its Details / edit button below.</p>
+      <textarea aria-label={`Extracted source text ${fileId}`} rows={6} readOnly className="mt-2 w-full rounded border border-input bg-background p-2 text-sm" value={review.text} />
     </details>}
     <h4 className="font-medium">Human measurement review</h4>
-    {!review.rows.length && <p className="text-sm text-muted-foreground">No catalog-matched measurements. Correct extracted text or use manual entry; nothing saved.</p>}
+    {!review.rows.length && <p className="text-sm text-muted-foreground">No catalog-matched measurements. Use manual entry or review the source document; nothing saved.</p>}
     {unsaved.length > 0 && <p className="text-sm text-muted-foreground">{eligible.length} eligible · {unsaved.length - eligible.length} require corrections · {eligible.filter(row => row.selected).length} verified</p>}
     {missingDates.length > 0 && <section aria-label="Shared observation date for this file" className="space-y-2 text-sm">
       <p className="font-medium">{missingDates.length} measurement(s) are missing an observation date.</p>
       <p className="text-muted-foreground">Only use a shared date if the original report explicitly confirms the same observation time for every missing row. Never substitute the import time or today's date.</p>
-      <label className="block">Report observation time (ISO 8601 with timezone)
-        <input type="text" placeholder="2026-10-28T06:32:00Z" value={sharedObservedAt} disabled={disabled} onChange={event => { setSharedObservedAt(event.target.value); setConfirmedRows(""); }} className="mt-1 w-full rounded border border-input bg-background p-2" />
+      <label className="block">Report observation date and time (device local time)
+        <input type="datetime-local" step={1} value={sharedLocal} disabled={disabled} onChange={event => { setSharedLocal(event.target.value); setConfirmedRows(""); }} className="mt-1 w-full rounded border border-input bg-background p-2" />
       </label>
-      {sharedObservedAt && !validSharedDate && <p role="status" className="text-destructive">Enter a valid calendar date and time with an explicit timezone (Z or ±HH:MM).</p>}
+      {sharedLocal && !validSharedDate && <p role="status" className="text-destructive">Choose a valid calendar date and time.</p>}
+      {validSharedDate && <p className="text-xs text-muted-foreground">Will be stored as {sharedObservedAt} (UTC).</p>}
       <label className="flex items-start gap-2"><input type="checkbox" checked={confirmSharedDate} disabled={disabled} onChange={event => setConfirmedRows(event.target.checked ? confirmationScope : "")} /><span>I verified that this exact observation time applies to all {missingDates.length} missing-date measurements in the original report.</span></label>
       <Button type="button" variant="outline" disabled={disabled || !validSharedDate || !confirmSharedDate} onClick={() => {
         onChange({ ...review, rows: applyBoneSharedObservationTimestamp(review.rows, sharedObservedAt, confirmSharedDate) });
@@ -74,7 +68,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm">Value<input aria-label={`Value ${fileId} ${index + 1}`} type="number" step="any" className="mt-1 w-full rounded border border-input bg-background p-2" value={Number.isFinite(row.value) ? row.value : ""} onChange={event => edit(row.id, {value:event.target.value === "" ? NaN : Number(event.target.value), selected:false})} /></label>
           <label className="text-sm">Unit (as reported)<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.unit} onChange={event => edit(row.id, {unit:event.target.value, selected:false})} /></label>
-          <label className="text-sm">Observation date / time (ISO 8601)<input className="mt-1 w-full rounded border border-input bg-background p-2" placeholder="2026-10-28T07:18:00Z" value={row.observedAt} onChange={event => edit(row.id, {observedAt:event.target.value, selected:false})} /></label>
+          <label className="text-sm">Observation date / time (device local time)<input type="datetime-local" step={1} className="mt-1 w-full rounded border border-input bg-background p-2" value={boneIsoToLocalInput(row.observedAt)} onChange={event => edit(row.id, {observedAt:boneLocalInputToIso(event.target.value), selected:false})} /></label>
           <label className="text-sm">Lab / original source<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.sourceLabel} onChange={event => edit(row.id, {sourceLabel:event.target.value, selected:false})} /></label>
           <label className="text-sm">Specimen / modality<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.specimen} onChange={event => edit(row.id, {specimen:event.target.value, selected:false})} /></label>
           <label className="text-sm">Assay / method<input className="mt-1 w-full rounded border border-input bg-background p-2" value={row.assayMethod} onChange={event => edit(row.id, {assayMethod:event.target.value, selected:false})} /></label>
