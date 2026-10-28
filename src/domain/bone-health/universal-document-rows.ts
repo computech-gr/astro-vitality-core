@@ -23,6 +23,8 @@ export type UniversalRow = {
   rawLine: string;
   trailingContext: string;
   specimen: string;
+  /** Source exactly as reported in an explicit Source column; never inferred. */
+  reportedSource: string;
   observedAt: string;
   page?: number | undefined;
 };
@@ -50,16 +52,17 @@ export function strictIsoDateTime(value: string): string {
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : "";
 }
 
-type Column = "id" | "analyte" | "result" | "unit" | "date" | "reference" | "specimen" | "ignore";
+type Column = "id" | "analyte" | "result" | "unit" | "date" | "reference" | "specimen" | "source" | "ignore";
 /** Reviewed header labels only (English + Greek); unknown labels never map a column. */
 const HEADER_LABELS: Record<Exclude<Column, "ignore">, readonly string[]> = {
-  id: ["id", "code", "catalog id", "test id", "test code", "variable", "κωδικός"],
+  id: ["id", "code", "catalog id", "test id", "test code", "variable", "variable id", "κωδικός"],
   analyte: ["analyte", "test", "parameter", "measurement", "metric", "εξέταση"],
   result: ["result", "value", "reading", "αποτέλεσμα", "τιμή"],
   unit: ["unit", "units", "μονάδα"],
-  date: ["date", "collected", "collection date", "observed", "observation date", "timestamp", "ημερομηνία"],
+  date: ["date", "collected", "collection date", "observed", "observation date", "observation utc", "timestamp", "ημερομηνία"],
   reference: ["reference", "reference range", "reference interval", "normal range", "range", "ref range", "τιμές αναφοράς"],
   specimen: ["specimen", "sample", "modality", "δείγμα"],
+  source: ["source", "device", "laboratory", "lab", "πηγή"],
 };
 const COLUMNS = Object.keys(HEADER_LABELS) as Array<Exclude<Column, "ignore">>;
 
@@ -136,7 +139,7 @@ export function extractUniversalDocumentRows(
           continue;
         }
         const analyte = normalize(get("analyte"));
-        if (!analyte || !catalogLabelsMatch(variable.name, analyte)) {
+        if (analyte && !catalogLabelsMatch(variable.name, analyte)) {
           held.push({ line: index + 1, reason: "catalog ID/analyte mismatch; manual review required", snippet: line, page });
           continue;
         }
@@ -172,6 +175,7 @@ export function extractUniversalDocumentRows(
           rawLine: original,
           trailingContext: context.join(" "),
           specimen: get("specimen"),
+          reportedSource: get("source"),
           observedAt,
           page,
         });
@@ -211,7 +215,7 @@ export function extractUniversalDocumentRows(
     const dateIndex = trailing.findIndex((cell) => dateLike.test(cell));
     const specimen = (dateIndex >= 0 ? trailing.slice(0, dateIndex) : trailing).join(" ");
     const trailingContext = (dateIndex >= 0 ? trailing.slice(dateIndex) : []).join(" ");
-    rows.push({ variableId: variable.id, value, unit, rawLine: original, trailingContext, specimen, observedAt: "", page });
+    rows.push({ variableId: variable.id, value, unit, rawLine: original, trailingContext, specimen, reportedSource: "", observedAt: "", page });
   }
   return { rows, warnings, held };
 }

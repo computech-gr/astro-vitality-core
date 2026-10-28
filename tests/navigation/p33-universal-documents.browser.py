@@ -16,6 +16,9 @@ DOMAINS = [
     ('CARDIOVASCULAR_MEASUREMENT_PROFILE', 'p28-cardiovascular-report.pdf', 5, False),
     ('BEHAVIORAL_MEASUREMENT_PROFILE', 'p28-behavioral-report.pdf', 4, True),
     ('BONE_MEASUREMENT_PROFILE', None, 2, True),
+    # P34: the two actual user-supplied cardiovascular PDFs.
+    ('CARDIOVASCULAR_MEASUREMENT_PROFILE', '../p34/original-cardio-five-column.pdf', 5, False),
+    ('CARDIOVASCULAR_MEASUREMENT_PROFILE', '../p34/p32-cardio-simple.pdf', 5, True),
 ]
 
 HARNESS = r'''async()=>{

@@ -154,7 +154,7 @@ export function parseBoneCorrectedText(text: string, source: string, profile: Me
   const universal = extractUniversalDocumentRows(text, profile, linePages);
   const universalMatches: DocumentMatch[] = universal.rows.map(row => ({
     variableId: row.variableId, value: row.value, unit: row.unit,
-    observedAt: row.observedAt, sourceLabel: source, specimen: row.specimen, assayMethod: "",
+    observedAt: row.observedAt, sourceLabel: row.reportedSource ? `${row.reportedSource} (${source})` : source, specimen: row.specimen, assayMethod: "",
     notes: row.trailingContext
       ? `Document context (not interpreted): ${row.trailingContext}`
       : "Extracted from document; verify source and observation time.",
