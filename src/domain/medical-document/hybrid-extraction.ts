@@ -92,8 +92,8 @@ function requestProfile(request: AiExtractionRequest): MeasurementProfile {
  * editable observation field for measurements belonging to that specimen.
  * Never use issued/reported/printed dates, ambiguous times or the current time. */
 export function explicitSharedCollectionTimestamp(text: string): string | null {
-  const dates = [...text.matchAll(/\bCOLLECTION\s+DATE\s*[:\-]?\s*(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})\b/gi)];
-  const times = [...text.matchAll(/\bCOLLECTION\s+TIME\s*[:\-]?\s*([01]?\d|2[0-3]):([0-5]\d)\s*(UTC|GMT)\b/gi)];
+  const dates = [...text.matchAll(/\bCOLLECTION\s+DATE\s*[:-]?\s*(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})\b/gi)];
+  const times = [...text.matchAll(/\bCOLLECTION\s+TIME\s*[:-]?\s*([01]?\d|2[0-3]):([0-5]\d)\s*(UTC|GMT)\b/gi)];
   if (dates.length !== 1 || times.length !== 1) return null;
   const date = dates[0]!; const time = times[0]!;
   const month = ["january","february","march","april","may","june","july","august","september","october","november","december"].indexOf(date[2]!.toLowerCase());
