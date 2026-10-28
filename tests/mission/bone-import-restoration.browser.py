@@ -40,7 +40,7 @@ async def main():
     window.fileTest.render=()=>{window.fileTest.root=Client.createRoot(host);window.fileTest.root.render(React.createElement(BoneHealthImport,{missionId:'synthetic-mission',crewMemberId:'synthetic-crew',dataOrigin:'synthetic',onImported:async()=>{}}));};window.fileTest.render();
   }''')
   button=page.get_by_role('button',name='Choose laboratory files',exact=True)
-  await button.wait_for(); await page.wait_for_function("!document.querySelector('button').disabled && !document.querySelector('fieldset').disabled")
+  await button.wait_for(); await page.wait_for_function("() => !document.querySelector('button').disabled && !document.querySelector('fieldset').disabled")
   assert await page.locator('input[type=file]').count()==1
   assert await button.evaluate('(e)=>getComputedStyle(e).cursor')=='pointer'
   await button.focus()
