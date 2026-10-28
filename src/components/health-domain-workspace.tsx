@@ -16,6 +16,8 @@ import {
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "@/domain/health-intelligence/patterns";
 import proposedCatalog from "../../data/scientific/p355-proposed-domain-catalog.v1.json";
 import { CardiovascularHandbookReference } from "@/components/scientific-handbook-reference";
+import { HealthMeasurementEntry } from "@/components/bone-health-entry";
+import { MEASUREMENT_PROFILES } from "@/domain/health-measurements/profiles";
 
 export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }) {
   const domain = getHealthDomain(domainId);
@@ -163,6 +165,10 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
             .
           </p>
         </section>
+      )}
+
+      {domainId !== "bone" && (
+        <HealthMeasurementEntry profile={MEASUREMENT_PROFILES[domainId]} embedded />
       )}
 
       <section
