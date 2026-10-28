@@ -58,12 +58,14 @@ async def main():
   assert await initial_pdf.get_by_role('checkbox',name='Verify All').is_visible()
   assert await initial_pdf.get_by_role('checkbox',name='Verify All').is_disabled()
   assert await initial_pdf.get_by_text('Complete the required fields first',exact=False).count()==1
-  shared=initial_pdf.get_by_label('Report observation time (ISO 8601 with timezone)')
+  shared=initial_pdf.get_by_label('Report observation date and time (device local time)')
+  assert await shared.get_attribute('type')=='datetime-local'
   confirmation=initial_pdf.get_by_role('checkbox',name='I verified that this exact observation time')
   apply_date=initial_pdf.get_by_role('button',name='Apply date to missing rows only')
-  await shared.fill('2026-02-30T07:18:00Z'); await confirmation.check()
+  await confirmation.check()
   assert await apply_date.is_disabled()
-  await shared.fill('2026-10-28T09:18:00+02:00')
+  await shared.fill('2026-10-28T09:18')
+  expected_iso=await page.evaluate("new Date(2026,9,28,9,18).toISOString()")
   assert await confirmation.is_checked() is False
   assert await apply_date.is_disabled()
   await page.screenshot(path=str(OUT/'shared-date-confirmation-desktop.png'))
@@ -74,7 +76,7 @@ async def main():
   await page.set_viewport_size({'width':1280,'height':1800})
   await confirmation.focus(); await confirmation.press('Space')
   await apply_date.click()
-  assert await initial_pdf.get_by_text('2026-10-28T09:18:00+02:00',exact=True).count()==2
+  assert await initial_pdf.get_by_text(expected_iso,exact=True).count()==2
   assert await initial_pdf.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).evaluate_all('(els)=>els.every(e=>!e.checked)')
   assert await page.locator('li').filter(has=page.get_by_role('heading',name='results.csv',exact=True)).get_by_role('cell',name='2026-10-28T07:18:00.000Z',exact=True).count()==1
   await page.screenshot(path=str(OUT/'shared-date-desktop.png'))
@@ -83,20 +85,19 @@ async def main():
   await page.screenshot(path=str(OUT/'shared-date-mobile.png'))
   assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
   await page.set_viewport_size({'width':1280,'height':1800})
-  # Corrected-text recheck accepts table IDs and CSV and exposes unsupported rows.
+  # Extracted source text is read-only; corrections happen per row via Details / edit.
   pdf_item=page.locator('li').filter(has=page.get_by_role('heading',name='synthetic.pdf',exact=True))
-  await pdf_item.get_by_text('Review extracted text',exact=True).click()
-  assert await pdf_item.get_by_role('button',name='Recheck corrected text').is_disabled()
-  text=pdf_item.get_by_label('Review and correct extracted text (local only)')
-  await text.fill('bone-999 12 nmol')
-  await pdf_item.get_by_role('button',name='Recheck corrected text').click()
-  assert await pdf_item.get_by_role('alert').count()==1
-  await text.fill('Catalog ID | Result | Unit\nbone-002 | 42.5 | nmol\nbone-003 | 3.1 | nmol')
-  await pdf_item.get_by_role('button',name='Recheck corrected text').click()
-  assert await pdf_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==2
-  await text.fill('variable,value,unit,observed_at,source\nbone-002,42.5,nmol,2026-10-28T07:18:00Z,Synthetic lab\nbone-003,3.1,nmol,2026-10-28T07:18:00Z,Synthetic lab')
-  await pdf_item.get_by_role('button',name='Recheck corrected text').click()
-  assert await pdf_item.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).count()==2
+  await pdf_item.get_by_text('View extracted source text (read-only)',exact=True).click()
+  assert await pdf_item.get_by_role('button',name='Recheck corrected text').count()==0
+  assert await pdf_item.get_by_role('textbox',name=re.compile(r'^Extracted source text')).get_attribute('readonly') is not None
+  await pdf_item.get_by_role('button',name=re.compile(r'Details / edit')).first.click()
+  row_date=pdf_item.get_by_label('Observation date / time (device local time)').first
+  assert await row_date.get_attribute('type')=='datetime-local'
+  assert await row_date.input_value()=='2026-10-28T09:18'
+  await row_date.fill('2026-10-29T10:05')
+  row_iso=await page.evaluate("new Date(2026,9,29,10,5).toISOString()")
+  assert await pdf_item.get_by_text(row_iso,exact=True).count()==1
+  await page.screenshot(path=str(OUT/'row-date-desktop.png'))
   await page.get_by_role('button',name='Check offline OCR readiness').click()
   await page.get_by_role('status').filter(has_text='CSV and selectable-text PDFs remain available').wait_for()
   # Bulk confirmation is explicit and scoped to this file; invalid rows cannot be selected.
