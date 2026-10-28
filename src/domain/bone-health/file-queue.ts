@@ -32,8 +32,15 @@ export async function processBoneFile(file: File, signal: AbortSignal, profile: 
   }
   const result = await extractBoneDocument(file, signal);
   signal.throwIfAborted();
-  const parsed = parseBoneCorrectedText(result.text, file.name, profile);
-  return { rows: parsed.matches.map(row => ({ ...row, id: crypto.randomUUID() })), errors: [...result.warnings, ...parsed.errors], text: result.text, method: `${result.method} · ${result.pages} page(s)` };
+  const parsed = parseBoneCorrectedText(result.text, file.name, profile, result.linePages);
+  const heldMessages = parsed.held.map(row => `Held for manual review (line ${row.line}${row.page ? `, page ${row.page}` : ""}): ${row.reason} — "${row.snippet.slice(0, 120)}"`);
+  return {
+    rows: parsed.matches.map(row => ({ ...row, id: crypto.randomUUID() })),
+    errors: [...result.warnings, ...parsed.errors, ...heldMessages],
+    text: result.text,
+    method: `${result.method} · ${result.pages} page(s)`,
+    diagnostics: { method: result.method, pages: result.pages, matched: parsed.matches.length, held: parsed.held.length, rejected: parsed.errors.length, warnings: result.warnings.length, sourceName: file.name },
+  };
 }
 
 /** One active parser/OCR job; cancellation never publishes late results. */
