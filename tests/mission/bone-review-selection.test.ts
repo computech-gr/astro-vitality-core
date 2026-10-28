@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it, test } from "bun:test";
 import { applyBoneSharedObservationTimestamp, isBoneSharedObservationTimestamp, boneReviewIssue, selectBoneReviewRows } from "@/domain/bone-health/review-selection";
 import type { ReviewRow } from "@/domain/bone-health/file-queue";
 
@@ -55,5 +55,36 @@ describe("confirmed per-file shared observation timestamp", () => {
     expect(result[0]?.sourceLabel).toBe("");
     expect(result[0]?.selected).toBe(false);
     expect(boneReviewIssue(result[0] ?? row)).not.toBeNull();
+  });
+});
+describe("native datetime-local conversion", () => {
+  it("round-trips device local input to UTC and back without changing the instant", async () => {
+    const { boneLocalInputToIso, boneIsoToLocalInput } = await import("@/domain/bone-health/review-selection");
+    const iso = boneLocalInputToIso("2026-10-28T09:18");
+    expect(iso).toBe(new Date(2026, 9, 28, 9, 18).toISOString());
+    expect(boneIsoToLocalInput(iso)).toBe("2026-10-28T09:18");
+  });
+  it("rejects calendar rollover and malformed input instead of inventing a date", async () => {
+    const { boneLocalInputToIso, boneIsoToLocalInput } = await import("@/domain/bone-health/review-selection");
+    expect(boneLocalInputToIso("2026-02-30T07:18")).toBe("");
+    expect(boneLocalInputToIso("")).toBe("");
+    expect(boneLocalInputToIso("2026-10-28 09:18")).toBe("");
+    expect(boneIsoToLocalInput("not a date")).toBe("");
+    expect(boneIsoToLocalInput("")).toBe("");
+  });
+  it("shared fill with converted value still touches only missing unsaved rows and never verifies", async () => {
+    const { boneLocalInputToIso, applyBoneSharedObservationTimestamp } = await import("@/domain/bone-health/review-selection");
+    const base = { variableId: "bone-001", value: 1, unit: "ng/mL", sourceLabel: "s", specimen: "", assayMethod: "", notes: "" };
+    const rows = [
+      { ...base, id: "a", observedAt: "", selected: true, saved: false },
+      { ...base, id: "b", observedAt: "2026-01-01T00:00:00Z", selected: true, saved: false },
+      { ...base, id: "c", observedAt: "", selected: false, saved: true },
+    ] as never[];
+    const iso = boneLocalInputToIso("2026-10-28T09:18");
+    const out = applyBoneSharedObservationTimestamp(rows, iso, true) as Array<{ id: string; observedAt: string; selected: boolean }>;
+    expect(out[0]).toMatchObject({ observedAt: iso, selected: false });
+    expect(out[1]!.observedAt).toBe("2026-01-01T00:00:00Z");
+    expect(out[2]!.observedAt).toBe("");
+    expect(applyBoneSharedObservationTimestamp(rows, iso, false)).toBe(rows);
   });
 });
