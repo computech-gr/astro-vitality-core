@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## P30 Medical Report and Advisor screen contrast
+
+- [ ] Apply the three supplied presentation files after comparison, preserving report/permission logic and existing print CSS; express the supplied screen palette through semantic CSS tokens.
+- [ ] Run the full regression suite, lint and security checks; verify desktop/mobile buttons, disabled states, textareas and keyboard focus with memory-only synthetic adapters, and compare actual multi-page A4 output against the pre-patch baseline.
+- [ ] Report automatic compilation and exact-revision typecheck/production-build evidence separately; no database, RLS, AI, release-gate or publishing changes.
+
 ## P29 Medical Report menu and A4 fit
 
 - [x] Apply supplied navigation and report presentation changes; complete missing 17/10/16/12/13/32% history columns, cover/evidence classes, exclusion widths and lossless date line breaks. Semantic paper tokens replace supplied hardcoded utilities; fix dark-mode table contrast and overlapping fixed print furniture. Report logic is unchanged.
