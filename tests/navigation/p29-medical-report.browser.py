@@ -103,6 +103,7 @@ async def main():
         await page.route('http://localhost:8080/__p29_fixture', lambda route: route.fulfill(content_type='text/html', body='<html><head><link rel="stylesheet" href="/src/styles.css"></head><body></body></html>'))
         await page.goto('http://localhost:8080/__p29_fixture', wait_until='networkidle')
         await page.route('**/__p29_presentation/*', lambda route: route.fulfill(status=200, content_type='text/javascript', body=modules[route.request.url.rsplit('/', 1)[-1]]))
+        await page.evaluate("async () => { const m=await import("/@react-refresh");m.default.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>()=>{};window.__vite_plugin_react_preamble_installed__=true; }")
         await page.evaluate("v => window.p29Version=v", re.search(r'react\.js\?v=([a-z0-9]+)', modules['report.js']).group(1))
         await page.evaluate(r'''async () => {
           const {default:React}=await import('/node_modules/.vite/deps/react.js?v='+window.p29Version);
