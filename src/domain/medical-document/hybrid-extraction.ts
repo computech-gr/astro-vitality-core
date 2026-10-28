@@ -112,10 +112,14 @@ export async function sourceCollectionTimestamp(file: File, reviewText: string, 
   if (!/\.pdf$/i.test(file.name)) return geometryTimestamp;
   try {
     signal.throwIfAborted();
-    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    // Same browser loader as the geometry extractor (bundled worker, no eval).
+    const pdfjs = await import("pdfjs-dist");
+    if (typeof window !== "undefined" && !pdfjs.GlobalWorkerOptions.workerSrc) {
+      pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+    }
     const bytes = await file.arrayBuffer();
     signal.throwIfAborted();
-    const task = pdfjs.getDocument({ data: new Uint8Array(bytes), isEvalSupported: false });
+    const task = pdfjs.getDocument({ data: new Uint8Array(bytes), isEvalSupported: false } as Parameters<typeof pdfjs.getDocument>[0]);
     try {
       const document = await task.promise;
       if (document.numPages > 12) return null;
@@ -126,6 +130,8 @@ export async function sourceCollectionTimestamp(file: File, reviewText: string, 
         parts.push(content.items.filter((item): item is typeof item & {str: string} => "str" in item).map(item => item.str).join(" "));
       }
       const rawTimestamp = explicitSharedCollectionTimestamp(parts.join("\n"));
+      // Sanitized diagnostics only: booleans, never document text or identifiers.
+      console.info("[p36.4] collection-date source", { rawTimestampFound: rawTimestamp !== null, geometryTimestampFound: geometryTimestamp !== null, conflict: Boolean(geometryTimestamp && rawTimestamp && geometryTimestamp !== rawTimestamp) });
       // A conflicting interpretation must not be silently promoted to a measurement date.
       if (geometryTimestamp && rawTimestamp && geometryTimestamp !== rawTimestamp) return null;
       return rawTimestamp ?? geometryTimestamp;
