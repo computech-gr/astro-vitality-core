@@ -28,7 +28,7 @@ describe("P34 actual PDF regression", () => {
     const r = await parse("original-cardio-five-column.pdf");
     expect(r.matches.map(m => [m.variableId, m.value, m.unit])).toEqual(expected);
     expect(r.matches.every(m => m.observedAt === "2026-10-02T08:00:00.000Z")).toBe(true);
-    expect(r.matches.every(m => m.sourceLabel === "SYNTHETIC Demo Device")).toBe(true);
+    expect(r.matches.every(m => m.sourceLabel === "SYNTHETIC Demo Device (original-cardio-five-column.pdf)")).toBe(true);
     expect(r.matches.every(m => m.selected === false && m.reviewRequired)).toBe(true);
     expect(r.errors).toEqual([]);
   });
