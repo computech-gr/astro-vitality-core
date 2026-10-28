@@ -227,5 +227,9 @@ export function parseBoneCorrectedText(text: string, source: string, profile: Me
   const held = universal.held.filter(row => !legacyTouched.has(row.line - 1));
   if (!found.length && !errors.length && !universalWarnings.length && !held.length) errors.push("No supported laboratory rows found. Use exact catalog ID/name followed by value and unit, a tab/pipe table, or the CSV template. Dates and source require human review.");
   if (found.length > 100) errors.push("Maximum 100 document results; remaining rows were not imported.");
+  // Restore document line order: universal and legacy matches were collected separately.
+  const lineOrder = new Map<string, number>();
+  lines.forEach((line, index) => { if (!lineOrder.has(line)) lineOrder.set(line, index); });
+  found.sort((a, b) => (lineOrder.get(a.rawLine) ?? 0) - (lineOrder.get(b.rawLine) ?? 0));
   return { matches: found.slice(0,100), errors: [...errors, ...universalWarnings], held };
 }

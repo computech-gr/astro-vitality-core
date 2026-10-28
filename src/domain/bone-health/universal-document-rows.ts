@@ -76,8 +76,10 @@ function detectHeader(cells: string[]): Column[] | null {
 }
 
 function catalogLabelsMatch(variableName: string, analyte: string): boolean {
-  const labels = [variableName, ...variableName.split(/\s+\/\s+/)].map(normalize).filter((n) => n.length > 2);
-  return labels.some((n) => analyte.includes(n) || n.includes(analyte));
+  const labels = [variableName, ...variableName.split(/\s+\/\s+/)].map(normalize).filter(Boolean);
+  // Exact equality is safe at any length (e.g. "HR"); substring matching only
+  // for longer labels so tiny abbreviations never fuzzy-map inside prose.
+  return labels.some((n) => analyte === n || (n.length > 2 && (analyte.includes(n) || n.includes(analyte))));
 }
 
 function splitCells(line: string): string[] {

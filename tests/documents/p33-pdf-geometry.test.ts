@@ -5,16 +5,16 @@ import { parseBoneCorrectedText } from "@/domain/bone-health/document-extraction
 import { CARDIOVASCULAR_MEASUREMENT_PROFILE, IMMUNE_MEASUREMENT_PROFILE } from "@/domain/health-measurements/profiles";
 
 const item = (str: string, x: number, y: number, page = 1): PdfTextItem => ({
-  str, x, y, width: str.length * 5, height: 10, page,
+  str, x, y, width: str.length * 4.5, height: 12, page,
 });
 
 describe("P33 PDF geometry reconstruction", () => {
   it("groups items into lines by y and splits cells on column gaps", () => {
     const lines = reconstructGeometryLines([
       item("IMM-001", 10, 100), item("White blood cell count (total leukocytes)", 80, 100),
-      item("6.1", 260, 100), item("10^9/L", 300, 100),
+      item("6.1", 300, 100), item("10^9/L", 340, 100),
       item("IMM-002", 10, 80), item("Neutrophil count (absolute)", 80, 80),
-      item("3.4", 260, 80), item("10^9/L", 300, 80),
+      item("3.4", 300, 80), item("10^9/L", 340, 80),
     ]);
     expect(lines).toHaveLength(2);
     expect(lines[0]?.cells.map(c => c.text)).toEqual(["IMM-001", "White blood cell count (total leukocytes)", "6.1", "10^9/L"]);
@@ -23,8 +23,8 @@ describe("P33 PDF geometry reconstruction", () => {
     // One logical row scattered across a 27px y-band (vertical-align: middle).
     const lines = reconstructGeometryLines([
       item("White blood cell", 80, 113.6), item("whole", 400, 106.9), item("2026-10-", 480, 106.9),
-      item("IMM-001", 10, 100), item("count (total", 80, 100), item("6.1", 260, 100),
-      item("blood", 400, 93.4), item("01T09:00:00Z", 480, 93.4), item("leukocytes)", 80, 86.6),
+      item("IMM-001", 10, 100.2), item("count (total", 80, 100.2), item("6.1", 260, 100.2),
+      item("blood", 400, 93.5), item("01T09:00:00Z", 480, 93.5), item("leukocytes)", 80, 86.8),
     ]);
     expect(lines).toHaveLength(1);
     expect(lines[0]?.cells.map(c => c.text)).toEqual([
