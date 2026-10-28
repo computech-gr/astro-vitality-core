@@ -61,13 +61,12 @@ async def main():
   shared=initial_pdf.get_by_label('Report observation date and time (device local time)')
   assert await shared.get_attribute('type')=='datetime-local'
   confirmation=initial_pdf.get_by_role('checkbox',name='I verified that this exact observation time')
-  apply_date=initial_pdf.get_by_role('button',name='Apply date to missing rows only')
-  await confirmation.check()
-  assert await apply_date.is_disabled()
+  assert await initial_pdf.get_by_role('button',name=re.compile('Apply date')).count()==0
+  assert await confirmation.is_disabled()
   await shared.fill('2026-10-28T09:18')
   expected_iso=await page.evaluate("new Date(2026,9,28,9,18).toISOString()")
   assert await confirmation.is_checked() is False
-  assert await apply_date.is_disabled()
+  assert await initial_pdf.get_by_text(expected_iso,exact=True).count()==1  # only the UTC preview, nothing applied yet
   await page.screenshot(path=str(OUT/'shared-date-confirmation-desktop.png'))
   await page.set_viewport_size({'width':390,'height':844})
   await shared.scroll_into_view_if_needed()
@@ -75,7 +74,7 @@ async def main():
   assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
   await page.set_viewport_size({'width':1280,'height':1800})
   await confirmation.focus(); await confirmation.press('Space')
-  await apply_date.click()
+  assert await initial_pdf.get_by_label('Report observation date and time (device local time)').count()==0
   assert await initial_pdf.get_by_text(expected_iso,exact=True).count()==2
   assert await initial_pdf.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).evaluate_all('(els)=>els.every(e=>!e.checked)')
   assert await page.locator('li').filter(has=page.get_by_role('heading',name='results.csv',exact=True)).get_by_role('cell',name='2026-10-28T07:18:00.000Z',exact=True).count()==1
