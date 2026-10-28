@@ -1,3 +1,4 @@
+import { BONE_MEASUREMENT_PROFILE, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 import { parseBoneImport, type BoneImportCandidate } from "./import";
 import { extractBoneDocument, parseBoneCorrectedText } from "./document-extraction";
 import { findPotentialDuplicates, validateBoneEntry, type BoneHealthEntry } from "./history";
@@ -17,19 +18,19 @@ export function boneFileIssue(file: Pick<File, "name" | "size">): string | null 
   const limit = /\.csv$/i.test(file.name) ? 2_000_000 : 12_000_000;
   return file.size > limit ? `File exceeds ${limit / 1_000_000} MB limit.` : null;
 }
-export async function processBoneFile(file: File, signal: AbortSignal): Promise<FileReview> {
+export async function processBoneFile(file: File, signal: AbortSignal, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): Promise<FileReview> {
   const issue = boneFileIssue(file);
   if (issue) throw new Error(issue);
   signal.throwIfAborted();
   if (/\.csv$/i.test(file.name)) {
     const text = await file.text();
     signal.throwIfAborted();
-    const result = parseBoneImport(text);
+    const result = parseBoneImport(text, profile);
     return { rows: result.candidates.map(row => ({ ...row, id: crypto.randomUUID() })), errors: result.rejected.length ? result.rejected : result.candidates.length ? [] : ["CSV contains no measurement rows."], text, method: "CSV parsing" };
   }
   const result = await extractBoneDocument(file, signal);
   signal.throwIfAborted();
-  const parsed = parseBoneCorrectedText(result.text, file.name);
+  const parsed = parseBoneCorrectedText(result.text, file.name, profile);
   return { rows: parsed.matches.map(row => ({ ...row, id: crypto.randomUUID() })), errors: [...result.warnings, ...parsed.errors], text: result.text, method: `${result.method} · ${result.pages} page(s)` };
 }
 
@@ -39,7 +40,7 @@ export class BoneFileQueue {
   private controller: AbortController | undefined;
   private running = false;
   private disposed = false;
-  constructor(private changed: (items: QueueItem[]) => void, private process = processBoneFile) {}
+  constructor(private changed: (items: QueueItem[]) => void, private process: (file: File, signal: AbortSignal) => Promise<FileReview> = processBoneFile) {}
   restore(items: QueueItem[]) { this.items = items; this.publish(); }
   private publish() { if (!this.disposed) this.changed([...this.items]); }
   add(files: File[]) {
@@ -92,11 +93,11 @@ export class BoneFileQueue {
   }
 }
 
-export function reviewedBoneEntries(rows: ReviewRow[], scope: Pick<BoneHealthEntry, "missionId" | "crewMemberId" | "dataOrigin">): BoneHealthEntry[] {
+export function reviewedBoneEntries(rows: ReviewRow[], scope: Pick<BoneHealthEntry, "missionId" | "crewMemberId" | "dataOrigin">, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): BoneHealthEntry[] {
   return rows.filter(row => row.selected && !row.saved).map(row => {
     const { selected: _selected, saved: _saved, rawLine: _line, ...candidate } = row;
     const entry = { ...candidate, ...scope };
-    const issue = validateBoneEntry(entry);
+    const issue = validateBoneEntry(entry, profile);
     if (issue) throw new Error(issue);
     return entry;
   });

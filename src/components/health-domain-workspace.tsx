@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/mission-identity";
 import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { ScientificCatalogPicker } from "@/components/scientific-catalog-picker";
 import { supabase } from "@/integrations/supabase/client";
-import { getCloudMissionContext } from "@/infrastructure/mission-records";
+
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
 import {
@@ -15,53 +16,82 @@ import {
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "@/domain/health-intelligence/patterns";
 import proposedCatalog from "../../data/scientific/p355-proposed-domain-catalog.v1.json";
 import { CardiovascularHandbookReference } from "@/components/scientific-handbook-reference";
+import { HealthMeasurementEntry } from "@/components/bone-health-entry";
+import { MEASUREMENT_PROFILES } from "@/domain/health-measurements/profiles";
 
 export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }) {
   const domain = getHealthDomain(domainId);
   const draftCatalog = proposedCatalog.entries.filter((item) => item.domain === domainId);
   const [memberships, setMemberships] = useState<
-    Array<{ missionId: string; crewMemberId: string; missionLabel: string }>
+    Array<{ missionId: string; crewMemberId: string; missionLabel: string; crewLabel: string }>
   >([]);
   const [selected, setSelected] = useState("");
   const [report, setReport] = useState<ScientificEvidenceReport | null>(null);
   const [message, setMessage] = useState("Checking private Crew Self access...");
   useEffect(() => {
     let active = true;
-    void getCloudMissionContext()
-      .then(async (context) => {
-        if (!active) return;
-        const allowed =
-          context.signedIn && !context.error
-            ? context.memberships.filter(
-                (member): member is typeof member & { crewMemberId: string } =>
-                  member.role === "crew_self" && Boolean(member.crewMemberId),
-              )
-            : [];
-        const missionIds = [...new Set(allowed.map((member) => member.missionId))];
-        const { data: missionRows } = missionIds.length
-          ? await supabase.from("missions").select("id, code, name").in("id", missionIds)
-          : { data: [] };
-        const labels = new Map(
-          (missionRows ?? []).map((row) => [row.id, row.name ?? row.code ?? row.id]),
-        );
-        setMemberships(
-          allowed.map((member) => ({
-            ...member,
-            missionLabel: labels.get(member.missionId) ?? member.missionId,
-          })),
-        );
-        setSelected(allowed.length ? `${allowed[0]!.missionId}|${allowed[0]!.crewMemberId}` : "");
-        if (!allowed.length)
-          setMessage(
-            "Sign in with an active Crew Self mission membership to view private measurements.",
-          );
-      })
-      .catch(() => {
-        if (active) setMessage("Mission authorization unavailable. No data loaded.");
+    let generation = 0;
+    const refresh = () => {
+      const request = ++generation;
+      void loadMissionIdentity().then(async (context) => {
+        if (!active || request !== generation) return;
+        const eligible = context.signedIn && !context.error
+          ? context.memberships.filter((member) =>
+              member.role === "crew_self" || member.role === "ground_medical")
+          : [];
+        const medicalMissionIds = [...new Set(eligible.filter((member) =>
+          member.role === "ground_medical").map((member) => member.missionId))];
+        const { data: roster, error: rosterError } = medicalMissionIds.length
+          ? await supabase.from("mission_memberships")
+              .select("mission_id, crew_member_id, role, active")
+              .in("mission_id", medicalMissionIds).eq("active", true).eq("role", "crew_self")
+          : { data: [], error: null };
+        if (!active || request !== generation) return;
+        if (rosterError) throw rosterError;
+        const scoped = [
+          ...eligible.filter((member) => member.role === "crew_self" && member.crewMemberId)
+            .map((member) => ({ missionId: member.missionId, crewMemberId: member.crewMemberId! })),
+          ...(roster ?? []).filter((member) => Boolean(member.crew_member_id))
+            .map((member) => ({ missionId: member.mission_id, crewMemberId: member.crew_member_id! })),
+        ];
+        const unique = [...new Map(scoped.map((member) =>
+          [`${member.missionId}|${member.crewMemberId}`, member])).values()];
+        const missionIds = [...new Set(unique.map((member) => member.missionId))];
+        const crewIds = [...new Set(unique.map((member) => member.crewMemberId))];
+        const [missionsResult, crewResult] = await Promise.all([
+          missionIds.length ? supabase.from("missions").select("id, code, name").in("id", missionIds) : Promise.resolve({ data: [], error: null }),
+          crewIds.length ? supabase.from("crew_members").select("id, display_name").in("id", crewIds) : Promise.resolve({ data: [], error: null }),
+        ]);
+        if (!active || request !== generation) return;
+        if (missionsResult.error || crewResult.error) throw new Error("Authorized roster labels unavailable.");
+        const missionLabels = new Map((missionsResult.data ?? []).map((row) =>
+          [row.id, row.name ?? row.code ?? row.id]));
+        const crewLabels = new Map((crewResult.data ?? []).map((row) =>
+          [row.id, row.display_name ?? row.id]));
+        const options = unique.map((member) => ({
+          ...member,
+          missionLabel: missionLabels.get(member.missionId) ?? member.missionId,
+          crewLabel: crewLabels.get(member.crewMemberId) ?? member.crewMemberId,
+        }));
+        setMemberships(options);
+        setSelected((previous) => options.some((member) =>
+          `${member.missionId}|${member.crewMemberId}` === previous)
+          ? previous : options.length ? `${options[0]!.missionId}|${options[0]!.crewMemberId}` : "");
+        if (!options.length) {
+          setReport(null);
+          setMessage("No authorized Crew Self or Ground Medical mission/crew selection is available.");
+        }
+      }).catch(() => {
+        if (!active || request !== generation) return;
+        setMemberships([]);
+        setSelected("");
+        setReport(null);
+        setMessage("Mission authorization or roster unavailable. No private data loaded.");
       });
-    return () => {
-      active = false;
     };
+    refresh();
+    const unsubscribe = subscribeMissionIdentity(refresh);
+    return () => { active = false; generation++; unsubscribe(); };
   }, []);
   useEffect(() => {
     const member = memberships.find(
@@ -137,6 +167,10 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
         </section>
       )}
 
+      {domainId !== "bone" && (
+        <HealthMeasurementEntry profile={MEASUREMENT_PROFILES[domainId]} embedded />
+      )}
+
       <section
         className="mt-8 rounded-xl border border-border p-5"
         aria-label="Private domain evidence"
@@ -144,7 +178,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
         <h2 className="text-xl font-semibold">Mission-scoped measurements</h2>
         {memberships.length > 1 && (
           <label className="mt-3 block text-sm">
-            Active mission{" "}
+            Authorized mission / crew{" "}
             <select
               className="ml-2 rounded-md border border-border bg-background p-2"
               value={selected}
@@ -155,7 +189,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
                   key={`${member.missionId}|${member.crewMemberId}`}
                   value={`${member.missionId}|${member.crewMemberId}`}
                 >
-                  {member.missionLabel}
+                  {member.missionLabel} — {member.crewLabel}
                 </option>
               ))}
             </select>

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Fragment, useId, useState } from "react";
-import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
+import { useMeasurementProfile } from "@/components/measurement-profile-hook";
 import { applyBoneSharedObservationTimestamp, boneIsoToLocalInput, boneLocalInputToIso, boneReviewIssue, selectBoneReviewRows } from "@/domain/bone-health/review-selection";
 import type { FileReview, ReviewRow } from "@/domain/bone-health/file-queue";
 
@@ -8,6 +8,7 @@ import type { FileReview, ReviewRow } from "@/domain/bone-health/file-queue";
 export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }: {
   review: FileReview; fileId: string; disabled: boolean; onChange: (review: FileReview) => void;
 }) {
+  const profile = useMeasurementProfile();
   function edit(id: string, patch: Partial<ReviewRow>) {
     onChange({ ...review, rows: review.rows.map(row => row.id === id && !row.saved ? { ...row, ...patch } : row) });
   }
@@ -16,7 +17,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
   const [sharedLocal, setSharedLocal] = useState("");
   const [confirmedRows, setConfirmedRows] = useState("");
   const unsaved = review.rows.filter(row => !row.saved);
-  const eligible = unsaved.filter(row => boneReviewIssue(row) === null);
+  const eligible = unsaved.filter(row => boneReviewIssue(row, profile) === null);
   const allVerified = eligible.length > 0 && eligible.every(row => row.selected);
   const missingDates = unsaved.filter(row => !row.observedAt.trim());
   const sharedObservedAt = boneLocalInputToIso(sharedLocal);
@@ -24,7 +25,7 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
   const confirmationScope = JSON.stringify([fileId, sharedObservedAt, review.rows]);
   const confirmSharedDate = confirmedRows === confirmationScope;
   function verifyAll(checked: boolean) {
-    onChange({ ...review, rows: selectBoneReviewRows(review.rows, checked) });
+    onChange({ ...review, rows: selectBoneReviewRows(review.rows, checked, profile) });
   }
   return <div className="mt-3 space-y-3">
     {review.errors.length > 0 && <div role="alert"><strong>Errors / warnings ({review.errors.length})</strong><ul className="list-disc pl-5 text-sm">{review.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
@@ -59,8 +60,8 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
         <thead><tr className="border-b border-border text-left"><th scope="col" className="p-2">Verified</th><th scope="col" className="p-2">Variable</th><th scope="col" className="p-2">Value</th><th scope="col" className="p-2">Unit</th><th scope="col" className="p-2">Date</th><th scope="col" className="p-2">Review</th></tr></thead>
         <tbody>{review.rows.map((row, index) => <Fragment key={row.id}>
           <tr key={`${row.id}-summary`} className="border-b border-border">
-            <td className="p-2"><input type="checkbox" checked={row.selected} aria-label={`I verified ${row.variableId}, measurement ${index + 1}, against the original report`} disabled={disabled || row.saved || boneReviewIssue(row) !== null} onChange={event => edit(row.id, {selected:event.target.checked})} /></td>
-            <td className="p-2">{BONE_HEALTH_VARIABLES.find(variable => variable.id === row.variableId)?.name} <span className="text-muted-foreground">({row.variableId})</span>{row.saved && <span className="block text-muted-foreground">Saved</span>}{!row.saved && boneReviewIssue(row) && <span className="block text-destructive">{boneReviewIssue(row)}</span>}</td>
+            <td className="p-2"><input type="checkbox" checked={row.selected} aria-label={`I verified ${row.variableId}, measurement ${index + 1}, against the original report`} disabled={disabled || row.saved || boneReviewIssue(row, profile) !== null} onChange={event => edit(row.id, {selected:event.target.checked})} /></td>
+            <td className="p-2">{profile.variables.find(variable => variable.id === row.variableId)?.name} <span className="text-muted-foreground">({row.variableId})</span>{row.saved && <span className="block text-muted-foreground">Saved</span>}{!row.saved && boneReviewIssue(row, profile) && <span className="block text-destructive">{boneReviewIssue(row, profile)}</span>}</td>
             <td className="p-2">{Number.isFinite(row.value) ? row.value : "Missing"}</td><td className="p-2">{row.unit}</td><td className="p-2">{row.observedAt || "Missing"}</td>
             <td className="p-2"><Button type="button" variant="outline" size="sm" aria-label={`${expanded.includes(row.id) ? "Close" : "Details / edit"} ${row.variableId}, measurement ${index + 1}`} aria-controls={`${detailsId}-${row.id}`} aria-expanded={expanded.includes(row.id)} onClick={() => setExpanded(current => current.includes(row.id) ? current.filter(id => id !== row.id) : [...current, row.id])}>{expanded.includes(row.id) ? "Close" : "Details / edit"}</Button></td>
           </tr>

@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { loadMissionIdentity } from "@/infrastructure/mission-identity";
-import { BONE_IMPORT_SESSION_KEY, type ImportScope } from "./import-session";
+import { type ImportScope } from "./import-session";
+import { ALL_MEASUREMENT_SESSION_KEYS } from "@/domain/health-measurements/profiles";
 
 let watching = false;
 export function watchBoneImportSignOut() {
@@ -11,14 +12,19 @@ export function watchBoneImportSignOut() {
     if (event === "SIGNED_OUT" || !session) clearRetainedBoneImport();
     else {
       try {
-        const raw = window.sessionStorage.getItem(BONE_IMPORT_SESSION_KEY);
-        if (raw && JSON.parse(raw).scope?.userId !== session.user.id) clearRetainedBoneImport();
+        for (const key of ALL_MEASUREMENT_SESSION_KEYS) {
+          const raw = window.sessionStorage.getItem(key);
+          if (raw && JSON.parse(raw).scope?.userId !== session.user.id) clearRetainedBoneImport();
+        }
       } catch { clearRetainedBoneImport(); }
     }
   });
 }
 export function clearRetainedBoneImport() {
-  try { window.sessionStorage.removeItem(BONE_IMPORT_SESSION_KEY); } catch { /* Storage unavailable. */ }
+  // Clears retained synthetic review for every health domain (account/scope change, sign-out).
+  for (const key of ALL_MEASUREMENT_SESSION_KEYS) {
+    try { window.sessionStorage.removeItem(key); } catch { /* Storage unavailable. */ }
+  }
 }
 export async function authorizeBoneImport(scope: Omit<ImportScope, "userId">): Promise<ImportScope> {
   const identity = await loadMissionIdentity();

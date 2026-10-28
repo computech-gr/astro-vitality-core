@@ -1,5 +1,5 @@
 import { getOfflineMissionStore, persistOfflineMissionEvent } from "@/infrastructure/offline";
-import { BONE_HEALTH_VARIABLES } from "./catalog";
+import { BONE_MEASUREMENT_PROFILE, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 
 export interface BoneHealthEntry {
   id: string;
@@ -21,9 +21,8 @@ export interface BoneHealthEntry {
   /** Human reason recorded when an entry is marked erroneous. */
   statusReason?: string;
 }
-const SOURCE = "p22.1-bone-health-manual";
-export function validateBoneEntry(entry: BoneHealthEntry): string | null {
-  if (!BONE_HEALTH_VARIABLES.some((item) => item.id === entry.variableId))
+export function validateBoneEntry(entry: BoneHealthEntry, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): string | null {
+  if (!profile.variables.some((item) => item.id === entry.variableId))
     return "Choose a catalog variable.";
   if (!entry.missionId.trim() || !entry.crewMemberId.trim())
     return "Mission and crew identifiers are required.";
@@ -72,18 +71,18 @@ export function collapseBoneEntryVersions(
   return [...latest.values()].map((version) => version.entry);
 }
 
-export async function saveBoneEntry(entry: BoneHealthEntry): Promise<void> {
-  const issue = validateBoneEntry(entry);
+export async function saveBoneEntry(entry: BoneHealthEntry, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): Promise<void> {
+  const issue = validateBoneEntry(entry, profile);
   if (issue) throw new Error(issue);
   await persistOfflineMissionEvent({
-    id: `bone-health:${entry.id}:${entry.status === "erroneous" ? "status" : "entry"}`,
+    id: `${profile.eventPrefix}:${entry.id}:${entry.status === "erroneous" ? "status" : "entry"}`,
     kind: "observation",
     mission: { missionId: entry.missionId, crewMemberId: entry.crewMemberId },
     eventTimestamp: entry.observedAt,
-    sourceId: SOURCE,
-    sourceVersion: "22.1",
+    sourceId: profile.sourceId,
+    sourceVersion: profile.sourceVersion,
     classification: "medical_sensitive",
-    payload: { schemaVersion: "22.1", metricCode: entry.variableId, entry },
+    payload: { schemaVersion: profile.sourceVersion, domain: profile.domainId, metricCode: entry.variableId, entry },
   });
 }
 
@@ -94,20 +93,22 @@ export async function saveBoneEntry(entry: BoneHealthEntry): Promise<void> {
 export async function markBoneEntryErroneous(
   entry: BoneHealthEntry,
   reason: string,
+  profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE,
 ): Promise<void> {
   if (!reason.trim()) throw new Error("A short reason is required to mark a record as erroneous.");
-  await saveBoneEntry({ ...entry, status: "erroneous", statusReason: reason.trim().slice(0, 500) });
+  await saveBoneEntry({ ...entry, status: "erroneous", statusReason: reason.trim().slice(0, 500) }, profile);
 }
 
 export async function listBoneEntries(
   missionId: string,
   crewMemberId: string,
+  profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE,
 ): Promise<BoneHealthEntry[]> {
   const records = await getOfflineMissionStore().list(1000);
   const versions = records
     .filter(
       (record) =>
-        record.sourceId === SOURCE &&
+        record.sourceId === profile.sourceId &&
         record.mission.missionId === missionId &&
         record.mission.crewMemberId === crewMemberId,
     )
@@ -116,7 +117,8 @@ export async function listBoneEntries(
       return payload?.entry ? { entry: payload.entry, storedAt: record.createdAt } : null;
     })
     .filter((version): version is { entry: BoneHealthEntry; storedAt: string } =>
-      Boolean(version && !validateBoneEntry(version.entry)),
+      Boolean(version && !validateBoneEntry(version.entry, profile) &&
+        version.entry.missionId === missionId && version.entry.crewMemberId === crewMemberId),
     );
   return collapseBoneEntryVersions(versions).sort((a, b) =>
     b.observedAt.localeCompare(a.observedAt),

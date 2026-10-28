@@ -1,4 +1,4 @@
-import { BONE_HEALTH_VARIABLES } from "./catalog";
+import { BONE_MEASUREMENT_PROFILE, catalogIdPattern, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 import { parseBoneImport, type BoneImportCandidate } from "./import";
 
 import { getLocalOcrAssets } from "./ocr-readiness";
@@ -111,16 +111,16 @@ function catalogLabels(name: string): string[] {
 }
 const resultPattern = /^\s*(?:[:=]|[-–—]|\s)+\s*([+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;|]+)(?:\s|$)/;
 
-export function suggestBoneDocumentMatches(text: string, source: string): DocumentMatch[] {
-  return parseBoneCorrectedText(text, source).matches;
+export function suggestBoneDocumentMatches(text: string, source: string, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): DocumentMatch[] {
+  return parseBoneCorrectedText(text, source, profile).matches;
 }
 
 /** Supported layouts: exact ID/name + value + reported unit, pipe/tab tables, or template CSV. */
-export function parseBoneCorrectedText(text: string, source: string): { matches: DocumentMatch[]; errors: string[] } {
+export function parseBoneCorrectedText(text: string, source: string, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): { matches: DocumentMatch[]; errors: string[] } {
   if (text.length > 100000) return { matches: [], errors: ["Extracted text exceeds 100,000 characters."] };
   if (/^\s*variable\s*,/i.test(text)) {
     try {
-      const parsed = parseBoneImport(text);
+      const parsed = parseBoneImport(text, profile);
       return { matches: parsed.candidates.map(row => ({ ...row, rawLine: "Corrected CSV", reviewRequired: true })), errors: parsed.rejected.length ? parsed.rejected : parsed.candidates.length ? [] : ["CSV contains no measurement rows."] };
     } catch (error) { return { matches: [], errors: [error instanceof Error ? error.message : "Invalid CSV."] }; }
   }
@@ -133,14 +133,14 @@ export function parseBoneCorrectedText(text: string, source: string): { matches:
     // PDF text often uses whitespace columns: ID, analyte, value, unit, specimen.
     // Only a catalog ID at the beginning of a row may trigger this path.
     // Metadata (e.g. Report ID) and prose containing an ID are never measurements.
-    const idRow = line.replace(/\s*[|\t]\s*/g, " ").trim().match(/^(bone-\d{3})\s+(.+)$/i);
+    const idRow = line.replace(/\s*[|\t]\s*/g, " ").trim().match(catalogIdPattern(profile));
     const idCode = idRow?.[1]; const idRest = idRow?.[2];
     const cells = idRest ? idRest.trim().split(/\s+/) : [];
     const numericCell = /^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
     // ID-led rows with an analyte column (ID, analyte, value, unit, specimen). Rows
     // with the value directly after the ID use the existing exact-ID path below.
     if (idCode && cells.length > 0 && !numericCell.test(cells[0] ?? "")) {
-      const variable = BONE_HEALTH_VARIABLES.find(v => v.id.toLowerCase() === idCode.toLowerCase());
+      const variable = profile.variables.find(v => v.id.toLowerCase() === idCode.toLowerCase());
       if (!variable) { errors.push(`Line ${index + 1}: unknown catalog ID.`); continue; }
       const valueAt = cells.findIndex((cell, i) => i > 0 && numericCell.test(cell) && i + 1 < cells.length);
       const valueCell = cells[valueAt]; const unit = cells[valueAt + 1];
@@ -158,11 +158,11 @@ export function parseBoneCorrectedText(text: string, source: string): { matches:
     }
     const tableLine = line.replace(/\s*[|\t]\s*/g, " ").trim();
     const normalized = normalizedLabel(tableLine);
-    const candidates = BONE_HEALTH_VARIABLES.flatMap(v => [v.id, ...catalogLabels(v.name)].map(label => ({v, label})))
+    const candidates = profile.variables.flatMap(v => [normalizedLabel(v.id), ...catalogLabels(v.name)].map(label => ({v, label})))
       .filter(({label}) => normalized.startsWith(label) && /[\s:=–—-]/.test(normalized.charAt(label.length)));
     const ids = new Set(candidates.map(c => c.v.id));
     if (ids.size !== 1) {
-      if (/^\s*bone-\d+\b/i.test(line)) errors.push(`Line ${index + 1}: unknown or ambiguous catalog ID.`);
+      if (new RegExp(`^\\s*${profile.idPrefix}-\\d+\\b`, "i").test(line)) errors.push(`Line ${index + 1}: unknown or ambiguous catalog ID.`);
       continue; // Ambiguous labels are never auto-mapped.
     }
     const chosen = candidates.sort((a,b) => b.label.length - a.label.length)[0];
