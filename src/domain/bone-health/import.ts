@@ -25,7 +25,7 @@ function csvRows(input: string): string[][] {
   let cell = "";
   let quote = false;
   for (let i = 0; i < input.length; i++) {
-    const c = input[i]!;
+    const c = input.charAt(i);
     if (quote) {
       if (c === '"' && input[i + 1] === '"') {
         cell += '"';
@@ -52,7 +52,8 @@ export function parseBoneImport(text: string): BoneImportReview {
   if (text.length > MAX_CHARS) throw new Error("Import exceeds 250,000 characters.");
   const rows = csvRows(text);
   if (!rows.length) throw new Error("Empty CSV.");
-  const names = rows[0]!.map((x) => x.toLowerCase());
+  const names = (rows[0] ?? []).map((x) => x.toLowerCase());
+  if (new Set(names).size !== names.length) throw new Error("Duplicate CSV headers.");
   if (headers.some((h) => !names.includes(h)))
     throw new Error(`Required CSV headers: ${headers.join(", ")}`);
   if (rows.length - 1 > MAX_ROWS) throw new Error("Maximum 200 results per import.");
@@ -60,7 +61,9 @@ export function parseBoneImport(text: string): BoneImportReview {
   const rejected: string[] = [];
   const get = (r: string[], k: string) => r[names.indexOf(k)]?.trim() ?? "";
   for (let i = 1; i < rows.length; i++) {
-    const r = rows[i]!;
+    const r = rows[i];
+    if (!r) continue;
+    if (r.length !== names.length) { rejected.push(`Row ${i + 1}: malformed CSV column count.`); continue; }
     const label = get(r, "variable");
     const matches = BONE_HEALTH_VARIABLES.filter(
       (v) =>
@@ -71,11 +74,12 @@ export function parseBoneImport(text: string): BoneImportReview {
     const unit = get(r, "unit"),
       observed = get(r, "observed_at"),
       source = get(r, "source");
+    if (matches.length !== 1) { rejected.push(`Row ${i + 1}: unknown or ambiguous exact catalog ID/name.`); continue; }
     if (
-      matches.length !== 1 ||
       !rawValue ||
+      !/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(rawValue) ||
       !Number.isFinite(numeric) ||
-      !unit ||
+      !unit || !/[\p{L}%µμ]/u.test(unit) || /[<>≤≥|]/.test(unit) ||
       !source ||
       !observed ||
       !Number.isFinite(Date.parse(observed))
@@ -86,7 +90,7 @@ export function parseBoneImport(text: string): BoneImportReview {
       continue;
     }
     candidates.push({
-      variableId: matches[0]!.id,
+      variableId: matches[0]?.id ?? "",
       value: numeric,
       unit,
       observedAt: new Date(observed).toISOString(),

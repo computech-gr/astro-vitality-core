@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## Bone corrected-text parsing and safe restoration
+
+- [x] Parse exact-ID/name report rows, tab/pipe tables and corrected CSV with explicit errors; preserve custom reported units without conversion or an invented unit whitelist.
+- [x] Restore bounded synthetic queues after fresh scoped identity/crew reads; reset checked review, clear account/scope/sign-out state, preserve saved-row receipts and require file reselection.
+- [x] 676 tests pass; synthetic-adapter desktop/mobile recheck, refocus/remount, denied restoration, OCR failure and partial-save-remount checks pass with no page errors. Lint: 0 errors/13 existing warnings; security/formatting and three Bone verifiers pass; managed compilation reports build OK. Dependency audit retains 2 moderate/1 low advisories.
+- [ ] Exact-revision full typecheck/production-build CI and authenticated encrypted-storage acceptance remain unverified; physical-device offline OCR is not attested. No new latest-project attachment was found beyond the previous role-access patch; current clean project was preserved. No database, migrations, AI or gate changes.
+
 ## Bone import role access patch
 
 - [x] Compare and apply the supplied import-access presentation patch without overwriting unrelated changes.
