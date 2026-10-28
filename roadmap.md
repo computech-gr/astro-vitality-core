@@ -1,3 +1,9 @@
+# P35 Clinical Lab Parser and Access Audit
+
+- [ ] Recognize the actual clinical PDF with five exact Immune candidates, reported units, source/page traceability and human-confirmed dates; preserve P34/four-domain behavior.
+- [ ] Audit Ground Medical/Crew Self access and harmonize owner-reported scientific review wording without changing authorization.
+- [ ] Run focused/full tests, security/lint and desktop/mobile real PDF uploads; document authenticated persistence and compilation limitations. No Cloud writes, migrations, AI, gate changes or publishing.
+
 # P33 Universal Medical Document Intelligence
 
 - [ ] Apply P33 patch (universal-document-rows, document-extraction, tests) and complete the full contract: PDF.js geometry reconstruction, header-aware tables, reviewed aliases only, unit validation without conversion, held-for-review ambiguity, diagnostics, page/source traceability.

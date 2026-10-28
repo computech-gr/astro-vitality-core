@@ -4,6 +4,7 @@ import { parseBoneImport, type BoneImportCandidate } from "./import";
 import { getLocalOcrAssets } from "./ocr-readiness";
 import { reconstructGeometryLines, geometryLinesToText, type PdfTextItem } from "./pdf-geometry";
 import { extractUniversalDocumentRows, type HeldRow } from "./universal-document-rows";
+import { recognizeClinicalLabRows } from "./clinical-lab-rows";
 
 export type ExtractedDocument = { text: string; pages: number; method: string; warnings: string[]; linePages: number[] };
 type Detector = { detect(image: ImageBitmap | HTMLCanvasElement): Promise<Array<{rawValue?: string}>> };
@@ -160,9 +161,16 @@ export function parseBoneCorrectedText(text: string, source: string, profile: Me
       : "Extracted from document; verify source and observation time.",
     selected: false, rawLine: row.rawLine, reviewRequired: true, page: row.page,
   }));
+  const clinical = recognizeClinicalLabRows(text, profile, linePages);
+  const clinicalMatches: DocumentMatch[] = clinical.rows.map(row => ({
+    variableId: row.variableId, value: row.value, unit: row.unit,
+    observedAt: "", sourceLabel: source, specimen: "", assayMethod: "",
+    notes: "Clinical document: verify analyte, exact reported unit, value, date and source against original. Collection metadata is not an observation date.",
+    selected: false, rawLine: row.rawLine, reviewRequired: true, page: row.page,
+  }));
   const lines = text.split(/\r?\n/).slice(0, 1000);
-  const found: DocumentMatch[] = [...universalMatches];
-  const universalLines = new Set(universal.rows.map(r => r.rawLine));
+  const found: DocumentMatch[] = [...universalMatches, ...clinicalMatches.filter(row => !universal.rows.some(u => u.rawLine === row.rawLine))];
+  const universalLines = new Set([...universal.rows.map(r => r.rawLine), ...clinical.touched]);
   const errors: string[] = [];
   // Lines the legacy paths matched or rejected; universal warnings for those
   // lines are suppressed so one line never produces duplicate diagnostics.
@@ -224,7 +232,7 @@ export function parseBoneCorrectedText(text: string, source: string, profile: Me
     legacyTouched.add(index);
   }
   const universalWarnings = universal.warnings.filter(warning => !legacyTouched.has(warning.line - 1)).map(warning => warning.message);
-  const held = universal.held.filter(row => !legacyTouched.has(row.line - 1));
+  const held = [...universal.held.filter(row => !legacyTouched.has(row.line - 1) && !clinical.touched.has(row.snippet)), ...clinical.held];
   if (!found.length && !errors.length && !universalWarnings.length && !held.length) errors.push("No supported laboratory rows found. Use exact catalog ID/name followed by value and unit, a tab/pipe table, or the CSV template. Dates and source require human review.");
   if (found.length > 100) errors.push("Maximum 100 document results; remaining rows were not imported.");
   // Restore document line order: universal and legacy matches were collected separately.
