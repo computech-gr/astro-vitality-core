@@ -13,6 +13,9 @@ async def main():
         await page.goto("http://localhost:8080/mission/bone-health", wait_until="networkidle")
         await page.evaluate(r'''async () => {
           let source = await (await fetch('/src/components/bone-health-entry.tsx')).text();
+          source = source.slice(0, source.indexOf('import * as RefreshRuntime'));
+          source = source.replace(/import\.meta\.hot = [^;]+;/, '');
+          source = 'const $RefreshSig$=()=>()=>{}; const $RefreshReg$=()=>{};\n'+source;
           const version = source.match(/react\.js\?v=([a-z0-9]+)/)[1];
           const {default: React} = await import('/node_modules/.vite/deps/react.js?v='+version);
           const {default: Client} = await import('/node_modules/.vite/deps/react-dom_client.js?v='+version);
@@ -35,17 +38,12 @@ async def main():
         await page.get_by_role("button", name="Save encrypted record", exact=True).wait_for()
         await page.wait_for_timeout(300)
         for label in ["Lab / original source", "Specimen / modality", "Assay / method"]:
-            # Source picker uses its established label, resolved below if needed.
-            if label.startswith("Lab"):
-                combo = form.get_by_role("combobox").filter(has=page.locator("never-match"))
-                combo = form.locator('input[role="combobox"]').nth(2)
-            else:
-                combo = form.get_by_role("combobox", name=label, exact=True)
+            combo = form.get_by_role("combobox", name=label, exact=True)
             assert await combo.input_value() == "", label
         await page.get_by_label("Result", exact=True).fill("12")
         await page.get_by_role("combobox", name="Unit (as reported)", exact=True).fill("pg/mL")
         await page.get_by_label("Observed at (device local time)", exact=True).fill("2026-10-28T08:49")
-        source = form.locator('input[role="combobox"]').nth(2)
+        source = form.get_by_role("combobox", name="Lab / original source", exact=True)
         await source.fill("Astronaut custom lab")
         await page.get_by_role("combobox", name="Specimen / modality", exact=True).fill("Custom specimen")
         await page.get_by_role("combobox", name="Assay / method", exact=True).fill("Custom assay")
