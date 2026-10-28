@@ -24,7 +24,7 @@ async def main():
       source=source.replace(/import\.meta\.hot = [^;]+;/,'');
       source='const $RefreshSig$=()=>()=>{}; const $RefreshReg$=()=>{};\n'+source;
       if(name==='form.js')window.reactVersion=source.match(/react\.js\?v=([a-z0-9]+)/)[1];
-      if(name==='form.js') source=source.replace(/import[^;]*from \"\/src\/domain\/bone-health\/import-authorization.ts\";/,'const authorizeBoneImport=async scope=>{if(window.fileTest.denied)throw new Error(\"denied\");return {...scope,userId:\"synthetic-user\"};};const clearRetainedBoneImport=()=>sessionStorage.removeItem(\"mitochondria.bone-import.synthetic.v1\");const watchBoneImportSignOut=()=>{};').replace(/import[^;]*from \"\/src\/infrastructure\/mission-identity.ts\";/,'const subscribeMissionIdentity=listener=>{window.fileTest.refresh=listener;return ()=>{};};');
+      if(name==='form.js') source=source.replace(/import[^;]*from \"\/src\/domain\/bone-health\/import-authorization.ts[^\"]*\";/,'const authorizeBoneImport=async scope=>{if(window.fileTest.denied)throw new Error(\"denied\");return {...scope,userId:\"synthetic-user\"};};const clearRetainedBoneImport=()=>sessionStorage.removeItem(\"mitochondria.bone-import.synthetic.v1\");const watchBoneImportSignOut=()=>{};').replace(/import[^;]*from \"\/src\/infrastructure\/mission-identity.ts\";/,'const subscribeMissionIdentity=listener=>{window.fileTest.refresh=listener;return ()=>{};};');
       source=source.replace(/from\s+(["'])([^"']+)\1/g,(whole,q,path)=>{
         let target=path.startsWith('/src/domain/bone-health/history.ts')?'/__files/history.js':path.startsWith('/src/domain/bone-health/file-queue.ts')?'/__files/queue.js':path;
         return 'from '+JSON.stringify(target.startsWith('/')?location.origin+target:target);
@@ -40,7 +40,7 @@ async def main():
     window.fileTest.render=()=>{window.fileTest.root=Client.createRoot(host);window.fileTest.root.render(React.createElement(BoneHealthImport,{missionId:'synthetic-mission',crewMemberId:'synthetic-crew',dataOrigin:'synthetic',onImported:async()=>{}}));};window.fileTest.render();
   }''')
   button=page.get_by_role('button',name='Choose laboratory files',exact=True)
-  await button.wait_for(); await page.wait_for_timeout(500); print(await page.locator('body').inner_text())
+  await button.wait_for(); await page.wait_for_timeout(500)
   assert await page.locator('input[type=file]').count()==1
   assert await button.evaluate('(e)=>getComputedStyle(e).cursor')=='pointer'
   await button.focus()
