@@ -123,7 +123,7 @@ export async function extractBoneDocument(file: File, signal?: AbortSignal): Pro
   throw new Error("Only PDF, PNG, JPEG and WebP documents are supported.");
 }
 
-export type DocumentMatch = BoneImportCandidate & { rawLine: string; reviewRequired: true; page?: number };
+export type DocumentMatch = BoneImportCandidate & { rawLine: string; reviewRequired: true; page?: number | undefined };
 
 // Only exact catalog names or their explicitly written slash-separated variants.
 // Do not infer clinical synonyms, ranges, inequalities, or missing units.

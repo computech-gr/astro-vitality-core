@@ -6,7 +6,7 @@ import { findPotentialDuplicates, validateBoneEntry, type BoneHealthEntry } from
 export const BONE_FILE_ACCEPT = ".csv,.pdf,.png,.jpg,.jpeg,.webp";
 export const MAX_BONE_FILES = 10;
 export const BONE_FILE_TIMEOUT_MS = 90_000;
-export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean; page?: number };
+export type ReviewRow = BoneImportCandidate & { id: string; rawLine?: string; saved?: boolean; page?: number | undefined };
 /** P33: per-file extraction diagnostics for the human review panel. */
 export type ReviewDiagnostics = { method: string; pages: number; matched: number; held: number; rejected: number; warnings: number; sourceName: string };
 export type FileReview = { rows: ReviewRow[]; errors: string[]; text: string; method: string; diagnostics?: ReviewDiagnostics };

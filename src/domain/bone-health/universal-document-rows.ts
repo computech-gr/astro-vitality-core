@@ -24,9 +24,9 @@ export type UniversalRow = {
   trailingContext: string;
   specimen: string;
   observedAt: string;
-  page?: number;
+  page?: number | undefined;
 };
-export type HeldRow = { line: number; reason: string; snippet: string; page?: number };
+export type HeldRow = { line: number; reason: string; snippet: string; page?: number | undefined };
 export type UniversalWarning = { line: number; message: string };
 
 const numeric = /^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
@@ -52,7 +52,7 @@ export function strictIsoDateTime(value: string): string {
 
 type Column = "id" | "analyte" | "result" | "unit" | "date" | "reference" | "specimen" | "ignore";
 /** Reviewed header labels only (English + Greek); unknown labels never map a column. */
-const HEADER_LABELS: Record<Column, readonly string[]> = {
+const HEADER_LABELS: Record<Exclude<Column, "ignore">, readonly string[]> = {
   id: ["id", "code", "catalog id", "test id", "test code", "variable", "κωδικός"],
   analyte: ["analyte", "test", "parameter", "measurement", "metric", "εξέταση"],
   result: ["result", "value", "reading", "αποτέλεσμα", "τιμή"],
