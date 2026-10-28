@@ -3,7 +3,7 @@ import fs from 'node:fs';
 const read = p => fs.readFileSync(p,'utf8');
 const readiness=read('src/domain/bone-health/ocr-readiness.ts');
 const domain=read('src/domain/bone-health/document-extraction.ts');
-const ui=read('src/components/bone-health-document-import.tsx');
+const ui=read('src/components/bone-health-import.tsx');
 const sw=read('public/sw.js');
 const staging=read('scripts/stage-p22-ocr-assets.mjs');
 const pkg=JSON.parse(read('package.json'));

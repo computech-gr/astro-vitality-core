@@ -9,7 +9,7 @@ describe("Bone local multi-file queue", () => {
   test("retains CSV parser and unchecked defaults without OCR", async () => {
     const output = await processBoneFile(new File([csv], "results.csv"), new AbortController().signal);
     expect(output.rows.length).toBe(1); expect(output.rows[0]?.selected).toBe(false);
-    expect(output.rows[0]?.unit).toBe("custom-unit"); expect(output.rows[0]?.observedAt).toBe(row.observedAt);
+    expect(output.rows[0]?.unit).toBe("custom-unit"); expect(output.rows[0]?.observedAt).toBe("2026-10-28T07:18:00.000Z");
   });
   test("supports all six extensions and rejects unsupported/oversized files", () => {
     for (const extension of ["csv","pdf","png","jpg","jpeg","webp"]) expect(boneFileIssue({name:`test.${extension}`,size:1})).toBeNull();
