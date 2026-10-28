@@ -34,7 +34,7 @@ changes, no release-gate changes, no publishing.
     the mission with an active Crew Self roster match — the existing import
     access policy.
   - Default deny: `P36_DOCUMENT_AI_ENABLED=true` master gate; `provenance:
-    "real"` additionally requires `P36_REAL_DOCUMENT_AI_ENABLED=true`. Neither
+"real"` additionally requires `P36_REAL_DOCUMENT_AI_ENABLED=true`. Neither
     is set in any managed environment, so the endpoint currently answers 503
     and sends nothing.
   - Provider allowlist: `lovable` (Lovable AI Gateway `/v1/responses`, model
@@ -72,13 +72,13 @@ usage 1,658 input + 629 output tokens (2,287 total; workspace-credit cost per
 the gateway rate card). All five expected synthetic immune measurements were
 returned with correct catalog IDs, values and units as printed:
 
-| Catalog | Analyte | Value | Unit (as reported) | Date handling |
-| --- | --- | --- | --- | --- |
-| IMM-001 | Total leukocytes / WBC | 6.7 | x10^9/L | collection → held for manual confirmation |
-| IMM-002 | Neutrophils, absolute | 3.8 | x10^9/L | collection → held |
-| IMM-003 | Absolute lymphocyte count | 2.2 | x10^9/L | collection → held |
-| IMM-007 | hs-CRP | 2.4 | mg/L | collection → held |
-| IMM-006 | NLR | 1.73 | dimensionless ratio | collection → held |
+| Catalog | Analyte                   | Value | Unit (as reported)  | Date handling                             |
+| ------- | ------------------------- | ----- | ------------------- | ----------------------------------------- |
+| IMM-001 | Total leukocytes / WBC    | 6.7   | x10^9/L             | collection → held for manual confirmation |
+| IMM-002 | Neutrophils, absolute     | 3.8   | x10^9/L             | collection → held                         |
+| IMM-003 | Absolute lymphocyte count | 2.2   | x10^9/L             | collection → held                         |
+| IMM-007 | hs-CRP                    | 2.4   | mg/L                | collection → held                         |
+| IMM-006 | NLR                       | 1.73  | dimensionless ratio | collection → held                         |
 
 The header collection time (14 October 2026, 07:35 UTC) arrived as
 `dateKind: "collection"` with `observedAt: null` on every row — never as an
