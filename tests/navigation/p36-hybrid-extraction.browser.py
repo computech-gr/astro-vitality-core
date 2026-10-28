@@ -74,7 +74,7 @@ async def main():
             await page.set_input_files('input[type=file]', [{'name': FIXTURE.name, 'mimeType': 'application/pdf', 'buffer': FIXTURE.read_bytes()}])
             ai_ok = page.get_by_role('status').filter(has_text='AI-assisted extraction (stubbed-server/ui-wiring-only)')
             await ai_ok.wait_for(timeout=60000)
-            print("AI STATUS:", await ai_ok.text_content()); print("ERRORS:", await page.locator("div[role=alert]").first.text_content() if await page.locator("div[role=alert]").count() else "none")
+            assert "5 unchecked suggestion(s) added" in await ai_ok.text_content()
             rows = page.locator('input[type=checkbox][aria-label^="I verified"]')
             assert await rows.count() == 5, await rows.count()
             assert await page.locator('input[type=checkbox]:checked').count() == 0
