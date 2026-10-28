@@ -1,5 +1,12 @@
 # P20 video evidence closure
 
+## Bone import role access patch
+
+- [x] Compare and apply the supplied import-access presentation patch without overwriting unrelated changes.
+- [x] Synthetic-adapter browser checks pass for Crew Self/Ground Medical import before correction, explicit provenance, denied roles, crew isolation and scope/provenance queue reset; desktop/mobile, existing OCR/partial-save and correction runners pass.
+- [x] 662 tests pass; lint reports 0 errors/13 existing warnings; security audit, formatting and Bone entry/import/document/SEO verifiers pass. Dependency audit retains 2 moderate/1 low advisories; automatic compilation reports build OK.
+- [ ] Full typecheck/production-build evidence and authenticated role/encrypted-storage acceptance remain unverified; these require managed validation and authorized test sessions. No database, migrations, AI, deployment or release-gate changes.
+
 ## Unified Bone file import UX
 
 - [x] Unified memory-only 10-file serial queue, cancellation/90-second timeout, independent OCR cache check and explicit per-measurement review; successful append-only saves receive stable-ID receipts and duplicates remain scope/provenance bound.
