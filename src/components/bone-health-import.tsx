@@ -8,6 +8,7 @@ import { BoneFileQueue, BONE_FILE_ACCEPT, MAX_BONE_FILES, reviewedBoneEntries, d
 import { listBoneEntries, saveBoneEntry } from "@/domain/bone-health/history";
 import { authorizeBoneImport, clearRetainedBoneImport, watchBoneImportSignOut } from "@/domain/bone-health/import-authorization";
 import { retainBoneImport, restoreBoneImport, type ImportScope } from "@/domain/bone-health/import-session";
+import { subscribeMissionIdentity } from "@/infrastructure/mission-identity";
 
 export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImported }: {
   missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic"; onImported: () => Promise<void>;

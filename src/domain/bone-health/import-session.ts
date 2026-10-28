@@ -5,6 +5,8 @@ export const BONE_IMPORT_SESSION_KEY = "mitochondria.bone-import.synthetic.v1";
 export const MAX_BONE_SESSION_CHARS = 500_000;
 export type ImportScope = { userId: string; missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic" };
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+type StoredRow = { id: string; variableId: string; value: number | null; unit: string; observedAt: string; sourceLabel: string; specimen: string; assayMethod: string; notes: string; rawLine?: string; saved?: boolean };
+type StoredItem = { id: string; name: string; kind: string; status: string; detail: string; review?: { text: string; method: string; errors: string[]; rows: StoredRow[] } };
 const string = (value: unknown, limit: number): value is string => typeof value === "string" && value.length <= limit;
 
 /** Explicit allowlist: never serialize files, approval flags, authorization or consent. */
@@ -30,15 +32,15 @@ export function restoreBoneImport(storage: StorageLike, scope: ImportScope): Que
     const data = JSON.parse(raw);
     if (data.version !== 1 || !scope.userId || !scope.missionId || !scope.crewMemberId ||
         Object.keys(scope).some(key => data.scope?.[key] !== scope[key as keyof ImportScope]) || !Array.isArray(data.items) || data.items.length > 10) throw new Error("Invalid session");
-    return data.items.map((item: Record<string, any>) => {
+    return data.items.map((item: StoredItem) => {
       if (!string(item.id, 100) || !string(item.name, 300) || !string(item.kind, 20) || !string(item.detail, 2000) || !["queued", "processing", "review", "error", "cancelled"].includes(item.status)) throw new Error("Invalid file metadata");
       let review: QueueItem["review"];
       if (item.review) {
         const r = item.review;
         if (!string(r.text, 100000) || !string(r.method, 300) || !Array.isArray(r.errors) || r.errors.length > 250 || r.errors.some((e: unknown) => !string(e, 2000)) || !Array.isArray(r.rows) || r.rows.length > 200) throw new Error("Invalid review");
-        review = { text: r.text, method: r.method, errors: r.errors, rows: r.rows.map((row: Record<string, unknown>) => {
+        review = { text: r.text, method: r.method, errors: r.errors, rows: r.rows.map((row: StoredRow) => {
           if (!string(row.id, 100) || !BONE_HEALTH_VARIABLES.some(v => v.id === row.variableId) || (row.value !== null && (typeof row.value !== "number" || !Number.isFinite(row.value))) ||
-              ["unit", "observedAt", "sourceLabel", "specimen", "assayMethod", "notes"].some(key => !string(row[key], key === "notes" ? 10000 : 1000)) || (row.rawLine !== undefined && !string(row.rawLine, 10000))) throw new Error("Invalid row");
+              ["unit", "observedAt", "sourceLabel", "specimen", "assayMethod", "notes"].some(key => !string(row[key as keyof StoredRow], key === "notes" ? 10000 : 1000)) || (row.rawLine !== undefined && !string(row.rawLine, 10000))) throw new Error("Invalid row");
           return { id: row.id as string, variableId: row.variableId as string, value: row.value === null ? NaN : row.value as number, unit: row.unit as string, observedAt: row.observedAt as string, sourceLabel: row.sourceLabel as string, specimen: row.specimen as string, assayMethod: row.assayMethod as string, notes: row.notes as string, ...(row.rawLine ? { rawLine: row.rawLine as string } : {}), saved: row.saved === true, selected: false };
         }) };
       }

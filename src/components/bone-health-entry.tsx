@@ -6,6 +6,7 @@ import {
   type MissionMembershipContext,
 } from "@/infrastructure/mission-identity";
 import { BoneHealthImport } from "@/components/bone-health-import";
+import { clearRetainedBoneImport } from "@/domain/bone-health/import-authorization";
 import { Button } from "@/components/ui/button";
 import { BoneHandbookReference } from "@/components/scientific-handbook-reference";
 import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
@@ -314,7 +315,7 @@ export function BoneHealthEntryPage() {
           <select
             className={field}
             value={missionId}
-            onChange={(e) => setMissionId(e.target.value)}
+            onChange={(e) => { clearRetainedBoneImport(); setMissionId(e.target.value); }}
             required
             disabled={!memberships.length}
           >
@@ -331,7 +332,7 @@ export function BoneHealthEntryPage() {
           <select
             className={field}
             value={crewMemberId}
-            onChange={(e) => setCrewMemberId(e.target.value)}
+            onChange={(e) => { clearRetainedBoneImport(); setCrewMemberId(e.target.value); }}
             required
             disabled={!missionId}
           >
@@ -411,7 +412,7 @@ export function BoneHealthEntryPage() {
           <select
             className={field}
             value={dataOrigin}
-            onChange={(e) => setDataOrigin(e.target.value as "synthetic" | "real")}
+            onChange={(e) => { clearRetainedBoneImport(); setDataOrigin(e.target.value as "synthetic" | "real"); }}
             required
           >
             <option value="">Select provenance</option>
@@ -472,7 +473,7 @@ export function BoneHealthEntryPage() {
             <select
               className={`${field} cursor-pointer`}
               value={dataOrigin}
-              onChange={(event) => setDataOrigin(event.target.value as "" | "synthetic" | "real")}
+              onChange={(event) => { clearRetainedBoneImport(); setDataOrigin(event.target.value as "" | "synthetic" | "real"); }}
               aria-label="Import data provenance"
             >
               <option value="">Choose provenance to enable file import</option>
