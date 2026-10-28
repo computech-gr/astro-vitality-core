@@ -121,7 +121,10 @@ export function extractUniversalDocumentRows(
         return at >= 0 ? (cells[at] ?? "").trim() : "";
       };
       const idCell = get("id");
-      const looksLikeRow = idCell || cells.some((cell) => numeric.test(cell));
+      // A table row must carry an ID-like token or a numeric cell; anything
+      // else (footers, notes, prose) ends the table instead of being held.
+      const idLike = new RegExp(`^${profile.idPrefix}-\\d{3}$`, "i").test(idCell) || /^[a-z]{1,6}-\d{1,4}$/i.test(idCell);
+      const looksLikeRow = idLike || cells.some((cell) => numeric.test(cell));
       if (looksLikeRow && cells.length !== header.length) {
         held.push({ line: index + 1, reason: `column count (${cells.length}) differs from the table header (${header.length}); manual mapping required`, snippet: line, page });
         continue;
@@ -129,7 +132,7 @@ export function extractUniversalDocumentRows(
       if (looksLikeRow && cells.length === header.length) {
         const variable = profile.variables.find((v) => v.id.toLowerCase() === idCell.toLowerCase());
         if (!variable) {
-          held.push({ line: index + 1, reason: idCell ? `unknown catalog ID "${idCell}"` : "row has no catalog ID; manual mapping required", snippet: line, page });
+          held.push({ line: index + 1, reason: idLike ? `unknown catalog ID "${idCell}"` : "row has no catalog ID; manual mapping required", snippet: line, page });
           continue;
         }
         const analyte = normalize(get("analyte"));

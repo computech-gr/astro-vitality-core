@@ -182,7 +182,7 @@ export function parseBoneCorrectedText(text: string, source: string, profile: Me
     // with the value directly after the ID use the existing exact-ID path below.
     if (idCode && cells.length > 0 && !numericCell.test(cells[0] ?? "")) {
       const variable = profile.variables.find(v => v.id.toLowerCase() === idCode.toLowerCase());
-      if (!variable) { errors.push(`Line ${index + 1}: unknown catalog ID.`); legacyTouched.add(index); continue; }
+      if (!variable) { errors.push(`Line ${index + 1}: unknown catalog ID "${idCode}".`); legacyTouched.add(index); continue; }
       const valueAt = cells.findIndex((cell, i) => i > 0 && numericCell.test(cell) && i + 1 < cells.length);
       const valueCell = cells[valueAt]; const unit = cells[valueAt + 1];
       if (valueAt < 1 || valueCell === undefined || unit === undefined) { errors.push(`Line ${index + 1}: measurement value/unit not identified.`); legacyTouched.add(index); continue; }
