@@ -93,7 +93,7 @@ describe("P36 hybrid pipeline orchestration", () => {
       schemaVersion: "p36.1", provider: "test", model: "test-model", warnings: [],
       suggestions: [{ catalogId: "IMM-002", reportedAnalyte: "Neutrophils", value: 3.8, reportedUnit: "10^9/L", observedAt: null, dateKind: "unknown", sourcePage: 1, evidenceSnippet: "3.8 x10^9/L Neutrophils", uncertainty: [] }],
     };
-    const ai: AiAssist = async () => ({ status: "ok", rows: validateExtractionEnvelope(envelope, profile, 1).rows, errors: [], provider: "test", model: "test-model" });
+    const ai: AiAssist = async () => ({ status: "ok", rows: validateExtractionEnvelope(envelope, profile, 1).rows.map(r => ({ ...r, status: "review" as const, reasons: [] })), errors: [], provider: "test", model: "test-model" });
     const review = await processBoneFileWithAi(csv("IMM-999,1,mg/L,2026-10-14T07:35:00Z,Demo Lab,,,"), new AbortController().signal, profile, ai);
     expect(review.rows).toHaveLength(1);
     expect(review.rows[0]!.variableId).toBe("IMM-002");

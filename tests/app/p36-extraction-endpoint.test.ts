@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from "bun:test";
 import { handleMedicalDocumentExtraction, type ExtractionDeps } from "@/lib/medical-document-extraction.server";
 
-const MISSION = "mission-".padEnd(39, "a");
+const MISSION = "mission-".padEnd(40, "a");
 const CREW = "crew-".padEnd(37, "b");
 const request = {
   missionId: MISSION,

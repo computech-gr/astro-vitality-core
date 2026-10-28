@@ -36,8 +36,8 @@ const expected = [
   ["IMM-001", 6.7, "10^9/L"],
   ["IMM-002", 3.8, "10^9/L"],
   ["IMM-003", 2.2, "10^9/L"],
-  ["IMM-006", 1.73, "ratio"],
   ["IMM-007", 2.4, "mg/L"],
+  ["IMM-006", 1.73, "ratio"],
 ];
 
 // The validated provider outcome for this document (live-verified shape; the
