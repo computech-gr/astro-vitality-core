@@ -62,7 +62,7 @@ export const IMMUNE_MEASUREMENT_PROFILE: MeasurementProfile = {
   eventPrefix: "immune-health",
   sessionKey: "mitochondria.immune-import.synthetic.v1",
   catalogStatusNote:
-    "IMM entries remain pending independent signed per-entry review. Recording a measurement does not validate or approve an entry.",
+    "The owner reports Nikolas completed verbal scientific review. Formal signed per-entry reconciliation is not recorded. Recording a measurement is not clinical validation or approval.",
   csvExample:
     "variable,value,unit,observed_at,source,specimen,assay_method,notes\nIMM-001,6.1,10^9/L,2026-10-01T09:00:00Z,Demo Lab,whole blood,,synthetic example",
   unitSuggestions: () => [],
@@ -78,7 +78,7 @@ export const CARDIOVASCULAR_MEASUREMENT_PROFILE: MeasurementProfile = {
   eventPrefix: "cardiovascular-health",
   sessionKey: "mitochondria.cardiovascular-import.synthetic.v1",
   catalogStatusNote:
-    "Cardiovascular handbook entries remain pending scientific review; no clinical activation.",
+    "The owner reports Nikolas completed verbal scientific review. Formal signed per-entry reconciliation is not recorded; no clinical validation or activation.",
   csvExample:
     "variable,value,unit,observed_at,source,specimen,assay_method,notes\ncv-001,62,bpm,2026-10-01T09:00:00Z,Demo Device,,,synthetic example",
   unitSuggestions: (id) => {
@@ -98,7 +98,7 @@ export const BEHAVIORAL_MEASUREMENT_PROFILE: MeasurementProfile = {
   eventPrefix: "behavioral-health",
   sessionKey: "mitochondria.behavioral-import.synthetic.v1",
   catalogStatusNote:
-    "BSC entries remain pending independent signed per-entry review. Recording a measurement does not validate or approve an entry.",
+    "The owner reports Nikolas completed verbal scientific review. Formal signed per-entry reconciliation is not recorded. Recording a measurement is not clinical validation or approval.",
   csvExample:
     "variable,value,unit,observed_at,source,specimen,assay_method,notes\nBSC-001,6.5,h,2026-10-01T09:00:00Z,Demo Sleep Log,,,synthetic example",
   unitSuggestions: () => [],
