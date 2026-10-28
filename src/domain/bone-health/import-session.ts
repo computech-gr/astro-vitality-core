@@ -12,6 +12,7 @@ const string = (value: unknown, limit: number): value is string => typeof value 
 /** Explicit allowlist: never serialize files, approval flags, authorization or consent. */
 export function retainBoneImport(storage: StorageLike, scope: ImportScope, items: QueueItem[]) {
   if (scope.dataOrigin !== "synthetic" || !scope.userId || !scope.missionId || !scope.crewMemberId) { storage.removeItem(BONE_IMPORT_SESSION_KEY); return; }
+  if (items.some(item => item.review && (item.review.text.length > 100000 || item.review.rows.length > 200 || item.review.errors.length > 250))) { storage.removeItem(BONE_IMPORT_SESSION_KEY); return; }
   const payload = JSON.stringify({ version: 1, scope, items: items.slice(0, 10).map(item => ({
     id: item.id, name: item.name, kind: item.kind, status: item.status, detail: item.detail,
     ...(item.review ? { review: { text: item.review.text, method: item.review.method, errors: item.review.errors, rows: item.review.rows.map(row => ({
@@ -44,7 +45,7 @@ export function restoreBoneImport(storage: StorageLike, scope: ImportScope): Que
           return { id: row.id as string, variableId: row.variableId as string, value: row.value === null ? NaN : row.value as number, unit: row.unit as string, observedAt: row.observedAt as string, sourceLabel: row.sourceLabel as string, specimen: row.specimen as string, assayMethod: row.assayMethod as string, notes: row.notes as string, ...(row.rawLine ? { rawLine: row.rawLine as string } : {}), saved: row.saved === true, selected: false };
         }) };
       }
-      return { id: item.id, name: item.name, kind: item.kind, file: undefined, status: review ? "review" : item.status === "cancelled" ? "cancelled" : "error", detail: "Re-select original file to reprocess", ...(review ? { review } : {}) };
+      return { id: item.id, name: item.name, kind: item.kind, file: undefined, status: review ? "review" : item.status === "cancelled" ? "cancelled" : "error", detail: item.status === "queued" || item.status === "processing" ? "Local processing interrupted; original file is no longer available." : item.detail, ...(review ? { review } : {}) };
     });
   } catch { storage.removeItem(BONE_IMPORT_SESSION_KEY); return []; }
 }

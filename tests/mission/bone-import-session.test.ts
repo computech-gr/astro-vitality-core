@@ -7,7 +7,7 @@ const item: QueueItem = { id:"file",name:"synthetic.csv",kind:"CSV",file:new Fil
 test("synthetic remount restores bounded edits and saved receipts, never files or checked review", () => {
  const storage=memory(); retainBoneImport(storage,scope,[item]); const raw=storage.getItem(BONE_IMPORT_SESSION_KEY) ?? "";
  expect(raw).not.toContain("original bytes"); expect(raw).not.toContain('"selected"'); expect(raw).not.toContain('"file":');
- const restored=restoreBoneImport(storage,scope); expect(restored[0]?.file).toBeUndefined(); expect(restored[0]?.detail).toBe("Re-select original file to reprocess"); expect(restored[0]?.review?.rows[0]?.notes).toBe("Synthetic edit"); expect(restored[0]?.review?.rows[0]?.selected).toBe(false); expect(restored[0]?.review?.rows[0]?.saved).toBe(true);
+ const restored=restoreBoneImport(storage,scope); expect(restored[0]?.file).toBeUndefined(); expect(restored[0]?.detail).toBe("ready"); expect(restored[0]?.review?.rows[0]?.notes).toBe("Synthetic edit"); expect(restored[0]?.review?.rows[0]?.selected).toBe(false); expect(restored[0]?.review?.rows[0]?.saved).toBe(true);
 });
 test("real provenance is never retained", () => { const s=memory(); retainBoneImport(s,{...scope,dataOrigin:"real"},[item]); expect(s.getItem(BONE_IMPORT_SESSION_KEY)).toBeNull(); });
 test.each(["userId","missionId","crewMemberId","dataOrigin"] as const)("scope change clears %s", key => { const s=memory();retainBoneImport(s,scope,[item]);expect(restoreBoneImport(s,{...scope,[key]:key==="dataOrigin"?"real":"other"})).toEqual([]);expect(s.getItem(BONE_IMPORT_SESSION_KEY)).toBeNull(); });

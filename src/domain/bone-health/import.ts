@@ -77,6 +77,7 @@ export function parseBoneImport(text: string): BoneImportReview {
     if (matches.length !== 1) { rejected.push(`Row ${i + 1}: unknown or ambiguous exact catalog ID/name.`); continue; }
     if (
       !rawValue ||
+      !/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(rawValue) ||
       !Number.isFinite(numeric) ||
       !unit || !/[\p{L}%µμ]/u.test(unit) || /[<>≤≥|]/.test(unit) ||
       !source ||

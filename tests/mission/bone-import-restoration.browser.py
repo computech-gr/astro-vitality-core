@@ -52,6 +52,19 @@ async def main():
   assert await page.get_by_role('status').filter(has_text='Required CSV headers').count()==1
   assert await page.locator('fieldset fieldset').count()==3
   assert await page.locator('input[type=checkbox]:checked').count()==0
+  # Corrected-text recheck accepts table IDs and CSV and exposes unsupported rows.
+  pdf_item=page.locator('li').filter(has=page.get_by_role('heading',name='synthetic.pdf',exact=True))
+  await pdf_item.get_by_text('Review extracted text',exact=True).click()
+  text=pdf_item.get_by_label('Review and correct extracted text (local only)')
+  await text.fill('bone-999 12 nmol')
+  await pdf_item.get_by_role('button',name='Recheck corrected text').click()
+  assert await pdf_item.get_by_role('alert').count()==1
+  await text.fill('Catalog ID | Result | Unit\nbone-002 | 42.5 | nmol\nbone-003 | 3.1 | nmol')
+  await pdf_item.get_by_role('button',name='Recheck corrected text').click()
+  assert await pdf_item.locator('fieldset').count()==2
+  await text.fill('variable,value,unit,observed_at,source\nbone-002,42.5,nmol,2026-10-28T07:18:00Z,Synthetic lab\nbone-003,3.1,nmol,2026-10-28T07:18:00Z,Synthetic lab')
+  await pdf_item.get_by_role('button',name='Recheck corrected text').click()
+  assert await pdf_item.locator('fieldset').count()==2
   await page.get_by_role('button',name='Check offline OCR readiness').click()
   await page.get_by_role('status').filter(has_text='CSV and selectable-text PDFs remain available').wait_for()
   await page.locator('fieldset fieldset').first.get_by_role('checkbox').check()
@@ -72,6 +85,9 @@ async def main():
   await page.get_by_role('status').filter(has_text='1 saved. Synthetic save failure').wait_for()
   assert await page.evaluate('window.fileTest.writes.length')==1
   assert await page.locator('fieldset fieldset').first.get_by_role('checkbox').is_disabled()
+  await page.evaluate('window.fileTest.root.unmount();window.fileTest.render()'); await page.wait_for_timeout(250)
+  assert await page.locator('fieldset fieldset').first.get_by_role('checkbox').is_disabled()
+  for fs in (await page.locator('fieldset fieldset').all())[1:]: await fs.get_by_role('checkbox').check()
   await page.evaluate('window.fileTest.failAt=0')
   await page.get_by_role('button',name='Confirm selected results and save').click()
   await page.get_by_role('status').filter(has_text='2 results saved').wait_for()
@@ -95,6 +111,6 @@ async def main():
   await page.evaluate('window.fileTest.denied=true;window.fileTest.refresh()'); await page.wait_for_timeout(250)
   assert await page.locator('fieldset fieldset').count()==0
   assert await page.evaluate('sessionStorage.getItem("mitochondria.bone-import.synthetic.v1")') is None
-  print(json.dumps({'passed':['single picker','keyboard file chooser','mixed multiple-file selection','real CSV parsing','real PDF selectable text extraction','OCR unavailable handled independently','unchecked human review','partial save receipt and safe retry','desktop/mobile no overflow','global enabled/disabled cursors'], 'scope':'synthetic in-memory history adapter, not encrypted-storage/auth acceptance','page_errors':errors}))
+  print(json.dumps({'passed':['single picker','keyboard file chooser','mixed multiple-file selection','CSV corrected-text recheck','PDF table corrected-text recheck and errors','real PDF selectable text extraction','OCR unavailable handled independently','tab/refocus resets approval','remount preserves edits','denied restoration clears cache','partial-save remount receipts and safe retry','desktop/mobile no overflow','global enabled/disabled cursors'], 'scope':'synthetic in-memory history/authorization adapter, not encrypted-storage/auth acceptance','page_errors':errors}))
   await browser.close()
 asyncio.run(main())
