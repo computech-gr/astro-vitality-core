@@ -61,16 +61,16 @@ const HEADER_LABELS: Record<Column, readonly string[]> = {
   reference: ["reference", "reference range", "reference interval", "normal range", "range", "ref range", "τιμές αναφοράς"],
   specimen: ["specimen", "sample", "modality", "δείγμα"],
 };
-const COLUMNS = Object.keys(HEADER_LABELS) as Column[];
+const COLUMNS = Object.keys(HEADER_LABELS) as Array<Exclude<Column, "ignore">>;
 
 function detectHeader(cells: string[]): Column[] | null {
-  const columns = cells.map((cell) => {
+  const columns: Column[] = cells.map((cell) => {
     const n = normalize(cell);
-    return COLUMNS.find((col) => HEADER_LABELS[col].includes(n)) ?? null;
+    return COLUMNS.find((col) => HEADER_LABELS[col].includes(n)) ?? "ignore";
   });
-  const present = new Set(columns.filter((col): col is Column => col !== null));
+  const present = new Set(columns.filter((col) => col !== "ignore"));
   if (present.size >= 3 && present.has("result") && present.has("unit") && (present.has("id") || present.has("analyte"))) {
-    return columns.map((col) => col ?? "specimen" as Column).map((col, i) => columns[i] ?? ("specimen" as Column));
+    return columns;
   }
   return null;
 }
