@@ -9,7 +9,7 @@ import { listBoneEntries, saveBoneEntry } from "@/domain/bone-health/history";
 import { authorizeBoneImport, clearRetainedBoneImport, watchBoneImportSignOut } from "@/domain/bone-health/import-authorization";
 import { retainBoneImport, restoreBoneImport, type ImportScope } from "@/domain/bone-health/import-session";
 import { subscribeMissionIdentity } from "@/infrastructure/mission-identity";
-import { useMeasurementProfile } from "@/components/measurement-profile-context";
+import { useMeasurementProfile } from "@/components/measurement-profile-hook";
 
 export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImported }: {
   missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic"; onImported: () => Promise<void>;

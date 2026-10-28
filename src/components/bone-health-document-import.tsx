@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Fragment, useId, useState } from "react";
-import { useMeasurementProfile } from "@/components/measurement-profile-context";
+import { useMeasurementProfile } from "@/components/measurement-profile-hook";
 import { applyBoneSharedObservationTimestamp, boneIsoToLocalInput, boneLocalInputToIso, boneReviewIssue, selectBoneReviewRows } from "@/domain/bone-health/review-selection";
 import type { FileReview, ReviewRow } from "@/domain/bone-health/file-queue";
 
