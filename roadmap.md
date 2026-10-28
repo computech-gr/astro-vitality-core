@@ -1,5 +1,10 @@
 # P20 video evidence closure
 
+## Bone notes, cancellation and cursor UX
+
+- [x] Compare supplied patch with latest source; retain original correction notes and add non-persisting Cancel beside Save correction, preserving scoped editable metadata.
+- [ ] Run regression/full tests, browser interaction, lint, formatting and security checks; inspect automatic compilation. Full exact-revision typecheck/production-build validation requires CI evidence.
+
 ## Health-domain navigation UX
 
 - [x] Apply supplied navigation-only replacements; restore the missing Bone import and use Button-as-link controls with a verified 2px offset focus ring. All newer Bone fields and correction logic preserved.
