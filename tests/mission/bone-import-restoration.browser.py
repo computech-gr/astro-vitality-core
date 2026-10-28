@@ -78,7 +78,7 @@ async def main():
   assert await csv_item.get_by_role('checkbox',name='I verified').is_checked() is False
   details=csv_item.get_by_role('button',name='Details / edit')
   await details.focus(); await details.press('Enter')
-  assert await details.get_attribute('aria-expanded')=='true'
+  assert await csv_item.get_by_role('button',name='Close').get_attribute('aria-expanded')=='true'
   await csv_item.get_by_role('checkbox',name='Verify All').check()
   await csv_item.get_by_label('Unit (as reported)').fill('edited-unit')
   assert await csv_item.get_by_role('checkbox',name='I verified').is_checked() is False
