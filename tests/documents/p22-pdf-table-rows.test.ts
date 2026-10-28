@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { parseBoneCorrectedText } from "@/domain/bone-health/document-extraction";
 
