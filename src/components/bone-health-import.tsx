@@ -69,8 +69,6 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
     // replaying persisted review. Commit still requires fresh authorization.
     // Browsers may emit both focus and visibilitychange for a single tab return.
     // Coalesce these signals; retain the mounted review UI while reauthorizing.
-    // An in-flight silent check absorbs duplicate signals; a short window
-    // after completion absorbs the paired focus/visibilitychange event.
     // One silent check at a time. Identity events arriving mid-check queue exactly
     // one follow-up (never dropped, so account switches are always re-verified);
     // paired focus/visibilitychange signals within 1.2 s collapse into one.
