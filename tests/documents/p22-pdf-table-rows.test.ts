@@ -27,11 +27,14 @@ describe("P22 selectable-text PDF table rows", () => {
     const r = parseBoneCorrectedText("SYNTHETIC TEST REPORT\nReport ID bone-002 2026 x\nPatient: Synthetic 42 years\nCollected 2026-10-01", "s");
     expect(r.matches).toEqual([]);
   });
-  it("accepts ID-led whitespace and pipe table rows", () => {
-    const sample = "bone-002 " + "X";
-    void sample;
-    const ws = parseBoneCorrectedText(readRow(), "s");
-    expect(ws.matches.length).toBe(1);
+  it("accepts ID-led whitespace and pipe table rows, keeping reported unit and specimen", () => {
+    const r = parseBoneCorrectedText("ID Analyte Result Unit Specimen\nbone-002 NTX 42.5 nmol urine\nbone-003 | Pyridinoline (PYD) | 3.1 | nmol", "s");
+    expect(r.matches.map((m) => [m.variableId, m.value, m.unit, m.specimen])).toEqual([["bone-002", 42.5, "nmol", "urine"], ["bone-003", 3.1, "nmol", ""]]);
+    expect(r.errors).toEqual([]);
+  });
+  it("rejects an ID-led row whose analyte does not match the catalog ID", () => {
+    const r = parseBoneCorrectedText("bone-002 Pyridinoline 3.1 nmol", "s");
+    expect(r.matches).toEqual([]);
+    expect(r.errors.length).toBe(1);
   });
 });
-function readRow() { return ""; }
