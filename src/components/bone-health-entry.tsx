@@ -15,7 +15,8 @@ import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { BoneReportedFieldCombobox } from "@/components/bone-reported-field-combobox";
 import { resolveBoneObservationInstant, utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
 import { persistBoneCorrection, scopedBoneSources } from "@/domain/bone-health/correction";
-import { BONE_HEALTH_VARIABLES } from "@/domain/bone-health/catalog";
+import { BONE_MEASUREMENT_PROFILE, type MeasurementProfile } from "@/domain/health-measurements/profiles";
+import { MeasurementProfileProvider } from "@/components/measurement-profile-context";
 import { boneReportedFieldSuggestions } from "@/domain/bone-health/reported-field-suggestions";
 import {
   findPotentialDuplicates,
@@ -67,6 +68,14 @@ function formatObservedAt(iso: string): string {
 }
 
 export function BoneHealthEntryPage() {
+  return <HealthMeasurementEntry profile={BONE_MEASUREMENT_PROFILE} />;
+}
+
+/**
+ * Shared P22/P26 measurement workflow. `embedded` renders inside an existing domain
+ * workspace (which owns its header and navigation); Bone keeps its full page.
+ */
+export function HealthMeasurementEntry({ profile, embedded = false }: { profile: MeasurementProfile; embedded?: boolean }) {
   const [memberships, setMemberships] = useState<MissionMembershipContext[]>([]);
   const [missionId, setMissionId] = useState("");
   const [groundRoster, setGroundRoster] = useState<MissionMembershipContext[]>([]);
@@ -144,7 +153,7 @@ export function BoneHealthEntryPage() {
         (m.role === "ground_medical" ||
           (m.role === "crew_self" && m.crewMemberId === crewMemberId)),
     );
-  const [variableId, setVariableId] = useState<string>(BONE_HEALTH_VARIABLES[0].id);
+  const [variableId, setVariableId] = useState<string>(profile.variables[0]?.id ?? "");
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
   const [observedAt, setObservedAt] = useState("");
@@ -168,7 +177,7 @@ export function BoneHealthEntryPage() {
       return;
     }
     let active = true;
-    listBoneEntries(missionId, crewMemberId)
+    listBoneEntries(missionId, crewMemberId, profile)
       .then((rows) => {
         if (active) setHistory(rows);
       })
@@ -178,10 +187,10 @@ export function BoneHealthEntryPage() {
     return () => {
       active = false;
     };
-  }, [missionId, crewMemberId, authorizedSelection]);
+  }, [missionId, crewMemberId, authorizedSelection, profile]);
   const reportedSuggestions = useMemo(() => boneReportedFieldSuggestions(history, {
     authorized: authorizedSelection, missionId, crewMemberId, dataOrigin, variableId,
-  }), [history, authorizedSelection, missionId, crewMemberId, dataOrigin, variableId]);
+  }, profile), [profile, history, authorizedSelection, missionId, crewMemberId, dataOrigin, variableId]);
   const observedAtUtc = resolveBoneObservationInstant(observedAt, supersedesId ? originalObservedAt : null, observationTimeEdited);
   const pendingDuplicates = useMemo(() => {
     if (!observedAtUtc || !value.trim() || !Number.isFinite(Number(value))) return [];
@@ -219,8 +228,8 @@ export function BoneHealthEntryPage() {
         dataOrigin,
         ...(supersedesId ? { supersedesId } : {}),
       };
-      await persistBoneCorrection(entry, supersedesId ? history.find(row => row.id === supersedesId) : undefined, saveBoneEntry, markBoneEntryErroneous);
-      setHistory(await listBoneEntries(entry.missionId, entry.crewMemberId));
+      await persistBoneCorrection(entry, supersedesId ? history.find(row => row.id === supersedesId) : undefined, (e) => saveBoneEntry(e, profile), (e, r) => markBoneEntryErroneous(e, r, profile));
+      setHistory(await listBoneEntries(entry.missionId, entry.crewMemberId, profile));
       setValue("");
       setNotes("");
       setDuplicateConfirmed(false);
@@ -242,8 +251,8 @@ export function BoneHealthEntryPage() {
     setBusy(true);
     setMessage("");
     try {
-      await markBoneEntryErroneous(target, erroneousReason);
-      setHistory(await listBoneEntries(missionId, crewMemberId));
+      await markBoneEntryErroneous(target, erroneousReason, profile);
+      setHistory(await listBoneEntries(missionId, crewMemberId, profile));
       setErroneousTarget(null);
       setErroneousReason("");
       setMessage(
@@ -299,17 +308,37 @@ export function BoneHealthEntryPage() {
         entries.findIndex((other) => other.variableId === entry.variableId) === index,
     );
   const field = "w-full rounded-md border border-border bg-background px-3 py-2 text-foreground";
+  const Wrapper = embedded ? "section" : "main";
   return (
-    <main className="mx-auto max-w-5xl px-5 py-10 text-foreground">
-      <p className="section-kicker">P22.1 · Bone Health</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold">
-        Bone Health — Measurements &amp; Reference
-      </h1>
-      <p className="mt-3 text-muted-foreground">
-        Research-only measurements. No clinical thresholds, diagnosis, readiness score or automatic
-        “OK” assessment. Stored encrypted on this device; not automatically sent to Ground.
-      </p>
-      <HealthDomainNavigation current="bone" />
+    <MeasurementProfileProvider profile={profile}>
+    <Wrapper
+      className={embedded ? "mt-8 text-foreground" : "mx-auto max-w-5xl px-5 py-10 text-foreground"}
+      aria-label={embedded ? `${profile.title} measurement entry` : undefined}
+    >
+      {embedded ? (
+        <>
+          <h2 className="text-2xl font-semibold">{profile.title} measurements · research only</h2>
+          <p className="mt-2 text-muted-foreground">
+            Research-only measurements. No clinical thresholds, diagnosis, readiness score or automatic
+            “OK” assessment. Stored encrypted on this device; not automatically sent to Ground.
+          </p>
+          <p className="mt-2 rounded-md border border-border p-3 text-sm" role="note">
+            {profile.catalogStatusNote}
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="section-kicker">P22.1 · Bone Health</p>
+          <h1 className="mt-2 font-display text-4xl font-semibold">
+            Bone Health — Measurements &amp; Reference
+          </h1>
+          <p className="mt-3 text-muted-foreground">
+            Research-only measurements. No clinical thresholds, diagnosis, readiness score or automatic
+            “OK” assessment. Stored encrypted on this device; not automatically sent to Ground.
+          </p>
+          <HealthDomainNavigation current="bone" />
+        </>
+      )}
       <form
         onSubmit={submit}
         className="mt-8 grid gap-4 rounded-xl border border-border p-5 sm:grid-cols-2"
@@ -361,7 +390,7 @@ export function BoneHealthEntryPage() {
         )}
         <div className="sm:col-span-2">
           <BoneVariableCombobox
-            variables={BONE_HEALTH_VARIABLES}
+            variables={profile.variables}
             value={variableId}
             onChange={setVariableId}
             className={field}
@@ -389,9 +418,9 @@ export function BoneHealthEntryPage() {
             value={observedAt}
             onChange={(e) => { setObservedAt(e.target.value); setObservationTimeEdited(true); }}
             required
-            aria-describedby="bone-observed-at-tz"
+            aria-describedby={`${profile.domainId}-observed-at-tz`}
           />
-          <span id="bone-observed-at-tz" className="mt-1 block text-xs text-muted-foreground">
+          <span id={`${profile.domainId}-observed-at-tz`} className="mt-1 block text-xs text-muted-foreground">
             Entered in your device local time; stored as UTC.
             {observedAtUtc ? ` Stored value: ${observedAtUtc}` : ""}
           </span>
@@ -496,7 +525,7 @@ export function BoneHealthEntryPage() {
               missionId={missionId}
               crewMemberId={crewMemberId}
               dataOrigin={dataOrigin}
-              onImported={async () => setHistory(await listBoneEntries(missionId, crewMemberId))}
+              onImported={async () => setHistory(await listBoneEntries(missionId, crewMemberId, profile))}
             />
           )}
         </section>
@@ -504,9 +533,9 @@ export function BoneHealthEntryPage() {
       {authorizedSelection && (
         <section
           className="mt-8 rounded-xl border border-border p-5"
-          aria-label="Bone research evidence summary"
+          aria-label={`${profile.title} research evidence summary`}
         >
-          <h2 className="text-xl font-semibold">Bone research evidence summary · local only</h2>
+          <h2 className="text-xl font-semibold">{profile.title} research evidence summary · local only</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Read-only synthetic evidence from encrypted local records for the selected mission and
             crew. Not cloud-synced, not a clinical assessment, and not combined with the cloud
@@ -520,12 +549,12 @@ export function BoneHealthEntryPage() {
             <div>
               <dt className="font-medium">Variables with observations</dt>
               <dd>
-                {uniqueVariables.size} of {BONE_HEALTH_VARIABLES.length} catalog variables
+                {uniqueVariables.size} of {profile.variables.length} catalog variables
               </dd>
             </div>
             <div>
               <dt className="font-medium">Catalog variables without local observations</dt>
-              <dd>{Math.max(0, BONE_HEALTH_VARIABLES.length - uniqueVariables.size)}</dd>
+              <dd>{Math.max(0, profile.variables.length - uniqueVariables.size)}</dd>
             </div>
           </dl>
           {latestByVariable.length > 0 ? (
@@ -533,7 +562,7 @@ export function BoneHealthEntryPage() {
               {latestByVariable.map((entry) => (
                 <li className="rounded border border-border p-3 text-sm" key={entry.variableId}>
                   <p className="font-medium">
-                    {BONE_HEALTH_VARIABLES.find((item) => item.id === entry.variableId)?.name ??
+                    {profile.variables.find((item) => item.id === entry.variableId)?.name ??
                       entry.variableId}
                   </p>
                   <p>
@@ -550,7 +579,7 @@ export function BoneHealthEntryPage() {
             </ul>
           ) : (
             <p className="mt-4 text-sm text-muted-foreground">
-              No synthetic bone observations in this device's local history for the selected crew
+              No synthetic {profile.title.toLowerCase()} observations in this device's local history for the selected crew
               and mission.
             </p>
           )}
@@ -586,7 +615,7 @@ export function BoneHealthEntryPage() {
                 <tr className="border-b" key={row.id}>
                   <td className="p-2">{formatObservedAt(row.observedAt)}</td>
                   <td className="p-2">
-                    {BONE_HEALTH_VARIABLES.find((v) => v.id === row.variableId)?.name ??
+                    {profile.variables.find((v) => v.id === row.variableId)?.name ??
                       row.variableId}
                   </td>
                   <td className="p-2">
@@ -676,7 +705,8 @@ export function BoneHealthEntryPage() {
           </div>
         )}
       </section>
-      <BoneHandbookReference />
-    </main>
+      {!embedded && <BoneHandbookReference />}
+    </Wrapper>
+    </MeasurementProfileProvider>
   );
 }
