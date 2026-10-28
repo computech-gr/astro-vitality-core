@@ -208,7 +208,7 @@ export function MedicalAdvisorWorkbench({
             />
             <Button
               type="button"
-              className="h-auto max-w-full whitespace-normal text-left"
+              className="medical-action-primary h-auto max-w-full whitespace-normal text-left"
               onClick={approve}
               disabled={!authorizedMedicalRole || review.decision === "approved"}
             >
