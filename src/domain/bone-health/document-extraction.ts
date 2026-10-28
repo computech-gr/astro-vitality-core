@@ -70,7 +70,7 @@ export async function extractBoneDocument(file: File, signal?: AbortSignal): Pro
         const page = await document.getPage(index);
         const content = await page.getTextContent();
         let text = content.items.map(item => "str" in item ? item.str + (item.hasEOL ? "\n" : " ") : "").join("");
-        if (text.trim().length < 30) {
+        if (!text.trim()) {
           const viewport = page.getViewport({scale: 1.7});
           const canvas = window.document.createElement("canvas");
           canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);

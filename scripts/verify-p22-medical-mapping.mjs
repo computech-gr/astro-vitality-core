@@ -11,7 +11,7 @@ assert.match(parser,/selected:false/);
 assert.match(parser,/reference range/);
 assert.match(parser,/resultPattern/);
 assert.match(ui,/Recheck corrected text/);
-assert.match(ui,/text:event.target.value/);
+assert.match(ui,/text:\s*event.target.value/);
 assert.match(read('src/components/bone-health-import.tsx'),/saveBoneEntry/);
 assert.match(ui,/selected:event.target.checked/);
 assert.match(catalog,/bone-063/);

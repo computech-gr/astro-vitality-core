@@ -57,7 +57,7 @@ export class BoneFileQueue {
     this.publish();
   }
   remove(id: string) { this.cancel(id); this.items = this.items.filter(item => item.id !== id); this.publish(); }
-  update(id: string, review: FileReview) { const item = this.items.find(item => item.id === id); if (item) { item.review = review; this.publish(); } }
+  update(id: string, review: FileReview) { const item = this.items.find(item => item.id === id); if (item) { item.review = review; item.detail = `${review.method} · ${review.rows.filter(row => row.saved).length} saved · ${review.rows.filter(row => !row.saved).length} awaiting review`; this.publish(); } }
   dispose() { this.disposed = true; this.controller?.abort(); this.items = []; }
   private async pump() {
     if (this.running || this.disposed) return;
