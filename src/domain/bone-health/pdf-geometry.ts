@@ -68,29 +68,33 @@ export function reconstructGeometryLines(items: PdfTextItem[]): GeometryLine[] {
       }
       return { page, y, cells };
     });
-    // Wrapped-cell merge: a single-cell continuation line with no digits and no
-    // catalog ID, directly below a row, belongs to the cell above it (e.g. a
-    // multi-line analyte name). Never merge numbers, IDs or new columns.
+    // Wrapped-cell merge: an indented continuation line (its first cell starts
+    // right of the row's first column, e.g. a wrapped analyte name, specimen or
+    // timestamp) belongs to the row above; each fragment rejoins the cell whose
+    // x-range it aligns with. Left-aligned prose and new ID-led rows never merge.
     const merged: Array<{ page: number; y: number; cells: WorkingCell[] }> = [];
     for (const line of pageLines) {
       const previous = merged[merged.length - 1];
-      const only = line.cells.length === 1 ? line.cells[0] : undefined;
+      const firstCell = line.cells[0];
       const isContinuation =
         previous !== undefined &&
-        only !== undefined &&
-        !/\d/.test(only.text) &&
-        !ID_LIKE.test(only.text) &&
+        previous.cells.length >= 2 &&
+        firstCell !== undefined &&
+        !ID_LIKE.test(firstCell.text) &&
+        firstCell.x > (previous.cells[0]?.x ?? 0) + typicalHeight &&
         previous.y - line.y > 0 &&
         previous.y - line.y <= typicalHeight * 2.6;
-      if (isContinuation && only) {
-        const target =
-          previous.cells.find((cell) => only.x >= cell.x - typicalHeight && only.x <= cell.end + typicalHeight) ??
-          [...previous.cells].sort((a, b) => Math.abs(a.x - only.x) - Math.abs(b.x - only.x))[0];
-        if (target) {
-          target.text = `${target.text} ${only.text}`;
-          target.end = Math.max(target.end, only.end);
-          continue;
+      if (isContinuation) {
+        for (const cell of line.cells) {
+          const target =
+            previous.cells.find((c) => cell.x >= c.x - typicalHeight && cell.x <= c.end + typicalHeight) ??
+            [...previous.cells].sort((a, b) => Math.abs(a.x - cell.x) - Math.abs(b.x - cell.x))[0];
+          if (target) {
+            target.text = `${target.text} ${cell.text}`;
+            target.end = Math.max(target.end, cell.end);
+          }
         }
+        continue;
       }
       merged.push(line);
     }

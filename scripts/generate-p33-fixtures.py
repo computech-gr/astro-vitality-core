@@ -19,6 +19,7 @@ STYLE = """
   body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #111; }
   h1 { font-size: 15px; } table { border-collapse: collapse; margin-top: 12px; }
   th, td { border: 1px solid #999; padding: 4px 10px; text-align: left; }
+  th { white-space: nowrap; }
   .meta { color: #444; margin: 2px 0; }
 </style>
 """
