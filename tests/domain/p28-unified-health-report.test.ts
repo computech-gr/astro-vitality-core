@@ -138,7 +138,7 @@ describe("P28 unified health & device report", () => {
     expect(reasons.a1).toContain("not bound");
     expect(reasons.a2).toContain("provenance is not declared");
     expect(reasons.a3).toContain("not in the canonical registry");
-    expect(reasons["dev-rec-1"]).toContain("Raw/series");
+    expect(reasons.a4).toContain("Raw/series");
     expect(reasons.a5).toContain("Unit is missing");
     expect(reasons.a6).toContain("environment");
     expect(reasons.a7).toContain("quality");
