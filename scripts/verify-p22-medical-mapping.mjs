@@ -13,7 +13,7 @@ assert.match(parser,/resultPattern/);
 assert.doesNotMatch(ui,/Recheck corrected text/);
 assert.match(ui,/readOnly/);
 assert.match(ui,/type="datetime-local"/);
-assert.match(ui,/text:\s*event.target.value/);
+assert.doesNotMatch(ui,/text:\s*event.target.value/);
 assert.match(read('src/components/bone-health-import.tsx'),/saveBoneEntry/);
 assert.match(ui,/selected:event.target.checked/);
 assert.match(catalog,/bone-063/);
