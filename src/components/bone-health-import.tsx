@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { BONE_IMPORT_CSV_TEMPLATE } from "@/domain/bone-health/import";
 import { offlineOcrCacheReady } from "@/domain/bone-health/ocr-readiness";
 import { BoneHealthDocumentImport } from "./bone-health-document-import";
-import { BoneFileQueue, BONE_FILE_ACCEPT, MAX_BONE_FILES, reviewedBoneEntries, duplicateBoneImportIds, persistReviewedBoneEntries, type QueueItem, type FileReview } from "@/domain/bone-health/file-queue";
+import { BoneFileQueue, processBoneFile, BONE_FILE_ACCEPT, MAX_BONE_FILES, reviewedBoneEntries, duplicateBoneImportIds, persistReviewedBoneEntries, type QueueItem, type FileReview } from "@/domain/bone-health/file-queue";
 import { listBoneEntries, saveBoneEntry } from "@/domain/bone-health/history";
 import { authorizeBoneImport, clearRetainedBoneImport, watchBoneImportSignOut } from "@/domain/bone-health/import-authorization";
 import { retainBoneImport, restoreBoneImport, type ImportScope } from "@/domain/bone-health/import-session";
 import { subscribeMissionIdentity } from "@/infrastructure/mission-identity";
+import { useMeasurementProfile } from "@/components/measurement-profile-context";
 
 export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImported }: {
   missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic"; onImported: () => Promise<void>;
@@ -19,6 +20,7 @@ export function BoneHealthImport({ missionId, crewMemberId, dataOrigin, onImport
 function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
   missionId: string; crewMemberId: string; dataOrigin: "real" | "synthetic"; onImported: () => Promise<void>;
 }) {
+  const profile = useMeasurementProfile();
   const [items, setItems] = useState<QueueItem[]>([]);
   const queue = useRef<BoneFileQueue | null>(null);
   const picker = useRef<HTMLInputElement>(null);
@@ -38,10 +40,11 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
     const retain = (next: QueueItem[]) => {
       setItems(next);
       if (currentScope.current?.dataOrigin === "synthetic") {
-        try { retainBoneImport(window.sessionStorage, currentScope.current, next); } catch { clearRetainedBoneImport(); }
+        try { retainBoneImport(window.sessionStorage, currentScope.current, next, profile); } catch { clearRetainedBoneImport(); }
       }
     };
-    queue.current = new BoneFileQueue(retain);
+    const process = (file: File, signal: AbortSignal) => processBoneFile(file, signal, profile);
+    queue.current = new BoneFileQueue(retain, process);
     const refresh = async (silent = false) => {
       const ticket = ++epoch;
       if (!silent) { setAuthorized(false); setDuplicateConfirmed(false); }
@@ -49,19 +52,19 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
         const scope = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
         if (!alive.current || ticket !== epoch) return;
         if (currentScope.current && currentScope.current.userId !== scope.userId) {
-          clearRetainedBoneImport(); queue.current?.dispose(); queue.current = new BoneFileQueue(retain);
+          clearRetainedBoneImport(); queue.current?.dispose(); queue.current = new BoneFileQueue(retain, process);
         }
         const initial = !currentScope.current || currentScope.current.userId !== scope.userId;
         currentScope.current = scope;
         if (dataOrigin === "real") clearRetainedBoneImport();
-        else if (initial) queue.current?.restore(restoreBoneImport(window.sessionStorage, scope));
+        else if (initial) queue.current?.restore(restoreBoneImport(window.sessionStorage, scope, profile));
         else if (!silent) for (const item of queue.current?.items ?? []) if (item.review) queue.current?.update(item.id, { ...item.review, rows: item.review.rows.map(row => ({ ...row, selected: false })) });
         setStatus(previous => previous.startsWith("Import authorization unavailable") ? "" : previous);
         setAuthorized(true);
       } catch {
         if (!alive.current || ticket !== epoch) return;
         setAuthorized(false); setDuplicateConfirmed(false);
-        currentScope.current = null; clearRetainedBoneImport(); queue.current?.dispose(); queue.current = new BoneFileQueue(retain); setItems([]);
+        currentScope.current = null; clearRetainedBoneImport(); queue.current?.dispose(); queue.current = new BoneFileQueue(retain, process); setItems([]);
         setStatus("Import authorization unavailable or scope denied. Retained review cleared; nothing saved.");
       }
     };
@@ -95,7 +98,7 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
     window.addEventListener("focus", focus); document.addEventListener("visibilitychange", focus);
     void refresh();
     return () => { alive.current = false; epoch++; currentScope.current = null; subscription(); window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); queue.current?.dispose(); queue.current = null; };
-  }, [missionId, crewMemberId, dataOrigin]);
+  }, [missionId, crewMemberId, dataOrigin, profile]);
   function update(id: string, review: FileReview) { if (saving.current) return; setDuplicateConfirmed(false); queue.current?.update(id, review); }
   async function commit() {
     if (saving.current || !authorized) return;
@@ -104,9 +107,9 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
     try {
       const scope = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
       if (!alive.current || scope.userId !== currentScope.current?.userId) throw new Error("Account or scope changed; nothing saved.");
-      const entries = reviewedBoneEntries(items.flatMap(item => item.review?.rows ?? []), { missionId, crewMemberId, dataOrigin });
+      const entries = reviewedBoneEntries(items.flatMap(item => item.review?.rows ?? []), { missionId, crewMemberId, dataOrigin }, profile);
       if (!entries.length) throw new Error("Select and verify at least one measurement.");
-      const history = await listBoneEntries(missionId, crewMemberId);
+      const history = await listBoneEntries(missionId, crewMemberId, profile);
       if (!alive.current || currentScope.current?.userId !== scope.userId) throw new Error("Authorization changed; nothing saved.");
       const duplicates = duplicateBoneImportIds(entries, history);
       if (duplicates.length && !duplicateConfirmed) throw new Error(`${duplicates.length} potential duplicate(s). Compare history and confirm duplicates before saving.`);
@@ -114,7 +117,7 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
         if (!alive.current) throw new Error("Scope changed; remaining rows were not saved.");
         const fresh = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
         if (!alive.current || fresh.userId !== scope.userId || currentScope.current?.userId !== scope.userId) throw new Error("Authorization changed; remaining rows were not saved.");
-        await saveBoneEntry(entry);
+        await saveBoneEntry(entry, profile);
       }, id => {
         saved++;
         for (const item of queue.current?.items ?? []) if (item.review) queue.current?.update(item.id, { ...item.review, rows: item.review.rows.map(row => row.id === id ? { ...row, selected: false, saved: true } : row) });
@@ -130,7 +133,7 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
   }
   function downloadTemplate() {
     const url = URL.createObjectURL(new Blob([BONE_IMPORT_CSV_TEMPLATE], {type:"text/csv;charset=utf-8"}));
-    const link = document.createElement("a"); link.href = url; link.download = "bone-health-import-template.csv"; link.click(); URL.revokeObjectURL(url);
+    const link = document.createElement("a"); link.href = url; link.download = `${profile.eventPrefix}-import-template.csv`; link.click(); URL.revokeObjectURL(url);
   }
   return <section className="mt-8 border-t border-border pt-6" aria-label="Import laboratory results">
     <h2 className="text-xl font-semibold">Import laboratory results</h2>
@@ -147,7 +150,7 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
         </div>
         <p className="mt-3 text-sm">
           <strong>Required:</strong> <code>variable</code> (exact catalog ID such as{" "}
-          <code>bone-001</code>, or exact catalog name), <code>value</code> (numeric, dot decimal
+          <code>{profile.variables[0]?.id}</code>, or exact catalog name), <code>value</code> (numeric, dot decimal
           separator), <code>unit</code> (as reported), <code>observed_at</code> (ISO 8601
           date/time), <code>source</code> (laboratory or original source).
         </p>
@@ -161,9 +164,7 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
           recommendation:
         </p>
         <pre className="mt-2 overflow-x-auto rounded-md bg-muted p-3 text-xs">
-          {
-            "variable,value,unit,observed_at,source,specimen,assay_method,notes\nbone-001,0.42,ng/mL,2026-10-01T09:00:00Z,Demo Lab,serum,,synthetic example\nbone-009,48,ug/L,2026-10-01T09:00:00Z,Demo Lab,serum,,synthetic example"
-          }
+          {profile.csvExample}
         </pre>
         <p className="mt-2 text-sm">
           If a field contains a comma, enclose it in double quotes. Maximum 200 result rows; 2 MB
