@@ -20,7 +20,7 @@ export type GeometryLine = { page: number; y: number; cells: GeometryCell[] };
 
 const ID_LIKE = /^[a-z]{1,6}-\d{1,4}\b/i;
 
-type WorkingCell = { x: number; end: number; text: string };
+type WorkingCell = { x: number; end: number; text: string; lastY: number };
 
 function median(values: number[], fallback: number): number {
   if (!values.length) return fallback;
@@ -55,20 +55,23 @@ export function reconstructGeometryLines(items: PdfTextItem[]): GeometryLine[] {
     }
     const pageLines: Array<{ page: number; y: number; cells: WorkingCell[] }> = rawLines.map(({ y, items: lineItems }) => {
       const cells: WorkingCell[] = [];
-      for (const item of [...lineItems].sort((a, b) => a.x - b.x)) {
+      for (const item of [...lineItems].sort((a, b) => a.x - b.x || b.y - a.y)) {
         const cell = cells[cells.length - 1];
         const width = item.width > 0 ? item.width : item.str.length * typicalHeight * 0.5;
         if (!cell) {
-          cells.push({ x: item.x, end: item.x + width, text: item.str.trim() });
+          cells.push({ x: item.x, end: item.x + width, text: item.str.trim(), lastY: item.y });
           continue;
         }
         const gap = item.x - cell.end;
         const cellGap = Math.max(6, typicalHeight * 1.1);
         if (gap > cellGap) {
-          cells.push({ x: item.x, end: item.x + width, text: item.str.trim() });
+          cells.push({ x: item.x, end: item.x + width, text: item.str.trim(), lastY: item.y });
         } else {
-          cell.text += (gap > typicalHeight * 0.2 && !cell.text.endsWith(" ") ? " " : "") + item.str.trim();
+          // Fragments from a wrapped sub-line (different y) are separate words.
+          const wrapped = Math.abs(item.y - cell.lastY) > 1;
+          cell.text += (wrapped || (gap > typicalHeight * 0.2 && !cell.text.endsWith(" ")) ? " " : "") + item.str.trim();
           cell.end = Math.max(cell.end, item.x + width);
+          cell.lastY = item.y;
         }
       }
       return { page, y, cells };
