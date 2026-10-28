@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it, test } from "bun:test";
 import { applyBoneSharedObservationTimestamp, isBoneSharedObservationTimestamp, boneReviewIssue, selectBoneReviewRows } from "@/domain/bone-health/review-selection";
 import type { ReviewRow } from "@/domain/bone-health/file-queue";
 
