@@ -51,13 +51,13 @@ approval, release-gate or publishing changes were made.
 Synthetic fixtures in `fixtures/synthetic/p33/` (see its README for provenance
 and the original-document limitation):
 
-| Fixture | Result |
-| --- | --- |
-| `p28-immune-report.pdf` | 5/5 rows recognized (IMM-001/002/003/007/030), header-tied dates, reference intervals ignored |
-| `p28-cardiovascular-report.pdf` | 5/5 rows recognized (cv-001/005/006/027/065) from Greek headers in swapped column order |
-| `p28-behavioral-report.pdf` | 4/4 rows recognized (BSC-001/002/004/015); wrapped analyte name and decimal comma handled; report-level date note not invented onto rows |
-| `p33-unsupported-layout.pdf` | 0 matches; explicit held reasons incl. unknown ID `IMM-999`; no fabrication |
-| `tests/fixtures/p3661-synthetic-lab-report.pdf` (existing Bone) | exactly its 2 catalog matches, unchanged |
+| Fixture                                                         | Result                                                                                                                                   |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `p28-immune-report.pdf`                                         | 5/5 rows recognized (IMM-001/002/003/007/030), header-tied dates, reference intervals ignored                                            |
+| `p28-cardiovascular-report.pdf`                                 | 5/5 rows recognized (cv-001/005/006/027/065) from Greek headers in swapped column order                                                  |
+| `p28-behavioral-report.pdf`                                     | 4/4 rows recognized (BSC-001/002/004/015); wrapped analyte name and decimal comma handled; report-level date note not invented onto rows |
+| `p33-unsupported-layout.pdf`                                    | 0 matches; explicit held reasons incl. unknown ID `IMM-999`; no fabrication                                                              |
+| `tests/fixtures/p3661-synthetic-lab-report.pdf` (existing Bone) | exactly its 2 catalog matches, unchanged                                                                                                 |
 
 All 14 expected P28 synthetic observations are recognized; nothing is held
 except the intentionally unsupported fixture.
