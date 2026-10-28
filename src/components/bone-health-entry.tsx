@@ -460,22 +460,41 @@ export function BoneHealthEntryPage() {
           </p>
         )}
       </form>
-      {authorizedSelection && dataOrigin && (
-        <BoneHealthImport
-          missionId={missionId}
-          crewMemberId={crewMemberId}
-          dataOrigin={dataOrigin}
-          onImported={async () => setHistory(await listBoneEntries(missionId, crewMemberId))}
-        />
-      )}
-      {authorizedSelection && !dataOrigin && (
-        <p
-          className="mt-8 rounded-xl border border-border p-5 text-sm text-muted-foreground"
-          role="status"
-        >
-          Choose the data provenance (synthetic or real) above to enable CSV and document import.
-          Imports never assume a provenance.
-        </p>
+      {authorizedSelection && (
+        <section className="mt-8 rounded-xl border border-border p-5" aria-label="Laboratory import access">
+          <h2 className="text-xl font-semibold">Laboratory import access</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your authorized mission role permits laboratory import for this selected crew member.
+            Select the actual data provenance below; correction mode is not required.
+          </p>
+          <label className="mt-4 block max-w-md">
+            Import data provenance
+            <select
+              className={`${field} cursor-pointer`}
+              value={dataOrigin}
+              onChange={(event) => setDataOrigin(event.target.value as "" | "synthetic" | "real")}
+              aria-label="Import data provenance"
+            >
+              <option value="">Choose provenance to enable file import</option>
+              <option value="synthetic">Synthetic / demonstration</option>
+              <option value="real">Real measurement (sensitive)</option>
+            </select>
+          </label>
+          {!dataOrigin && (
+            <p className="mt-3 text-sm text-muted-foreground" role="status">
+              Choose provenance here or in the measurement form. File import cannot proceed
+              until provenance is explicitly selected; no correction is necessary.
+            </p>
+          )}
+          {dataOrigin && (
+            <BoneHealthImport
+              missionId={missionId}
+              crewMemberId={crewMemberId}
+              dataOrigin={dataOrigin}
+              onImported={async () => setHistory(await listBoneEntries(missionId, crewMemberId))}
+            />
+          )}
+        </section>
       )}
       {authorizedSelection && (
         <section
