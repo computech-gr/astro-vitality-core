@@ -20,14 +20,22 @@ export function recognizeClinicalLabRows(text: string, profile: MeasurementProfi
   if (profile.domainId !== "immune") return { rows, held, touched };
   const labels = profile.variables.flatMap(v => [v.name, ...(ALIASES[v.id.toUpperCase()] ?? [])]
     .map(label => ({ variableId: v.id, label: norm(label) })).filter(x => x.label.length >= 3));
+  let clinicalTable = false;
   for (const [index, rawLine] of text.split(/\r?\n/).slice(0, 1000).entries()) {
     const cells = rawLine.split(/[|\t]/).map(c => c.trim());
+    if (cells.map(norm).join("|") === "test performed|result|reported unit|illustrative range") { clinicalTable = true; continue; }
     const tokens = rawLine.trim().split(/\s+/);
     const prefixes = cells.length > 1
       ? [{ name: cells[0] ?? "", remainder: cells.slice(1).join(" ") }]
       : Array.from({ length: Math.min(tokens.length, 16) }, (_, i) => ({ name: tokens.slice(0, i + 1).join(" "), remainder: tokens.slice(i + 1).join(" ") }));
     const candidates = prefixes.flatMap(prefix => labels.filter(l => l.label === norm(prefix.name)).map(l => ({ ...l, remainder: prefix.remainder })));
-    if (!candidates.length) continue;
+    if (!candidates.length) {
+      if (clinicalTable && cells.length >= 3 && numberPattern.test(cells[1] ?? "")) {
+        touched.add(rawLine);
+        held.push({ line: index + 1, page: linePages?.[index], snippet: rawLine, reason: "Unknown clinical analyte; no exact catalog-bound alias. Manual review required." });
+      }
+      continue;
+    }
     touched.add(rawLine);
     const hold = (reason: string) => held.push({ line: index + 1, reason, snippet: rawLine, page: linePages?.[index] });
     if (new Set(candidates.map(c => c.variableId)).size !== 1) { hold("Ambiguous analyte alias; manual review required."); continue; }

@@ -48,4 +48,9 @@ describe("P35 actual clinical PDF bytes", () => {
     expect(r.rows).toHaveLength(0);
     expect(r.held[0]?.reason).toContain("catalog-defined unit");
   });
+  it("holds unknown analytes in the recognized clinical table", () => {
+    const r = recognizeClinicalLabRows("Test performed | Result | Reported unit | Illustrative range\nUnknown protein | 1.2 | mg/L | 0 – 5", profile, [1, 1]);
+    expect(r.rows).toHaveLength(0);
+    expect(r.held[0]?.reason).toContain("Unknown clinical analyte");
+  });
 });
