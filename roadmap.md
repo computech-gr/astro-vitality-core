@@ -1,5 +1,10 @@
 # P20 video evidence closure
 
+## Unified Bone file import UX
+
+- [ ] Unify local multi-file selection, bounded processing, cancellation, OCR readiness and separate human review; preserve scope, validation and append-only save safeguards.
+- [ ] Run regression/full tests, lint/security and desktop/mobile browser checks; report automatic compilation and unavailable exact-revision typecheck/build evidence separately.
+
 ## Bone notes, cancellation and cursor UX
 
 - [x] Compare supplied patch with latest source; retain original correction notes and add non-persisting Cancel beside Save correction, preserving scoped editable metadata.
