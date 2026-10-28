@@ -69,7 +69,7 @@ async def main():
   await apply_date.click()
   assert await initial_pdf.get_by_text('2026-10-28T09:18:00+02:00',exact=True).count()==2
   assert await initial_pdf.get_by_role('checkbox',name=re.compile(r'^I verified bone-')).evaluate_all('(els)=>els.every(e=>!e.checked)')
-  assert await page.get_by_text('2026-10-28T07:18:00Z',exact=True).count()==1
+  assert await page.locator('li').filter(has=page.get_by_role('heading',name='results.csv',exact=True)).get_by_role('cell',name='2026-10-28T07:18:00Z',exact=True).count()==1
   await page.screenshot(path=str(OUT/'shared-date-desktop.png'))
   await page.set_viewport_size({'width':390,'height':844})
   await initial_pdf.get_by_role('checkbox',name='Verify All').scroll_into_view_if_needed()
