@@ -311,3 +311,4 @@
 - [x] /mission/health-report: AI draft capture and session-only advisor review workbench; ground-medical-only approval bound to an evidence fingerprint; no external AI calls, persistence or signed-opinion claims.
 - [x] Full tests, typecheck, production build, scientific/security verifiers and desktop/mobile browser checks pass.
 - [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
+- [x] P33 universal medical document intelligence: geometry PDF parsing, header-aware catalog matching, 14/14 synthetic P28 rows recognized, fail-closed unsupported layouts, 737 tests, browser upload regression for all four domains. Original P28/P32 PDFs unavailable — fixtures are synthetic reconstructions. OCR offline-device proof, authenticated storage acceptance and exact-revision CI remain open.
