@@ -53,9 +53,9 @@ export interface ReportScope {
 }
 export interface ReportFilters {
   /** Inclusive ISO instant or YYYY-MM-DD date (UTC). */
-  from?: string;
+  from?: string | undefined;
   /** Inclusive ISO instant or YYYY-MM-DD date (UTC, whole day). */
-  to?: string;
+  to?: string | undefined;
   sources?: readonly ReportSourceBadge[];
 }
 
