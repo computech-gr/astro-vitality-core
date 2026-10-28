@@ -44,11 +44,13 @@ export function BoneHealthDocumentImport({ review, fileId, disabled, onChange }:
       </label>
       {sharedLocal && !validSharedDate && <p role="status" className="text-destructive">Choose a valid calendar date and time.</p>}
       {validSharedDate && <p className="text-xs text-muted-foreground">Will be stored as {sharedObservedAt} (UTC).</p>}
-      <label className="flex items-start gap-2"><input type="checkbox" checked={confirmSharedDate} disabled={disabled} onChange={event => setConfirmedRows(event.target.checked ? confirmationScope : "")} /><span>I verified that this exact observation time applies to all {missingDates.length} missing-date measurements in the original report.</span></label>
-      <Button type="button" variant="outline" disabled={disabled || !validSharedDate || !confirmSharedDate} onClick={() => {
-        onChange({ ...review, rows: applyBoneSharedObservationTimestamp(review.rows, sharedObservedAt, confirmSharedDate) });
+      <label className="flex items-start gap-2"><input type="checkbox" checked={confirmSharedDate} disabled={disabled || !validSharedDate} onChange={event => {
+        if (!event.target.checked || !validSharedDate) { setConfirmedRows(""); return; }
+        // Confirmation applies immediately: fills only missing unsaved dates and never verifies rows.
+        onChange({ ...review, rows: applyBoneSharedObservationTimestamp(review.rows, sharedObservedAt, true) });
         setConfirmedRows("");
-      }}>Apply date to missing rows only</Button>
+      }} /><span>I verified that this exact observation time applies to all {missingDates.length} missing-date measurements in the original report. Confirming fills those dates immediately; existing dates and saved rows are unchanged.</span></label>
+      {!validSharedDate && <p className="text-xs text-muted-foreground">Choose a valid date and time before confirming.</p>}
     </section>}
     <label className="flex items-start gap-2 text-sm rounded border border-border p-3"><input type="checkbox" disabled={disabled || eligible.length === 0} checked={allVerified} onChange={event => verifyAll(event.target.checked)} /><span>{allVerified ? "Unverify All" : "Verify All"} — {eligible.length} eligible unsaved measurement(s) in this file. {eligible.length === 0 ? (unsaved.length === 0 ? "No unsaved measurements in this file. " : "Complete the required fields first; no rows can be verified yet. ") : ""}I personally compared each value, unit, date and source with the original report. This is not scientific or medical approval.</span></label>
     <div role="region" aria-label="Scrollable imported measurement table" tabIndex={0} className="overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring">
