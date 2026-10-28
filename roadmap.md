@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Compact Bone import review
+
+- [ ] Apply supplied compact table and silent tab-return patch; correct eligibility, confirmation and accessibility integration without changing persistence or permissions.
+- [ ] Run focused/full tests, lint/security and managed compilation checks; verify desktop/mobile keyboard review and authorization loss.
+- [ ] Report patch deviations and any unavailable exact-revision typecheck/production-build or authenticated storage evidence.
+
 ## Bone corrected-text parsing and safe restoration
 
 - [x] Parse exact-ID/name report rows, tab/pipe tables and corrected CSV with explicit errors; preserve custom reported units without conversion or an invented unit whitelist.
