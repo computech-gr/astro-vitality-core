@@ -1,3 +1,10 @@
+# P35 Clinical Lab Parser and Access Audit
+
+- [x] Actual clinical PDF: five exact Immune candidates, original Unicode units, source/page evidence, human-confirmed dates; P34/four-domain actual PDF uploads pass.
+- [x] Read-only live-policy/service audit; Ground Medical import remains separately scoped, Crew-Self-only evidence panel no longer offers unsupported selections; owner-reported wording harmonized without approval/status changes.
+- [x] 75 focused/750 full tests pass; lint 0 errors/12 existing warnings; security audit passes; desktop/mobile uploads pass. Latest automatic compilation build OK. See docs/P35_CLINICAL_LAB_RESULTS.md.
+- [ ] Authenticated Ground Medical encrypted persistence blocked: requesting account is mission-operator only. Exact-revision GitHub full typecheck/production-build evidence and physical-device offline OCR unavailable. Three existing P22 source-pattern failures and P3663/P3664/P20 gates unchanged. No Cloud writes, migrations, AI, gate changes or publishing.
+
 # P33 Universal Medical Document Intelligence
 
 - [ ] Apply P33 patch (universal-document-rows, document-extraction, tests) and complete the full contract: PDF.js geometry reconstruction, header-aware tables, reviewed aliases only, unit validation without conversion, held-for-review ambiguity, diagnostics, page/source traceability.

@@ -27,7 +27,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
   >([]);
   const [selected, setSelected] = useState("");
   const [report, setReport] = useState<ScientificEvidenceReport | null>(null);
-  const [message, setMessage] = useState("Checking private Crew Self access...");
+  const [message, setMessage] = useState("Checking assigned Crew Self access for the read-only evidence summary...");
   useEffect(() => {
     let active = true;
     let generation = 0;
@@ -35,25 +35,14 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
       const request = ++generation;
       void loadMissionIdentity().then(async (context) => {
         if (!active || request !== generation) return;
+        // This evidence service deliberately remains Crew-Self-only. Ground
+        // Medical entry/import below has its separate existing scoped controls.
         const eligible = context.signedIn && !context.error
           ? context.memberships.filter((member) =>
-              member.role === "crew_self" || member.role === "ground_medical")
+              member.role === "crew_self")
           : [];
-        const medicalMissionIds = [...new Set(eligible.filter((member) =>
-          member.role === "ground_medical").map((member) => member.missionId))];
-        const { data: roster, error: rosterError } = medicalMissionIds.length
-          ? await supabase.from("mission_memberships")
-              .select("mission_id, crew_member_id, role, active")
-              .in("mission_id", medicalMissionIds).eq("active", true).eq("role", "crew_self")
-          : { data: [], error: null };
-        if (!active || request !== generation) return;
-        if (rosterError) throw rosterError;
-        const scoped = [
-          ...eligible.filter((member) => member.role === "crew_self" && member.crewMemberId)
-            .map((member) => ({ missionId: member.missionId, crewMemberId: member.crewMemberId! })),
-          ...(roster ?? []).filter((member) => Boolean(member.crew_member_id))
-            .map((member) => ({ missionId: member.mission_id, crewMemberId: member.crew_member_id! })),
-        ];
+        const scoped = eligible.flatMap(member => member.crewMemberId
+          ? [{ missionId: member.missionId, crewMemberId: member.crewMemberId }] : []);
         const unique = [...new Map(scoped.map((member) =>
           [`${member.missionId}|${member.crewMemberId}`, member])).values()];
         const missionIds = [...new Set(unique.map((member) => member.missionId))];
@@ -74,12 +63,13 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
           crewLabel: crewLabels.get(member.crewMemberId) ?? member.crewMemberId,
         }));
         setMemberships(options);
+        const first = options[0];
         setSelected((previous) => options.some((member) =>
           `${member.missionId}|${member.crewMemberId}` === previous)
-          ? previous : options.length ? `${options[0]!.missionId}|${options[0]!.crewMemberId}` : "");
+          ? previous : first ? `${first.missionId}|${first.crewMemberId}` : "");
         if (!options.length) {
           setReport(null);
-          setMessage("No authorized Crew Self or Ground Medical mission/crew selection is available.");
+          setMessage("This read-only evidence summary is restricted to assigned Crew Self. Ground Medical measurement entry and document review use the separate authorized controls above.");
         }
       }).catch(() => {
         if (!active || request !== generation) return;
@@ -137,9 +127,9 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
       <p className="mt-4 max-w-3xl text-muted-foreground">{domain.scope}</p>
       <p className="mt-3 rounded-md border border-border p-3 text-sm" role="status">
         {domainId === "immune" || domainId === "behavioral"
-          ? "Scientific handbook integrated. Measurement-level validation is awaiting independent review. Research reference only."
+          ? "The owner reports Nikolas completed verbal scientific review. Formal signed per-entry reconciliation is not recorded; no clinical validation or approval is implied. Research reference only."
           : domain.reviewState === "scientific_review_pending"
-            ? "Scientific domain review pending. Existing evidence is displayed without clinical inference."
+            ? "The owner reports Nikolas completed verbal scientific review. Formal signed per-entry reconciliation is not recorded. Existing evidence is displayed without clinical inference or approval."
             : "Bone handbook mapping available. Clinical validation and approved thresholds are not established."}
       </p>
       <HealthDomainNavigation current={domainId} />

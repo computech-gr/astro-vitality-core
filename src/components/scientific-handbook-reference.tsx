@@ -63,8 +63,9 @@ export function CardiovascularHandbookReference() {
       <p className="mt-2 text-sm text-muted-foreground">
         Nikolas' cardiovascular handbook: {metrics.length} catalogued measurements across{" "}
         {groups.length} groups, shown in English. The original Greek handbook is preserved
-        unchanged. Translation and scientific review are pending; no clinical thresholds, diagnoses
-        or alerts are enabled by this reference.
+        unchanged. The owner reports Nikolas completed verbal scientific review; formal signed
+        per-entry reconciliation and translation review are not recorded. No clinical validation,
+        approval, thresholds, diagnoses or alerts are enabled by this reference.
       </p>
       <LocaleToggle locale={locale} onChange={setLocale} />
       <details className="mt-4 text-sm">
