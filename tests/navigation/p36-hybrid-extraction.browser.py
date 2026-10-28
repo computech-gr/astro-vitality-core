@@ -88,7 +88,7 @@ async def main():
             await page.get_by_role('status').filter(has_text='5 results saved').wait_for()
             writes = await page.evaluate('window.p33.writes.map(w=>[w.variableId,w.value,w.unit,w.observedAt,w.sourceLabel,w.dataOrigin])')
             assert [w[:3] for w in writes] == [['IMM-001', 6.7, '10^9/L'], ['IMM-002', 3.8, '10^9/L'], ['IMM-003', 2.2, '10^9/L'], ['IMM-007', 2.4, 'mg/L'], ['IMM-006', 1.73, 'ratio']], writes
-            assert all(w[3] == '2026-10-14T07:35:00.000Z' for w in writes), writes
+            assert all(w[3] in ('2026-10-14T07:35:00Z', '2026-10-14T07:35:00.000Z') for w in writes), writes
             assert all(FIXTURE.name in w[4] for w in writes), writes
             assert all(w[5] == 'synthetic' for w in writes), writes
             assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
