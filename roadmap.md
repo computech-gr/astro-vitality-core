@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## Bone notes, cancellation and cursor UX
+
+- [x] Compare supplied patch with latest source; retain original correction notes and add non-persisting Cancel beside Save correction, preserving scoped editable metadata.
+- [x] 653 tests pass after regenerating the existing sealed synthetic fixture; isolated real-form browser verifies notes, cancellation without writes, failed-save ordering and desktop/mobile cursors. Lint: 0 errors/13 existing warnings; formatting, security audit, SEO and Bone entry checks pass; automatic compilation reports build OK.
+- [ ] Full exact-revision typecheck/production-build validation requires CI evidence. Existing P22 coverage verifier assumption, two moderate/one low dependency advisories and P3663/P3664/P20 gates remain unchanged. Browser storage/identity were synthetic adapters, not authenticated encrypted-history acceptance.
+
 ## Health-domain navigation UX
 
 - [x] Apply supplied navigation-only replacements; restore the missing Bone import and use Button-as-link controls with a verified 2px offset focus ring. All newer Bone fields and correction logic preserved.

@@ -72,6 +72,14 @@
   body { margin: 0; background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); letter-spacing: 0; }
   ::selection { background: var(--color-primary); color: var(--color-primary-foreground); }
   a, button { outline-offset: 4px; }
+  /* Interactive affordance across all modules; disabled controls stay non-actionable. */
+  a[href]:not([aria-disabled="true"]), button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]):not(:disabled),
+  [role="link"]:not([aria-disabled="true"]), summary, select:not(:disabled),
+  input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled, select:disabled, input:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 }
 
 @utility section-kicker {

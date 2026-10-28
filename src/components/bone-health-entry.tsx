@@ -6,6 +6,7 @@ import {
   type MissionMembershipContext,
 } from "@/infrastructure/mission-identity";
 import { BoneHealthImport } from "@/components/bone-health-import";
+import { Button } from "@/components/ui/button";
 import { BoneHandbookReference } from "@/components/scientific-handbook-reference";
 import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BoneSourceCombobox } from "@/components/bone-source-combobox";
@@ -249,6 +250,21 @@ export function BoneHealthEntryPage() {
       setBusy(false);
     }
   }
+  function cancelCorrection() {
+    if (busy) return;
+    setSupersedesId(null);
+    setOriginalObservedAt(null);
+    setObservationTimeEdited(false);
+    setDuplicateConfirmed(false);
+    setValue("");
+    setUnit("");
+    setObservedAt("");
+    setSourceLabel("");
+    setSpecimen("");
+    setAssayMethod("");
+    setNotes("");
+    setMessage("Correction cancelled. The original encrypted record was not changed.");
+  }
   function startCorrection(row: BoneHealthEntry) {
     setVariableId(row.variableId);
     setValue(String(row.value));
@@ -259,7 +275,7 @@ export function BoneHealthEntryPage() {
     setSourceLabel(row.sourceLabel);
     setSpecimen(row.specimen);
     setAssayMethod(row.assayMethod);
-    setNotes("");
+    setNotes(row.notes ?? "");
     setDataOrigin(row.dataOrigin);
     setSupersedesId(row.id);
     setDuplicateConfirmed(false);
@@ -335,17 +351,7 @@ export function BoneHealthEntryPage() {
         {supersedesId && (
           <p className="sm:col-span-2 rounded-md border border-border p-3 text-sm" role="status">
             Correcting an earlier record. The original stays in append-only history and will be
-            marked erroneous on save.{" "}
-            <button
-              type="button"
-              className="underline"
-              onClick={() => {
-                setSupersedesId(null);
-                setMessage("");
-              }}
-            >
-              Cancel correction
-            </button>
+            marked erroneous on save.
           </p>
         )}
         <div className="sm:col-span-2">
@@ -395,6 +401,11 @@ export function BoneHealthEntryPage() {
           suggestions={reportedSuggestions.specimen} className={field} />
         <BoneReportedFieldCombobox label="Assay / method" value={assayMethod} onChange={setAssayMethod}
           suggestions={reportedSuggestions.assayMethod} className={field} />
+        <p className="sm:col-span-2 text-xs text-muted-foreground">
+          Lab/source, specimen and assay are entered by the astronaut from the original report.
+          The dropdown only suggests previously entered values for this authorized selection; it does not prescribe a specimen or method.
+          Leave optional specimen and assay fields empty when unknown.
+        </p>
         <label>
           Data provenance
           <select
@@ -429,13 +440,20 @@ export function BoneHealthEntryPage() {
             new, distinct measurement.
           </label>
         )}
-        <button
-          className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 sm:col-span-2"
-          type="submit"
-          disabled={busy || !authorizedSelection}
-        >
-          {busy ? "Saving…" : supersedesId ? "Save correction" : "Save encrypted record"}
-        </button>
+        <div className="sm:col-span-2 flex flex-wrap gap-3">
+          <Button
+            className="min-w-0 flex-1"
+            type="submit"
+            disabled={busy || !authorizedSelection}
+          >
+            {busy ? "Saving…" : supersedesId ? "Save correction" : "Save encrypted record"}
+          </Button>
+          {supersedesId && (
+            <Button type="button" variant="outline" onClick={cancelCorrection} disabled={busy}>
+              Cancel
+            </Button>
+          )}
+        </div>
         {message && (
           <p role="status" className="sm:col-span-2">
             {message}

@@ -36,4 +36,9 @@ describe("Bone reported metadata suggestions", () => {
   test("custom input without a match has no automatic replacement", () => {
     expect(filterReportedSuggestions(["pg/mL", "ng/L"], "CUSTOM exact unit")).toEqual([]);
   });
+  test("no historical measurements means no fabricated specimen or assay defaults", () => {
+    const suggestions = boneReportedFieldSuggestions([], scope);
+    expect(suggestions.specimen).toEqual([]);
+    expect(suggestions.assayMethod).toEqual([]);
+  });
 });
