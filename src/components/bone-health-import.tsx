@@ -84,13 +84,13 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
       const entries = reviewedBoneEntries(items.flatMap(item => item.review?.rows ?? []), { missionId, crewMemberId, dataOrigin });
       if (!entries.length) throw new Error("Select and verify at least one measurement.");
       const history = await listBoneEntries(missionId, crewMemberId);
-      if (!alive.current) return;
+      if (!alive.current || currentScope.current?.userId !== scope.userId) throw new Error("Authorization changed; nothing saved.");
       const duplicates = duplicateBoneImportIds(entries, history);
       if (duplicates.length && !duplicateConfirmed) throw new Error(`${duplicates.length} potential duplicate(s). Compare history and confirm duplicates before saving.`);
       await persistReviewedBoneEntries(entries, async entry => {
         if (!alive.current) throw new Error("Scope changed; remaining rows were not saved.");
         const fresh = await authorizeBoneImport({ missionId, crewMemberId, dataOrigin });
-        if (!alive.current || fresh.userId !== scope.userId) throw new Error("Authorization changed; remaining rows were not saved.");
+        if (!alive.current || fresh.userId !== scope.userId || currentScope.current?.userId !== scope.userId) throw new Error("Authorization changed; remaining rows were not saved.");
         await saveBoneEntry(entry);
       }, id => {
         saved++;
