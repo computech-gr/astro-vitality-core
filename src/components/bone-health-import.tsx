@@ -67,8 +67,31 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
     };
     // Revalidate silently on return, without flashing an unauthorized state or
     // replaying persisted review. Commit still requires fresh authorization.
-    const focus = () => { if (document.visibilityState !== "hidden") void refresh(true); };
-    const subscription = subscribeMissionIdentity(() => void refresh());
+    // Browsers may emit both focus and visibilitychange for a single tab return.
+    // Coalesce these signals; retain the mounted review UI while reauthorizing.
+    // One silent check at a time. Identity events arriving mid-check queue exactly
+    // one follow-up (never dropped, so account switches are always re-verified);
+    // paired focus/visibilitychange signals within 1.2 s collapse into one.
+    let silentInFlight = false;
+    let pending = false;
+    let lastFocusRefresh = 0;
+    const runSilent = () => {
+      if (silentInFlight) { pending = true; return; }
+      silentInFlight = true;
+      lastFocusRefresh = Date.now();
+      void refresh(true).finally(() => {
+        silentInFlight = false;
+        if (pending && alive.current) { pending = false; runSilent(); }
+      });
+    };
+    const focus = () => {
+      if (document.visibilityState === "hidden" || silentInFlight) return;
+      if (Date.now() - lastFocusRefresh < 1200) return;
+      runSilent();
+    };
+    // Auth events (token refresh / session re-emit on tab return) revalidate silently;
+    // a different account or denial still clears the queue inside refresh().
+    const subscription = subscribeMissionIdentity(() => { setDuplicateConfirmed(false); runSilent(); });
     window.addEventListener("focus", focus); document.addEventListener("visibilitychange", focus);
     void refresh();
     return () => { alive.current = false; epoch++; currentScope.current = null; subscription(); window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); queue.current?.dispose(); queue.current = null; };

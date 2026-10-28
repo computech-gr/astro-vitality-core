@@ -130,13 +130,39 @@ export function parseBoneCorrectedText(text: string, source: string): { matches:
   for (const [index, line] of lines.entries()) {
     // Refuse report lines with comparison symbols, reference intervals or multi-result layouts.
     if (/[<>≤≥]/.test(line) || /\b(?:reference range|reference interval|normal range)\b/i.test(line)) continue;
+    // PDF text often uses whitespace columns: ID, analyte, value, unit, specimen.
+    // Only a catalog ID at the beginning of a row may trigger this path.
+    // Metadata (e.g. Report ID) and prose containing an ID are never measurements.
+    const idRow = line.replace(/\s*[|\t]\s*/g, " ").trim().match(/^(bone-\d{3})\s+(.+)$/i);
+    const idCode = idRow?.[1]; const idRest = idRow?.[2];
+    const cells = idRest ? idRest.trim().split(/\s+/) : [];
+    const numericCell = /^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
+    // ID-led rows with an analyte column (ID, analyte, value, unit, specimen). Rows
+    // with the value directly after the ID use the existing exact-ID path below.
+    if (idCode && cells.length > 0 && !numericCell.test(cells[0] ?? "")) {
+      const variable = BONE_HEALTH_VARIABLES.find(v => v.id.toLowerCase() === idCode.toLowerCase());
+      if (!variable) { errors.push(`Line ${index + 1}: unknown catalog ID.`); continue; }
+      const valueAt = cells.findIndex((cell, i) => i > 0 && numericCell.test(cell) && i + 1 < cells.length);
+      const valueCell = cells[valueAt]; const unit = cells[valueAt + 1];
+      if (valueAt < 1 || valueCell === undefined || unit === undefined) { errors.push(`Line ${index + 1}: measurement value/unit not identified.`); continue; }
+      const analyte = normalizedLabel(cells.slice(0, valueAt).join(" "));
+      // The row must explicitly name the catalog analyte, not merely carry an ID.
+      if (!catalogLabels(variable.name).some(label => analyte.includes(label))) {
+        errors.push(`Line ${index + 1}: catalog ID and analyte need human confirmation.`); continue;
+      }
+      const value = Number(valueCell.replace(",", "."));
+      if (!Number.isFinite(value) || !/[\p{L}%µμ]/u.test(unit) || /[<>≤≥|]/.test(unit)) { errors.push(`Line ${index + 1}: invalid value/unit.`); continue; }
+      const specimen = cells.slice(valueAt + 2).join(" ");
+      found.push({ variableId: variable.id, value, unit, observedAt: "", sourceLabel: source, specimen, assayMethod: "", notes: "Extracted from document; verify source and observation time.", selected: false, rawLine: line, reviewRequired: true });
+      continue;
+    }
     const tableLine = line.replace(/\s*[|\t]\s*/g, " ").trim();
     const normalized = normalizedLabel(tableLine);
     const candidates = BONE_HEALTH_VARIABLES.flatMap(v => [v.id, ...catalogLabels(v.name)].map(label => ({v, label})))
       .filter(({label}) => normalized.startsWith(label) && /[\s:=–—-]/.test(normalized.charAt(label.length)));
     const ids = new Set(candidates.map(c => c.v.id));
     if (ids.size !== 1) {
-      if (/\bbone-\d+\b/i.test(line)) errors.push(`Line ${index + 1}: unknown or ambiguous catalog ID.`);
+      if (/^\s*bone-\d+\b/i.test(line)) errors.push(`Line ${index + 1}: unknown or ambiguous catalog ID.`);
       continue; // Ambiguous labels are never auto-mapped.
     }
     const chosen = candidates.sort((a,b) => b.label.length - a.label.length)[0];

@@ -24,7 +24,7 @@ async def main():
       source=source.replace(/import\.meta\.hot = [^;]+;/,'');
       source='const $RefreshSig$=()=>()=>{}; const $RefreshReg$=()=>{};\n'+source;
       if(name==='form.js')window.reactVersion=source.match(/react\.js\?v=([a-z0-9]+)/)[1];
-      if(name==='form.js') source=source.replace(/import[^;]*from \"\/src\/domain\/bone-health\/import-authorization.ts[^\"]*\";/,'const authorizeBoneImport=async scope=>{if(window.fileTest.delay)await new Promise(r=>setTimeout(r,window.fileTest.delay));if(window.fileTest.denied)throw new Error(\"denied\");return {...scope,userId:\"synthetic-user\"};};const clearRetainedBoneImport=()=>sessionStorage.removeItem(\"mitochondria.bone-import.synthetic.v1\");const watchBoneImportSignOut=()=>{};').replace(/import[^;]*from \"\/src\/infrastructure\/mission-identity.ts\";/,'const subscribeMissionIdentity=listener=>{window.fileTest.refresh=listener;return ()=>{};};');
+      if(name==='form.js') source=source.replace(/import[^;]*from \"\/src\/domain\/bone-health\/import-authorization.ts[^\"]*\";/,'const authorizeBoneImport=async scope=>{window.fileTest.authCalls=(window.fileTest.authCalls||0)+1;if(window.fileTest.delay)await new Promise(r=>setTimeout(r,window.fileTest.delay));if(window.fileTest.denied)throw new Error(\"denied\");return {...scope,userId:\"synthetic-user\"};};const clearRetainedBoneImport=()=>sessionStorage.removeItem(\"mitochondria.bone-import.synthetic.v1\");const watchBoneImportSignOut=()=>{};').replace(/import[^;]*from \"\/src\/infrastructure\/mission-identity.ts\";/,'const subscribeMissionIdentity=listener=>{window.fileTest.refresh=listener;return ()=>{};};');
       source=source.replace(/from\s+(["'])([^"']+)\1/g,(whole,q,path)=>{
         let target=path.startsWith('/src/domain/bone-health/history.ts')?'/__files/history.js':path.startsWith('/src/domain/bone-health/file-queue.ts')?'/__files/queue.js':path;
         return 'from '+JSON.stringify(target.startsWith('/')?location.origin+target:target);
@@ -86,7 +86,12 @@ async def main():
   await pdf_item.get_by_role('checkbox',name='Verify All').check()
   # Same-account tab return preserves the live human review with no authorization flash.
   await page.evaluate('''()=>{window.fileTest.flashes=[];window.fileTest.observer=new MutationObserver(()=>{const fs=document.querySelector('section>fieldset');if(fs?.disabled)window.fileTest.flashes.push(true);});window.fileTest.observer.observe(document.body,{subtree:true,attributes:true});window.dispatchEvent(new Event("focus"));}''')
-  await page.wait_for_timeout(250)
+  await page.wait_for_timeout(1300)
+  # Paired focus + visibilitychange (+ auth re-emit) for one tab return => one check.
+  await page.evaluate('window.fileTest.authCalls=0;window.fileTest.delay=150;window.dispatchEvent(new Event("focus"));document.dispatchEvent(new Event("visibilitychange"));window.dispatchEvent(new Event("focus"));')
+  await page.wait_for_timeout(400)
+  assert await page.evaluate('window.fileTest.authCalls')==1, await page.evaluate('window.fileTest.authCalls')
+  await page.evaluate('window.fileTest.delay=0')
   assert await page.get_by_role('checkbox',name='I verified').count()==3
   assert await page.get_by_role('checkbox',name='I verified').evaluate_all('(els)=>els.every(e=>e.checked)')
   assert await page.evaluate('window.fileTest.flashes.length')==0
@@ -138,6 +143,6 @@ async def main():
   await page.evaluate('window.fileTest.delay=100;window.fileTest.denied=true;window.dispatchEvent(new Event("focus"))'); await page.wait_for_timeout(250)
   assert await page.get_by_role('checkbox',name='I verified').count()==0
   assert await page.evaluate('sessionStorage.getItem("mitochondria.bone-import.synthetic.v1")') is None
-  print(json.dumps({'passed':['single picker','keyboard file chooser','mixed multiple-file selection','CSV corrected-text recheck','PDF table corrected-text recheck and errors','real PDF selectable text extraction','OCR unavailable handled independently','silent tab return preserves live review without flashing','per-file bulk confirmation and unverify','keyboard disclosure','edits invalidate verification','remount preserves edits','denied restoration clears cache','partial-save remount receipts and safe retry','desktop/mobile no overflow','global enabled/disabled cursors'], 'scope':'synthetic in-memory history/authorization adapter, not encrypted-storage/auth acceptance','page_errors':errors}))
+  print(json.dumps({'passed':['single picker','keyboard file chooser','mixed multiple-file selection','CSV corrected-text recheck','PDF table corrected-text recheck and errors','real PDF selectable text extraction','OCR unavailable handled independently','silent tab return preserves live review without flashing','paired tab-return events coalesce into one authorization','per-file bulk confirmation and unverify','keyboard disclosure','edits invalidate verification','remount preserves edits','denied restoration clears cache','partial-save remount receipts and safe retry','desktop/mobile no overflow','global enabled/disabled cursors'], 'scope':'synthetic in-memory history/authorization adapter, not encrypted-storage/auth acceptance','page_errors':errors}))
   await browser.close()
 asyncio.run(main())
