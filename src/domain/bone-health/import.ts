@@ -1,4 +1,4 @@
-import { BONE_HEALTH_VARIABLES } from "./catalog";
+import { BONE_MEASUREMENT_PROFILE, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 
 export interface BoneImportCandidate {
   variableId: string;
@@ -48,7 +48,7 @@ function csvRows(input: string): string[][] {
   if (row.some(Boolean)) rows.push(row);
   return rows;
 }
-export function parseBoneImport(text: string): BoneImportReview {
+export function parseBoneImport(text: string, profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE): BoneImportReview {
   if (text.length > MAX_CHARS) throw new Error("Import exceeds 250,000 characters.");
   const rows = csvRows(text);
   if (!rows.length) throw new Error("Empty CSV.");
@@ -65,7 +65,7 @@ export function parseBoneImport(text: string): BoneImportReview {
     if (!r) continue;
     if (r.length !== names.length) { rejected.push(`Row ${i + 1}: malformed CSV column count.`); continue; }
     const label = get(r, "variable");
-    const matches = BONE_HEALTH_VARIABLES.filter(
+    const matches = profile.variables.filter(
       (v) =>
         v.id.toLowerCase() === label.toLowerCase() || v.name.toLowerCase() === label.toLowerCase(),
     );

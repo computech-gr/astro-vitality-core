@@ -1,4 +1,5 @@
 import { validateBoneEntry } from "./history";
+import { BONE_MEASUREMENT_PROFILE, type MeasurementProfile } from "@/domain/health-measurements/profiles";
 import type { ReviewRow } from "./file-queue";
 
 /** Use the existing save prerequisites; selection is never persistence or scientific approval. */
