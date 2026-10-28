@@ -88,6 +88,21 @@ function requestProfile(request: AiExtractionRequest): MeasurementProfile {
   return MEASUREMENT_PROFILES[request.domain];
 }
 
+/** A single explicitly labelled specimen collection timestamp may prefill the
+ * editable observation field for measurements belonging to that specimen.
+ * Never use issued/reported/printed dates, ambiguous times or the current time. */
+export function explicitSharedCollectionTimestamp(text: string): string | null {
+  const dates = [...text.matchAll(/\bCOLLECTION\s+DATE\s*[:-]?\s*(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})\b/gi)];
+  const times = [...text.matchAll(/\bCOLLECTION\s+TIME\s*[:-]?\s*([01]?\d|2[0-3]):([0-5]\d)\s*(UTC|GMT)\b/gi)];
+  if (dates.length !== 1 || times.length !== 1) return null;
+  const date = dates[0]!; const time = times[0]!;
+  const month = ["january","february","march","april","may","june","july","august","september","october","november","december"].indexOf(date[2]!.toLowerCase());
+  const day = Number(date[1]); const year = Number(date[3]);
+  const candidate = new Date(Date.UTC(year, month, day, Number(time[1]), Number(time[2])));
+  if (candidate.getUTCFullYear() !== year || candidate.getUTCMonth() !== month || candidate.getUTCDate() !== day) return null;
+  return candidate.toISOString().replace(".000Z", "Z");
+}
+
 export type AiMerge = { added: ReviewRow[]; heldMessages: string[]; duplicates: number };
 
 /** Merge validated AI suggestions into local review rows. Evidence-keyed dedupe;
@@ -187,6 +202,15 @@ export async function processBoneFileWithAi(
   if (ai.status === "unavailable")
     return { ...review, aiStatus: `AI-assisted extraction unavailable: ${ai.reason} Deployment administrator: check P36_DOCUMENT_AI_ENABLED, P36_AI_PROVIDER and server-side provider credentials. Local results and held rows retained.` };
   const merge = mergeAiSuggestions(review.rows, ai.rows, profile, file.name);
+  const sharedCollection = explicitSharedCollectionTimestamp(review.text);
+  // Prefill only AI rows explicitly associated with collection metadata, and
+  // only when the source has exactly one unambiguous labelled UTC collection.
+  // Remain unchecked and editable; user verification is still mandatory.
+  const collectionIds = new Set(ai.rows.filter(row => row.dateKind === "collection").map(row => row.catalogId));
+  const datedRows = merge.added.map(row => sharedCollection && collectionIds.has(row.variableId) && !row.observedAt
+    ? { ...row, observedAt: sharedCollection, selected: false,
+        notes: `${row.notes} Observation field prefilled from explicit shared specimen collection timestamp (${sharedCollection}); confirm that collection time is appropriate for this measurement before verification.` }
+    : row);
   const parts = [
     `AI-assisted extraction (${ai.provider}/${ai.model}): ${merge.added.length} unchecked suggestion(s) added`,
     merge.duplicates ? `${merge.duplicates} duplicate(s) skipped` : "",
@@ -194,7 +218,7 @@ export async function processBoneFileWithAi(
   ].filter(Boolean).join(", ");
   return {
     ...review,
-    rows: [...review.rows, ...merge.added],
+    rows: [...review.rows, ...datedRows],
     errors: [...review.errors, ...ai.errors, ...merge.heldMessages],
     aiStatus: `${parts}. AI output is never saved automatically; verify every value, unit, date and source against the original report.`,
   };
