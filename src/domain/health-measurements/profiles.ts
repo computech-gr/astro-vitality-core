@@ -95,7 +95,7 @@ export const BEHAVIORAL_MEASUREMENT_PROFILE: MeasurementProfile = {
   catalogStatusNote:
     "BSC entries remain pending independent signed per-entry review. Recording a measurement does not validate or approve an entry.",
   csvExample:
-    "variable,value,unit,observed_at,source,specimen,assay_method,notes\nBSC-001,7,score,2026-10-01T09:00:00Z,Demo Questionnaire,,,synthetic example",
+    "variable,value,unit,observed_at,source,specimen,assay_method,notes\nBSC-001,6.5,h,2026-10-01T09:00:00Z,Demo Sleep Log,,,synthetic example",
   unitSuggestions: () => [],
 };
 
