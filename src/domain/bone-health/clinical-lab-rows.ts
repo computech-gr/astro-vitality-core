@@ -31,7 +31,7 @@ export function recognizeClinicalLabRows(text: string, profile: MeasurementProfi
     touched.add(rawLine);
     const hold = (reason: string) => held.push({ line: index + 1, reason, snippet: rawLine, page: linePages?.[index] });
     if (new Set(candidates.map(c => c.variableId)).size !== 1) { hold("Ambiguous analyte alias; manual review required."); continue; }
-    const chosen = candidates[0];
+    const chosen = candidates.sort((a, b) => b.label.length - a.label.length)[0];
     if (!chosen) continue;
     const parts = chosen.remainder.trim().split(/\s+/);
     const valueText = parts[0] ?? "", unit = parts[1] ?? "", tail = parts.slice(2).join(" ");
