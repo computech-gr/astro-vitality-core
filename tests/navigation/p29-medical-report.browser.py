@@ -86,6 +86,7 @@ async def main():
           const adapters={
             '/src/infrastructure/mission-identity.ts':identity,
             '/src/domain/health-intelligence/unified-health-report-loader.ts':'export async function loadUnifiedReportInputs(){return '+JSON.stringify({domainEntries,unifiedObservations:[],deviceRecords})+'}',
+            '/node_modules/.vite/deps/@tanstack_react-router.js':'export function Link(){return null}',
             '/src/components/medical-advisor-workbench.tsx':'export function MedicalAdvisorWorkbench(){return null}',
             '/src/components/synthetic-medical-review.tsx':'export function SyntheticMedicalReview(){return null}'};
           const modules={};
@@ -113,7 +114,6 @@ async def main():
           Client.createRoot(host).render(React.createElement(AstronautHealthReport));
         }''')
         await page.wait_for_timeout(700)
-        print("fixture errors:", errors, "body:", (await page.locator("body").inner_text())[:300])
         await page.get_by_label('Authorized mission and crew').select_option('SYNTHETIC-P29|SYNTHETIC-CREW')
         await page.locator('.report-history-table tbody tr').nth(63).wait_for()
         assert await page.locator('.report-history-table tbody tr').count() == 64
