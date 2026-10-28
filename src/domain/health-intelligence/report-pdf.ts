@@ -12,13 +12,14 @@ export function downloadReportBlob(blob: Blob, filename: string) {
 
 export function reportPageCuts(height: number, pageHeight: number, blocks: Array<{ top: number; bottom: number }>): number[] {
   const cuts = [0];
-  while (cuts[cuts.length - 1] < height) {
-    const start = cuts[cuts.length - 1];
+  let start = 0;
+  while (start < height) {
     let end = Math.min(height, start + pageHeight);
     const crossing = blocks.filter(b => b.top >= start && b.top < end && b.bottom > end);
     if (crossing.length) end = Math.min(...crossing.map(b => b.top));
     if (end <= start) throw new Error("A report item exceeds one A4 page.");
     cuts.push(end);
+    start = end;
   }
   return cuts;
 }
@@ -67,8 +68,11 @@ export async function createReportPdf(element: HTMLElement, title: string): Prom
     pdf.setProperties({ title, subject: "Research-only unified health report", creator: "MITOCHONDRIA — local export" });
     for (let i = 0; i < cuts.length - 1; i++) {
       if (i) pdf.addPage("a4", "portrait");
-      const start = Math.round(cuts[i] * ratio);
-      const end = Math.round(cuts[i + 1] * ratio);
+      const first = cuts[i];
+      const last = cuts[i + 1];
+      if (first === undefined || last === undefined) throw new Error("Invalid PDF page boundary.");
+      const start = Math.round(first * ratio);
+      const end = Math.round(last * ratio);
       const slice = document.createElement("canvas");
       slice.width = canvas.width;
       slice.height = end - start;

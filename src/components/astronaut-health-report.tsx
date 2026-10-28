@@ -163,7 +163,7 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
-  const exportName = member ? reportExportBasename({ ...member, generatedAt: unified?.generatedAt, provenance }) : "MITOCHONDRIA_Health_Report";
+  const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
   const currentExport = useRef({ unified, userId: identity?.userId });
   currentExport.current = { unified, userId: identity?.userId };
   const performExport = async (kind: "pdf" | "text" | "print") => {
