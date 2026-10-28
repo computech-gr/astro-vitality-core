@@ -219,3 +219,39 @@ label[for]:has(+ :disabled) { cursor: not-allowed; }
     break-after: avoid;
   }
 }
+
+/* P30: screen-only medical reporting controls; print palette remains unchanged. */
+@media screen {
+  :root {
+    --medical-action-primary: #087f9c;
+    --medical-action-on-primary: #ffffff;
+    --medical-action-primary-hover: #065e76;
+    --medical-action-secondary: #eff8ff;
+    --medical-action-on-secondary: #123e63;
+    --medical-action-secondary-border: #4c82a5;
+    --medical-action-secondary-hover: #dbeefa;
+    --medical-action-on-secondary-hover: #092c4c;
+    --medical-action-disabled: #d5dce4;
+    --medical-action-on-disabled: #475569;
+    --medical-action-disabled-border: #8998aa;
+    --medical-advisor-field: #f8fbff;
+    --medical-advisor-field-ink: #132f4a;
+    --medical-advisor-field-border: #7c9bb4;
+    --medical-advisor-caret: #075985;
+    --medical-advisor-placeholder: #526b82;
+    --medical-control-focus: #f4b740;
+  }
+  .medical-report-ui .medical-action-primary,
+  .medical-action-primary { background-color: var(--medical-action-primary); color: var(--medical-action-on-primary); border: 1px solid var(--medical-action-primary); font-weight: 650; }
+  .medical-report-ui .medical-action-primary:hover:not(:disabled),
+  .medical-action-primary:hover:not(:disabled) { background-color: var(--medical-action-primary-hover); color: var(--medical-action-on-primary); }
+  .medical-report-ui .medical-action-secondary,
+  .medical-action-secondary { background-color: var(--medical-action-secondary); color: var(--medical-action-on-secondary); border: 1px solid var(--medical-action-secondary-border); font-weight: 650; }
+  .medical-report-ui .medical-action-secondary:hover:not(:disabled),
+  .medical-action-secondary:hover:not(:disabled) { background-color: var(--medical-action-secondary-hover); color: var(--medical-action-on-secondary-hover); }
+  .medical-report-ui :is(.medical-action-primary,.medical-action-secondary):disabled,
+  :is(.medical-action-primary,.medical-action-secondary):disabled { opacity: 1; background-color: var(--medical-action-disabled); color: var(--medical-action-on-disabled); border: 1px solid var(--medical-action-disabled-border); cursor: not-allowed; }
+  .medical-advisor-input { background-color: var(--medical-advisor-field); color: var(--medical-advisor-field-ink); border: 1px solid var(--medical-advisor-field-border); caret-color: var(--medical-advisor-caret); }
+  .medical-advisor-input::placeholder { color: var(--medical-advisor-placeholder); }
+  :is(.medical-action-primary,.medical-action-secondary,.medical-advisor-input):focus-visible { outline: 3px solid var(--medical-control-focus); outline-offset: 2px; }
+}

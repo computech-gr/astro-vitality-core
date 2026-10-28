@@ -1,5 +1,11 @@
 # P20 video evidence closure
 
+## P30 Medical Report and Advisor screen contrast
+
+- [x] Apply P30 report bytes exactly; advisor differs only by the matching primary class on the omitted acknowledgment button. Supplied screen colors are semantic CSS tokens; original stylesheet/print rules remain byte-identical.
+- [x] 715 tests/10032 assertions pass after generating the existing sealed ignored synthetic sample; lint 0 errors/12 existing warnings, formatting/security/SEO/header checks pass. Synthetic desktop/mobile actual-component keyboard, disabled/enabled buttons and three textareas pass; 64 records/4 exclusions/60 long IDs in 15-page A4 exports. All 15 same-DOM before/after pages are pixel-identical; print styles/positions are identical.
+- [ ] Exact-revision full typecheck/production-build validation is blocked by unavailable synchronized CI evidence; platform forbids manual execution. Automatic compilation reports build OK. Dependency audit retains 2 moderate/1 low advisory; authenticated encrypted-storage acceptance and manual print dialog remain unverified. No database, RLS, AI, release-gate or publishing changes. Detailed results: docs/P30_UI_CONTRAST_RESULTS.md.
+
 ## P29 Medical Report menu and A4 fit
 
 - [x] Apply supplied navigation and report presentation changes; complete missing 17/10/16/12/13/32% history columns, cover/evidence classes, exclusion widths and lossless date line breaks. Semantic paper tokens replace supplied hardcoded utilities; fix dark-mode table contrast and overlapping fixed print furniture. Report logic is unchanged.
