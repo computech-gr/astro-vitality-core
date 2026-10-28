@@ -67,7 +67,16 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
     };
     // Revalidate silently on return, without flashing an unauthorized state or
     // replaying persisted review. Commit still requires fresh authorization.
-    const focus = () => { if (document.visibilityState !== "hidden") void refresh(true); };
+    // Browsers may emit both focus and visibilitychange for a single tab return.
+    // Coalesce these signals; retain the mounted review UI while reauthorizing.
+    let lastFocusRefresh = 0;
+    const focus = () => {
+      if (document.visibilityState === "hidden") return;
+      const now = Date.now();
+      if (now - lastFocusRefresh < 1200) return;
+      lastFocusRefresh = now;
+      void refresh(true);
+    };
     const subscription = subscribeMissionIdentity(() => void refresh());
     window.addEventListener("focus", focus); document.addEventListener("visibilitychange", focus);
     void refresh();
