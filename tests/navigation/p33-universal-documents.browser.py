@@ -1,7 +1,7 @@
 # P33 browser regression: real PDF upload through the shared four-domain import
 # workflow, using synthetic in-memory authorization/history adapters only.
 # No encrypted storage, no real accounts, no external services.
-import asyncio, json
+import asyncio, json, re
 from pathlib import Path
 from playwright.async_api import async_playwright
 
@@ -87,7 +87,7 @@ async def run_domain(page, profile, fixture, expected, needs_date, screenshot=Fa
         section = page.locator('section[aria-label="Shared observation date for this file"]')
         await section.locator('input[type=datetime-local]').fill('2026-10-01T09:00:00')
         await section.locator('input[type=checkbox]').check()  # explicit confirmation auto-applies
-    await page.get_by_role('checkbox', name=lambda n: n and n.startswith('Verify All')).check()
+    await page.get_by_role('checkbox', name=re.compile('^Verify All')).check()
     await page.get_by_role('button', name='Confirm selected results and save').click()
     await page.get_by_role('status').filter(has_text=f'{expected} results saved').wait_for()
     writes = await page.evaluate('window.p33.writes.map(w=>[w.variableId,w.unit,w.observedAt,w.sourceLabel,w.dataOrigin])')
