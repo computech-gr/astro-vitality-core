@@ -2,7 +2,7 @@
 import type { MeasurementProfile } from "@/domain/health-measurements/profiles";
 import type { HeldRow } from "./universal-document-rows";
 
-export type ClinicalLabRow = { variableId: string; value: number; unit: string; rawLine: string; page?: number };
+export type ClinicalLabRow = { variableId: string; value: number; unit: string; rawLine: string; page?: number | undefined };
 const norm = (s: string) => s.normalize("NFKC").toLocaleLowerCase("en-US").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 const ALIASES: Record<string, readonly string[]> = {
   "IMM-001": ["leukocytes (wbc)", "white blood cells", "wbc", "leukocytes"],
