@@ -121,11 +121,10 @@ async def main():
         for width, height in [(390,844),(1280,1800)]:
             await page.set_viewport_size({'width':width,'height':height})
             assert await page.evaluate('document.documentElement.scrollWidth <= innerWidth')
-            await page.locator('section[aria-label="Chronological history"]').screenshot(path=str(OUT / f'history-{width}.png'))
+            await page.locator('.report-history-table thead').screenshot(path=str(OUT / f'history-{width}.png'))
             overflow = await page.locator('.report-table').evaluate_all('(tables)=>tables.flatMap(t=>[...t.querySelectorAll("th,td")]).filter(c=>c.scrollWidth>c.clientWidth+1).length')
             assert overflow == 0, overflow
         await page.emulate_media(media='print')
-        print("colors", await page.locator(".report-history-table td").first.evaluate("e=>({td:getComputedStyle(e).color,table:getComputedStyle(e.closest("table")).color,article:getComputedStyle(e.closest("article")).color})"))
         # Match A4 printable width for layout measurement, independent of mobile width.
         await page.set_viewport_size({'width':703,'height':1800})
         assert await page.locator('.report-history-table').evaluate('t=>t.scrollWidth<=t.clientWidth+1')
