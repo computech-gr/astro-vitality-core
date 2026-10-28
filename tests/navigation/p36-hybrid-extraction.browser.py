@@ -83,9 +83,6 @@ async def main():
             body = await page.text_content('main')
             assert body.count('2026-10-14T07:35') >= 5, body[:600]  # P36.4: source-PDF collection date prefilled
             assert await page.get_by_role('button', name='Confirm selected results and save').is_disabled()
-            section = page.locator('section[aria-label="Shared observation date for this file"]')
-            await section.locator('input[type=datetime-local]').fill('2026-10-14T07:35')
-            await section.locator('input[type=checkbox]').click()
             await page.get_by_role('checkbox', name='Verify All', exact=False).check()
             await page.get_by_role('button', name='Confirm selected results and save').click()
             await page.get_by_role('status').filter(has_text='5 results saved').wait_for()
