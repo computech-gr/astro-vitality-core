@@ -157,7 +157,7 @@ export function MedicalAdvisorWorkbench({
         <Button
           type="button"
           variant="outline"
-          className="h-auto whitespace-normal text-left"
+          className="medical-action-secondary h-auto whitespace-normal text-left"
           onClick={draftPrompt}
           disabled={!report.observations.length}
         >
@@ -168,7 +168,7 @@ export function MedicalAdvisorWorkbench({
         </label>
         <textarea
           id="ai-medical-draft"
-          className="w-full rounded border bg-background p-2"
+          className="medical-advisor-input w-full rounded border bg-background p-2"
           rows={5}
           maxLength={12000}
           value={draftText}
@@ -177,6 +177,7 @@ export function MedicalAdvisorWorkbench({
         <Button
           type="button"
           onClick={start}
+          className="medical-action-primary"
           disabled={!report.observations.length || !draftText.trim()}
         >
           Capture unverified draft
@@ -188,7 +189,7 @@ export function MedicalAdvisorWorkbench({
             </label>
             <textarea
               id="advisor-final-text"
-              className="w-full rounded border bg-background p-2"
+              className="medical-advisor-input w-full rounded border bg-background p-2"
               rows={6}
               maxLength={12000}
               value={finalText}
@@ -199,7 +200,7 @@ export function MedicalAdvisorWorkbench({
             </label>
             <textarea
               id="advisor-rationale"
-              className="w-full rounded border bg-background p-2"
+              className="medical-advisor-input w-full rounded border bg-background p-2"
               rows={3}
               maxLength={2000}
               value={reason}

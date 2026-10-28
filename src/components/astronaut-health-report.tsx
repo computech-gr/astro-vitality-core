@@ -266,10 +266,10 @@ export function AstronautHealthReport() {
         </div>
       )}
       {report && unified && (
-        <article className="report-print space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
+        <article className="report-print medical-report-ui space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
           <div className="flex flex-wrap justify-between gap-3 print:hidden">
-            <Button onClick={printReport}>Print / Save as PDF</Button>
-            <Button variant="outline" onClick={exportText}>
+            <Button className="medical-action-primary" onClick={printReport}>Print / Save as PDF</Button>
+            <Button className="medical-action-secondary" variant="outline" onClick={exportText}>
               Export evidence text
             </Button>
           </div>
