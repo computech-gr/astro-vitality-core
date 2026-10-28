@@ -84,14 +84,18 @@ export function BoneHealthEntryPage() {
           const medicalMissions = authorized
             .filter((m) => m.role === "ground_medical")
             .map((m) => m.missionId);
-          setGroundRoster([]);
+          // Keep the current roster until its fresh replacement resolves; clearing it
+          // first emptied the crew selector on every auth event (e.g. tab return),
+          // unmounting the import review. Denial or errors still clear it.
           if (medicalMissions.length) {
             void loadGroundRoster(medicalMissions).then((result) => {
               if (!alive) return;
-              if (result.error) setIdentityError("Unable to load authorized mission crew roster.");
-              else setGroundRoster(result.data);
+              if (result.error) {
+                setGroundRoster([]);
+                setIdentityError("Unable to load authorized mission crew roster.");
+              } else setGroundRoster(result.data);
             });
-          }
+          } else setGroundRoster([]);
           setMemberships(authorized);
           setMissionId((previous) =>
             authorized.some((m) => m.missionId === previous)

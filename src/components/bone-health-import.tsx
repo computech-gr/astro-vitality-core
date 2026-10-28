@@ -81,7 +81,9 @@ function ScopedBoneImport({ missionId, crewMemberId, dataOrigin, onImported }: {
       silentInFlight = true;
       void refresh(true).finally(() => { silentInFlight = false; });
     };
-    const subscription = subscribeMissionIdentity(() => void refresh());
+    // Auth events (token refresh / session re-emit on tab return) revalidate silently;
+    // a different account or denial still clears the queue inside refresh().
+    const subscription = subscribeMissionIdentity(() => { setDuplicateConfirmed(false); focus(); });
     window.addEventListener("focus", focus); document.addEventListener("visibilitychange", focus);
     void refresh();
     return () => { alive.current = false; epoch++; currentScope.current = null; subscription(); window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); queue.current?.dispose(); queue.current = null; };
