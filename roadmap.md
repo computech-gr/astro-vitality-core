@@ -2,9 +2,9 @@
 
 ## P30 Medical Report and Advisor screen contrast
 
-- [ ] Apply the three supplied presentation files after comparison, preserving report/permission logic and existing print CSS; express the supplied screen palette through semantic CSS tokens.
-- [ ] Run the full regression suite, lint and security checks; verify desktop/mobile buttons, disabled states, textareas and keyboard focus with memory-only synthetic adapters, and compare actual multi-page A4 output against the pre-patch baseline.
-- [ ] Report automatic compilation and exact-revision typecheck/production-build evidence separately; no database, RLS, AI, release-gate or publishing changes.
+- [x] Apply P30 report bytes exactly; advisor differs only by the matching primary class on the omitted acknowledgment button. Supplied screen colors are semantic CSS tokens; original stylesheet/print rules remain byte-identical.
+- [x] 715 tests/10032 assertions pass after generating the existing sealed ignored synthetic sample; lint 0 errors/12 existing warnings, formatting/security/SEO/header checks pass. Synthetic desktop/mobile actual-component keyboard, disabled/enabled buttons and three textareas pass; 64 records/4 exclusions/60 long IDs in 15-page A4 exports. All 15 same-DOM before/after pages are pixel-identical; print styles/positions are identical.
+- [ ] Exact-revision full typecheck/production-build validation is blocked by unavailable synchronized CI evidence; platform forbids manual execution. Automatic compilation reports build OK. Dependency audit retains 2 moderate/1 low advisory; authenticated encrypted-storage acceptance and manual print dialog remain unverified. No database, RLS, AI, release-gate or publishing changes. Detailed results: docs/P30_UI_CONTRAST_RESULTS.md.
 
 ## P29 Medical Report menu and A4 fit
 
