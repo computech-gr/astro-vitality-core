@@ -25,9 +25,9 @@ async def run(p, w, h, tag):
     # keyboard: tab through until a min-h-11 link focused
     await page.goto(URL, wait_until="networkidle")
     hit = None
-    for i in range(120):
+    for i in range(200):
         await page.keyboard.press("Tab")
-        info = await page.evaluate("() => { const a = document.activeElement; return a && a.className && String(a.className).includes('min-h-11') ? [a.textContent.trim(), getComputedStyle(a).outlineStyle, getComputedStyle(a).outlineWidth] : null }")
+        info = await page.evaluate("() => { const a = document.activeElement; return a && a.tagName === 'A' && a.closest('main') && String(a.className).includes('min-h-11') && a.textContent.trim() ? [a.textContent.trim(), getComputedStyle(a).outlineStyle, getComputedStyle(a).outlineWidth] : null }")
         if info: hit = (i + 1, info); break
     print(tag, "keyboard reached touch link:", hit)
     if hit:
