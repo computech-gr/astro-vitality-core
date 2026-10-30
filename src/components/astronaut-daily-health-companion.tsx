@@ -98,6 +98,7 @@ export function AstronautDailyHealthCompanion() {
   const [reminderPlan, setReminderPlan] = useState<ReminderPlan | null>(null);
   const [reminderNotice, setReminderNotice] = useState("");
   const [notificationStatus, setNotificationStatus] = useState("Not requested");
+  const [showSyntheticTrends, setShowSyntheticTrends] = useState(false);
 
   useEffect(() => {
     if (!reminderPlan?.enabled) return;
@@ -380,6 +381,75 @@ export function AstronautDailyHealthCompanion() {
           <p className="text-sm text-muted-foreground" data-testid="trend-status">
             {status}
           </p>
+          <section
+            className="rounded border border-dashed p-4 space-y-3"
+            aria-label="Synthetic trend demonstration"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold">Synthetic trend demonstration</h3>
+                <p className="text-sm text-muted-foreground">
+                  Illustrative values only; not a crew record, clinical baseline, or live sensor
+                  feed.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                aria-expanded={showSyntheticTrends}
+                aria-controls="companion-synthetic-trend"
+                onClick={() => setShowSyntheticTrends((v) => !v)}
+              >
+                {showSyntheticTrends ? "Hide synthetic example" : "Show synthetic example"}
+              </Button>
+            </div>
+            {showSyntheticTrends && (
+              <div
+                id="companion-synthetic-trend"
+                className="space-y-2"
+                data-testid="companion-synthetic-trend"
+              >
+                <p className="font-semibold text-sm">
+                  SYNTHETIC DEMONSTRATION — Resting heart rate (bpm)
+                </p>
+                <svg
+                  viewBox="0 0 600 180"
+                  className="w-full rounded border bg-background text-primary"
+                  role="img"
+                  aria-label="Synthetic example line chart: five illustrative resting heart rate measurements, 68, 70, 67, 72, and 69 bpm; not clinical data"
+                >
+                  <line x1="44" y1="150" x2="560" y2="150" stroke="currentColor" opacity=".3" />
+                  <polyline
+                    points="54,103 178,78 302,116 426,52 550,90"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  />
+                  {(
+                    [
+                      [54, 103],
+                      [178, 78],
+                      [302, 116],
+                      [426, 52],
+                      [550, 90],
+                    ] as const
+                  ).map(([x, y], i) => (
+                    <circle key={i} cx={x} cy={y} r="5" fill="currentColor" />
+                  ))}
+                  <text x="8" y="57" className="fill-muted-foreground" fontSize="16">
+                    72 bpm
+                  </text>
+                  <text x="8" y="121" className="fill-muted-foreground" fontSize="16">
+                    67 bpm
+                  </text>
+                </svg>
+                <p className="text-xs text-muted-foreground">
+                  Illustrative days 1–5: 68, 70, 67, 72, 69 bpm. Not sourced from Supabase. Not a
+                  health-risk assessment.
+                </p>
+              </div>
+            )}
+          </section>
           {memberships.length > 1 && (
             <label className="block text-sm">
               Authorized crew mission
