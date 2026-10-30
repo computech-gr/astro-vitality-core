@@ -144,7 +144,7 @@ function SyntheticMetricChart({ metric }: { metric: keyof typeof SYNTHETIC_TREND
         Observed range (illustrative): {min}–{max} {series.unit}. No reference ranges or clinical
         thresholds.
       </p>
-      <table className="w-full text-left text-xs">
+      <table className="w-full table-fixed text-left text-xs">
         <caption className="sr-only">Synthetic demonstration values</caption>
         <thead>
           <tr>
@@ -625,7 +625,8 @@ export function AstronautDailyHealthCompanion() {
                         </label>
                       </div>
                       <p className="text-xs text-muted-foreground" aria-live="polite">
-                        {filteredSeries.length} matching observations · original units and source
+                        {filteredSeries.length} matching{" "}
+                        {filteredSeries.length === 1 ? "observation" : "observations"} · original units and source
                         provenance retained. Windows are relative to the latest recorded
                         observation, not the current clock.
                       </p>
