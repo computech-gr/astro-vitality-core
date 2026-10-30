@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { advanceReminder, createReminderPlan, reminderDue, reminderText } from "../../src/domain/companion/reminder-engine";
+import {
+  advanceReminder,
+  createReminderPlan,
+  reminderDue,
+  reminderText,
+} from "../../src/domain/companion/reminder-engine";
 describe("P46 foreground reminders", () => {
   it("does not trigger before the user-selected due time", () => {
     const plan = createReminderPlan(1000, 15);
