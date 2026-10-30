@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import {
+  advanceReminder,
+  createReminderPlan,
+  reminderDue,
+  reminderText,
+  REMINDER_INTERVAL_MINUTES,
+  type ReminderInterval,
+  type ReminderPlan,
+} from "@/domain/companion/reminder-engine";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
 import type {
@@ -68,7 +77,8 @@ function MetricChart({ items, unit }: { items: ScientificObservation[]; unit: st
       </svg>
       <p className="text-xs text-muted-foreground">
         {new Date(first.item.observedAt).toLocaleDateString()} →{" "}
-        {new Date(last.item.observedAt).toLocaleDateString()} · {geometry.points.length} observations
+        {new Date(last.item.observedAt).toLocaleDateString()} · {geometry.points.length}{" "}
+        observations
         {geometry.truncated ? " (latest 30 shown)" : ""} · {unit} · range shown is the observed
         minimum/maximum only; no clinical thresholds
       </p>
@@ -84,6 +94,42 @@ export function AstronautDailyHealthCompanion() {
   const [report, setReport] = useState<ScientificEvidenceReport | null>(null);
   const [status, setStatus] = useState("Checking mission authorization...");
   const [metric, setMetric] = useState("");
+  const [reminderInterval, setReminderInterval] = useState<ReminderInterval>(60);
+  const [reminderPlan, setReminderPlan] = useState<ReminderPlan | null>(null);
+  const [reminderNotice, setReminderNotice] = useState("");
+  const [notificationStatus, setNotificationStatus] = useState("Not requested");
+
+  useEffect(() => {
+    if (!reminderPlan?.enabled) return;
+    const timer = window.setInterval(() => {
+      const now = Date.now();
+      if (!reminderDue(reminderPlan, now)) return;
+      setReminderNotice(reminderText());
+      setReminderPlan((current) =>
+        current && reminderDue(current, now) ? advanceReminder(current, now) : current,
+      );
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        try {
+          new Notification("MITOCHONDRIA · Routine reminder", { body: reminderText() });
+        } catch {
+          /* in-page notice remains available */
+        }
+      }
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [reminderPlan]);
+
+  const requestReminderPermission = async () => {
+    if (typeof Notification === "undefined") {
+      setNotificationStatus("Browser notifications unsupported; in-page reminders still work.");
+      return;
+    }
+    try {
+      setNotificationStatus(`Browser permission: ${await Notification.requestPermission()}`);
+    } catch {
+      setNotificationStatus("Permission unavailable; in-page reminders still work.");
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -203,10 +249,82 @@ export function AstronautDailyHealthCompanion() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Suggested checklist only. No automated notifications or medically prescribed
-            frequencies. Completion is kept in memory for this page session; nothing is saved to the
-            medical record.
+            Suggested checklist only. No medically prescribed frequencies; the optional reminders
+            below are user-chosen and work only while this page is open. Completion is kept in
+            memory for this page session; nothing is saved to the medical record.
           </p>
+          <section className="space-y-3 rounded border p-4" aria-label="Optional timed reminders">
+            <h3 className="font-semibold">Optional timed check-in reminders</h3>
+            <p className="text-sm text-muted-foreground">
+              Choose your own demonstration interval. No medical frequency is prescribed. Timers run
+              only while this page stays open; they do not persist across reloads, devices or
+              offline browser shutdown. Browser notifications require permission and are not
+              guaranteed.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <label htmlFor="companion-reminder-interval">Repeat every</label>
+              <select
+                id="companion-reminder-interval"
+                className="rounded border bg-background p-2"
+                value={reminderInterval}
+                onChange={(e) => setReminderInterval(Number(e.target.value) as ReminderInterval)}
+              >
+                {REMINDER_INTERVAL_MINUTES.map((minutes) => (
+                  <option key={minutes} value={minutes}>
+                    {minutes} minute{minutes === 1 ? "" : "s"}
+                    {minutes === 1 ? " (demo)" : ""}
+                  </option>
+                ))}
+              </select>
+              <Button
+                type="button"
+                onClick={() => {
+                  setReminderNotice("");
+                  setReminderPlan(createReminderPlan(Date.now(), reminderInterval));
+                }}
+              >
+                Start reminders
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!reminderPlan}
+                onClick={() => {
+                  setReminderPlan(null);
+                  setReminderNotice("");
+                }}
+              >
+                Stop
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void requestReminderPermission()}
+              >
+                Enable browser notifications
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground" aria-live="polite">
+              {reminderPlan
+                ? `Active · next check-in ${new Date(reminderPlan.nextDueAt).toLocaleTimeString()}`
+                : "Reminders off"}{" "}
+              · {notificationStatus}
+            </p>
+            {reminderNotice && (
+              <div role="status" className="rounded border border-primary p-3">
+                <strong>Routine reminder</strong>
+                <p>{reminderNotice}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2"
+                  onClick={() => setReminderNotice("")}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            )}
+          </section>
           <div className="grid gap-3 md:grid-cols-2">
             {COMPANION_ROUTINE.map((item) => (
               <div key={item.id} className="rounded border p-4">
@@ -238,7 +356,10 @@ export function AstronautDailyHealthCompanion() {
               Participation: {progress.done} / {progress.total} activities
             </strong>
             <div className="mt-2 h-2 overflow-hidden rounded bg-muted">
-              <div className="h-full bg-primary transition-all" style={{ width: `${progress.percent}%` }} />
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${progress.percent}%` }}
+              />
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               Participation progress only — never a health score, readiness certification or medical
@@ -362,8 +483,8 @@ export function AstronautDailyHealthCompanion() {
             variation. A line chart does not establish a clinical trend or causal relationship.
           </p>
           <p>
-            For individual measurement technique, approved thresholds, symptoms or emergency actions,
-            use your mission-approved medical protocol and designated medical authority.
+            For individual measurement technique, approved thresholds, symptoms or emergency
+            actions, use your mission-approved medical protocol and designated medical authority.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link className="text-primary underline" to="/mission/guidance">

@@ -340,3 +340,8 @@
 - [x] Apply the P45 patch: `/mission/companion` route, Mission Console menu entry, five environments, session-only checklist, Crew Self read-only trends, data-quality colors, guidance links.
 - [x] Integration: semantic quality color tokens, router links, time-proportional chart, explicit 0/1/2+ and empty states, search keywords, noindex route; 8 tests.
 - [ ] Real signed-in Crew Self browser acceptance (owner account lacks a Crew Self membership; verified with stubbed membership/evidence responses).
+
+## P46 Foreground reminders
+
+- [x] Apply the P46 patch: optional user-chosen reminder intervals (1-minute demo), Start/Stop, in-page notice, optional browser notification permission, reset on reload; no persistence, schedules or background delivery.
+- [ ] Physical-device and branded Chrome/Edge notification acceptance (blocked: only bundled Chromium in sandbox).
