@@ -47,10 +47,10 @@ function MetricChart({ items, unit }: { items: ScientificObservation[]; unit: st
         className="w-full rounded border bg-background text-primary"
       >
         <line x1="24" y1="140" x2="576" y2="140" stroke="currentColor" opacity=".2" />
-        <text x="4" y="28" className="fill-muted-foreground" fontSize="11">
+        <text x="4" y="22" className="fill-muted-foreground" fontSize="18">
           {geometry.max}
         </text>
-        <text x="4" y="136" className="fill-muted-foreground" fontSize="11">
+        <text x="4" y="136" className="fill-muted-foreground" fontSize="18">
           {geometry.min}
         </text>
         <polyline
