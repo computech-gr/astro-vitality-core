@@ -91,18 +91,80 @@ function MetricChart({ items, unit }: { items: ScientificObservation[]; unit: st
 function SyntheticMetricChart({ metric }: { metric: keyof typeof SYNTHETIC_TREND_SERIES }) {
   const series = SYNTHETIC_TREND_SERIES[metric];
   const values = series.values;
-  const min = Math.min(...values), max = Math.max(...values);
+  const min = Math.min(...values),
+    max = Math.max(...values);
   const span = max - min || 1;
-  const points = values.map((value, i) => ({ value, x: 68 + i * 122, y: 126 - ((value - min) / span) * 90 }));
-  return <div className="space-y-2">
-    <svg viewBox="0 0 620 170" className="w-full rounded border bg-background text-primary" role="img" aria-label={`Synthetic ${series.label} chart, five illustrative values: ${values.join(", ")}; not clinical data`}>
-      <line x1="60" y1="140" x2="566" y2="140" stroke="currentColor" opacity=".25" />
-      <polyline points={points.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke="currentColor" strokeWidth="3" />
-      {points.map((p,i) => <g key={i}><circle cx={p.x} cy={p.y} r="5" fill="currentColor"><title>{`Day ${i+1}: ${p.value} ${series.unit} (synthetic)`}</title></circle><text x={p.x} y={p.y - 11} textAnchor="middle" fontSize="12" className="fill-foreground">{p.value}</text><text x={p.x} y="157" textAnchor="middle" fontSize="12" className="fill-muted-foreground">D{i+1}</text></g>)}
-    </svg>
-    <p className="text-xs text-muted-foreground">Observed range (illustrative): {min}–{max} {series.unit}. No reference ranges or clinical thresholds.</p>
-    <table className="w-full text-left text-xs"><caption className="sr-only">Synthetic demonstration values</caption><thead><tr><th>Day</th>{values.map((_,i)=><th key={i}>{i+1}</th>)}</tr></thead><tbody><tr><th>{series.unit}</th>{values.map((v,i)=><td key={i}>{v}</td>)}</tr></tbody></table>
-  </div>;
+  const points = values.map((value, i) => ({
+    value,
+    x: 68 + i * 122,
+    y: 126 - ((value - min) / span) * 90,
+  }));
+  return (
+    <div className="space-y-2">
+      <svg
+        viewBox="0 0 620 170"
+        className="w-full rounded border bg-background text-primary"
+        role="img"
+        aria-label={`Synthetic ${series.label} chart, five illustrative values: ${values.join(", ")}; not clinical data`}
+      >
+        <line x1="60" y1="140" x2="566" y2="140" stroke="currentColor" opacity=".25" />
+        <polyline
+          points={points.map((p) => `${p.x},${p.y}`).join(" ")}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+        />
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="5" fill="currentColor">
+              <title>{`Day ${i + 1}: ${p.value} ${series.unit} (synthetic)`}</title>
+            </circle>
+            <text
+              x={p.x}
+              y={p.y - 11}
+              textAnchor="middle"
+              fontSize="12"
+              className="fill-foreground"
+            >
+              {p.value}
+            </text>
+            <text
+              x={p.x}
+              y="157"
+              textAnchor="middle"
+              fontSize="12"
+              className="fill-muted-foreground"
+            >
+              D{i + 1}
+            </text>
+          </g>
+        ))}
+      </svg>
+      <p className="text-xs text-muted-foreground">
+        Observed range (illustrative): {min}–{max} {series.unit}. No reference ranges or clinical
+        thresholds.
+      </p>
+      <table className="w-full text-left text-xs">
+        <caption className="sr-only">Synthetic demonstration values</caption>
+        <thead>
+          <tr>
+            <th>Day</th>
+            {values.map((_, i) => (
+              <th key={i}>{i + 1}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>{series.unit}</th>
+            {values.map((v, i) => (
+              <td key={i}>{v}</td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 export function AstronautDailyHealthCompanion() {
@@ -222,8 +284,14 @@ export function AstronautDailyHealthCompanion() {
         : [],
     [report, current],
   );
-  const sources = useMemo(() => Array.from(new Set(series.map((o) => o.sourceId))).sort(), [series]);
-  const filteredSeries = useMemo(() => filterTrendObservations(series, trendWindow, trendSource), [series, trendWindow, trendSource]);
+  const sources = useMemo(
+    () => Array.from(new Set(series.map((o) => o.sourceId))).sort(),
+    [series],
+  );
+  const filteredSeries = useMemo(
+    () => filterTrendObservations(series, trendWindow, trendSource),
+    [series, trendWindow, trendSource],
+  );
   const progress = participation(completed, COMPANION_ROUTINE.length);
   const quality = current ? qualityPresentation(current.latest.quality) : null;
 
@@ -433,15 +501,27 @@ export function AstronautDailyHealthCompanion() {
                 className="space-y-2"
                 data-testid="companion-synthetic-trend"
               >
-                <label className="block text-sm" htmlFor="companion-synthetic-metric">Synthetic biomarker</label>
-                <select id="companion-synthetic-metric" className="rounded border bg-background p-2" value={syntheticMetric} onChange={(e) => setSyntheticMetric(e.target.value as typeof syntheticMetric)}>
+                <label className="block text-sm" htmlFor="companion-synthetic-metric">
+                  Synthetic biomarker
+                </label>
+                <select
+                  id="companion-synthetic-metric"
+                  className="rounded border bg-background p-2"
+                  value={syntheticMetric}
+                  onChange={(e) => setSyntheticMetric(e.target.value as typeof syntheticMetric)}
+                >
                   <option value="heart">Resting heart rate (bpm)</option>
                   <option value="hrv">Heart rate variability (ms)</option>
                   <option value="sleep">Sleep duration (hours)</option>
                 </select>
-                <p className="font-semibold text-sm">SYNTHETIC DEMONSTRATION — {SYNTHETIC_TREND_SERIES[syntheticMetric].label}</p>
+                <p className="font-semibold text-sm">
+                  SYNTHETIC DEMONSTRATION — {SYNTHETIC_TREND_SERIES[syntheticMetric].label}
+                </p>
                 <SyntheticMetricChart metric={syntheticMetric} />
-                <p className="text-xs text-muted-foreground">Illustrative days 1–5. Not from mission records, not a clinical baseline or health-risk assessment.</p>
+                <p className="text-xs text-muted-foreground">
+                  Illustrative days 1–5. Not from mission records, not a clinical baseline or
+                  health-risk assessment.
+                </p>
               </div>
             )}
           </section>
@@ -485,7 +565,11 @@ export function AstronautDailyHealthCompanion() {
                   <select
                     id="companion-metric"
                     value={metric}
-                    onChange={(e) => { setMetric(e.target.value); setTrendSource("all"); setTrendWindow("all"); }}
+                    onChange={(e) => {
+                      setMetric(e.target.value);
+                      setTrendSource("all");
+                      setTrendWindow("all");
+                    }}
                     className="w-full max-w-xl rounded border bg-background p-2"
                   >
                     {report.metrics.map((m) => (
@@ -507,20 +591,70 @@ export function AstronautDailyHealthCompanion() {
                         {current.latest.sourceId}
                       </p>
                       <div className="flex flex-wrap gap-3">
-                        <label className="text-sm">Time window
-                          <select className="mt-1 block rounded border bg-background p-2" value={trendWindow} onChange={(e) => setTrendWindow(e.target.value as typeof trendWindow)}>
-                            <option value="all">All recorded</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option>
+                        <label className="text-sm">
+                          Time window
+                          <select
+                            className="mt-1 block rounded border bg-background p-2"
+                            value={trendWindow}
+                            onChange={(e) => setTrendWindow(e.target.value as typeof trendWindow)}
+                          >
+                            <option value="all">All recorded</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 90 days</option>
                           </select>
                         </label>
-                        <label className="text-sm">Evidence source
-                          <select className="mt-1 block max-w-xs rounded border bg-background p-2" value={trendSource} onChange={(e) => setTrendSource(e.target.value)}>
-                            <option value="all">All sources</option>{sources.map((source) => <option key={source} value={source}>{source}</option>)}
+                        <label className="text-sm">
+                          Evidence source
+                          <select
+                            className="mt-1 block max-w-xs rounded border bg-background p-2"
+                            value={trendSource}
+                            onChange={(e) => setTrendSource(e.target.value)}
+                          >
+                            <option value="all">All sources</option>
+                            {sources.map((source) => (
+                              <option key={source} value={source}>
+                                {source}
+                              </option>
+                            ))}
                           </select>
                         </label>
                       </div>
-                      <p className="text-xs text-muted-foreground">{filteredSeries.length} matching observations · original units and source provenance retained. Windows are relative to the latest recorded observation, not the current clock.</p>
+                      <p className="text-xs text-muted-foreground">
+                        {filteredSeries.length} matching observations · original units and source
+                        provenance retained. Windows are relative to the latest recorded
+                        observation, not the current clock.
+                      </p>
                       <MetricChart items={filteredSeries} unit={current.unit} />
-                      {filteredSeries.length > 0 && <div className="max-h-64 overflow-auto rounded border"><table className="w-full text-left text-xs"><caption className="sr-only">Recorded observations and evidence provenance</caption><thead><tr><th className="p-2">Observed</th><th className="p-2">Value</th><th className="p-2">Quality</th><th className="p-2">Source</th></tr></thead><tbody>{filteredSeries.map((o) => <tr key={o.id} className="border-t"><td className="p-2">{new Date(o.observedAt).toLocaleString()}</td><td className="p-2">{o.value} {o.unit}</td><td className="p-2">{qualityPresentation(o.quality).label}</td><td className="p-2 break-all">{o.sourceId}</td></tr>)}</tbody></table></div>}
+                      {filteredSeries.length > 0 && (
+                        <div className="max-h-64 overflow-auto rounded border">
+                          <table className="w-full text-left text-xs">
+                            <caption className="sr-only">
+                              Recorded observations and evidence provenance
+                            </caption>
+                            <thead>
+                              <tr>
+                                <th className="p-2">Observed</th>
+                                <th className="p-2">Value</th>
+                                <th className="p-2">Quality</th>
+                                <th className="p-2">Source</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredSeries.map((o) => (
+                                <tr key={o.id} className="border-t">
+                                  <td className="p-2">{new Date(o.observedAt).toLocaleString()}</td>
+                                  <td className="p-2">
+                                    {o.value} {o.unit}
+                                  </td>
+                                  <td className="p-2">{qualityPresentation(o.quality).label}</td>
+                                  <td className="p-2 break-all">{o.sourceId}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </>
                   )}
                 </>

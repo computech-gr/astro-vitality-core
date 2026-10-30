@@ -8,28 +8,29 @@ import type { ScientificObservation } from "@/domain/health-intelligence/live-ev
 
 export type CompanionEnvironment = "spacecraft" | "station" | "rover" | "lunar" | "planetary";
 
-export const COMPANION_ENVIRONMENTS: Record<CompanionEnvironment, { name: string; note: string }> = {
-  spacecraft: {
-    name: "Spacecraft",
-    note: "Confined cabin; follow the vehicle's approved medical and operational procedures.",
-  },
-  station: {
-    name: "Space station",
-    note: "Long-duration microgravity operations; use the mission's approved monitoring schedule.",
-  },
-  rover: {
-    name: "Rover",
-    note: "Mobile operations; account for connectivity, workload and the approved EVA/vehicle plan.",
-  },
-  lunar: {
-    name: "Lunar base",
-    note: "Surface operations; consider dust, habitat constraints and the approved mission plan.",
-  },
-  planetary: {
-    name: "Planetary base",
-    note: "Remote habitat; consider communications delay and mission-approved protocols.",
-  },
-};
+export const COMPANION_ENVIRONMENTS: Record<CompanionEnvironment, { name: string; note: string }> =
+  {
+    spacecraft: {
+      name: "Spacecraft",
+      note: "Confined cabin; follow the vehicle's approved medical and operational procedures.",
+    },
+    station: {
+      name: "Space station",
+      note: "Long-duration microgravity operations; use the mission's approved monitoring schedule.",
+    },
+    rover: {
+      name: "Rover",
+      note: "Mobile operations; account for connectivity, workload and the approved EVA/vehicle plan.",
+    },
+    lunar: {
+      name: "Lunar base",
+      note: "Surface operations; consider dust, habitat constraints and the approved mission plan.",
+    },
+    planetary: {
+      name: "Planetary base",
+      note: "Remote habitat; consider communications delay and mission-approved protocols.",
+    },
+  };
 
 export type CompanionRoutineItem = {
   id: string;
@@ -127,16 +128,21 @@ export function filterTrendObservations(
   windowDays: "all" | "7" | "30" | "90",
   source: string,
 ): ScientificObservation[] {
-  const valid = observations.filter((o) => Number.isFinite(o.value) && Number.isFinite(Date.parse(o.observedAt)));
+  const valid = observations.filter(
+    (o) => Number.isFinite(o.value) && Number.isFinite(Date.parse(o.observedAt)),
+  );
   const latest = Math.max(...valid.map((o) => Date.parse(o.observedAt)));
   const cutoff = windowDays === "all" ? -Infinity : latest - Number(windowDays) * 86400000;
-  return valid.filter((o) => (source === "all" || o.sourceId === source) && Date.parse(o.observedAt) >= cutoff)
-    .sort((a,b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+  return valid
+    .filter(
+      (o) => (source === "all" || o.sourceId === source) && Date.parse(o.observedAt) >= cutoff,
+    )
+    .sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
 }
 
 /** Hardcoded illustration: never inserted into evidence records or exported. */
 export const SYNTHETIC_TREND_SERIES = {
-  heart: { label: "Resting heart rate (bpm)", unit: "bpm", values: [68,70,67,72,69] },
-  hrv: { label: "Heart rate variability (ms)", unit: "ms", values: [42,45,40,47,44] },
-  sleep: { label: "Sleep duration (hours)", unit: "hours", values: [7.2,6.8,7.5,7.0,7.4] },
+  heart: { label: "Resting heart rate (bpm)", unit: "bpm", values: [68, 70, 67, 72, 69] },
+  hrv: { label: "Heart rate variability (ms)", unit: "ms", values: [42, 45, 40, 47, 44] },
+  sleep: { label: "Sleep duration (hours)", unit: "hours", values: [7.2, 6.8, 7.5, 7.0, 7.4] },
 } as const;
