@@ -16,3 +16,7 @@ Run tests, typecheck, lint, format check, security audit, production build; veri
 ## Still outstanding
 
 Real authorized Crew Self end-to-end tests and Edge/Chrome physical notification tests; no database, RLS, auth or migration changes.
+
+## Integration notes (2026-10-30)
+
+The project's CardTitle has no `asChild` prop, so the four titles are rendered as `h2` elements with the identical card-title classes (the supplied markup failed typecheck and would leak an unknown DOM attribute). Focus outlines use the `ring` design token. Browser acceptance in bundled Chromium at 1280px and 390px (`tests/navigation/p471-companion-a11y.browser.py`): heading order h1 → four h2 (with the two existing h3 subsections), all seven links 44px tall, Tab reaches them with a 2px solid focus outline, no horizontal overflow, no page errors.

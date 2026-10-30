@@ -356,3 +356,8 @@
 - [x] Apply the P47 patch: three synthetic example series (resting heart rate, HRV, sleep) behind one metric selector; Crew Self time-window and evidence-source filters relative to the latest observation; read-only provenance table with original units, UTC times, quality and source.
 - [x] Integration: filter-specific empty state, filters reset per crew scope, table header scopes, live count, singular/plural count, mobile table layout; 5 domain tests; browser check with stubbed Crew Self responses.
 - [ ] Real signed-in Crew Self acceptance of the filters and table — blocked: no account with a Crew Self membership.
+
+## P47.1 Companion accessibility & UX
+
+- [x] Apply the P47.1 patch: four section titles as level-2 headings, 44px touch height and visible keyboard focus on the four console links and three guidance links.
+- [x] Integration: the shared card title has no `asChild` option, so headings are plain h2 elements with the same card-title styling; focus outline uses the ring token.
