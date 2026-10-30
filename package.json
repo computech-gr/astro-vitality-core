@@ -95,7 +95,9 @@
     "body-parser": "2.4.0",
     "hono": "4.13.11",
     "fast-uri": "3.1.9",
-    "ip-address": "10.7.4"
+    "ip-address": "10.7.4",
+    "seroval": "1.6.12",
+    "seroval-plugins": "1.6.12"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
