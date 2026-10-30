@@ -254,6 +254,8 @@ export function AstronautDailyHealthCompanion() {
     }
     let cancelled = false;
     setReport(null);
+    setTrendSource("all");
+    setTrendWindow("all");
     setStatus("Loading authorized read-only evidence...");
     void loadCrewScientificEvidence(membership.missionId, membership.crewMemberId)
       .then((result) => {
