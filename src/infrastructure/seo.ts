@@ -50,6 +50,7 @@ export const NON_INDEXABLE_ROUTES = [
   "/mission/live",
   "/mission/devices",
   "/mission/readiness",
+  "/mission/companion",
   "/mission/intelligence",
   "/mission/nasa-evidence",
   "/mission/alerts",
