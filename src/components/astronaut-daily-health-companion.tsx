@@ -315,7 +315,7 @@ export function AstronautDailyHealthCompanion() {
 
       <Card>
         <CardHeader>
-          <CardTitle>1 · Mission environment</CardTitle>
+          <h2 className="font-semibold leading-none tracking-tight">1 · Mission environment</h2>
         </CardHeader>
         <CardContent className="space-y-3">
           <label className="block text-sm" htmlFor="companion-environment">
@@ -342,7 +342,9 @@ export function AstronautDailyHealthCompanion() {
 
       <Card>
         <CardHeader>
-          <CardTitle>2 · Daily routine & reminders</CardTitle>
+          <h2 className="font-semibold leading-none tracking-tight">
+            2 · Daily routine & reminders
+          </h2>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
@@ -442,7 +444,10 @@ export function AstronautDailyHealthCompanion() {
                   </span>
                 </label>
                 <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p>
-                <Link className="mt-2 inline-block text-sm text-primary underline" to={item.href}>
+                <Link
+                  className="mt-2 inline-flex min-h-11 items-center rounded px-2 py-2 text-sm text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+                  to={item.href}
+                >
                   Open relevant console
                 </Link>
               </div>
@@ -471,7 +476,7 @@ export function AstronautDailyHealthCompanion() {
 
       <Card>
         <CardHeader>
-          <CardTitle>3 · Dynamic health trends</CardTitle>
+          <h2 className="font-semibold leading-none tracking-tight">3 · Dynamic health trends</h2>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground" data-testid="trend-status">
@@ -696,7 +701,9 @@ export function AstronautDailyHealthCompanion() {
 
       <Card>
         <CardHeader>
-          <CardTitle>4 · Understand the indicators and colors</CardTitle>
+          <h2 className="font-semibold leading-none tracking-tight">
+            4 · Understand the indicators and colors
+          </h2>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <ul className="space-y-2">
@@ -725,13 +732,22 @@ export function AstronautDailyHealthCompanion() {
             actions, use your mission-approved medical protocol and designated medical authority.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link className="text-primary underline" to="/mission/guidance">
+            <Link
+              className="inline-flex min-h-11 items-center rounded px-2 py-2 text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+              to="/mission/guidance"
+            >
               Action Guidance
             </Link>
-            <Link className="text-primary underline" to="/mission/intelligence">
+            <Link
+              className="inline-flex min-h-11 items-center rounded px-2 py-2 text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+              to="/mission/intelligence"
+            >
               Health Intelligence
             </Link>
-            <Link className="text-primary underline" to="/mission/validation">
+            <Link
+              className="inline-flex min-h-11 items-center rounded px-2 py-2 text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+              to="/mission/validation"
+            >
               Validation & limitations
             </Link>
           </div>
