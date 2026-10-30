@@ -52,7 +52,7 @@ async def run(p, w, h, tag):
     sel = chart.get_by_label("Synthetic biomarker")
     for m in ["heart", "hrv", "sleep"]:
         await sel.select_option(m)
-        print(tag, m, "|", await chart.get_by_text("SYNTHETIC DEMONSTRATION").inner_text(), "|",
+        print(tag, m, "|", await chart.get_by_text("SYNTHETIC DEMONSTRATION —").inner_text(), "|",
               await chart.get_by_role("img").get_attribute("aria-label"), "| circles", await chart.locator("circle").count())
         await chart.screenshot(path=str(S / f"{tag}_synthetic_{m}.png"))
     print(tag, "signed-out overflow px:", await page.evaluate("document.documentElement.scrollWidth - innerWidth"))
