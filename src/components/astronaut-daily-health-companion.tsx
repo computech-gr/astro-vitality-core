@@ -123,16 +123,16 @@ function SyntheticMetricChart({ metric }: { metric: keyof typeof SYNTHETIC_TREND
               x={p.x}
               y={p.y - 11}
               textAnchor="middle"
-              fontSize="12"
+              fontSize="16"
               className="fill-foreground"
             >
               {p.value}
             </text>
             <text
               x={p.x}
-              y="157"
+              y="162"
               textAnchor="middle"
-              fontSize="12"
+              fontSize="15"
               className="fill-muted-foreground"
             >
               D{i + 1}
@@ -148,15 +148,17 @@ function SyntheticMetricChart({ metric }: { metric: keyof typeof SYNTHETIC_TREND
         <caption className="sr-only">Synthetic demonstration values</caption>
         <thead>
           <tr>
-            <th>Day</th>
+            <th scope="col">Day</th>
             {values.map((_, i) => (
-              <th key={i}>{i + 1}</th>
+              <th scope="col" key={i}>
+                {i + 1}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           <tr>
-            <th>{series.unit}</th>
+            <th scope="row">{series.unit}</th>
             {values.map((v, i) => (
               <td key={i}>{v}</td>
             ))}
@@ -620,12 +622,19 @@ export function AstronautDailyHealthCompanion() {
                           </select>
                         </label>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground" aria-live="polite">
                         {filteredSeries.length} matching observations · original units and source
                         provenance retained. Windows are relative to the latest recorded
                         observation, not the current clock.
                       </p>
-                      <MetricChart items={filteredSeries} unit={current.unit} />
+                      {filteredSeries.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          No recorded observations match the selected time window and evidence
+                          source.
+                        </p>
+                      ) : (
+                        <MetricChart items={filteredSeries} unit={current.unit} />
+                      )}
                       {filteredSeries.length > 0 && (
                         <div className="max-h-64 overflow-auto rounded border">
                           <table className="w-full text-left text-xs">
@@ -634,16 +643,29 @@ export function AstronautDailyHealthCompanion() {
                             </caption>
                             <thead>
                               <tr>
-                                <th className="p-2">Observed</th>
-                                <th className="p-2">Value</th>
-                                <th className="p-2">Quality</th>
-                                <th className="p-2">Source</th>
+                                <th scope="col" className="p-2">
+                                  Observed (UTC)
+                                </th>
+                                <th scope="col" className="p-2">
+                                  Value
+                                </th>
+                                <th scope="col" className="p-2">
+                                  Quality
+                                </th>
+                                <th scope="col" className="p-2">
+                                  Source
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
                               {filteredSeries.map((o) => (
                                 <tr key={o.id} className="border-t">
-                                  <td className="p-2">{new Date(o.observedAt).toLocaleString()}</td>
+                                  <td className="p-2 whitespace-nowrap">
+                                    {new Date(o.observedAt)
+                                      .toISOString()
+                                      .slice(0, 16)
+                                      .replace("T", " ")}
+                                  </td>
                                   <td className="p-2">
                                     {o.value} {o.unit}
                                   </td>
