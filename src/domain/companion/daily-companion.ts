@@ -118,3 +118,25 @@ export function chartGeometry(items: readonly ScientificObservation[]) {
   });
   return { points, min, max, truncated };
 }
+
+/** P47: source-filtered, read-only trend window relative to the latest observation.
+ * No cross-metric conversion, clinical inference, persistence or network effects.
+ */
+export function filterTrendObservations(
+  observations: readonly ScientificObservation[],
+  windowDays: "all" | "7" | "30" | "90",
+  source: string,
+): ScientificObservation[] {
+  const valid = observations.filter((o) => Number.isFinite(o.value) && Number.isFinite(Date.parse(o.observedAt)));
+  const latest = Math.max(...valid.map((o) => Date.parse(o.observedAt)));
+  const cutoff = windowDays === "all" ? -Infinity : latest - Number(windowDays) * 86400000;
+  return valid.filter((o) => (source === "all" || o.sourceId === source) && Date.parse(o.observedAt) >= cutoff)
+    .sort((a,b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+}
+
+/** Hardcoded illustration: never inserted into evidence records or exported. */
+export const SYNTHETIC_TREND_SERIES = {
+  heart: { label: "Resting heart rate (bpm)", unit: "bpm", values: [68,70,67,72,69] },
+  hrv: { label: "Heart rate variability (ms)", unit: "ms", values: [42,45,40,47,44] },
+  sleep: { label: "Sleep duration (hours)", unit: "hours", values: [7.2,6.8,7.5,7.0,7.4] },
+} as const;
