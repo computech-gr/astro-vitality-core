@@ -97,6 +97,7 @@ const navigation: readonly NavigationEntry[] = [
           "Mission Workspace",
           "Mission & Crew Operations",
           "Daily Readiness Check-in",
+          "Daily Health Companion",
         ],
       },
       {
@@ -337,6 +338,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Mission & Crew Operations") return "/mission/operations";
   if (label === "Mission Workspace") return "/mission/experience";
   if (label === "Daily Readiness Check-in") return "/mission/readiness";
+  if (label === "Daily Health Companion") return "/mission/companion";
   if (label === "Unified Data Intake") return "/mission/intake";
   if (label === "Astronaut Health Report" || label === "Medical Report") return "/mission/health-report";
   if (label === "Live Monitoring") return "/mission/live";

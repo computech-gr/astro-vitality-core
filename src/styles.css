@@ -34,6 +34,8 @@
   --color-surface: var(--surface);
   --color-deep: var(--deep);
   --color-signal: var(--signal);
+  --color-quality-good: var(--quality-good);
+  --color-quality-degraded: var(--quality-degraded);
 }
 
 :root {
@@ -61,6 +63,9 @@
   --surface: oklch(0.185 0.031 243);
   --deep: oklch(0.125 0.028 246);
   --signal: oklch(0.72 0.17 54);
+  /* P45: data-quality states (not health risk). */
+  --quality-good: oklch(0.78 0.15 155);
+  --quality-degraded: oklch(0.8 0.15 80);
   --primary-glow: oklch(0.79 0.145 206 / 35%);
   --cyan-haze: oklch(0.68 0.15 215 / 15%);
   --hero-overlay: oklch(0.11 0.025 245 / 94%);

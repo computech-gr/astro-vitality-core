@@ -334,3 +334,9 @@
 - [x] Full tests, typecheck, production build, scientific/security verifiers and desktop/mobile browser checks pass.
 - [ ] Confirm GitHub synchronization plus Quality and Security Scan on the exact commit; awaiting managed sync and GitHub Actions.
 - [x] P33 universal medical document intelligence: geometry PDF parsing, header-aware catalog matching, 14/14 synthetic P28 rows recognized, fail-closed unsupported layouts, 737 tests, browser upload regression for all four domains. Original P28/P32 PDFs unavailable — fixtures are synthetic reconstructions. OCR offline-device proof, authenticated storage acceptance and exact-revision CI remain open.
+
+## P45 Daily Health Companion
+
+- [x] Apply the P45 patch: `/mission/companion` route, Mission Console menu entry, five environments, session-only checklist, Crew Self read-only trends, data-quality colors, guidance links.
+- [x] Integration: semantic quality color tokens, router links, time-proportional chart, explicit 0/1/2+ and empty states, search keywords, noindex route; 8 tests.
+- [ ] Real signed-in Crew Self browser acceptance (owner account lacks a Crew Self membership; verified with stubbed membership/evidence responses).
