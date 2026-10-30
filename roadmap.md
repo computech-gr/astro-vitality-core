@@ -350,3 +350,9 @@
 
 - [x] Apply the P46.1 patch: opt-in Show/Hide synthetic resting-heart-rate example under Dynamic health trends, clearly labelled, never stored, exported or fetched; real Crew Self charts unchanged.
 - [ ] Authorized Crew Self browser acceptance of real charts beside the demo — blocked: no account with a Crew Self membership.
+
+## P47 Interactive multi-biomarker trends
+
+- [x] Apply the P47 patch: three synthetic example series (resting heart rate, HRV, sleep) behind one metric selector; Crew Self time-window and evidence-source filters relative to the latest observation; read-only provenance table with original units, UTC times, quality and source.
+- [x] Integration: filter-specific empty state, filters reset per crew scope, table header scopes, live count, singular/plural count, mobile table layout; 5 domain tests; browser check with stubbed Crew Self responses.
+- [ ] Real signed-in Crew Self acceptance of the filters and table — blocked: no account with a Crew Self membership.
