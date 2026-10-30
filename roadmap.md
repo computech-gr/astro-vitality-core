@@ -345,3 +345,8 @@
 
 - [x] Apply the P46 patch: optional user-chosen reminder intervals (1-minute demo), Start/Stop, in-page notice, optional browser notification permission, reset on reload; no persistence, schedules or background delivery.
 - [ ] Physical-device and branded Chrome/Edge notification acceptance (blocked: only bundled Chromium in sandbox).
+
+## P46.1 Synthetic trends demo
+
+- [x] Apply the P46.1 patch: opt-in Show/Hide synthetic resting-heart-rate example under Dynamic health trends, clearly labelled, never stored, exported or fetched; real Crew Self charts unchanged.
+- [ ] Authorized Crew Self browser acceptance of real charts beside the demo — blocked: no account with a Crew Self membership.
