@@ -15,7 +15,7 @@ import type {
   ScientificEvidenceReport,
   ScientificObservation,
 } from "@/domain/health-intelligence/live-evidence";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   COMPANION_ENVIRONMENTS,
