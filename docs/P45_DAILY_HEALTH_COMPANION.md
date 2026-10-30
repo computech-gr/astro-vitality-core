@@ -1,6 +1,7 @@
 # P45 — Daily Health Companion (NASA challenge consideration implementation)
 
 ## Implemented
+
 - Five explicit selectable mission environments with contextual nonclinical descriptions; environment selection is not persisted and does not change medical rules.
 - Four suggested routine activities linking to existing mission consoles. Checkbox completion and progress are in-memory only, resettable, and never medical readiness scores.
 - Mission-scoped Crew Self read-only evidence loading via existing authorization and scientific evidence adapters. No new Supabase tables, writes, permissions, AI calls or migrations.
@@ -9,6 +10,7 @@
 - Route `/mission/companion` in existing Mission Console menu.
 
 ## Explicit limitations / future gated work
+
 - This is NOT a scheduler, background notification service, prescribed measurement cadence, clinician-reviewed guidance protocol, or persisted cross-device gamification.
 - Approved mission schedules and notifications require protocol governance, role-based authoring, time-zone/mission-clock design, offline queue, user opt-in, and tests. Do not silently invent these.
 - Color codes must not be interpreted as clinical severity; no population thresholds or diagnosis.
@@ -17,6 +19,7 @@
 - Documentation updates for the three Claude-managed documents should follow verified acceptance, not precede it.
 
 ## Acceptance
+
 1. Open `/mission/companion` as Crew Self and verify only own mission evidence appears.
 2. Switch all five environments; guidance changes but data/risk does not.
 3. Check activities; progress changes, reset works, reload clears session state.
