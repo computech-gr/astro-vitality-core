@@ -61,8 +61,8 @@ async def run(p, w, h, tag):
     # Stubbed Crew Self
     await stub_crew(page)
     await page.goto(URL, wait_until="networkidle")
-    await page.get_by_text("matching observations").wait_for(timeout=15000)
-    count = page.get_by_text("matching observations")
+    await page.get_by_text("matching", exact=False).filter(has_text="original units").wait_for(timeout=15000)
+    count = page.get_by_text("matching", exact=False).filter(has_text="original units")
     table = page.get_by_role("table", name="Recorded observations and evidence provenance")
     print(tag, "crew all:", await count.inner_text())
     print(tag, "rows:", await table.locator("tbody tr").all_inner_texts())

@@ -626,9 +626,9 @@ export function AstronautDailyHealthCompanion() {
                       </div>
                       <p className="text-xs text-muted-foreground" aria-live="polite">
                         {filteredSeries.length} matching{" "}
-                        {filteredSeries.length === 1 ? "observation" : "observations"} · original units and source
-                        provenance retained. Windows are relative to the latest recorded
-                        observation, not the current clock.
+                        {filteredSeries.length === 1 ? "observation" : "observations"} · original
+                        units and source provenance retained. Windows are relative to the latest
+                        recorded observation, not the current clock.
                       </p>
                       {filteredSeries.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
@@ -669,7 +669,7 @@ export function AstronautDailyHealthCompanion() {
                                       .slice(0, 16)
                                       .replace("T", " ")}
                                   </td>
-                                  <td className="p-2">
+                                  <td className="p-2 whitespace-nowrap">
                                     {o.value} {o.unit}
                                   </td>
                                   <td className="p-2">{qualityPresentation(o.quality).label}</td>
