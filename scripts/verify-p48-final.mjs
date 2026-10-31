@@ -1,0 +1,13 @@
+import { readFileSync, existsSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const root = process.cwd();
+const read = p => readFileSync(`${root}/${p}`, 'utf8');
+for (const p of ['src/components/astronaut-daily-health-companion.tsx','src/domain/companion/crew-revalidation.ts','src/infrastructure/mission-records.ts']) assert.ok(existsSync(`${root}/${p}`), `Missing ${p}`);
+const page=read('src/components/astronaut-daily-health-companion.tsx');
+const revalidation=read('src/domain/companion/crew-revalidation.ts');
+assert.ok(!page.includes('window.location.reload()'), 'P48.1 reload regression');
+assert.ok(page.includes('visibilitychange'), 'Missing tab revalidation');
+assert.ok(revalidation.includes('createCrewEvidenceController'), 'Missing fail-closed controller');
+assert.ok(page.includes('SYNTHETIC'), 'Missing synthetic chart label');
+assert.ok(page.includes('reminder'), 'Missing reminders');
+console.log('P48 FINAL compatibility preflight: 6/6 checks passed. No writes performed.');

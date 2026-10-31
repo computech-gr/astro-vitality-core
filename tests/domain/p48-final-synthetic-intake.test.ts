@@ -31,7 +31,18 @@ describe("P48 FINAL synthetic batch — RPC contract", () => {
     if (!r.ok) return;
     const { event, idempotencyKey } = r.events[0]!;
     expect(Object.keys(event).sort()).toEqual(
-      ["classification", "createdAt", "eventTimestamp", "id", "kind", "mission", "payload", "sourceId", "sourcePriority", "sourceVersion"].sort(),
+      [
+        "classification",
+        "createdAt",
+        "eventTimestamp",
+        "id",
+        "kind",
+        "mission",
+        "payload",
+        "sourceId",
+        "sourcePriority",
+        "sourceVersion",
+      ].sort(),
     );
     expect(event.classification).toBe("synthetic");
     expect(event.kind).toBe("observation");
@@ -41,7 +52,11 @@ describe("P48 FINAL synthetic batch — RPC contract", () => {
     expect(idempotencyKey.length).toBeLessThanOrEqual(256);
     expect(event.id.length).toBeLessThanOrEqual(160);
     const payload = event.payload as {
-      observation: { metric: { code: string; unit: string }; value: { number: number }; classification: string };
+      observation: {
+        metric: { code: string; unit: string };
+        value: { number: number };
+        classification: string;
+      };
       syntheticDemonstration: { label: string; synthetic: boolean };
     };
     // Shape read by the Companion and the database index trigger.
@@ -49,7 +64,10 @@ describe("P48 FINAL synthetic batch — RPC contract", () => {
     expect(payload.observation.metric.unit).toBe("{beats}/min");
     expect(payload.observation.value.number).toBe(64);
     expect(payload.observation.classification).toBe("synthetic");
-    expect(payload.syntheticDemonstration).toMatchObject({ label: P48_SYNTHETIC_LABEL, synthetic: true });
+    expect(payload.syntheticDemonstration).toMatchObject({
+      label: P48_SYNTHETIC_LABEL,
+      synthetic: true,
+    });
   });
 
   it("uses deterministic ids so a retried reading is a database duplicate, not a new record", () => {
@@ -63,32 +81,82 @@ describe("P48 FINAL synthetic batch — RPC contract", () => {
 
 describe("P48 FINAL synthetic batch — validation", () => {
   it("accepts only catalog metrics with catalog units", () => {
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ metricCode: "lab.wbc", unit: "10^9/L" })], NOW))[0]).toContain("metric is not allowed");
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ unit: "Hz" })], NOW))[0]).toContain("unit must be one of");
-    expect(buildSyntheticBatch(scope, [reading({ metricCode: "sleep.duration", unit: "h", value: 7.1 })], NOW).ok).toBe(true);
-    expect(buildSyntheticBatch(scope, [reading({ metricCode: "phys.hrv_rmssd", unit: "ms", value: 52 })], NOW).ok).toBe(true);
+    expect(
+      issuesOf(
+        buildSyntheticBatch(scope, [reading({ metricCode: "lab.wbc", unit: "10^9/L" })], NOW),
+      )[0],
+    ).toContain("metric is not allowed");
+    expect(issuesOf(buildSyntheticBatch(scope, [reading({ unit: "Hz" })], NOW))[0]).toContain(
+      "unit must be one of",
+    );
+    expect(
+      buildSyntheticBatch(
+        scope,
+        [reading({ metricCode: "sleep.duration", unit: "h", value: 7.1 })],
+        NOW,
+      ).ok,
+    ).toBe(true);
+    expect(
+      buildSyntheticBatch(
+        scope,
+        [reading({ metricCode: "phys.hrv_rmssd", unit: "ms", value: 52 })],
+        NOW,
+      ).ok,
+    ).toBe(true);
   });
   it("rejects non-finite, non-positive and impossible values", () => {
     for (const value of [NaN, Infinity, 0, -3])
-      expect(issuesOf(buildSyntheticBatch(scope, [reading({ value })], NOW))[0]).toContain("finite number");
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ metricCode: "sleep.duration", unit: "h", value: 25 })], NOW))[0]).toContain("24 hours");
+      expect(issuesOf(buildSyntheticBatch(scope, [reading({ value })], NOW))[0]).toContain(
+        "finite number",
+      );
+    expect(
+      issuesOf(
+        buildSyntheticBatch(
+          scope,
+          [reading({ metricCode: "sleep.duration", unit: "h", value: 25 })],
+          NOW,
+        ),
+      )[0],
+    ).toContain("24 hours");
   });
   it("rejects invalid, future and too-old timestamps", () => {
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ observedAt: "yesterday" })], NOW))[0]).toContain("invalid");
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ observedAt: "2026-11-02T00:00:00Z" })], NOW))[0]).toContain("future");
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ observedAt: "2025-01-01T00:00:00Z" })], NOW))[0]).toContain("older than");
+    expect(
+      issuesOf(buildSyntheticBatch(scope, [reading({ observedAt: "yesterday" })], NOW))[0],
+    ).toContain("invalid");
+    expect(
+      issuesOf(
+        buildSyntheticBatch(scope, [reading({ observedAt: "2026-11-02T00:00:00Z" })], NOW),
+      )[0],
+    ).toContain("future");
+    expect(
+      issuesOf(
+        buildSyntheticBatch(scope, [reading({ observedAt: "2025-01-01T00:00:00Z" })], NOW),
+      )[0],
+    ).toContain("older than");
   });
   it("rejects duplicates, unknown sources/quality, empty and oversized batches", () => {
-    expect(issuesOf(buildSyntheticBatch(scope, [reading(), reading()], NOW))[0]).toContain("duplicates");
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ source: "real-watch" })], NOW))[0]).toContain("source");
-    expect(issuesOf(buildSyntheticBatch(scope, [reading({ quality: "excellent" })], NOW))[0]).toContain("quality");
+    expect(issuesOf(buildSyntheticBatch(scope, [reading(), reading()], NOW))[0]).toContain(
+      "duplicates",
+    );
+    expect(
+      issuesOf(buildSyntheticBatch(scope, [reading({ source: "real-watch" })], NOW))[0],
+    ).toContain("source");
+    expect(
+      issuesOf(buildSyntheticBatch(scope, [reading({ quality: "excellent" })], NOW))[0],
+    ).toContain("quality");
     expect(buildSyntheticBatch(scope, [], NOW).ok).toBe(false);
-    const many = Array.from({ length: 13 }, (_, i) => reading({ observedAt: new Date(NOW.getTime() - (i + 1) * 3_600_000).toISOString() }));
+    const many = Array.from({ length: 13 }, (_, i) =>
+      reading({ observedAt: new Date(NOW.getTime() - (i + 1) * 3_600_000).toISOString() }),
+    );
     expect(issuesOf(buildSyntheticBatch(scope, many, NOW))[0]).toContain("At most 12");
   });
   it("rejects malformed scope identifiers", () => {
-    expect(buildSyntheticBatch({ missionId: "", crewMemberId: "c" }, [reading()], NOW).ok).toBe(false);
-    expect(buildSyntheticBatch({ missionId: "m'; drop", crewMemberId: "c" }, [reading()], NOW).ok).toBe(false);
+    expect(buildSyntheticBatch({ missionId: "", crewMemberId: "c" }, [reading()], NOW).ok).toBe(
+      false,
+    );
+    expect(
+      buildSyntheticBatch({ missionId: "m'; drop", crewMemberId: "c" }, [reading()], NOW).ok,
+    ).toBe(false);
   });
 });
 
@@ -118,9 +186,21 @@ describe("P48 FINAL eligibility (no operator/researcher/medical bypass)", () => 
   it("is eligible only for the dedicated open mission's own crew_self", () => {
     expect(syntheticIntakeEligibility(facts(), "crew-a1")).toBe("eligible");
     expect(syntheticIntakeEligibility(facts({ flagEnabled: false }), "crew-a1")).toBe("disabled");
-    expect(syntheticIntakeEligibility(facts({ mission: { code: "MISSION_TEST", status: "active" } }), "crew-a1")).toBe("not_synthetic_mission");
-    expect(syntheticIntakeEligibility(facts({ mission: null }), "crew-a1")).toBe("not_synthetic_mission");
-    expect(syntheticIntakeEligibility(facts({ mission: { code: P48_SYNTHETIC_MISSION_CODE, status: "completed" } }), "crew-a1")).toBe("mission_closed");
+    expect(
+      syntheticIntakeEligibility(
+        facts({ mission: { code: "MISSION_TEST", status: "active" } }),
+        "crew-a1",
+      ),
+    ).toBe("not_synthetic_mission");
+    expect(syntheticIntakeEligibility(facts({ mission: null }), "crew-a1")).toBe(
+      "not_synthetic_mission",
+    );
+    expect(
+      syntheticIntakeEligibility(
+        facts({ mission: { code: P48_SYNTHETIC_MISSION_CODE, status: "completed" } }),
+        "crew-a1",
+      ),
+    ).toBe("mission_closed");
     expect(syntheticIntakeEligibility(facts(), "crew-b1")).toBe("not_crew_self");
     expect(syntheticIntakeEligibility(facts({ memberships: [] }), "crew-a1")).toBe("not_crew_self");
   });
@@ -128,7 +208,12 @@ describe("P48 FINAL eligibility (no operator/researcher/medical bypass)", () => 
     for (const role of ["mission_operator", "researcher", "ground_medical"])
       expect(
         syntheticIntakeEligibility(
-          facts({ memberships: [{ role: "crew_self", crewMemberId: "crew-a1" }, { role, crewMemberId: null }] }),
+          facts({
+            memberships: [
+              { role: "crew_self", crewMemberId: "crew-a1" },
+              { role, crewMemberId: null },
+            ],
+          }),
           "crew-a1",
         ),
       ).toBe("other_role_present");
@@ -138,7 +223,11 @@ describe("P48 FINAL eligibility (no operator/researcher/medical bypass)", () => 
 describe("P48 FINAL counts and server guard", () => {
   it("reports counts only", () => {
     expect(tallyIngestStatuses(["accepted", "accepted", "duplicate"], 6)).toEqual({
-      accepted: 2, duplicate: 1, conflict: 0, rejected: 0, notAttempted: 3,
+      accepted: 2,
+      duplicate: 1,
+      conflict: 0,
+      rejected: 0,
+      notAttempted: 3,
     });
   });
   const server = readFileSync("src/lib/p48-synthetic-intake.functions.ts", "utf8");

@@ -81,49 +81,85 @@ async function readFacts(
   if (mission.error || memberships.error) return null;
   return {
     flagEnabled: flagEnabled(),
-    mission: mission.data ? { code: String(mission.data.code), status: String(mission.data.status) } : null,
-    memberships: ((memberships.data ?? []) as Array<{ role: string; crew_member_id: string | null }>).map(
-      (m) => ({ role: m.role, crewMemberId: m.crew_member_id }),
-    ),
+    mission: mission.data
+      ? { code: String(mission.data.code), status: String(mission.data.status) }
+      : null,
+    memberships: (
+      (memberships.data ?? []) as Array<{ role: string; crew_member_id: string | null }>
+    ).map((m) => ({ role: m.role, crewMemberId: m.crew_member_id })),
   };
 }
 
-export type P48IntakeStatus = { enabled: false } | { enabled: true; reason: EligibilityReason | "unavailable" };
+export type P48IntakeStatus =
+  { enabled: false } | { enabled: true; reason: EligibilityReason | "unavailable" };
 
 export const getP48SyntheticIntakeStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => scopeSchema.parse(input))
   .handler(async ({ data, context }): Promise<P48IntakeStatus> => {
     if (!flagEnabled()) return { enabled: false };
-    const facts = await readFacts(context.supabase as unknown as Supa, context.userId, data.missionId);
+    const facts = await readFacts(
+      context.supabase as unknown as Supa,
+      context.userId,
+      data.missionId,
+    );
     if (!facts) return { enabled: true, reason: "unavailable" };
     return { enabled: true, reason: syntheticIntakeEligibility(facts, data.crewMemberId) };
   });
 
 export type P48SubmitResult =
   | { ok: true; counts: SubmissionCounts }
-  | { ok: false; code: "disabled" | "forbidden" | "invalid" | "unconfirmed" | "unavailable"; message: string; counts?: SubmissionCounts; issues?: string[] };
+  | {
+      ok: false;
+      code: "disabled" | "forbidden" | "invalid" | "unconfirmed" | "unavailable";
+      message: string;
+      counts?: SubmissionCounts;
+      issues?: string[];
+    };
 
 export const submitP48SyntheticReadings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => submitSchema.parse(input))
   .handler(async ({ data, context }): Promise<P48SubmitResult> => {
     if (!flagEnabled())
-      return { ok: false, code: "disabled", message: "Synthetic intake is not enabled in this deployment." };
+      return {
+        ok: false,
+        code: "disabled",
+        message: "Synthetic intake is not enabled in this deployment.",
+      };
     if (
       data.confirmation.typedMissionCode !== P48_SYNTHETIC_MISSION_CODE ||
       data.confirmation.plannedCount !== data.readings.length
     )
-      return { ok: false, code: "unconfirmed", message: "The irreversible-write confirmation does not match this batch. Nothing was saved." };
+      return {
+        ok: false,
+        code: "unconfirmed",
+        message:
+          "The irreversible-write confirmation does not match this batch. Nothing was saved.",
+      };
     const supabase = context.supabase as unknown as Supa;
     const facts = await readFacts(supabase, context.userId, data.scope.missionId);
     if (!facts)
-      return { ok: false, code: "unavailable", message: "Authorization could not be checked. Nothing was saved." };
+      return {
+        ok: false,
+        code: "unavailable",
+        message: "Authorization could not be checked. Nothing was saved.",
+      };
     if (syntheticIntakeEligibility(facts, data.scope.crewMemberId) !== "eligible")
-      return { ok: false, code: "forbidden", message: "Only the active Crew Self of this dedicated synthetic mission can add these readings. Nothing was saved." };
+      return {
+        ok: false,
+        code: "forbidden",
+        message:
+          "Only the active Crew Self of this dedicated synthetic mission can add these readings. Nothing was saved.",
+      };
     const batch = buildSyntheticBatch(data.scope, data.readings, new Date());
     if (!batch.ok)
-      return { ok: false, code: "invalid", message: "The batch did not pass validation. Nothing was saved.", issues: batch.issues };
+      return {
+        ok: false,
+        code: "invalid",
+        message: "The batch did not pass validation. Nothing was saved.",
+        issues: batch.issues,
+      };
 
     const statuses: Array<"accepted" | "duplicate" | "conflict" | "rejected"> = [];
     for (const planned of batch.events) {
@@ -134,11 +170,15 @@ export const submitP48SyntheticReadings = createServerFn({ method: "POST" })
       const status = (result as { status?: string } | null)?.status;
       if (error || !status || !["accepted", "duplicate", "conflict", "rejected"].includes(status)) {
         // Stop on the first refusal (e.g. revocation mid-batch); log the category only.
-        console.error("[P48] synthetic ingest stopped", (error as { code?: string } | null)?.code ?? "unknown");
+        console.error(
+          "[P48] synthetic ingest stopped",
+          (error as { code?: string } | null)?.code ?? "unknown",
+        );
         return {
           ok: false,
           code: "unavailable",
-          message: "The database refused or did not confirm a reading; remaining readings were not sent.",
+          message:
+            "The database refused or did not confirm a reading; remaining readings were not sent.",
           counts: tallyIngestStatuses(statuses, batch.events.length),
         };
       }

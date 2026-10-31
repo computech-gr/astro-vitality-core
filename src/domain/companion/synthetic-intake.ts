@@ -83,8 +83,7 @@ export interface PlannedSyntheticEvent {
 }
 
 export type SyntheticBatchResult =
-  | { ok: true; events: PlannedSyntheticEvent[] }
-  | { ok: false; issues: string[] };
+  { ok: true; events: PlannedSyntheticEvent[] } | { ok: false; issues: string[] };
 
 const isMetric = (code: string): code is SyntheticMetricCode => code in P48_SYNTHETIC_METRICS;
 const isSource = (key: string): key is SyntheticSourceKey => key in P48_SYNTHETIC_SOURCES;
@@ -140,7 +139,9 @@ export function buildSyntheticBatch(
     const observedAt = new Date(ts).toISOString();
     const id = syntheticEventId(scope, { ...r, observedAt });
     if (seen.has(id))
-      return void issues.push(`Reading ${n}: duplicates another reading (same metric, source and time).`);
+      return void issues.push(
+        `Reading ${n}: duplicates another reading (same metric, source and time).`,
+      );
     seen.add(id);
     if (id.length > 160) return void issues.push(`Reading ${n}: identifier too long.`);
 
@@ -173,9 +174,7 @@ export function buildSyntheticBatch(
       reviewStatus: "raw",
     });
     if (!result.ok)
-      return void issues.push(
-        `Reading ${n}: ${result.issues.map((i) => i.message).join("; ")}`,
-      );
+      return void issues.push(`Reading ${n}: ${result.issues.map((i) => i.message).join("; ")}`);
     events.push({
       idempotencyKey: `p48-idem:${id}`,
       event: {
@@ -211,12 +210,54 @@ export function syntheticScenario(variant: "A" | "B", now: Date): SyntheticReadi
   };
   const v = variant === "A" ? [64, 52, 7.1, 66, 55, 65] : [71, 44, 6.4, 73, 47, 72];
   return [
-    { metricCode: "phys.heart_rate", value: v[0]!, unit: "bpm", observedAt: day(120), source: "alpha", quality: "good" },
-    { metricCode: "phys.hrv_rmssd", value: v[1]!, unit: "ms", observedAt: day(60), source: "beta", quality: "good" },
-    { metricCode: "sleep.duration", value: v[2]!, unit: "h", observedAt: day(25), source: "alpha", quality: "good" },
-    { metricCode: "phys.heart_rate", value: v[3]!, unit: "bpm", observedAt: day(6), source: "beta", quality: "degraded" },
-    { metricCode: "phys.hrv_rmssd", value: v[4]!, unit: "ms", observedAt: day(2), source: "alpha", quality: "good" },
-    { metricCode: "phys.heart_rate", value: v[5]!, unit: "bpm", observedAt: day(1), source: "alpha", quality: "good" },
+    {
+      metricCode: "phys.heart_rate",
+      value: v[0]!,
+      unit: "bpm",
+      observedAt: day(120),
+      source: "alpha",
+      quality: "good",
+    },
+    {
+      metricCode: "phys.hrv_rmssd",
+      value: v[1]!,
+      unit: "ms",
+      observedAt: day(60),
+      source: "beta",
+      quality: "good",
+    },
+    {
+      metricCode: "sleep.duration",
+      value: v[2]!,
+      unit: "h",
+      observedAt: day(25),
+      source: "alpha",
+      quality: "good",
+    },
+    {
+      metricCode: "phys.heart_rate",
+      value: v[3]!,
+      unit: "bpm",
+      observedAt: day(6),
+      source: "beta",
+      quality: "degraded",
+    },
+    {
+      metricCode: "phys.hrv_rmssd",
+      value: v[4]!,
+      unit: "ms",
+      observedAt: day(2),
+      source: "alpha",
+      quality: "good",
+    },
+    {
+      metricCode: "phys.heart_rate",
+      value: v[5]!,
+      unit: "bpm",
+      observedAt: day(1),
+      source: "alpha",
+      quality: "good",
+    },
   ];
 }
 
@@ -266,7 +307,13 @@ export function tallyIngestStatuses(
   statuses: ReadonlyArray<"accepted" | "duplicate" | "conflict" | "rejected">,
   planned: number,
 ): SubmissionCounts {
-  const counts: SubmissionCounts = { accepted: 0, duplicate: 0, conflict: 0, rejected: 0, notAttempted: 0 };
+  const counts: SubmissionCounts = {
+    accepted: 0,
+    duplicate: 0,
+    conflict: 0,
+    rejected: 0,
+    notAttempted: 0,
+  };
   for (const s of statuses) counts[s]++;
   counts.notAttempted = Math.max(0, planned - statuses.length);
   return counts;

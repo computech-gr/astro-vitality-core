@@ -82,8 +82,7 @@ export function P48SyntheticIntakePanel({
     resetConfirmation();
     setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   };
-  const ready =
-    batch?.ok === true && acknowledged && typed === P48_SYNTHETIC_MISSION_CODE && !busy;
+  const ready = batch?.ok === true && acknowledged && typed === P48_SYNTHETIC_MISSION_CODE && !busy;
 
   const submit = async () => {
     if (!ready) return;
@@ -192,7 +191,10 @@ export function P48SyntheticIntakePanel({
                         value={r.metricCode}
                         onChange={(e) => {
                           const code = e.target.value as keyof typeof P48_SYNTHETIC_METRICS;
-                          update(i, { metricCode: code, unit: P48_SYNTHETIC_METRICS[code].units[0] });
+                          update(i, {
+                            metricCode: code,
+                            unit: P48_SYNTHETIC_METRICS[code].units[0],
+                          });
                         }}
                       >
                         {Object.entries(P48_SYNTHETIC_METRICS).map(([code, m]) => (
@@ -296,8 +298,8 @@ export function P48SyntheticIntakePanel({
         <div className="space-y-2 rounded border p-3 text-sm">
           <p>
             <strong>Review:</strong> {rows.length} synthetic{" "}
-            {rows.length === 1 ? "record" : "records"} → mission {P48_SYNTHETIC_MISSION_CODE},
-            crew {scope.crewMemberId}.
+            {rows.length === 1 ? "record" : "records"} → mission {P48_SYNTHETIC_MISSION_CODE}, crew{" "}
+            {scope.crewMemberId}.
           </p>
           <label className="flex items-start gap-2">
             <input
@@ -307,8 +309,8 @@ export function P48SyntheticIntakePanel({
               onChange={(e) => setAcknowledged(e.target.checked)}
             />
             <span>
-              I reviewed these {rows.length} synthetic records and understand they are permanent
-              and cannot be edited or deleted.
+              I reviewed these {rows.length} synthetic records and understand they are permanent and
+              cannot be edited or deleted.
             </span>
           </label>
           <label className="block">
