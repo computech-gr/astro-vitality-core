@@ -48,6 +48,7 @@ import { Route as TechnologyIndexRouteImport } from './routes/technology.index'
 import { Route as TechnologyTopicRouteImport } from './routes/technology.$topic'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as CompetitionPdfDocumentIdRouteImport } from './routes/competition.pdf.$documentId'
+import { Route as ApiPublicCompetitionPdfDocumentIdRouteImport } from './routes/api.public.competition-pdf.$documentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -249,6 +250,12 @@ const CompetitionPdfDocumentIdRoute =
     path: '/competition/pdf/$documentId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCompetitionPdfDocumentIdRoute =
+  ApiPublicCompetitionPdfDocumentIdRouteImport.update({
+    id: '/api/public/competition-pdf/$documentId',
+    path: '/api/public/competition-pdf/$documentId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/technology/': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/competition/pdf/$documentId': typeof CompetitionPdfDocumentIdRoute
+  '/api/public/competition-pdf/$documentId': typeof ApiPublicCompetitionPdfDocumentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -331,6 +339,7 @@ export interface FileRoutesByTo {
   '/technology': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/competition/pdf/$documentId': typeof CompetitionPdfDocumentIdRoute
+  '/api/public/competition-pdf/$documentId': typeof ApiPublicCompetitionPdfDocumentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -373,6 +382,7 @@ export interface FileRoutesById {
   '/technology/': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/competition/pdf/$documentId': typeof CompetitionPdfDocumentIdRoute
+  '/api/public/competition-pdf/$documentId': typeof ApiPublicCompetitionPdfDocumentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/technology/'
     | '/.lovable/oauth/consent'
     | '/competition/pdf/$documentId'
+    | '/api/public/competition-pdf/$documentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -457,6 +468,7 @@ export interface FileRouteTypes {
     | '/technology'
     | '/.lovable/oauth/consent'
     | '/competition/pdf/$documentId'
+    | '/api/public/competition-pdf/$documentId'
   id:
     | '__root__'
     | '/'
@@ -498,6 +510,7 @@ export interface FileRouteTypes {
     | '/technology/'
     | '/.lovable/oauth/consent'
     | '/competition/pdf/$documentId'
+    | '/api/public/competition-pdf/$documentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -540,6 +553,7 @@ export interface RootRouteChildren {
   TechnologyIndexRoute: typeof TechnologyIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   CompetitionPdfDocumentIdRoute: typeof CompetitionPdfDocumentIdRoute
+  ApiPublicCompetitionPdfDocumentIdRoute: typeof ApiPublicCompetitionPdfDocumentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -817,6 +831,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompetitionPdfDocumentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/competition-pdf/$documentId': {
+      id: '/api/public/competition-pdf/$documentId'
+      path: '/api/public/competition-pdf/$documentId'
+      fullPath: '/api/public/competition-pdf/$documentId'
+      preLoaderRoute: typeof ApiPublicCompetitionPdfDocumentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -861,6 +882,8 @@ const rootRouteChildren: RootRouteChildren = {
   TechnologyIndexRoute: TechnologyIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   CompetitionPdfDocumentIdRoute: CompetitionPdfDocumentIdRoute,
+  ApiPublicCompetitionPdfDocumentIdRoute:
+    ApiPublicCompetitionPdfDocumentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
