@@ -11,6 +11,7 @@ import {
 } from "@/domain/companion/reminder-engine";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
+import { groupNonChartable } from "@/domain/health-intelligence/canonical-projection";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCrewEvidenceController,
@@ -797,10 +798,11 @@ export function AstronautDailyHealthCompanion() {
                   </p>
                 ) : (
                   <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {report.nonChartable!.map((r) => (
-                      <li key={r.recordId} className="break-words">
-                        {r.metricCode ?? "No metric"}
-                        {r.healthDomain ? ` (${r.healthDomain})` : ""} — {r.reason}
+                    {groupNonChartable(report.nonChartable ?? []).map((g) => (
+                      <li key={`${g.metricCode}|${g.healthDomain}|${g.reason}`} className="break-words">
+                        {g.metricCode ?? "No metric"}
+                        {g.healthDomain ? ` (${g.healthDomain})` : ""} — {g.reason}
+                        {g.count > 1 ? ` (×${g.count})` : ""}
                       </li>
                     ))}
                   </ul>

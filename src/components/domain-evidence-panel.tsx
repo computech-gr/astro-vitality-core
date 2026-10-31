@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/mission-identity";
 import { supabase } from "@/integrations/supabase/client";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
+import { groupNonChartable } from "@/domain/health-intelligence/canonical-projection";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
 import {
   getHealthDomain,
@@ -307,9 +308,10 @@ export function DomainEvidencePanel({
             </p>
           ) : (
             <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-              {nonChartable.map((r) => (
-                <li key={r.recordId} className="break-words">
-                  {r.metricCode ?? "Unknown metric"} — {r.reason}
+              {groupNonChartable(nonChartable).map((g) => (
+                <li key={`${g.metricCode}|${g.reason}`} className="break-words">
+                  {g.metricCode ?? "Unknown metric"} — {g.reason}
+                  {g.count > 1 ? ` (×${g.count})` : ""}
                 </li>
               ))}
             </ul>
