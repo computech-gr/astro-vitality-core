@@ -61,29 +61,24 @@ describe("official competition team destinations", () => {
     }
   });
 
-  test("competition PDFs retain the exact current FINAL destinations", () => {
+  test("competition PDFs open the in-app browser viewer routes", () => {
     expect(competitionDocuments.map((document) => [document.label, document.url])).toEqual([
-      [
-        "NASA Competition Presentation (PDF)",
-        "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
-      ],
+      ["NASA Competition Presentation (PDF)", "/competition/pdf/presentation"],
       ["View Narrated Presentation Online (PPTX)", "/competition/narrated-presentation"],
-      [
-        "NASA Evaluator Quick Start (PDF)",
-        "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
-      ],
-      [
-        "Master Technical Manual (PDF)",
-        "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
-      ],
+      ["NASA Evaluator Quick Start (PDF)", "/competition/pdf/evaluator"],
+      ["Master Technical Manual (PDF)", "/competition/pdf/manual"],
       ["Watch NASA Demo Video", "/competition/demo-video"],
     ]);
+    // No competition material points at a GitHub blob page any more.
+    expect(competitionDocuments.some((document) => document.url.includes("github.com"))).toBe(false);
     // Obsolete direct-download entries must never return to the competition list.
-    expect(competitionDocuments.some((document) => /\.(pptx|mp4)$/.test(document.url))).toBe(false);
+    expect(competitionDocuments.some((document) => /\.(pdf|pptx|mp4)$/.test(document.url))).toBe(
+      false,
+    );
     expect(competitionDocuments.some((document) => document.label.startsWith("Download"))).toBe(
       false,
     );
-    for (const document of competitionDocuments.filter((entry) => entry.url.endsWith(".pdf"))) {
+    for (const document of competitionDocuments.filter((entry) => entry.label.endsWith("(PDF)"))) {
       expect(searchCatalogue.find((entry) => entry.title === document.label)?.href).toBe(
         document.url,
       );
@@ -99,6 +94,20 @@ describe("official competition team destinations", () => {
     expect(searchCatalogue.some((entry) => entry.href.endsWith(".mp4"))).toBe(false);
   });
 
+  test("every competition material destination opens in a new tab", () => {
+    const shell = readFileSync(
+      new URL("../../src/components/app-shell.tsx", import.meta.url),
+      "utf8",
+    );
+    for (const prefix of [
+      "/competition/pdf/",
+      "/competition/demo-video",
+      "/competition/narrated-presentation",
+    ]) {
+      expect(shell).toContain(`href.startsWith("${prefix}")`);
+    }
+  });
+
   test("menu lists the narrated PPTX viewer directly below the presentation PDF", () => {
     const shell = readFileSync(
       new URL("../../src/components/app-shell.tsx", import.meta.url),
@@ -110,17 +119,24 @@ describe("official competition team destinations", () => {
     expect(shell.slice(pdf, viewer).split("\n").length).toBe(2);
   });
 
-  test("every competition material link names an existing file in docs/competition", () => {
-    // PDFs open on GitHub; the PPTX and MP4 are reached only through their viewer pages.
-    const prefix = "https://github.com/computech-gr/astro-vitality-core/blob/main/";
-    for (const document of competitionDocuments.filter((entry) =>
-      entry.url.startsWith("https://"),
-    )) {
-      expect(document.url.startsWith(prefix)).toBe(true);
+  test("the PDF viewer registry serves only the three committed competition PDFs", () => {
+    expect(Object.keys(competitionPdfs)).toEqual(["presentation", "evaluator", "manual"]);
+    expect(Object.values(competitionPdfs).map((document) => document.file)).toEqual([
+      "MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
+      "MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
+      "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+    ]);
+    for (const document of Object.values(competitionPdfs)) {
       expect(
-        existsSync(new URL(`../../${document.url.slice(prefix.length)}`, import.meta.url)),
+        existsSync(new URL(`../../docs/competition/${document.file}`, import.meta.url)),
       ).toBe(true);
     }
+    for (const id of ["__proto__", "constructor", "../presentation", "presentation.pdf", ""]) {
+      expect(findCompetitionPdf(id)).toBeUndefined();
+    }
+  });
+
+  test("the narrated PPTX and MP4 remain reachable only through their viewer pages", () => {
     for (const file of [
       "docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx",
       "docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
