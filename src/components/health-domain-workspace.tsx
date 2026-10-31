@@ -109,8 +109,21 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
       active = false;
     };
   }, [memberships, selected]);
+  // P49: handbook / unified-intake series belong to the module named in the stored
+  // record (catalog-validated by the canonical projection); device series keep the
+  // existing canonical metric-code mapping.
+  const domainSeries = new Set(
+    (report?.observations ?? [])
+      .filter((o) => o.healthDomain === domainId)
+      .map((o) => `${o.metricCode}|${o.unit}`),
+  );
   const summaries =
-    report?.metrics.filter((metric) => domain.metricCodes.includes(metric.metricCode)) ?? [];
+    report?.metrics.filter(
+      (metric) =>
+        domain.metricCodes.includes(metric.metricCode) ||
+        domainSeries.has(`${metric.metricCode}|${metric.unit}`),
+    ) ?? [];
+  const nonChartable = (report?.nonChartable ?? []).filter((r) => r.healthDomain === domainId);
   const coverage = projectDomainEvidence(
     domain,
     summaries.map((metric) => metric.metricCode),
