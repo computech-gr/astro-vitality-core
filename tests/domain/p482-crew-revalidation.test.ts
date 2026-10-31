@@ -108,7 +108,11 @@ async function authorizeA(h: ReturnType<typeof harness>) {
 describe("P48.2 scope resolution", () => {
   it("keeps only crew_self memberships with a crew member id", () => {
     expect(
-      allowedCrewScopes([member(A), member(B, "mission_operator"), { missionId: "m2", role: "crew_self" }]),
+      allowedCrewScopes([
+        member(A),
+        member(B, "mission_operator"),
+        { missionId: "m2", role: "crew_self" },
+      ]),
     ).toEqual([A]);
   });
   it("restores a still-authorized previous scope and flags revocation otherwise", () => {

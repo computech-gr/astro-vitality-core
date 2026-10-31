@@ -25,17 +25,10 @@ export interface CrewMissionContext {
 
 export interface CrewEvidenceResult {
   report: ScientificEvidenceReport | null;
-  reason?: string;
+  reason?: string | undefined;
 }
 
-export type CrewPhase =
-  | "checking"
-  | "hidden"
-  | "loading"
-  | "ready"
-  | "none"
-  | "revoked"
-  | "error";
+export type CrewPhase = "checking" | "hidden" | "loading" | "ready" | "none" | "revoked" | "error";
 
 export const CREW_STATUS = {
   initial: "Checking mission authorization...",
@@ -123,7 +116,11 @@ export function restoreTrendSelection(
   prior: TrendSelection | null,
 ): TrendSelection {
   const first = report.metrics[0];
-  const fallback: TrendSelection = { metric: first ? metricKey(first) : "", window: "all", source: "all" };
+  const fallback: TrendSelection = {
+    metric: first ? metricKey(first) : "",
+    window: "all",
+    source: "all",
+  };
   if (!prior || !report.metrics.some((m) => metricKey(m) === prior.metric)) return fallback;
   const sourceValid =
     prior.source === "all" ||
