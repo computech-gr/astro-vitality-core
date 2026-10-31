@@ -6,9 +6,10 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
+import { competitionPdfAssets } from "./scripts/competition-pdf-assets-plugin.mjs";
 
 export default defineConfig({
-  plugins: [mcpPlugin()],
+  plugins: [mcpPlugin(), competitionPdfAssets()],
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

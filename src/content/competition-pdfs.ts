@@ -1,9 +1,6 @@
 // Browser-safe registry of the three competition PDFs shown by the in-app viewer.
-// Bytes are served same-origin by /api/public/competition-pdf/$documentId, which
-// only proxies these exact public repository files (never arbitrary URLs).
-
-export const COMPETITION_PDF_SOURCE_BASE =
-  "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/";
+// P53: the committed docs/competition PDFs ship as same-origin static files under
+// /competition/assets/pdf/ (staged at build time); nothing is fetched from GitHub.
 
 export const competitionPdfs = {
   presentation: {
@@ -33,5 +30,5 @@ export function competitionPdfViewerPath(id: CompetitionPdfId) {
 }
 
 export function competitionPdfFilePath(id: CompetitionPdfId) {
-  return `/api/public/competition-pdf/${id}` as const;
+  return `/competition/assets/pdf/${competitionPdfs[id].file}`;
 }
