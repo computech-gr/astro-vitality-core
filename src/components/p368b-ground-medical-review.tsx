@@ -30,6 +30,12 @@ export function GroundMedicalReviewPanel() {
   const [receipt, setReceipt] = useState<ResearchDecisionReceipt | null>(null);
   const [decisionError, setDecisionError] = useState("");
   const inFlight = useRef(false);
+  // Identity refreshes (including browser tab returns) must not discard an unchanged
+  // authorized user's read-only batch. A changed identity or revoked membership does.
+  const verifiedUser = useRef<string | undefined>(undefined);
+  const identityRequest = useRef(0);
+  const missionRef = useRef(missionId);
+  missionRef.current = missionId;
   // One idempotency key per batch view; retries of the same view replay the same receipt.
   const decisionKey = useRef("");
 
@@ -38,20 +44,37 @@ export function GroundMedicalReviewPanel() {
   useEffect(() => {
     let live = true;
     const update = async () => {
+      const request = ++identityRequest.current;
       try {
         const identity = await loadMissionIdentity();
-        if (!live) return;
-        const allowed = identity.memberships.filter(m => m.role === "ground_medical");
+        if (!live || request !== identityRequest.current) return;
+        const allowed = identity.signedIn && !identity.error
+          ? identity.memberships.filter(m => m.role === "ground_medical") : [];
+        const sameUser = Boolean(identity.userId && verifiedUser.current === identity.userId);
+        const currentMissionAllowed = allowed.some(m => m.missionId === missionRef.current);
         setMissions(allowed);
-        setMissionId(previous => allowed.some(m => m.missionId === previous) ? previous : (allowed.length === 1 ? (allowed[0]?.missionId ?? "") : ""));
+        if (!sameUser || !currentMissionAllowed) {
+          setQueue([]);
+          clearSelection();
+          setReceipt(null);
+        }
+        verifiedUser.current = identity.userId;
+        setMissionId(previous => allowed.some(m => m.missionId === previous)
+          ? previous : (allowed.length === 1 ? (allowed[0]?.missionId ?? "") : ""));
       } catch {
-        if (live) { setMissions([]); setMissionId(""); }
+        if (live && request === identityRequest.current) {
+          verifiedUser.current = undefined;
+          setMissions([]);
+          setMissionId("");
+          setQueue([]);
+          clearSelection();
+          setReceipt(null);
+        }
       }
-      if (live) { setQueue([]); clearSelection(); setReceipt(null); }
     };
     void update();
     const unsubscribe = subscribeMissionIdentity(() => { void update(); });
-    return () => { live = false; unsubscribe(); };
+    return () => { live = false; identityRequest.current++; unsubscribe(); };
   }, []);
 
   async function refreshQueue(message?: string) {
