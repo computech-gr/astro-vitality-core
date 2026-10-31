@@ -20,6 +20,13 @@ describe("P16 Security & Safety Hardening", () => {
     expect(buildContentSecurityPolicy()).toContain("frame-ancestors 'none'");
   });
 
+  test("media may load only from this site and the public GitHub raw host", () => {
+    const media = buildContentSecurityPolicy()
+      .split("; ")
+      .find((directive) => directive.startsWith("media-src "));
+    expect(media).toBe("media-src 'self' https://raw.githubusercontent.com");
+  });
+
   test("HSTS is not asserted for non-canonical preview hosts", () => {
     const response = applySecurityHeaders(
       new Request("https://preview.example.test/"),
