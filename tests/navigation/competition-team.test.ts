@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
 import { searchCatalogue } from "@/components/app-shell";
 import { competitionDocuments, competitionTeam } from "@/content/competition-team";
+import { competitionPdfs, findCompetitionPdf } from "@/content/competition-pdfs";
 
 const OFFICIAL_CHALLENGE_URL =
   "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
