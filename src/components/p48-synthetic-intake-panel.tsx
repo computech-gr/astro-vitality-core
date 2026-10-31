@@ -113,7 +113,7 @@ export function P48SyntheticIntakePanel({
     } catch {
       if (keyRef.current === requested) setMessage("Submission failed; no confirmation received.");
     } finally {
-      if (keyRef.current === requested) setBusy(false);
+      setBusy(false);
     }
   };
 
