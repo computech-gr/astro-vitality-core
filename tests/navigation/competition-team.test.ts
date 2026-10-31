@@ -51,10 +51,23 @@ describe("official competition team destinations", () => {
       "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx",
       "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
     ]);
-    for (const document of competitionDocuments) {
+    for (const document of competitionDocuments.filter((entry) => entry.url.endsWith(".pdf"))) {
       expect(searchCatalogue.find((entry) => entry.title === document.label)?.href).toBe(document.url);
     }
     expect(searchCatalogue.find((entry) => entry.title === "Watch NASA Demo Video")?.href).toBe("/competition/demo-video");
+    expect(searchCatalogue.find((entry) => entry.title === "View Narrated Presentation Online (PPTX)")?.href).toBe(
+      "/competition/narrated-presentation",
+    );
+    // The menu offers the video only as a page to watch, never as an MP4 download.
+    expect(searchCatalogue.some((entry) => entry.href.endsWith(".mp4"))).toBe(false);
+  });
+
+  test("menu lists the narrated PPTX viewer directly below the presentation PDF", () => {
+    const shell = readFileSync(new URL("../../src/components/app-shell.tsx", import.meta.url), "utf8");
+    const pdf = shell.indexOf('"NASA Competition Presentation (PDF)",');
+    const viewer = shell.indexOf('"View Narrated Presentation Online (PPTX)",');
+    expect(pdf).toBeGreaterThan(-1);
+    expect(shell.slice(pdf, viewer).split("\n").length).toBe(2);
   });
 
   test("every competition material link names an existing file in docs/competition", () => {
@@ -73,14 +86,12 @@ describe("official competition team destinations", () => {
     }
   });
 
-  test("demo video page plays the official MP4 and offers a GitHub fallback link", () => {
+  test("demo video page plays the official MP4 without a download link", () => {
     const page = readFileSync(new URL("../../src/routes/competition.demo-video.tsx", import.meta.url), "utf8");
     expect(page).toContain(
       "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
     );
-    expect(page).toContain(
-      "https://github.com/computech-gr/astro-vitality-core/raw/refs/heads/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
-    );
+    expect(page).not.toContain("<a ");
     expect(page).not.toContain("Demo_Video_VO");
   });
 });
