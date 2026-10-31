@@ -62,13 +62,27 @@ describe("official competition team destinations", () => {
   });
 
   test("competition PDFs retain the exact current FINAL destinations", () => {
-    expect(competitionDocuments.map((document) => document.url)).toEqual([
-      "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
-      "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
-      "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
-      "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx",
-      "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
+    expect(competitionDocuments.map((document) => [document.label, document.url])).toEqual([
+      [
+        "NASA Competition Presentation (PDF)",
+        "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
+      ],
+      ["View Narrated Presentation Online (PPTX)", "/competition/narrated-presentation"],
+      [
+        "NASA Evaluator Quick Start (PDF)",
+        "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
+      ],
+      [
+        "Master Technical Manual (PDF)",
+        "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+      ],
+      ["Watch NASA Demo Video", "/competition/demo-video"],
     ]);
+    // Obsolete direct-download entries must never return to the competition list.
+    expect(competitionDocuments.some((document) => /\.(pptx|mp4)$/.test(document.url))).toBe(false);
+    expect(competitionDocuments.some((document) => document.label.startsWith("Download"))).toBe(
+      false,
+    );
     for (const document of competitionDocuments.filter((entry) => entry.url.endsWith(".pdf"))) {
       expect(searchCatalogue.find((entry) => entry.title === document.label)?.href).toBe(
         document.url,
@@ -97,22 +111,21 @@ describe("official competition team destinations", () => {
   });
 
   test("every competition material link names an existing file in docs/competition", () => {
-    // PDFs open on GitHub; the PPTX and MP4 are direct raw downloads with exact filenames.
-    const prefixes = [
-      "https://github.com/computech-gr/astro-vitality-core/blob/main/",
-      "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/",
-    ];
-    for (const document of competitionDocuments) {
-      const prefix = prefixes.find((candidate) => document.url.startsWith(candidate));
-      expect(prefix).toBeDefined();
+    // PDFs open on GitHub; the PPTX and MP4 are reached only through their viewer pages.
+    const prefix = "https://github.com/computech-gr/astro-vitality-core/blob/main/";
+    for (const document of competitionDocuments.filter((entry) =>
+      entry.url.startsWith("https://"),
+    )) {
+      expect(document.url.startsWith(prefix)).toBe(true);
       expect(
-        existsSync(new URL(`../../${document.url.slice(prefix!.length)}`, import.meta.url)),
+        existsSync(new URL(`../../${document.url.slice(prefix.length)}`, import.meta.url)),
       ).toBe(true);
     }
-    for (const document of competitionDocuments.filter((entry) =>
-      /\.(pptx|mp4)$/.test(entry.url),
-    )) {
-      expect(document.url.startsWith(prefixes[1])).toBe(true);
+    for (const file of [
+      "docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx",
+      "docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
+    ]) {
+      expect(existsSync(new URL(`../../${file}`, import.meta.url))).toBe(true);
     }
   });
 
