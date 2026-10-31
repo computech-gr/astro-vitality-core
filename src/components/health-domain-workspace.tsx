@@ -216,7 +216,8 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
               <div>
                 <dt className="font-medium">Available metric series</dt>
                 <dd>
-                  {summaries.length} of {domain.metricCodes.length} mapped signals
+                  {summaries.length} series · {coverage.available.length} of{" "}
+                  {domain.metricCodes.length} mapped device signals
                 </dd>
               </div>
               <div>
@@ -298,13 +299,24 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
                     key={`${metric.metricCode}|${metric.unit}`}
                     className="rounded-md border border-border p-3 text-sm"
                   >
-                    <h3 className="font-semibold">{metric.metricCode}</h3>
+                    <h3 className="font-semibold">
+                      {metric.latest.metricLabel
+                        ? `${metric.latest.metricLabel} (${metric.metricCode})`
+                        : metric.metricCode}
+                    </h3>
                     <p>
                       Latest observed: {metric.latest.value} {metric.unit}
                     </p>
                     <p>
-                      Quality: {metric.latest.quality} · {metric.count} observations
+                      Quality: {metric.latest.quality === "unknown" ? "not reported" : metric.latest.quality} ·{" "}
+                      {metric.count} observations
+                      {metric.latest.provenance ? ` · ${metric.latest.provenance} provenance` : ""}
                     </p>
+                    {metric.latest.sourceLabel && (
+                      <p className="break-words text-muted-foreground">
+                        Source: {metric.latest.sourceLabel}
+                      </p>
+                    )}
                     <p className="text-muted-foreground">
                       {new Date(metric.latest.observedAt).toLocaleString()}
                     </p>
@@ -328,6 +340,22 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
                 <p className="mt-2 text-muted-foreground">{coverage.missing.join(" · ")}</p>
               </details>
             )}
+            <details className="mt-4 text-sm" data-testid="domain-non-chartable">
+              <summary>Stored records not charted ({nonChartable.length})</summary>
+              {nonChartable.length === 0 ? (
+                <p className="mt-2 text-muted-foreground">
+                  Every stored record for this module was charted.
+                </p>
+              ) : (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                  {nonChartable.map((r) => (
+                    <li key={r.recordId} className="break-words">
+                      {r.metricCode ?? "Unknown metric"} — {r.reason}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </details>
           </>
         )}
       </section>
