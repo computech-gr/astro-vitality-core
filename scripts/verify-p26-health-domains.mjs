@@ -10,5 +10,7 @@ if (!registry.includes('metricCodes: []') || !registry.includes('scientific_revi
 const ui = read("src/components/health-domain-workspace.tsx");
 const panel = read("src/components/domain-evidence-panel.tsx");
 if (!ui.includes("<DomainEvidencePanel") || !panel.includes("loadCrewScientificEvidence(") || !panel.includes('role === "crew_self"') || !ui.includes("No autonomous diagnosis")) throw new Error("Crew-scoped non-diagnostic UI contract missing");
-if (!read("src/components/bone-health-entry.tsx").includes("/mission/immune-health")) throw new Error("Bone workspace domain links missing");
+// Bone workspace links to the other domains through the shared registry-driven navigation.
+const nav = read("src/components/health-domain-navigation.tsx");
+if (!read("src/components/bone-health-entry.tsx").includes('<HealthDomainNavigation current="bone"') || !nav.includes("HEALTH_DOMAINS.map") || !nav.includes("href={item.path}") || !registry.includes('path: "/mission/immune-health"')) throw new Error("Bone workspace domain links missing");
 console.log("P26 health domain navigation and safety verifier: PASS");
