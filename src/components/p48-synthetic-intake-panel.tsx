@@ -43,14 +43,20 @@ export function P48SyntheticIntakePanel({
   const [message, setMessage] = useState("");
   const [counts, setCounts] = useState<SubmissionCounts | null>(null);
 
+  const lastScopeRef = useRef("");
   useEffect(() => {
+    // Hide immediately on every scope transition; eligibility is re-read from the server.
     setEligibleKey("");
-    setRows([]);
     setAcknowledged(false);
     setTyped("");
-    setMessage("");
-    setCounts(null);
     if (!scope) return;
+    if (lastScopeRef.current !== key) {
+      // A different crew scope never inherits another scope's draft rows or results.
+      lastScopeRef.current = key;
+      setRows([]);
+      setMessage("");
+      setCounts(null);
+    }
     const requested = key;
     void getP48SyntheticIntakeStatus({ data: scope })
       .then((status) => {
