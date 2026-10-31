@@ -349,15 +349,22 @@
 ## P46.1 Synthetic trends demo
 
 - [x] Apply the P46.1 patch: opt-in Show/Hide synthetic resting-heart-rate example under Dynamic health trends, clearly labelled, never stored, exported or fetched; real Crew Self charts unchanged.
-- [ ] Authorized Crew Self browser acceptance of real charts beside the demo — blocked: no account with a Crew Self membership.
+- [ ] Authorized Crew Self browser acceptance of real charts beside the demo — blocked: Crew Self accounts exist but none has synthetic data or owner approval for a test session (see P48).
 
 ## P47 Interactive multi-biomarker trends
 
 - [x] Apply the P47 patch: three synthetic example series (resting heart rate, HRV, sleep) behind one metric selector; Crew Self time-window and evidence-source filters relative to the latest observation; read-only provenance table with original units, UTC times, quality and source.
 - [x] Integration: filter-specific empty state, filters reset per crew scope, table header scopes, live count, singular/plural count, mobile table layout; 5 domain tests; browser check with stubbed Crew Self responses.
-- [ ] Real signed-in Crew Self acceptance of the filters and table — blocked: no account with a Crew Self membership.
+- [ ] Real signed-in Crew Self acceptance of the filters and table — blocked: Crew Self accounts exist but none has synthetic data or owner approval for a test session (see P48).
 
 ## P47.1 Companion accessibility & UX
 
 - [x] Apply the P47.1 patch: four section titles as level-2 headings, 44px touch height and visible keyboard focus on the four console links and three guidance links.
 - [x] Integration: the shared card title has no `asChild` option, so headings are plain h2 elements with the same card-title styling; focus outline uses the ring token.
+
+## P48 Crew Self preflight (Stage A, read-only)
+
+- [x] Add the P48 verifier and contract; verifier 6/6 PASS; findings in `docs/P48_PREFLIGHT_FINDINGS.md`.
+- [x] Disposable-database isolation and revocation scenarios on live migrations: 25/25 PASS.
+- [ ] Stage B synthetic Crew Self provisioning and signed-in acceptance — blocked: owner approval of environment, test accounts, synthetic mission and append-only synthetic events.
+- [ ] Optional: re-check Crew Self membership on page refocus so revocation clears an open companion page — awaiting approval.
