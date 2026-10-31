@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   advanceReminder,
@@ -11,6 +11,16 @@ import {
 } from "@/domain/companion/reminder-engine";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  createCrewEvidenceController,
+  crewScopeKey as scopeKey,
+  CREW_STATUS,
+  restoreTrendSelection,
+  type CrewPhase,
+  type CrewScope,
+  type TrendSelection,
+} from "@/domain/companion/crew-revalidation";
 import type {
   ScientificEvidenceReport,
   ScientificObservation,
@@ -28,8 +38,6 @@ import {
   type CompanionEnvironment,
 } from "@/domain/companion/daily-companion";
 
-type CrewScope = { missionId: string; crewMemberId: string };
-const scopeKey = (m: CrewScope) => `${m.missionId}|${m.crewMemberId}`;
 
 const qualityClass: Record<ReturnType<typeof qualityPresentation>["tone"], string> = {
   good: "border-quality-good/50 bg-quality-good/10 text-quality-good",
@@ -175,7 +183,8 @@ export function AstronautDailyHealthCompanion() {
   const [memberships, setMemberships] = useState<CrewScope[]>([]);
   const [selected, setSelected] = useState("");
   const [report, setReport] = useState<ScientificEvidenceReport | null>(null);
-  const [status, setStatus] = useState("Checking mission authorization...");
+  const [status, setStatus] = useState<string>(CREW_STATUS.initial);
+  const [crewPhase, setCrewPhase] = useState<CrewPhase>("checking");
   const [metric, setMetric] = useState("");
   const [trendWindow, setTrendWindow] = useState<"all" | "7" | "30" | "90">("all");
   const [trendSource, setTrendSource] = useState("all");
@@ -218,80 +227,80 @@ export function AstronautDailyHealthCompanion() {
     }
   };
 
-  // P48.1: A backgrounded tab must not retain previously loaded crew health data
-  // when it becomes visible again. A full reload re-runs authentication, active
-  // membership selection, RLS-backed evidence reads and their fail-closed states.
-  // This does not claim instantaneous revocation while the tab stays visible.
+  // P48.2: fail-closed focused revalidation (replaces the P48.1 full reload). Private
+  // evidence is hidden synchronously when the tab is backgrounded and again on return,
+  // before any request; fresh membership and RLS-backed evidence reads then decide what
+  // reappears, and generation tokens drop late responses. Checklist, environment,
+  // synthetic demo and reminders are untouched. Not real-time while continuously visible.
+  const filtersRef = useRef<TrendSelection>({ metric: "", window: "all", source: "all" });
   useEffect(() => {
+    filtersRef.current = { metric, window: trendWindow, source: trendSource };
+  });
+  const controllerRef = useRef<ReturnType<typeof createCrewEvidenceController> | null>(null);
+
+  useEffect(() => {
+    const controller = createCrewEvidenceController({
+      role: "crew_self",
+      loadContext: getCloudMissionContext,
+      loadEvidence: loadCrewScientificEvidence,
+      sink: {
+        setPhase: (phase, text) => {
+          setCrewPhase(phase);
+          setStatus(text);
+          if (phase === "revoked" || phase === "none") {
+            setReport(null);
+            setMetric("");
+            setTrendWindow("all");
+            setTrendSource("all");
+          }
+        },
+        setScopes: (scopes, key) => {
+          setMemberships(scopes);
+          setSelected(key);
+        },
+        setReport: (next, preserveFilters) => {
+          setReport(next);
+          if (!next) return;
+          const restored = restoreTrendSelection(
+            next,
+            preserveFilters ? filtersRef.current : null,
+          );
+          setMetric(restored.metric);
+          setTrendWindow(restored.window);
+          setTrendSource(restored.source);
+        },
+      },
+    });
+    controllerRef.current = controller;
+    void controller.revalidate("initial");
+
     let wasHidden = document.visibilityState === "hidden";
-    const revalidateOnReturn = () => {
+    const onVisibility = () => {
       if (document.visibilityState === "hidden") {
         wasHidden = true;
+        controller.suspend();
       } else if (wasHidden) {
         wasHidden = false;
-        window.location.reload();
+        void controller.revalidate("return");
       }
     };
-    document.addEventListener("visibilitychange", revalidateOnReturn);
-    return () => document.removeEventListener("visibilitychange", revalidateOnReturn);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void getCloudMissionContext()
-      .then((ctx) => {
-        if (cancelled) return;
-        const allowed = ctx.memberships
-          .filter(
-            (m): m is typeof m & { crewMemberId: string } =>
-              m.role === "crew_self" && Boolean(m.crewMemberId),
-          )
-          .map((m) => ({ missionId: m.missionId, crewMemberId: m.crewMemberId }));
-        setMemberships(allowed);
-        setSelected(allowed.length ? scopeKey(allowed[0]!) : "");
-        if (!allowed.length)
-          setStatus(
-            ctx.signedIn
-              ? "No authorized Crew Self mission context. Private health data is unavailable."
-              : "Sign in as the assigned Crew Self member to view your own health trends.",
-          );
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("Mission authorization unavailable; no private data loaded.");
-      });
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) void controller.revalidate("return");
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onPageShow);
+    const { data: auth } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED")
+        void controller.revalidate("auth");
+    });
     return () => {
-      cancelled = true;
+      controller.dispose();
+      controllerRef.current = null;
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onPageShow);
+      auth.subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    const membership = memberships.find((m) => scopeKey(m) === selected);
-    if (!membership) {
-      setReport(null);
-      return;
-    }
-    let cancelled = false;
-    setReport(null);
-    setTrendSource("all");
-    setTrendWindow("all");
-    setStatus("Loading authorized read-only evidence...");
-    void loadCrewScientificEvidence(membership.missionId, membership.crewMemberId)
-      .then((result) => {
-        if (cancelled) return;
-        setReport(result.report);
-        const firstMetric = result.report?.metrics[0];
-        setMetric(firstMetric ? `${firstMetric.metricCode}|${firstMetric.unit}` : "");
-        setStatus(
-          result.reason ?? (result.report ? "Read-only evidence loaded." : "No eligible evidence."),
-        );
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("Evidence unavailable; no interpretation performed.");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [memberships, selected]);
 
   const current = useMemo(
     () => report?.metrics.find((m) => `${m.metricCode}|${m.unit}` === metric),
@@ -498,9 +507,24 @@ export function AstronautDailyHealthCompanion() {
           <h2 className="font-semibold leading-none tracking-tight">3 · Dynamic health trends</h2>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground" data-testid="trend-status">
-            {status}
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p
+              className="text-sm text-muted-foreground"
+              data-testid="trend-status"
+              aria-live="polite"
+            >
+              {status}
+            </p>
+            {crewPhase === "error" && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void controllerRef.current?.revalidate("retry")}
+              >
+                Retry authorization
+              </Button>
+            )}
+          </div>
           <section
             className="rounded border border-dashed p-4 space-y-3"
             aria-label="Synthetic trend demonstration"
@@ -553,14 +577,19 @@ export function AstronautDailyHealthCompanion() {
               </div>
             )}
           </section>
-          {memberships.length > 1 && (
+          {(memberships.length > 1 || (memberships.length > 0 && !selected)) && (
             <label className="block text-sm">
               Authorized crew mission
               <select
                 className="mt-1 block w-full max-w-xl rounded border bg-background p-2"
                 value={selected}
-                onChange={(e) => setSelected(e.target.value)}
+                onChange={(e) => void controllerRef.current?.select(e.target.value)}
               >
+                {!selected && (
+                  <option value="" disabled>
+                    Choose an authorized mission
+                  </option>
+                )}
                 {memberships.map((m) => (
                   <option key={scopeKey(m)} value={scopeKey(m)}>
                     {m.missionId} · {m.crewMemberId}
