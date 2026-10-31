@@ -183,6 +183,22 @@ describe("P48.2 focused revalidation controller", () => {
     expect(h.evidence.length).toBe(evidenceCalls);
   });
 
+  it("revoking only the shown scope clears it and waits for an explicit choice", async () => {
+    const h = harness();
+    await authorizeA(h);
+    const evidenceCalls = h.evidence.length;
+    h.controller.suspend();
+    void h.controller.revalidate("return");
+    h.contexts.at(-1)!.resolve(ctx([member(B)]));
+    await flush();
+    expect(h.state.phase).toBe("revoked");
+    expect(h.state.status).toBe(CREW_STATUS.revoked);
+    expect(h.state.selected).toBe("");
+    expect(h.state.scopes).toEqual([B]);
+    expect(h.state.report).toBeNull();
+    expect(h.evidence.length).toBe(evidenceCalls);
+  });
+
   it("a stale evidence response never repopulates after revocation", async () => {
     const h = harness();
     void h.controller.revalidate("initial");
