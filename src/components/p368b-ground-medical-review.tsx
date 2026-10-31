@@ -34,6 +34,8 @@ export function GroundMedicalReviewPanel() {
   // authorized user's read-only batch. A changed identity or revoked membership does.
   const verifiedUser = useRef<string | undefined>(undefined);
   const identityRequest = useRef(0);
+  const dataEpoch = useRef(0);
+  const authorizedMission = useRef("");
   const missionRef = useRef(missionId);
   missionRef.current = missionId;
   // One idempotency key per batch view; retries of the same view replay the same receipt.
@@ -52,9 +54,12 @@ export function GroundMedicalReviewPanel() {
           ? identity.memberships.filter(m => m.role === "ground_medical") : [];
         const sameUser = Boolean(identity.userId && verifiedUser.current === identity.userId);
         const currentMissionAllowed = allowed.some(m => m.missionId === missionRef.current);
+        authorizedMission.current = allowed.some(m => m.missionId === missionRef.current) ? missionRef.current : "";
         setMissions(allowed);
         if (!sameUser || !currentMissionAllowed) {
+          dataEpoch.current++;
           setQueue([]);
+          setBusy(false);
           clearSelection();
           setReceipt(null);
         }
@@ -63,44 +68,58 @@ export function GroundMedicalReviewPanel() {
           ? previous : (allowed.length === 1 ? (allowed[0]?.missionId ?? "") : ""));
       } catch {
         if (live && request === identityRequest.current) {
+          dataEpoch.current++;
+          authorizedMission.current = "";
           verifiedUser.current = undefined;
           setMissions([]);
           setMissionId("");
           setQueue([]);
+          setBusy(false);
           clearSelection();
           setReceipt(null);
         }
       }
     };
     void update();
-    const unsubscribe = subscribeMissionIdentity(() => { void update(); });
-    return () => { live = false; identityRequest.current++; unsubscribe(); };
+    const unsubscribe = subscribeMissionIdentity(() => {
+      // Fail closed immediately on auth changes; old responses must never repopulate private UI.
+      dataEpoch.current++;
+      authorizedMission.current = "";
+      setQueue([]); setBusy(false); clearSelection(); setReceipt(null);
+      void update();
+    });
+    return () => { live = false; identityRequest.current++; dataEpoch.current++; unsubscribe(); };
   }, []);
 
   async function refreshQueue(message?: string) {
     if (!missions.some(m => m.missionId === missionId)) return;
+    const epoch = ++dataEpoch.current;
+    const requestedMission = missionId;
     setBusy(true); setQueue([]); clearSelection();
     try {
-      const rows = await listGroundMedicalPending(missionId);
+      const rows = await listGroundMedicalPending(requestedMission);
+      if (epoch !== dataEpoch.current || authorizedMission.current !== requestedMission || missionRef.current !== requestedMission) return;
       setQueue(rows);
       setStatus(message ?? `${rows.length} pending synthetic batch(es).`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Review queue unavailable.");
-    } finally { setBusy(false); }
+      if (epoch === dataEpoch.current) setStatus(error instanceof Error ? error.message : "Review queue unavailable.");
+    } finally { if (epoch === dataEpoch.current) setBusy(false); }
   }
 
   async function viewBatch(batchId: string) {
     if (!queue.some(row => row.batch_id === batchId)) return;
+    const epoch = ++dataEpoch.current;
+    const requestedMission = missionId;
     setBusy(true); clearSelection(); setReceipt(null); setSelectedBatch(batchId);
     try {
-      const rows = await getGroundMedicalBatch(missionId, batchId);
+      const rows = await getGroundMedicalBatch(requestedMission, batchId);
+      if (epoch !== dataEpoch.current || authorizedMission.current !== requestedMission || missionRef.current !== requestedMission) return;
       setDetails(rows);
       decisionKey.current = rows.length ? newDecisionIdempotencyKey() : "";
       setStatus(rows.length ? `${rows.length} synthetic biomarker value(s) loaded.` : "Batch is no longer available for independent review.");
     } catch (error) {
-      setSelectedBatch("");
-      setStatus(error instanceof Error ? error.message : "Batch detail unavailable.");
-    } finally { setBusy(false); }
+      if (epoch === dataEpoch.current) { setSelectedBatch(""); setStatus(error instanceof Error ? error.message : "Batch detail unavailable."); }
+    } finally { if (epoch === dataEpoch.current) setBusy(false); }
   }
 
   async function confirmDecision() {
@@ -130,7 +149,7 @@ export function GroundMedicalReviewPanel() {
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">Synthetic research demonstration only. A decision marks a batch as usable or excluded for research demonstration. It is not medical validation, diagnosis or clinical approval, and nothing is promoted into health records. Submitted values are never changed.</p>
         <label className="block text-sm font-medium" htmlFor="p368b-mission">Ground Medical mission</label>
-        <select id="p368b-mission" className="w-full rounded-md border border-border bg-background p-3 text-foreground" value={missionId} onChange={e => { setMissionId(e.target.value); setQueue([]); clearSelection(); setReceipt(null); }}>
+        <select id="p368b-mission" className="w-full rounded-md border border-border bg-background p-3 text-foreground" value={missionId} onChange={e => { dataEpoch.current++; authorizedMission.current = e.target.value; setMissionId(e.target.value); setQueue([]); clearSelection(); setReceipt(null); }}>
           <option value="">Select Ground Medical mission</option>
           {missions.map(m => <option key={m.missionId} value={m.missionId}>{m.missionCode ?? m.missionName ?? m.missionId}</option>)}
         </select>
