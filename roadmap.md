@@ -361,3 +361,10 @@
 
 - [x] Apply the P47.1 patch: four section titles as level-2 headings, 44px touch height and visible keyboard focus on the four console links and three guidance links.
 - [x] Integration: the shared card title has no `asChild` option, so headings are plain h2 elements with the same card-title styling; focus outline uses the ring token.
+
+## P48 Crew Self preflight (Stage A, read-only)
+
+- [x] Add the P48 verifier and contract; verifier 6/6 PASS; findings in `docs/P48_PREFLIGHT_FINDINGS.md`.
+- [x] Disposable-database isolation and revocation scenarios on live migrations: 25/25 PASS.
+- [ ] Stage B synthetic Crew Self provisioning and signed-in acceptance — blocked: owner approval of environment, test accounts, synthetic mission and append-only synthetic events.
+- [ ] Optional: re-check Crew Self membership on page refocus so revocation clears an open companion page — awaiting approval.
