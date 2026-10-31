@@ -21,6 +21,8 @@ export interface RecordedMissionRow {
   unit?: string;
   quality?: string;
   location: RecordedDataLocation;
+  /** P49: original stored payload, read-only, for canonical projection. Never rewritten. */
+  payload?: unknown;
   syncState?: OfflineSyncQueueItem["state"];
 }
 
@@ -120,6 +122,7 @@ export function localRecordedRow(record: OfflineEventRecord, syncState?: Offline
     classification: record.classification,
     location: "local",
     ...(syncState ? { syncState } : {}),
+    payload: record.payload,
     ...summarizePayload(record.payload),
   };
 }
@@ -147,6 +150,7 @@ function cloudRow(record: CloudEventShape): RecordedMissionRow {
     sourceVersion: record.source_version,
     classification: record.classification,
     location: "cloud",
+    payload: record.payload,
     ...summarizePayload(record.payload),
   };
 }
