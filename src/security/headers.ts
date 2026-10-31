@@ -22,6 +22,8 @@ export function buildContentSecurityPolicy(): string {
     "form-action 'self'",
     "img-src 'self' data: blob:",
     "font-src 'self' https://fonts.gstatic.com data:",
+    // The official competition demo MP4 is streamed from the public GitHub repository.
+    "media-src 'self' https://raw.githubusercontent.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     // TanStack Start currently emits inline bootstrap/hydration code. P16 documents this
     // residual risk; a nonce-based strict CSP is a release-hardening follow-up.
