@@ -27,6 +27,13 @@ describe("P16 Security & Safety Hardening", () => {
     expect(media).toBe("media-src 'self' https://raw.githubusercontent.com");
   });
 
+  test("frames may embed only the Office Online presentation viewer", () => {
+    const frame = buildContentSecurityPolicy()
+      .split("; ")
+      .find((directive) => directive.startsWith("frame-src "));
+    expect(frame).toBe("frame-src https://view.officeapps.live.com");
+  });
+
   test("HSTS is not asserted for non-canonical preview hosts", () => {
     const response = applySecurityHeaders(
       new Request("https://preview.example.test/"),

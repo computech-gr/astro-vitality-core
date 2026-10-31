@@ -16,6 +16,7 @@ import { Route as ApiMedicalAiDraftRouteImport } from './routes/api.medical-ai-d
 import { Route as ApiMedicalDocumentExtractionRouteImport } from './routes/api.medical-document-extraction'
 import { Route as ApiNasaResearchRouteImport } from './routes/api.nasa-research'
 import { Route as CompetitionDemoVideoRouteImport } from './routes/competition.demo-video'
+import { Route as CompetitionNarratedPresentationRouteImport } from './routes/competition.narrated-presentation'
 import { Route as CompetitionTeamRouteImport } from './routes/competition.team'
 import { Route as MissionAiAdministrationRouteImport } from './routes/mission.ai-administration'
 import { Route as MissionAlertsRouteImport } from './routes/mission.alerts'
@@ -84,6 +85,12 @@ const CompetitionDemoVideoRoute = CompetitionDemoVideoRouteImport.update({
   path: '/competition/demo-video',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompetitionNarratedPresentationRoute =
+  CompetitionNarratedPresentationRouteImport.update({
+    id: '/competition/narrated-presentation',
+    path: '/competition/narrated-presentation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CompetitionTeamRoute = CompetitionTeamRouteImport.update({
   id: '/competition/team',
   path: '/competition/team',
@@ -244,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/api/medical-document-extraction': typeof ApiMedicalDocumentExtractionRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
+  '/competition/narrated-presentation': typeof CompetitionNarratedPresentationRoute
   '/competition/team': typeof CompetitionTeamRoute
   '/mission/ai-administration': typeof MissionAiAdministrationRoute
   '/mission/alerts': typeof MissionAlertsRoute
@@ -283,6 +291,7 @@ export interface FileRoutesByTo {
   '/api/medical-document-extraction': typeof ApiMedicalDocumentExtractionRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
+  '/competition/narrated-presentation': typeof CompetitionNarratedPresentationRoute
   '/competition/team': typeof CompetitionTeamRoute
   '/mission/ai-administration': typeof MissionAiAdministrationRoute
   '/mission/alerts': typeof MissionAlertsRoute
@@ -323,6 +332,7 @@ export interface FileRoutesById {
   '/api/medical-document-extraction': typeof ApiMedicalDocumentExtractionRoute
   '/api/nasa-research': typeof ApiNasaResearchRoute
   '/competition/demo-video': typeof CompetitionDemoVideoRoute
+  '/competition/narrated-presentation': typeof CompetitionNarratedPresentationRoute
   '/competition/team': typeof CompetitionTeamRoute
   '/mission/ai-administration': typeof MissionAiAdministrationRoute
   '/mission/alerts': typeof MissionAlertsRoute
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/api/medical-document-extraction'
     | '/api/nasa-research'
     | '/competition/demo-video'
+    | '/competition/narrated-presentation'
     | '/competition/team'
     | '/mission/ai-administration'
     | '/mission/alerts'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/api/medical-document-extraction'
     | '/api/nasa-research'
     | '/competition/demo-video'
+    | '/competition/narrated-presentation'
     | '/competition/team'
     | '/mission/ai-administration'
     | '/mission/alerts'
@@ -442,6 +454,7 @@ export interface FileRouteTypes {
     | '/api/medical-document-extraction'
     | '/api/nasa-research'
     | '/competition/demo-video'
+    | '/competition/narrated-presentation'
     | '/competition/team'
     | '/mission/ai-administration'
     | '/mission/alerts'
@@ -482,6 +495,7 @@ export interface RootRouteChildren {
   ApiMedicalDocumentExtractionRoute: typeof ApiMedicalDocumentExtractionRoute
   ApiNasaResearchRoute: typeof ApiNasaResearchRoute
   CompetitionDemoVideoRoute: typeof CompetitionDemoVideoRoute
+  CompetitionNarratedPresentationRoute: typeof CompetitionNarratedPresentationRoute
   CompetitionTeamRoute: typeof CompetitionTeamRoute
   MissionAiAdministrationRoute: typeof MissionAiAdministrationRoute
   MissionAlertsRoute: typeof MissionAlertsRoute
@@ -563,6 +577,13 @@ declare module '@tanstack/react-router' {
       path: '/competition/demo-video'
       fullPath: '/competition/demo-video'
       preLoaderRoute: typeof CompetitionDemoVideoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competition/narrated-presentation': {
+      id: '/competition/narrated-presentation'
+      path: '/competition/narrated-presentation'
+      fullPath: '/competition/narrated-presentation'
+      preLoaderRoute: typeof CompetitionNarratedPresentationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/competition/team': {
@@ -787,6 +808,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMedicalDocumentExtractionRoute: ApiMedicalDocumentExtractionRoute,
   ApiNasaResearchRoute: ApiNasaResearchRoute,
   CompetitionDemoVideoRoute: CompetitionDemoVideoRoute,
+  CompetitionNarratedPresentationRoute: CompetitionNarratedPresentationRoute,
   CompetitionTeamRoute: CompetitionTeamRoute,
   MissionAiAdministrationRoute: MissionAiAdministrationRoute,
   MissionAlertsRoute: MissionAlertsRoute,

@@ -135,7 +135,13 @@ const navigation: readonly NavigationEntry[] = [
       },
       {
         title: "Health domains",
-        items: ["Bone Health", "Cardiovascular Health", "Immune Changes", "Behavioral Health", "Medical Report"],
+        items: [
+          "Bone Health",
+          "Cardiovascular Health",
+          "Immune Changes",
+          "Behavioral Health",
+          "Medical Report",
+        ],
       },
       {
         title: "Research intelligence",
@@ -223,11 +229,10 @@ const navigation: readonly NavigationEntry[] = [
         title: "Competition Materials",
         items: [
           "NASA Competition Presentation (PDF)",
+          "View Narrated Presentation Online (PPTX)",
           "NASA Evaluator Quick Start (PDF)",
           "Master Technical Manual (PDF)",
-          "Download Narrated Presentation (PPTX)",
           "Watch NASA Demo Video",
-          "Download NASA Demo Video (MP4)",
         ],
       },
       {
@@ -323,10 +328,8 @@ function itemHref(label: string, fallback: string) {
   if (label === "Our Team — NASA Space Apps 2026") return "/competition/team";
   if (label === "Official NASA Team Profile") return competitionTeam.officialUrl;
   if (label === "Watch NASA Demo Video") return "/competition/demo-video";
-  if (label === "Download Narrated Presentation (PPTX)")
-    return `${GITHUB_RAW_URL}/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx`;
-  if (label === "Download NASA Demo Video (MP4)")
-    return `${GITHUB_RAW_URL}/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4`;
+  if (label === "View Narrated Presentation Online (PPTX)")
+    return "/competition/narrated-presentation";
   if (label === "NASA Competition Presentation (PDF)")
     return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf`;
   if (label === "NASA Evaluator Quick Start (PDF)")
@@ -350,7 +353,8 @@ function itemHref(label: string, fallback: string) {
   if (label === "Daily Readiness Check-in") return "/mission/readiness";
   if (label === "Daily Health Companion") return "/mission/companion";
   if (label === "Unified Data Intake") return "/mission/intake";
-  if (label === "Astronaut Health Report" || label === "Medical Report") return "/mission/health-report";
+  if (label === "Astronaut Health Report" || label === "Medical Report")
+    return "/mission/health-report";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
@@ -365,7 +369,12 @@ function itemHref(label: string, fallback: string) {
   if (label === "Explainable Alerts") return "/mission/alerts";
   if (label === "Action Guidance") return "/mission/guidance";
   if (label === "Offline Mission Mode") return "/mission/offline";
-  if (label === "Ground & Research Console" || label === "Ground Medical Workspace" || label === "Research Workspace") return "/mission/ground";
+  if (
+    label === "Ground & Research Console" ||
+    label === "Ground Medical Workspace" ||
+    label === "Research Workspace"
+  )
+    return "/mission/ground";
   if (label === "Cognitive & Behavioral Health") return "/mission/readiness";
   if (label === "Validation & Limitations") return "/mission/validation";
   if (label === "Challenge Submission") return "/mission/submission";
@@ -404,6 +413,16 @@ function isExternal(href: string) {
   return href.startsWith("https://");
 }
 
+// Competition resources open in a separate tab so the visitor's current page
+// and scroll position remain unchanged (desktop, mobile and CTA links).
+function opensInNewTab(href: string) {
+  return (
+    isExternal(href) ||
+    href.startsWith("/competition/demo-video") ||
+    href.startsWith("/competition/narrated-presentation")
+  );
+}
+
 function Brand() {
   return (
     <a
@@ -435,7 +454,7 @@ function NavLink({
   children: ReactNode;
   mobile?: boolean;
 }) {
-  const external = isExternal(href);
+  const external = opensInNewTab(href);
   const link = (
     <a
       href={href}
@@ -517,7 +536,7 @@ export function SiteHeader() {
                         </DropdownMenuLabel>
                         {group.items.map((item) => {
                           const href = itemHref(item, group.href ?? entry.href);
-                          const external = isExternal(href);
+                          const external = opensInNewTab(href);
                           return (
                             <DropdownMenuItem
                               key={item}
@@ -813,8 +832,8 @@ export function AppShell() {
                 >
                   <a
                     href={href}
-                    target={isExternal(href) ? "_blank" : undefined}
-                    rel={isExternal(href) ? "noopener noreferrer" : undefined}
+                    target={opensInNewTab(href) ? "_blank" : undefined}
+                    rel={opensInNewTab(href) ? "noopener noreferrer" : undefined}
                   >
                     <Icon aria-hidden="true" className="size-5 shrink-0 text-primary" />
                     <span className="min-w-0 flex-1">{label}</span>
@@ -885,6 +904,8 @@ export function AppShell() {
                   <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">{copy}</p>
                   <a
                     href={href}
+                    target={opensInNewTab(href) ? "_blank" : undefined}
+                    rel={opensInNewTab(href) ? "noopener noreferrer" : undefined}
                     className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary hover:underline"
                   >
                     {linkLabel}
@@ -1149,8 +1170,8 @@ function Footer() {
                   <li key={label}>
                     <a
                       href={href}
-                      target={isExternal(href) ? "_blank" : undefined}
-                      rel={isExternal(href) ? "noopener noreferrer" : undefined}
+                      target={opensInNewTab(href) ? "_blank" : undefined}
+                      rel={opensInNewTab(href) ? "noopener noreferrer" : undefined}
                       className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
                     >
                       {label}
