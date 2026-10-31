@@ -3,6 +3,7 @@
 This is one consolidated implementation contract for Lovable to implement against the attached current source. Do not silently substitute direct database writes or bypass RLS.
 
 ## Non-negotiable scope
+
 - No existing account, mission, membership or health record may be reused or modified.
 - Never modify medical_sensitive observations or history. No SQL migrations or RLS changes.
 - Implement a **Crew Self only** synthetic observation entry panel behind an explicit feature flag, default OFF, visible only for an authorized, active Crew Self scope in a dedicated `P48_SYNTHETIC_DEMO` mission. Do not allow operator/researcher/admin bypass.
@@ -15,11 +16,13 @@ This is one consolidated implementation contract for Lovable to implement agains
 - Avoid storing passwords, invite secrets, health values or private identifiers in reports or logs. Keep submission/demo results limited to counts, access-denied outcomes and test status.
 
 ## Isolation decision gate
+
 1. Inspect whether a new Lovable draft can have its own database; creating a draft is NOT authorized by this contract. Report steps for owner to approve and verify isolation.
 2. If isolated environment is unavailable, STOP and request explicit authorization for a live shared-backend synthetic mission and permanent writes.
 3. Confirm that email signup/confirmation is configured before creating two dedicated test identities controlled by the team.
 
 ## Acceptance sequence (only after approvals)
+
 A. Operator creates dedicated mission and Crew A/B, creates invites via existing UI; each of two distinct dedicated accounts accepts its own invite. Never paste invite codes in reports.
 B. Each Crew Self enters six explicitly synthetic observations through approved UI, using two sources and date coverage >90 days. Review batch before submit. Confirm database counts and classification read-only.
 C. Crew A sees own chart/table; all/7/30/90 and source filters correctly narrow only their own readings. Crew B's readings remain invisible to Crew A including direct API read. Operator and signed-out users see none.
@@ -27,6 +30,7 @@ D. Revoke Crew A through operator UI; subsequent reads return zero; returning to
 E. Close mission through operator UI only after owner confirms. Capture counts/results, not medical values, credentials or invite secrets.
 
 ## Additional fixes consolidated
+
 - Replace obsolete P48.1 static verifier that expects window.location.reload with a P48.2-aware assertion; do not reinstate reload.
 - Fix formatting in only the three previously identified older docs if safe and semantics unchanged.
 - Review five dependency advisories (4 moderate, 1 low), record direct/transitive, dev/prod exposure and available non-breaking fixes; no unapproved major upgrades.
@@ -34,7 +38,9 @@ E. Close mission through operator UI only after owner confirms. Capture counts/r
 - Explicitly document remaining continuously-visible-tab revocation limitation; do not claim instant remote revocation without push or polling.
 
 ## Quality gates
+
 Full tests, typecheck, lint, security audit, production build, formatting, RLS isolation harness, browser desktop/mobile. Add real authenticated end-to-end tests when the approved test environment exists. Preserve all P45-P48.2 behavior. No publishing.
 
 ## Competition integrity
+
 Preserve real Git/Supabase timestamps and disclose pre-existing code. Do not rewrite history to imply creation during the hackathon.

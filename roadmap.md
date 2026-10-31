@@ -372,3 +372,5 @@
 - [ ] P48.1/P48.2 signed-in acceptance with real synthetic Crew Self A/B accounts and operator revocation — blocked by Stage B approval above.
 - [x] P48.3: Stage B readiness verifier 6/6 PASS; read-only plan in `docs/P48_3_STAGE_B_PLAN.md`.
 - [ ] P48.3 Stage B execution — blocked: owner approvals (draft/environment, test accounts, mission/crew, permanent synthetic records, synthetic intake method).
+- [x] P48 FINAL: default-off Crew Self synthetic intake, disposable-DB acceptance 14/14, P48.2-aware P48.1 verifier, older docs formatted, dependency review (`docs/P48_FINAL_STAGE_B_RESULTS.md`).
+- [ ] P48 FINAL real authenticated Crew A/B demonstration — blocked: owner approvals listed in `docs/P48_FINAL_STAGE_B_RESULTS.md`.
