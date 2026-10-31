@@ -1,10 +1,11 @@
 import { readFileSync, existsSync } from 'node:fs';
 const read = p => { if (!existsSync(p)) throw new Error(`Missing ${p}`); return readFileSync(p,'utf8'); };
 const page=read('src/components/astronaut-daily-health-companion.tsx');
+const controller=read('src/domain/companion/crew-revalidation.ts');
 const checks = [
- ['Mission identity resolved from canonical context', /getCloudMissionContext\s*\(/.test(page)],
- ['Evidence loaded through existing infrastructure', /loadCrewScientificEvidence\s*\(/.test(page)],
- ['No authorized Crew Self fail-closed message', page.includes('No authorized Crew Self mission context')],
+ ['Mission identity resolved from canonical context', /loadContext:\s*getCloudMissionContext\b/.test(page) && /await deps\.loadContext\(\)/.test(controller)],
+ ['Evidence loaded through existing infrastructure', /loadEvidence:\s*loadCrewScientificEvidence\b/.test(page) && /deps\.loadEvidence\(/.test(controller)],
+ ['No authorized Crew Self fail-closed message', controller.includes('No authorized Crew Self mission context')],
  ['Synthetic example clearly identified', page.includes('SYNTHETIC DEMONSTRATION')],
  ['Time and source filtering available', page.includes('filterTrendObservations')],
  ['Existing reminder engine preserved', page.includes('createReminderPlan')],

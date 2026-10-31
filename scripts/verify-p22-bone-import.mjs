@@ -8,10 +8,10 @@ assert.match(parser,/MAX_ROWS = 200/);assert.match(parser,/MAX_CHARS = 250_000/)
 assert.match(parser,/matches.length !== 1/);assert.match(parser,/Number.isFinite/);
 assert.match(ui,/Confirm selected results and save/);assert.match(ui,/saveBoneEntry/);
 const queue=read('src/domain/bone-health/file-queue.ts');
-assert.match(queue,/parseBoneImport\(text\)/);
+assert.match(queue,/parseBoneImport\(text(?:, profile)?\)/);
 assert.match(ui,/type="file" multiple/);
 assert.match(queue,/reviewedBoneEntries/);
-assert.match(queue,/validateBoneEntry\(entry\)/);
+assert.match(queue,/validateBoneEntry\(entry(?:, profile)?\)/);
 assert.match(queue,/await save\(entry\); receipt\(entry.id\)/);
 const extraction=read('src/domain/bone-health/document-extraction.ts');
 assert.match(extraction,/On-device OCR unavailable/);

@@ -8,6 +8,7 @@ for (const name of ["immune", "cardiovascular", "behavioral"]) {
 const registry = read("src/domain/health-domains/registry.ts");
 if (!registry.includes('metricCodes: []') || !registry.includes('scientific_review_pending')) throw new Error("Pending scientific evidence guardrails missing");
 const ui = read("src/components/health-domain-workspace.tsx");
-if (!ui.includes("loadCrewScientificEvidence") || !ui.includes('role === "crew_self"') || !ui.includes("No autonomous diagnosis")) throw new Error("Crew-scoped non-diagnostic UI contract missing");
+const panel = read("src/components/domain-evidence-panel.tsx");
+if (!ui.includes("<DomainEvidencePanel") || !panel.includes("loadCrewScientificEvidence(") || !panel.includes('role === "crew_self"') || !ui.includes("No autonomous diagnosis")) throw new Error("Crew-scoped non-diagnostic UI contract missing");
 if (!read("src/components/bone-health-entry.tsx").includes("/mission/immune-health")) throw new Error("Bone workspace domain links missing");
 console.log("P26 health domain navigation and safety verifier: PASS");
