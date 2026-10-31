@@ -384,9 +384,8 @@ export function AstronautDailyHealthCompanion() {
             <p className="text-sm text-muted-foreground">
               Choose your own demonstration interval. No medical frequency is prescribed. Timers run
               only while this page stays open; they do not persist across reloads, devices or
-              offline browser shutdown. Returning to this tab after switching away reloads the page
-              to re-check access, which also stops reminders. Browser notifications require
-              permission and are not guaranteed.
+              offline browser shutdown. Browser notifications require permission and are not
+              guaranteed.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <label htmlFor="companion-reminder-interval">Repeat every</label>
