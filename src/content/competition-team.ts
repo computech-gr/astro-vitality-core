@@ -19,5 +19,5 @@ export const competitionDocuments = [
   { label: "NASA Evaluator Quick Start (PDF)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf" },
   { label: "Master Technical Manual (PDF)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf" },
   { label: "Narrated Presentation (PPTX)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx" },
-  { label: "NASA Demo Video (MP4)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4" },
+  { label: "Download NASA Demo Video (MP4)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4" },
 ] as const;
