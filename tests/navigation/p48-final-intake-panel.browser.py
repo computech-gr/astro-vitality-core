@@ -31,7 +31,9 @@ async def run(p, w, h, tag):
     await page.route("**/rest/v1/mission_events*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(EVENTS)))
     await page.route("**/auth/v1/**", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(sess["user"])))
     async def serverfn(r):
-        if "getP48SyntheticIntakeStatus" in __import__("base64").b64decode(r.request.url.split("/_serverFn/")[1].split("?")[0] + "==").decode(errors="ignore"):
+        token = r.request.url.split("/_serverFn/")[1].split("?")[0]
+        name = __import__("base64").urlsafe_b64decode(token + "=" * (-len(token) % 4)).decode(errors="ignore")
+        if "getP48SyntheticIntakeStatus" in name:
             body = STATUS if STATE["eligible"] else envelope(obj(1, {"enabled": TRUE, "reason": s("not_crew_self")}))
             return await r.fulfill(status=200, content_type="application/json", body=body)
         STATE["submits"] += 1; STATE["bodies"].append(r.request.post_data or "")
