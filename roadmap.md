@@ -370,3 +370,5 @@
 - [x] P48.1: returning to a hidden Companion tab reloads the page, re-checks Crew Self membership and clears revoked evidence (superseded by P48.2).
 - [x] P48.2: focused fail-closed revalidation replaces the reload; generation-guarded controller in `src/domain/companion/crew-revalidation.ts`, 15 unit tests, stubbed browser acceptance in `tests/navigation/p482-focused-revalidation.browser.py`.
 - [ ] P48.1/P48.2 signed-in acceptance with real synthetic Crew Self A/B accounts and operator revocation — blocked by Stage B approval above.
+- [x] P48.3: Stage B readiness verifier 6/6 PASS; read-only plan in `docs/P48_3_STAGE_B_PLAN.md`.
+- [ ] P48.3 Stage B execution — blocked: owner approvals (draft/environment, test accounts, mission/crew, permanent synthetic records, synthetic intake method).
