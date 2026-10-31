@@ -218,6 +218,24 @@ export function AstronautDailyHealthCompanion() {
     }
   };
 
+  // P48.1: A backgrounded tab must not retain previously loaded crew health data
+  // when it becomes visible again. A full reload re-runs authentication, active
+  // membership selection, RLS-backed evidence reads and their fail-closed states.
+  // This does not claim instantaneous revocation while the tab stays visible.
+  useEffect(() => {
+    let wasHidden = document.visibilityState === "hidden";
+    const revalidateOnReturn = () => {
+      if (document.visibilityState === "hidden") {
+        wasHidden = true;
+      } else if (wasHidden) {
+        wasHidden = false;
+        window.location.reload();
+      }
+    };
+    document.addEventListener("visibilitychange", revalidateOnReturn);
+    return () => document.removeEventListener("visibilitychange", revalidateOnReturn);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     void getCloudMissionContext()
@@ -357,8 +375,9 @@ export function AstronautDailyHealthCompanion() {
             <p className="text-sm text-muted-foreground">
               Choose your own demonstration interval. No medical frequency is prescribed. Timers run
               only while this page stays open; they do not persist across reloads, devices or
-              offline browser shutdown. Browser notifications require permission and are not
-              guaranteed.
+              offline browser shutdown. Returning to this tab after switching away reloads the page
+              to re-check access, which also stops reminders. Browser notifications require
+              permission and are not guaranteed.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <label htmlFor="companion-reminder-interval">Repeat every</label>
