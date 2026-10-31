@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { indexableRouteHead } from "@/infrastructure/seo";
 const videoUrl = "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4";
-const githubVideoUrl = "https://github.com/computech-gr/astro-vitality-core/raw/refs/heads/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4";
 
 const title = "NASA Space Apps Demo Video | The Mitochondria";
 const description = "Three-minute MITOCHONDRIA astronaut health intelligence research prototype demonstration.";
@@ -24,7 +23,7 @@ function CompetitionDemoVideoPage() {
         <source src={videoUrl} type="video/mp4" />
         Your browser does not support HTML5 video.
       </video>
-      <p className="mt-4 text-sm"><a className="underline underline-offset-4" href={githubVideoUrl} target="_blank" rel="noopener noreferrer">Download official NASA Demo MP4</a>. If playback is unavailable, download the MP4 and play it locally. GitHub raw hosting does not guarantee streaming.</p>
+      <p className="mt-4 text-sm text-muted-foreground">If playback is unavailable, please try a different browser. GitHub raw file delivery does not guarantee streaming.</p>
       <p className="mt-5 text-sm text-muted-foreground">Research prototype using synthetic data. Not NASA-endorsed, clinically validated, or flight-qualified.</p>
     </main>
   );
