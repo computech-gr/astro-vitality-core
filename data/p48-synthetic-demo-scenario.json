@@ -1,0 +1,15 @@
+{
+  "schema": "mitochondria.p48.synthetic-demo-plan.v1",
+  "execution": "planning-only-no-database-writes",
+  "missionCode": "P48_SYNTHETIC_DEMO",
+  "crew": ["Synthetic Crew A", "Synthetic Crew B"],
+  "accounts": "two distinct team-controlled test identities; never reuse existing users",
+  "recordsPerCrew": 6,
+  "totalPlannedRecords": 12,
+  "sources": ["p48-synthetic-source-alpha", "p48-synthetic-source-beta"],
+  "metricCandidatesRequireCanonicalValidation": ["resting heart rate", "heart rate variability", "sleep duration"],
+  "dateCoverage": "more than 90 days; use approved backdated synthetic observation timestamps only",
+  "classification": "synthetic",
+  "permanent": true,
+  "requiresOwnerApproval": true
+}

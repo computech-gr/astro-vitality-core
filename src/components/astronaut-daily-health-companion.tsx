@@ -27,6 +27,7 @@ import type {
 } from "@/domain/health-intelligence/live-evidence";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { P48SyntheticIntakePanel } from "@/components/p48-synthetic-intake-panel";
 import {
   COMPANION_ENVIRONMENTS,
   filterTrendObservations,
@@ -597,6 +598,14 @@ export function AstronautDailyHealthCompanion() {
               </select>
             </label>
           )}
+          <P48SyntheticIntakePanel
+            scope={
+              (crewPhase === "ready" || crewPhase === "none") && selected
+                ? (memberships.find((m) => scopeKey(m) === selected) ?? null)
+                : null
+            }
+            onSubmitted={() => void controllerRef.current?.revalidate("retry")}
+          />
           {report && (
             <>
               <p className="text-sm">
