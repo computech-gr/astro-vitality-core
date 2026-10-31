@@ -151,9 +151,9 @@
 }
 
 /* Unlayered so menu cursor-default utilities cannot override affordances. */
-:is(a[href], button, summary, select, input[type="file"], input[type="checkbox"], input[type="radio"], input[type="button"], input[type="submit"], input[type="reset"], input[type="range"], label[for], label:has(input), [role="button"], [role="link"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="slider"], [aria-haspopup], [tabindex]):not(:disabled):not([aria-disabled="true"]):not([data-disabled]):not([inert]):not([inert] *):not(input:not([type="file"], [type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"], [type="range"])):not(textarea) { cursor: pointer; }
+:is(a[href], button, summary, select, input[type="file"], input[type="checkbox"], input[type="radio"], input[type="button"], input[type="submit"], input[type="reset"], input[type="range"], label[for], label:has(input), [role="button"], [role="link"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="slider"], [aria-haspopup], [tabindex]):not(:disabled):not([aria-disabled="true"]):not([data-disabled]:not([data-disabled="false"])):not([inert]):not([inert] *):not(input:not([type="file"], [type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"], [type="range"])):not(textarea) { cursor: pointer; }
 input[type="file"]::file-selector-button { cursor: pointer; }
-:is(:disabled, [aria-disabled="true"], [data-disabled], [inert], [inert] *, label:has(:disabled), label:has([aria-disabled="true"])), input[type="file"]:disabled::file-selector-button { cursor: not-allowed; }
+:is(:disabled, [aria-disabled="true"], [data-disabled]:not([data-disabled="false"]), [inert], [inert] *, label:has(:disabled), label:has([aria-disabled="true"])), input[type="file"]:disabled::file-selector-button { cursor: not-allowed; }
 label[for]:has(+ :disabled) { cursor: not-allowed; }
 
 @utility section-kicker {
