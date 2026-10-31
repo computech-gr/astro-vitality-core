@@ -38,3 +38,6 @@ dist-ssr
 
 # Deterministic release samples are generated locally from P17.
 data/release/*.synthetic.json
+
+# P53: competition PDFs are staged from docs/competition at build time; never commit copies.
+public/competition/assets/pdf/
