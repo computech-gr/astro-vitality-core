@@ -59,12 +59,12 @@ project backend. No migration, RLS change, configuration change or publishing.
 
 ## Dependency advisories (all transitive)
 
-| Package           | Severity     | Path                                       | Exposure      | Non-breaking fix                                       |
-| ----------------- | ------------ | ------------------------------------------ | ------------- | ------------------------------------------------------ |
-| @hono/node-server | moderate     | @lovable.dev/mcp-js → MCP SDK              | production    | 2.1.3 is inside the SDK's `^2.0.5` range; not applied  |
-| qs                | moderate     | @lovable.dev/mcp-js → MCP SDK → express    | production    | 6.16.1 is inside express `^6.14.0`; not applied        |
-| esbuild (2)       | moderate/low | vite/tsx, drizzle-kit, router plugin, mcp  | dev server    | needs upstream releases; Windows-only for the low one  |
-| minimatch         | moderate     | eslint, typescript-eslint                  | dev/lint only | needs a major (11); not applied                        |
+| Package           | Severity     | Path                                      | Exposure      | Non-breaking fix                                      |
+| ----------------- | ------------ | ----------------------------------------- | ------------- | ----------------------------------------------------- |
+| @hono/node-server | moderate     | @lovable.dev/mcp-js → MCP SDK             | production    | 2.1.3 is inside the SDK's `^2.0.5` range; not applied |
+| qs                | moderate     | @lovable.dev/mcp-js → MCP SDK → express   | production    | 6.16.1 is inside express `^6.14.0`; not applied       |
+| esbuild (2)       | moderate/low | vite/tsx, drizzle-kit, router plugin, mcp | dev server    | needs upstream releases; Windows-only for the low one |
+| minimatch         | moderate     | eslint, typescript-eslint                 | dev/lint only | needs a major (11); not applied                       |
 
 ## Approvals still required (nothing below has been done)
 
