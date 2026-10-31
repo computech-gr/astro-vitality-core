@@ -1,18 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/mission-identity";
+import { useState } from "react";
 import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { ScientificCatalogPicker } from "@/components/scientific-catalog-picker";
-import { supabase } from "@/integrations/supabase/client";
-
-import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
+import { DomainEvidencePanel } from "@/components/domain-evidence-panel";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
-import {
-  getHealthDomain,
-  projectDomainEvidence,
-  type HealthDomainId,
-} from "@/domain/health-domains/registry";
+import { getHealthDomain, type HealthDomainId } from "@/domain/health-domains/registry";
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "@/domain/health-intelligence/patterns";
 import proposedCatalog from "../../data/scientific/p355-proposed-domain-catalog.v1.json";
 import { CardiovascularHandbookReference } from "@/components/scientific-handbook-reference";
