@@ -218,6 +218,24 @@ export function AstronautDailyHealthCompanion() {
     }
   };
 
+  // P48.1: A backgrounded tab must not retain previously loaded crew health data
+  // when it becomes visible again. A full reload re-runs authentication, active
+  // membership selection, RLS-backed evidence reads and their fail-closed states.
+  // This does not claim instantaneous revocation while the tab stays visible.
+  useEffect(() => {
+    let wasHidden = document.visibilityState === "hidden";
+    const revalidateOnReturn = () => {
+      if (document.visibilityState === "hidden") {
+        wasHidden = true;
+      } else if (wasHidden) {
+        wasHidden = false;
+        window.location.reload();
+      }
+    };
+    document.addEventListener("visibilitychange", revalidateOnReturn);
+    return () => document.removeEventListener("visibilitychange", revalidateOnReturn);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     void getCloudMissionContext()
