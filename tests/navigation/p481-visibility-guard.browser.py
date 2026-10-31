@@ -71,7 +71,7 @@ async def run(p, w, h, tag):
           "| window:", await page.get_by_label("Time window").input_value(),
           "| synthetic shown:", await page.get_by_test_id("companion-synthetic-trend").count(),
           "| checklist kept:", await first_box.is_checked(),
-          "| stop button:", await page.get_by_role("button", name="Stop reminders").count())
+          "| reminders running:", not await page.get_by_role("button", name="Stop", exact=True).is_disabled())
 
     # B. Hide and return while still authorized: reload, re-check membership, evidence re-read.
     before = len(reqs)
@@ -85,7 +85,7 @@ async def run(p, w, h, tag):
           "| rows:", await table.locator("tbody tr").count(),
           "| window reset:", await page.get_by_label("Time window").input_value(),
           "| synthetic reset:", await page.get_by_test_id("companion-synthetic-trend").count() == 0,
-          "| reminders reset:", await page.get_by_role("button", name="Stop reminders").count() == 0)
+          "| reminders reset:", await page.get_by_role("button", name="Stop", exact=True).is_disabled())
 
     # C. Revoke while hidden, then return: no previous evidence remains.
     await marker(page)
