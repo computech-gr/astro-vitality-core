@@ -25,6 +25,7 @@ describe("P52.1 offline module contract", () => {
     // Bun module mocks are process-wide; a partial stand-in removes exports for later test files.
     const offenders: string[] = [];
     for (const file of testFiles(testsRoot)) {
+      if (file === import.meta.path) continue;
       const source = readFileSync(file, "utf8");
       if (!source.includes('mock.module("@/infrastructure/offline"')) continue;
       const keepsActual = /mock\.module\("@\/infrastructure\/offline",\s*\(\)\s*=>\s*\(\{\s*\.\.\.actualOffline/.test(source);
