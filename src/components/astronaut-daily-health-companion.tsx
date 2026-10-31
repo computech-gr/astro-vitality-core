@@ -11,6 +11,7 @@ import {
 } from "@/domain/companion/reminder-engine";
 import { getCloudMissionContext } from "@/infrastructure/mission-records";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
+import { groupNonChartable } from "@/domain/health-intelligence/canonical-projection";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCrewEvidenceController,
@@ -45,6 +46,8 @@ const qualityClass: Record<ReturnType<typeof qualityPresentation>["tone"], strin
   degraded: "border-quality-degraded/50 bg-quality-degraded/10 text-quality-degraded",
   neutral: "border-border bg-muted text-muted-foreground",
 };
+
+const utcMinute = (iso: string) => new Date(iso).toISOString().slice(0, 16).replace("T", " ");
 
 function MetricChart({ items, unit }: { items: ScientificObservation[]; unit: string }) {
   const geometry = chartGeometry(items);
@@ -639,7 +642,8 @@ export function AstronautDailyHealthCompanion() {
                   >
                     {report.metrics.map((m) => (
                       <option key={`${m.metricCode}|${m.unit}`} value={`${m.metricCode}|${m.unit}`}>
-                        {m.metricCode} · {m.unit} · {m.count} samples
+                        {m.latest.metricLabel ? `${m.latest.metricLabel} (${m.metricCode})` : m.metricCode}{" "}
+                        · {m.unit} · {m.count} samples
                       </option>
                     ))}
                   </select>
@@ -700,51 +704,110 @@ export function AstronautDailyHealthCompanion() {
                         <MetricChart items={filteredSeries} unit={current.unit} />
                       )}
                       {filteredSeries.length > 0 && (
-                        <div className="max-h-64 overflow-auto rounded border">
-                          <table className="w-full text-left text-xs">
-                            <caption className="sr-only">
-                              Recorded observations and evidence provenance
-                            </caption>
-                            <thead>
-                              <tr>
-                                <th scope="col" className="p-2">
-                                  Observed (UTC)
-                                </th>
-                                <th scope="col" className="p-2">
-                                  Value
-                                </th>
-                                <th scope="col" className="p-2">
-                                  Quality
-                                </th>
-                                <th scope="col" className="p-2">
-                                  Source
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredSeries.map((o) => (
-                                <tr key={o.id} className="border-t">
-                                  <td className="p-2 whitespace-nowrap">
-                                    {new Date(o.observedAt)
-                                      .toISOString()
-                                      .slice(0, 16)
-                                      .replace("T", " ")}
-                                  </td>
-                                  <td className="p-2 whitespace-nowrap">
+                        <>
+                          {/* P49: stacked cards on phones; full table from the sm breakpoint. */}
+                          <ul
+                            className="max-h-96 space-y-2 overflow-auto sm:hidden"
+                            aria-label="Recorded observations and evidence provenance"
+                            data-testid="provenance-cards"
+                          >
+                            {filteredSeries.map((o) => (
+                              <li key={o.id} className="rounded border p-3 text-sm">
+                                <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1">
+                                  <dt className="text-muted-foreground">Observed (UTC)</dt>
+                                  <dd>{utcMinute(o.observedAt)}</dd>
+                                  <dt className="text-muted-foreground">Value</dt>
+                                  <dd>
                                     {o.value} {o.unit}
-                                  </td>
-                                  <td className="p-2">{qualityPresentation(o.quality).label}</td>
-                                  <td className="p-2 break-all">{o.sourceId}</td>
+                                  </dd>
+                                  <dt className="text-muted-foreground">Quality</dt>
+                                  <dd>{qualityPresentation(o.quality).label}</dd>
+                                  <dt className="text-muted-foreground">Source</dt>
+                                  <dd className="break-words">
+                                    {o.sourceId}
+                                    {o.sourceLabel ? ` · ${o.sourceLabel}` : ""}
+                                  </dd>
+                                  {o.provenance && (
+                                    <>
+                                      <dt className="text-muted-foreground">Provenance</dt>
+                                      <dd>{o.provenance}</dd>
+                                    </>
+                                  )}
+                                </dl>
+                              </li>
+                            ))}
+                          </ul>
+                          <div
+                            className="hidden max-h-64 overflow-auto rounded border sm:block"
+                            data-testid="provenance-table"
+                          >
+                            <table className="w-full min-w-[36rem] text-left text-xs">
+                              <caption className="sr-only">
+                                Recorded observations and evidence provenance
+                              </caption>
+                              <thead>
+                                <tr>
+                                  <th scope="col" className="p-2 whitespace-nowrap">
+                                    Observed (UTC)
+                                  </th>
+                                  <th scope="col" className="p-2 whitespace-nowrap">
+                                    Value
+                                  </th>
+                                  <th scope="col" className="p-2 whitespace-nowrap">
+                                    Quality
+                                  </th>
+                                  <th scope="col" className="p-2 whitespace-nowrap">
+                                    Source
+                                  </th>
+                                  <th scope="col" className="p-2 whitespace-nowrap">
+                                    Provenance
+                                  </th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                              </thead>
+                              <tbody>
+                                {filteredSeries.map((o) => (
+                                  <tr key={o.id} className="border-t">
+                                    <td className="p-2 whitespace-nowrap">{utcMinute(o.observedAt)}</td>
+                                    <td className="p-2 whitespace-nowrap">
+                                      {o.value} {o.unit}
+                                    </td>
+                                    <td className="p-2">{qualityPresentation(o.quality).label}</td>
+                                    <td className="p-2 break-words">
+                                      {o.sourceId}
+                                      {o.sourceLabel ? ` · ${o.sourceLabel}` : ""}
+                                    </td>
+                                    <td className="p-2">{o.provenance ?? "—"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </>
                       )}
                     </>
                   )}
                 </>
               )}
+              <details className="text-sm" data-testid="companion-non-chartable">
+                <summary>
+                  Stored records not charted ({report.nonChartable?.length ?? 0})
+                </summary>
+                {(report.nonChartable?.length ?? 0) === 0 ? (
+                  <p className="mt-2 text-muted-foreground">
+                    Every stored record for this mission was charted.
+                  </p>
+                ) : (
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {groupNonChartable(report.nonChartable ?? []).map((g) => (
+                      <li key={`${g.metricCode}|${g.healthDomain}|${g.reason}`} className="break-words">
+                        {g.metricCode ?? "No metric"}
+                        {g.healthDomain ? ` (${g.healthDomain})` : ""} — {g.reason}
+                        {g.count > 1 ? ` (×${g.count})` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </details>
               {report.warnings.length > 0 && (
                 <p className="text-sm text-muted-foreground">
                   Evidence caveats: {report.warnings.join(" · ")}
