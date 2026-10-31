@@ -14,10 +14,12 @@ export const competitionTeam = {
   ],
 } as const;
 
+// Public competition navigation: the PDF and online viewers open in a new tab.
+// Keep this list aligned with the SiteHeader Competition Materials group.
 export const competitionDocuments = [
   { label: "NASA Competition Presentation (PDF)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf" },
+  { label: "View Narrated Presentation Online (PPTX)", url: "/competition/narrated-presentation" },
   { label: "NASA Evaluator Quick Start (PDF)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf" },
   { label: "Master Technical Manual (PDF)", url: "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf" },
-  { label: "Download Narrated Presentation (PPTX)", url: "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx" },
-  { label: "Download NASA Demo Video (MP4)", url: "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4" },
+  { label: "Watch NASA Demo Video", url: "/competition/demo-video" },
 ] as const;
