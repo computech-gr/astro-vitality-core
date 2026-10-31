@@ -47,19 +47,26 @@ for (let i = 0; i < 63; i++)
 const entry = read("src/components/bone-health-entry.tsx");
 const importer = read("src/domain/bone-health/import.ts");
 const document = read("src/domain/bone-health/document-extraction.ts");
+const profiles = read("src/domain/health-measurements/profiles.ts");
+const search = read("src/domain/bone-health/variable-combobox.ts");
+const combobox = read("src/components/bone-variable-combobox.tsx");
+assert.match(
+  profiles,
+  /variables:\s*BONE_HEALTH_VARIABLES\s*,/,
+  "Bone measurement profile must bind the full runtime catalog",
+);
 assert.match(
   entry,
-  /if\s*\(!query\)\s*return\s+BONE_HEALTH_VARIABLES\s*;/,
-  "Empty search must expose the full catalog",
+  /HealthMeasurementEntry\s+profile=\{BONE_MEASUREMENT_PROFILE\}/,
+  "Bone workspace must use the bone measurement profile",
 );
-assert.match(entry, /BONE_HEALTH_VARIABLES\.filter\s*\(/, "Search must filter the full catalog");
-assert.match(
-  entry,
-  /filteredVariables\.map\s*\(/,
-  "Manual entry must render catalog-derived options",
-);
-assert.ok(importer.includes("BONE_HEALTH_VARIABLES.filter"), "CSV importer must use catalog");
-assert.ok(document.includes("BONE_HEALTH_VARIABLES.flatMap"), "Document matching must use catalog");
+assert.match(search, /if\s*\(!q\)\s*return\s+\[\.\.\.variables\]\s*;/, "Empty search must expose the full catalog");
+assert.match(search, /return\s+variables\.filter\s*\(/, "Search must filter the full catalog");
+assert.match(combobox, /filterCatalogVariables\(variables, query\)/, "Picker must search the supplied catalog");
+assert.match(combobox, /options\.map\s*\(/, "Manual entry must render catalog-derived options");
+assert.match(entry, /variables=\{profile\.variables\}/, "Manual entry must pass the profile catalog to the picker");
+assert.ok(importer.includes("profile.variables.filter"), "CSV importer must use catalog");
+assert.ok(document.includes("profile.variables.flatMap"), "Document matching must use catalog");
 assert.ok(document.includes("selected:false"), "Document extraction must remain opt-in");
 assert.equal(audit.capabilityBoundaries.clinicalInterpretation, false);
 assert.equal(audit.capabilityBoundaries.independentScientificApproval, false);

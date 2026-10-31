@@ -10,7 +10,7 @@ assert.match(domain,/TextDetector/);
 assert.match(domain,/ids.size !== 1/);
 assert.match(domain,/selected:false/);
 assert.match(parent,/saveBoneEntry/);
-assert.match(parent,/listBoneEntries\(missionId, crewMemberId\)/);
+assert.match(parent,/listBoneEntries\(missionId, crewMemberId(?:, profile)?\)/);
 assert.match(parent,/onImported/);
 assert.match(component,/Human measurement review/);
 assert.match(component,/type="checkbox" checked=\{row.selected\}/);
