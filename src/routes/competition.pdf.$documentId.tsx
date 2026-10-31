@@ -36,14 +36,16 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
     if (!element) return;
     let cancelled = false;
     let renderedWidth = 0;
+    let generation = 0;
     const render = async () => {
       const target = canvas.current;
       if (!target || cancelled) return;
       const cssWidth = element.clientWidth;
       if (!cssWidth || Math.abs(cssWidth - renderedWidth) < 2) return;
       renderedWidth = cssWidth;
+      const run = ++generation;
       const page = await doc.getPage(pageNumber);
-      if (cancelled) return;
+      if (cancelled || run !== generation) return;
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       const viewport = page.getViewport({ scale: (cssWidth / size.width) * ratio });
       target.width = Math.floor(viewport.width);
@@ -51,19 +53,36 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       const context = target.getContext("2d");
       if (!context) return;
       await page.render({ canvasContext: context, viewport, canvas: target }).promise;
-      if (!cancelled) setRendered(true);
+      if (!cancelled && run === generation) setRendered(true);
+    };
+    // Pages far outside the viewport release their bitmap so long documents
+    // (the manual has 120+ pages) stay within mobile and desktop memory limits.
+    const release = () => {
+      generation += 1;
+      renderedWidth = 0;
+      const target = canvas.current;
+      if (target) {
+        target.width = 0;
+        target.height = 0;
+      }
+      setRendered(false);
     };
     let visible = false;
+    const fail = () => {
+      if (!cancelled) setFailed(true);
+    };
     const observer = new IntersectionObserver(
       (entries) => {
-        visible = entries.some((entry) => entry.isIntersecting);
-        if (visible) void render().catch(() => !cancelled && setFailed(true));
+        const nowVisible = entries.some((entry) => entry.isIntersecting);
+        if (visible && !nowVisible) release();
+        visible = nowVisible;
+        if (visible) void render().catch(fail);
       },
-      { rootMargin: "800px 0px" },
+      { rootMargin: "1200px 0px" },
     );
     observer.observe(element);
     const resize = new ResizeObserver(() => {
-      if (visible) void render().catch(() => !cancelled && setFailed(true));
+      if (visible) void render().catch(fail);
     });
     resize.observe(element);
     return () => {
