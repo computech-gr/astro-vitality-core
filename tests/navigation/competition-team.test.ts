@@ -48,8 +48,8 @@ describe("official competition team destinations", () => {
       "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
       "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
       "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
-      "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx",
-      "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
+      "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx",
+      "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
     ]);
     for (const document of competitionDocuments) {
       expect(searchCatalogue.find((entry) => entry.title === document.label)?.href).toBe(document.url);
@@ -58,10 +58,18 @@ describe("official competition team destinations", () => {
   });
 
   test("every competition material link names an existing file in docs/competition", () => {
-    const prefix = "https://github.com/computech-gr/astro-vitality-core/blob/main/";
+    // PDFs open on GitHub; the PPTX and MP4 are direct raw downloads with exact filenames.
+    const prefixes = [
+      "https://github.com/computech-gr/astro-vitality-core/blob/main/",
+      "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/",
+    ];
     for (const document of competitionDocuments) {
-      expect(document.url.startsWith(prefix)).toBe(true);
-      expect(existsSync(new URL(`../../${document.url.slice(prefix.length)}`, import.meta.url))).toBe(true);
+      const prefix = prefixes.find((candidate) => document.url.startsWith(candidate));
+      expect(prefix).toBeDefined();
+      expect(existsSync(new URL(`../../${document.url.slice(prefix!.length)}`, import.meta.url))).toBe(true);
+    }
+    for (const document of competitionDocuments.filter((entry) => /\.(pptx|mp4)$/.test(entry.url))) {
+      expect(document.url.startsWith(prefixes[1])).toBe(true);
     }
   });
 
@@ -71,7 +79,8 @@ describe("official competition team destinations", () => {
       "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
     );
     expect(page).toContain(
-      "https://github.com/computech-gr/astro-vitality-core/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
+      "https://github.com/computech-gr/astro-vitality-core/raw/refs/heads/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
     );
+    expect(page).not.toContain("Demo_Video_VO");
   });
 });

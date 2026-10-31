@@ -49,7 +49,7 @@ function CompetitionTeamPage() {
           <h2 id="competition-materials" className="font-display text-2xl font-semibold">Competition Materials</h2>
           <div className="mt-5 flex flex-wrap gap-3">
             <Button asChild><a href={CANONICAL_ORIGIN} target="_blank" rel="noopener noreferrer">Live application<ArrowRight aria-hidden="true" /></a></Button>
-            <Button asChild variant="outline"><Link to="/competition/demo-video"><Play aria-hidden="true" />Watch NASA Demo Video</Link></Button>
+            <Button asChild variant="outline"><Link to="/competition/demo-video"><Play aria-hidden="true" />Watch Official NASA Demo Video</Link></Button>
           </div>
           <ul className="mt-6 divide-y divide-border">
             {competitionDocuments.map((document) => (
