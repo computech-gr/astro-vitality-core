@@ -17,13 +17,17 @@ const DECISION_LABEL: Record<ResearchDecision, string> = {
   rejected_for_research: "Reject for research",
 };
 
+// Neutral status texts carry no batch counts or values, so nothing private survives a reset.
+const SELECT_MISSION_STATUS = "Select your Ground Medical mission to load pending synthetic submissions.";
+const SIGNED_OUT_STATUS = "Sign in with an active Ground Medical mission membership to review synthetic submissions.";
+
 export function GroundMedicalReviewPanel() {
   const [missions, setMissions] = useState<MissionMembershipContext[]>([]);
   const [missionId, setMissionId] = useState("");
   const [queue, setQueue] = useState<GroundMedicalPendingBatch[]>([]);
   const [details, setDetails] = useState<GroundMedicalReviewItem[]>([]);
   const [selectedBatch, setSelectedBatch] = useState("");
-  const [status, setStatus] = useState("Select your Ground Medical mission to load pending synthetic submissions.");
+  const [status, setStatus] = useState(SELECT_MISSION_STATUS);
   const [busy, setBusy] = useState(false);
   const [pendingDecision, setPendingDecision] = useState<ResearchDecision | null>(null);
   const [note, setNote] = useState("");
@@ -65,6 +69,7 @@ export function GroundMedicalReviewPanel() {
           setBusy(false);
           clearSelection();
           setReceipt(null);
+          setStatus(allowed.length ? SELECT_MISSION_STATUS : SIGNED_OUT_STATUS);
         }
         verifiedUser.current = identity.userId;
         setRevalidating(false);
@@ -81,6 +86,7 @@ export function GroundMedicalReviewPanel() {
           setBusy(false);
           clearSelection();
           setReceipt(null);
+          setStatus(SIGNED_OUT_STATUS);
           setRevalidating(false);
         }
       }
@@ -154,13 +160,12 @@ export function GroundMedicalReviewPanel() {
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">Synthetic research demonstration only. A decision marks a batch as usable or excluded for research demonstration. It is not medical validation, diagnosis or clinical approval, and nothing is promoted into health records. Submitted values are never changed.</p>
         <label className="block text-sm font-medium" htmlFor="p368b-mission">Ground Medical mission</label>
-        <select id="p368b-mission" className="w-full rounded-md border border-border bg-background p-3 text-foreground" value={missionId} onChange={e => { dataEpoch.current++; setBusy(false); authorizedMission.current = e.target.value; setMissionId(e.target.value); setQueue([]); clearSelection(); setReceipt(null); }}>
+        <select id="p368b-mission" className="w-full rounded-md border border-border bg-background p-3 text-foreground" value={missionId} onChange={e => { dataEpoch.current++; setBusy(false); authorizedMission.current = e.target.value; setMissionId(e.target.value); setQueue([]); clearSelection(); setReceipt(null); setStatus(SELECT_MISSION_STATUS); }}>
           <option value="">Select Ground Medical mission</option>
           {missions.map(m => <option key={m.missionId} value={m.missionId}>{m.missionCode ?? m.missionName ?? m.missionId}</option>)}
         </select>
         <Button disabled={busy || revalidating || !missionId} onClick={() => void refreshQueue()}>Refresh pending reviews</Button>
-        <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{status}</p>
-        {revalidating && <p role="status" className="text-sm text-muted-foreground">Re-checking Ground Medical authorization…</p>}
+        <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{revalidating ? "Re-checking Ground Medical authorization…" : status}</p>
         {!revalidating && receipt && <div role="status" aria-label="Decision receipt" className="rounded-md border border-border bg-muted p-3 text-sm">
           <p className="font-medium">{DECISION_LABEL[receipt.decision]} · research only</p>
           <p className="text-muted-foreground">Receipt: <span className="font-mono">{receipt.decision_request_id}</span></p>
