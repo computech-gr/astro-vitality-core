@@ -158,3 +158,44 @@ describe("official competition team destinations", () => {
     expect(page).not.toContain("Demo_Video_VO");
   });
 });
+
+describe("P53 same-origin competition PDFs", () => {
+  test("viewer loads each PDF from the same-origin static path, never GitHub", async () => {
+    const { competitionPdfFilePath } = await import("@/content/competition-pdfs");
+    expect(competitionPdfFilePath("presentation")).toBe(
+      "/competition/assets/pdf/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
+    );
+    expect(competitionPdfFilePath("evaluator")).toBe(
+      "/competition/assets/pdf/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
+    );
+    expect(competitionPdfFilePath("manual")).toBe(
+      "/competition/assets/pdf/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+    );
+    const api = readFileSync(
+      new URL("../../src/routes/api.public.competition-pdf.$documentId.ts", import.meta.url),
+      "utf8",
+    );
+    expect(api).not.toContain("fetch(");
+    expect(api).not.toContain("githubusercontent");
+  });
+
+  test("build staging and the Vite safeguard ship exactly the three registry PDFs", async () => {
+    const { COMPETITION_PDF_FILES } = await import("../../scripts/competition-pdf-assets-plugin.mjs");
+    const files = Object.values(competitionPdfs).map((document) => document.file);
+    expect(COMPETITION_PDF_FILES).toEqual(files);
+    const stage = readFileSync(
+      new URL("../../scripts/stage-competition-pdfs.mjs", import.meta.url),
+      "utf8",
+    );
+    for (const file of files) expect(stage).toContain(`"${file}"`);
+    const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+    expect(pkg.scripts.build).toBe("node scripts/stage-competition-pdfs.mjs && vite build");
+    expect(readFileSync(new URL("../../vite.config.ts", import.meta.url), "utf8")).toContain(
+      "competitionPdfAssets()",
+    );
+    // Staged copies are build output, never committed duplicates.
+    expect(readFileSync(new URL("../../.gitignore", import.meta.url), "utf8")).toContain(
+      "public/competition/assets/pdf/",
+    );
+  });
+});
