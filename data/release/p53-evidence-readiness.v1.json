@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "purpose": "Read-only planning register; not approval, backup proof or release authorization",
+  "gates": {
+    "P3663": {"status": "BLOCKED", "privateRestoreEvidencePath": null, "restoreDrillObserved": false, "liveChecksCompleted": false, "ownerApprovalRecorded": false},
+    "P3664": {"status": "BLOCKED", "privateOwnerAcknowledgementPath": null, "independentBackupVerified": false, "ownerRiskAcceptanceRecorded": false, "liveChecksCompleted": false},
+    "P20": {"status": "BLOCKED", "official2026RulesSource": null, "submissionFieldsRechecked": false, "judgingInstructionsRechecked": false, "rightsRequirementsRechecked": false}
+  },
+  "notes": ["Do not commit private evidence, secrets, cloud identifiers or signed approvals", "No production migration, feature activation, release approval or deployment is authorized by this register"]
+}
