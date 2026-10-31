@@ -46,6 +46,8 @@ const qualityClass: Record<ReturnType<typeof qualityPresentation>["tone"], strin
   neutral: "border-border bg-muted text-muted-foreground",
 };
 
+const utcMinute = (iso: string) => new Date(iso).toISOString().slice(0, 16).replace("T", " ");
+
 function MetricChart({ items, unit }: { items: ScientificObservation[]; unit: string }) {
   const geometry = chartGeometry(items);
   if (items.length === 0)
