@@ -331,11 +331,11 @@ function itemHref(label: string, fallback: string) {
   if (label === "View Narrated Presentation Online (PPTX)")
     return "/competition/narrated-presentation";
   if (label === "NASA Competition Presentation (PDF)")
-    return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf`;
+    return "/competition/pdf/presentation";
   if (label === "NASA Evaluator Quick Start (PDF)")
-    return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf`;
+    return "/competition/pdf/evaluator";
   if (label === "Master Technical Manual (PDF)")
-    return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf`;
+    return "/competition/pdf/manual";
   if (label === "GitHub Repository") return GITHUB_URL;
   if (label === "Backend Architecture (GitHub)")
     return `${GITHUB_URL}/blob/main/docs/ARCHITECTURE.md`;
@@ -418,6 +418,7 @@ function isExternal(href: string) {
 function opensInNewTab(href: string) {
   return (
     isExternal(href) ||
+    href.startsWith("/competition/pdf/") ||
     href.startsWith("/competition/demo-video") ||
     href.startsWith("/competition/narrated-presentation")
   );

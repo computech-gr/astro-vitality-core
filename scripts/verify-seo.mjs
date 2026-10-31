@@ -32,6 +32,16 @@ if (!topicRoute.includes("technologyTopicPath(")) failures.push("technology topi
 const TOPIC_PATHS = TOPIC_SLUGS.map((slug) => `/technology/${slug}`);
 for (const path of TOPIC_PATHS) if (!policy.includes(`"${path}"`)) failures.push(`policy missing technology route ${path}`);
 
+// P52: the three competition PDF viewer pages share one dynamic route whose
+// self-canonical path comes from the browser-safe PDF registry.
+const PDF_IDS = [...read("src/content/competition-pdfs.ts").matchAll(/^  ([a-z]+): \{$/gm)].map((m) => m[1]);
+if (PDF_IDS.join(",") !== "presentation,evaluator,manual") failures.push(`expected 3 competition PDFs, found ${PDF_IDS.join(",")}`);
+const pdfRoute = read("src/routes/competition.pdf.$documentId.tsx");
+if (!pdfRoute.includes("indexableRouteHead")) failures.push("competition PDF route must use indexableRouteHead");
+if (!pdfRoute.includes("competitionPdfViewerPath(")) failures.push("competition PDF route must self-canonicalize");
+const PDF_PATHS = PDF_IDS.map((id) => `/competition/pdf/${id}`);
+for (const path of PDF_PATHS) if (!policy.includes(`"${path}"`)) failures.push(`policy missing competition PDF route ${path}`);
+
 const OPERATIONAL = {
   "/mission/identity": "src/routes/mission.identity.tsx",
   "/mission/live": "src/routes/mission.live.tsx",
@@ -106,7 +116,7 @@ if (!sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.
   failures.push("sitemap.xml missing sitemaps.org urlset namespace");
 }
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-const expected = [...Object.keys(INDEXABLE), ...TOPIC_PATHS].map((p) => (p === "/" ? `${ORIGIN}/` : `${ORIGIN}${p}`));
+const expected = [...Object.keys(INDEXABLE), ...TOPIC_PATHS, ...PDF_PATHS].map((p) => (p === "/" ? `${ORIGIN}/` : `${ORIGIN}${p}`));
 for (const url of expected) {
   if (!locs.includes(url)) failures.push(`sitemap.xml missing indexable URL ${url}`);
 }
