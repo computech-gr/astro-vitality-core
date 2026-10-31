@@ -140,6 +140,8 @@ const navigation: readonly NavigationEntry[] = [
         items: [
           "Health Intelligence",
           "Synthetic Research AI",
+          "Ground Medical Workspace",
+          "Research Workspace",
           "Explainable Alerts",
           "Action Guidance",
           "NASA Scientific Evidence",
@@ -355,7 +357,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Explainable Alerts") return "/mission/alerts";
   if (label === "Action Guidance") return "/mission/guidance";
   if (label === "Offline Mission Mode") return "/mission/offline";
-  if (label === "Ground & Research Console") return "/mission/ground";
+  if (label === "Ground & Research Console" || label === "Ground Medical Workspace" || label === "Research Workspace") return "/mission/ground";
   if (label === "Cognitive & Behavioral Health") return "/mission/readiness";
   if (label === "Validation & Limitations") return "/mission/validation";
   if (label === "Challenge Submission") return "/mission/submission";
