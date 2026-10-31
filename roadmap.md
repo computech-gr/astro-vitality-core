@@ -367,4 +367,5 @@
 - [x] Add the P48 verifier and contract; verifier 6/6 PASS; findings in `docs/P48_PREFLIGHT_FINDINGS.md`.
 - [x] Disposable-database isolation and revocation scenarios on live migrations: 25/25 PASS.
 - [ ] Stage B synthetic Crew Self provisioning and signed-in acceptance — blocked: owner approval of environment, test accounts, synthetic mission and append-only synthetic events.
-- [ ] Optional: re-check Crew Self membership on page refocus so revocation clears an open companion page — awaiting approval.
+- [x] P48.1: returning to a hidden Companion tab reloads the page, re-checks Crew Self membership and clears revoked evidence; verifier PASS; stubbed browser acceptance in `tests/navigation/p481-visibility-guard.browser.py`.
+- [ ] P48.1 signed-in acceptance with real synthetic Crew Self A/B accounts and operator revocation — blocked by Stage B approval above.
