@@ -4,7 +4,12 @@ import { join } from "node:path";
 import { execSync } from "node:child_process";
 
 const memoryRecords: Array<Record<string, unknown>> = [];
+// Bun module mocks are process-wide: keep every real export and restore it after this file
+// so later test files keep the complete offline module contract.
+const actualOffline = { ...(await import("@/infrastructure/offline")) };
+afterAll(() => { mock.module("@/infrastructure/offline", () => actualOffline); });
 mock.module("@/infrastructure/offline", () => ({
+  ...actualOffline,
   getOfflineMissionStore: () => ({
     list: async () => memoryRecords.map((r) => structuredClone(r)),
   }),
