@@ -1,9 +1,14 @@
-import { expect, mock, test } from "bun:test";
+import { afterAll, expect, mock, test } from "bun:test";
 
 type Stored = { id: string; sourceId: string; mission: { missionId: string; crewMemberId: string }; payload: unknown; createdAt: string };
 const store: Stored[] = [];
 let tick = 0;
+// Bun module mocks are process-wide: keep every real export and restore it after this file
+// so later test files keep the complete offline module contract.
+const actualOffline = { ...(await import("@/infrastructure/offline")) };
+afterAll(() => { mock.module("@/infrastructure/offline", () => actualOffline); });
 mock.module("@/infrastructure/offline", () => ({
+  ...actualOffline,
   persistOfflineMissionEvent: async (event: Omit<Stored, "createdAt">) => {
     store.push({ ...event, createdAt: new Date(Date.UTC(2026, 9, 28, 0, 0, tick++)).toISOString() });
   },
