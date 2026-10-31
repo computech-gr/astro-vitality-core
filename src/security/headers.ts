@@ -24,6 +24,8 @@ export function buildContentSecurityPolicy(): string {
     "font-src 'self' https://fonts.gstatic.com data:",
     // The official competition demo MP4 is streamed from the public GitHub repository.
     "media-src 'self' https://raw.githubusercontent.com",
+    // The narrated competition PPTX is previewed only through Microsoft's Office Online viewer.
+    "frame-src https://view.officeapps.live.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     // TanStack Start currently emits inline bootstrap/hydration code. P16 documents this
     // residual risk; a nonce-based strict CSP is a release-hardening follow-up.
