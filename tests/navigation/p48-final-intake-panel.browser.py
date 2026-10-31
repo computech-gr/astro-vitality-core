@@ -35,9 +35,9 @@ async def run(p, w, h, tag):
         name = __import__("base64").urlsafe_b64decode(token + "=" * (-len(token) % 4)).decode(errors="ignore")
         if "getP48SyntheticIntakeStatus" in name:
             body = STATUS if STATE["eligible"] else envelope(obj(1, {"enabled": TRUE, "reason": s("not_crew_self")}))
-            return await r.fulfill(status=200, content_type="application/json", body=body)
+            return await r.fulfill(status=200, content_type="application/json", headers={"x-tss-serialized": "true"}, body=body)
         STATE["submits"] += 1; STATE["bodies"].append(r.request.post_data or "")
-        await r.fulfill(status=200, content_type="application/json", body=SUBMIT)
+        await r.fulfill(status=200, content_type="application/json", headers={"x-tss-serialized": "true"}, body=SUBMIT)
     await page.route("**/_serverFn/**", serverfn)
     await page.goto("http://localhost:8080/", wait_until="domcontentloaded")
     await page.evaluate("([k,v]) => localStorage.setItem(k, v)", [KEY, json.dumps(sess)])
