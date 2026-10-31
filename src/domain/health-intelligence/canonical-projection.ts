@@ -323,3 +323,27 @@ export function projectCanonicalObservations(
   }
   return { observations, nonChartable, outOfScope };
 }
+
+export interface NonChartableGroup {
+  metricCode?: string;
+  healthDomain?: HealthDomainId;
+  reason: string;
+  count: number;
+}
+/** Presentation helper: identical (metric, module, reason) entries collapse to one line with a count. */
+export function groupNonChartable(records: readonly NonChartableRecord[]): NonChartableGroup[] {
+  const groups = new Map<string, NonChartableGroup>();
+  for (const r of records) {
+    const key = [r.metricCode ?? "", r.healthDomain ?? "", r.reason].join("\u0000");
+    const g = groups.get(key);
+    if (g) g.count++;
+    else
+      groups.set(key, {
+        ...(r.metricCode ? { metricCode: r.metricCode } : {}),
+        ...(r.healthDomain ? { healthDomain: r.healthDomain } : {}),
+        reason: r.reason,
+        count: 1,
+      });
+  }
+  return [...groups.values()];
+}

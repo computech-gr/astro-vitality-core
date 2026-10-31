@@ -228,3 +228,14 @@ describe("P49 trend filters over a controlled multi-date, multi-source synthetic
   test("30-day window combined with source B keeps 2", () =>
     expect(filterTrendObservations(series, "30", "fixture-source-b")).toHaveLength(2));
 });
+
+describe("P49 non-chartable grouping", () => {
+  test("repeated duplicates of one reading collapse to one line with a count", async () => {
+    const { groupNonChartable } = await import("@/domain/health-intelligence/canonical-projection");
+    const p = projectCanonicalObservations(
+      ["d1", "d2", "d3"].map((id) => rec(`immune-health:${id}:entry`, entry(id))),
+      scope,
+    );
+    expect(groupNonChartable(p.nonChartable).map((g) => g.count)).toEqual([2]);
+  });
+});
