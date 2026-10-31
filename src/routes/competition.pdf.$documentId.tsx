@@ -39,7 +39,9 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       const cssWidth = element.clientWidth;
       if (!cssWidth || Math.abs(cssWidth - renderedWidth) < 2) return;
       renderedWidth = cssWidth;
+      console.log('pdfstep getPage', pageNumber, cssWidth);
       const page = await doc.getPage(pageNumber);
+      console.log('pdfstep gotPage', pageNumber, cancelled);
       if (cancelled) return;
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       const viewport = page.getViewport({ scale: (cssWidth / size.width) * ratio });
@@ -47,7 +49,9 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       target.height = Math.floor(viewport.height);
       const context = target.getContext("2d");
       if (!context) return;
+      console.log('pdfstep render', pageNumber);
       await page.render({ canvasContext: context, viewport, canvas: target }).promise;
+      console.log('pdfstep done', pageNumber);
       if (!cancelled) setRendered(true);
     };
     let visible = false;
