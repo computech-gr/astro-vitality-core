@@ -29,13 +29,13 @@ Offline encryption, queue synchronization, mission isolation, authorization and 
 
 ## Local results (clean checkout, Bun 1.4.4)
 
-| Check | Before (02778ec) | After |
-| --- | --- | --- |
-| Tests | 862 pass / 161 files (local order did not trigger it) | 864 pass / 162 files, 0 errors |
-| `bun run check` | — | PASS |
-| typecheck, lint (0 errors), format, security audit, build | — | PASS |
-| Medical v3 release gate structure | — | PASS |
-| P47 competition handoff, P35 submission readiness | — | PASS |
-| Static gates P3663, P3664, P20 submission | blocked | blocked (owner/external evidence) |
+| Check                                                     | Before (02778ec)                                      | After                             |
+| --------------------------------------------------------- | ----------------------------------------------------- | --------------------------------- |
+| Tests                                                     | 862 pass / 161 files (local order did not trigger it) | 864 pass / 162 files, 0 errors    |
+| `bun run check`                                           | —                                                     | PASS                              |
+| typecheck, lint (0 errors), format, security audit, build | —                                                     | PASS                              |
+| Medical v3 release gate structure                         | —                                                     | PASS                              |
+| P47 competition handoff, P35 submission readiness         | —                                                     | PASS                              |
+| Static gates P3663, P3664, P20 submission                 | blocked                                               | blocked (owner/external evidence) |
 
 GitHub Actions results for the new commit are not attested here.
