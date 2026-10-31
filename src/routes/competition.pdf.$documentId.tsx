@@ -54,13 +54,13 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
     const observer = new IntersectionObserver(
       (entries) => {
         visible = entries.some((entry) => entry.isIntersecting);
-        if (visible) void render().catch(() => undefined);
+        if (visible) void render().catch((e) => console.error('pdfrender', e));
       },
       { rootMargin: "800px 0px" },
     );
     observer.observe(element);
     const resize = new ResizeObserver(() => {
-      if (visible) void render().catch(() => undefined);
+      if (visible) void render().catch((e) => console.error('pdfrender', e));
     });
     resize.observe(element);
     return () => {
