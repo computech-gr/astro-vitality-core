@@ -47,6 +47,7 @@ import { Route as ProjectGuideRouteImport } from './routes/project.guide'
 import { Route as TechnologyIndexRouteImport } from './routes/technology.index'
 import { Route as TechnologyTopicRouteImport } from './routes/technology.$topic'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as CompetitionPdfDocumentIdRouteImport } from './routes/competition.pdf.$documentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -242,6 +243,12 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompetitionPdfDocumentIdRoute =
+  CompetitionPdfDocumentIdRouteImport.update({
+    id: '/competition/pdf/$documentId',
+    path: '/competition/pdf/$documentId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/technology/$topic': typeof TechnologyTopicRoute
   '/technology/': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/competition/pdf/$documentId': typeof CompetitionPdfDocumentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -322,6 +330,7 @@ export interface FileRoutesByTo {
   '/technology/$topic': typeof TechnologyTopicRoute
   '/technology': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/competition/pdf/$documentId': typeof CompetitionPdfDocumentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -363,6 +372,7 @@ export interface FileRoutesById {
   '/technology/$topic': typeof TechnologyTopicRoute
   '/technology/': typeof TechnologyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/competition/pdf/$documentId': typeof CompetitionPdfDocumentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -405,6 +415,7 @@ export interface FileRouteTypes {
     | '/technology/$topic'
     | '/technology/'
     | '/.lovable/oauth/consent'
+    | '/competition/pdf/$documentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -445,6 +456,7 @@ export interface FileRouteTypes {
     | '/technology/$topic'
     | '/technology'
     | '/.lovable/oauth/consent'
+    | '/competition/pdf/$documentId'
   id:
     | '__root__'
     | '/'
@@ -485,6 +497,7 @@ export interface FileRouteTypes {
     | '/technology/$topic'
     | '/technology/'
     | '/.lovable/oauth/consent'
+    | '/competition/pdf/$documentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -526,6 +539,7 @@ export interface RootRouteChildren {
   TechnologyTopicRoute: typeof TechnologyTopicRoute
   TechnologyIndexRoute: typeof TechnologyIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  CompetitionPdfDocumentIdRoute: typeof CompetitionPdfDocumentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -796,6 +810,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/competition/pdf/$documentId': {
+      id: '/competition/pdf/$documentId'
+      path: '/competition/pdf/$documentId'
+      fullPath: '/competition/pdf/$documentId'
+      preLoaderRoute: typeof CompetitionPdfDocumentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -839,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   TechnologyTopicRoute: TechnologyTopicRoute,
   TechnologyIndexRoute: TechnologyIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  CompetitionPdfDocumentIdRoute: CompetitionPdfDocumentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
