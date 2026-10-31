@@ -135,7 +135,13 @@ const navigation: readonly NavigationEntry[] = [
       },
       {
         title: "Health domains",
-        items: ["Bone Health", "Cardiovascular Health", "Immune Changes", "Behavioral Health", "Medical Report"],
+        items: [
+          "Bone Health",
+          "Cardiovascular Health",
+          "Immune Changes",
+          "Behavioral Health",
+          "Medical Report",
+        ],
       },
       {
         title: "Research intelligence",
@@ -347,7 +353,8 @@ function itemHref(label: string, fallback: string) {
   if (label === "Daily Readiness Check-in") return "/mission/readiness";
   if (label === "Daily Health Companion") return "/mission/companion";
   if (label === "Unified Data Intake") return "/mission/intake";
-  if (label === "Astronaut Health Report" || label === "Medical Report") return "/mission/health-report";
+  if (label === "Astronaut Health Report" || label === "Medical Report")
+    return "/mission/health-report";
   if (label === "Live Monitoring") return "/mission/live";
   if (label === "Device Integration Center") return "/mission/devices";
   if (label === "Recorded Mission Data") return "/mission/records";
@@ -362,7 +369,12 @@ function itemHref(label: string, fallback: string) {
   if (label === "Explainable Alerts") return "/mission/alerts";
   if (label === "Action Guidance") return "/mission/guidance";
   if (label === "Offline Mission Mode") return "/mission/offline";
-  if (label === "Ground & Research Console" || label === "Ground Medical Workspace" || label === "Research Workspace") return "/mission/ground";
+  if (
+    label === "Ground & Research Console" ||
+    label === "Ground Medical Workspace" ||
+    label === "Research Workspace"
+  )
+    return "/mission/ground";
   if (label === "Cognitive & Behavioral Health") return "/mission/readiness";
   if (label === "Validation & Limitations") return "/mission/validation";
   if (label === "Challenge Submission") return "/mission/submission";
@@ -404,7 +416,11 @@ function isExternal(href: string) {
 // Competition resources open in a separate tab so the visitor's current page
 // and scroll position remain unchanged (desktop, mobile and CTA links).
 function opensInNewTab(href: string) {
-  return isExternal(href) || href.startsWith("/competition/demo-video") || href.startsWith("/competition/narrated-presentation");
+  return (
+    isExternal(href) ||
+    href.startsWith("/competition/demo-video") ||
+    href.startsWith("/competition/narrated-presentation")
+  );
 }
 
 function Brand() {
