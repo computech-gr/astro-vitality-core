@@ -65,6 +65,8 @@ const NASA_URL = "https://www.spaceappschallenge.org/2026/";
 const CHALLENGE_URL =
   "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
 const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
+// Direct-download host for competition binaries (exact filenames preserved).
+const GITHUB_RAW_URL = "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main";
 
 type NavigationGroup = {
   title: string;
@@ -322,9 +324,9 @@ function itemHref(label: string, fallback: string) {
   if (label === "Official NASA Team Profile") return competitionTeam.officialUrl;
   if (label === "Watch NASA Demo Video") return "/competition/demo-video";
   if (label === "Narrated Presentation (PPTX)")
-    return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx`;
+    return `${GITHUB_RAW_URL}/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx`;
   if (label === "Download NASA Demo Video (MP4)")
-    return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4`;
+    return `${GITHUB_RAW_URL}/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4`;
   if (label === "NASA Competition Presentation (PDF)")
     return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf`;
   if (label === "NASA Evaluator Quick Start (PDF)")
