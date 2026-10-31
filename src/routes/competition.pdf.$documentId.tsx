@@ -16,7 +16,7 @@ import {
 
 type PdfPage = {
   getViewport: (o: { scale: number }) => { width: number; height: number };
-  render: (o: { canvasContext: CanvasRenderingContext2D; viewport: unknown; canvas: HTMLCanvasElement }) => { promise: Promise<void> };
+  render: (o: { canvasContext: CanvasRenderingContext2D; viewport: unknown; canvas: HTMLCanvasElement }) => { promise: Promise<void>; cancel: () => void };
 };
 type PdfDoc = { numPages: number; getPage: (n: number) => Promise<PdfPage>; destroy: () => Promise<void> };
 
@@ -37,6 +37,7 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
     let cancelled = false;
     let renderedWidth = 0;
     let generation = 0;
+    let task: { promise: Promise<void>; cancel: () => void } | undefined;
     const render = async () => {
       const target = canvas.current;
       if (!target || cancelled) return;
@@ -52,13 +53,22 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       target.height = Math.floor(viewport.height);
       const context = target.getContext("2d");
       if (!context) return;
-      await page.render({ canvasContext: context, viewport, canvas: target }).promise;
+      task?.cancel();
+      task = page.render({ canvasContext: context, viewport, canvas: target });
+      try {
+        await task.promise;
+      } catch (error) {
+        if (run !== generation || cancelled) return; // superseded or released
+        throw error;
+      }
       if (!cancelled && run === generation) setRendered(true);
     };
     // Pages far outside the viewport release their bitmap so long documents
     // (the manual has 120+ pages) stay within mobile and desktop memory limits.
     const release = () => {
       generation += 1;
+      task?.cancel();
+      task = undefined;
       renderedWidth = 0;
       const target = canvas.current;
       if (target) {
@@ -87,6 +97,7 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
     resize.observe(element);
     return () => {
       cancelled = true;
+      task?.cancel();
       observer.disconnect();
       resize.disconnect();
     };
