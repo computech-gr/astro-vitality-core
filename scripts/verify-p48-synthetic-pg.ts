@@ -26,7 +26,7 @@ psql(["-f", "tests/integration-pg/stub.sql"], DB);
 for (const f of readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort())
   psql(["-f", join("supabase/migrations", f)], DB);
 
-const OP = "00000000-0000-0000-0000-00000000p0a1".replace("p0", "00");
+const OP = "00000000-0000-0000-0000-0000000000a1";
 const A = "00000000-0000-0000-0000-0000000000a2";
 const B = "00000000-0000-0000-0000-0000000000a3";
 const M = "mission-p48disposable";
@@ -63,7 +63,7 @@ const check = (name: string, ok: boolean) => results.push([name, ok]);
 check("crew A: 6 synthetic readings accepted", batchA.events.every((e) => ingest(A, e) === "accepted"));
 check("crew B: 6 synthetic readings accepted", batchB.events.every((e) => ingest(B, e) === "accepted"));
 check("retry of the same reading is a duplicate", ingest(A, batchA.events[0]!) === "duplicate");
-check("crew A cannot write crew B readings", ingest(A, batchB.events[0]!)!.startsWith("error:mission access denied") || ingest(A, { ...batchB.events[1]!, idempotencyKey: batchB.events[1]!.idempotencyKey + "-x" })!.startsWith("error:"));
+check("crew A cannot write crew B readings", ingest(A, batchB.events[0]!)!.startsWith("error:mission access denied"));
 check("operator cannot write synthetic observations", ingest(OP, { event: { ...batchA.events[1]!.event, id: "p48syn:op-attempt" }, idempotencyKey: "p48-idem:op-attempt-0001" })!.startsWith("error:mission operator event scope denied"));
 check("crew A reads only own 6 events", q(A, "select count(*) from public.mission_events;") === "6" && q(A, "select count(*) from public.mission_events where crew_member_id='crew-b';") === "0");
 check("crew B reads only own 6 events", q(B, "select count(*) from public.mission_events where crew_member_id='crew-b';") === "6" && q(B, "select count(*) from public.mission_events where crew_member_id='crew-a';") === "0");
