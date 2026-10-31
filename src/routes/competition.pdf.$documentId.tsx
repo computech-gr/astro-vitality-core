@@ -37,6 +37,7 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       const target = canvas.current;
       if (!target || cancelled) return;
       const cssWidth = element.clientWidth;
+      console.log('pdfstep start', pageNumber, cssWidth, renderedWidth);
       if (!cssWidth || Math.abs(cssWidth - renderedWidth) < 2) return;
       renderedWidth = cssWidth;
       console.log('pdfstep getPage', pageNumber, cssWidth);
@@ -57,6 +58,7 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
     let visible = false;
     const observer = new IntersectionObserver(
       (entries) => {
+        console.log('pdfstep io', pageNumber);
         visible = entries.some((entry) => entry.isIntersecting);
         if (visible) void render().catch((e) => console.error('pdfrender', e));
       },
