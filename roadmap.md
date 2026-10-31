@@ -374,3 +374,5 @@
 - [ ] P48.3 Stage B execution — blocked: owner approvals (draft/environment, test accounts, mission/crew, permanent synthetic records, synthetic intake method).
 - [x] P48 FINAL: default-off Crew Self synthetic intake, disposable-DB acceptance 14/14, P48.2-aware P48.1 verifier, older docs formatted, dependency review (`docs/P48_FINAL_STAGE_B_RESULTS.md`).
 - [ ] P48 FINAL real authenticated Crew A/B demonstration — blocked: owner approvals listed in `docs/P48_FINAL_STAGE_B_RESULTS.md`.
+- [x] P49: read-only canonical projection for unified-observation, handbook/manual entry and Bone formats; Crew A's 74 records now accounted (27 charted, 47 identical repeats listed); Bone page gains mission evidence; phone cards; 24 tests (`docs/P49_DEMO_READINESS_RESULTS.md`).
+- [ ] P49 manual checks M1–M4 (branded browsers/phones, real tab switching, hand isolation, revocation) — blocked: physical devices and owner-approved membership change.
