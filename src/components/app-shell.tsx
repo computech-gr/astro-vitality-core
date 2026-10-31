@@ -223,7 +223,9 @@ const navigation: readonly NavigationEntry[] = [
           "NASA Competition Presentation (PDF)",
           "NASA Evaluator Quick Start (PDF)",
           "Master Technical Manual (PDF)",
+          "Narrated Presentation (PPTX)",
           "Watch NASA Demo Video",
+          "Download NASA Demo Video (MP4)",
         ],
       },
       {
@@ -319,6 +321,10 @@ function itemHref(label: string, fallback: string) {
   if (label === "Our Team — NASA Space Apps 2026") return "/competition/team";
   if (label === "Official NASA Team Profile") return competitionTeam.officialUrl;
   if (label === "Watch NASA Demo Video") return "/competition/demo-video";
+  if (label === "Narrated Presentation (PPTX)")
+    return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx`;
+  if (label === "Download NASA Demo Video (MP4)")
+    return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4`;
   if (label === "NASA Competition Presentation (PDF)")
     return `${GITHUB_URL}/blob/main/docs/competition/MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf`;
   if (label === "NASA Evaluator Quick Start (PDF)")
