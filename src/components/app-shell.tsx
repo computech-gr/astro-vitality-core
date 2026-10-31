@@ -815,7 +815,9 @@ export function AppShell() {
                 { label: "Meet the Team", href: "/competition/team", Icon: Users },
                 {
                   label: "Evaluator Quick Start Guide",
-                  href: competitionDocuments[1].url,
+                  href: competitionDocuments.find(
+                    (document) => document.label === "NASA Evaluator Quick Start (PDF)",
+                  )!.url,
                   Icon: FileText,
                 },
                 {

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, ExternalLink, FileText, Play } from "lucide-react";
 
 import logoAsset from "@/assets/mitochondria-logo.png.asset.json";
@@ -49,13 +49,12 @@ function CompetitionTeamPage() {
           <h2 id="competition-materials" className="font-display text-2xl font-semibold">Competition Materials</h2>
           <div className="mt-5 flex flex-wrap gap-3">
             <Button asChild><a href={CANONICAL_ORIGIN} target="_blank" rel="noopener noreferrer">Live application<ArrowRight aria-hidden="true" /></a></Button>
-            <Button asChild variant="outline"><Link to="/competition/demo-video"><Play aria-hidden="true" />Watch Official NASA Demo Video</Link></Button>
           </div>
           <ul className="mt-6 divide-y divide-border">
             {competitionDocuments.map((document) => (
               <li key={document.url} className="py-2">
                 <Button asChild variant="ghost" className="h-auto min-h-11 w-full justify-start whitespace-normal text-left">
-                  <a href={document.url} target="_blank" rel="noopener noreferrer"><FileText aria-hidden="true" className="shrink-0" /><span>{document.label}</span><ExternalLink aria-hidden="true" className="shrink-0" /></a>
+                  <a href={document.url} target="_blank" rel="noopener noreferrer">{document.url === "/competition/demo-video" ? <Play aria-hidden="true" className="shrink-0" /> : <FileText aria-hidden="true" className="shrink-0" />}<span>{document.label}</span><ExternalLink aria-hidden="true" className="shrink-0" /></a>
                 </Button>
               </li>
             ))}
