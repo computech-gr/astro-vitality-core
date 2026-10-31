@@ -10,7 +10,9 @@ import {
 
 // P52: Google Docs Viewer refuses to be framed (X-Frame-Options: SAMEORIGIN), so the
 // competition PDFs are fetched same-origin and rendered page by page with pdf.js.
-// pdf.js is imported dynamically after hydration because it is browser-only.
+// pdf.js is imported dynamically after hydration because it is browser-only; the legacy
+// build is used because the modern build needs Map.getOrInsertComputed, which many
+// current desktop and mobile browsers do not yet support.
 
 type PdfPage = {
   getViewport: (o: { scale: number }) => { width: number; height: number };
@@ -37,12 +39,9 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       const target = canvas.current;
       if (!target || cancelled) return;
       const cssWidth = element.clientWidth;
-      console.log('pdfstep start', pageNumber, cssWidth, renderedWidth);
       if (!cssWidth || Math.abs(cssWidth - renderedWidth) < 2) return;
       renderedWidth = cssWidth;
-      console.log('pdfstep getPage', pageNumber, cssWidth);
       const page = await doc.getPage(pageNumber);
-      console.log('pdfstep gotPage', pageNumber, cancelled);
       if (cancelled) return;
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       const viewport = page.getViewport({ scale: (cssWidth / size.width) * ratio });
@@ -50,23 +49,20 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       target.height = Math.floor(viewport.height);
       const context = target.getContext("2d");
       if (!context) return;
-      console.log('pdfstep render', pageNumber);
       await page.render({ canvasContext: context, viewport, canvas: target }).promise;
-      console.log('pdfstep done', pageNumber);
       if (!cancelled) setRendered(true);
     };
     let visible = false;
     const observer = new IntersectionObserver(
       (entries) => {
-        console.log('pdfstep io', pageNumber);
         visible = entries.some((entry) => entry.isIntersecting);
-        if (visible) void render().catch((e) => console.error('pdfrender', e));
+        if (visible) void render().catch(() => undefined);
       },
       { rootMargin: "800px 0px" },
     );
     observer.observe(element);
     const resize = new ResizeObserver(() => {
-      if (visible) void render().catch((e) => console.error('pdfrender', e));
+      if (visible) void render().catch(() => undefined);
     });
     resize.observe(element);
     return () => {
@@ -123,9 +119,9 @@ function CompetitionPdfViewer() {
         bytes.set(chunk, offset);
         offset += chunk.byteLength;
       }
-      const pdfjs = await import("pdfjs-dist");
+      const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
       if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-        pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+        pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")).default;
       }
       const doc = (await pdfjs.getDocument({ data: bytes, isEvalSupported: false } as Parameters<typeof pdfjs.getDocument>[0]).promise) as unknown as PdfDoc;
       loaded = doc;
