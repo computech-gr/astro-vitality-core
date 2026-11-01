@@ -1,3 +1,4 @@
+import { extractCsvCandidates, extractTextTableCandidates } from "@/domain/health-intelligence/universal-intake-parser";
 /**
  * Unified Medical Data Intake workspace. Every observation is classified
  * individually against the P36 source catalog (exact name + exact unit), is
@@ -78,35 +79,10 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
   };
 }
 
-/** Strict CSV: label,value,unit[,observed_at]. Ambiguous rows are skipped. */
+/** Schema-aware CSV; candidates still require catalog and human review. */
 function parseIntakeCsv(text: string): { rows: IntakeRow[]; skipped: number } {
-  const lines = text.split(/\r?\n/).filter((line) => line.trim());
-  const rows: IntakeRow[] = [];
-  let skipped = 0;
-  for (const line of lines.slice(0, MAX_ROWS + 1)) {
-    const cells = line.split(",").map((cell) => cell.trim());
-    if (cells.length < 3) {
-      skipped += 1;
-      continue;
-    }
-    const [label, value, unit, observedAt] = cells;
-    if (!label || !value || !unit || /^label$/i.test(label!)) {
-      skipped += 1;
-      continue;
-    }
-    rows.push(
-      newRow({
-        label: label!,
-        value: value!,
-        unit: unit!,
-        observedAt: observedAt ?? "",
-        excerpt: line.slice(0, 350),
-        sourceKind: "csv",
-        sourceLabel: "CSV import",
-      }),
-    );
-  }
-  return { rows: rows.slice(0, MAX_ROWS), skipped };
+  const parsed = extractCsvCandidates(text, MAX_ROWS);
+  return { rows: parsed.rows.map((item) => newRow({ ...item, sourceKind: "csv", sourceLabel: "CSV import" })), skipped: parsed.skipped };
 }
 
 /** Conservative text/OCR lines: "Label: 12.3 unit". Reference ranges are never extracted. */
@@ -120,7 +96,9 @@ function parseIntakeText(
   documentName?: string,
   documentSha256?: string,
 ): IntakeRow[] {
-  const rows: IntakeRow[] = [];
+  const rows: IntakeRow[] = extractTextTableCandidates(text, MAX_ROWS).map((item) =>
+    newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }),
+  );
   for (const line of text.split(/\r?\n/).slice(0, 1000)) {
     if (line.length > 350 || BLOCKED_LINE.test(line)) continue;
     const match = /^\s*(.+?)\s*[:=]\s*([-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;,|]+)\s*$/.exec(
