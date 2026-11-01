@@ -188,7 +188,19 @@ export function AstronautHealthReport() {
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
       } else {
         if (!reportRef.current) throw new Error("Report is unavailable.");
-        const blob = await createReportPdf(reportRef.current, exportName);
+        let blob: Blob;
+        try {
+          blob = await createReportPdf(reportRef.current, exportName);
+        } catch (pdfError) {
+          // Preserve browser-native Save as PDF as an explicit fallback; never claim a download.
+          const message = pdfError instanceof Error ? pdfError.message : "PDF renderer unavailable";
+          setExportStatus(`Direct PDF export failed (${message}). Opening browser Print: select Save as PDF.`);
+          if (!stillCurrent()) throw new Error("Report selection changed. Export cancelled.");
+          const previousTitle = document.title;
+          try { document.title = exportName; window.print(); }
+          finally { document.title = previousTitle; }
+          return;
+        }
         const after = await loadMissionIdentity();
         if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>
           m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled.");

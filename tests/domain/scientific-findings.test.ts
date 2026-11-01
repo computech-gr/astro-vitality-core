@@ -44,3 +44,16 @@ describe("scientific findings reported precision", () => {
     expect(Object.is(unchanged.metrics[0]?.delta, 0)).toBe(true);
   });
 });
+
+
+describe("Nikolas governed canonical signal coverage", () => {
+  it("matches reviewed canonical IDs but does not infer a relationship from partial coverage", () => {
+    const cv = { ...row("rmssd", "48", "2026-10-02T08:00:00Z"), metricId: "cv-027", metricLabel: "RMSSD", unit: "ms" };
+    const sleep = { ...row("sleep", "6.5", "2026-10-03T07:00:00Z"), badge: "behavioral" as const, metricId: "BSC-001", metricLabel: "Total sleep time", unit: "h" };
+    const result = buildScientificFindings({ ...base, rows: [cv, sleep] });
+    const context = result.crossDomain.find((c) => c.domains.includes("cardiovascular"));
+    expect(context?.evidenceIds).toEqual(["rmssd", "sleep"]);
+    expect(context?.missingSignals).toContain("workload");
+    expect(context?.statement).toContain("No cross-domain association inferred");
+  });
+});
