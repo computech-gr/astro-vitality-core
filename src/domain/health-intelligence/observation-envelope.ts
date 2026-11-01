@@ -48,6 +48,19 @@ export interface UnifiedObservation {
   status?: "active" | "erroneous";
   statusReason?: string;
   supersedesId?: string;
+  /**
+   * Present only on a superseding correction appended by Ground Medical
+   * (stored-observation-review.ts). Records who corrected what and why; the
+   * original record is never rewritten.
+   */
+  correction?: {
+    intentId: string;
+    originalRecordId: string;
+    actorUserId: string;
+    actorRole: "ground_medical";
+    reason: string;
+    decidedAt: string;
+  };
   recordedAt: string;
 }
 
