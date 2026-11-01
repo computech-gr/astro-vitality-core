@@ -30,6 +30,21 @@ import {
   EVIDENCE_TIER_LABELS,
   scientificHealthSummaryPlainText,
 } from "@/domain/health-intelligence/scientific-health-summary";
+import {
+  ATTESTATION_REASON_MIN,
+  ATTESTATION_STATUS_LABELS,
+  attestationPlainText,
+  attestationStateFor,
+  canAttestEvidence,
+  eligibleForAttestation,
+  planAttestation,
+  planRevocation,
+  scopedAttestationEvents,
+  summarizeAttestations,
+  type AttestationEvent,
+} from "@/domain/health-intelligence/evidence-attestation";
+import { appendAttestationEvents, listAttestationEvents } from "@/domain/health-intelligence/review-ledger";
+import { pdfExportErrorMessage } from "@/domain/health-intelligence/report-pdf";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
