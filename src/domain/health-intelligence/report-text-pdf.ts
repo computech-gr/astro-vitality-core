@@ -67,7 +67,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
   const missing = u.summaries.filter((s) => s.missing).map((s) => REPORT_SOURCE_LABELS[s.badge]);
   const present = u.summaries.filter((s) => !s.missing).map((s) => `${REPORT_SOURCE_LABELS[s.badge]} ${s.included}`);
   const corrections = u.exclusions.filter((e) => isCorrectionHistory(e.reason));
-  const superseded = corrections.filter((e) => e.reason.startsWith("Superseded")).length;
+  const superseded = corrections.filter((e) => e.reason.includes("Superseded by correction")).length;
   const erroneous = corrections.length - superseded;
   const mission = identity.missionName ?? u.scope.missionId;
   const crew = identity.crewDisplayName ?? "Crew identity unavailable";
@@ -125,7 +125,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
         { title: "Evidence", width: 0.28 },
       ],
       rows: findings.metrics.map((m) => [
-        `${m.label} (${m.metricId})`,
+        m.label && m.label !== m.metricId ? `${m.label} (${m.metricId})` : m.metricId,
         String(m.count),
         m.earliestValue === null || m.latestValue === null ? "-" : `${m.earliestValue} -> ${m.latestValue} ${m.unit}`,
         m.delta === null ? "insufficient time points" : `${m.delta} ${m.unit}`,
@@ -494,9 +494,9 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     pdf.setLineWidth(0.2);
     pdf.line(L.marginX, 14, L.pageWidth - L.marginX, 14);
     pdf.line(L.marginX, L.bottom + 4, L.pageWidth - L.marginX, L.bottom + 4);
+    font("normal", 7.5, true);
+    pdf.splitTextToSize(clean(doc.footerLeft), width - 28).slice(0, 2).forEach((line, i) => pdf.text(line, L.marginX, L.bottom + 8 + i * 3.4));
     font("normal", 8, true);
-    const footer = pdf.splitTextToSize(clean(doc.footerLeft), width - 30)[0] ?? "";
-    pdf.text(footer, L.marginX, L.bottom + 9);
     pdf.text(`Page ${p} of ${pages}`, L.pageWidth - L.marginX, L.bottom + 9, { align: "right" });
   }
   return { pages };

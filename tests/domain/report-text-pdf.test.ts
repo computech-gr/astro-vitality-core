@@ -93,6 +93,8 @@ describe("v9 searchable text PDF: document model", () => {
     expect(chrono && chrono.kind === "table" && chrono.rows.map((r) => r[3])).toEqual(["70"]);
     const history = tables.find((t) => t.kind === "table" && t.columns[0]!.title === "Record ID" && t.columns[1]!.title === "Status and reason");
     expect(history && history.kind === "table" && history.rows[0]![0]).toBe(o.id);
+    const kv = doc.blocks.flatMap((b) => (b.kind === "kv" ? b.rows : []));
+    expect(kv.find(([k]) => k === "Excluded records")?.[1]).toContain("superseded by correction 1, marked erroneous 0");
     // Main text uses compact references; full IDs live in Appendix A.
     expect(chrono && chrono.kind === "table" && chrono.rows[0]![6]).toBe("E001");
   });
@@ -126,8 +128,8 @@ describe("v9 searchable text PDF: layout", () => {
         expect(texts.some((t) => t.page === p && t.text === `Page ${p} of ${pages}`)).toBe(true);
         expect(texts.some((t) => t.page === p && t.text === "SYNTHETIC / RESEARCH ONLY")).toBe(true);
       }
-      // Body text never overflows into the footer band (footer lines sit at y = 288 mm).
-      expect(texts.filter((t) => t.y > 279.5 && t.y !== 288).length).toBe(0);
+      // Body text never overflows into the footer band (footer lines start at y = 287 mm).
+      expect(texts.filter((t) => t.y > 279.5 && t.y < 286.9).length).toBe(0);
     }
   });
 
