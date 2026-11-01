@@ -36,13 +36,24 @@ export type IntakeClassification =
 
 const normalized = (value: string) => value.trim().toLocaleLowerCase("en-US").replace(/\s+/g, " ");
 
-/** Exact label and unit only; never guesses synonyms, converts units or infers a diagnosis. */
+/** Explicit reviewed aliases to existing P36 source-registry entries only.
+ * Never infer a metric from a unit alone or convert values/units.
+ * The P36 registry currently has no behavioral-domain entries.
+ */
+const reviewedAliases: Readonly<Record<string, { metricId: string; unit: string }>> = {
+  "heart rate": { metricId: "cv-001", unit: "bpm" },
+  "hrv rmssd": { metricId: "cv-027", unit: "ms" },
+};
+
+/** Exact catalog label/unit or explicitly reviewed alias; always requires review. */
 export function classifyIntakeObservation(input: {
   label: string;
   unit: string;
 }): IntakeClassification {
   const originalLabel = input.label.trim();
   const originalUnit = input.unit.trim();
+  const alias = reviewedAliases[normalized(originalLabel)];
+  const aliasMetric = alias && registry.metrics.find((metric) => metric.id === alias.metricId);
   const sameName = registry.metrics.filter(
     (metric) => normalized(metric.name) === normalized(originalLabel),
   );
@@ -50,6 +61,12 @@ export function classifyIntakeObservation(input: {
     (metric) => metric.originalUnit?.trim() && metric.originalUnit.trim() === originalUnit,
   );
   const base = { originalLabel, originalUnit, reviewRequired: true as const };
+  if (alias && aliasMetric && aliasMetric.originalUnit === alias.unit) {
+    if (originalUnit !== alias.unit)
+      return { ...base, status: "unit_review_required", candidateMetricIds: [alias.metricId] };
+    const domain = domainForMetric(alias.metricId);
+    if (domain) return { ...base, status: "matched", metricId: alias.metricId, domain };
+  }
   if (exact.length > 1)
     return { ...base, status: "ambiguous", candidateMetricIds: exact.map((m) => m.id) };
   if (exact.length === 1) {
