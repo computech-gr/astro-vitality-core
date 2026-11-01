@@ -1,4 +1,10 @@
 import { extractCsvCandidates, extractTextTableCandidates } from "@/domain/health-intelligence/universal-intake-parser";
+import {
+  detectIntakeFormat,
+  extractJsonCandidates,
+  extractXlsxCandidates,
+  SUPPORTED_INTAKE_EXTENSIONS,
+} from "@/domain/health-intelligence/universal-intake-adapters";
 /**
  * Unified Medical Data Intake workspace. Every observation is classified
  * individually against the P36 source catalog (exact name + exact unit), is
@@ -256,8 +262,11 @@ export function UnifiedIntakeWorkspace() {
         try {
           if (file.size > MAX_FILE_BYTES || file.size === 0)
             throw new Error("File is empty or exceeds 15 MB.");
-          if (!/\.(csv|txt|pdf|png|jpe?g)$/i.test(file.name))
-            throw new Error("Unsupported file type.");
+          const format = detectIntakeFormat(file.name);
+          if (format === "unsupported")
+            throw new Error(
+              `Unsupported file type. Supported: ${SUPPORTED_INTAKE_EXTENSIONS.join(", ")}.`,
+            );
           const hash = await sha256Hex(file);
           if (hashes.has(hash)) {
             state = "duplicate file skipped";
@@ -265,7 +274,30 @@ export function UnifiedIntakeWorkspace() {
             continue;
           }
           hashes.add(hash);
-          if (/\.csv$/i.test(file.name)) {
+          if (format === "xlsx" || format === "json") {
+            const parsed =
+              format === "xlsx"
+                ? extractXlsxCandidates(new Uint8Array(await file.arrayBuffer()), MAX_ROWS)
+                : extractJsonCandidates(await file.text(), MAX_ROWS);
+            const isFhir =
+              format === "json" && parsed.rows.some((row) => row.excerpt.startsWith("FHIR "));
+            const kind: ObservationSourceKind =
+              format === "xlsx" ? "xlsx" : isFhir ? "fhir" : "json";
+            const label = format === "xlsx" ? "XLSX" : isFhir ? "FHIR" : "JSON";
+            const space = Math.max(0, MAX_ROWS - incoming.length);
+            const batch = parsed.rows.slice(0, space).map((item) =>
+              newRow({
+                ...item,
+                sourceKind: kind,
+                sourceLabel: `${label}: ${file.name}`,
+                documentName: file.name,
+                documentSha256: hash,
+              }),
+            );
+            incoming.push(...batch);
+            count = batch.length;
+            if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
+          } else if (format === "csv") {
             const parsed = parseIntakeCsv(await file.text());
             const space = Math.max(0, MAX_ROWS - incoming.length);
             const batch = parsed.rows.slice(0, space).map((row) => ({
@@ -276,6 +308,7 @@ export function UnifiedIntakeWorkspace() {
             }));
             incoming.push(...batch);
             count = batch.length;
+            if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
           } else {
             const extracted = await extractBoneDocument(file);
             const kind: ObservationSourceKind = extracted.method.includes("ocr")
@@ -542,15 +575,15 @@ export function UnifiedIntakeWorkspace() {
             disabled={busy}
             onClick={() => fileInputRef.current?.click()}
           >
-            Import multiple CSV, PDF or scans (on-device)
+            Import CSV, XLSX, JSON/FHIR, PDF or scans (on-device)
           </Button>
           <input
             ref={fileInputRef}
             type="file"
             multiple
-            accept=".csv,.txt,.pdf,.png,.jpg,.jpeg"
+            accept={SUPPORTED_INTAKE_EXTENSIONS.join(",")}
             className="hidden"
-            aria-label="Import multiple CSV, PDF or scanned documents"
+            aria-label="Import multiple CSV, XLSX, JSON, FHIR, PDF or scanned documents"
             onChange={(event) => {
               const files = Array.from(event.target.files ?? []);
               if (files.length) void processBatch(files);
