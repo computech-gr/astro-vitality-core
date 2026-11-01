@@ -101,7 +101,8 @@ async function scopedEvents(
   store: OfflineMissionStore,
 ): Promise<UnifiedObservationEvent[]> {
   // Read every stored record (not a bounded page) so sync and history never miss events.
-  const total = await store.countRecords();
+  // Some injected test stores implement only list(); fall back to the historical 1000-record page.
+  const total = typeof store.countRecords === "function" ? await store.countRecords() : 0;
   const records = await store.list(Math.max(1000, total));
   return records
     .filter(
