@@ -123,15 +123,20 @@ export function scoreEntry(entry: SearchEntry, query: string) {
   return total;
 }
 
+function curatedHit(entry: SearchEntry, query: string) {
+  const q = normalize(query);
+  return (entry.keywords ?? []).some((k) => normalize(k) === q) ? 1 : 0;
+}
+
 export function searchEntries(entries: readonly SearchEntry[], query: string, limit = 12) {
   return entries
     .map((entry, index) => ({ entry, index, score: scoreEntry(entry, query) }))
     .filter((r) => r.score > 0)
-    // Equal scores: the broader (shorter-titled) destination first, then catalogue order.
+    // Equal scores: a destination whose curated synonyms name the query wins, then catalogue order.
     .sort(
       (a, b) =>
         b.score - a.score ||
-        normalize(a.entry.title).split(" ").length - normalize(b.entry.title).split(" ").length ||
+        curatedHit(b.entry, query) - curatedHit(a.entry, query) ||
         a.index - b.index,
     )
     .slice(0, limit)
