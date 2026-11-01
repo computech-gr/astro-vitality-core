@@ -39,6 +39,16 @@ const CONTEXT_LINKS = [
   { domains: ["behavioral", "cardiovascular"], signals: ["HRV RMSSD", "sleep duration", "workload"] },
 ] as const;
 
+function recordedDecimals(value: string): number {
+  const fraction = value.trim().split(".")[1];
+  return fraction ? fraction.length : 0;
+}
+
+function differenceAtRecordedPrecision(firstText: string, lastText: string, first: number, last: number): number {
+  const decimals = Math.max(recordedDecimals(firstText), recordedDecimals(lastText));
+  return Number((last - first).toFixed(decimals)) + 0; // + 0 normalizes -0 to 0
+}
+
 function finiteNumber(value: string): number | null {
   const trimmed = value.trim();
   if (!/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(trimmed)) return null;
@@ -60,7 +70,9 @@ export function buildScientificFindings(report: UnifiedHealthReport): Scientific
     const lastNumber = finiteNumber(last.value);
     const distinctTimes = new Set(rows.map((r) => r.observedAt)).size;
     const canCompare = rows.length >= 2 && distinctTimes >= 2 && firstNumber !== null && lastNumber !== null;
-    const delta = canCompare ? lastNumber - firstNumber : null;
+    // Express the difference at the recorded precision so binary floating-point artefacts
+    // (e.g. 5.9 - 6.1 = -0.1999999999999993) never appear as reported values.
+    const delta = canCompare ? differenceAtRecordedPrecision(first.value, last.value, firstNumber, lastNumber) : null;
     return {
       metricId: first.metricId,
       label: first.metricLabel,

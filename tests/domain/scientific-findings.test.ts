@@ -33,3 +33,14 @@ describe("scientific findings research boundaries", () => {
     expect(result.metrics[0]?.delta).toBeNull();
   });
 });
+
+describe("scientific findings reported precision", () => {
+  it("reports first-to-last differences at the recorded precision without floating-point artefacts", () => {
+    const decimals = buildScientificFindings({ ...base, rows: [row("a", "6.1", "2026-10-01T09:00:00Z"), row("b", "6.3", "2026-10-02T09:00:00Z"), row("c", "5.9", "2026-10-03T09:00:00Z")] });
+    expect(decimals.metrics[0]?.delta).toBe(-0.2);
+    const hundredths = buildScientificFindings({ ...base, rows: [row("a", "0.4", "2026-10-20T09:00:00Z"), row("b", "0.44", "2026-10-22T09:00:00Z")] });
+    expect(hundredths.metrics[0]?.delta).toBe(0.04);
+    const unchanged = buildScientificFindings({ ...base, rows: [row("a", "-1.5", "2026-10-20T09:00:00Z"), row("b", "-1.5", "2026-10-22T09:00:00Z")] });
+    expect(Object.is(unchanged.metrics[0]?.delta, 0)).toBe(true);
+  });
+});
