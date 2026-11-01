@@ -93,7 +93,7 @@ export async function runObservationSync(
         attempted.add(i.eventId);
         failed.add(i.eventId);
         result.uploaded.notSent++;
-        result.conflicts.length < 0 || notes.length < 6 ? notes.push(`not sent ${i.eventId}: ${i.reason}`) : null;
+        if (notes.length < 6) notes.push(`not sent ${i.eventId}: ${i.reason}`);
       }
       const batch = plan.send.filter((e) => !attempted.has(e.eventId));
       if (!batch.length) break;
