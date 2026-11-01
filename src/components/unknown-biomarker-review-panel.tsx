@@ -337,7 +337,7 @@ export function UnknownBiomarkerReviewPanel(props: {
             </Button>
             {terms.length === 0 ? (
               <p className="w-full text-xs text-muted-foreground" role="status">
-                Export is unavailable because this import batch contains no unknown, ambiguous or unit-mismatched measurements. Import review-only rows first; previously stored accepted observations are not review candidates.
+                Export is unavailable because this import batch contains no unknown, ambiguous or unit-mismatched measurements, so there is no pending review request to export. Import review-only rows first; previously stored accepted observations are not review candidates, and the app never fabricates a request. Re-evaluate is different: it imports a JSON file you exported earlier — it does not fetch anything from the cloud.
               </p>
             ) : null}
             <label className="inline-flex cursor-pointer items-center rounded-md border border-border px-3 py-2 text-sm">

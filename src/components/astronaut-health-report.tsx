@@ -25,7 +25,7 @@ import { loadUnifiedReportInputs } from "@/domain/health-intelligence/unified-he
 import { reportExportBasename } from "@/domain/health-intelligence/report-export-identity";
 import { downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 import { createTextReportPdf } from "@/domain/health-intelligence/report-text-pdf";
-import { subscribeReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
+import { notifyReviewDataChanged, subscribeReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { buildScientificFindings, scientificFindingsPlainText } from "@/domain/health-intelligence/scientific-findings";
 import {
   buildScientificHealthSummary,
@@ -257,6 +257,7 @@ export function AstronautHealthReport() {
       const saved = await appendAttestationEvents(plan.events, scope, ctx);
       const events = await listAttestationEvents(scope);
       setAttestations(events);
+      notifyReviewDataChanged({ missionId: scope.missionId, crewMemberId: scope.crewMemberId });
       setSelected(new Set());
       setAttestConfirmed(false);
       setAttestStatus(`${mode === "attest" ? "Attested" : "Revoked"} ${saved.inserted} record(s)${saved.duplicates ? `, ${saved.duplicates} already recorded` : ""}${saved.failed.length ? `, ${saved.failed.length} FAILED (${saved.failed.map((f) => f.recordId).join(", ")}: ${saved.failed[0]!.message}) — retry those records` : ""}${plan.skipped.length ? `, ${plan.skipped.length} skipped (${plan.skipped[0]!.reason})` : ""}. Batch ${plan.batchId}. Stored encrypted on this device; catalog and scientific review status unchanged.`);

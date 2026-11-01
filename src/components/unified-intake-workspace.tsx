@@ -142,11 +142,6 @@ async function sha256Hex(file: File): Promise<string> {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function formatObservedAt(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return `${date.toLocaleString()} (local) · ${date.toISOString()} (UTC)`;
-}
 
 export function UnifiedIntakeWorkspace() {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
