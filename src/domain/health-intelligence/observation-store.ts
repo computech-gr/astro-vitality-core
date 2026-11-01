@@ -3,8 +3,9 @@
  * Corrections append a new event (erroneous status or a superseding entry);
  * stored events are never rewritten or deleted. No automatic cloud upload.
  */
-import { getOfflineMissionStore, persistOfflineMissionEvent } from "@/infrastructure/offline";
+import { getOfflineMissionStore, persistOfflineMissionEvent, type OfflineMissionStore } from "@/infrastructure/offline";
 import {
+  canonicalJson,
   isDomainReadable,
   validateUnifiedObservation,
   type UnifiedObservation,

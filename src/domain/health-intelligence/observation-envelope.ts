@@ -97,3 +97,18 @@ export function validateUnifiedObservation(observation: UnifiedObservation): str
 export function isDomainReadable(observation: UnifiedObservation): boolean {
   return observation.reviewState === "accepted" && observation.status !== "erroneous";
 }
+
+/**
+ * Deterministic sorted-key JSON (undefined members omitted) used to compare
+ * observation versions across devices and as the input of sync fingerprints.
+ */
+export function canonicalJson(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value) ?? "null";
+  if (Array.isArray(value)) return `[${value.map((v) => (v === undefined ? "null" : canonicalJson(v))).join(",")}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .filter((k) => record[k] !== undefined)
+    .sort()
+    .map((k) => `${JSON.stringify(k)}:${canonicalJson(record[k])}`)
+    .join(",")}}`;
+}
