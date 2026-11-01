@@ -181,9 +181,11 @@ describe("v9 searchable text PDF: document model", () => {
   test("findings, limitations, hypotheses, reviewer decisions and attestation are separate sections; no AI draft content", () => {
     const doc = buildReportDocument(inputFor(rows(4)));
     const h2 = doc.blocks.filter((b) => b.kind === "h2").map((b) => (b.kind === "h2" ? b.text : ""));
-    expect(h2.slice(0, 5)).toEqual([
+    expect(h2.slice(0, 6)).toEqual([
       "1. Descriptive findings",
       "2. Limitations, missing data and uncertainty",
+      // v9.5: shared researcher interpretation sits between limitations and handbook hypotheses.
+      "Researcher module physiological evidence interpretation (research only)",
       "3. Handbook hypotheses (pending independent scientific review)",
       "4. Reviewer decisions (data-entry acceptance)",
       "5. Ground Medical evidence attestation (optional second stage)",
