@@ -78,9 +78,14 @@ Rollback: `supabase/pending/20261102000000_v94_observation_sync.rollback.sql` re
 Export the table first, then run it inside a transaction with
 `set local observation_sync.allow_destructive_rollback = 'on';`.
 
-## Known pre-existing behavior (not changed by v9.4)
+## Legacy background upload (blocked for Unified Intake since v9.4.1)
 
 The older background mission queue (`src/infrastructure/ground-research`) uploads locally saved
-records, including Unified Intake observations, to `mission_events` through `ingest_mission_event` as
-RLS-protected JSON (not application-encrypted). v9.4 imports are never added to that queue. Whether to
-stop that older path for Unified Intake observations is an owner decision.
+records to `mission_events` through `ingest_mission_event` as RLS-protected JSON (not
+application-encrypted). Since v9.4.1, Unified Intake observations are never enqueued, and queue items
+saved by earlier releases are refused by the transport before the RPC and held as `needs_review`
+(blocked, never retried, never shown as synced). Other mission events keep the existing behavior.
+
+Records uploaded before v9.4.1 (62 synthetic Unified Intake events for the demo mission) remain in
+`mission_events` unchanged; that table is append-only, so any retention or removal decision needs a
+separately approved governance procedure. See `docs/V9_4_1_SECURITY_ACTIVATION.md`.

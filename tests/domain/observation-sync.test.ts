@@ -402,3 +402,22 @@ describe("v9.4 research-only boundaries", () => {
     }
   });
 });
+
+describe("v9.4.1 payload ceiling matches the staged database ciphertext limit", () => {
+  const bytes = (o: UnifiedObservation) => new TextEncoder().encode(JSON.stringify(o)).length;
+  const withGreekExcerpt = (targetBytes: number) => {
+    const base = obs();
+    const pad = targetBytes - bytes(base);
+    return obs({ id: base.id, source: { ...base.source, excerpt: "μ".repeat(Math.max(0, Math.floor(pad / 2))) } });
+  };
+
+  test("the largest accepted Greek observation still fits the 24,000-character ciphertext column", async () => {
+    let o = withGreekExcerpt(11_990);
+    expect(checkObservationSyncEvent(entry(o), SCOPE)).toBeNull();
+    const keys = await deriveScopeKeys(readMasterKeys((n) => ENV[n]).get(1)!, 1, SCOPE);
+    const sealed = await sealEvent(keys, SCOPE, entry(o));
+    expect(sealed.ciphertext.length).toBeLessThanOrEqual(24_000);
+    o = withGreekExcerpt(12_100);
+    expect(checkObservationSyncEvent(entry(o), SCOPE)).toBe("Observation payload is too large to sync.");
+  });
+});

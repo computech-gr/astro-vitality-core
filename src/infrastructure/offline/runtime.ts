@@ -126,7 +126,11 @@ export async function persistOfflineMissionEvent(input: {
   };
   try {
     await store.append(record);
-    await enqueueOfflineRecord(store, record, now);
+    // v9.4.1: Unified Intake observations use explicit encrypted observation sync only.
+    // Do not enqueue them for the legacy plaintext mission-events transport.
+    if (record.sourceId !== "unified-intake") {
+      await enqueueOfflineRecord(store, record, now);
+    }
     runtimeLastError = undefined;
   } catch (error) {
     runtimeLastError = error instanceof Error ? error.message : "Offline persistence failed";

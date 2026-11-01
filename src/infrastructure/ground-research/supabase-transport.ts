@@ -29,6 +29,11 @@ export class SupabaseMissionSyncTransport implements OfflineSyncTransport {
     // Each record is independent: one rejected/failed RPC must not poison the batch.
     return Promise.all(records.map(async (record): Promise<SyncTransportResult> => {
       try {
+        // Defense in depth for legacy queue items saved before v9.4.1.
+        // Never transmit Unified Intake payloads through ingest_mission_event.
+        if (record.sourceId === "unified-intake") {
+          return { recordId: record.id, status: "rejected", message: "Unified Intake observation requires explicit encrypted observation sync; legacy upload blocked" };
+        }
         const idempotencyKey = `${record.id}:${record.sourceVersion}:${await sha256Hex(record.payload)}`;
         const { data, error } = await rpcClient().rpc<{
           status: string;
