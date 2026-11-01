@@ -249,6 +249,12 @@ export function scientificHealthSummaryPlainText(s: ScientificHealthSummary): st
   const list = (items: readonly string[], empty: string) => (items.length ? items.map((i) => `- ${i}`) : [`- ${empty}`]);
   return [
     "SCIENTIFIC HEALTH SUMMARY — RESEARCH ONLY",
+    "At a glance:",
+    ...s.frontPage.keyPoints.map((p) => `- ${p}`),
+    `- Evidence IDs for recorded differences: ${s.frontPage.evidenceIds.join(", ") || "none"}`,
+    `- ${s.frontPage.interpretationStatus}`,
+    "Interpretation review status by domain:",
+    ...s.domainInterpretation.map((d) => `- ${d.domain} (${d.present ? "data present" : "no included data"}): ${d.source ? `${d.source}. ` : ""}${d.status}`),
     "Evidence tiers:",
     ...s.evidenceTiers.map((t) => `- ${EVIDENCE_TIER_LABELS[t.tier]}: ${t.count}. ${t.note}`),
     "1. What was measured and changed",
