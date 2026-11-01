@@ -421,3 +421,32 @@ describe("v9.4.1 payload ceiling matches the staged database ciphertext limit", 
     expect(checkObservationSyncEvent(entry(o), SCOPE)).toBe("Observation payload is too large to sync.");
   });
 });
+
+describe("v9.4.2 master-secret formats (fail closed)", () => {
+  // Test-only material; never a deployed value.
+  const ALNUM = Array.from({ length: 64 }, (_, i) => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"[(i * 17 + 5) % 62]).join("");
+  const read = (value: string) => readMasterKeys((n) => (n === "MITO_OBSERVATION_SYNC_KEY_V1" ? value : undefined));
+
+  test("accepts padded 32-byte base64 and a 64+ character random alphanumeric secret", () => {
+    expect(read(KEY).get(1)?.length).toBe(32);
+    expect(read(ALNUM).has(1)).toBe(true);
+  });
+
+  test("rejects short, low-variety, unpadded or wrong-length values", () => {
+    expect(read(ALNUM.slice(0, 63)).has(1)).toBe(false);
+    expect(read("a".repeat(64)).has(1)).toBe(false);
+    expect(read(KEY.replace(/=$/, "")).has(1)).toBe(false);
+    expect(read(Buffer.alloc(31, 7).toString("base64")).has(1)).toBe(false);
+    expect(read("not a key").has(1)).toBe(false);
+  });
+
+  test("an alphanumeric secret round-trips and different secrets cannot decrypt each other", async () => {
+    const a = await deriveScopeKeys(read(ALNUM).get(1)!, 1, SCOPE);
+    const b = await deriveScopeKeys(read(ALNUM.split("").reverse().join("")).get(1)!, 1, SCOPE);
+    const e = entry(obs());
+    const sealed = await sealEvent(a, SCOPE, e);
+    const row = { event_id: sealed.eventId, iv: sealed.iv, ciphertext: sealed.ciphertext, fingerprint: sealed.fingerprint, event_kind: sealed.eventKind, observation_id: sealed.observationId };
+    expect((await openEvent(a, SCOPE, row)).observation.id).toBe(e.observation.id);
+    await expect(openEvent(b, SCOPE, row)).rejects.toThrow();
+  });
+});
