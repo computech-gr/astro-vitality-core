@@ -4,6 +4,7 @@ import { useState } from "react";
 import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { ScientificCatalogPicker } from "@/components/scientific-catalog-picker";
 import { DomainEvidencePanel } from "@/components/domain-evidence-panel";
+import { ResearcherInterpretationPanel } from "@/components/researcher-interpretation-panel";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
 import { getHealthDomain, type HealthDomainId } from "@/domain/health-domains/registry";
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "@/domain/health-intelligence/patterns";
@@ -63,6 +64,7 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
       )}
 
       <DomainEvidencePanel domainId={domainId} onReport={setReport} />
+      <ResearcherInterpretationPanel domainId={domainId} />
       <section className="mt-8 grid gap-5 md:grid-cols-2">
         <div className="rounded-xl border border-border p-5">
           <h2 className="text-lg font-semibold">Scientific relationship registry</h2>

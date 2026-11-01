@@ -86,17 +86,22 @@ export function evidenceTierOf(row: ReportRow): EvidenceTier {
   return row.evidence.startsWith("unified-intake") ? "reviewer_accepted_intake" : "stored_observation";
 }
 
-type HandbookEntry = { handbook: string; reviewStatus: string; what?: string | null; increase?: string | null; decrease?: string | null; context?: string | null; linkage?: string | null };
+export type HandbookEntry = { domain: "bone" | "cardiovascular"; handbook: string; reviewStatus: string; what?: string | null; increase?: string | null; decrease?: string | null; context?: string | null; linkage?: string | null };
 let handbookCache: Map<string, HandbookEntry> | null = null;
 function handbookIndex(): Map<string, HandbookEntry> {
   if (handbookCache) return handbookCache;
   const map = new Map<string, HandbookEntry>();
   for (const v of localizedBoneVariables())
-    map.set(v.id, { handbook: "Astronaut Bone Health Handbook v7 (Nikolas)", reviewStatus: v.reviewStatus, what: v.what, increase: v.increase, decrease: v.decrease });
+    map.set(v.id, { domain: "bone", handbook: "Astronaut Bone Health Handbook v7 (Nikolas)", reviewStatus: v.reviewStatus, what: v.what, increase: v.increase, decrease: v.decrease });
   for (const m of localizedCardiovascularMetrics())
-    map.set(m.id, { handbook: "NASA Cardiovascular Handbook (Nikolas)", reviewStatus: m.reviewStatus, what: m.biology, context: m.context, linkage: m.linkage });
+    map.set(m.id, { domain: "cardiovascular", handbook: "NASA Cardiovascular Handbook (Nikolas)", reviewStatus: m.reviewStatus, what: m.biology, context: m.context, linkage: m.linkage });
   handbookCache = map;
   return map;
+}
+
+/** Exact catalog-ID lookup into the governed English handbook layers (no aliases, no fuzzy matching). */
+export function governedHandbookEntry(metricId: string): HandbookEntry | null {
+  return handbookIndex().get(metricId) ?? null;
 }
 
 const DOMAIN_BADGES = ["bone", "immune", "cardiovascular", "behavioral"] as const;

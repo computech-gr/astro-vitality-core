@@ -14,6 +14,7 @@ import { REPORT_SOURCE_LABELS, type ReportRow, type UnifiedHealthReport } from "
 import type { ScientificFindings } from "./scientific-findings";
 import { EVIDENCE_TIER_LABELS, type ScientificHealthSummary } from "./scientific-health-summary";
 import { attestationStateFor, ATTESTATION_STATUS_LABELS, summarizeAttestations, type AttestationEvent } from "./evidence-attestation";
+import { attestationLine, buildResearcherInterpretation, handbookLine } from "./researcher-interpretation";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
@@ -317,6 +318,43 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
       { kind: "h3", text: "Handbook-listed related measures (possible confounding context)" },
       { kind: "table", columns: [{ title: "Metric", width: 0.35 }, { title: "Related measures (documented)", width: 0.65 }], rows: confounders },
     );
+  }
+
+  // ---- Researcher module physiological evidence interpretation (v9.5) ----
+  // Rendered from the shared deterministic model used by the four module screens and TXT.
+  // No inferred clinical thresholds, diagnoses or invented handbook statements.
+  if (findings) {
+    const model = buildResearcherInterpretation(u, findings, input.attestations);
+    blocks.push({ kind: "h2", text: "Researcher module physiological evidence interpretation (research only)" });
+    blocks.push({ kind: "p", text: "This section separates recorded changes from possible biological context. A measured difference is not an abnormality, clinical trend, diagnosis or fitness-for-duty finding. Ground Medical attestation verifies evidence provenance, not scientific interpretation.", muted: true });
+    blocks.push({ kind: "kv", rows: model.approvalLayers.map((l): [string, string] => [l.layer, `${l.count ?? "n/a"} - ${l.meaning}`]) });
+    for (const d of model.domains) {
+      blocks.push({ kind: "h3", text: d.label });
+      blocks.push({ kind: "p", text: d.summary });
+      blocks.push({ kind: "p", text: `Governance: ${d.governance.source ? `${d.governance.source}. ` : ""}${d.governance.status}`, muted: true });
+      if (!d.series.length) continue;
+      blocks.push({
+        kind: "table",
+        columns: [
+          { title: "Metric / unit (as recorded)", width: 0.24 },
+          { title: "Recorded observation", width: 0.36 },
+          { title: "Coverage / review", width: 0.22 },
+          { title: "Evidence", width: 0.18 },
+        ],
+        rows: d.series.map((s) => [
+          `${metricName(s.label, s.metricId)} | ${s.unit}`,
+          s.observation,
+          `${s.readings} reading(s), ${s.distinctUtcDays} UTC day(s). ${s.provenance}. Quality: ${s.quality} Ground Medical: ${attestationLine(s.attestation)}.`,
+          ref(s.evidenceIds),
+        ]),
+      });
+      blocks.push({ kind: "bullets", items: d.series.map((s) => `${metricName(s.label, s.metricId)} [${s.unit}] biological context: ${handbookLine(s.handbook)}`) });
+      const limits = [...new Set([...d.series.flatMap((s) => s.limitations), ...d.limitations])];
+      blocks.push({ kind: "p", text: `Limitations: ${limits.join(" ")}`, muted: true });
+    }
+    blocks.push({ kind: "h3", text: "Cross-domain comparability" });
+    blocks.push({ kind: "bullets", items: model.crossDomain.map((c) => `${c.statement} Evidence: ${ref(c.evidenceIds)}.`) });
+    blocks.push({ kind: "p", text: "Cross-domain hypotheses require co-observed, temporally comparable evidence and independent scientific review. No automatic risk classification, abnormality label, causal claim, treatment or medical recommendation is generated.", muted: true });
   }
 
   // ---- 3. Handbook hypotheses ----
