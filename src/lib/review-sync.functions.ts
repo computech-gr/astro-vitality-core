@@ -123,10 +123,12 @@ export const pushReviewEvents = createServerFn({ method: "POST" })
     return { ok: true, results };
   });
 
+export type SyncRow = Record<string, string | number | null>;
+
 export const pullReviewEvents = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => pullInput.parse(input))
-  .handler(async ({ data, context }): Promise<{ ok: true; rows: Record<string, unknown>[]; lastSeq: number; hasMore: boolean } | ReviewSyncFailure> => {
+  .handler(async ({ data, context }): Promise<{ ok: true; rows: SyncRow[]; lastSeq: number; hasMore: boolean } | ReviewSyncFailure> => {
     const rpc = context.supabase.rpc as unknown as Rpc;
     const { data: rows, error } = await rpc.call(context.supabase, "review_sync_list_v1", {
       p_mission_id: data.scope.missionId,
@@ -138,7 +140,10 @@ export const pullReviewEvents = createServerFn({ method: "POST" })
     });
     if (error) return classify(error);
     if (!Array.isArray(rows)) return fail("unavailable");
-    const clean = rows.filter((r): r is Record<string, unknown> => !!r && typeof r === "object");
+    // Normalize to plain serializable scalars; nested or unexpected values are dropped.
+    const clean: SyncRow[] = rows
+      .filter((r): r is Record<string, unknown> => !!r && typeof r === "object")
+      .map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === "string" || typeof v === "number" ? v : null])));
     const lastSeq = clean.reduce((m, r) => Math.max(m, Number(r["received_seq"] ?? 0) || 0), data.afterSeq);
     return { ok: true, rows: clean, lastSeq, hasMore: clean.length >= data.limit };
   });
