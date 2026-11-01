@@ -1,8 +1,13 @@
-# v9 Cloud Review Sync — operator instructions (PENDING owner approval)
+# v9 Cloud Review Sync — operator instructions
 
-Status: **staged, not applied.** The migration lives in `supabase/pending/` and has not been run
-against the project database. Until it is applied, the app shows
-`Cloud review sync unavailable: migration required` and keeps every review event on the device.
+Status: **applied on 2026-11-01 with owner approval.** The staged file in `supabase/pending/` was
+applied byte-for-byte as `drizzle/migrations/0014_v9_review_sync.sql` (SHA-256
+`ee54715d7f04574c6629ff9f0c4da8058cb2d8b2f2a1160868cdb3af192eb175`). Before it was applied, the app
+showed `Cloud review sync unavailable: migration required` and kept every review event on the device.
+
+Note: the platform's default table privileges also give `service_role` (and the platform sandbox role)
+insert rights on both tables, as on existing audit tables; the triggers still block UPDATE, DELETE
+and TRUNCATE for every role, and the app never writes with the service role.
 
 ## What it adds
 

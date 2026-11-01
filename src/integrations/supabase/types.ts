@@ -1308,6 +1308,138 @@ export type Database = {
         }
         Relationships: []
       }
+      review_sync_attestation_events: {
+        Row: {
+          action: string
+          actor_user_id: string
+          badge: string
+          batch_id: string
+          crew_member_id: string
+          decided_at: string
+          event_id: string
+          metric_id: string
+          mission_id: string
+          provenance: string
+          reason: string
+          received_at: string
+          received_seq: number
+          record_fingerprint: string
+          record_id: string
+          supersedes_event_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          badge: string
+          batch_id: string
+          crew_member_id: string
+          decided_at: string
+          event_id: string
+          metric_id: string
+          mission_id: string
+          provenance: string
+          reason: string
+          received_at?: string
+          received_seq?: never
+          record_fingerprint: string
+          record_id: string
+          supersedes_event_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          badge?: string
+          batch_id?: string
+          crew_member_id?: string
+          decided_at?: string
+          event_id?: string
+          metric_id?: string
+          mission_id?: string
+          provenance?: string
+          reason?: string
+          received_at?: string
+          received_seq?: never
+          record_fingerprint?: string
+          record_id?: string
+          supersedes_event_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_sync_attestation_events_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_sync_attestation_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_sync_correction_events: {
+        Row: {
+          actor_user_id: string
+          corrected_record_id: string
+          crew_member_id: string
+          decided_at: string
+          intent_id: string
+          metric_id: string
+          mission_id: string
+          original_record_id: string
+          provenance: string
+          reason: string
+          received_at: string
+          received_seq: number
+        }
+        Insert: {
+          actor_user_id: string
+          corrected_record_id: string
+          crew_member_id: string
+          decided_at: string
+          intent_id: string
+          metric_id: string
+          mission_id: string
+          original_record_id: string
+          provenance: string
+          reason: string
+          received_at?: string
+          received_seq?: never
+        }
+        Update: {
+          actor_user_id?: string
+          corrected_record_id?: string
+          crew_member_id?: string
+          decided_at?: string
+          intent_id?: string
+          metric_id?: string
+          mission_id?: string
+          original_record_id?: string
+          provenance?: string
+          reason?: string
+          received_at?: string
+          received_seq?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_sync_correction_events_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_sync_correction_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1609,6 +1741,35 @@ export type Database = {
           review_status: string
           submitted_at: string
         }[]
+      }
+      review_sync_append_v1: {
+        Args: {
+          p_attestations: Json
+          p_corrections: Json
+          p_crew_member_id: string
+          p_mission_id: string
+          p_provenance: string
+        }
+        Returns: Json
+      }
+      review_sync_can_read: {
+        Args: { p_crew_member_id: string; p_mission_id: string }
+        Returns: boolean
+      }
+      review_sync_is_ground_medical: {
+        Args: { p_crew_member_id: string; p_mission_id: string }
+        Returns: boolean
+      }
+      review_sync_list_v1: {
+        Args: {
+          p_after_seq: number
+          p_crew_member_id: string
+          p_kind: string
+          p_limit: number
+          p_mission_id: string
+          p_provenance: string
+        }
+        Returns: Json
       }
       set_mission_membership_active: {
         Args: {
