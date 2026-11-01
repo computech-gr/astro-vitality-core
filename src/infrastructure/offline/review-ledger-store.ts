@@ -69,7 +69,7 @@ function done(tx: IDBTransaction): Promise<void> {
 }
 
 export class IndexedDbReviewLedgerStore implements ReviewLedgerStore {
-  private ready?: Promise<{ db: IDBDatabase; key: CryptoKey }>;
+  private ready: Promise<{ db: IDBDatabase; key: CryptoKey }> | undefined;
 
   /** Single in-flight initialization: concurrent first reads must not race to create two keys. */
   private init() {
