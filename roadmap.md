@@ -376,3 +376,14 @@
 - [ ] P48 FINAL real authenticated Crew A/B demonstration — blocked: owner approvals listed in `docs/P48_FINAL_STAGE_B_RESULTS.md`.
 - [x] P49: read-only canonical projection for unified-observation, handbook/manual entry and Bone formats; Crew A's 74 records now accounted (27 charted, 47 identical repeats listed); Bone page gains mission evidence; phone cards; 24 tests (`docs/P49_DEMO_READINESS_RESULTS.md`).
 - [ ] P49 manual checks M1–M4 (branded browsers/phones, real tab switching, hand isolation, revocation) — blocked: physical devices and owner-approved membership change.
+
+## v9 consolidated review bundle
+
+- [x] Apply v8 TSX files (intake note, report attestation anchor) byte-identically.
+- [x] Stored observations: Observation vs Ground Medical status columns, select-all-eligible, counters, Save selected approvals, per-row Attest/Revoke with reason, confirmation and audit history; per-record partial-failure reporting.
+- [x] Append-only Edit/Save correction (Ground Medical only, exact catalog metric/unit, deterministic IDs, recoverable two-step write with Complete correction); Mark erroneous kept separate; report and domain views refresh automatically.
+- [x] Explicit metadata-only cloud review sync with counts, retry and fail-closed "migration required"; deterministic append-only merge.
+- [x] Pending migration + rollback + operator guide; disposable-PostgreSQL verifier 38/38 PASS.
+- [ ] Apply `supabase/pending/20261101000000_v9_review_sync.sql` — blocked: owner approval.
+- [x] Searchable text-based Download PDF (executive summary, separated sections, repeated headers, appendices); 90/360-row stress verified in browser; Print separate.
+- [ ] Branded Chrome/Edge/Safari and physical-device PDF checks — blocked: real devices.
