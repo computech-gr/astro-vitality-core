@@ -52,7 +52,38 @@ export function collapseUnifiedObservationVersions(
   }
   return [...latest.values()].map((version) => version.observation);
 }
-...
+
+export async function saveUnifiedObservation(observation: UnifiedObservation): Promise<void> {
+  const issue = validateUnifiedObservation(observation);
+  if (issue) throw new Error(issue);
+  await persistOfflineMissionEvent({
+    id: `unified-observation:${observation.id}:${observation.status === "erroneous" ? "status" : "entry"}`,
+    kind: "observation",
+    mission: { missionId: observation.missionId, crewMemberId: observation.crewMemberId },
+    eventTimestamp: observation.observedAt,
+    sourceId: SOURCE,
+    sourceVersion: SOURCE_VERSION,
+    classification: "medical_sensitive",
+    payload: { schemaVersion: SOURCE_VERSION, observation },
+  });
+}
+
+/**
+ * Append-only correction: stores a new event marking the existing observation
+ * as erroneous. The original event is never rewritten or deleted.
+ */
+export async function markUnifiedObservationErroneous(
+  observation: UnifiedObservation,
+  reason: string,
+): Promise<void> {
+  if (!reason.trim()) throw new Error("A short reason is required to mark a record as erroneous.");
+  await saveUnifiedObservation({
+    ...observation,
+    status: "erroneous",
+    statusReason: reason.trim().slice(0, 500),
+  });
+}
+
 /** One stored append-only event (entry or status) for an observation. */
 export interface UnifiedObservationEvent {
   /** `${observationId}:entry` or `${observationId}:status` — stable across devices. */
