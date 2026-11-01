@@ -5,6 +5,7 @@ import { jsPDF } from "jspdf";
 import {
   buildReportDocument,
   createTextReportPdf,
+  formatRefList,
   renderReportDocument,
   toWinAnsi,
   type PdfWriter,
@@ -15,7 +16,7 @@ import { buildUnifiedHealthReport } from "../../src/domain/health-intelligence/u
 import { buildScientificFindings } from "../../src/domain/health-intelligence/scientific-findings";
 import { buildScientificHealthSummary } from "../../src/domain/health-intelligence/scientific-health-summary";
 import { buildHealthHistoryReport } from "../../src/domain/health-intelligence/health-history-report";
-import { summarizeAttestations } from "../../src/domain/health-intelligence/evidence-attestation";
+import { planAttestation, summarizeAttestations } from "../../src/domain/health-intelligence/evidence-attestation";
 import { planObservationCorrection } from "../../src/domain/health-intelligence/stored-observation-review";
 import type { UnifiedObservation } from "../../src/domain/health-intelligence/observation-envelope";
 import { V9_SCOPE, gmCtx, obs } from "./fixtures-v9-observations";
@@ -98,12 +99,18 @@ describe("v9 searchable text PDF: document model", () => {
     expect(bullets.some((i) => /Ground Medical|No included data|PENDING_NIKOLAS/.test(i))).toBe(false);
   });
 
-  test("a fully attested scope shows a completion notice instead of the pending call-out", () => {
+  test("a fully attested scope shows a completion notice instead of the pending call-out; empty scope says so", () => {
     const input = inputFor(rows(2));
-    const events = input.unified.rows.map((r, i) => ({ recordId: r.recordId, i }));
-    expect(events.length).toBe(2);
-    const doc = buildReportDocument({ ...input, unified: { ...input.unified, rows: [] } });
-    expect(doc.blocks[2]).toMatchObject({ kind: "alert", tone: "info", title: "GROUND MEDICAL ATTESTATION: NO INCLUDED RECORDS" });
+    const plan = planAttestation(input.unified, input.unified.rows.map((r) => r.recordId), [], { actorUserId: "user-gm", rolesForScope: ["ground_medical"], scope: input.unified.scope, decidedAt: "2026-11-01T10:00:00.000Z" }, { reason: "Checked against the source sheet", confirmed: true });
+    if (!plan.ok) throw new Error(plan.reason);
+    const done = buildReportDocument({ ...input, attestations: plan.events });
+    expect(done.blocks[2]).toMatchObject({ kind: "alert", tone: "complete", title: "GROUND MEDICAL ATTESTATION COMPLETE: 2 of 2 included records" });
+    expect(done.blocks.some((b) => b.kind === "alert" && b.tone === "pending")).toBe(false);
+    // Audit history is preserved in Appendix C.
+    const audit = done.blocks.find((b) => b.kind === "table" && b.columns[0]?.title === "Decided (UTC)");
+    expect(audit && audit.kind === "table" && audit.rows.length).toBe(2);
+    const empty = buildReportDocument({ ...input, unified: { ...input.unified, rows: [] } });
+    expect(empty.blocks[2]).toMatchObject({ kind: "alert", tone: "info", title: "GROUND MEDICAL ATTESTATION: NO INCLUDED RECORDS" });
   });
 
   test("missing-domain statements collapse to one line and limitations are not repeated", () => {
@@ -218,7 +225,10 @@ describe("v9 searchable text PDF: layout", () => {
     renderReportDocument(buildReportDocument(inputFor(rows(3))), writer, { family: "LiberationSans", unicode: true });
     expect(texts.some((t) => t.text.includes("Ελλάς"))).toBe(true);
     const appendixIds = texts.filter((t) => t.text.startsWith("obs-xxxx"));
+    expect(appendixIds.length).toBeGreaterThan(0);
     expect(appendixIds.every((t) => t.text.length < 45)).toBe(true);
+    // Long identifiers break after a separator, not mid-token.
+    expect(appendixIds.every((t) => t.text.endsWith("-") || /^obs-x+-\d{4}$/.test(t.text) || t.text.length < 45)).toBe(true);
   });
 
   test("standard-font fallback keeps text searchable and maps symbols to Latin-1", () => {
