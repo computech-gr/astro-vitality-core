@@ -7,13 +7,13 @@ and keeps every observation on the device. The review step (v9, already applied)
 
 ## What it adds (additive only)
 
-| Object                                  | Purpose                                                                  |
-| --------------------------------------- | ------------------------------------------------------------------------ |
-| `observation_sync_events`               | Append-only encrypted observation events (ciphertext + keyed fingerprint) |
-| `observation_sync_can_access`           | Server-side scope check (exact crew_self, or scoped ground_medical)      |
-| `observation_sync_append_v1`            | Caller-scoped write RPC (`auth.uid()` uploader, max 100 events)         |
-| `observation_sync_list_v1`              | Caller-scoped cursor read (max 100 rows per page)                       |
-| `observation_sync_reject_mutation`      | Trigger function: rejects UPDATE, DELETE and TRUNCATE for every role    |
+| Object                             | Purpose                                                                   |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| `observation_sync_events`          | Append-only encrypted observation events (ciphertext + keyed fingerprint) |
+| `observation_sync_can_access`      | Server-side scope check (exact crew_self, or scoped ground_medical)       |
+| `observation_sync_append_v1`       | Caller-scoped write RPC (`auth.uid()` uploader, max 100 events)           |
+| `observation_sync_list_v1`         | Caller-scoped cursor read (max 100 rows per page)                         |
+| `observation_sync_reject_mutation` | Trigger function: rejects UPDATE, DELETE and TRUNCATE for every role      |
 
 No existing table, policy, function or record is changed. The v9 review-sync tables are untouched.
 Columns in plaintext: mission, crew member, provenance, event/observation ID, entry/status kind, key
