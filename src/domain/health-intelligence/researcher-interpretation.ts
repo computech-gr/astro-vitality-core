@@ -370,7 +370,6 @@ export function researcherInterpretationPlainText(model: ResearcherInterpretatio
         `  Readings ${s.readings}; time points ${s.distinctTimePoints}; UTC days ${s.distinctUtcDays}. Evidence: ${s.evidenceIds.join(", ")}.`,
         `  Provenance: ${s.provenance}. Quality: ${s.quality}`,
         `  Evidence tiers: ${s.evidenceTiers.storedModule} module, ${s.evidenceTiers.intakeAccepted} intake-accepted, ${s.evidenceTiers.device} device. Ground Medical: ${attestationLine(s.attestation)}.`,
-        ...(s.handbook.kind === "quoted_pending_hypothesis" && s.handbook.about ? [`  About this measure (handbook): ${s.handbook.about}`] : []),
         `  Biological context: ${handbookLine(s.handbook)}`,
         ...s.limitations.map((l) => `  Limitation: ${l}`),
       );
