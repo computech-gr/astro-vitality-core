@@ -31,7 +31,7 @@ export interface HandbookImplication {
   metricId: string;
   label: string;
   direction: "increase" | "decrease" | "unchanged";
-  /** Verbatim English handbook text; null when the handbook documents nothing for this direction. */
+  /** Verbatim English handbook text joined by exact catalog ID. */
   statement: string;
   handbook: string;
   reviewStatus: string;
@@ -43,7 +43,6 @@ export interface DomainReconciliation {
   reportIncluded: number;
   storedObservations: number;
   reviewerAcceptedIntake: number;
-  deviceObservations: number;
   medicalIntakeAccepted: number;
   explanation: string;
 }
@@ -180,7 +179,7 @@ export function buildScientificHealthSummary(
         : medicalIntakeAccepted !== accepted
           ? "Medical Intake covers the full period without date or source filters and before cross-store deduplication; the domain overview applies the selected filters and counts identical readings once."
           : "Counts are consistent.";
-    return { domain: REPORT_SOURCE_LABELS[badge], reportIncluded: rows.length, storedObservations: stored, reviewerAcceptedIntake: accepted, deviceObservations: 0, medicalIntakeAccepted, explanation };
+    return { domain: REPORT_SOURCE_LABELS[badge], reportIncluded: rows.length, storedObservations: stored, reviewerAcceptedIntake: accepted, medicalIntakeAccepted, explanation };
   });
 
   return {
