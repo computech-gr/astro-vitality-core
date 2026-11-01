@@ -20,7 +20,11 @@ export type ReviewLedgerKind =
   /** v9: local receipt that an event was accepted by (or conflicted with) the cloud review ledger. */
   | "review-sync-receipt"
   /** v9: correction audit intents received from the cloud (metadata only, no values). */
-  | "remote-correction-intent";
+  | "remote-correction-intent"
+  /** v9.4: local receipt that an observation event was confirmed by (or conflicted with) the encrypted cloud store. */
+  | "observation-sync-receipt"
+  /** v9.4: append-only log of explicit "Sync observations & reviews" runs (counts and outcomes only). */
+  | "sync-run";
 
 export interface ReviewLedgerEntry {
   id: string;
