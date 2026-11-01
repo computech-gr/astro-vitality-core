@@ -247,6 +247,28 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     );
   }
 
+  // Data sufficiency and provenance are descriptive, not clinical conclusions.
+  blocks.push({ kind: "h3", text: "Evidence coverage and comparability" });
+  blocks.push({
+    kind: "table",
+    columns: [
+      { title: "Domain", width: 0.31 },
+      { title: "Included records", width: 0.17 },
+      { title: "Distinct metrics", width: 0.17 },
+      { title: "Recorded UTC coverage", width: 0.35 },
+    ],
+    rows: u.summaries.map((s) => [
+      REPORT_SOURCE_LABELS[s.badge],
+      String(s.included),
+      String(s.metrics),
+      s.firstAt && s.lastAt ? `${s.firstAt} to ${s.lastAt}` : "not observed",
+    ]),
+  });
+  blocks.push({
+    kind: "p", muted: true,
+    text: "Coverage counts describe available evidence, not overall astronaut health. Uneven sampling, different observation times, unrecorded measurement methods and missing domains limit comparisons. A first-to-last difference is not a validated trend; no normal/abnormal classification, diagnosis or fitness-for-duty conclusion is made.",
+  });
+
   // ---- 2. Limitations ----
   blocks.push({ kind: "h2", text: "2. Limitations, missing data and uncertainty" });
   const rawLimits = [...u.limitations, ...(findings?.limitations ?? []), ...(summary?.uncertainty ?? [])];

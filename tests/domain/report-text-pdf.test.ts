@@ -256,3 +256,14 @@ describe("v9 searchable text PDF: layout", () => {
     expect(fallback.fontMode).toBe("standard");
   });
 });
+
+test("v9.2 PDF makes per-domain evidence coverage and comparability limits explicit", () => {
+  const doc = buildReportDocument(inputFor(rows(6)));
+  const coverage = doc.blocks.find((b) => b.kind === "table" && b.columns.some((c) => c.title === "Recorded UTC coverage"));
+  expect(coverage?.kind).toBe("table");
+  if (coverage?.kind === "table") {
+    expect(coverage.rows.length).toBeGreaterThan(0);
+    expect(coverage.rows.some((r) => r[1] === "6")).toBe(true);
+  }
+  expect(doc.blocks.some((b) => b.kind === "p" && b.text.includes("not overall astronaut health"))).toBe(true);
+});

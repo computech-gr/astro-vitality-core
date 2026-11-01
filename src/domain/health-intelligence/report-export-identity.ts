@@ -12,7 +12,7 @@ function filenameToken(value: string, max = 52): string {
     .replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "").slice(0, max);
 }
 export function reportExportBasename(identity: ReportExportIdentity): string {
-  const mission = filenameToken(identity.missionName?.trim() || identity.missionId) || "Mission";
+  const mission = (filenameToken(identity.missionName?.trim() || identity.missionId) || "Mission").replace(/^(?:MITOCHONDRIA_?)+/i, "") || "Mission";
   // Never infer a person's name from a crew UUID. Fallback to neutral crew identifier.
   const crew = filenameToken(identity.crewDisplayName?.trim() || identity.crewMemberId) || "Crew";
   const date = /^\d{4}-\d{2}-\d{2}/.exec(identity.generatedAt ?? "")?.[0] ?? new Date().toISOString().slice(0, 10);
