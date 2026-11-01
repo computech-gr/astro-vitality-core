@@ -34,8 +34,7 @@ export function detectIntakeFormat(fileName: string): IntakeFileFormat {
 export type AdapterResult = { rows: Candidate[]; skipped: number; notes: string[] };
 
 const NUMERIC = /^[-+]?(?:\d+(?:\.\d+)?|\.\d+)$/;
-const ISO_WITH_ZONE =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const ISO_WITH_ZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 /** Only full timestamps with an explicit time zone are accepted; never a date-only value. */
 export function explicitTimestamp(value: unknown): string | null {
@@ -122,7 +121,11 @@ export function extractFhirCandidates(input: unknown, max = 200): AdapterResult 
     if (EXCLUDED_STATUSES.has(text(observation.status)))
       return skip(`status "${text(observation.status)}" is not a usable result.`);
     if (observation.dataAbsentReason) return skip("dataAbsentReason present; no value.");
-    if (Array.isArray(observation.component) && observation.component.length && !observation.valueQuantity)
+    if (
+      Array.isArray(observation.component) &&
+      observation.component.length &&
+      !observation.valueQuantity
+    )
       return skip("component-only Observation is not supported.");
     const value = numericText(observation.valueQuantity?.value);
     if (value === null || typeof observation.valueQuantity?.value !== "number")
@@ -142,7 +145,11 @@ export function extractFhirCandidates(input: unknown, max = 200): AdapterResult 
       value,
       unit,
       observedAt,
-      excerpt: `FHIR Observation${id ? ` ${id}` : ""}${trace ? ` [${trace}]` : ""}: ${value} ${unit}${observedAt ? ` @ ${observedAt}` : ""}`.slice(0, 350),
+      excerpt:
+        `FHIR Observation${id ? ` ${id}` : ""}${trace ? ` [${trace}]` : ""}: ${value} ${unit}${observedAt ? ` @ ${observedAt}` : ""}`.slice(
+          0,
+          350,
+        ),
     });
   });
   return { rows, skipped, notes };
@@ -170,22 +177,25 @@ export function extractJsonCandidates(textValue: string, max = 200): AdapterResu
   const list = Array.isArray(parsed)
     ? parsed
     : Array.isArray((parsed as { observations?: unknown })?.observations)
-      ? ((parsed as { observations: unknown[] }).observations)
+      ? (parsed as { observations: unknown[] }).observations
       : null;
-  if (!list) return { rows: [], skipped: 0, notes: ["JSON must be an array or { observations: [...] }."] };
+  if (!list)
+    return { rows: [], skipped: 0, notes: ["JSON must be an array or { observations: [...] }."] };
   const rows: Candidate[] = [];
   const notes: string[] = [];
   let skipped = 0;
   list.forEach((item, index) => {
     const record = (item ?? {}) as Record<string, unknown>;
     const label = LABEL_KEYS.map((key) => text(record[key])).find(Boolean) ?? "";
-    const value = numericText(record.value);
-    const unit = text(record.unit);
-    const rawTime = record.observed_at ?? record.observedAt;
+    const value = numericText(record["value"]);
+    const unit = text(record["unit"]);
+    const rawTime = record["observed_at"] ?? record["observedAt"];
     const observedAt = rawTime === undefined || rawTime === "" ? "" : explicitTimestamp(rawTime);
     if (!label || value === null || !unit || observedAt === null || rows.length >= max) {
       skipped += 1;
-      notes.push(`Item ${index + 1}: needs label, numeric value, unit and a valid zoned timestamp.`);
+      notes.push(
+        `Item ${index + 1}: needs label, numeric value, unit and a valid zoned timestamp.`,
+      );
       return;
     }
     rows.push({ label, value, unit, observedAt, excerpt: JSON.stringify(record).slice(0, 350) });
@@ -205,13 +215,17 @@ function decodeXml(value: string): string {
     if (lower === "gt") return ">";
     if (lower === "quot") return '"';
     if (lower === "apos") return "'";
-    const code = lower.startsWith("#x") ? parseInt(lower.slice(2), 16) : parseInt(lower.slice(1), 10);
+    const code = lower.startsWith("#x")
+      ? parseInt(lower.slice(2), 16)
+      : parseInt(lower.slice(1), 10);
     return Number.isFinite(code) ? String.fromCodePoint(code) : "";
   });
 }
 
 function runText(xml: string): string {
-  return Array.from(xml.matchAll(/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g), (m) => decodeXml(m[1]!)).join("");
+  return Array.from(xml.matchAll(/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g), (m) => decodeXml(m[1]!)).join(
+    "",
+  );
 }
 
 function columnIndex(ref: string): number {
@@ -260,7 +274,9 @@ export function xlsxCells(bytes: Uint8Array): string[][] {
   const sheetPath = firstSheetPath(files);
   if (!sheetPath) throw new Error("Workbook has no worksheet.");
   const decoder = new TextDecoder();
-  const sharedXml = files["xl/sharedStrings.xml"] ? decoder.decode(files["xl/sharedStrings.xml"]) : "";
+  const sharedXml = files["xl/sharedStrings.xml"]
+    ? decoder.decode(files["xl/sharedStrings.xml"])
+    : "";
   const shared = Array.from(sharedXml.matchAll(/<si>([\s\S]*?)<\/si>/g), (m) => runText(m[1]!));
   const sheet = decoder.decode(files[sheetPath]!);
   const grid: string[][] = [];
@@ -302,7 +318,9 @@ export function extractXlsxCandidates(bytes: Uint8Array, max = 200): AdapterResu
     rows: parsed.rows,
     skipped: parsed.skipped,
     notes: parsed.skipped
-      ? ["Rows without a numeric value, unit or ISO text timestamp were skipped (date serials are not converted)."]
+      ? [
+          "Rows without a numeric value, unit or ISO text timestamp were skipped (date serials are not converted).",
+        ]
       : [],
   };
 }

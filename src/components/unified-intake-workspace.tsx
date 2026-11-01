@@ -1,4 +1,7 @@
-import { extractCsvCandidates, extractTextTableCandidates } from "@/domain/health-intelligence/universal-intake-parser";
+import {
+  extractCsvCandidates,
+  extractTextTableCandidates,
+} from "@/domain/health-intelligence/universal-intake-parser";
 import {
   detectIntakeFormat,
   extractJsonCandidates,
@@ -89,7 +92,12 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
 /** Schema-aware CSV; candidates still require catalog and human review. */
 function parseIntakeCsv(text: string): { rows: IntakeRow[]; skipped: number } {
   const parsed = extractCsvCandidates(text, MAX_ROWS);
-  return { rows: parsed.rows.map((item) => newRow({ ...item, sourceKind: "csv", sourceLabel: "CSV import" })), skipped: parsed.skipped };
+  return {
+    rows: parsed.rows.map((item) =>
+      newRow({ ...item, sourceKind: "csv", sourceLabel: "CSV import" }),
+    ),
+    skipped: parsed.skipped,
+  };
 }
 
 /** Conservative text/OCR lines: "Label: 12.3 unit". Reference ranges are never extracted. */

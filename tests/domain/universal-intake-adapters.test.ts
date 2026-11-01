@@ -57,7 +57,13 @@ describe("timestamps are never invented", () => {
   test("only full zoned timestamps are accepted", () => {
     expect(explicitTimestamp("2026-10-20T08:00:00Z")).toBe("2026-10-20T08:00:00Z");
     expect(explicitTimestamp("2026-10-20T08:00:00+03:00")).toBe("2026-10-20T08:00:00+03:00");
-    for (const bad of ["2026-10-20", "2026-10-20T08:00:00", "20/10/2026 08:00", "2026-13-40T99:00:00Z", 46000])
+    for (const bad of [
+      "2026-10-20",
+      "2026-10-20T08:00:00",
+      "20/10/2026 08:00",
+      "2026-13-40T99:00:00Z",
+      46000,
+    ])
       expect(explicitTimestamp(bad)).toBeNull();
   });
 });
@@ -74,19 +80,31 @@ describe("XLSX adapter", () => {
     expect(xlsx.rows.map(({ excerpt: _e, ...rest }) => rest)).toEqual(
       csv.rows.map(({ excerpt: _e, ...rest }) => rest),
     );
-    expect(xlsx.rows.map((r) => classifyIntakeObservation(r).status)).toEqual(["matched", "matched"]);
+    expect(xlsx.rows.map((r) => classifyIntakeObservation(r).status)).toEqual([
+      "matched",
+      "matched",
+    ]);
   });
   test("inline strings with commas and entities survive", () => {
     const r = extractXlsxCandidates(
-      workbook([["label", "value", "unit", "observed_at"], ["Heart rate", 64, "bpm", "2026-10-20T08:00:00Z"]], {
-        shared: false,
-      }),
+      workbook(
+        [
+          ["label", "value", "unit", "observed_at"],
+          ["Heart rate", 64, "bpm", "2026-10-20T08:00:00Z"],
+        ],
+        {
+          shared: false,
+        },
+      ),
     );
     expect(r.rows[0]?.label).toBe("Heart rate");
   });
   test("Excel date serials are skipped, never converted", () => {
     const r = extractXlsxCandidates(
-      workbook([["variable", "value", "unit", "observed_at"], ["cv-001", 62, "bpm", 46297.33]]),
+      workbook([
+        ["variable", "value", "unit", "observed_at"],
+        ["cv-001", 62, "bpm", 46297.33],
+      ]),
     );
     expect(r.rows).toHaveLength(0);
     expect(r.skipped).toBe(1);
@@ -98,9 +116,18 @@ describe("XLSX adapter", () => {
 
 describe("JSON adapter", () => {
   test("array and observations wrapper", () => {
-    const a = extractJsonCandidates('[{"variable":"cv-001","value":62,"unit":"bpm","observed_at":"2026-10-02T08:00:00Z"}]');
-    const b = extractJsonCandidates('{"observations":[{"label":"Heart rate","value":"64","unit":"bpm"}]}');
-    expect(a.rows[0]).toMatchObject({ label: "cv-001", value: "62", unit: "bpm", observedAt: "2026-10-02T08:00:00Z" });
+    const a = extractJsonCandidates(
+      '[{"variable":"cv-001","value":62,"unit":"bpm","observed_at":"2026-10-02T08:00:00Z"}]',
+    );
+    const b = extractJsonCandidates(
+      '{"observations":[{"label":"Heart rate","value":"64","unit":"bpm"}]}',
+    );
+    expect(a.rows[0]).toMatchObject({
+      label: "cv-001",
+      value: "62",
+      unit: "bpm",
+      observedAt: "2026-10-02T08:00:00Z",
+    });
     expect(b.rows[0]?.observedAt).toBe("");
   });
   test("malformed input and invalid rows", () => {
@@ -127,18 +154,34 @@ describe("FHIR R4 Observation adapter", () => {
   });
   test("LOINC display maps only through the reviewed alias; time is effectiveDateTime, never issued", () => {
     const r = extractFhirCandidates(observation());
-    expect(r.rows[0]).toMatchObject({ label: "Heart rate", value: "62", unit: "bpm", observedAt: "2026-10-02T08:00:00Z" });
+    expect(r.rows[0]).toMatchObject({
+      label: "Heart rate",
+      value: "62",
+      unit: "bpm",
+      observedAt: "2026-10-02T08:00:00Z",
+    });
     expect(r.rows[0]?.excerpt).toContain("http://loinc.org|8867-4");
     expect(classifyIntakeObservation(r.rows[0]!).status).toBe("matched");
   });
   test("Mitochondria catalog coding is used verbatim", () => {
     const r = extractFhirCandidates(
-      observation({ code: { coding: [{ system: MITOCHONDRIA_CATALOG_SYSTEM, code: "cv-027" }] }, valueQuantity: { value: 48, unit: "ms" } }),
+      observation({
+        code: { coding: [{ system: MITOCHONDRIA_CATALOG_SYSTEM, code: "cv-027" }] },
+        valueQuantity: { value: 48, unit: "ms" },
+      }),
     );
-    expect(classifyIntakeObservation(r.rows[0]!)).toMatchObject({ status: "matched", metricId: "cv-027" });
+    expect(classifyIntakeObservation(r.rows[0]!)).toMatchObject({
+      status: "matched",
+      metricId: "cv-027",
+    });
   });
   test("unmapped LOINC code stays review-only", () => {
-    const r = extractFhirCandidates(observation({ code: { coding: [{ system: "http://loinc.org", code: "6690-2" }] }, valueQuantity: { value: 6.1, unit: "10*9/L" } }));
+    const r = extractFhirCandidates(
+      observation({
+        code: { coding: [{ system: "http://loinc.org", code: "6690-2" }] },
+        valueQuantity: { value: 6.1, unit: "10*9/L" },
+      }),
+    );
     expect(classifyIntakeObservation(r.rows[0]!).status).not.toBe("matched");
   });
   test("missing effective time is kept empty, issued is not promoted", () => {
@@ -163,7 +206,9 @@ describe("FHIR R4 Observation adapter", () => {
     expect(r.notes).toHaveLength(6);
   });
   test("JSON adapter routes FHIR resources", () => {
-    expect(extractJsonCandidates(JSON.stringify(observation())).rows[0]?.excerpt).toStartWith("FHIR Observation");
+    expect(extractJsonCandidates(JSON.stringify(observation())).rows[0]?.excerpt).toStartWith(
+      "FHIR Observation",
+    );
   });
 });
 
@@ -181,7 +226,9 @@ describe("duplicate records", () => {
 
 describe("unit gate stays strict across adapters", () => {
   test("wrong or differently written units require review", () => {
-    const r = extractJsonCandidates('[{"variable":"cv-001","value":62,"unit":"/min","observed_at":"2026-10-02T08:00:00Z"},{"variable":"cv-001","value":62,"unit":"BPM","observed_at":"2026-10-02T08:00:00Z"}]');
+    const r = extractJsonCandidates(
+      '[{"variable":"cv-001","value":62,"unit":"/min","observed_at":"2026-10-02T08:00:00Z"},{"variable":"cv-001","value":62,"unit":"BPM","observed_at":"2026-10-02T08:00:00Z"}]',
+    );
     expect(r.rows.map((row) => classifyIntakeObservation(row).status)).toEqual([
       "unit_review_required",
       "unit_review_required",
