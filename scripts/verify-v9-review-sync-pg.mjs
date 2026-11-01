@@ -35,7 +35,12 @@ try {
   refused = true;
 }
 if (!refused) throw new Error("rollback must refuse while audit rows exist");
-psql(["-c", "begin; set local review_sync.allow_destructive_rollback = 'on'; \\i supabase/pending/20261101000000_v9_review_sync.rollback.sql\ncommit;"], "v9_review_sync_it");
+execFileSync("psql", [...base, "-d", "v9_review_sync_it", "-f", "-"], {
+  env,
+  encoding: "utf8",
+  cwd: root,
+  input: "begin;\nset local review_sync.allow_destructive_rollback = 'on';\n\\i supabase/pending/20261101000000_v9_review_sync.rollback.sql\ncommit;\n",
+});
 const left = psql(["-t", "-A", "-c", "select count(*) from pg_class where relname like 'review_sync_%'"], "v9_review_sync_it").trim();
 if (left !== "0") throw new Error(`rollback left ${left} objects`);
 for (const p of passes) console.log(p);
