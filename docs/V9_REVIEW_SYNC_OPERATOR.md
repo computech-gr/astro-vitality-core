@@ -8,13 +8,13 @@ against the project database. Until it is applied, the app shows
 
 `supabase/pending/20261101000000_v9_review_sync.sql` (additive only):
 
-| Object | Purpose |
-| --- | --- |
-| `review_sync_attestation_events` | Append-only Ground Medical attest/revoke metadata |
-| `review_sync_correction_events` | Append-only correction audit intents (IDs + reason, no values) |
-| `review_sync_is_ground_medical`, `review_sync_can_read` | Server-side scope checks |
-| `review_sync_append_v1` | Caller-scoped write RPC (`auth.uid()` actor, Ground Medical only) |
-| `review_sync_list_v1` | Caller-scoped paginated read (Ground Medical or the crew member) |
+| Object                                                  | Purpose                                                           |
+| ------------------------------------------------------- | ----------------------------------------------------------------- |
+| `review_sync_attestation_events`                        | Append-only Ground Medical attest/revoke metadata                 |
+| `review_sync_correction_events`                         | Append-only correction audit intents (IDs + reason, no values)    |
+| `review_sync_is_ground_medical`, `review_sync_can_read` | Server-side scope checks                                          |
+| `review_sync_append_v1`                                 | Caller-scoped write RPC (`auth.uid()` actor, Ground Medical only) |
+| `review_sync_list_v1`                                   | Caller-scoped paginated read (Ground Medical or the crew member)  |
 
 Nothing stores measured values, units, documents, excerpts or AI text.
 

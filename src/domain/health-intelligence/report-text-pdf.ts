@@ -317,7 +317,8 @@ export function toWinAnsi(text: string): string {
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/…/g, "...")
-    .replace(/[^\x09\x0a\x0d\x20-\x7e\xa0-\xff]/g, "?");
+    .replace(/[\t\r\n]/g, " ")
+    .replace(/[^\x20-\x7e\xa0-\xff]/g, "?");
 }
 
 export interface RenderOptions {
