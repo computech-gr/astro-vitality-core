@@ -326,21 +326,25 @@ export function buildResearcherInterpretation(
         : [],
     };
   });
-  const allSeries = domains.flatMap((d) => d.series);
-  const sum = (f: (s: InterpretationSeries) => number) => allSeries.reduce((n, s) => n + f(s), 0);
   return {
     scope: report.scope,
     generatedAt: report.generatedAt,
     domains,
     crossDomain: crossDomainAssessments(report),
-    approvalLayers: [
-      { layer: "Intake acceptance", count: sum((s) => s.evidenceTiers.intakeAccepted), meaning: "Rows accepted one by one in Unified Intake; confirms data entry, not scientific validity." },
-      { layer: "Ground Medical attestation", count: sum((s) => s.attestation.attested), meaning: "Verifies evidence provenance for the exact record version; not a scientific interpretation or clinical opinion." },
-      { layer: "Scientific interpretation approval", count: 0, meaning: `None approved. All handbook context and catalog mappings remain ${INTERPRETATION_APPROVAL_STATUS}.` },
-    ],
+    approvalLayers: approvalLayersFor(domains.flatMap((d) => d.series)),
     validatedInterpretations: 0,
     boundaries: [...INTERPRETATION_BOUNDARIES],
   };
+}
+
+/** Three separate layers; counts come only from the given series. */
+export function approvalLayersFor(series: readonly InterpretationSeries[]): ResearcherInterpretationModel["approvalLayers"] {
+  const sum = (f: (s: InterpretationSeries) => number) => series.reduce((n, s) => n + f(s), 0);
+  return [
+    { layer: "Intake acceptance", count: sum((s) => s.evidenceTiers.intakeAccepted), meaning: "Rows accepted one by one in Unified Intake; confirms data entry, not scientific validity." },
+    { layer: "Ground Medical attestation", count: sum((s) => s.attestation.attested), meaning: "Verifies evidence provenance for the exact record version; not a scientific interpretation or clinical opinion." },
+    { layer: "Scientific interpretation approval", count: 0, meaning: `None approved. All handbook context and catalog mappings remain ${INTERPRETATION_APPROVAL_STATUS}.` },
+  ];
 }
 
 export const domainInterpretation = (model: ResearcherInterpretationModel, domain: ResearcherDomain) =>

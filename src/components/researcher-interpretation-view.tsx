@@ -1,4 +1,5 @@
 import {
+  approvalLayersFor,
   attestationLine,
   crossDomainFor,
   handbookLine,
@@ -68,10 +69,10 @@ export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain:
   );
 }
 
-export function ApprovalLayers({ model }: { model: ResearcherInterpretationModel }) {
+export function ApprovalLayers({ layers }: { layers: ResearcherInterpretationModel["approvalLayers"] }) {
   return (
     <ul className="grid gap-2 sm:grid-cols-3" aria-label="Separate approval layers">
-      {model.approvalLayers.map((l) => (
+      {layers.map((l) => (
         <li key={l.layer} className="rounded-md border border-border p-2 text-xs">
           <p className="font-semibold">{l.layer}: {l.count ?? "n/a"}</p>
           <p className="text-muted-foreground">{l.meaning}</p>
@@ -105,7 +106,7 @@ export function ResearcherInterpretationView({ model }: { model: ResearcherInter
       <p className="text-sm text-muted-foreground">
         Recorded changes are kept separate from possible biological context. Validated interpretations: {model.validatedInterpretations} ({INTERPRETATION_APPROVAL_STATUS}).
       </p>
-      <ApprovalLayers model={model} />
+      <ApprovalLayers layers={model.approvalLayers} />
       <div className="space-y-3">
         {model.domains.map((d) => <DomainInterpretationCard key={d.domain} domain={d} headingLevel={4} />)}
       </div>
@@ -123,7 +124,7 @@ export function ModuleInterpretationView({ model, domain }: { model: ResearcherI
   if (!d) return null;
   return (
     <div className="space-y-3">
-      <ApprovalLayers model={model} />
+      <ApprovalLayers layers={approvalLayersFor(d.series)} />
       <DomainInterpretationCard domain={d} />
       <CrossDomainList items={crossDomainFor(model, domain)} />
       <ul className="list-disc pl-5 text-xs text-muted-foreground">
