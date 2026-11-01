@@ -145,12 +145,14 @@ export function AstronautHealthReport() {
 
   // Bumped when a correction, attestation, revocation or sync changes this scope (any tab).
   const [dataVersion, setDataVersion] = useState(0);
+  const changeMissionId = member?.missionId;
+  const changeCrewId = member?.crewMemberId;
   useEffect(() => {
-    if (!member) return;
+    if (!changeMissionId || !changeCrewId) return;
     return subscribeReviewDataChanged((c) => {
-      if (c.missionId === member.missionId && c.crewMemberId === member.crewMemberId) setDataVersion((v) => v + 1);
+      if (c.missionId === changeMissionId && c.crewMemberId === changeCrewId) setDataVersion((v) => v + 1);
     });
-  }, [member?.missionId, member?.crewMemberId]);
+  }, [changeMissionId, changeCrewId]);
 
   const loadedScope = useRef("");
   useEffect(() => {
