@@ -290,7 +290,7 @@ export function StoredObservationsReview(props: Props) {
           <Button type="button" disabled={busy || counts.selected === 0} onClick={() => openDialog({ kind: "attest", recordIds: [...selected] })}>
             Save selected approvals
           </Button>
-          <span className="text-xs text-muted-foreground">Erroneous, superseded, already-attested and other-provenance rows cannot be selected.</span>
+          <span className="text-xs text-muted-foreground">Only active, not-yet-attested records in the selected mission, crew and provenance can be selected. Already attested records are locked against duplicate approval; use History to inspect, Revoke to withdraw approval, or Edit to create a corrected version.</span>
         </div>
       )}
 
@@ -331,6 +331,7 @@ export function StoredObservationsReview(props: Props) {
                           checked={selected.has(o.id)}
                           disabled={busy || !v.selectable}
                           title={v.ineligibleReason ?? undefined}
+                          aria-describedby={!v.selectable ? `eligibility-${o.id}` : undefined}
                           onCheckedChange={(c) =>
                             setSelected((s) => {
                               const n = new Set(s);
@@ -342,7 +343,7 @@ export function StoredObservationsReview(props: Props) {
                         />
                       </td>
                     )}
-                    <td className="break-words px-2 py-3 text-xs leading-relaxed">{formatObservedAt(o.observedAt)}</td>
+                    <td className="break-words px-2 py-3 text-xs leading-relaxed">{!v.selectable && <span id={`eligibility-${o.id}`} className="sr-only">{v.ineligibleReason ?? "Not eligible for bulk attestation"}</span>}{formatObservedAt(o.observedAt)}</td>
                     <td className="py-2 pr-3 font-mono text-xs">{o.metricId}</td>
                     <td className={`py-2 pr-3 ${v.lifecycle !== "active" ? "line-through" : ""}`}>
                       {o.value} {o.originalUnit}
