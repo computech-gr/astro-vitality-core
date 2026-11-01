@@ -95,7 +95,7 @@ describe("v7 direct PDF export", () => {
 
   test("Download PDF never invokes Print; Print stays a separate action", () => {
     const src = readFileSync(join(import.meta.dir, "../../src/components/astronaut-health-report.tsx"), "utf8");
-    const pdfBranch = src.slice(src.indexOf("createReportPdf(reportRef.current"), src.indexOf("} catch (error) {", src.indexOf("createReportPdf(reportRef.current")));
+    const pdfBranch = src.slice(src.indexOf("createTextReportPdf({"), src.indexOf("} catch (error) {", src.indexOf("createTextReportPdf({")));
     expect(pdfBranch).not.toContain("window.print");
     expect(pdfBranch).toContain("pdfExportErrorMessage");
     expect(src).toContain('onClick={() => void performExport("print")}');
