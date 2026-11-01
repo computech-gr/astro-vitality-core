@@ -433,6 +433,22 @@ export function AstronautHealthReport() {
           </div>
           <p className="report-disclaimer rounded-md border p-3 text-sm font-semibold">{REPORT_DISCLAIMER}</p>
 
+          {healthSummary && (
+            <section aria-label="Scientific summary at a glance" className="report-avoid-break space-y-2 rounded-lg border p-4">
+              <h3 className="font-semibold">Scientific summary at a glance</h3>
+              <ul className="list-disc pl-5 text-sm">{healthSummary.frontPage.keyPoints.map((p) => <li key={p}>{p}</li>)}</ul>
+              <p className="report-evidence-id text-xs text-muted-foreground">
+                Evidence IDs for recorded differences: {healthSummary.frontPage.evidenceIds.join(", ") || "none"}
+              </p>
+              <ul className="list-disc pl-5 text-xs">
+                {healthSummary.domainInterpretation.map((d) => (
+                  <li key={d.domain}><strong>{d.domain}</strong> ({d.present ? "data present" : "no included data"}): {d.source ? `${d.source}. ` : ""}{d.status}</li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground">{healthSummary.frontPage.interpretationStatus}</p>
+            </section>
+          )}
+
           <section aria-label="Domain overview" className="report-avoid-break space-y-2">
             <h3 className="font-semibold">Domain overview</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 print:grid-cols-3">
@@ -544,6 +560,62 @@ export function AstronautHealthReport() {
             <ul className="list-disc pl-5 text-xs">{findings.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
           </section>}
 
+          <section aria-label="Ground Medical evidence attestation" className="space-y-2 rounded-lg border p-4">
+            <div className="report-avoid-break space-y-1">
+              <h3 className="font-semibold">Ground Medical evidence attestation (second stage, optional)</h3>
+              <p className="text-xs text-muted-foreground">
+                Every row below is already an accepted stored observation. Attestation is an additional, append-only
+                confirmation by an authenticated Ground Medical member for exactly this mission, crew member and provenance.
+                Rows without one remain accepted. Attestation never changes catalog or scientific review status
+                (PENDING_NIKOLAS_REVIEW) and is not a diagnosis or legal signature.
+              </p>
+              {attestationSummary && (
+                <p className="text-sm" role="status">
+                  {attestLoad === "loading" ? "Reading the encrypted attestation ledger…"
+                    : attestLoad === "error" ? "The attestation ledger could not be read; attestation status is unavailable, not absent."
+                    : `Attested ${attestationSummary.attested} · accepted without attestation ${attestationSummary.notAttested} · revoked ${attestationSummary.revoked} · earlier record version ${attestationSummary.stale} · ${attestationSummary.events} audit event(s).`}
+                </p>
+              )}
+            </div>
+            {canAttest ? (
+              <div className="space-y-2 print:hidden">
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" disabled={attesting || !eligible.length} onClick={() => setSelected(new Set(eligible.map((e) => e.recordId)))}>
+                    Select all eligible ({eligible.length})
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" disabled={attesting || !selected.size} onClick={() => setSelected(new Set())}>
+                    Clear selection
+                  </Button>
+                </div>
+                <label className="block text-sm" htmlFor="attest-reason">Reason (required, at least {ATTESTATION_REASON_MIN} characters; also used for revocations)</label>
+                <textarea id="attest-reason" className="w-full rounded border bg-background p-2 text-sm" rows={2} maxLength={500} value={attestReason} onChange={(e) => setAttestReason(e.target.value)} />
+                <label className="flex items-start gap-2 text-sm">
+                  <input type="checkbox" checked={attestConfirmed} onChange={(e) => setAttestConfirmed(e.target.checked)} />
+                  I confirm I reviewed the source evidence of each selected record for this mission and crew member.
+                </label>
+                <Button type="button" disabled={attesting || !selected.size || !attestConfirmed || attestReason.trim().length < ATTESTATION_REASON_MIN} onClick={() => void runAttestation("attest")}>
+                  Attest selected ({selected.size})
+                </Button>
+                {attestStatus && <p className="text-xs text-muted-foreground" role="status">{attestStatus}</p>}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground print:hidden">View only: attestation requires the Ground Medical role for this exact mission and crew member.</p>
+            )}
+            {scopedAttestations.length > 0 && (
+              <details className="text-xs" open>
+                <summary className="cursor-pointer">Attestation audit history (append-only)</summary>
+                <ol className="mt-1 list-decimal space-y-1 pl-5">
+                  {[...scopedAttestations].sort((a, b) => a.decidedAt.localeCompare(b.decidedAt) || a.eventId.localeCompare(b.eventId)).map((e) => (
+                    <li key={e.eventId} className="report-avoid-break break-words">
+                      {e.decidedAt} · {e.action === "attest" ? "Attested" : "Revoked"} {e.recordId} · Ground Medical {e.actorUserId} · event {e.eventId}
+                      {e.supersedesEventId ? ` (supersedes ${e.supersedesEventId})` : ""} · {e.reason}
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
+          </section>
+
           <section aria-label="Chronological history" className="space-y-2">
             <h3 className="font-semibold">Chronological history</h3>
             {unified.rows.length === 0 ? (
@@ -596,6 +668,42 @@ export function AstronautHealthReport() {
                         </td>
                         <td className="pr-2">
                           {r.provenance} · {r.status}
+                          {(() => {
+                            const state = attestationStateFor(r, scopedAttestations);
+                            const isEligible = eligible.some((e) => e.recordId === r.recordId);
+                            return (
+                              <>
+                                <span className="report-attestation block text-muted-foreground">
+                                  {ATTESTATION_STATUS_LABELS[state.status]}
+                                  {state.latest ? ` · ${state.latest.decidedAt.slice(0, 16)}Z` : ""}
+                                </span>
+                                {canAttest && (
+                                  <span className="flex flex-wrap items-center gap-2 print:hidden">
+                                    {isEligible && (
+                                      <label className="inline-flex items-center gap-1">
+                                        <input
+                                          type="checkbox"
+                                          aria-label={`Select ${r.recordId} for attestation`}
+                                          checked={selected.has(r.recordId)}
+                                          onChange={(e) => setSelected((prev) => {
+                                            const next = new Set(prev);
+                                            if (e.target.checked) next.add(r.recordId); else next.delete(r.recordId);
+                                            return next;
+                                          })}
+                                        />
+                                        Select
+                                      </label>
+                                    )}
+                                    {state.status === "attested" && (
+                                      <button type="button" className="underline" disabled={attesting} onClick={() => void runAttestation("revoke", r.recordId)}>
+                                        Revoke
+                                      </button>
+                                    )}
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
                         </td>
                         <td className="report-evidence-cell">
                           {r.sourceLabel}
@@ -677,7 +785,11 @@ export function AstronautHealthReport() {
             ))}
           </section>
 
-          <div className="print:hidden">
+          <div className="print:hidden space-y-2 rounded-lg border border-dashed p-3" aria-label="AI-assisted drafts (unverified)">
+            <p className="text-xs font-semibold">
+              AI-assisted drafts — UNVERIFIED. Kept separate from the scientific findings above, never counted as approved
+              interpretation, and excluded from the PDF and TXT exports.
+            </p>
             <MedicalAdvisorWorkbench
               key={`${report.missionId}:${report.crewMemberId}:${report.provenance}`}
               report={report}
