@@ -16,7 +16,7 @@ describe("P36.5 report export rules", () => {
   test("A4 pagination never cuts a fitting measurement row", () => {
     expect(reportPageCuts(2500, 1000, [{ top: 950, bottom: 1100 }, { top: 1900, bottom: 2000 }])).toEqual([0, 950, 1900, 2500]);
   });
-  test("oversized indivisible report items fail rather than clip", () => {
-    expect(() => reportPageCuts(2000, 1000, [{ top: 0, bottom: 1500 }])).toThrow("exceeds one A4 page");
+  test("v7: an item taller than a page continues on the next page instead of failing the whole export", () => {
+    expect(reportPageCuts(2000, 1000, [{ top: 0, bottom: 1500 }])).toEqual([0, 1000, 2000]);
   });
 });
