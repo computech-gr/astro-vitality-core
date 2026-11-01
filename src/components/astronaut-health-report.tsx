@@ -581,20 +581,20 @@ export function AstronautHealthReport() {
             {canAttest ? (
               <div className="space-y-2 print:hidden">
                 <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" size="sm" disabled={attesting || !eligible.length} onClick={() => setSelected(new Set(eligible.map((e) => e.recordId)))}>
+                  <Button type="button" variant="outline" size="sm" className="medical-action-secondary" disabled={attesting || !eligible.length} onClick={() => setSelected(new Set(eligible.map((e) => e.recordId)))}>
                     Select all eligible ({eligible.length})
                   </Button>
-                  <Button type="button" variant="outline" size="sm" disabled={attesting || !selected.size} onClick={() => setSelected(new Set())}>
+                  <Button type="button" variant="outline" size="sm" className="medical-action-secondary" disabled={attesting || !selected.size} onClick={() => setSelected(new Set())}>
                     Clear selection
                   </Button>
                 </div>
                 <label className="block text-sm" htmlFor="attest-reason">Reason (required, at least {ATTESTATION_REASON_MIN} characters; also used for revocations)</label>
-                <textarea id="attest-reason" className="w-full rounded border bg-background p-2 text-sm" rows={2} maxLength={500} value={attestReason} onChange={(e) => setAttestReason(e.target.value)} />
+                <textarea id="attest-reason" className="medical-advisor-input w-full rounded border p-2 text-sm" rows={2} maxLength={500} value={attestReason} onChange={(e) => setAttestReason(e.target.value)} />
                 <label className="flex items-start gap-2 text-sm">
                   <input type="checkbox" checked={attestConfirmed} onChange={(e) => setAttestConfirmed(e.target.checked)} />
                   I confirm I reviewed the source evidence of each selected record for this mission and crew member.
                 </label>
-                <Button type="button" disabled={attesting || !selected.size || !attestConfirmed || attestReason.trim().length < ATTESTATION_REASON_MIN} onClick={() => void runAttestation("attest")}>
+                <Button type="button" className="medical-action-primary" disabled={attesting || !selected.size || !attestConfirmed || attestReason.trim().length < ATTESTATION_REASON_MIN} onClick={() => void runAttestation("attest")}>
                   Attest selected ({selected.size})
                 </Button>
                 {attestStatus && <p className="text-xs text-muted-foreground" role="status">{attestStatus}</p>}
