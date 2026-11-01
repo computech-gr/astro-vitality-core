@@ -5,6 +5,7 @@ import { jsPDF } from "jspdf";
 import {
   buildReportDocument,
   createTextReportPdf,
+  formatRefList,
   renderReportDocument,
   toWinAnsi,
   type PdfWriter,
@@ -15,7 +16,7 @@ import { buildUnifiedHealthReport } from "../../src/domain/health-intelligence/u
 import { buildScientificFindings } from "../../src/domain/health-intelligence/scientific-findings";
 import { buildScientificHealthSummary } from "../../src/domain/health-intelligence/scientific-health-summary";
 import { buildHealthHistoryReport } from "../../src/domain/health-intelligence/health-history-report";
-import { summarizeAttestations } from "../../src/domain/health-intelligence/evidence-attestation";
+import { planAttestation, summarizeAttestations } from "../../src/domain/health-intelligence/evidence-attestation";
 import { planObservationCorrection } from "../../src/domain/health-intelligence/stored-observation-review";
 import type { UnifiedObservation } from "../../src/domain/health-intelligence/observation-envelope";
 import { V9_SCOPE, gmCtx, obs } from "./fixtures-v9-observations";
@@ -75,8 +76,86 @@ describe("v9 searchable text PDF: document model", () => {
     expect(get("Included (active) records")).toBe("6");
     expect(get("Observed date range")).toContain("2026-01-01T00:00:00.000Z to 2026-01-01T05:00:00.000Z");
     expect(get("Missing domains")).toContain("Bone");
-    expect(get("Ground Medical attestation")).toBe("attested 0 · not attested 6 · revoked 0 · stale 0");
+    // Missing Ground Medical attestation is a prominent call-out directly under the title.
+    expect(first[2]).toEqual({
+      kind: "alert",
+      tone: "pending",
+      title: "GROUND MEDICAL ATTESTATION PENDING: 6 of 6 included records",
+      lines: [
+        "Attested 0 · not attested 6 · revoked 0 · earlier record version 0.",
+        "Records awaiting attestation: E001-E006 (see Section 5).",
+        "Intake acceptance is a data-entry confirmation, not a Ground Medical attestation.",
+      ],
+    });
+    expect(first.some((b) => b.kind === "alert" && b.title.includes("PENDING INDEPENDENT REVIEW") && b.lines[0]!.includes("0 interpretations are scientifically validated"))).toBe(true);
     expect(doc.headerRight).toBe("SYNTHETIC / RESEARCH ONLY");
+  });
+
+  test("executive summary stays concise: no repeated attestation, missing-domain or interpretation bullets", () => {
+    const doc = buildReportDocument(inputFor(rows(6)));
+    const first = doc.blocks.slice(0, doc.blocks.findIndex((b) => b.kind === "pagebreak"));
+    const bullets = first.flatMap((b) => (b.kind === "bullets" ? b.items : []));
+    expect(bullets.length).toBeLessThanOrEqual(3);
+    expect(bullets.some((i) => /Ground Medical|No included data|PENDING_NIKOLAS/.test(i))).toBe(false);
+  });
+
+  test("a fully attested scope shows a completion notice instead of the pending call-out; empty scope says so", () => {
+    const input = inputFor(rows(2));
+    const plan = planAttestation(input.unified, input.unified.rows.map((r) => r.recordId), [], { actorUserId: "user-gm", rolesForScope: ["ground_medical"], scope: input.unified.scope, decidedAt: "2026-11-01T10:00:00.000Z" }, { reason: "Checked against the source sheet", confirmed: true });
+    if (!plan.ok) throw new Error(plan.reason);
+    const done = buildReportDocument({ ...input, attestations: plan.events });
+    expect(done.blocks[2]).toMatchObject({ kind: "alert", tone: "complete", title: "GROUND MEDICAL ATTESTATION COMPLETE: 2 of 2 included records" });
+    expect(done.blocks.some((b) => b.kind === "alert" && b.tone === "pending")).toBe(false);
+    // Audit history is preserved in Appendix C.
+    const audit = done.blocks.find((b) => b.kind === "table" && b.columns[0]?.title === "Decided (UTC)");
+    expect(audit && audit.kind === "table" && audit.rows.length).toBe(2);
+    const empty = buildReportDocument({ ...input, unified: { ...input.unified, rows: [] } });
+    expect(empty.blocks[2]).toMatchObject({ kind: "alert", tone: "info", title: "GROUND MEDICAL ATTESTATION: NO INCLUDED RECORDS" });
+  });
+
+  test("missing-domain statements collapse to one line and limitations are not repeated", () => {
+    const doc = buildReportDocument(inputFor(rows(6)));
+    const all = doc.blocks.flatMap((b) => (b.kind === "bullets" ? b.items : []));
+    expect(all.filter((i) => /^(No included data for|Missing domains)/.test(i)).length).toBe(1);
+    expect(all.filter((i) => /^Research-use-only/i.test(i)).length).toBe(1);
+    const keys = all.map((i) => i.toLowerCase());
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  test("insufficient-point metrics are collapsed by canonical ID plus unit with every evidence reference kept", () => {
+    const single = [
+      obs({ id: "a-1", metricId: "cv-001", originalUnit: "bpm", value: "60", observedAt: "2026-01-01T08:00:00.000Z" }),
+      obs({ id: "a-2", metricId: "cv-027", originalUnit: "ms", value: "40", observedAt: "2026-01-02T08:00:00.000Z" }),
+    ];
+    const doc = buildReportDocument(inputFor(single));
+    const t = doc.blocks.find((b) => b.kind === "table" && b.columns[1]?.title === "Unit (as recorded)");
+    expect(t && t.kind === "table" && t.rows.map((r) => [r[0], r[1], r[3]])).toEqual([
+      ["cv-001", "bpm", "E001"],
+      ["cv-027", "ms", "E002"],
+    ]);
+    const all = JSON.stringify(doc);
+    expect(all).not.toContain("additional comparable time points required");
+  });
+
+  test("two points on the same UTC day are never described as a longitudinal change", () => {
+    const sameDay = [
+      obs({ id: "s-1", metricId: "cv-001", originalUnit: "bpm", value: "60", observedAt: "2026-01-01T08:00:00.000Z" }),
+      obs({ id: "s-2", metricId: "cv-001", originalUnit: "bpm", value: "64", observedAt: "2026-01-01T20:00:00.000Z" }),
+    ];
+    const doc = buildReportDocument(inputFor(sameDay));
+    const t = doc.blocks.find((b) => b.kind === "table" && b.columns[0]?.title === "Metric" && b.columns[3]?.title === "Difference");
+    expect(t && t.kind === "table" && t.rows[0]![3]).toBe("4 bpm (same UTC day; not a longitudinal change)");
+    const glance = doc.blocks.flatMap((b) => (b.kind === "bullets" ? b.items : [])).join(" ");
+    expect(glance).toContain("0 show a descriptive first-to-last recorded difference across different days");
+    const multi = buildReportDocument(inputFor([sameDay[0]!, { ...sameDay[1]!, observedAt: "2026-01-03T08:00:00.000Z" }]));
+    const t2 = multi.blocks.find((b) => b.kind === "table" && b.columns[3]?.title === "Difference");
+    expect(t2 && t2.kind === "table" && t2.rows[0]![3]).toBe("4 bpm");
+  });
+
+  test("reference lists compress runs to ranges without dropping any reference", () => {
+    expect(formatRefList(["E003", "E001", "E002", "E004", "E009", "E011", "E010"])).toBe("E001-E004, E009, E010, E011");
+    expect(formatRefList([])).toBe("none");
+    expect(formatRefList(["E002", "E002", "x-1"])).toBe("E002, x-1");
   });
 
   test("real provenance is labelled as real research-only data, never synthetic", () => {
@@ -146,7 +225,12 @@ describe("v9 searchable text PDF: layout", () => {
     renderReportDocument(buildReportDocument(inputFor(rows(3))), writer, { family: "LiberationSans", unicode: true });
     expect(texts.some((t) => t.text.includes("Ελλάς"))).toBe(true);
     const appendixIds = texts.filter((t) => t.text.startsWith("obs-xxxx"));
+    expect(appendixIds.length).toBeGreaterThan(0);
     expect(appendixIds.every((t) => t.text.length < 45)).toBe(true);
+    // The full identifier is reconstructable from consecutive cell lines, and the
+    // trailing sequence number stays attached after its separator.
+    const tails = texts.filter((t) => /^x*-\d{4}$/.test(t.text));
+    expect(tails.length).toBeGreaterThan(0);
   });
 
   test("standard-font fallback keeps text searchable and maps symbols to Latin-1", () => {

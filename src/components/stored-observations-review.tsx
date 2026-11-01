@@ -295,8 +295,9 @@ export function StoredObservationsReview(props: Props) {
       )}
 
       {views.length ? (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-left text-sm">
+        <div className="max-w-full overflow-x-auto rounded-md border border-border" role="region" aria-label="Stored observations review table; scroll horizontally to see all actions" tabIndex={0}>
+          <p className="px-3 py-2 text-xs text-muted-foreground md:hidden">Scroll this table horizontally to access all review actions.</p>
+          <table className="w-full min-w-[980px] table-fixed text-left text-sm">
             <thead>
               <tr className="border-b border-border text-xs uppercase text-muted-foreground">
                 {isGroundMedical && scope && (
@@ -309,13 +310,13 @@ export function StoredObservationsReview(props: Props) {
                     />
                   </th>
                 )}
-                <th className="py-2 pr-3">Observed</th>
-                <th className="py-2 pr-3">Metric</th>
-                <th className="py-2 pr-3">Value</th>
-                <th className="py-2 pr-3">Origin</th>
-                <th className="py-2 pr-3">Observation</th>
-                <th className="py-2 pr-3">Ground Medical</th>
-                <th className="py-2">Actions</th>
+                <th className="w-[155px] px-2 py-2">Observed</th>
+                <th className="w-[75px] px-2 py-2">Metric</th>
+                <th className="w-[90px] px-2 py-2">Value</th>
+                <th className="w-[205px] px-2 py-2">Origin</th>
+                <th className="w-[100px] px-2 py-2">Observation</th>
+                <th className="w-[110px] px-2 py-2">Ground Medical</th>
+                <th className="w-[150px] px-2 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -341,12 +342,12 @@ export function StoredObservationsReview(props: Props) {
                         />
                       </td>
                     )}
-                    <td className="py-2 pr-3 text-xs">{formatObservedAt(o.observedAt)}</td>
+                    <td className="break-words px-2 py-3 text-xs leading-relaxed">{formatObservedAt(o.observedAt)}</td>
                     <td className="py-2 pr-3 font-mono text-xs">{o.metricId}</td>
                     <td className={`py-2 pr-3 ${v.lifecycle !== "active" ? "line-through" : ""}`}>
                       {o.value} {o.originalUnit}
                     </td>
-                    <td className="py-2 pr-3 text-xs">
+                    <td className="break-all px-2 py-3 text-xs leading-relaxed">
                       {o.source.label} · {o.provenance}
                       {o.supersedesId ? <span className="block">Corrects {o.supersedesId}</span> : null}
                       {o.statusReason && o.status === "erroneous" ? <span className="block">Reason: {o.statusReason}</span> : null}
@@ -362,25 +363,25 @@ export function StoredObservationsReview(props: Props) {
                         <Badge variant={v.groundMedical === "attested" ? "default" : "outline"}>{GROUND_MEDICAL_LABELS[v.groundMedical]}</Badge>
                       )}
                     </td>
-                    <td className="space-y-1 py-2">
-                      <div className="flex flex-wrap gap-1">
+                    <td className="px-2 py-3">
+                      <div className="flex flex-col items-stretch gap-2">
                         {isGroundMedical && scope && v.selectable && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "attest", recordIds: [o.id] })}>
+                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "attest", recordIds: [o.id] })}>
                             Attest
                           </Button>
                         )}
                         {isGroundMedical && scope && v.groundMedical === "attested" && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "revoke", recordId: o.id })}>
+                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "revoke", recordId: o.id })}>
                             Revoke
                           </Button>
                         )}
                         {isGroundMedical && scope && v.lifecycle === "active" && o.provenance === scope.provenance && o.reviewState === "accepted" && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "edit", observation: o })}>
+                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "edit", observation: o })}>
                             Edit
                           </Button>
                         )}
                         {v.lifecycle === "active" && membership && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "erroneous", observation: o })}>
+                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "erroneous", observation: o })}>
                             Mark erroneous
                           </Button>
                         )}
@@ -390,7 +391,7 @@ export function StoredObservationsReview(props: Props) {
                           </Button>
                         )}
                         {(v.attestationHistory.length > 0 || o.correction) && (
-                          <Button type="button" size="sm" variant="ghost" aria-expanded={openHistory === o.id} onClick={() => setOpenHistory(openHistory === o.id ? null : o.id)}>
+                          <Button type="button" size="sm" variant="ghost" className="w-full justify-center" aria-expanded={openHistory === o.id} onClick={() => setOpenHistory(openHistory === o.id ? null : o.id)}>
                             History
                           </Button>
                         )}
@@ -484,7 +485,7 @@ function ReviewDialog(props: {
   const ready = reason.trim().length >= min && confirmed && !props.busy;
   return (
     <Dialog open onOpenChange={(open) => !open && props.onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-1.5rem)] max-w-lg overflow-y-auto overflow-x-hidden sm:max-w-lg [&>*]:min-w-0">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -495,15 +496,15 @@ function ReviewDialog(props: {
           </DialogDescription>
         </DialogHeader>
         {state.kind === "edit" && (
-          <div className="grid gap-3 text-sm">
-            <p className="text-xs text-muted-foreground">
+          <div className="grid min-w-0 gap-3 text-sm">
+            <p className="break-all text-xs text-muted-foreground">
               Original: {state.observation.metricId} = {state.observation.value} {state.observation.originalUnit} at {state.observation.observedAt} · {state.observation.provenance} · source {state.observation.source.label}
             </p>
             <div className="space-y-1">
               <Label htmlFor="corr-metric">Catalog metric ID</Label>
               <Input id="corr-metric" value={metricId} onChange={(e) => setMetricId(e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
               <div className="space-y-1">
                 <Label htmlFor="corr-value">Value</Label>
                 <Input id="corr-value" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} />
@@ -517,7 +518,7 @@ function ReviewDialog(props: {
               <Label htmlFor="corr-observed">Observed at (ISO, UTC)</Label>
               <Input id="corr-observed" value={observedAt} onChange={(e) => setObservedAt(e.target.value)} placeholder="2026-10-14T07:35:00.000Z" />
             </div>
-            <p className="text-xs text-muted-foreground">Provenance ({state.observation.provenance}) and source ({state.observation.source.label}) are preserved from the original.</p>
+            <p className="break-words text-xs text-muted-foreground">Provenance ({state.observation.provenance}) and source ({state.observation.source.label}) are preserved from the original.</p>
           </div>
         )}
         <div className="space-y-1 text-sm">
@@ -533,7 +534,7 @@ function ReviewDialog(props: {
             {props.error}
           </p>
         )}
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={props.onClose}>
             Cancel
           </Button>
