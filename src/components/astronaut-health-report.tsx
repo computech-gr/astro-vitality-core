@@ -184,10 +184,73 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
+  // Roles held for exactly the selected mission + crew (never inferred from other memberships).
+  const rolesForScope = useMemo(
+    () =>
+      member && identity?.signedIn && !identity.error
+        ? identity.memberships
+            .filter((m) => m.missionId === member.missionId && m.crewMemberId === member.crewMemberId)
+            .map((m) => m.role)
+        : [],
+    [identity, member],
+  );
+  const canAttest = canAttestEvidence(rolesForScope) && Boolean(identity?.userId);
+  const [attestations, setAttestations] = useState<AttestationEvent[]>([]);
+  const [attestLoad, setAttestLoad] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [attestReason, setAttestReason] = useState("");
+  const [attestConfirmed, setAttestConfirmed] = useState(false);
+  const [attestStatus, setAttestStatus] = useState("");
+  const [attesting, setAttesting] = useState(false);
+
+  useEffect(() => {
+    setAttestations([]);
+    setSelected(new Set());
+    setAttestConfirmed(false);
+    setAttestStatus("");
+    if (!member) { setAttestLoad("idle"); return; }
+    let active = true;
+    setAttestLoad("loading");
+    void listAttestationEvents({ missionId: member.missionId, crewMemberId: member.crewMemberId, provenance })
+      .then((events) => { if (active) { setAttestations(events); setAttestLoad("ready"); } })
+      .catch(() => { if (active) setAttestLoad("error"); });
+    return () => { active = false; };
+  }, [member?.missionId, member?.crewMemberId, provenance, identity?.userId]);
+
+  const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(attestations, unified.scope) : []), [attestations, unified]);
+  const attestationSummary = useMemo(() => (unified ? summarizeAttestations(unified, scopedAttestations) : null), [unified, scopedAttestations]);
+  const eligible = useMemo(() => (unified ? eligibleForAttestation(unified, scopedAttestations) : []), [unified, scopedAttestations]);
+
+  const runAttestation = async (mode: "attest" | "revoke", recordId?: string) => {
+    if (!member || !unified || attesting) return;
+    const scope = { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance };
+    setAttesting(true);
+    try {
+      const fresh = await loadMissionIdentity();
+      const freshRoles = fresh.signedIn && !fresh.error && fresh.userId === identity?.userId
+        ? fresh.memberships.filter((m) => m.missionId === member.missionId && m.crewMemberId === member.crewMemberId).map((m) => m.role)
+        : [];
+      const ctx = { actorUserId: fresh.userId, rolesForScope: freshRoles, scope, decidedAt: new Date().toISOString() };
+      const input = { reason: attestReason, confirmed: attestConfirmed };
+      const plan = mode === "attest"
+        ? planAttestation(unified, [...selected], scopedAttestations, ctx, input)
+        : planRevocation(unified, recordId ?? "", scopedAttestations, ctx, input);
+      if (!plan.ok) { setAttestStatus(plan.reason); return; }
+      const saved = await appendAttestationEvents(plan.events, scope, ctx);
+      const events = await listAttestationEvents(scope);
+      setAttestations(events);
+      setSelected(new Set());
+      setAttestConfirmed(false);
+      setAttestStatus(`${mode === "attest" ? "Attested" : "Revoked"} ${saved.inserted} record(s)${saved.duplicates ? `, ${saved.duplicates} already recorded` : ""}${plan.skipped.length ? `, ${plan.skipped.length} skipped (${plan.skipped[0]!.reason})` : ""}. Batch ${plan.batchId}. Stored encrypted on this device; catalog and scientific review status unchanged.`);
+    } catch (error) {
+      setAttestStatus(error instanceof Error ? error.message : "Attestation could not be saved. Nothing was changed.");
+    } finally { setAttesting(false); }
+  };
+
   const findings = useMemo(() => unified ? buildScientificFindings(unified) : null, [unified]);
   const healthSummary = useMemo(
-    () => (unified && findings ? buildScientificHealthSummary(unified, findings, report) : null),
-    [unified, findings, report],
+    () => (unified && findings ? buildScientificHealthSummary(unified, findings, report, attestationSummary) : null),
+    [unified, findings, report, attestationSummary],
   );
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
@@ -198,18 +261,21 @@ export function AstronautHealthReport() {
     const snapshot = currentExport.current;
     const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
     setExporting(true);
-    setExportStatus(kind === "pdf" ? "Preparing A4 PDF locally…" : "Checking authorized report scope…");
+    setExportStatus(kind === "pdf" ? "Preparing A4 PDF locally… long reports are rendered page band by page band." : "Checking authorized report scope…");
     try {
       const fresh = await loadMissionIdentity();
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && fresh.memberships.some(m =>
         m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"));
       if (!authorized || !stillCurrent()) throw new Error("Report authorization or selection changed. Export cancelled.");
       if (kind === "print") {
+        // Print is a separate, explicit browser action; it is never used as a silent PDF fallback.
         const previous = document.title;
         try { document.title = exportName; window.print(); } finally { document.title = previous; }
+        setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
+        setExportStatus(`Evidence TXT created locally and download started as ${exportName}.txt. No medical data was uploaded.`);
       } else {
         if (!reportRef.current) throw new Error("Report is unavailable.");
         let blob: Blob;
@@ -217,16 +283,14 @@ export function AstronautHealthReport() {
           blob = await createReportPdf(reportRef.current, exportName);
         } catch (pdfError) {
           // Download PDF must never silently invoke the separate Print action.
-          // Keep the actual renderer failure visible for troubleshooting.
-          const message = pdfError instanceof Error ? pdfError.message : "PDF renderer unavailable";
-          throw new Error(`Direct PDF export failed: ${message}. No PDF was downloaded. Use the separate Print button for browser Save as PDF.`);
+          throw new Error(pdfExportErrorMessage(pdfError));
         }
         const after = await loadMissionIdentity();
         if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>
-          m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled.");
+          m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled; no PDF was downloaded.");
         downloadReportBlob(blob, `${exportName}.pdf`);
+        setExportStatus(`PDF created locally (${(blob.size / 1_048_576).toFixed(1)} MB) and download started as ${exportName}.pdf. Check your browser downloads. No medical data was uploaded.`);
       }
-      setExportStatus(kind === "print" ? "Print dialog requested." : `${kind === "pdf" ? "PDF" : "Evidence TXT"} download requested. No medical data was uploaded.`);
     } catch (error) {
       setExportStatus(error instanceof Error ? error.message : "Export failed. No file downloaded.");
     } finally { setExporting(false); }
