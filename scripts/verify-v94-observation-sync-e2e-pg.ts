@@ -135,7 +135,8 @@ check(upA.status === "ok" && upA.uploaded.inserted === 2, "device A uploads 2 en
 const revA = await a.reviews(true);
 check(revA.status === "ok", "device A syncs 2 attestations");
 const stored = psql(["-t", "-A", "-c", "select string_agg(ciphertext || fingerprint || iv, '') from public.observation_sync_events"], DB);
-check(!stored.includes("bpm") && !stored.includes("synthetic-e2e") && !stored.includes("62"), "database holds ciphertext only (no unit, source label or value)");
+const decoded = psql(["-t", "-A", "-c", "select string_agg(ciphertext, ',') from public.observation_sync_events"], DB).trim().split(",").map((c) => Buffer.from(c, "base64").toString("latin1")).join("");
+check(!stored.includes("bpm") && !stored.includes("synthetic-e2e") && !decoded.includes("bpm") && !decoded.includes("synthetic-e2e") && !decoded.includes('"value"'), "database holds ciphertext only (no plaintext unit, source label or value field, even after base64 decoding)");
 
 const b = device(CREW);
 check((await b.history()).length === 0, "fresh device B starts with zero local observations");
