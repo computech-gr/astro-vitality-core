@@ -485,7 +485,7 @@ function ReviewDialog(props: {
   const ready = reason.trim().length >= min && confirmed && !props.busy;
   return (
     <Dialog open onOpenChange={(open) => !open && props.onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-1.5rem)] max-w-lg overflow-y-auto overflow-x-hidden sm:max-w-lg [&>*]:min-w-0">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -496,15 +496,15 @@ function ReviewDialog(props: {
           </DialogDescription>
         </DialogHeader>
         {state.kind === "edit" && (
-          <div className="grid gap-3 text-sm">
-            <p className="text-xs text-muted-foreground">
+          <div className="grid min-w-0 gap-3 text-sm">
+            <p className="break-all text-xs text-muted-foreground">
               Original: {state.observation.metricId} = {state.observation.value} {state.observation.originalUnit} at {state.observation.observedAt} · {state.observation.provenance} · source {state.observation.source.label}
             </p>
             <div className="space-y-1">
               <Label htmlFor="corr-metric">Catalog metric ID</Label>
               <Input id="corr-metric" value={metricId} onChange={(e) => setMetricId(e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
               <div className="space-y-1">
                 <Label htmlFor="corr-value">Value</Label>
                 <Input id="corr-value" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} />
@@ -518,7 +518,7 @@ function ReviewDialog(props: {
               <Label htmlFor="corr-observed">Observed at (ISO, UTC)</Label>
               <Input id="corr-observed" value={observedAt} onChange={(e) => setObservedAt(e.target.value)} placeholder="2026-10-14T07:35:00.000Z" />
             </div>
-            <p className="text-xs text-muted-foreground">Provenance ({state.observation.provenance}) and source ({state.observation.source.label}) are preserved from the original.</p>
+            <p className="break-words text-xs text-muted-foreground">Provenance ({state.observation.provenance}) and source ({state.observation.source.label}) are preserved from the original.</p>
           </div>
         )}
         <div className="space-y-1 text-sm">
@@ -534,7 +534,7 @@ function ReviewDialog(props: {
             {props.error}
           </p>
         )}
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={props.onClose}>
             Cancel
           </Button>
