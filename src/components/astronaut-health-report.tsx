@@ -23,7 +23,9 @@ import {
 } from "@/domain/health-intelligence/unified-health-report";
 import { loadUnifiedReportInputs } from "@/domain/health-intelligence/unified-health-report-loader";
 import { reportExportBasename } from "@/domain/health-intelligence/report-export-identity";
-import { createReportPdf, downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
+import { downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
+import { createTextReportPdf } from "@/domain/health-intelligence/report-text-pdf";
+import { notifyReviewDataChanged, subscribeReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { buildScientificFindings, scientificFindingsPlainText } from "@/domain/health-intelligence/scientific-findings";
 import {
   buildScientificHealthSummary,
@@ -141,8 +143,23 @@ export function AstronautHealthReport() {
     }
   }, [key, identity, member]);
 
+  // Bumped when a correction, attestation, revocation or sync changes this scope (any tab).
+  const [dataVersion, setDataVersion] = useState(0);
+  const changeMissionId = member?.missionId;
+  const changeCrewId = member?.crewMemberId;
   useEffect(() => {
-    setInputs(EMPTY_INPUTS);
+    if (!changeMissionId || !changeCrewId) return;
+    return subscribeReviewDataChanged((c) => {
+      if (c.missionId === changeMissionId && c.crewMemberId === changeCrewId) setDataVersion((v) => v + 1);
+    });
+  }, [changeMissionId, changeCrewId]);
+
+  const loadedScope = useRef("");
+  useEffect(() => {
+    const scopeKey = member ? `${member.missionId}|${member.crewMemberId}` : "";
+    // A refresh for the same scope keeps the visible report until the new read completes.
+    if (loadedScope.current !== scopeKey) setInputs(EMPTY_INPUTS);
+    loadedScope.current = scopeKey;
     if (!member) return;
     let active = true;
     setStatus("Reading encrypted local records…");
@@ -159,7 +176,7 @@ export function AstronautHealthReport() {
     return () => {
       active = false;
     };
-  }, [member?.missionId, member?.crewMemberId]);
+  }, [member?.missionId, member?.crewMemberId, dataVersion]);
 
   const report = useMemo(
     () =>
@@ -218,7 +235,7 @@ export function AstronautHealthReport() {
       .then((events) => { if (active) { setAttestations(events); setAttestLoad("ready"); } })
       .catch(() => { if (active) setAttestLoad("error"); });
     return () => { active = false; };
-  }, [attestMissionId, attestCrewId, provenance, identity?.userId]);
+  }, [attestMissionId, attestCrewId, provenance, identity?.userId, dataVersion]);
 
   const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(attestations, unified.scope) : []), [attestations, unified]);
   const attestationSummary = useMemo(() => (unified ? summarizeAttestations(unified, scopedAttestations) : null), [unified, scopedAttestations]);
@@ -242,9 +259,10 @@ export function AstronautHealthReport() {
       const saved = await appendAttestationEvents(plan.events, scope, ctx);
       const events = await listAttestationEvents(scope);
       setAttestations(events);
+      notifyReviewDataChanged({ missionId: scope.missionId, crewMemberId: scope.crewMemberId });
       setSelected(new Set());
       setAttestConfirmed(false);
-      setAttestStatus(`${mode === "attest" ? "Attested" : "Revoked"} ${saved.inserted} record(s)${saved.duplicates ? `, ${saved.duplicates} already recorded` : ""}${plan.skipped.length ? `, ${plan.skipped.length} skipped (${plan.skipped[0]!.reason})` : ""}. Batch ${plan.batchId}. Stored encrypted on this device; catalog and scientific review status unchanged.`);
+      setAttestStatus(`${mode === "attest" ? "Attested" : "Revoked"} ${saved.inserted} record(s)${saved.duplicates ? `, ${saved.duplicates} already recorded` : ""}${saved.failed.length ? `, ${saved.failed.length} FAILED (${saved.failed.map((f) => f.recordId).join(", ")}: ${saved.failed[0]!.message}) — retry those records` : ""}${plan.skipped.length ? `, ${plan.skipped.length} skipped (${plan.skipped[0]!.reason})` : ""}. Batch ${plan.batchId}. Stored encrypted on this device; catalog and scientific review status unchanged.`);
     } catch (error) {
       setAttestStatus(error instanceof Error ? error.message : "Attestation could not be saved. Nothing was changed.");
     } finally { setAttesting(false); }
@@ -264,7 +282,7 @@ export function AstronautHealthReport() {
     const snapshot = currentExport.current;
     const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
     setExporting(true);
-    setExportStatus(kind === "pdf" ? "Preparing A4 PDF locally… long reports are rendered page band by page band." : "Checking authorized report scope…");
+    setExportStatus(kind === "pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
     try {
       const fresh = await loadMissionIdentity();
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && fresh.memberships.some(m =>
@@ -280,10 +298,21 @@ export function AstronautHealthReport() {
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
         setExportStatus(`Evidence TXT created locally and download started as ${exportName}.txt. No medical data was uploaded.`);
       } else {
-        if (!reportRef.current) throw new Error("Report is unavailable.");
         let blob: Blob;
+        let pdfInfo = "";
         try {
-          blob = await createReportPdf(reportRef.current, exportName);
+          // Searchable text PDF built from the same read models as screen/TXT (never a DOM screenshot).
+          const result = await createTextReportPdf({
+            unified,
+            findings,
+            summary: healthSummary,
+            history: report,
+            attestations: scopedAttestations,
+            identity: { missionName: member.missionName, crewDisplayName: member.crewDisplayName },
+            title: exportName,
+          });
+          blob = result.blob;
+          pdfInfo = `${result.pages} pages, searchable text${result.fontMode === "standard" ? "; embedded Unicode font unavailable, some symbols simplified" : ""}`;
         } catch (pdfError) {
           // Download PDF must never silently invoke the separate Print action.
           throw new Error(pdfExportErrorMessage(pdfError));
@@ -292,7 +321,7 @@ export function AstronautHealthReport() {
         if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>
           m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled; no PDF was downloaded.");
         downloadReportBlob(blob, `${exportName}.pdf`);
-        setExportStatus(`PDF created locally (${(blob.size / 1_048_576).toFixed(1)} MB) and download started as ${exportName}.pdf. Check your browser downloads. No medical data was uploaded.`);
+        setExportStatus(`PDF created locally (${pdfInfo}, ${(blob.size / 1_048_576).toFixed(2)} MB) and download started as ${exportName}.pdf. Check your browser downloads. No medical data was uploaded.`);
       }
     } catch (error) {
       setExportStatus(error instanceof Error ? error.message : "Export failed. No file downloaded.");
@@ -563,9 +592,10 @@ export function AstronautHealthReport() {
             <ul className="list-disc pl-5 text-xs">{findings.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
           </section>}
 
-          <section aria-label="Ground Medical evidence attestation" className="space-y-2 rounded-lg border p-4">
+          <section id="ground-medical-attestation" aria-label="Ground Medical evidence attestation" className="scroll-mt-24 space-y-2 rounded-lg border p-4">
             <div className="report-avoid-break space-y-1">
               <h3 className="font-semibold">Ground Medical evidence attestation (second stage, optional)</h3>
+              <p className="text-xs text-muted-foreground">If you arrived from Medical Intake, select the same authorized mission, crew, SYNTHETIC/REAL provenance and reporting period. The controls below appear only for an authorized Ground Medical reviewer. Scroll to the chronological records to select individual rows; Select all eligible selects only records in this report scope.</p>
               <p className="text-xs text-muted-foreground">
                 Every row below is already an accepted stored observation. Attestation is an additional, append-only
                 confirmation by an authenticated Ground Medical member for exactly this mission, crew member and provenance.
