@@ -622,9 +622,9 @@ function ReviewCloudSync(props: { scope: Scope; userId: string | null; rolesForS
       let imported = 0;
       let conflicts = 0;
       for (const kind of ["attestation", "correction"] as const) {
-        let afterSeq = 0;
+        let afterSeq: number = 0;
         for (let page = 0; page < 20; page++) {
-          const res = await pullReviewEvents({ data: { scope, kind, afterSeq, limit: 500 } });
+          const res: Awaited<ReturnType<typeof pullReviewEvents>> = await pullReviewEvents({ data: { scope, kind, afterSeq, limit: 500 } });
           if (!res.ok) {
             setMessage(res.code === "migration_required" ? `${REVIEW_SYNC_MIGRATION_REQUIRED}. Local events are kept on this device.` : `${notes.join("; ")}${notes.length ? "; " : ""}${res.message}`);
             setFailed(nextFailed);

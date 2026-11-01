@@ -428,12 +428,13 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       continue;
     }
     // table
+    const t = b as Extract<Block, { kind: "table" }>;
     const size = L.table;
     const lh = lineHeight(size);
     const pad = 1.2;
-    const widths = b.columns.map((c) => c.width * width);
+    const widths = t.columns.map((c) => c.width * width);
     const drawHeader = () => {
-      const hl = b.columns.map((c, i) => lines(c.title, size, "bold", widths[i]! - 2 * pad));
+      const hl = t.columns.map((c, i) => lines(c.title, size, "bold", widths[i]! - 2 * pad));
       const h = Math.max(...hl.map((l) => l.length)) * lh + 2 * pad;
       pdf.setFillColor(232, 232, 232);
       pdf.rect(L.marginX, y, width, h, "F");
@@ -447,14 +448,14 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       return h;
     };
     const headerH = (() => {
-      const hl = b.columns.map((c, i) => lines(c.title, size, "bold", widths[i]! - 2 * pad));
+      const hl = t.columns.map((c, i) => lines(c.title, size, "bold", widths[i]! - 2 * pad));
       return Math.max(...hl.map((l) => l.length)) * lh + 2 * pad;
     })();
     ensure(headerH + lh + 2 * pad);
     drawHeader();
     pdf.setDrawColor(200, 200, 200);
     pdf.setLineWidth(0.1);
-    for (const row of b.rows) {
+    for (const row of t.rows) {
       let cells = row.map((c, i) => lines(c ?? "", size, "normal", widths[i]! - 2 * pad));
       // A row taller than a page is split across pages with the header repeated.
       while (cells.some((c) => c.length)) {
