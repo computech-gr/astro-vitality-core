@@ -354,7 +354,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     ls.forEach((l, i) => {
       ensure(lh);
       font(style, size, muted);
-      if (bullet && i === 0) pdf.text("•", L.marginX + indent, y + lh * 0.75);
+      if (bullet && i === 0) pdf.text(opts.unicode ? "•" : "-", L.marginX + indent, y + lh * 0.75);
       pdf.text(l, L.marginX + indent + (bullet ? 4 : 0), y + lh * 0.75);
       y += lh;
     });
