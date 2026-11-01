@@ -1,10 +1,11 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, mock, test } from "bun:test";
 import type { OfflineEventRecord } from "../../src/domain/offline-mission";
-import { supabase } from "../../src/integrations/supabase/client";
-import { SupabaseMissionSyncTransport } from "../../src/infrastructure/ground-research/supabase-transport";
+import * as realClientModule from "../../src/integrations/supabase/client";
 import { InMemoryOfflineMissionStore } from "../../src/infrastructure/offline/store";
 import { enqueueOfflineRecord, flushOfflineSyncQueue } from "../../src/infrastructure/offline/sync";
 import { persistOfflineMissionEvent } from "../../src/infrastructure/offline/runtime";
+
+const realClientExports = { ...realClientModule };
 
 const mission = { missionId: "mission-synthetic-a", crewMemberId: "crew-synthetic-a" };
 
@@ -24,21 +25,25 @@ function record(id: string, sourceId: string): OfflineEventRecord {
 }
 
 const rpcCalls: Array<{ fn: string; args: Record<string, unknown> | undefined }> = [];
-const client = supabase as unknown as { rpc: (fn: string, args?: Record<string, unknown>) => Promise<unknown> };
-const originalRpc = client.rpc;
-const hadWindow = "window" in globalThis;
-
-beforeAll(() => {
-  client.rpc = async (fn, args) => {
+const fakeClient = {
+  rpc: async (fn: string, args?: Record<string, unknown>) => {
     rpcCalls.push({ fn, args });
     const event = args?.["p_event"] as OfflineEventRecord;
     return { data: { status: "accepted", record_id: event.id }, error: null };
-  };
+  },
+};
+const hadWindow = "window" in globalThis;
+let SupabaseMissionSyncTransport: typeof import("../../src/infrastructure/ground-research/supabase-transport").SupabaseMissionSyncTransport;
+
+beforeAll(async () => {
+  // Bun module mocks are process-wide: spread the real exports and restore them afterwards.
+  mock.module("@/integrations/supabase/client", () => ({ ...realClientExports, supabase: fakeClient }));
+  ({ SupabaseMissionSyncTransport } = await import("../../src/infrastructure/ground-research/supabase-transport?v941"));
   if (!hadWindow) (globalThis as Record<string, unknown>)["window"] = {};
 });
 
 afterAll(() => {
-  client.rpc = originalRpc;
+  mock.module("@/integrations/supabase/client", () => realClientExports);
   if (!hadWindow) delete (globalThis as Record<string, unknown>)["window"];
 });
 
