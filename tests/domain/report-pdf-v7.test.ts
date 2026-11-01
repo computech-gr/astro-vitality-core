@@ -80,10 +80,10 @@ describe("v7 direct PDF export", () => {
   });
 
   test("page cuts never split a fitting row and bands end on page boundaries", () => {
-    const cuts = reportPageCuts(3000, 1000, [{ top: 980, bottom: 1020 }, { top: 1990, bottom: 2030 }]);
-    expect(cuts).toEqual([0, 980, 1990, 2990, 3000]);
+    const cuts = reportPageCuts(3000, 1000, [{ top: 980, bottom: 1020 }, { top: 1960, bottom: 2010 }]);
+    expect(cuts).toEqual([0, 980, 1960, 2960, 3000]);
     const bands = planRenderBands(cuts, 2000);
-    expect(bands.map((b) => [b.start, b.end])).toEqual([[0, 1990], [1990, 3000]]);
+    expect(bands.map((b) => [b.start, b.end])).toEqual([[0, 1960], [1960, 3000]]);
   });
 
   test("failure message is actionable, states no file was created and points to the separate Print", () => {
