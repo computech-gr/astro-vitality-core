@@ -18,11 +18,10 @@ import {
  * reference only — no clinical thresholds, diagnosis or automatic approval.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
+import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
 import { Link } from "@tanstack/react-router";
-import {
-  classifyIntakeObservation,
-  type IntakeClassification,
-} from "@/domain/health-domains/unified-intake-classification";
+import { type IntakeClassification } from "@/domain/health-domains/unified-intake-classification";
 import { DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import {
   UNIFIED_OBSERVATION_SCHEMA,
@@ -71,8 +70,9 @@ type IntakeRow = {
 
 const MAX_ROWS = 200;
 
+/** Base P36 catalog first; only governed, fully approved catalog extensions can add matches. */
 function classify(label: string, unit: string): IntakeClassification {
-  return classifyIntakeObservation({ label, unit });
+  return classifyWithGovernedExtensions({ label, unit }).classification;
 }
 
 function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): IntakeRow {
@@ -188,6 +188,15 @@ export function UnifiedIntakeWorkspace() {
 
   const [missionKey, setMissionKey] = useState("");
   const membership = memberships.find((m) => `${m.missionId}|${m.crewMemberId}` === missionKey);
+  const rolesForScope = useMemo(
+    () =>
+      membership && identity?.signedIn && !identity.error
+        ? identity.memberships
+            .filter((m) => m.missionId === membership.missionId && m.crewMemberId === membership.crewMemberId)
+            .map((m) => m.role)
+        : [],
+    [identity, membership],
+  );
 
   const [rows, setRows] = useState<IntakeRow[]>([]);
   const [history, setHistory] = useState<UnifiedObservation[]>([]);
@@ -811,6 +820,14 @@ export function UnifiedIntakeWorkspace() {
           </Button>
         </section>
       ) : null}
+
+      <UnknownBiomarkerReviewPanel
+        key={`${membership?.missionId ?? ""}|${membership?.crewMemberId ?? ""}|${provenance}|${identity?.userId ?? ""}`}
+        rows={reviewOnlyRows}
+        scope={membership && provenance ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance } : null}
+        reviewerUserId={identity?.signedIn && !identity.error ? (identity.userId ?? null) : null}
+        rolesForScope={rolesForScope}
+      />
 
       <section className="space-y-4 rounded-lg border border-border bg-card p-5">
         <h2 className="text-lg font-semibold">Stored observations (this mission &amp; crew)</h2>

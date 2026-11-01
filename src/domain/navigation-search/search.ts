@@ -89,7 +89,8 @@ export function editDistance(a: string, b: string, max = 2) {
 function tokenScore(token: string, words: string[], weight: number) {
   let best = 0;
   for (const word of words) {
-    if (word === token) best = Math.max(best, 10 * weight);
+    // Singular and plural forms are equally exact ("biomarker" ≙ "biomarkers").
+    if (word === token || word === `${token}s` || token === `${word}s`) best = Math.max(best, 10 * weight);
     else if (word.startsWith(token)) best = Math.max(best, 7 * weight);
     else if (token.length >= 3 && word.includes(token)) best = Math.max(best, 4 * weight);
     else if (
@@ -122,11 +123,22 @@ export function scoreEntry(entry: SearchEntry, query: string) {
   return total;
 }
 
+function curatedHit(entry: SearchEntry, query: string) {
+  const q = normalize(query);
+  return (entry.keywords ?? []).some((k) => normalize(k) === q) ? 1 : 0;
+}
+
 export function searchEntries(entries: readonly SearchEntry[], query: string, limit = 12) {
   return entries
     .map((entry, index) => ({ entry, index, score: scoreEntry(entry, query) }))
     .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score || a.index - b.index)
+    // Equal scores: a destination whose curated synonyms name the query wins, then catalogue order.
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        curatedHit(b.entry, query) - curatedHit(a.entry, query) ||
+        a.index - b.index,
+    )
     .slice(0, limit)
     .map((r) => r.entry);
 }

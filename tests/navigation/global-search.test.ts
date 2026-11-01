@@ -72,3 +72,10 @@ describe("global navigation search", () => {
     expect(shell).toContain("data-mega-menu");
   });
 });
+
+describe("unknown biomarker review destination", () => {
+  test("is reachable by name without displacing the general biomarker page", () => {
+    expect(first("unknown biomarker")).toMatchObject({ title: "Unknown Biomarker Review", href: "/mission/intake#unknown-biomarker-review" });
+    expect(first("biomarker")?.title).toBe("Biomarkers & Signals");
+  });
+});

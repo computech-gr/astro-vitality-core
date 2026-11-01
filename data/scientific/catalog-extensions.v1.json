@@ -1,0 +1,9 @@
+{
+  "schema": "mitochondria.catalog-extension-registry.v1",
+  "baseCatalog": "data/scientific/p36-biomarker-source-registry.v1.json",
+  "baseCatalogVersion": "p36.1.0",
+  "requiredScientificGate": "PENDING_NIKOLAS_REVIEW",
+  "governance": "Versioned catalog extensions for Unified Intake. Entries are added only through governed code review after independent scientific approval; the application never writes this file. An extension is effective only when its status is APPROVED and its latest approval-history record is APPROVED with a named reviewer, a valid decision time and handbook evidence references. Only aliases to existing P36 metrics with the exact original unit are supported; no unit conversion.",
+  "extensions": [],
+  "approvalHistory": []
+}
