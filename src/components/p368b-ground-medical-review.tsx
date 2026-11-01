@@ -19,7 +19,7 @@ const DECISION_LABEL: Record<ResearchDecision, string> = {
 };
 
 export function GroundMedicalReviewPanel() {
-  // Mission membership is filtered to m.role === "ground_medical" inside the review scope.
+  // Only Ground Medical memberships are reviewable; the filter lives in the review scope.
   const [scope] = useState(() => createGroundMedicalReviewScope({
     loadIdentity: loadMissionIdentity,
     subscribeIdentity: subscribeMissionIdentity,
