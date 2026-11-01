@@ -18,6 +18,8 @@ import {
  * reference only — no clinical thresholds, diagnosis or automatic approval.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
+import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
 import { Link } from "@tanstack/react-router";
 import {
   classifyIntakeObservation,
@@ -71,8 +73,9 @@ type IntakeRow = {
 
 const MAX_ROWS = 200;
 
+/** Base P36 catalog first; only governed, fully approved catalog extensions can add matches. */
 function classify(label: string, unit: string): IntakeClassification {
-  return classifyIntakeObservation({ label, unit });
+  return classifyWithGovernedExtensions({ label, unit }).classification;
 }
 
 function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): IntakeRow {
@@ -188,6 +191,15 @@ export function UnifiedIntakeWorkspace() {
 
   const [missionKey, setMissionKey] = useState("");
   const membership = memberships.find((m) => `${m.missionId}|${m.crewMemberId}` === missionKey);
+  const rolesForScope = useMemo(
+    () =>
+      membership && identity?.signedIn && !identity.error
+        ? identity.memberships
+            .filter((m) => m.missionId === membership.missionId && m.crewMemberId === membership.crewMemberId)
+            .map((m) => m.role)
+        : [],
+    [identity, membership],
+  );
 
   const [rows, setRows] = useState<IntakeRow[]>([]);
   const [history, setHistory] = useState<UnifiedObservation[]>([]);
@@ -763,56 +775,6 @@ export function UnifiedIntakeWorkspace() {
             </table>
           </div>
           {reviewOnlyRows.length ? (
-            <section id="unknown-biomarker-review" aria-label="Unknown Biomarker Review and Catalog Extension" className="space-y-3 rounded-md border border-border p-4">
-              <h3 className="text-base font-semibold">Unknown Biomarker Review &amp; Catalog Extension</h3>
-              <p className="text-sm text-muted-foreground">
-                {reviewOnlyRows.length} candidate observation(s) require scientific catalog review.
-                These candidates are not approved measurements and cannot enter the observation store,
-                sync queue, Health Intelligence or medical reports. Export a review request for the
-                scientific team; this action does not modify the catalog or upload any health data.
-              </p>
-              <div className="max-h-52 overflow-auto text-xs" role="list" aria-label="Catalog review candidates">
-                {reviewOnlyRows.map((row) => (
-                  <p role="listitem" key={row.key} className="border-b py-1">
-                    {row.label} · {row.unit || "unit missing"} · {row.classification.status}
-                    {"candidateMetricIds" in row.classification && row.classification.candidateMetricIds.length
-                      ? ` · candidate IDs: ${row.classification.candidateMetricIds.join(", ")}` : ""}
-                  </p>
-                ))}
-              </div>
-              <Button type="button" variant="outline" onClick={() => {
-                const request = {
-                  schema: "mitochondria.unknown-biomarker-review.v1",
-                  status: "PENDING_INDEPENDENT_SCIENTIFIC_REVIEW",
-                  provenance: "research-only; local export; not approved",
-                  catalogChangeApplied: false,
-                  candidates: reviewOnlyRows.map((row) => ({
-                    originalLabel: row.label, originalUnit: row.unit, originalValue: row.value,
-                    observedAt: row.observedAt || null, classification: row.classification.status,
-                    candidateMetricIds: "candidateMetricIds" in row.classification
-                      ? row.classification.candidateMetricIds : [],
-                    sourceKind: row.sourceKind, sourceLabel: row.sourceLabel,
-                    documentName: row.documentName || null,
-                    documentSha256: row.documentSha256 || null,
-                    evidenceExcerpt: row.excerpt || null,
-                  })),
-                };
-                const blob = new Blob([JSON.stringify(request, null, 2)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const anchor = document.createElement("a");
-                anchor.href = url;
-                anchor.download = "MITOCHONDRIA_unknown_biomarker_review_request.json";
-                anchor.click();
-                URL.revokeObjectURL(url);
-              }}>Export scientific review request (JSON)</Button>
-              <p className="text-xs text-muted-foreground">
-                Contains source labels and measurements. Share only through an approved secure channel.
-                A qualified reviewer must separately approve canonical ID, specimen, method, units,
-                reference context and catalog version before any future reclassification.
-              </p>
-            </section>
-          ) : null}
-          {reviewOnlyRows.length ? (
             <p className="text-sm text-muted-foreground">
               {reviewOnlyRows.length} row(s) are review-only and cannot be saved: unknown, ambiguous
               or unit-mismatched observations never enter storage or domain read models.
@@ -861,6 +823,14 @@ export function UnifiedIntakeWorkspace() {
           </Button>
         </section>
       ) : null}
+
+      <UnknownBiomarkerReviewPanel
+        key={`${membership?.missionId ?? ""}|${membership?.crewMemberId ?? ""}|${provenance}|${identity?.userId ?? ""}`}
+        rows={reviewOnlyRows}
+        scope={membership && provenance ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance } : null}
+        reviewerUserId={identity?.signedIn && !identity.error ? (identity.userId ?? null) : null}
+        rolesForScope={rolesForScope}
+      />
 
       <section className="space-y-4 rounded-lg border border-border bg-card p-5">
         <h2 className="text-lg font-semibold">Stored observations (this mission &amp; crew)</h2>
