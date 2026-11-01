@@ -3,7 +3,8 @@
  * encryption, authorization pre-check and RPC orchestration.
  *
  * Key handling (documented in docs/V9_4_OBSERVATION_SYNC_OPERATOR.md):
- *  - Master secrets MITO_OBSERVATION_SYNC_KEY_V<n> (base64, exactly 32 bytes)
+ *  - Master secrets MITO_OBSERVATION_SYNC_KEY_V<n> (padded base64 of 32 bytes, or a 64-512
+ *    character platform-generated random alphanumeric secret; see readMasterKeys)
  *    live only in the server runtime. They are never sent to the browser,
  *    never stored in the database and never logged.
  *  - Per-scope keys are derived with HKDF-SHA256 (fixed salt, info bound to
@@ -46,15 +47,30 @@ const b64 = (bytes: Uint8Array) => {
 const unb64 = (text: string): Uint8Array<ArrayBuffer> => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
 const hex = (buf: ArrayBuffer) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 
+/**
+ * Accepted master-secret formats (both are HKDF input keying material):
+ *  - padded base64 decoding to exactly 32 random bytes (44 characters ending in "="), or
+ *  - a platform-generated random alphanumeric secret of 64-512 characters (>= ~381 bits of
+ *    entropy), whose UTF-8 bytes are condensed by HKDF-SHA256 into the 256-bit scope keys.
+ * Anything else (short, low-alphabet, unpadded or wrong-length values) is ignored.
+ */
+const BASE64_32 = /^[A-Za-z0-9+/]{43}=$/;
+const RANDOM_ALNUM = /^[A-Za-z0-9]{64,512}$/;
+const MIN_DISTINCT_CHARS = 20;
+
 /** Parses configured master keys; malformed values are ignored (fail closed), never partially used. */
 export function readMasterKeys(env: (name: string) => string | undefined): Map<number, Uint8Array<ArrayBuffer>> {
   const keys = new Map<number, Uint8Array<ArrayBuffer>>();
   for (let v = 1; v <= 32; v++) {
-    const raw = env(`MITO_OBSERVATION_SYNC_KEY_V${v}`);
+    const raw = env(`MITO_OBSERVATION_SYNC_KEY_V${v}`)?.trim();
     if (!raw) continue;
     try {
-      const bytes = unb64(raw.trim());
-      if (bytes.length === 32) keys.set(v, bytes);
+      if (BASE64_32.test(raw)) {
+        const bytes = unb64(raw);
+        if (bytes.length === 32) keys.set(v, bytes);
+      } else if (RANDOM_ALNUM.test(raw) && new Set(raw).size >= MIN_DISTINCT_CHARS) {
+        keys.set(v, Uint8Array.from(enc.encode(raw)));
+      }
     } catch {
       // Malformed key material is never used.
     }
