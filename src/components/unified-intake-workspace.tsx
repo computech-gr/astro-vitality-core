@@ -831,6 +831,17 @@ export function UnifiedIntakeWorkspace() {
 
       <section className="space-y-4 rounded-lg border border-border bg-card p-5">
         <h2 className="text-lg font-semibold">Stored observations (this mission &amp; crew)</h2>
+        <div className="rounded-md border border-border bg-muted/30 p-3 text-sm" role="note">
+          <p className="font-semibold">Accepted observations are not Ground Medical attestations.</p>
+          <p className="mt-1 text-muted-foreground">
+            Active means the observation was accepted into research storage; it does not mean a medical reviewer signed it off.
+            To review records individually or in a batch, open the authorized Unified Health Report and use
+            Ground Medical evidence attestation. Original values cannot be edited in place; use Mark erroneous and a new corrected record.
+          </p>
+          <Link className="mt-2 inline-block underline underline-offset-2" to="/mission/health-report" hash="ground-medical-attestation">
+            Open Ground Medical evidence attestation (individual / Select all eligible)
+          </Link>
+        </div>
         <p className="text-sm text-muted-foreground">
           Append-only history: corrections mark records erroneous and add a superseding entry;
           nothing is rewritten or deleted. Only reviewer-accepted, non-erroneous observations

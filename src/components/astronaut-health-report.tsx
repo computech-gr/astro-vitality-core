@@ -563,9 +563,10 @@ export function AstronautHealthReport() {
             <ul className="list-disc pl-5 text-xs">{findings.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
           </section>}
 
-          <section aria-label="Ground Medical evidence attestation" className="space-y-2 rounded-lg border p-4">
+          <section id="ground-medical-attestation" aria-label="Ground Medical evidence attestation" className="scroll-mt-24 space-y-2 rounded-lg border p-4">
             <div className="report-avoid-break space-y-1">
               <h3 className="font-semibold">Ground Medical evidence attestation (second stage, optional)</h3>
+              <p className="text-xs text-muted-foreground">If you arrived from Medical Intake, select the same authorized mission, crew, SYNTHETIC/REAL provenance and reporting period. The controls below appear only for an authorized Ground Medical reviewer. Scroll to the chronological records to select individual rows; Select all eligible selects only records in this report scope.</p>
               <p className="text-xs text-muted-foreground">
                 Every row below is already an accepted stored observation. Attestation is an additional, append-only
                 confirmation by an authenticated Ground Medical member for exactly this mission, crew member and provenance.
