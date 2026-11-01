@@ -240,11 +240,20 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
   };
 }
 
-function crossDomainAssessments(report: UnifiedHealthReport): CrossDomainAssessment[] {
-  return CONTEXT_LINKS.map((link) => {
+/**
+ * Governed contexts and exact-ID signal mappings default to the existing
+ * Nikolas context registry; parameters exist only so tests can exercise every
+ * comparability status. Callers in the app never widen the mapping.
+ */
+export function buildCrossDomainAssessments(
+  report: UnifiedHealthReport,
+  links: readonly { domains: readonly string[]; signals: readonly string[] }[] = CONTEXT_LINKS,
+  signalIds: Readonly<Record<string, readonly string[]>> = CROSS_DOMAIN_SIGNAL_IDS,
+): CrossDomainAssessment[] {
+  return links.map((link) => {
     const domains = link.domains.filter(isResearcherDomain);
     const signals = link.signals.map((signal) => {
-      const ids = CROSS_DOMAIN_SIGNAL_IDS[signal] ?? [];
+      const ids = signalIds[signal] ?? [];
       const rows = report.rows.filter((r) => ids.includes(r.metricId) && (domains as readonly string[]).includes(r.badge));
       return {
         signal,
@@ -330,7 +339,7 @@ export function buildResearcherInterpretation(
     scope: report.scope,
     generatedAt: report.generatedAt,
     domains,
-    crossDomain: crossDomainAssessments(report),
+    crossDomain: buildCrossDomainAssessments(report),
     approvalLayers: approvalLayersFor(domains.flatMap((d) => d.series)),
     validatedInterpretations: 0,
     boundaries: [...INTERPRETATION_BOUNDARIES],

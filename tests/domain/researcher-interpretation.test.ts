@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { jsPDF } from "jspdf";
 import { buildScientificFindings } from "../../src/domain/health-intelligence/scientific-findings";
 import {
+  buildCrossDomainAssessments,
   buildResearcherInterpretation,
   crossDomainFor,
   domainInterpretation,
@@ -168,14 +169,38 @@ describe("v9.5 researcher interpretation: four modules", () => {
 });
 
 describe("v9.5 cross-domain comparability", () => {
-  it("never compares when signals are missing, sparse or not temporally aligned", () => {
+  it("with the current governed mapping every context has an unmapped signal, so no comparison is made", () => {
     const m = build(MIXED).model;
-    expect(m.crossDomain.map((c) => c.status)).toEqual(["signals_missing", "signals_missing", "not_temporally_aligned"]);
-    const sleep = crossDomainFor(m, "behavioral").find((c) => c.domains.includes("cardiovascular"))!;
-    expect(sleep.missingSignals).toEqual(["workload"]);
-    // Third context lists "workload" as missing; status order still reflects missing signals first.
-    expect(m.crossDomain[2]!.status).toBe("signals_missing" === m.crossDomain[2]!.status ? "signals_missing" : m.crossDomain[2]!.status);
-    for (const c of m.crossDomain) expect(c.statement).toContain("No comparison");
+    expect(m.crossDomain.map((c) => c.status)).toEqual(["signals_missing", "signals_missing", "signals_missing"]);
+    expect(crossDomainFor(m, "behavioral").find((c) => c.domains.includes("cardiovascular"))!.missingSignals).toEqual(["workload"]);
+    for (const c of m.crossDomain) expect(c.statement).toContain("No comparison is made");
+  });
+
+  const LINK = [{ domains: ["behavioral", "cardiovascular"], signals: ["HRV RMSSD", "sleep duration"] }];
+  const IDS = { "HRV RMSSD": ["cv-027"], "sleep duration": ["BSC-001"] };
+  it("requires two time points per signal (sufficient data)", () => {
+    const u = report([r("v1", "cardiovascular", "cv-027", "48", "ms", "2026-10-01T07:00:00.000Z"), r("s1", "behavioral", "BSC-001", "6.5", "h", "2026-10-01T06:00:00.000Z")]);
+    expect(buildCrossDomainAssessments(u, LINK, IDS)[0]!.status).toBe("insufficient_data");
+  });
+  it("requires temporal alignment on a shared UTC day", () => {
+    const u = report([
+      r("v1", "cardiovascular", "cv-027", "48", "ms", "2026-10-01T07:00:00.000Z"), r("v2", "cardiovascular", "cv-027", "47", "ms", "2026-10-02T07:00:00.000Z"),
+      r("s1", "behavioral", "BSC-001", "6.5", "h", "2026-10-03T06:00:00.000Z"), r("s2", "behavioral", "BSC-001", "6.3", "h", "2026-10-04T06:00:00.000Z"),
+    ]);
+    const [c] = buildCrossDomainAssessments(u, LINK, IDS);
+    expect(c!.status).toBe("not_temporally_aligned");
+    expect(c!.sharedUtcDays).toEqual([]);
+  });
+  it("even when aligned, unrecorded measurement conditions block any comparison or association", () => {
+    const u = report([
+      r("v1", "cardiovascular", "cv-027", "48", "ms", "2026-10-01T07:00:00.000Z"), r("v2", "cardiovascular", "cv-027", "47", "ms", "2026-10-04T07:00:00.000Z"),
+      r("s1", "behavioral", "BSC-001", "6.5", "h", "2026-10-01T06:00:00.000Z"), r("s2", "behavioral", "BSC-001", "6.3", "h", "2026-10-04T06:00:00.000Z"),
+    ]);
+    const [c] = buildCrossDomainAssessments(u, LINK, IDS);
+    expect(c!.status).toBe("measurement_conditions_unverified");
+    expect(c!.sharedUtcDays).toEqual(["2026-10-01", "2026-10-04"]);
+    expect(c!.statement).toContain("No comparison, association or causal claim is made");
+    expect(c!.evidenceIds.sort()).toEqual(["s1", "s2", "v1", "v2"]);
   });
 
   it("missing data is never treated as evidence of normal status", () => {
