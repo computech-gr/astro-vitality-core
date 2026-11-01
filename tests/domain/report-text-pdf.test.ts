@@ -225,11 +225,12 @@ describe("v9 searchable text PDF: layout", () => {
     renderReportDocument(buildReportDocument(inputFor(rows(3))), writer, { family: "LiberationSans", unicode: true });
     expect(texts.some((t) => t.text.includes("Ελλάς"))).toBe(true);
     const appendixIds = texts.filter((t) => t.text.startsWith("obs-xxxx"));
-    console.log(JSON.stringify(texts.filter((t) => t.text.includes("xxxx") || t.text.startsWith("obs")).slice(0, 8).map((t) => t.text)));
     expect(appendixIds.length).toBeGreaterThan(0);
     expect(appendixIds.every((t) => t.text.length < 45)).toBe(true);
-    // Long identifiers break after a separator, not mid-token.
-    expect(appendixIds.every((t) => t.text.endsWith("-") || /^obs-x+-\d{4}$/.test(t.text) || t.text.length < 45)).toBe(true);
+    // The full identifier is reconstructable from consecutive cell lines, and the
+    // trailing sequence number stays attached after its separator.
+    const tails = texts.filter((t) => /^x*-\d{4}$/.test(t.text));
+    expect(tails.length).toBeGreaterThan(0);
   });
 
   test("standard-font fallback keeps text searchable and maps symbols to Latin-1", () => {

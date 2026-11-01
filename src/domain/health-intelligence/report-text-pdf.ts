@@ -442,7 +442,8 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
         ...governed.map((d) => `${d.domain} (${d.present ? "data present" : "no included data"}): ${d.source ? `${d.source}. ` : ""}${d.status}`),
         ...(ungoverned.length ? [`${ungoverned.map((d) => d.domain).join(", ")} (no included data): ${ungoverned[0]!.status}`] : []),
         ...summary.measured,
-        ...summary.boundaries,
+        // The research-use-only boundary is already stated on page 1 and in Section 2.
+        ...summary.boundaries.filter((x) => !/^research-use-only/i.test(x)),
       ]),
     });
   }
@@ -552,12 +553,13 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
         cur = cand;
         return;
       }
-      if (cur) out.push(cur);
-      cur = "";
       if (fits(piece)) {
+        if (cur) out.push(cur);
         cur = piece;
         return;
       }
+      // Over-long token: continue on the current line, then break by character.
+      if (cur) cur += joiner;
       for (const ch of piece) {
         if (cur && !fits(cur + ch)) {
           out.push(cur);
