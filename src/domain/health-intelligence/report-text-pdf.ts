@@ -536,6 +536,50 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     font(style, size);
     return pdf.splitTextToSize(clean(text), w);
   };
+  /**
+   * Table-cell wrapping: words wrap at spaces; identifiers longer than the
+   * column break after separators (- _ / . : ·) instead of at arbitrary
+   * characters. The text itself is never altered, so it stays searchable.
+   */
+  const cellLines = (text: string, size: number, w: number) => {
+    font("normal", size);
+    const fits = (s: string) => pdf.getTextWidth(s) <= w;
+    const out: string[] = [];
+    let cur = "";
+    const pushPiece = (piece: string, joiner: string) => {
+      const cand = cur ? cur + joiner + piece : piece;
+      if (fits(cand)) {
+        cur = cand;
+        return;
+      }
+      if (cur) out.push(cur);
+      cur = "";
+      if (fits(piece)) {
+        cur = piece;
+        return;
+      }
+      for (const ch of piece) {
+        if (cur && !fits(cur + ch)) {
+          out.push(cur);
+          cur = "";
+        }
+        cur += ch;
+      }
+    };
+    for (const para of clean(text).split("\n")) {
+      for (const word of para.split(" ").filter((x) => x !== "")) {
+        if (fits(cur ? `${cur} ${word}` : word) || fits(word)) {
+          pushPiece(word, " ");
+          continue;
+        }
+        const parts = word.split(/(?<=[-_/.:·])/);
+        parts.forEach((p, i) => pushPiece(p, i === 0 ? " " : ""));
+      }
+      if (cur) out.push(cur);
+      cur = "";
+    }
+    return out.length ? out : [""];
+  };
   const paragraph = (text: string, size: number, style: "normal" | "bold", muted = false, indent = 0, bullet = false) => {
     const ls = lines(text, size, style, width - indent - (bullet ? 4 : 0));
     const lh = lineHeight(size);
@@ -579,6 +623,45 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       pdf.setTextColor(255, 255, 255);
       pdf.text(clean(b.text), L.pageWidth / 2, y + 6.8, { align: "center" });
       y += h + 4;
+      continue;
+    }
+    if (b.kind === "alert") {
+      const pad = 3;
+      const inner = width - 2 * pad - (b.tone === "pending" ? 3 : 0);
+      const titleSize = b.tone === "info" ? 10 : 11;
+      const tl = lines(b.title, titleSize, "bold", inner);
+      const bl = b.lines.flatMap((l) => lines(l, 9, "normal", inner));
+      const h = tl.length * lineHeight(titleSize) + bl.length * lineHeight(9) + 2 * pad + 1;
+      ensure(h + 2);
+      const x0 = L.marginX + (b.tone === "pending" ? 3 : 0);
+      if (b.tone === "pending") {
+        pdf.setFillColor(255, 243, 205);
+        pdf.rect(L.marginX, y, width, h, "F");
+        pdf.setFillColor(150, 90, 0);
+        pdf.rect(L.marginX, y, 2, h, "F");
+        pdf.setDrawColor(150, 90, 0);
+        pdf.setLineWidth(0.6);
+      } else {
+        pdf.setFillColor(b.tone === "complete" ? 232 : 245, b.tone === "complete" ? 245 : 245, b.tone === "complete" ? 233 : 245);
+        pdf.rect(L.marginX, y, width, h, "F");
+        pdf.setDrawColor(120, 120, 120);
+        pdf.setLineWidth(0.25);
+      }
+      pdf.rect(L.marginX, y, width, h);
+      let ty = y + pad;
+      font("bold", titleSize);
+      if (b.tone === "pending") pdf.setTextColor(110, 60, 0);
+      for (const l of tl) {
+        pdf.text(l, x0 + pad, ty + lineHeight(titleSize) * 0.75);
+        ty += lineHeight(titleSize);
+      }
+      ty += 1;
+      for (const l of bl) {
+        font("normal", 9);
+        pdf.text(l, x0 + pad, ty + lineHeight(9) * 0.75);
+        ty += lineHeight(9);
+      }
+      y += h + 3;
       continue;
     }
     if (b.kind === "p") {
@@ -644,7 +727,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     pdf.setDrawColor(200, 200, 200);
     pdf.setLineWidth(0.1);
     for (const row of t.rows) {
-      let cells = row.map((c, i) => lines(c ?? "", size, "normal", widths[i]! - 2 * pad));
+      let cells = row.map((c, i) => cellLines(c ?? "", size, widths[i]! - 2 * pad));
       // A row taller than a page is split across pages with the header repeated.
       while (cells.some((c) => c.length)) {
         const available = Math.floor((L.bottom - y - 2 * pad) / lh);
