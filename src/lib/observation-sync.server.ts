@@ -43,12 +43,12 @@ const b64 = (bytes: Uint8Array) => {
   for (const b of bytes) s += String.fromCharCode(b);
   return btoa(s);
 };
-const unb64 = (text: string) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
+const unb64 = (text: string): Uint8Array<ArrayBuffer> => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
 const hex = (buf: ArrayBuffer) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 
 /** Parses configured master keys; malformed values are ignored (fail closed), never partially used. */
-export function readMasterKeys(env: (name: string) => string | undefined): Map<number, Uint8Array> {
-  const keys = new Map<number, Uint8Array>();
+export function readMasterKeys(env: (name: string) => string | undefined): Map<number, Uint8Array<ArrayBuffer>> {
+  const keys = new Map<number, Uint8Array<ArrayBuffer>>();
   for (let v = 1; v <= 32; v++) {
     const raw = env(`MITO_OBSERVATION_SYNC_KEY_V${v}`);
     if (!raw) continue;
@@ -62,7 +62,7 @@ export function readMasterKeys(env: (name: string) => string | undefined): Map<n
   return keys;
 }
 
-export async function deriveScopeKeys(master: Uint8Array, version: number, scope: SyncScope): Promise<ScopeKeys> {
+export async function deriveScopeKeys(master: Uint8Array<ArrayBuffer>, version: number, scope: SyncScope): Promise<ScopeKeys> {
   const base = await crypto.subtle.importKey("raw", master, "HKDF", false, ["deriveKey"]);
   const info = (purpose: string) => enc.encode(JSON.stringify(["mitochondria/observation-sync", purpose, version, scope.missionId, scope.crewMemberId, scope.provenance]));
   const aes = await crypto.subtle.deriveKey({ name: "HKDF", hash: "SHA-256", salt: SALT, info: info("aes-gcm") }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
@@ -132,7 +132,7 @@ export const OBSERVATION_SYNC_MESSAGES: Record<ObservationSyncErrorCode, string>
 const fail = (code: ObservationSyncErrorCode): SyncFailure => ({ ok: false, code, message: OBSERVATION_SYNC_MESSAGES[code] });
 
 /** Gate: enable flag + key material, and for REAL provenance a separate flag. All default-off. */
-export function syncGate(env: SyncDeps["env"], provenance: SyncScope["provenance"]): { ok: true; keys: Map<number, Uint8Array> } | SyncFailure {
+export function syncGate(env: SyncDeps["env"], provenance: SyncScope["provenance"]): { ok: true; keys: Map<number, Uint8Array<ArrayBuffer>> } | SyncFailure {
   if (env("MITO_OBSERVATION_SYNC_ENABLED") !== "true") return fail("disabled");
   if (provenance === "real" && env("MITO_OBSERVATION_SYNC_REAL_ENABLED") !== "true") return fail("disabled");
   const keys = readMasterKeys(env);
