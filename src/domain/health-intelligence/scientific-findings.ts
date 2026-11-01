@@ -36,11 +36,22 @@ export interface ScientificFindings {
 
 // Source: data/scientific/nikolas-cross-domain-context.v1.json.
 // These are research context links only, never diagnostic or causal rules.
-const CONTEXT_LINKS = [
+export const CONTEXT_LINKS = [
   { domains: ["immune", "behavioral"], signals: ["salivary cortisol", "sleep duration", "immune cell function"] },
   { domains: ["immune", "bone"], signals: ["IL-6", "CTX", "25(OH) vitamin D"] },
   { domains: ["behavioral", "cardiovascular"], signals: ["HRV RMSSD", "sleep duration", "workload"] },
 ] as const;
+
+// Provisional exact catalog-ID mappings; scientific review remains pending. No fuzzy matching or invented aliases.
+// Shared read-only with the Researcher interpretation model (researcher-interpretation.ts).
+export const CROSS_DOMAIN_SIGNAL_IDS: Readonly<Record<string, readonly string[]>> = {
+  "HRV RMSSD": ["cv-027"],
+  "sleep duration": ["BSC-001"],
+  "25(OH) vitamin D": ["IMM-030"],
+  "CTX": ["bone-001"],
+  // No reviewed canonical mapping for salivary cortisol, immune cell function,
+  // IL-6 or workload in this reporting pipeline: keep them explicitly missing.
+};
 
 function recordedDecimals(value: string): number {
   const fraction = value.trim().split(".")[1];
@@ -93,15 +104,7 @@ export function buildScientificFindings(report: UnifiedHealthReport): Scientific
         : "Insufficient comparable time points for a descriptive change; no trend inferred.",
     };
   });
-  // Provisional exact catalog-ID mappings; scientific review remains pending. No fuzzy matching or invented aliases.
-  const signalIds: Record<string, readonly string[]> = {
-    "HRV RMSSD": ["cv-027"],
-    "sleep duration": ["BSC-001"],
-    "25(OH) vitamin D": ["IMM-030"],
-    "CTX": ["bone-001"],
-    // No reviewed canonical mapping for salivary cortisol, immune cell function,
-    // IL-6 or workload in this reporting pipeline: keep them explicitly missing.
-  };
+  const signalIds = CROSS_DOMAIN_SIGNAL_IDS;
   const crossDomain: ScientificCrossDomainFinding[] = CONTEXT_LINKS.map((link) => {
     const matched = link.signals.map((signal) => ({ signal, rows: report.rows.filter((r) =>
       (signalIds[signal] ?? []).includes(r.metricId) && link.domains.includes(r.badge as never)),
