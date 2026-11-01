@@ -18,7 +18,14 @@ describe("scientific findings research boundaries", () => {
   it("does not invent findings when report is empty", () => {
     const result = buildScientificFindings(base);
     expect(result.metrics).toEqual([]);
-    expect(result.crossDomain).toEqual([]);
+    // Every governed context is listed with all signals missing and no evidence; nothing is associated.
+    expect(result.crossDomain).toHaveLength(3);
+    for (const c of result.crossDomain) {
+      expect(c.evidenceIds).toEqual([]);
+      expect(c.missingSignals).toEqual(c.signals);
+      expect(c.statement).toContain("No cross-domain association inferred");
+    }
+    expect(result.reviewItems).toEqual([]);
   });
   it("requires distinct comparable time points for descriptive delta", () => {
     const single = buildScientificFindings({ ...base, rows: [row("a", "67", "2026-11-01T08:00:00Z")] });
@@ -26,7 +33,8 @@ describe("scientific findings research boundaries", () => {
     const paired = buildScientificFindings({ ...base, rows: [row("a", "67", "2026-11-01T08:00:00Z"), row("b", "72", "2026-11-02T08:00:00Z")] });
     expect(paired.metrics[0]?.delta).toBe(5);
     expect(paired.metrics[0]?.evidenceIds).toEqual(["a", "b"]);
-    expect(paired.crossDomain).toEqual([]);
+    // Heart rate (cv-001) is not a mapped context signal, so it never becomes cross-domain evidence.
+    expect(paired.crossDomain.flatMap((c) => c.evidenceIds)).toEqual([]);
   });
   it("does not compute numeric changes from nonnumeric values", () => {
     const result = buildScientificFindings({ ...base, rows: [row("a", "unknown", "2026-11-01T08:00:00Z"), row("b", "72", "2026-11-02T08:00:00Z")] });
@@ -55,5 +63,27 @@ describe("Nikolas governed canonical signal coverage", () => {
     expect(context?.evidenceIds).toEqual(["rmssd", "sleep"]);
     expect(context?.missingSignals).toContain("workload");
     expect(context?.statement).toContain("No cross-domain association inferred");
+  });
+});
+
+describe("Nikolas canonical mapping stays exact and domain-scoped", () => {
+  it("maps CTX (bone-001) and 25(OH) vitamin D (IMM-030) but keeps IL-6 missing, so no association is stated", () => {
+    const ctx = { ...row("ctx", "450", "2026-10-02T08:00:00Z"), badge: "bone" as const, metricId: "bone-001", metricLabel: "CTX / β-CTX", unit: "pg/mL" };
+    const vitd = { ...row("vitd", "30", "2026-10-02T08:00:00Z"), badge: "immune" as const, metricId: "IMM-030", metricLabel: "25-hydroxyvitamin D", unit: "ng/mL" };
+    const context = buildScientificFindings({ ...base, rows: [ctx, vitd] }).crossDomain.find((c) => c.domains.includes("bone"));
+    expect(context?.evidenceIds).toEqual(["ctx", "vitd"]);
+    expect(context?.missingSignals).toEqual(["IL-6"]);
+    expect(context?.statement).toContain("No cross-domain association inferred");
+  });
+  it("does not match by label text or outside the context domains", () => {
+    const labelOnly = { ...row("lbl", "48", "2026-10-02T08:00:00Z"), metricId: "cv-999", metricLabel: "HRV RMSSD", unit: "ms" };
+    const wrongDomain = { ...row("wd", "6.5", "2026-10-03T07:00:00Z"), badge: "wearable" as const, metricId: "BSC-001", metricLabel: "Total sleep time", unit: "h" };
+    const result = buildScientificFindings({ ...base, rows: [labelOnly, wrongDomain] });
+    expect(result.crossDomain.flatMap((c) => c.evidenceIds)).toEqual([]);
+  });
+  it("never asks for cross-domain review when coverage is partial", () => {
+    const cv = { ...row("rmssd", "48", "2026-10-02T08:00:00Z"), metricId: "cv-027", metricLabel: "RMSSD", unit: "ms" };
+    const result = buildScientificFindings({ ...base, rows: [cv] });
+    expect(result.reviewItems.some((item) => item.includes("qualified human scientific review"))).toBe(false);
   });
 });
