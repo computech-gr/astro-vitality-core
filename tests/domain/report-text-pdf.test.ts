@@ -126,8 +126,8 @@ describe("v9 searchable text PDF: layout", () => {
         expect(texts.some((t) => t.page === p && t.text === `Page ${p} of ${pages}`)).toBe(true);
         expect(texts.some((t) => t.page === p && t.text === "SYNTHETIC / RESEARCH ONLY")).toBe(true);
       }
-      // Body text never overflows the bottom margin.
-      expect(texts.filter((t) => !t.text.startsWith("Page ") && t.y > 284).length).toBe(0);
+      // Body text never overflows into the footer band (footer lines sit at y = 288 mm).
+      expect(texts.filter((t) => t.y > 279.5 && t.y !== 288).length).toBe(0);
     }
   });
 

@@ -193,9 +193,9 @@ describe("v9 append-only Edit / Save correction", () => {
   });
 
   test("erroneous and already-superseded records cannot be edited", () => {
-    const bad = obs({ status: "erroneous", statusReason: "wrong" });
+    const bad = obs({ status: "erroneous", statusReason: "wrong", value: "55" });
     expect(planObservationCorrection(bad, [bad], draftFor(bad), gmCtx()).ok).toBe(false);
-    const o = obs();
+    const o = obs({ value: "55" });
     const plan = planObservationCorrection(o, [o], draftFor(o), gmCtx());
     if (!plan.ok) throw new Error(plan.reason);
     expect(observationLifecycle(o, [o, plan.corrected])).toBe("superseded");
