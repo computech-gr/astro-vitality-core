@@ -103,9 +103,18 @@ export async function listUnifiedObservations(
   );
 }
 
-/** Domain read-model view: reviewer-accepted, non-erroneous observations only. */
+/**
+ * Domain read-model view: reviewer-accepted, non-erroneous observations that
+ * are not superseded by a non-erroneous correction. After an append-only
+ * correction exactly one version (the latest) stays active in projections.
+ */
 export function domainReadableObservations(
   observations: readonly UnifiedObservation[],
 ): UnifiedObservation[] {
-  return observations.filter(isDomainReadable);
+  const superseded = new Set(
+    observations
+      .filter((o) => o.supersedesId && o.status !== "erroneous" && isDomainReadable(o))
+      .map((o) => o.supersedesId!),
+  );
+  return observations.filter((o) => isDomainReadable(o) && !superseded.has(o.id));
 }
