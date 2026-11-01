@@ -473,7 +473,6 @@ function ReviewDialog(props: {
       setUnit(state.observation.originalUnit);
       setObservedAt(new Date(state.observation.observedAt).toISOString());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when a new dialog opens
   }, [state]);
   if (!state) return null;
   const min = state.kind === "erroneous" || state.kind === "edit" ? CORRECTION_REASON_MIN : ATTESTATION_REASON_MIN;
