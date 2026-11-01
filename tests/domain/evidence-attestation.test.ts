@@ -54,9 +54,9 @@ describe("v7 Ground Medical evidence attestation", () => {
     if (!plan.ok) throw new Error(plan.reason);
     expect(plan.events).toHaveLength(3);
     const store = new InMemoryReviewLedgerStore();
-    expect(await appendAttestationEvents(plan.events, V7_SCOPE, gm(), store)).toEqual({ inserted: 3, duplicates: 0 });
+    expect(await appendAttestationEvents(plan.events, V7_SCOPE, gm(), store)).toEqual({ inserted: 3, duplicates: 0, failed: [] });
     // Replaying the identical batch never duplicates.
-    expect(await appendAttestationEvents(plan.events, V7_SCOPE, gm(), store)).toEqual({ inserted: 0, duplicates: 3 });
+    expect(await appendAttestationEvents(plan.events, V7_SCOPE, gm(), store)).toEqual({ inserted: 0, duplicates: 3, failed: [] });
     const stored = await listAttestationEvents(V7_SCOPE, store);
     expect(stored).toHaveLength(3);
     expect(eligibleForAttestation(report, stored)).toHaveLength(0);

@@ -244,7 +244,7 @@ export function AstronautHealthReport() {
       setAttestations(events);
       setSelected(new Set());
       setAttestConfirmed(false);
-      setAttestStatus(`${mode === "attest" ? "Attested" : "Revoked"} ${saved.inserted} record(s)${saved.duplicates ? `, ${saved.duplicates} already recorded` : ""}${plan.skipped.length ? `, ${plan.skipped.length} skipped (${plan.skipped[0]!.reason})` : ""}. Batch ${plan.batchId}. Stored encrypted on this device; catalog and scientific review status unchanged.`);
+      setAttestStatus(`${mode === "attest" ? "Attested" : "Revoked"} ${saved.inserted} record(s)${saved.duplicates ? `, ${saved.duplicates} already recorded` : ""}${saved.failed.length ? `, ${saved.failed.length} FAILED (${saved.failed.map((f) => f.recordId).join(", ")}: ${saved.failed[0]!.message}) — retry those records` : ""}${plan.skipped.length ? `, ${plan.skipped.length} skipped (${plan.skipped[0]!.reason})` : ""}. Batch ${plan.batchId}. Stored encrypted on this device; catalog and scientific review status unchanged.`);
     } catch (error) {
       setAttestStatus(error instanceof Error ? error.message : "Attestation could not be saved. Nothing was changed.");
     } finally { setAttesting(false); }
