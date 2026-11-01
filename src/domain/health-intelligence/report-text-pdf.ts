@@ -241,7 +241,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
           { title: "Time coverage (UTC)", width: 0.18 },
           { title: "Evidence", width: 0.15 },
         ],
-        rows: findings.crossDomain.map((c) => [c.domains.join(" / "), c.observedSignalCounts.join("; ") || "none", c.missingSignals.join(", ") || "none", c.observedTimeRange ?? "none", ref(c.evidenceIds)]),
+        rows: findings.crossDomain.map((c) => [c.domains.join(" / "), c.observedSignalCounts.join("; ") || "none", c.missingSignals.join(", ") || "none", c.observedTimeRange ? c.observedTimeRange.replace(/\.000Z/g, "Z") : "none", ref(c.evidenceIds)]),
       },
       { kind: "p", text: "No cross-domain association, temporal alignment, causality or clinical significance is inferred from partial coverage or co-observation.", muted: true },
     );
@@ -414,7 +414,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     audit.length
       ? {
           kind: "table",
-          columns: [{ title: "Decided (UTC)", width: 0.2 }, { title: "Action", width: 0.09 }, { title: "Record / event", width: 0.3 }, { title: "Reviewer and reason", width: 0.41 }],
+          columns: [{ title: "Decided (UTC)", width: 0.24 }, { title: "Action", width: 0.08 }, { title: "Record / event", width: 0.3 }, { title: "Reviewer and reason", width: 0.38 }],
           rows: audit.map((e) => [e.decidedAt, e.action, `${e.recordId} · ${e.eventId}${e.supersedesEventId ? ` (supersedes ${e.supersedesEventId})` : ""}`, `${e.actorUserId} (ground_medical): ${e.reason}`]),
         }
       : { kind: "p", text: "No attestation events." },
@@ -539,7 +539,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
   };
   /**
    * Table-cell wrapping: words wrap at spaces; identifiers longer than the
-   * column break after separators (- _ / . : ·) instead of at arbitrary
+   * column break after separators (- _ / ·) instead of at arbitrary
    * characters. The text itself is never altered, so it stays searchable.
    */
   const cellLines = (text: string, size: number, w: number) => {
@@ -574,7 +574,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
           pushPiece(word, " ");
           continue;
         }
-        const parts = word.split(/(?<=[-_/.:·])/);
+        const parts = word.split(/(?<=[-_/·])/);
         parts.forEach((p, i) => pushPiece(p, i === 0 ? " " : ""));
       }
       if (cur) out.push(cur);
