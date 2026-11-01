@@ -218,3 +218,10 @@ export async function createReportPdf(element: HTMLElement, title: string, injec
   if (!(blob.size > 0)) throw new Error("The PDF file is empty.");
   return blob;
 }
+
+/** Actionable failure text: states the real cause and that no file was created. Print stays a separate action. */
+export function pdfExportErrorMessage(error: unknown): string {
+  const raw = error instanceof Error && error.message.trim() ? error.message.trim() : "PDF renderer unavailable";
+  const cause = raw.replace(/[.\s]+$/, "");
+  return `Direct PDF export failed: ${cause}. No PDF was downloaded. Use the separate Print button for browser Save as PDF.`;
+}
