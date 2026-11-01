@@ -1,7 +1,7 @@
 /**
  * v9 Stored observations review: lifecycle + Ground Medical status columns,
  * per-row and bulk attestation, append-only Edit/Save correction, Mark
- * erroneous, and explicit cloud review sync. All writes are append-only and
+ * erroneous, and the explicit v9.4 "Sync observations & reviews" action. All writes are append-only and
  * re-check the signed-in reviewer's roles for this exact mission + crew first.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -15,7 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { loadMissionIdentity } from "@/infrastructure/mission-identity";
 import type { UnifiedObservation } from "@/domain/health-intelligence/observation-envelope";
-import { markUnifiedObservationErroneous, saveUnifiedObservation } from "@/domain/health-intelligence/observation-store";
+import {
+  importUnifiedObservationEvent,
+  listUnifiedObservationEvents,
+  listUnifiedObservations,
+  markUnifiedObservationErroneous,
+  saveUnifiedObservation,
+} from "@/domain/health-intelligence/observation-store";
 import {
   ATTESTATION_REASON_MIN,
   planAttestation,
@@ -23,14 +29,16 @@ import {
 } from "@/domain/health-intelligence/evidence-attestation";
 import {
   appendAttestationEvents,
-  appendSyncReceipts,
-  importRemoteAttestationEvents,
-  importRemoteCorrectionIntents,
+  appendObservationSyncReceipts,
+  appendSyncRun,
   listAttestationEvents,
+  listObservationSyncReceipts,
   listRemoteCorrectionIntents,
   listSyncReceipts,
+  listSyncRuns,
   type RemoteCorrectionIntent,
   type SyncReceipt,
+  type SyncRunRecord,
 } from "@/domain/health-intelligence/review-ledger";
 import {
   buildStoredObservationReview,
@@ -45,18 +53,19 @@ import {
   toggleSelectAll,
   type StoredObservationView,
 } from "@/domain/health-intelligence/stored-observation-review";
+import { correctionSyncPayload, syncCounts } from "@/domain/health-intelligence/review-sync";
+import { runReviewSync } from "@/domain/health-intelligence/review-sync-runner";
 import {
-  correctionSyncPayload,
-  mergeAttestationEvents,
-  pendingForPush,
-  receiptsFromServer,
-  remoteRowToAttestation,
-  remoteRowToCorrection,
-  REVIEW_SYNC_MIGRATION_REQUIRED,
-  syncCounts,
-} from "@/domain/health-intelligence/review-sync";
+  observationSyncCounts,
+  reconcileReviewEvents,
+  type ObservationSyncCounts,
+  type ObservationSyncEvent,
+  type ObservationSyncReceipt,
+} from "@/domain/health-intelligence/observation-sync";
+import { runObservationSync } from "@/domain/health-intelligence/observation-sync-runner";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { pullReviewEvents, pushReviewEvents } from "@/lib/review-sync.functions";
+import { pullObservationEvents, pushObservationEvents } from "@/lib/observation-sync.functions";
 
 type Scope = { missionId: string; crewMemberId: string; provenance: "synthetic" | "real" };
 
@@ -432,7 +441,7 @@ export function StoredObservationsReview(props: Props) {
       )}
 
       {scope && membership && (
-        <ReviewCloudSync scope={scope} userId={userId} rolesForScope={rolesForScope} history={history} onImported={() => afterWrite("Cloud review events merged into this device.")} ledgerVersion={ledgerVersion} />
+        <ReviewCloudSync scope={scope} userId={userId} rolesForScope={rolesForScope} history={history} onImported={() => afterWrite("Cloud observations and review events were added to this device (nothing local was changed or replaced).")} ledgerVersion={ledgerVersion} />
       )}
 
       <ReviewDialog
@@ -557,141 +566,231 @@ function ReviewDialog(props: {
   );
 }
 
+type RunState = { status: "ok" | "partial" | "failed" | "skipped"; message: string; at: string } | null;
+
+const runTone = (s: RunState) => (!s ? "" : s.status === "ok" ? "text-foreground" : s.status === "skipped" ? "text-muted-foreground" : "text-destructive");
+const runLabel = (s: RunState) => (!s ? "" : s.status === "ok" ? "Completed" : s.status === "partial" ? "Partly completed — see details" : s.status === "skipped" ? "Skipped" : "Failed — nothing marked as synced");
+
+/**
+ * v9.4 explicit "Sync observations & reviews": first the encrypted observation
+ * events (upload, then download + append-only import), then the existing
+ * metadata-only review sync. Each step reports its own result; a failure in one
+ * never hides or fakes the other.
+ */
 function ReviewCloudSync(props: { scope: Scope; userId: string | null; rolesForScope: readonly string[]; history: UnifiedObservation[]; onImported: () => Promise<void>; ledgerVersion: number }) {
   const { scope, userId, rolesForScope, history } = props;
-  const canPush = rolesForScope.includes("ground_medical") && Boolean(userId);
-  const canPull = canPush || rolesForScope.includes("crew_self");
+  const canReviewPush = rolesForScope.includes("ground_medical") && Boolean(userId);
+  const canAccess = Boolean(userId) && (rolesForScope.includes("ground_medical") || rolesForScope.includes("crew_self"));
   const [receipts, setReceipts] = useState<SyncReceipt[]>([]);
+  const [obsReceipts, setObsReceipts] = useState<ObservationSyncReceipt[]>([]);
+  const [localEvents, setLocalEvents] = useState<ObservationSyncEvent[]>([]);
   const [local, setLocal] = useState<Awaited<ReturnType<typeof listAttestationEvents>>>([]);
   const [remoteCorrections, setRemoteCorrections] = useState<RemoteCorrectionIntent[]>([]);
+  const [runs, setRuns] = useState<SyncRunRecord[]>([]);
   const [failed, setFailed] = useState<Set<string>>(new Set());
-  const [message, setMessage] = useState("");
+  const [obsFailed, setObsFailed] = useState<Set<string>>(new Set());
+  const [obsRun, setObsRun] = useState<RunState>(null);
+  const [revRun, setRevRun] = useState<RunState>(null);
+  const [obsCounts, setObsCounts] = useState<ObservationSyncCounts | null>(null);
+  const [realConfirmed, setRealConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [readError, setReadError] = useState("");
   const [version, setVersion] = useState(0);
   const key = `${scope.missionId}|${scope.crewMemberId}|${scope.provenance}`;
   useEffect(() => {
     let active = true;
-    void Promise.all([listAttestationEvents(scope), listSyncReceipts(scope), listRemoteCorrectionIntents(scope)])
-      .then(([a, r, c]) => {
+    void Promise.all([
+      listAttestationEvents(scope),
+      listSyncReceipts(scope),
+      listRemoteCorrectionIntents(scope),
+      listObservationSyncReceipts(scope),
+      listUnifiedObservationEvents(scope.missionId, scope.crewMemberId),
+      listSyncRuns(scope),
+    ])
+      .then(([a, r, c, or, ev, rn]) => {
         if (!active) return;
         setLocal(a);
         setReceipts(r);
         setRemoteCorrections(c);
+        setObsReceipts(or);
+        setLocalEvents(ev.map((e) => ({ eventId: e.eventId, eventKind: e.eventKind, observation: e.observation })));
+        setRuns(rn);
+        setReadError("");
       })
-      .catch(() => active && setMessage("Local review ledger unavailable; sync status unknown."));
+      .catch(() => active && setReadError("Local sync records unavailable; sync status unknown (not zero)."));
     return () => {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- key captures scope
-  }, [key, version, props.ledgerVersion]);
+  }, [key, version, props.ledgerVersion, history]);
   useEffect(() => {
     setFailed(new Set());
-    setMessage("");
+    setObsFailed(new Set());
+    setObsRun(null);
+    setRevRun(null);
+    setRealConfirmed(false);
   }, [key]);
+  useEffect(() => {
+    let active = true;
+    void observationSyncCounts(localEvents, obsReceipts, obsFailed, scope).then((c) => active && setObsCounts(c));
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- key captures scope
+  }, [localEvents, obsReceipts, obsFailed, key]);
 
   const corrections = useMemo(
     () => history.filter((o) => o.missionId === scope.missionId && o.crewMemberId === scope.crewMemberId && o.provenance === scope.provenance).map(correctionSyncPayload).filter((p): p is NonNullable<typeof p> => p !== null),
     [history, scope.missionId, scope.crewMemberId, scope.provenance],
   );
   const counts = syncCounts(local, corrections, receipts, failed, userId);
+  const reconciliation = reconcileReviewEvents(history.filter((o) => o.provenance === scope.provenance), local);
+  const lastObs = [...runs].reverse().find((r) => r.observations.status === "ok" || r.observations.status === "partial")?.at ?? null;
+  const lastRev = [...runs].reverse().find((r) => r.reviews.status === "ok" || r.reviews.status === "partial")?.at ?? null;
 
   const sync = async () => {
-    if (!userId || !canPull) return;
+    if (!userId || !canAccess) return;
     setBusy(true);
-    setMessage("Syncing review metadata…");
+    setObsRun(null);
+    setRevRun(null);
+    let obsState: RunState = null;
+    let revState: RunState = null;
     try {
       const fresh = await freshRoles(scope, userId);
       if (!fresh.userId) throw new Error("Your session changed. Sign in again; nothing was synced.");
-      const now = new Date().toISOString();
-      const notes: string[] = [];
-      const nextFailed = new Set<string>();
-      if (canPush && fresh.roles.includes("ground_medical")) {
-        const push = pendingForPush(local, corrections, receipts, fresh.userId);
-        if (push.attestations.length || push.corrections.length) {
-          const result = await pushReviewEvents({ data: { scope, attestations: push.attestations, corrections: push.corrections } });
-          if (!result.ok) {
-            setMessage(result.code === "migration_required" ? `${REVIEW_SYNC_MIGRATION_REQUIRED}. Local events are kept on this device; nothing was synced.` : `${result.message} Local events are kept.`);
-            return;
-          }
-          await appendSyncReceipts(receiptsFromServer(result.results, now), scope, fresh.userId);
-          for (const r of result.results) if (r.status === "rejected") nextFailed.add(r.id);
-          const by = (s: string) => result.results.filter((r) => r.status === s).length;
-          notes.push(`sent ${result.results.length}: ${by("inserted")} new, ${by("duplicate")} already in cloud, ${by("conflict")} conflict, ${by("rejected")} rejected${by("rejected") ? ` (${result.results.find((r) => r.status === "rejected")?.detail ?? "server validation"})` : ""}`);
-        } else notes.push("nothing new to send");
-      }
-      // Pull (paginated); absence from a page is never treated as deletion.
-      let imported = 0;
-      let conflicts = 0;
-      for (const kind of ["attestation", "correction"] as const) {
-        let afterSeq: number = 0;
-        for (let page = 0; page < 20; page++) {
-          const res: Awaited<ReturnType<typeof pullReviewEvents>> = await pullReviewEvents({ data: { scope, kind, afterSeq, limit: 500 } });
-          if (!res.ok) {
-            setMessage(res.code === "migration_required" ? `${REVIEW_SYNC_MIGRATION_REQUIRED}. Local events are kept on this device.` : `${notes.join("; ")}${notes.length ? "; " : ""}${res.message}`);
-            setFailed(nextFailed);
-            return;
-          }
-          if (kind === "attestation") {
-            const remote = res.rows.map((r) => remoteRowToAttestation(r, scope)).filter((e): e is NonNullable<typeof e> => e !== null);
-            const merged = mergeAttestationEvents(await listAttestationEvents(scope), remote);
-            conflicts += merged.conflicts.length;
-            imported += (await importRemoteAttestationEvents(merged.imported, scope)).inserted;
-            await appendSyncReceipts(
-              [
-                ...remote.filter((e) => !merged.conflicts.some((c) => c.eventId === e.eventId)).map((e) => ({ kind: "attestation" as const, eventId: e.eventId, status: "synced" as const, serverReceivedAt: null, recordedAt: now })),
-                ...merged.conflicts.map((c) => ({ kind: "attestation" as const, eventId: c.eventId, status: "conflict" as const, serverReceivedAt: null, recordedAt: now, detail: c.detail })),
-              ],
-              scope,
-              fresh.userId,
-            );
-          } else {
-            const remote = res.rows.map((r) => remoteRowToCorrection(r, scope)).filter((e): e is NonNullable<typeof e> => e !== null);
-            imported += await importRemoteCorrectionIntents(remote, scope);
-            await appendSyncReceipts(remote.map((c) => ({ kind: "correction" as const, eventId: c.intentId, status: "synced" as const, serverReceivedAt: c.serverReceivedAt, recordedAt: now })), scope, fresh.userId);
-          }
-          afterSeq = res.lastSeq;
-          if (!res.hasMore) break;
+      const freshUser = fresh.userId;
+      const mayAccess = fresh.roles.includes("ground_medical") || fresh.roles.includes("crew_self");
+      // ---- Step 1: observations ----
+      if (!mayAccess) {
+        obsState = { status: "failed", message: "Your access to this mission and crew member is no longer valid. Nothing was synced.", at: new Date().toISOString() };
+      } else {
+        try {
+          const r = await runObservationSync(
+            { scope, canUpload: true, realDataConfirmed: scope.provenance === "real" ? realConfirmed : false },
+            {
+              listLocal: async () => (await listUnifiedObservationEvents(scope.missionId, scope.crewMemberId)).map((e) => ({ eventId: e.eventId, eventKind: e.eventKind, observation: e.observation })),
+              listReceipts: () => listObservationSyncReceipts(scope),
+              appendReceipts: async (rs) => {
+                await appendObservationSyncReceipts(rs, scope, freshUser);
+              },
+              importEvent: (e) => importUnifiedObservationEvent(e),
+              push: (a) => pushObservationEvents({ data: a }),
+              pull: (a) => pullObservationEvents({ data: a }),
+              now: () => new Date().toISOString(),
+            },
+          );
+          setObsFailed(new Set(r.failedIds));
+          obsState = { status: r.status, message: r.message + (r.conflicts.length ? ` Conflicts: ${r.conflicts.slice(0, 3).map((c) => `${c.eventId} (${c.detail})`).join("; ")}.` : ""), at: r.finishedAt };
+          if (r.downloaded.imported) await props.onImported();
+        } catch (error) {
+          obsState = { status: "failed", message: `Observation sync failed: ${error instanceof Error ? error.message : "network error"}. Observations stay on this device; use Retry.`, at: new Date().toISOString() };
         }
       }
-      setFailed(nextFailed);
-      notes.push(`received ${imported} new event(s) from the cloud${conflicts ? `, ${conflicts} conflict(s) kept locally` : ""}`);
-      setMessage(`Sync finished at ${now}: ${notes.join("; ")}.`);
-      if (imported) await props.onImported();
+      // ---- Step 2: review metadata (always attempted; independent result) ----
+      try {
+        const freshHistory = await listUnifiedObservations(scope.missionId, scope.crewMemberId);
+        const r = await runReviewSync(
+          { scope, actorUserId: freshUser, canPush: canReviewPush && fresh.roles.includes("ground_medical"), history: freshHistory },
+          { push: (a) => pushReviewEvents({ data: a }), pull: (a) => pullReviewEvents({ data: a }), now: () => new Date().toISOString() },
+        );
+        setFailed(new Set(r.failedIds));
+        revState = { status: r.status, message: r.message, at: r.finishedAt };
+        if (r.imported) await props.onImported();
+      } catch (error) {
+        revState = { status: "failed", message: `Review sync failed: ${error instanceof Error ? error.message : "network error"}. Local events are kept; use Retry.`, at: new Date().toISOString() };
+      }
+      await appendSyncRun(
+        {
+          at: new Date().toISOString(),
+          actorUserId: freshUser,
+          observations: { status: obsState?.status ?? "skipped", message: obsState?.message ?? "" },
+          reviews: { status: revState?.status ?? "skipped", message: revState?.message ?? "" },
+        },
+        scope,
+      ).catch(() => undefined);
     } catch (error) {
-      setMessage(`Sync failed: ${error instanceof Error ? error.message : "network error"}. Local events are kept; use Retry.`);
+      const message = `Sync failed: ${error instanceof Error ? error.message : "network error"}. Local data is kept; use Retry.`;
+      obsState ??= { status: "failed", message, at: new Date().toISOString() };
+      revState ??= { status: "failed", message, at: new Date().toISOString() };
     } finally {
+      setObsRun(obsState);
+      setRevRun(revState);
       setBusy(false);
       setVersion((v) => v + 1);
     }
   };
 
+  const anyFailure = [obsRun, revRun].some((s) => s && s.status !== "ok" && s.status !== "skipped") || counts.failed > 0 || (obsCounts?.failed ?? 0) > 0;
+  const needsRealConfirm = scope.provenance === "real";
+
   return (
-    <div className="space-y-2 rounded-md border border-border p-3 text-sm" aria-label="Cloud review sync">
-      <p className="font-semibold">Cloud review sync (explicit, metadata only)</p>
+    <div className="space-y-3 rounded-md border border-border p-3 text-sm" aria-label="Cloud sync for observations and reviews">
+      <p className="font-semibold">Cloud sync (explicit; nothing syncs automatically)</p>
       <p className="text-xs text-muted-foreground">
-        Sends only Ground Medical attestation, revocation and correction metadata (record IDs, fingerprints, reviewer, reason, UTC time) — never
-        measured values, documents or AI drafts. Nothing syncs automatically. The cloud checks your Ground Medical membership for this exact mission
-        and crew member.
+        One action, two independent steps. <strong>Observations</strong>: the full stored records for this mission, crew member and provenance are
+        encrypted on the server before they are stored, then records from your other devices are added to this device without changing or replacing
+        anything here. <strong>Reviews</strong>: only Ground Medical attestation, revocation and correction metadata (record IDs, fingerprints,
+        reviewer, reason, UTC time). The cloud checks your membership for this exact mission and crew member. Importing a record is never an
+        attestation or scientific approval.
       </p>
-      <p role="status" aria-live="polite" className="text-xs">
-        Pending {counts.pending} · Synced {counts.synced} · Failed {counts.failed} · Conflict {counts.conflict}
-        {counts.otherAuthor ? ` · ${counts.otherAuthor} by another reviewer (only they can send them)` : ""} · Last sync {counts.lastSyncedAt ?? "never"}
-        {remoteCorrections.length ? ` · ${remoteCorrections.length} correction(s) recorded on other devices (values stay on the recording device)` : ""}
-      </p>
+      <dl className="grid gap-2 text-xs sm:grid-cols-2">
+        <div className="rounded border border-border p-2" role="status" aria-live="polite" aria-label="Observation sync status">
+          <dt className="font-semibold">Observations</dt>
+          <dd>
+            {obsCounts
+              ? `Pending ${obsCounts.pending} · Synced ${obsCounts.synced} · Failed ${obsCounts.failed} · Conflict ${obsCounts.conflict}`
+              : "Counting…"}
+          </dd>
+          <dd className="text-muted-foreground">Last sync {lastObs ?? "never"}</dd>
+          {obsRun && (
+            <dd className={runTone(obsRun)}>
+              {runLabel(obsRun)}: {obsRun.message}
+            </dd>
+          )}
+        </div>
+        <div className="rounded border border-border p-2" role="status" aria-live="polite" aria-label="Review sync status">
+          <dt className="font-semibold">Reviews</dt>
+          <dd>
+            Pending {counts.pending} · Synced {counts.synced} · Failed {counts.failed} · Conflict {counts.conflict}
+            {counts.otherAuthor ? ` · ${counts.otherAuthor} by another reviewer (only they can send them)` : ""}
+          </dd>
+          <dd className="text-muted-foreground">Last sync {lastRev ?? "never"}</dd>
+          {reconciliation.absentRecordIds.length > 0 && (
+            <dd className="text-muted-foreground">
+              {reconciliation.absentRecordIds.length} reviewed record(s) are not on this device; they are not shown as Attested until the exact record version is present.
+            </dd>
+          )}
+          {remoteCorrections.length > 0 && <dd className="text-muted-foreground">{remoteCorrections.length} correction(s) recorded on other devices.</dd>}
+          {revRun && (
+            <dd className={runTone(revRun)}>
+              {runLabel(revRun)}: {revRun.message}
+            </dd>
+          )}
+        </div>
+      </dl>
+      {needsRealConfirm && (
+        <label className="flex items-start gap-2 text-xs">
+          <Checkbox checked={realConfirmed} onCheckedChange={(c) => setRealConfirmed(c === true)} aria-label="Confirm uploading encrypted REAL observation data" />
+          <span>
+            I confirm uploading <strong>REAL</strong> observation records for exactly this mission and crew member to the encrypted cloud store. Without
+            this, real records are only downloaded, never uploaded.
+          </span>
+        </label>
+      )}
       <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" disabled={busy || !canPull} onClick={() => void sync()}>
-          {canPush ? "Sync reviews to cloud" : "Fetch reviews from cloud"}
+        <Button type="button" variant="outline" disabled={busy || !canAccess} onClick={() => void sync()}>
+          {busy ? "Syncing…" : "Sync observations & reviews"}
         </Button>
-        {(counts.failed > 0 || message.startsWith("Sync failed")) && (
-          <Button type="button" variant="ghost" disabled={busy} onClick={() => void sync()}>
+        {anyFailure && !busy && (
+          <Button type="button" variant="ghost" onClick={() => void sync()}>
             Retry
           </Button>
         )}
       </div>
-      {!canPull && <p className="text-xs text-muted-foreground">Cloud review sync requires Ground Medical or the crew member's own access.</p>}
-      {message && (
-        <p className="text-xs" role="status">
-          {message}
+      {!canAccess && <p className="text-xs text-muted-foreground">Cloud sync requires Crew Self access for this crew member or scoped Ground Medical access.</p>}
+      {readError && (
+        <p className="text-xs text-destructive" role="alert">
+          {readError}
         </p>
       )}
     </div>
