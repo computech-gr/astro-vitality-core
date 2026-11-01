@@ -225,6 +225,7 @@ describe("v9 searchable text PDF: layout", () => {
     renderReportDocument(buildReportDocument(inputFor(rows(3))), writer, { family: "LiberationSans", unicode: true });
     expect(texts.some((t) => t.text.includes("Ελλάς"))).toBe(true);
     const appendixIds = texts.filter((t) => t.text.startsWith("obs-xxxx"));
+    console.log(JSON.stringify(texts.filter((t) => t.text.includes("xxxx") || t.text.startsWith("obs")).slice(0, 8).map((t) => t.text)));
     expect(appendixIds.length).toBeGreaterThan(0);
     expect(appendixIds.every((t) => t.text.length < 45)).toBe(true);
     // Long identifiers break after a separator, not mid-token.
