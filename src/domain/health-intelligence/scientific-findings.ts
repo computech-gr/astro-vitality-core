@@ -22,6 +22,7 @@ export interface ScientificCrossDomainFinding {
   signals: string[];
   evidenceIds: string[];
   statement: string;
+  missingSignals: string[];
 }
 export interface ScientificFindings {
   metrics: ScientificMetricFinding[];
@@ -90,23 +91,33 @@ export function buildScientificFindings(report: UnifiedHealthReport): Scientific
         : "Insufficient comparable time points for a descriptive change; no trend inferred.",
     };
   });
-  const crossDomain: ScientificCrossDomainFinding[] = [];
-  for (const link of CONTEXT_LINKS) {
-    const related = report.rows.filter((row) => link.domains.includes(row.badge as never) &&
-      link.signals.some((signal) => row.metricLabel.toLowerCase().includes(signal.toLowerCase())));
-    const represented = new Set(related.map((row) => row.badge));
-    if (!link.domains.every((domain) => represented.has(domain as ReportRow["badge"]))) continue;
-    crossDomain.push({
-      domains: [...link.domains],
-      signals: [...link.signals],
-      evidenceIds: related.map((row) => row.recordId),
-      statement: "Co-observed research signals from the Nikolas cross-domain context. No temporal association, causal effect or clinical conclusion established.",
-    });
-  }
+  // Reviewed exact canonical identities. No fuzzy matching, no invented aliases.
+  const signalIds: Record<string, readonly string[]> = {
+    "HRV RMSSD": ["cv-027"],
+    "sleep duration": ["BSC-001"],
+    "25(OH) vitamin D": ["IMM-030"],
+    "CTX": ["bone-001"],
+    // No reviewed canonical mapping for salivary cortisol, immune cell function,
+    // IL-6 or workload in this reporting pipeline: keep them explicitly missing.
+  };
+  const crossDomain: ScientificCrossDomainFinding[] = CONTEXT_LINKS.map((link) => {
+    const matched = link.signals.map((signal) => ({ signal, rows: report.rows.filter((r) =>
+      (signalIds[signal] ?? []).includes(r.metricId) && link.domains.includes(r.badge as never)),
+    }));
+    const present = matched.filter((item) => item.rows.length > 0);
+    const missingSignals = matched.filter((item) => item.rows.length === 0).map((item) => item.signal);
+    const evidenceIds = [...new Set(present.flatMap((item) => item.rows.map((r) => r.recordId)))];
+    return {
+      domains: [...link.domains], signals: [...link.signals], evidenceIds, missingSignals,
+      statement: missingSignals.length
+        ? `Partial signal coverage (${present.map((item) => item.signal).join(", ") || "none"}); missing: ${missingSignals.join(", ")}. No cross-domain association inferred.`
+        : "All named signals observed. Co-observation is research context only; no temporal association, causal effect or clinical conclusion established.",
+    };
+  });
   const missingDomains = report.summaries.filter((s) => s.missing).map((s) => s.badge);
   const reviewItems = [
     ...metrics.filter((m) => m.trend === "insufficient_evidence").map((m) => `${m.label}: additional comparable time points required.`),
-    ...crossDomain.map((c) => `${c.domains.join(" + ")}: qualified human scientific review required before interpretation.`),
+    ...crossDomain.filter((c) => c.missingSignals.length === 0).map((c) => `${c.domains.join(" + ")}: qualified human scientific review required before interpretation.`),
     ...(report.coverage.pendingReview > 0 ? [`${report.coverage.pendingReview} records pending review.`] : []),
     ...(report.coverage.excluded > 0 ? [`${report.coverage.excluded} excluded records require provenance/quality review.`] : []),
   ];
@@ -127,7 +138,7 @@ export function scientificFindingsPlainText(findings: ScientificFindings): strin
     "SCIENTIFIC FINDINGS & INTERPRETATION — RESEARCH ONLY",
     ...findings.metrics.map((m) => `${m.label} (${m.metricId}): ${m.count} observations; ${m.delta === null ? "insufficient time points" : `first ${m.earliestValue} → last ${m.latestValue} ${m.unit}; difference ${m.delta} ${m.unit}`} | evidence ${m.evidenceIds.join(", ")}. ${m.note}`),
     "CROSS-DOMAIN CONTEXT",
-    ...(findings.crossDomain.length ? findings.crossDomain.map((c) => `${c.domains.join(" / ")}: ${c.statement} Evidence: ${c.evidenceIds.join(", ")}`) : ["No governed cross-domain link has sufficient co-observed signal coverage."]),
+    ...findings.crossDomain.map((c) => `${c.domains.join(" / ")}: ${c.statement} Evidence: ${c.evidenceIds.join(", ") || "none"}`),
     `MISSING DOMAINS: ${findings.missingDomains.join(", ") || "none in selected scope"}`,
     "HUMAN REVIEW: ", ...findings.reviewItems,
     "LIMITATIONS:", ...findings.limitations,
