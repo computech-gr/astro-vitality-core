@@ -7,11 +7,20 @@
  * mission store's bounded reads, and it is never queued for cloud sync.
  * Entries are encrypted with a non-extractable device AES-GCM key using the
  * same envelope as the mission store. Nothing is updated or deleted.
+ * v9: cloud review sync is an explicit user action (review-sync.ts); this
+ * store itself never uploads anything.
  */
 import type { OfflineEventRecord } from "@/domain/offline-mission";
 import { decryptOfflineRecord, encryptOfflineRecord, generateDeviceLocalKey } from "./crypto";
 
-export type ReviewLedgerKind = "evidence-attestation" | "unknown-biomarker-request" | "unknown-biomarker-decision";
+export type ReviewLedgerKind =
+  | "evidence-attestation"
+  | "unknown-biomarker-request"
+  | "unknown-biomarker-decision"
+  /** v9: local receipt that an event was accepted by (or conflicted with) the cloud review ledger. */
+  | "review-sync-receipt"
+  /** v9: correction audit intents received from the cloud (metadata only, no values). */
+  | "remote-correction-intent";
 
 export interface ReviewLedgerEntry {
   id: string;

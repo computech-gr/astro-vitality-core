@@ -2,7 +2,8 @@
  * Durable review ledgers over the encrypted local review-ledger store.
  * Every write re-checks the actor's role for the exact scope; every read
  * re-validates schema and scope, so foreign or malformed entries never surface.
- * Local-only: nothing here is synchronized or uploaded.
+ * Local-only: nothing here uploads. Cloud review sync (review-sync.ts) is an
+ * explicit, user-initiated action that reads from and appends to this ledger.
  */
 import { getReviewLedgerStore, type ReviewLedgerStore } from "@/infrastructure/offline/review-ledger-store";
 import {
@@ -33,7 +34,7 @@ export async function appendAttestationEvents(
   scope: ReviewScope,
   actor: ActorContext,
   store: ReviewLedgerStore = getReviewLedgerStore(),
-): Promise<{ inserted: number; duplicates: number }> {
+): Promise<{ inserted: number; duplicates: number; failed: { eventId: string; recordId: string; message: string }[] }> {
   if (!actor.actorUserId || !canAttestEvidence(actor.rolesForScope))
     throw new Error("Only an authenticated Ground Medical member for this mission and crew member can attest evidence.");
   const valid = scopedAttestationEvents(events, scope);
@@ -41,21 +42,27 @@ export async function appendAttestationEvents(
     throw new Error("Attestation events do not match the authorized scope or reviewer. Nothing was saved.");
   let inserted = 0;
   let duplicates = 0;
+  const failed: { eventId: string; recordId: string; message: string }[] = [];
+  // Each event is appended independently so a partial failure is reported per record, never hidden.
   for (const e of valid) {
-    const result = await store.append({
-      id: `evidence-attestation:${e.eventId}`,
-      ledger: "evidence-attestation",
-      missionId: scope.missionId,
-      crewMemberId: scope.crewMemberId,
-      provenance: scope.provenance,
-      actorUserId: e.actorUserId,
-      createdAt: e.decidedAt,
-      payload: e,
-    });
-    if (result === "inserted") inserted++;
-    else duplicates++;
+    try {
+      const result = await store.append({
+        id: `evidence-attestation:${e.eventId}`,
+        ledger: "evidence-attestation",
+        missionId: scope.missionId,
+        crewMemberId: scope.crewMemberId,
+        provenance: scope.provenance,
+        actorUserId: e.actorUserId,
+        createdAt: e.decidedAt,
+        payload: e,
+      });
+      if (result === "inserted") inserted++;
+      else duplicates++;
+    } catch (error) {
+      failed.push({ eventId: e.eventId, recordId: e.recordId, message: error instanceof Error ? error.message : "storage error" });
+    }
   }
-  return { inserted, duplicates };
+  return { inserted, duplicates, failed };
 }
 
 export async function listAttestationEvents(scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()): Promise<AttestationEvent[]> {
@@ -178,4 +185,104 @@ export async function listUnknownBiomarkerReviewState(scope: ReviewScope, store:
       .filter((p) => isDecision(p, scope))
       .sort((a, b) => a.decidedAt.localeCompare(b.decidedAt) || a.sequence - b.sequence),
   };
+}
+
+// ---------- v9 cloud review sync (local side) ----------
+
+export interface SyncReceipt {
+  kind: "attestation" | "correction";
+  eventId: string;
+  status: "synced" | "conflict";
+  serverReceivedAt: string | null;
+  recordedAt: string;
+  detail?: string;
+}
+
+const isReceipt = (x: unknown): x is SyncReceipt => {
+  const r = x as Partial<SyncReceipt> | null;
+  return !!r && (r.kind === "attestation" || r.kind === "correction") && typeof r.eventId === "string" && (r.status === "synced" || r.status === "conflict") && typeof r.recordedAt === "string";
+};
+
+/** Append-only receipts; a conflict receipt is permanent and never overwritten by a later success. */
+export async function appendSyncReceipts(receipts: readonly SyncReceipt[], scope: ReviewScope, actorUserId: string, store: ReviewLedgerStore = getReviewLedgerStore()) {
+  let inserted = 0;
+  for (const r of receipts) {
+    if (!isReceipt(r)) continue;
+    const result = await store.append({
+      id: `review-sync-receipt:${r.kind}:${r.eventId}`,
+      ledger: "review-sync-receipt",
+      ...scope,
+      actorUserId,
+      createdAt: r.recordedAt,
+      payload: r,
+    });
+    if (result === "inserted") inserted++;
+  }
+  return inserted;
+}
+
+export async function listSyncReceipts(scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()): Promise<SyncReceipt[]> {
+  const entries = await store.list({ ledger: "review-sync-receipt", ...scope });
+  return entries.filter((e) => sameScope(e, scope)).map((e) => e.payload).filter(isReceipt);
+}
+
+/**
+ * Remote attestation events were authorized by the server (auth.uid() actor,
+ * exact mission/crew Ground Medical membership); locally they are re-validated
+ * for schema and scope and appended under the same entry ID, so an event
+ * already known locally is an idempotent duplicate, never a second attestation.
+ */
+export async function importRemoteAttestationEvents(events: readonly AttestationEvent[], scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()) {
+  const valid = scopedAttestationEvents(events, scope);
+  let inserted = 0;
+  for (const e of valid) {
+    const result = await store.append({
+      id: `evidence-attestation:${e.eventId}`,
+      ledger: "evidence-attestation",
+      ...scope,
+      actorUserId: e.actorUserId,
+      createdAt: e.decidedAt,
+      payload: e,
+    });
+    if (result === "inserted") inserted++;
+  }
+  return { inserted, rejected: events.length - valid.length };
+}
+
+export interface RemoteCorrectionIntent {
+  intentId: string;
+  originalRecordId: string;
+  correctedRecordId: string;
+  metricId: string;
+  actorUserId: string;
+  reason: string;
+  decidedAt: string;
+  serverReceivedAt: string;
+}
+
+const isRemoteIntent = (x: unknown): x is RemoteCorrectionIntent => {
+  const r = x as Partial<RemoteCorrectionIntent> | null;
+  return !!r && typeof r.intentId === "string" && typeof r.originalRecordId === "string" && typeof r.correctedRecordId === "string" && typeof r.actorUserId === "string";
+};
+
+export async function importRemoteCorrectionIntents(intents: readonly RemoteCorrectionIntent[], scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()) {
+  let inserted = 0;
+  for (const i of intents) {
+    if (!isRemoteIntent(i)) continue;
+    const result = await store.append({
+      id: `remote-correction-intent:${i.intentId}`,
+      ledger: "remote-correction-intent",
+      ...scope,
+      actorUserId: i.actorUserId,
+      createdAt: i.decidedAt,
+      payload: i,
+    });
+    if (result === "inserted") inserted++;
+  }
+  return inserted;
+}
+
+export async function listRemoteCorrectionIntents(scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()): Promise<RemoteCorrectionIntent[]> {
+  const entries = await store.list({ ledger: "remote-correction-intent", ...scope });
+  return entries.filter((e) => sameScope(e, scope)).map((e) => e.payload).filter(isRemoteIntent);
 }
