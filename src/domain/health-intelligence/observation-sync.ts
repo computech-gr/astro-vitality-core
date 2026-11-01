@@ -18,7 +18,11 @@ import type { AttestationEvent } from "./evidence-attestation";
 
 export const OBSERVATION_SYNC_BATCH_MAX = 50;
 export const OBSERVATION_SYNC_PAGE_MAX = 100;
-/** Canonical observation JSON bound (bytes of UTF-16 code units; generous for source excerpts). */
+/**
+ * Canonical observation JSON bound in UTF-8 bytes. Measured in bytes (not UTF-16 units) so that
+ * Greek/non-Latin text cannot exceed the staged database ciphertext ceiling (24,000 base64 chars)
+ * after the event wrapper, AES-GCM tag and base64 expansion.
+ */
 export const OBSERVATION_SYNC_PAYLOAD_MAX = 12_000;
 export const OBSERVATION_SYNC_MIGRATION_REQUIRED = "Cloud observation sync unavailable: migration required";
 
@@ -71,7 +75,7 @@ export function checkObservationSyncEvent(event: ObservationSyncEvent, scope: Sy
   if (o.provenance !== scope.provenance) return `Observation provenance is ${o.provenance}, not ${scope.provenance}.`;
   if ((event.eventKind === "status") !== (o.status === "erroneous")) return "Event kind does not match the observation status.";
   if (!o.source || !SOURCE_KINDS.has(o.source.kind) || typeof o.source.label !== "string" || !o.source.label.trim()) return "Source metadata is missing.";
-  if (canonicalJson(o).length > OBSERVATION_SYNC_PAYLOAD_MAX) return "Observation payload is too large to sync.";
+  if (new TextEncoder().encode(canonicalJson(o)).length > OBSERVATION_SYNC_PAYLOAD_MAX) return "Observation payload is too large to sync.";
   if (o.correction && (o.correction.actorRole !== "ground_medical" || o.correction.originalRecordId !== o.supersedesId))
     return "Correction metadata is inconsistent.";
   // Exact catalog metric + unit pair; units are never converted.
