@@ -10,7 +10,7 @@ import type { HealthDomainId } from "@/domain/health-domains/registry";
 export const UNIFIED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v1";
 
 export type ObservationSourceKind =
-  "manual" | "csv" | "pdf_text" | "ocr" | "device" | "self_assessment";
+  "manual" | "csv" | "xlsx" | "json" | "fhir" | "pdf_text" | "ocr" | "device" | "self_assessment";
 
 export type ObservationReviewState = "pending_review" | "accepted" | "rejected";
 

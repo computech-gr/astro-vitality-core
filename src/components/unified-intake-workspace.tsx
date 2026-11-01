@@ -1,3 +1,14 @@
+import {
+  extractCsvCandidates,
+  extractTextTableCandidates,
+} from "@/domain/health-intelligence/universal-intake-parser";
+import {
+  detectIntakeFormat,
+  extractJsonCandidates,
+  extractXlsxCandidates,
+  SUPPORTED_INTAKE_EXTENSIONS,
+  batchDuplicateKeys,
+} from "@/domain/health-intelligence/universal-intake-adapters";
 /**
  * Unified Medical Data Intake workspace. Every observation is classified
  * individually against the P36 source catalog (exact name + exact unit), is
@@ -78,35 +89,15 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
   };
 }
 
-/** Strict CSV: label,value,unit[,observed_at]. Ambiguous rows are skipped. */
+/** Schema-aware CSV; candidates still require catalog and human review. */
 function parseIntakeCsv(text: string): { rows: IntakeRow[]; skipped: number } {
-  const lines = text.split(/\r?\n/).filter((line) => line.trim());
-  const rows: IntakeRow[] = [];
-  let skipped = 0;
-  for (const line of lines.slice(0, MAX_ROWS + 1)) {
-    const cells = line.split(",").map((cell) => cell.trim());
-    if (cells.length < 3) {
-      skipped += 1;
-      continue;
-    }
-    const [label, value, unit, observedAt] = cells;
-    if (!label || !value || !unit || /^label$/i.test(label!)) {
-      skipped += 1;
-      continue;
-    }
-    rows.push(
-      newRow({
-        label: label!,
-        value: value!,
-        unit: unit!,
-        observedAt: observedAt ?? "",
-        excerpt: line.slice(0, 350),
-        sourceKind: "csv",
-        sourceLabel: "CSV import",
-      }),
-    );
-  }
-  return { rows: rows.slice(0, MAX_ROWS), skipped };
+  const parsed = extractCsvCandidates(text, MAX_ROWS);
+  return {
+    rows: parsed.rows.map((item) =>
+      newRow({ ...item, sourceKind: "csv", sourceLabel: "CSV import" }),
+    ),
+    skipped: parsed.skipped,
+  };
 }
 
 /** Conservative text/OCR lines: "Label: 12.3 unit". Reference ranges are never extracted. */
@@ -120,7 +111,9 @@ function parseIntakeText(
   documentName?: string,
   documentSha256?: string,
 ): IntakeRow[] {
-  const rows: IntakeRow[] = [];
+  const rows: IntakeRow[] = extractTextTableCandidates(text, MAX_ROWS).map((item) =>
+    newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }),
+  );
   for (const line of text.split(/\r?\n/).slice(0, 1000)) {
     if (line.length > 350 || BLOCKED_LINE.test(line)) continue;
     const match = /^\s*(.+?)\s*[:=]\s*([-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;,|]+)\s*$/.exec(
@@ -278,8 +271,11 @@ export function UnifiedIntakeWorkspace() {
         try {
           if (file.size > MAX_FILE_BYTES || file.size === 0)
             throw new Error("File is empty or exceeds 15 MB.");
-          if (!/\.(csv|txt|pdf|png|jpe?g)$/i.test(file.name))
-            throw new Error("Unsupported file type.");
+          const format = detectIntakeFormat(file.name);
+          if (format === "unsupported")
+            throw new Error(
+              `Unsupported file type. Supported: ${SUPPORTED_INTAKE_EXTENSIONS.join(", ")}.`,
+            );
           const hash = await sha256Hex(file);
           if (hashes.has(hash)) {
             state = "duplicate file skipped";
@@ -287,7 +283,30 @@ export function UnifiedIntakeWorkspace() {
             continue;
           }
           hashes.add(hash);
-          if (/\.csv$/i.test(file.name)) {
+          if (format === "xlsx" || format === "json") {
+            const parsed =
+              format === "xlsx"
+                ? extractXlsxCandidates(new Uint8Array(await file.arrayBuffer()), MAX_ROWS)
+                : extractJsonCandidates(await file.text(), MAX_ROWS);
+            const isFhir =
+              format === "json" && parsed.rows.some((row) => row.excerpt.startsWith("FHIR "));
+            const kind: ObservationSourceKind =
+              format === "xlsx" ? "xlsx" : isFhir ? "fhir" : "json";
+            const label = format === "xlsx" ? "XLSX" : isFhir ? "FHIR" : "JSON";
+            const space = Math.max(0, MAX_ROWS - incoming.length);
+            const batch = parsed.rows.slice(0, space).map((item) =>
+              newRow({
+                ...item,
+                sourceKind: kind,
+                sourceLabel: `${label}: ${file.name}`,
+                documentName: file.name,
+                documentSha256: hash,
+              }),
+            );
+            incoming.push(...batch);
+            count = batch.length;
+            if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
+          } else if (format === "csv") {
             const parsed = parseIntakeCsv(await file.text());
             const space = Math.max(0, MAX_ROWS - incoming.length);
             const batch = parsed.rows.slice(0, space).map((row) => ({
@@ -298,6 +317,7 @@ export function UnifiedIntakeWorkspace() {
             }));
             incoming.push(...batch);
             count = batch.length;
+            if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
           } else {
             const extracted = await extractBoneDocument(file);
             const kind: ObservationSourceKind = extracted.method.includes("ocr")
@@ -374,12 +394,21 @@ export function UnifiedIntakeWorkspace() {
         }),
       )
     : [];
+  const batchDuplicates = batchDuplicateKeys(
+    saveableRows.map((row) => ({
+      key: row.key,
+      metricId: row.classification.status === "matched" ? row.classification.metricId : "",
+      observedAt: row.observedAt,
+      value: row.value,
+    })),
+  );
+  const duplicateWarnings = duplicates.length + batchDuplicates.length;
   const canSave = Boolean(
     membership &&
     provenance &&
     reviewerConfirmed &&
     saveableRows.length > 0 &&
-    (duplicates.length === 0 || duplicateAcknowledged) &&
+    (duplicateWarnings === 0 || duplicateAcknowledged) &&
     !busy,
   );
 
@@ -417,7 +446,7 @@ export function UnifiedIntakeWorkspace() {
           provenance,
           quality: {
             reviewerConfirmed: true,
-            ...(duplicates.length > 0 ? { duplicateWarningAcknowledged: true } : {}),
+            ...(duplicateWarnings > 0 ? { duplicateWarningAcknowledged: true } : {}),
           },
           reviewState: "accepted",
           status: "active",
@@ -564,15 +593,15 @@ export function UnifiedIntakeWorkspace() {
             disabled={busy}
             onClick={() => fileInputRef.current?.click()}
           >
-            Import multiple CSV, PDF or scans (on-device)
+            Import CSV, XLSX, JSON/FHIR, PDF or scans (on-device)
           </Button>
           <input
             ref={fileInputRef}
             type="file"
             multiple
-            accept=".csv,.txt,.pdf,.png,.jpg,.jpeg"
+            accept={SUPPORTED_INTAKE_EXTENSIONS.join(",")}
             className="hidden"
-            aria-label="Import multiple CSV, PDF or scanned documents"
+            aria-label="Import multiple CSV, XLSX, JSON, FHIR, PDF or scanned documents"
             onChange={(event) => {
               const files = Array.from(event.target.files ?? []);
               if (files.length) void processBatch(files);
@@ -739,12 +768,20 @@ export function UnifiedIntakeWorkspace() {
               or unit-mismatched observations never enter storage or domain read models.
             </p>
           ) : null}
-          {duplicates.length ? (
+          {duplicateWarnings ? (
             <div className="space-y-2 rounded-md border border-border p-3">
-              <p className="text-sm font-medium">
-                Possible duplicate: {duplicates.length} stored observation(s) share the same metric,
-                time and value.
-              </p>
+              {duplicates.length ? (
+                <p className="text-sm font-medium">
+                  Possible duplicate: {duplicates.length} stored observation(s) share the same
+                  metric, time and value.
+                </p>
+              ) : null}
+              {batchDuplicates.length ? (
+                <p className="text-sm font-medium">
+                  Possible duplicate: {batchDuplicates.length} selected row(s) repeat another
+                  selected row&apos;s metric, time and value.
+                </p>
+              ) : null}
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"

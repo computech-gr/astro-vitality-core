@@ -52,6 +52,16 @@ export function classifyIntakeObservation(input: {
 }): IntakeClassification {
   const originalLabel = input.label.trim();
   const originalUnit = input.unit.trim();
+  // Canonical IDs are unambiguous identifiers, but only a reviewed P36 unit may be saved.
+  const byId = registry.metrics.find((metric) => normalized(metric.id) === normalized(originalLabel));
+  if (byId) {
+    const base = { originalLabel, originalUnit, reviewRequired: true as const };
+    if (!byId.originalUnit?.trim() || byId.originalUnit.trim() !== originalUnit)
+      return { ...base, status: "unit_review_required" as const, candidateMetricIds: [byId.id] };
+    const domain = domainForMetric(byId.id);
+    if (domain) return { ...base, status: "matched" as const, metricId: byId.id, domain };
+    return { ...base, status: "unclassified" as const, candidateMetricIds: [] };
+  }
   const alias = reviewedAliases[normalized(originalLabel)];
   const aliasMetric = alias && registry.metrics.find((metric) => metric.id === alias.metricId);
   const sameName = registry.metrics.filter(
