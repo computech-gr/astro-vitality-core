@@ -15,7 +15,7 @@ export function obs(over: Partial<UnifiedObservation> = {}): UnifiedObservation 
     domain: "cardiovascular",
     value: String(60 + n),
     originalUnit: "bpm",
-    observedAt: new Date(Date.UTC(2026, 9, 1, 7, 30) + n * 86_400_000).toISOString(),
+    observedAt: new Date(Date.UTC(2026, 8, 1, 7, 30) + n * 60_000).toISOString(),
     source: { kind: "csv", label: "CSV: synthetic-kit.csv", documentName: "synthetic-kit.csv", documentSha256: "a".repeat(64), excerpt: "HR,62,bpm" },
     provenance: "synthetic",
     quality: { reviewerConfirmed: true },
