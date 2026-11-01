@@ -13,6 +13,7 @@ import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BoneSourceCombobox } from "@/components/bone-source-combobox";
 import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { DomainEvidencePanel } from "@/components/domain-evidence-panel";
+import { ResearcherInterpretationPanel } from "@/components/researcher-interpretation-panel";
 import { BoneReportedFieldCombobox } from "@/components/bone-reported-field-combobox";
 import { resolveBoneObservationInstant, utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
 import { persistBoneCorrection, scopedBoneSources } from "@/domain/bone-health/correction";
@@ -75,6 +76,7 @@ export function BoneHealthEntryPage() {
       {/* P49: the same Crew-Self-only, read-only mission evidence shown on the other Health pages. */}
       <div className="mx-auto max-w-5xl px-5 pb-10 text-foreground">
         <DomainEvidencePanel domainId="bone" />
+        <ResearcherInterpretationPanel domainId="bone" />
       </div>
     </>
   );
