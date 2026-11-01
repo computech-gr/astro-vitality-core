@@ -1065,6 +1065,72 @@ export type Database = {
         }
         Relationships: []
       }
+      observation_sync_events: {
+        Row: {
+          cipher_alg: string
+          ciphertext: string
+          crew_member_id: string
+          event_id: string
+          event_kind: string
+          fingerprint: string
+          iv: string
+          key_version: number
+          mission_id: string
+          observation_id: string
+          provenance: string
+          received_at: string
+          received_seq: number
+          uploaded_by: string
+        }
+        Insert: {
+          cipher_alg: string
+          ciphertext: string
+          crew_member_id: string
+          event_id: string
+          event_kind: string
+          fingerprint: string
+          iv: string
+          key_version: number
+          mission_id: string
+          observation_id: string
+          provenance: string
+          received_at?: string
+          received_seq?: never
+          uploaded_by: string
+        }
+        Update: {
+          cipher_alg?: string
+          ciphertext?: string
+          crew_member_id?: string
+          event_id?: string
+          event_kind?: string
+          fingerprint?: string
+          iv?: string
+          key_version?: number
+          mission_id?: string
+          observation_id?: string
+          provenance?: string
+          received_at?: string
+          received_seq?: never
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observation_sync_events_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observation_sync_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       p36_biomarker_review_batches: {
         Row: {
           classification: string
@@ -1682,6 +1748,30 @@ export type Database = {
       mission_roles_compatible: {
         Args: { p_a: string; p_b: string }
         Returns: boolean
+      }
+      observation_sync_append_v1: {
+        Args: {
+          p_crew_member_id: string
+          p_events: Json
+          p_mission_id: string
+          p_provenance: string
+          p_real_data_confirmed: boolean
+        }
+        Returns: Json
+      }
+      observation_sync_can_access: {
+        Args: { p_crew_member_id: string; p_mission_id: string }
+        Returns: boolean
+      }
+      observation_sync_list_v1: {
+        Args: {
+          p_after_seq: number
+          p_crew_member_id: string
+          p_limit: number
+          p_mission_id: string
+          p_provenance: string
+        }
+        Returns: Json
       }
       p36_list_synthetic_review_history: {
         Args: { p_crew_member_id: string; p_mission_id: string }
