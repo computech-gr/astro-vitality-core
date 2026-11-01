@@ -18,6 +18,7 @@ import {
   type ReviewScope,
   type UnknownBiomarkerTerm,
 } from "./unknown-biomarker-review";
+import type { ObservationSyncReceipt } from "./observation-sync";
 
 export interface ActorContext {
   actorUserId: string | null | undefined;
@@ -285,4 +286,67 @@ export async function importRemoteCorrectionIntents(intents: readonly RemoteCorr
 export async function listRemoteCorrectionIntents(scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()): Promise<RemoteCorrectionIntent[]> {
   const entries = await store.list({ ledger: "remote-correction-intent", ...scope });
   return entries.filter((e) => sameScope(e, scope)).map((e) => e.payload).filter(isRemoteIntent);
+}
+
+// ---------- v9.4 observation sync receipts and sync-run log ----------
+
+const isObservationReceipt = (x: unknown): x is ObservationSyncReceipt => {
+  const r = x as Partial<ObservationSyncReceipt> | null;
+  return (
+    !!r &&
+    typeof r.eventId === "string" &&
+    typeof r.contentSha256 === "string" &&
+    /^[0-9a-f]{64}$/.test(r.contentSha256) &&
+    (r.status === "synced" || r.status === "conflict") &&
+    (r.direction === "uploaded" || r.direction === "downloaded" || r.direction === "already_in_cloud") &&
+    typeof r.recordedAt === "string"
+  );
+};
+
+/** Append-only; the first receipt for an event wins (a conflict is never later replaced by "synced"). */
+export async function appendObservationSyncReceipts(receipts: readonly ObservationSyncReceipt[], scope: ReviewScope, actorUserId: string, store: ReviewLedgerStore = getReviewLedgerStore()) {
+  let inserted = 0;
+  for (const r of receipts) {
+    if (!isObservationReceipt(r)) continue;
+    const result = await store.append({
+      id: `observation-sync-receipt:${r.eventId}`,
+      ledger: "observation-sync-receipt",
+      ...scope,
+      actorUserId,
+      createdAt: r.recordedAt,
+      payload: r,
+    });
+    if (result === "inserted") inserted++;
+  }
+  return inserted;
+}
+
+export async function listObservationSyncReceipts(scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()): Promise<ObservationSyncReceipt[]> {
+  const entries = await store.list({ ledger: "observation-sync-receipt", ...scope });
+  return entries.filter((e) => sameScope(e, scope)).map((e) => e.payload).filter(isObservationReceipt);
+}
+
+export interface SyncRunRecord {
+  at: string;
+  actorUserId: string;
+  observations: { status: string; message: string };
+  reviews: { status: string; message: string };
+}
+
+const isSyncRun = (x: unknown): x is SyncRunRecord => {
+  const r = x as Partial<SyncRunRecord> | null;
+  return !!r && typeof r.at === "string" && typeof r.actorUserId === "string" && !!r.observations && !!r.reviews;
+};
+
+export async function appendSyncRun(run: SyncRunRecord, scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()) {
+  return store.append({ id: `sync-run:${run.actorUserId}:${run.at}`, ledger: "sync-run", ...scope, actorUserId: run.actorUserId, createdAt: run.at, payload: run });
+}
+
+export async function listSyncRuns(scope: ReviewScope, store: ReviewLedgerStore = getReviewLedgerStore()): Promise<SyncRunRecord[]> {
+  const entries = await store.list({ ledger: "sync-run", ...scope });
+  return entries
+    .filter((e) => sameScope(e, scope))
+    .map((e) => e.payload)
+    .filter(isSyncRun)
+    .sort((a, b) => a.at.localeCompare(b.at));
 }
