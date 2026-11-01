@@ -87,3 +87,15 @@ describe("Nikolas canonical mapping stays exact and domain-scoped", () => {
     expect(result.reviewItems.some((item) => item.includes("qualified human scientific review"))).toBe(false);
   });
 });
+
+
+describe("scientific context time and coverage transparency", () => {
+  it("shows exact per-signal observation counts and time coverage without claiming association", () => {
+    const cv = { ...row("r1", "48", "2026-10-20T08:00:00Z"), metricId: "cv-027", metricLabel: "RMSSD", unit: "ms" };
+    const sleep = { ...row("s1", "6.5", "2026-10-30T07:00:00Z"), badge: "behavioral" as const, metricId: "BSC-001", metricLabel: "Total sleep time", unit: "h" };
+    const ctx = buildScientificFindings({ ...base, rows: [cv, sleep] }).crossDomain.find((c) => c.domains.includes("cardiovascular"));
+    expect(ctx?.observedSignalCounts).toEqual(["HRV RMSSD: 1 observation(s)", "sleep duration: 1 observation(s)"]);
+    expect(ctx?.observedTimeRange).toContain("2026-10-20T08:00:00Z");
+    expect(ctx?.statement).toContain("No cross-domain association inferred");
+  });
+});
