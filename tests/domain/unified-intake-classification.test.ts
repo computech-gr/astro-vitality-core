@@ -32,3 +32,20 @@ describe("research-only unified intake classification", () => {
     expect(result.observations).toHaveLength(1);
   });
 });
+
+
+describe("reviewed crew CSV aliases", () => {
+  test("heart rate maps to the P36 cardiovascular HR metric", () => {
+    expect(classifyIntakeObservation({ label: "Heart rate", unit: "bpm" })).toMatchObject({ status: "matched", metricId: "cv-001", domain: "cardiovascular", reviewRequired: true });
+  });
+  test("HRV RMSSD maps to the existing P36 RMSSD metric", () => {
+    expect(classifyIntakeObservation({ label: "HRV RMSSD", unit: "ms" })).toMatchObject({ status: "matched", metricId: "cv-027", domain: "cardiovascular", reviewRequired: true });
+  });
+  test("unit mismatch stays review-only", () => {
+    expect(classifyIntakeObservation({ label: "HRV RMSSD", unit: "bpm" }).status).toBe("unit_review_required");
+  });
+  test("behavioral labels absent from P36 remain unclassified", () => {
+    for (const label of ["Sleep duration", "Fatigue", "Sleepiness KSS", "Reaction time median"])
+      expect(classifyIntakeObservation({ label, unit: "score" }).status).toBe("unclassified");
+  });
+});
