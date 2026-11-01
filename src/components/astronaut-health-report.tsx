@@ -48,6 +48,8 @@ import {
 } from "@/domain/health-intelligence/evidence-attestation";
 import { appendAttestationEvents, listAttestationEvents } from "@/domain/health-intelligence/review-ledger";
 import { pdfExportErrorMessage } from "@/domain/health-intelligence/report-pdf";
+import { buildResearcherInterpretation, researcherInterpretationPlainText } from "@/domain/health-intelligence/researcher-interpretation";
+import { ResearcherInterpretationView } from "@/components/researcher-interpretation-view";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -273,6 +275,10 @@ export function AstronautHealthReport() {
     () => (unified && findings ? buildScientificHealthSummary(unified, findings, report, attestationSummary) : null),
     [unified, findings, report, attestationSummary],
   );
+  const interpretation = useMemo(
+    () => (unified && findings ? buildResearcherInterpretation(unified, findings, scopedAttestations) : null),
+    [unified, findings, scopedAttestations],
+  );
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
   const currentExport = useRef({ unified, userId: identity?.userId });
@@ -294,7 +300,7 @@ export function AstronautHealthReport() {
         try { document.title = exportName; window.print(); } finally { document.title = previous; }
         setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
         setExportStatus(`Evidence TXT created locally and download started as ${exportName}.txt. No medical data was uploaded.`);
       } else {
@@ -591,6 +597,8 @@ export function AstronautHealthReport() {
             <h4 className="font-semibold">Scientific limitations</h4>
             <ul className="list-disc pl-5 text-xs">{findings.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
           </section>}
+
+          {interpretation && <ResearcherInterpretationView model={interpretation} />}
 
           <section id="ground-medical-attestation" aria-label="Ground Medical evidence attestation" className="scroll-mt-24 space-y-2 rounded-lg border p-4">
             <div className="report-avoid-break space-y-1">
