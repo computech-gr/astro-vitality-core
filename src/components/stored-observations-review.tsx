@@ -104,6 +104,15 @@ export function StoredObservationsReview(props: Props) {
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   const [openHistory, setOpenHistory] = useState<string | null>(null);
+  const [dialogError, setDialogError] = useState("");
+  const openDialog = (d: DialogState) => {
+    setDialogError("");
+    setDialog(d);
+  };
+  const fail = (message: string) => {
+    setStatus(message);
+    setDialogError(message);
+  };
 
   const scopeKey = scope ? `${scope.missionId}|${scope.crewMemberId}|${scope.provenance}|${userId ?? ""}` : "";
   useEffect(() => {
@@ -167,7 +176,7 @@ export function StoredObservationsReview(props: Props) {
         ? planAttestation(review.report, ids, review.events, ctx, { reason, confirmed })
         : planRevocation(review.report, ids[0] ?? "", review.events, ctx, { reason, confirmed });
       if (!plan.ok) {
-        setStatus(plan.reason);
+        fail(plan.reason);
         return;
       }
       const saved = await appendAttestationEvents(plan.events, scope, ctx);
@@ -181,7 +190,7 @@ export function StoredObservationsReview(props: Props) {
           " Stored encrypted on this device; observations and scientific review status are unchanged.",
       );
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Attestation could not be saved. Nothing changed.");
+      fail(error instanceof Error ? error.message : "Attestation could not be saved. Nothing changed.");
     } finally {
       setBusy(false);
     }
@@ -190,7 +199,7 @@ export function StoredObservationsReview(props: Props) {
   const runErroneous = async (o: UnifiedObservation, reason: string, confirmed: boolean) => {
     if (!membership) return;
     if (reason.trim().length < CORRECTION_REASON_MIN || !confirmed) {
-      setStatus(`A reason of at least ${CORRECTION_REASON_MIN} characters and confirmation are required.`);
+      fail(`A reason of at least ${CORRECTION_REASON_MIN} characters and confirmation are required.`);
       return;
     }
     setBusy(true);
@@ -201,7 +210,7 @@ export function StoredObservationsReview(props: Props) {
       setDialog(null);
       await afterWrite("Record marked erroneous. The original event is preserved; it no longer appears in reports or domain views.");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Marking erroneous failed. Nothing changed.");
+      fail(error instanceof Error ? error.message : "Marking erroneous failed. Nothing changed.");
     } finally {
       setBusy(false);
     }
@@ -214,12 +223,12 @@ export function StoredObservationsReview(props: Props) {
       const fresh = await freshRoles(scope, userId);
       const plan = planObservationCorrection(o, history, draft, { actorUserId: fresh.userId, rolesForScope: fresh.roles, scope, decidedAt: new Date().toISOString() });
       if (!plan.ok) {
-        setStatus(plan.reason);
+        fail(plan.reason);
         return;
       }
       const outcome = await executeCorrection(plan, { save: saveUnifiedObservation });
       if (outcome.status === "failed") {
-        setStatus(outcome.message);
+        fail(outcome.message);
         return;
       }
       setDialog(null);
@@ -229,7 +238,7 @@ export function StoredObservationsReview(props: Props) {
           : outcome.message,
       );
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Correction failed. Nothing changed.");
+      fail(error instanceof Error ? error.message : "Correction failed. Nothing changed.");
     } finally {
       setBusy(false);
     }
@@ -278,7 +287,7 @@ export function StoredObservationsReview(props: Props) {
           <span role="status" aria-live="polite">
             {counts.selected} selected of {counts.eligible} eligible
           </span>
-          <Button type="button" disabled={busy || counts.selected === 0} onClick={() => setDialog({ kind: "attest", recordIds: [...selected] })}>
+          <Button type="button" disabled={busy || counts.selected === 0} onClick={() => openDialog({ kind: "attest", recordIds: [...selected] })}>
             Save selected approvals
           </Button>
           <span className="text-xs text-muted-foreground">Erroneous, superseded, already-attested and other-provenance rows cannot be selected.</span>
@@ -356,22 +365,22 @@ export function StoredObservationsReview(props: Props) {
                     <td className="space-y-1 py-2">
                       <div className="flex flex-wrap gap-1">
                         {isGroundMedical && scope && v.selectable && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setDialog({ kind: "attest", recordIds: [o.id] })}>
+                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "attest", recordIds: [o.id] })}>
                             Attest
                           </Button>
                         )}
                         {isGroundMedical && scope && v.groundMedical === "attested" && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setDialog({ kind: "revoke", recordId: o.id })}>
+                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "revoke", recordId: o.id })}>
                             Revoke
                           </Button>
                         )}
                         {isGroundMedical && scope && v.lifecycle === "active" && o.provenance === scope.provenance && o.reviewState === "accepted" && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setDialog({ kind: "edit", observation: o })}>
+                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "edit", observation: o })}>
                             Edit
                           </Button>
                         )}
                         {v.lifecycle === "active" && membership && (
-                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setDialog({ kind: "erroneous", observation: o })}>
+                          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => openDialog({ kind: "erroneous", observation: o })}>
                             Mark erroneous
                           </Button>
                         )}
@@ -432,7 +441,7 @@ export function StoredObservationsReview(props: Props) {
         onRevoke={(id, reason, confirmed) => void runAttestation("revoke", [id], reason, confirmed)}
         onErroneous={(o, reason, confirmed) => void runErroneous(o, reason, confirmed)}
         onCorrect={(o, draft) => void runCorrection(o, draft)}
-        status={status}
+        error={dialogError}
       />
     </section>
   );
@@ -441,7 +450,7 @@ export function StoredObservationsReview(props: Props) {
 function ReviewDialog(props: {
   state: DialogState;
   busy: boolean;
-  status: string;
+  error: string;
   onClose: () => void;
   onAttest: (ids: string[], reason: string, confirmed: boolean) => void;
   onRevoke: (id: string, reason: string, confirmed: boolean) => void;
@@ -455,11 +464,9 @@ function ReviewDialog(props: {
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
   const [observedAt, setObservedAt] = useState("");
-  const [openStatus, setOpenStatus] = useState("");
   useEffect(() => {
     setReason("");
     setConfirmed(false);
-    setOpenStatus(props.status);
     if (state?.kind === "edit") {
       setMetricId(state.observation.metricId);
       setValue(state.observation.value);
@@ -476,7 +483,6 @@ function ReviewDialog(props: {
       : state.kind === "erroneous" ? "Mark observation erroneous"
       : "Edit observation (append-only correction)";
   const ready = reason.trim().length >= min && confirmed && !props.busy;
-  const freshError = props.status !== openStatus ? props.status : "";
   return (
     <Dialog open onOpenChange={(open) => !open && props.onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -523,9 +529,9 @@ function ReviewDialog(props: {
           <Checkbox checked={confirmed} onCheckedChange={(c) => setConfirmed(c === true)} aria-label="Confirm this append-only decision" />
           <span>I confirm this decision for exactly this mission, crew member and provenance. It is recorded with my account and the UTC time and cannot be edited later.</span>
         </label>
-        {freshError && (
+        {props.error && (
           <p className="text-sm text-destructive" role="alert">
-            {freshError}
+            {props.error}
           </p>
         )}
         <DialogFooter>

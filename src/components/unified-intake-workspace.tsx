@@ -19,6 +19,8 @@ import {
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
+import { StoredObservationsReview } from "@/components/stored-observations-review";
+import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
 import { Link } from "@tanstack/react-router";
 import { type IntakeClassification } from "@/domain/health-domains/unified-intake-classification";
@@ -29,10 +31,8 @@ import {
   type UnifiedObservation,
 } from "@/domain/health-intelligence/observation-envelope";
 import {
-  domainReadableObservations,
   findUnifiedDuplicates,
   listUnifiedObservations,
-  markUnifiedObservationErroneous,
   saveUnifiedObservation,
 } from "@/domain/health-intelligence/observation-store";
 import { extractBoneDocument } from "@/domain/bone-health/document-extraction";
@@ -468,6 +468,7 @@ export function UnifiedIntakeWorkspace() {
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
       setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
+      notifyReviewDataChanged({ missionId: membership.missionId, crewMemberId: membership.crewMemberId });
       setStatus(
         `${saveableRows.length} observation(s) saved encrypted on this device. Research reference only — not a scientific approval; no cloud records written.`,
       );
@@ -478,7 +479,10 @@ export function UnifiedIntakeWorkspace() {
     }
   };
 
-  const readable = domainReadableObservations(history);
+  const reloadHistory = async () => {
+    if (!membership) return;
+    setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
+  };
 
   return (
     <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-10">
@@ -829,104 +833,15 @@ export function UnifiedIntakeWorkspace() {
         rolesForScope={rolesForScope}
       />
 
-      <section className="space-y-4 rounded-lg border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">Stored observations (this mission &amp; crew)</h2>
-        <div className="rounded-md border border-border bg-muted/30 p-3 text-sm" role="note">
-          <p className="font-semibold">Accepted observations are not Ground Medical attestations.</p>
-          <p className="mt-1 text-muted-foreground">
-            Active means the observation was accepted into research storage; it does not mean a medical reviewer signed it off.
-            To review records individually or in a batch, open the authorized Unified Health Report and use
-            Ground Medical evidence attestation. Original values cannot be edited in place; use Mark erroneous and a new corrected record.
-          </p>
-          <Link className="mt-2 inline-block underline underline-offset-2" to="/mission/health-report" hash="ground-medical-attestation">
-            Open Ground Medical evidence attestation (individual / Select all eligible)
-          </Link>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Append-only history: corrections mark records erroneous and add a superseding entry;
-          nothing is rewritten or deleted. Only reviewer-accepted, non-erroneous observations
-          connect to domain read models and Health Intelligence — and only as research-only
-          evidence, never as diagnostic alerts.
-        </p>
-        {history.length ? (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-border text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">Observed</th>
-                  <th className="py-2 pr-3">Metric</th>
-                  <th className="py-2 pr-3">Value</th>
-                  <th className="py-2 pr-3">Domain</th>
-                  <th className="py-2 pr-3">Origin</th>
-                  <th className="py-2 pr-3">Status</th>
-                  <th className="py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((entry) => (
-                  <tr key={entry.id} className="border-b border-border/60 align-top">
-                    <td className="py-2 pr-3 text-xs">{formatObservedAt(entry.observedAt)}</td>
-                    <td className="py-2 pr-3 font-mono text-xs">{entry.metricId}</td>
-                    <td className="py-2 pr-3">
-                      {entry.value} {entry.originalUnit}
-                    </td>
-                    <td className="py-2 pr-3">{DOMAIN_LABELS[entry.domain]}</td>
-                    <td className="py-2 pr-3 text-xs">{entry.provenance}</td>
-                    <td className="py-2 pr-3">
-                      {entry.status === "erroneous" ? (
-                        <Badge variant="outline">Erroneous</Badge>
-                      ) : (
-                        <Badge variant="secondary">Active</Badge>
-                      )}
-                    </td>
-                    <td className="py-2">
-                      {entry.status !== "erroneous" ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const reason = window.prompt(
-                              "Reason for marking this record erroneous (a superseding entry can then be added):",
-                            );
-                            if (!reason?.trim()) return;
-                            void markUnifiedObservationErroneous(entry, reason)
-                              .then(async () => {
-                                if (membership)
-                                  setHistory(
-                                    await listUnifiedObservations(
-                                      membership.missionId,
-                                      membership.crewMemberId,
-                                    ),
-                                  );
-                                setStatus(
-                                  "Record marked erroneous. The original event is preserved; add a corrected entry above.",
-                                );
-                              })
-                              .catch((error: unknown) =>
-                                setStatus(
-                                  error instanceof Error ? error.message : "Correction failed.",
-                                ),
-                              );
-                          }}
-                        >
-                          Mark erroneous
-                        </Button>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No records for this mission and crew.</p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          Domain-readable observations: {readable.length} of {history.length} (research-only
-          evidence adapters; no clinical activation).
-        </p>
-      </section>
+      <StoredObservationsReview
+        key={`${membership?.missionId ?? ""}|${membership?.crewMemberId ?? ""}|${identity?.userId ?? ""}`}
+        history={history}
+        membership={membership ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId } : null}
+        provenance={provenance}
+        userId={identity?.signedIn && !identity.error ? (identity.userId ?? null) : null}
+        rolesForScope={rolesForScope}
+        reload={reloadHistory}
+      />
 
       <p role="status" className="text-sm text-muted-foreground">
         {status}
