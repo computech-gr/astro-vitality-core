@@ -598,6 +598,7 @@ export function UnifiedIntakeWorkspace() {
           <Button
             type="button"
             variant="outline"
+            className="h-auto min-h-9 max-w-full whitespace-normal py-2 text-left"
             disabled={busy}
             onClick={() => fileInputRef.current?.click()}
           >
