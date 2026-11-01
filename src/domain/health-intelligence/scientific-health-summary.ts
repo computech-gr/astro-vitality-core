@@ -13,6 +13,7 @@ import type { UnifiedHealthReport, ReportRow } from "./unified-health-report";
 import { REPORT_SOURCE_LABELS } from "./unified-health-report";
 import type { ScientificFindings } from "./scientific-findings";
 import type { HealthHistoryReport } from "./health-history-report";
+import type { AttestationSummary } from "./evidence-attestation";
 import {
   localizedBoneVariables,
   localizedCardiovascularMetrics,
@@ -47,7 +48,16 @@ export interface DomainReconciliation {
   explanation: string;
 }
 
+export interface DomainInterpretationStatus {
+  domain: string;
+  present: boolean;
+  source: string | null;
+  status: string;
+}
+
 export interface ScientificHealthSummary {
+  frontPage: { keyPoints: string[]; evidenceIds: string[]; interpretationStatus: string };
+  domainInterpretation: DomainInterpretationStatus[];
   evidenceTiers: { tier: keyof typeof EVIDENCE_TIER_LABELS; count: number; note: string }[];
   measured: string[];
   supported: string[];
@@ -85,6 +95,7 @@ export function buildScientificHealthSummary(
   report: UnifiedHealthReport,
   findings: ScientificFindings,
   intake: HealthHistoryReport | null,
+  attestation?: AttestationSummary | null,
 ): ScientificHealthSummary {
   const tierCount = (tier: EvidenceTier) => report.rows.filter((r) => evidenceTierOf(r) === tier).length;
   const evidenceTiers: ScientificHealthSummary["evidenceTiers"] = [
@@ -182,7 +193,40 @@ export function buildScientificHealthSummary(
     return { domain: REPORT_SOURCE_LABELS[badge], reportIncluded: rows.length, storedObservations: stored, reviewerAcceptedIntake: accepted, medicalIntakeAccepted, explanation };
   });
 
+  const domainInterpretation: DomainInterpretationStatus[] = DOMAIN_BADGES.map((badge) => {
+    const present = report.rows.some((r) => r.badge === badge);
+    const governed = badge === "bone" || badge === "cardiovascular";
+    return {
+      domain: REPORT_SOURCE_LABELS[badge],
+      present,
+      source: governed
+        ? badge === "bone" ? "Astronaut Bone Health Handbook v7 (Nikolas)" : "NASA Cardiovascular Handbook (Nikolas)"
+        : null,
+      status: governed
+        ? "Handbook text quoted by exact catalog ID; machine-assisted English pending independent scientific review."
+        : "No governed handbook interpretation is available; interpretation is pending scientific review and none is stated.",
+    };
+  });
+
+  const presentDomains = report.summaries.filter((s) => s.included > 0).map((s) => REPORT_SOURCE_LABELS[s.badge]);
+  const missingDomains = report.summaries.filter((s) => s.missing && report.filters.sources.includes(s.badge)).map((s) => REPORT_SOURCE_LABELS[s.badge]);
+  const changed = findings.metrics.filter((m) => m.trend === "descriptive_change" && m.delta !== 0);
+  const evidenceIds = [...new Set(changed.flatMap((m) => m.evidenceIds))];
+  const frontPage = {
+    keyPoints: [
+      `${report.coverage.included} included observation(s) for ${report.scope.provenance.toUpperCase()} provenance across ${presentDomains.length ? presentDomains.join(", ") : "no domain"}.`,
+      `${changed.length} metric(s) show a descriptive first-to-last recorded difference; ${insufficient.length} metric(s) have fewer than two comparable time points.`,
+      missingDomains.length ? `No included data for ${missingDomains.join(", ")} — missing data is not a negative finding.` : "Every selected source has included data.",
+      `${implications.length} handbook-quoted statement(s) apply to observed changes; 0 interpretations are scientifically validated (${"PENDING_NIKOLAS_REVIEW"}).`,
+      ...(attestation ? [`Ground Medical attestation: ${attestation.attested} attested, ${attestation.notAttested} accepted without attestation, ${attestation.revoked} revoked.`] : []),
+    ],
+    evidenceIds,
+    interpretationStatus: "Research summary only. Interpretations are quoted from governed handbooks, pending independent scientific review; immune and behavioral interpretations are not available until governed review is complete.",
+  };
+
   return {
+    frontPage,
+    domainInterpretation,
     evidenceTiers,
     measured,
     supported,
@@ -196,6 +240,7 @@ export function buildScientificHealthSummary(
     boundaries: [
       "Research-use-only. No diagnosis, treatment, risk score or fitness-for-duty judgment is generated.",
       "Biological implications are quoted from Nikolas's handbooks (machine-assisted English, pending independent scientific review) and describe the measure, not this crew member's condition.",
+      "AI-assisted drafts are unverified, are kept separate from these findings and are excluded from PDF and TXT exports.",
     ],
   };
 }
