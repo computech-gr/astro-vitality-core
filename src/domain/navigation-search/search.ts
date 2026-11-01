@@ -127,7 +127,13 @@ export function searchEntries(entries: readonly SearchEntry[], query: string, li
   return entries
     .map((entry, index) => ({ entry, index, score: scoreEntry(entry, query) }))
     .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score || a.index - b.index)
+    // Equal scores: the broader (shorter-titled) destination first, then catalogue order.
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        normalize(a.entry.title).split(" ").length - normalize(b.entry.title).split(" ").length ||
+        a.index - b.index,
+    )
     .slice(0, limit)
     .map((r) => r.entry);
 }
