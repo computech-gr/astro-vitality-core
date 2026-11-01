@@ -201,14 +201,10 @@ export function AstronautHealthReport() {
         try {
           blob = await createReportPdf(reportRef.current, exportName);
         } catch (pdfError) {
-          // Preserve browser-native Save as PDF as an explicit fallback; never claim a download.
+          // Download PDF must never silently invoke the separate Print action.
+          // Keep the actual renderer failure visible for troubleshooting.
           const message = pdfError instanceof Error ? pdfError.message : "PDF renderer unavailable";
-          setExportStatus(`Direct PDF export failed (${message}). Opening browser Print: select Save as PDF.`);
-          if (!stillCurrent()) throw new Error("Report selection changed. Export cancelled.");
-          const previousTitle = document.title;
-          try { document.title = exportName; window.print(); }
-          finally { document.title = previousTitle; }
-          return;
+          throw new Error(`Direct PDF export failed: ${message}. No PDF was downloaded. Use the separate Print button for browser Save as PDF.`);
         }
         const after = await loadMissionIdentity();
         if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>

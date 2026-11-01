@@ -198,6 +198,11 @@ export function UnknownBiomarkerReviewPanel(props: {
             <Button type="button" variant="outline" disabled={terms.length === 0 || (isReal && !realAck)} onClick={exportRequest}>
               Export scientific review request (JSON)
             </Button>
+            {terms.length === 0 ? (
+              <p className="w-full text-xs text-muted-foreground" role="status">
+                Export is unavailable because this import batch contains no unknown, ambiguous or unit-mismatched measurements. Import review-only rows first; previously stored accepted observations are not review candidates.
+              </p>
+            ) : null}
             <label className="inline-flex cursor-pointer items-center rounded-md border border-border px-3 py-2 text-sm">
               Re-evaluate a saved review request
               <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => { void reevaluateFile(e.target.files?.[0]); e.target.value = ""; }} />
