@@ -55,6 +55,16 @@ export interface DomainInterpretationStatus {
   status: string;
 }
 
+export const FRONT_PAGE_EVIDENCE_ID_LIMIT = 12;
+
+/** Concise evidence-ID line shared by screen, PDF and TXT (full lists stay in Scientific Findings). */
+export function frontPageEvidenceLine(ids: readonly string[]): string {
+  if (!ids.length) return "Evidence IDs for recorded differences: none";
+  const shown = ids.slice(0, FRONT_PAGE_EVIDENCE_ID_LIMIT).join(", ");
+  const more = ids.length - FRONT_PAGE_EVIDENCE_ID_LIMIT;
+  return `Evidence IDs for recorded differences (${ids.length}): ${shown}${more > 0 ? ` … and ${more} more, all listed per metric in Scientific Findings` : ""}`;
+}
+
 export interface ScientificHealthSummary {
   frontPage: { keyPoints: string[]; evidenceIds: string[]; interpretationStatus: string };
   domainInterpretation: DomainInterpretationStatus[];
@@ -251,7 +261,7 @@ export function scientificHealthSummaryPlainText(s: ScientificHealthSummary): st
     "SCIENTIFIC HEALTH SUMMARY — RESEARCH ONLY",
     "At a glance:",
     ...s.frontPage.keyPoints.map((p) => `- ${p}`),
-    `- Evidence IDs for recorded differences: ${s.frontPage.evidenceIds.join(", ") || "none"}`,
+    `- ${frontPageEvidenceLine(s.frontPage.evidenceIds)}`,
     `- ${s.frontPage.interpretationStatus}`,
     "Interpretation review status by domain:",
     ...s.domainInterpretation.map((d) => `- ${d.domain} (${d.present ? "data present" : "no included data"}): ${d.source ? `${d.source}. ` : ""}${d.status}`),

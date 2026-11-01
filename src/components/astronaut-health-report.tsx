@@ -28,6 +28,7 @@ import { buildScientificFindings, scientificFindingsPlainText } from "@/domain/h
 import {
   buildScientificHealthSummary,
   EVIDENCE_TIER_LABELS,
+  frontPageEvidenceLine,
   scientificHealthSummaryPlainText,
 } from "@/domain/health-intelligence/scientific-health-summary";
 import {
@@ -438,7 +439,7 @@ export function AstronautHealthReport() {
               <h3 className="font-semibold">Scientific summary at a glance</h3>
               <ul className="list-disc pl-5 text-sm">{healthSummary.frontPage.keyPoints.map((p) => <li key={p}>{p}</li>)}</ul>
               <p className="report-evidence-id text-xs text-muted-foreground">
-                Evidence IDs for recorded differences: {healthSummary.frontPage.evidenceIds.join(", ") || "none"}
+                {frontPageEvidenceLine(healthSummary.frontPage.evidenceIds)}
               </p>
               <ul className="list-disc pl-5 text-xs">
                 {healthSummary.domainInterpretation.map((d) => (

@@ -10,7 +10,7 @@ import {
   type ReportPdfDeps,
 } from "../../src/domain/health-intelligence/report-pdf";
 import { buildScientificFindings, scientificFindingsPlainText } from "../../src/domain/health-intelligence/scientific-findings";
-import { buildScientificHealthSummary, scientificHealthSummaryPlainText } from "../../src/domain/health-intelligence/scientific-health-summary";
+import { buildScientificHealthSummary, frontPageEvidenceLine, scientificHealthSummaryPlainText } from "../../src/domain/health-intelligence/scientific-health-summary";
 import { summarizeAttestations } from "../../src/domain/health-intelligence/evidence-attestation";
 import { v7Report, v7Row } from "./fixtures-v7-report";
 
@@ -116,7 +116,10 @@ describe("v7 screen / TXT parity", () => {
   test("every on-screen front-page point and evidence ID appears in TXT", () => {
     for (const p of summary.frontPage.keyPoints) expect(text).toContain(p);
     expect(summary.frontPage.evidenceIds).toEqual(["obs-1", "obs-2"]);
-    expect(text).toContain("obs-1, obs-2");
+    expect(text).toContain(frontPageEvidenceLine(summary.frontPage.evidenceIds));
+    expect(text).toContain("(2): obs-1, obs-2");
+    const many = Array.from({ length: 20 }, (_, i) => `id-${i}`);
+    expect(frontPageEvidenceLine(many)).toContain("… and 8 more");
     expect(scientificFindingsPlainText(findings)).toContain("obs-1");
   });
 
