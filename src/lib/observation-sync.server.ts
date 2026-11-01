@@ -3,7 +3,8 @@
  * encryption, authorization pre-check and RPC orchestration.
  *
  * Key handling (documented in docs/V9_4_OBSERVATION_SYNC_OPERATOR.md):
- *  - Master secrets MITO_OBSERVATION_SYNC_KEY_V<n> (base64, exactly 32 bytes)
+ *  - Master secrets MITO_OBSERVATION_SYNC_KEY_V<n> (padded base64 of 32 bytes, or a 64-512
+ *    character platform-generated random alphanumeric secret; see readMasterKeys)
  *    live only in the server runtime. They are never sent to the browser,
  *    never stored in the database and never logged.
  *  - Per-scope keys are derived with HKDF-SHA256 (fixed salt, info bound to
