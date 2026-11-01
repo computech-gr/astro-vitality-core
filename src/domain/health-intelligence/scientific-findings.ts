@@ -23,6 +23,8 @@ export interface ScientificCrossDomainFinding {
   evidenceIds: string[];
   statement: string;
   missingSignals: string[];
+  observedTimeRange: string | null;
+  observedSignalCounts: string[];
 }
 export interface ScientificFindings {
   metrics: ScientificMetricFinding[];
@@ -91,7 +93,7 @@ export function buildScientificFindings(report: UnifiedHealthReport): Scientific
         : "Insufficient comparable time points for a descriptive change; no trend inferred.",
     };
   });
-  // Reviewed exact canonical identities. No fuzzy matching, no invented aliases.
+  // Provisional exact catalog-ID mappings; scientific review remains pending. No fuzzy matching or invented aliases.
   const signalIds: Record<string, readonly string[]> = {
     "HRV RMSSD": ["cv-027"],
     "sleep duration": ["BSC-001"],
@@ -107,11 +109,14 @@ export function buildScientificFindings(report: UnifiedHealthReport): Scientific
     const present = matched.filter((item) => item.rows.length > 0);
     const missingSignals = matched.filter((item) => item.rows.length === 0).map((item) => item.signal);
     const evidenceIds = [...new Set(present.flatMap((item) => item.rows.map((r) => r.recordId)))];
+    const times = present.flatMap((item) => item.rows.map((r) => r.observedAt)).filter((t) => Number.isFinite(Date.parse(t))).sort((a, b) => Date.parse(a) - Date.parse(b));
+    const observedTimeRange = times.length ? `${times[0]} to ${times[times.length - 1]}` : null;
+    const observedSignalCounts = present.map((item) => `${item.signal}: ${item.rows.length} observation(s)`);
     return {
-      domains: [...link.domains], signals: [...link.signals], evidenceIds, missingSignals,
+      domains: [...link.domains], signals: [...link.signals], evidenceIds, missingSignals, observedTimeRange, observedSignalCounts,
       statement: missingSignals.length
-        ? `Partial signal coverage (${present.map((item) => item.signal).join(", ") || "none"}); missing: ${missingSignals.join(", ")}. No cross-domain association inferred.`
-        : "All named signals observed. Co-observation is research context only; no temporal association, causal effect or clinical conclusion established.",
+        ? `Partial signal coverage (${present.map((item) => item.signal).join(", ") || "none"}); missing: ${missingSignals.join(", ")}. Observed counts: ${observedSignalCounts.join("; ") || "none"}. Time coverage: ${observedTimeRange || "none"}. No cross-domain association inferred.`
+        : `All named signals observed. Observed counts: ${observedSignalCounts.join("; ")}. Time coverage: ${observedTimeRange || "none"}. Co-observation is research context only; temporal alignment, statistical association, causal effect and clinical significance are not established.`,
     };
   });
   const missingDomains = report.summaries.filter((s) => s.missing).map((s) => s.badge);
