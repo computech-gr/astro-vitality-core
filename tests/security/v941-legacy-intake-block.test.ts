@@ -38,7 +38,7 @@ let SupabaseMissionSyncTransport: typeof import("../../src/infrastructure/ground
 beforeAll(async () => {
   // Bun module mocks are process-wide: spread the real exports and restore them afterwards.
   mock.module("@/integrations/supabase/client", () => ({ ...realClientExports, supabase: fakeClient }));
-  ({ SupabaseMissionSyncTransport } = await import("../../src/infrastructure/ground-research/supabase-transport?v941"));
+  ({ SupabaseMissionSyncTransport } = await import("../../src/infrastructure/ground-research/supabase-transport"));
   if (!hadWindow) (globalThis as Record<string, unknown>)["window"] = {};
 });
 
