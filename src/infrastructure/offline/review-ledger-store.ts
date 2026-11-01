@@ -69,31 +69,46 @@ function done(tx: IDBTransaction): Promise<void> {
 }
 
 export class IndexedDbReviewLedgerStore implements ReviewLedgerStore {
-  private db?: IDBDatabase;
-  private key?: CryptoKey;
+  private ready?: Promise<{ db: IDBDatabase; key: CryptoKey }>;
 
-  private async init() {
-    if (this.db && this.key) return { db: this.db, key: this.key };
+  /** Single in-flight initialization: concurrent first reads must not race to create two keys. */
+  private init() {
+    this.ready ??= this.open().catch((error) => {
+      this.ready = undefined;
+      throw error;
+    });
+    return this.ready;
+  }
+
+  private async open(): Promise<{ db: IDBDatabase; key: CryptoKey }> {
     if (typeof indexedDB === "undefined") throw new Error("Encrypted local storage is unavailable in this browser.");
-    const open = indexedDB.open(DB_NAME, 1);
-    open.onupgradeneeded = () => {
-      const db = open.result;
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
       if (!db.objectStoreNames.contains(EVENTS)) db.createObjectStore(EVENTS, { keyPath: "id" });
       if (!db.objectStoreNames.contains(KEYS)) db.createObjectStore(KEYS, { keyPath: "id" });
     };
-    const db = await req(open);
-    const readTx = db.transaction(KEYS, "readonly");
-    const existing = await req(readTx.objectStore(KEYS).get(KEY_ID) as IDBRequest<{ id: string; key: CryptoKey } | undefined>);
-    await done(readTx);
-    let key = existing?.key;
+    const db = await req(request);
+    const readKey = async () => {
+      const tx = db.transaction(KEYS, "readonly");
+      const row = await req(tx.objectStore(KEYS).get(KEY_ID) as IDBRequest<{ id: string; key: CryptoKey } | undefined>);
+      await done(tx);
+      return row?.key;
+    };
+    let key = await readKey();
     if (!key) {
-      key = await generateDeviceLocalKey();
-      const writeTx = db.transaction(KEYS, "readwrite");
-      writeTx.objectStore(KEYS).add({ id: KEY_ID, key });
-      await done(writeTx);
+      const generated = await generateDeviceLocalKey();
+      try {
+        const tx = db.transaction(KEYS, "readwrite");
+        tx.objectStore(KEYS).add({ id: KEY_ID, key: generated });
+        await done(tx);
+        key = generated;
+      } catch {
+        // Another tab created the key first: use the stored one, never overwrite it.
+        key = await readKey();
+      }
     }
-    this.db = db;
-    this.key = key;
+    if (!key) throw new Error("The local review-ledger encryption key is unavailable.");
     return { db, key };
   }
 
