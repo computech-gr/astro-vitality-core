@@ -35,7 +35,7 @@ export type AdapterResult = { rows: Candidate[]; skipped: number; notes: string[
 
 const NUMERIC = /^[-+]?(?:\d+(?:\.\d+)?|\.\d+)$/;
 const ISO_WITH_ZONE =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 /** Only full timestamps with an explicit time zone are accepted; never a date-only value. */
 export function explicitTimestamp(value: unknown): string | null {
