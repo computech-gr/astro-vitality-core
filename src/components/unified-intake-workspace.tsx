@@ -4,6 +4,7 @@ import {
   extractJsonCandidates,
   extractXlsxCandidates,
   SUPPORTED_INTAKE_EXTENSIONS,
+  batchDuplicateKeys,
 } from "@/domain/health-intelligence/universal-intake-adapters";
 /**
  * Unified Medical Data Intake workspace. Every observation is classified
@@ -385,12 +386,21 @@ export function UnifiedIntakeWorkspace() {
         }),
       )
     : [];
+  const batchDuplicates = batchDuplicateKeys(
+    saveableRows.map((row) => ({
+      key: row.key,
+      metricId: row.classification.status === "matched" ? row.classification.metricId : "",
+      observedAt: row.observedAt,
+      value: row.value,
+    })),
+  );
+  const duplicateWarnings = duplicates.length + batchDuplicates.length;
   const canSave = Boolean(
     membership &&
     provenance &&
     reviewerConfirmed &&
     saveableRows.length > 0 &&
-    (duplicates.length === 0 || duplicateAcknowledged) &&
+    (duplicateWarnings === 0 || duplicateAcknowledged) &&
     !busy,
   );
 
@@ -428,7 +438,7 @@ export function UnifiedIntakeWorkspace() {
           provenance,
           quality: {
             reviewerConfirmed: true,
-            ...(duplicates.length > 0 ? { duplicateWarningAcknowledged: true } : {}),
+            ...(duplicateWarnings > 0 ? { duplicateWarningAcknowledged: true } : {}),
           },
           reviewState: "accepted",
           status: "active",
@@ -750,12 +760,20 @@ export function UnifiedIntakeWorkspace() {
               or unit-mismatched observations never enter storage or domain read models.
             </p>
           ) : null}
-          {duplicates.length ? (
+          {duplicateWarnings ? (
             <div className="space-y-2 rounded-md border border-border p-3">
-              <p className="text-sm font-medium">
-                Possible duplicate: {duplicates.length} stored observation(s) share the same metric,
-                time and value.
-              </p>
+              {duplicates.length ? (
+                <p className="text-sm font-medium">
+                  Possible duplicate: {duplicates.length} stored observation(s) share the same
+                  metric, time and value.
+                </p>
+              ) : null}
+              {batchDuplicates.length ? (
+                <p className="text-sm font-medium">
+                  Possible duplicate: {batchDuplicates.length} selected row(s) repeat another
+                  selected row&apos;s metric, time and value.
+                </p>
+              ) : null}
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"

@@ -306,3 +306,23 @@ export function extractXlsxCandidates(bytes: Uint8Array, max = 200): AdapterResu
       : [],
   };
 }
+
+/**
+ * Selected rows that repeat an earlier selected row's metric, observation time
+ * and value (for example the same reading imported from CSV and XLSX). They
+ * are reported for explicit acknowledgment, never silently dropped or merged.
+ */
+export function batchDuplicateKeys(
+  rows: ReadonlyArray<{ key: string; metricId: string; observedAt: string; value: string }>,
+): string[] {
+  const seen = new Set<string>();
+  const repeats: string[] = [];
+  for (const row of rows) {
+    if (!row.metricId) continue;
+    const time = Date.parse(row.observedAt);
+    const identity = `${row.metricId}|${Number.isFinite(time) ? time : row.observedAt}|${row.value.trim()}`;
+    if (seen.has(identity)) repeats.push(row.key);
+    else seen.add(identity);
+  }
+  return repeats;
+}
