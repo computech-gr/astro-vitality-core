@@ -25,6 +25,11 @@ import { loadUnifiedReportInputs } from "@/domain/health-intelligence/unified-he
 import { reportExportBasename } from "@/domain/health-intelligence/report-export-identity";
 import { createReportPdf, downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 import { buildScientificFindings, scientificFindingsPlainText } from "@/domain/health-intelligence/scientific-findings";
+import {
+  buildScientificHealthSummary,
+  EVIDENCE_TIER_LABELS,
+  scientificHealthSummaryPlainText,
+} from "@/domain/health-intelligence/scientific-health-summary";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -165,6 +170,10 @@ export function AstronautHealthReport() {
   );
 
   const findings = useMemo(() => unified ? buildScientificFindings(unified) : null, [unified]);
+  const healthSummary = useMemo(
+    () => (unified && findings ? buildScientificHealthSummary(unified, findings, report) : null),
+    [unified, findings, report],
+  );
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
   const currentExport = useRef({ unified, userId: identity?.userId });
@@ -184,7 +193,7 @@ export function AstronautHealthReport() {
         const previous = document.title;
         try { document.title = exportName; window.print(); } finally { document.title = previous; }
       } else if (kind === "text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${healthReportPlainText(report)}`;
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
       } else {
         if (!reportRef.current) throw new Error("Report is unavailable.");
@@ -378,6 +387,59 @@ export function AstronautHealthReport() {
             </p>
           </section>
 
+          {healthSummary && (
+            <section aria-label="Scientific Health Summary" className="space-y-3 rounded-lg border p-4">
+              <div className="report-avoid-break space-y-2">
+                <h3 className="text-lg font-semibold">Scientific Health Summary</h3>
+                <p className="text-sm font-semibold">Research summary only — no diagnosis, treatment, risk score or fitness-for-duty judgment.</p>
+                <ul className="space-y-1 text-xs">
+                  {healthSummary.evidenceTiers.map((t) => (
+                    <li key={t.tier}><strong>{EVIDENCE_TIER_LABELS[t.tier]}: {t.count}.</strong> {t.note}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="report-avoid-break space-y-1">
+                <h4 className="font-semibold">1. What was measured and changed</h4>
+                {healthSummary.measured.length ? <ul className="list-disc pl-5 text-sm">{healthSummary.measured.map((m) => <li key={m}>{m}</li>)}</ul> : <p className="text-sm">No included observations in this scope.</p>}
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-semibold">2. Supported versus insufficient</h4>
+                <ul className="list-disc pl-5 text-sm">
+                  {healthSummary.supported.map((m) => <li key={m} className="report-avoid-break">Supported (descriptive): {m}</li>)}
+                  {healthSummary.insufficient.map((m) => <li key={m} className="report-avoid-break">Insufficient: {m}</li>)}
+                  {!healthSummary.supported.length && !healthSummary.insufficient.length ? <li>No numeric evidence in this scope.</li> : null}
+                </ul>
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-semibold">3. Possible biological implications (handbook-documented, pending review)</h4>
+                {healthSummary.implications.length ? <ul className="list-disc pl-5 text-sm">{healthSummary.implications.map((i) => <li key={i.metricId + i.direction} className="report-avoid-break">
+                  <strong>{i.label}</strong> ({i.metricId}, {i.direction}): {i.statement}
+                  <span className="report-evidence-id block text-xs text-muted-foreground">{i.handbook} · {i.reviewStatus} · Evidence IDs: {i.evidenceIds.join(", ")}</span>
+                </li>)}</ul> : <p className="text-sm">No handbook-documented implication applies to the observed changes.</p>}
+                {healthSummary.implicationGaps.length ? <ul className="list-disc pl-5 text-xs text-muted-foreground">{healthSummary.implicationGaps.map((g) => <li key={g} className="report-avoid-break">{g}</li>)}</ul> : null}
+              </div>
+              <div className="report-avoid-break space-y-1">
+                <h4 className="font-semibold">4. Nikolas-governed cross-domain context</h4>
+                <ul className="list-disc pl-5 text-sm">{healthSummary.crossDomain.map((c) => <li key={c}>{c}</li>)}</ul>
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-semibold">5. Missing data, uncertainty and confounders</h4>
+                <ul className="list-disc pl-5 text-sm">{healthSummary.uncertainty.map((u) => <li key={u} className="report-avoid-break">{u}</li>)}</ul>
+              </div>
+              <div className="report-avoid-break space-y-1">
+                <h4 className="font-semibold">6. Qualified Ground Medical follow-up considerations</h4>
+                <ul className="list-disc pl-5 text-sm">{healthSummary.followUp.map((f) => <li key={f}>{f}</li>)}</ul>
+              </div>
+              <div className="report-avoid-break space-y-1">
+                <h4 className="font-semibold">Domain coverage versus Medical Intake</h4>
+                <ul className="list-disc pl-5 text-xs">{healthSummary.reconciliation.map((r) => <li key={r.domain}>
+                  <strong>{r.domain}:</strong> {r.reportIncluded} included ({r.storedObservations} module, {r.reviewerAcceptedIntake} intake); Medical Intake accepted {r.medicalIntakeAccepted}. {r.explanation}
+                </li>)}</ul>
+                <ul className="list-disc pl-5 text-xs text-muted-foreground">{healthSummary.boundaries.map((b) => <li key={b}>{b}</li>)}</ul>
+              </div>
+            </section>
+          )}
+
           {/* Keep individual findings together, not the whole section: a section taller than one A4 page made direct PDF export fail. */}
           {findings && <section aria-label="Scientific Findings and Interpretation" className="space-y-3 rounded-lg border p-4">
             <div className="report-avoid-break space-y-3">
@@ -519,6 +581,12 @@ export function AstronautHealthReport() {
 
           <section aria-label="Intake research observations" className="space-y-3">
             <h3 className="font-semibold">Medical Intake research observations</h3>
+            <p className="text-xs text-muted-foreground">
+              Lists only reviewer-accepted Unified Intake observations for the full period, without the
+              date or source filters above. Health module entries and device rows are counted in the
+              domain overview, so domain counts can differ. Not reviewed: {report.excluded.unreviewed} ·
+              erroneous: {report.excluded.erroneous} · other provenance: {report.excluded.otherProvenance}.
+            </p>
             {report.findings.map((f, i) => (
               <div key={i} className="report-avoid-break break-words text-sm">
                 <strong>

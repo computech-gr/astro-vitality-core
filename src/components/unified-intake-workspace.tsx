@@ -21,10 +21,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
 import { Link } from "@tanstack/react-router";
-import {
-  classifyIntakeObservation,
-  type IntakeClassification,
-} from "@/domain/health-domains/unified-intake-classification";
+import { type IntakeClassification } from "@/domain/health-domains/unified-intake-classification";
 import { DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import {
   UNIFIED_OBSERVATION_SCHEMA,
