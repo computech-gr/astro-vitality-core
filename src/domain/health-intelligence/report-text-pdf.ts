@@ -14,6 +14,7 @@ import { REPORT_SOURCE_LABELS, type ReportRow, type UnifiedHealthReport } from "
 import type { ScientificFindings } from "./scientific-findings";
 import { EVIDENCE_TIER_LABELS, type ScientificHealthSummary } from "./scientific-health-summary";
 import { attestationStateFor, ATTESTATION_STATUS_LABELS, summarizeAttestations, type AttestationEvent } from "./evidence-attestation";
+import { attestationLine, buildResearcherInterpretation, handbookLine } from "./researcher-interpretation";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
@@ -319,49 +320,42 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     );
   }
 
-  // ---- Researcher module physiological evidence interpretation ----
-  // Shared evidence contract across Bone, Cardiovascular, Immune and Behavioral.
+  // ---- Researcher module physiological evidence interpretation (v9.5) ----
+  // Rendered from the shared deterministic model used by the four module screens and TXT.
   // No inferred clinical thresholds, diagnoses or invented handbook statements.
-  blocks.push({ kind: "h2", text: "Researcher module physiological evidence interpretation (research only)" });
-  blocks.push({ kind: "p", text: "This section separates recorded changes from possible biological context. A measured difference is not an abnormality, clinical trend, diagnosis or fitness-for-duty finding. Ground Medical attestation verifies evidence provenance, not scientific interpretation.", muted: true });
-  const researchDomains = [
-    { key: "bone", label: "Bone Health" },
-    { key: "cardiovascular", label: "Cardiovascular Health" },
-    { key: "immune", label: "Immune Health" },
-    { key: "behavioral", label: "Behavioral Health" },
-  ];
-  for (const domain of researchDomains) {
-    const domainRows = unified.rows.filter((row) => row.badge === domain.key);
-    const domainMetrics = [...new Set(domainRows.map((row) => `${row.metricId} | ${row.unit}`))];
-    const domainImplications = (summary?.implications ?? []).filter((item) =>
-      domainRows.some((row) => row.metricId === item.metricId),
-    );
-    blocks.push({ kind: "h3", text: domain.label });
-    if (!domainRows.length) {
-      blocks.push({ kind: "p", text: "No included observations in this reporting scope. No physiological conclusion can be drawn from missing evidence." });
-      continue;
+  if (findings) {
+    const model = buildResearcherInterpretation(u, findings, input.attestations);
+    blocks.push({ kind: "h2", text: "Researcher module physiological evidence interpretation (research only)" });
+    blocks.push({ kind: "p", text: "This section separates recorded changes from possible biological context. A measured difference is not an abnormality, clinical trend, diagnosis or fitness-for-duty finding. Ground Medical attestation verifies evidence provenance, not scientific interpretation.", muted: true });
+    blocks.push({ kind: "kv", rows: model.approvalLayers.map((l): [string, string] => [l.layer, `${l.count ?? "n/a"} - ${l.meaning}`]) });
+    for (const d of model.domains) {
+      blocks.push({ kind: "h3", text: d.label });
+      blocks.push({ kind: "p", text: d.summary });
+      blocks.push({ kind: "p", text: `Governance: ${d.governance.source ? `${d.governance.source}. ` : ""}${d.governance.status}`, muted: true });
+      if (!d.series.length) continue;
+      blocks.push({
+        kind: "table",
+        columns: [
+          { title: "Metric / unit (as recorded)", width: 0.24 },
+          { title: "Recorded observation", width: 0.36 },
+          { title: "Coverage / review", width: 0.22 },
+          { title: "Evidence", width: 0.18 },
+        ],
+        rows: d.series.map((s) => [
+          `${metricName(s.label, s.metricId)} | ${s.unit}`,
+          s.observation,
+          `${s.readings} reading(s), ${s.distinctUtcDays} UTC day(s). ${s.provenance}. Quality: ${s.quality} Ground Medical: ${attestationLine(s.attestation)}.`,
+          ref(s.evidenceIds),
+        ]),
+      });
+      blocks.push({ kind: "bullets", items: d.series.map((s) => `${metricName(s.label, s.metricId)} [${s.unit}] biological context: ${handbookLine(s.handbook)}`) });
+      const limits = [...new Set([...d.series.flatMap((s) => s.limitations), ...d.limitations])];
+      blocks.push({ kind: "p", text: `Limitations: ${limits.join(" ")}`, muted: true });
     }
-    blocks.push({ kind: "p", text: `${domainRows.length} included observations across ${domainMetrics.length} distinct metric/unit series. Evidence: ${ref(domainRows.map((row) => row.recordId))}.` });
-    blocks.push({ kind: "table", columns: [
-      { title: "Metric / unit", width: 0.30 },
-      { title: "Readings", width: 0.12 },
-      { title: "Observed UTC coverage", width: 0.35 },
-      { title: "Evidence", width: 0.23 },
-    ], rows: domainMetrics.map((key) => {
-      const matching = domainRows.filter((row) => `${row.metricId} | ${row.unit}` === key);
-      const dates = matching.map((row) => row.observedAt).sort();
-      return [key, String(matching.length), `${dates[0]} to ${dates[dates.length - 1]}`, ref(matching.map((row) => row.recordId))];
-    }) });
-    if (domainImplications.length) {
-      blocks.push({ kind: "bullets", items: domainImplications.map((item) =>
-        `${item.metricId}: recorded ${item.direction}. Handbook context (not a finding about this astronaut): ${item.statement}. Source: ${item.handbook}; status: ${item.reviewStatus}. Evidence: ${ref(item.evidenceIds)}.`,
-      ) });
-    } else {
-      blocks.push({ kind: "p", text: "No governed, metric-linked biological interpretation available for these observations. Scientific interpretation remains pending; none is generated." });
-    }
-    blocks.push({ kind: "p", text: "Evidence sufficiency: descriptive observations only. Individual baseline, measurement method and quality, repeat sampling, timing, confounders and cross-domain co-observations must be reviewed before interpreting physiological significance.", muted: true });
+    blocks.push({ kind: "h3", text: "Cross-domain comparability" });
+    blocks.push({ kind: "bullets", items: model.crossDomain.map((c) => `${c.statement} Evidence: ${ref(c.evidenceIds)}.`) });
+    blocks.push({ kind: "p", text: "Cross-domain hypotheses require co-observed, temporally comparable evidence and independent scientific review. No automatic risk classification, abnormality label, causal claim, treatment or medical recommendation is generated.", muted: true });
   }
-  blocks.push({ kind: "p", text: "Cross-domain hypotheses require co-observed, temporally comparable evidence and independent scientific review. No automatic risk classification, abnormality label, causal claim, treatment or medical recommendation is generated.", muted: true });
 
   // ---- 3. Handbook hypotheses ----
   blocks.push({ kind: "h2", text: "3. Handbook hypotheses (pending independent scientific review)" });
