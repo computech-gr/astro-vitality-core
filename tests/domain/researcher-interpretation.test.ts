@@ -8,6 +8,7 @@ import {
   buildResearcherInterpretation,
   crossDomainFor,
   domainInterpretation,
+  handbookLine,
   researcherInterpretationPlainText,
   RESEARCHER_DOMAINS,
   type ResearcherInterpretationModel,
@@ -245,6 +246,9 @@ describe("v9.5 PDF and TXT parity with the shared model", () => {
         expect(text).toContain(JSON.stringify(s.observation).slice(1, -1));
         expect(txt).toContain(s.observation);
         for (const id of s.evidenceIds) expect(txt).toContain(id);
+        const context = handbookLine(s.handbook);
+        expect(text).toContain(JSON.stringify(context).slice(1, -1));
+        expect(txt).toContain(context);
       }
     }
     expect(text).toContain("Scientific interpretation approval");
