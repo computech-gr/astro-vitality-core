@@ -14,6 +14,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { classifyReviewSyncError, type ReviewSyncErrorCode } from "@/domain/health-intelligence/review-sync";
 
 const scopeSchema = z
   .object({
@@ -70,7 +71,6 @@ const pullInput = z
   })
   .strict();
 
-export type ReviewSyncErrorCode = "migration_required" | "forbidden" | "invalid" | "unavailable";
 export type ReviewSyncFailure = { ok: false; code: ReviewSyncErrorCode; message: string };
 
 const messages: Record<ReviewSyncErrorCode, string> = {
@@ -86,10 +86,7 @@ type Rpc = (fn: string, args: Record<string, unknown>) => Promise<{ data: unknow
 function classify(error: { code?: string }): ReviewSyncFailure {
   // Log only the failure class; never payloads or tokens.
   console.error("[v9 review sync] refused", error.code ?? "unknown");
-  if (error.code === "PGRST202" || error.code === "42883" || error.code === "42P01" || error.code === "PGRST205") return fail("migration_required");
-  if (error.code === "42501") return fail("forbidden");
-  if (error.code === "22023" || error.code === "22P02") return fail("invalid");
-  return fail("unavailable");
+  return fail(classifyReviewSyncError(error.code));
 }
 
 export interface PushItemResult {

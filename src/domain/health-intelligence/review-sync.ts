@@ -19,6 +19,16 @@ import type { RemoteCorrectionIntent, SyncReceipt } from "./review-ledger";
 export const REVIEW_SYNC_MIGRATION_REQUIRED = "Cloud review sync unavailable: migration required";
 export const REVIEW_SYNC_BATCH_MAX = 500;
 
+export type ReviewSyncErrorCode = "migration_required" | "forbidden" | "invalid" | "unavailable";
+
+/** Maps a database/API error code to a fail-closed sync outcome. A missing RPC/table means the pending migration is not applied. */
+export function classifyReviewSyncError(code: string | undefined): ReviewSyncErrorCode {
+  if (code === "PGRST202" || code === "PGRST205" || code === "42883" || code === "42P01") return "migration_required";
+  if (code === "42501") return "forbidden";
+  if (code === "22023" || code === "22P02") return "invalid";
+  return "unavailable";
+}
+
 export interface AttestationSyncPayload {
   eventId: string;
   action: "attest" | "revoke";
