@@ -319,6 +319,50 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     );
   }
 
+  // ---- Researcher module physiological evidence interpretation ----
+  // Shared evidence contract across Bone, Cardiovascular, Immune and Behavioral.
+  // No inferred clinical thresholds, diagnoses or invented handbook statements.
+  blocks.push({ kind: "h2", text: "Researcher module physiological evidence interpretation (research only)" });
+  blocks.push({ kind: "p", text: "This section separates recorded changes from possible biological context. A measured difference is not an abnormality, clinical trend, diagnosis or fitness-for-duty finding. Ground Medical attestation verifies evidence provenance, not scientific interpretation.", muted: true });
+  const researchDomains = [
+    { key: "bone", label: "Bone Health" },
+    { key: "cardiovascular", label: "Cardiovascular Health" },
+    { key: "immune", label: "Immune Health" },
+    { key: "behavioral", label: "Behavioral Health" },
+  ];
+  for (const domain of researchDomains) {
+    const domainRows = unified.rows.filter((row) => row.badge === domain.key);
+    const domainMetrics = [...new Set(domainRows.map((row) => `${row.metricId} | ${row.unit}`))];
+    const domainImplications = (summary?.implications ?? []).filter((item) =>
+      domainRows.some((row) => row.metricId === item.metricId),
+    );
+    blocks.push({ kind: "h3", text: domain.label });
+    if (!domainRows.length) {
+      blocks.push({ kind: "p", text: "No included observations in this reporting scope. No physiological conclusion can be drawn from missing evidence." });
+      continue;
+    }
+    blocks.push({ kind: "p", text: `${domainRows.length} included observations across ${domainMetrics.length} distinct metric/unit series. Evidence: ${ref(domainRows.map((row) => row.recordId))}.` });
+    blocks.push({ kind: "table", columns: [
+      { title: "Metric / unit", width: 0.30 },
+      { title: "Readings", width: 0.12 },
+      { title: "Observed UTC coverage", width: 0.35 },
+      { title: "Evidence", width: 0.23 },
+    ], rows: domainMetrics.map((key) => {
+      const matching = domainRows.filter((row) => `${row.metricId} | ${row.unit}` === key);
+      const dates = matching.map((row) => row.observedAt).sort();
+      return [key, String(matching.length), `${dates[0]} to ${dates[dates.length - 1]}`, ref(matching.map((row) => row.recordId))];
+    }) });
+    if (domainImplications.length) {
+      blocks.push({ kind: "bullets", items: domainImplications.map((item) =>
+        `${item.metricId}: recorded ${item.direction}. Handbook context (not a finding about this astronaut): ${item.statement}. Source: ${item.handbook}; status: ${item.reviewStatus}. Evidence: ${ref(item.evidenceIds)}.`,
+      ) });
+    } else {
+      blocks.push({ kind: "p", text: "No governed, metric-linked biological interpretation available for these observations. Scientific interpretation remains pending; none is generated." });
+    }
+    blocks.push({ kind: "p", text: "Evidence sufficiency: descriptive observations only. Individual baseline, measurement method and quality, repeat sampling, timing, confounders and cross-domain co-observations must be reviewed before interpreting physiological significance.", muted: true });
+  }
+  blocks.push({ kind: "p", text: "Cross-domain hypotheses require co-observed, temporally comparable evidence and independent scientific review. No automatic risk classification, abnormality label, causal claim, treatment or medical recommendation is generated.", muted: true });
+
   // ---- 3. Handbook hypotheses ----
   blocks.push({ kind: "h2", text: "3. Handbook hypotheses (pending independent scientific review)" });
   const implications = summary?.implications ?? [];
