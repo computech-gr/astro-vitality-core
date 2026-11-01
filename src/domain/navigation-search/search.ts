@@ -89,7 +89,8 @@ export function editDistance(a: string, b: string, max = 2) {
 function tokenScore(token: string, words: string[], weight: number) {
   let best = 0;
   for (const word of words) {
-    if (word === token) best = Math.max(best, 10 * weight);
+    // Singular and plural forms are equally exact ("biomarker" ≙ "biomarkers").
+    if (word === token || word === `${token}s` || token === `${word}s`) best = Math.max(best, 10 * weight);
     else if (word.startsWith(token)) best = Math.max(best, 7 * weight);
     else if (token.length >= 3 && word.includes(token)) best = Math.max(best, 4 * weight);
     else if (
