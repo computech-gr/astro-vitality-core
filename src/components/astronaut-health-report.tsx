@@ -28,8 +28,24 @@ import { buildScientificFindings, scientificFindingsPlainText } from "@/domain/h
 import {
   buildScientificHealthSummary,
   EVIDENCE_TIER_LABELS,
+  frontPageEvidenceLine,
   scientificHealthSummaryPlainText,
 } from "@/domain/health-intelligence/scientific-health-summary";
+import {
+  ATTESTATION_REASON_MIN,
+  ATTESTATION_STATUS_LABELS,
+  attestationPlainText,
+  attestationStateFor,
+  canAttestEvidence,
+  eligibleForAttestation,
+  planAttestation,
+  planRevocation,
+  scopedAttestationEvents,
+  summarizeAttestations,
+  type AttestationEvent,
+} from "@/domain/health-intelligence/evidence-attestation";
+import { appendAttestationEvents, listAttestationEvents } from "@/domain/health-intelligence/review-ledger";
+import { pdfExportErrorMessage } from "@/domain/health-intelligence/report-pdf";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -169,10 +185,75 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
+  // Roles held for exactly the selected mission + crew (never inferred from other memberships).
+  const rolesForScope = useMemo(
+    () =>
+      member && identity?.signedIn && !identity.error
+        ? identity.memberships
+            .filter((m) => m.missionId === member.missionId && m.crewMemberId === member.crewMemberId)
+            .map((m) => m.role)
+        : [],
+    [identity, member],
+  );
+  const canAttest = canAttestEvidence(rolesForScope) && Boolean(identity?.userId);
+  const [attestations, setAttestations] = useState<AttestationEvent[]>([]);
+  const [attestLoad, setAttestLoad] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [attestReason, setAttestReason] = useState("");
+  const [attestConfirmed, setAttestConfirmed] = useState(false);
+  const [attestStatus, setAttestStatus] = useState("");
+  const [attesting, setAttesting] = useState(false);
+
+  const attestMissionId = member?.missionId;
+  const attestCrewId = member?.crewMemberId;
+  useEffect(() => {
+    setAttestations([]);
+    setSelected(new Set());
+    setAttestConfirmed(false);
+    setAttestStatus("");
+    if (!attestMissionId || !attestCrewId) { setAttestLoad("idle"); return; }
+    let active = true;
+    setAttestLoad("loading");
+    void listAttestationEvents({ missionId: attestMissionId, crewMemberId: attestCrewId, provenance })
+      .then((events) => { if (active) { setAttestations(events); setAttestLoad("ready"); } })
+      .catch(() => { if (active) setAttestLoad("error"); });
+    return () => { active = false; };
+  }, [attestMissionId, attestCrewId, provenance, identity?.userId]);
+
+  const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(attestations, unified.scope) : []), [attestations, unified]);
+  const attestationSummary = useMemo(() => (unified ? summarizeAttestations(unified, scopedAttestations) : null), [unified, scopedAttestations]);
+  const eligible = useMemo(() => (unified ? eligibleForAttestation(unified, scopedAttestations) : []), [unified, scopedAttestations]);
+
+  const runAttestation = async (mode: "attest" | "revoke", recordId?: string) => {
+    if (!member || !unified || attesting) return;
+    const scope = { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance };
+    setAttesting(true);
+    try {
+      const fresh = await loadMissionIdentity();
+      const freshRoles = fresh.signedIn && !fresh.error && fresh.userId === identity?.userId
+        ? fresh.memberships.filter((m) => m.missionId === member.missionId && m.crewMemberId === member.crewMemberId).map((m) => m.role)
+        : [];
+      const ctx = { actorUserId: fresh.userId, rolesForScope: freshRoles, scope, decidedAt: new Date().toISOString() };
+      const input = { reason: attestReason, confirmed: attestConfirmed };
+      const plan = mode === "attest"
+        ? planAttestation(unified, [...selected], scopedAttestations, ctx, input)
+        : planRevocation(unified, recordId ?? "", scopedAttestations, ctx, input);
+      if (!plan.ok) { setAttestStatus(plan.reason); return; }
+      const saved = await appendAttestationEvents(plan.events, scope, ctx);
+      const events = await listAttestationEvents(scope);
+      setAttestations(events);
+      setSelected(new Set());
+      setAttestConfirmed(false);
+      setAttestStatus(`${mode === "attest" ? "Attested" : "Revoked"} ${saved.inserted} record(s)${saved.duplicates ? `, ${saved.duplicates} already recorded` : ""}${plan.skipped.length ? `, ${plan.skipped.length} skipped (${plan.skipped[0]!.reason})` : ""}. Batch ${plan.batchId}. Stored encrypted on this device; catalog and scientific review status unchanged.`);
+    } catch (error) {
+      setAttestStatus(error instanceof Error ? error.message : "Attestation could not be saved. Nothing was changed.");
+    } finally { setAttesting(false); }
+  };
+
   const findings = useMemo(() => unified ? buildScientificFindings(unified) : null, [unified]);
   const healthSummary = useMemo(
-    () => (unified && findings ? buildScientificHealthSummary(unified, findings, report) : null),
-    [unified, findings, report],
+    () => (unified && findings ? buildScientificHealthSummary(unified, findings, report, attestationSummary) : null),
+    [unified, findings, report, attestationSummary],
   );
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
@@ -183,39 +264,36 @@ export function AstronautHealthReport() {
     const snapshot = currentExport.current;
     const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
     setExporting(true);
-    setExportStatus(kind === "pdf" ? "Preparing A4 PDF locally…" : "Checking authorized report scope…");
+    setExportStatus(kind === "pdf" ? "Preparing A4 PDF locally… long reports are rendered page band by page band." : "Checking authorized report scope…");
     try {
       const fresh = await loadMissionIdentity();
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && fresh.memberships.some(m =>
         m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"));
       if (!authorized || !stillCurrent()) throw new Error("Report authorization or selection changed. Export cancelled.");
       if (kind === "print") {
+        // Print is a separate, explicit browser action; it is never used as a silent PDF fallback.
         const previous = document.title;
         try { document.title = exportName; window.print(); } finally { document.title = previous; }
+        setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
+        setExportStatus(`Evidence TXT created locally and download started as ${exportName}.txt. No medical data was uploaded.`);
       } else {
         if (!reportRef.current) throw new Error("Report is unavailable.");
         let blob: Blob;
         try {
           blob = await createReportPdf(reportRef.current, exportName);
         } catch (pdfError) {
-          // Preserve browser-native Save as PDF as an explicit fallback; never claim a download.
-          const message = pdfError instanceof Error ? pdfError.message : "PDF renderer unavailable";
-          setExportStatus(`Direct PDF export failed (${message}). Opening browser Print: select Save as PDF.`);
-          if (!stillCurrent()) throw new Error("Report selection changed. Export cancelled.");
-          const previousTitle = document.title;
-          try { document.title = exportName; window.print(); }
-          finally { document.title = previousTitle; }
-          return;
+          // Download PDF must never silently invoke the separate Print action.
+          throw new Error(pdfExportErrorMessage(pdfError));
         }
         const after = await loadMissionIdentity();
         if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>
-          m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled.");
+          m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled; no PDF was downloaded.");
         downloadReportBlob(blob, `${exportName}.pdf`);
+        setExportStatus(`PDF created locally (${(blob.size / 1_048_576).toFixed(1)} MB) and download started as ${exportName}.pdf. Check your browser downloads. No medical data was uploaded.`);
       }
-      setExportStatus(kind === "print" ? "Print dialog requested." : `${kind === "pdf" ? "PDF" : "Evidence TXT"} download requested. No medical data was uploaded.`);
     } catch (error) {
       setExportStatus(error instanceof Error ? error.message : "Export failed. No file downloaded.");
     } finally { setExporting(false); }
@@ -358,6 +436,22 @@ export function AstronautHealthReport() {
           </div>
           <p className="report-disclaimer rounded-md border p-3 text-sm font-semibold">{REPORT_DISCLAIMER}</p>
 
+          {healthSummary && (
+            <section aria-label="Scientific summary at a glance" className="report-avoid-break space-y-2 rounded-lg border p-4">
+              <h3 className="font-semibold">Scientific summary at a glance</h3>
+              <ul className="list-disc pl-5 text-sm">{healthSummary.frontPage.keyPoints.map((p) => <li key={p}>{p}</li>)}</ul>
+              <p className="report-evidence-id text-xs text-muted-foreground">
+                {frontPageEvidenceLine(healthSummary.frontPage.evidenceIds)}
+              </p>
+              <ul className="list-disc pl-5 text-xs">
+                {healthSummary.domainInterpretation.map((d) => (
+                  <li key={d.domain}><strong>{d.domain}</strong> ({d.present ? "data present" : "no included data"}): {d.source ? `${d.source}. ` : ""}{d.status}</li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground">{healthSummary.frontPage.interpretationStatus}</p>
+            </section>
+          )}
+
           <section aria-label="Domain overview" className="report-avoid-break space-y-2">
             <h3 className="font-semibold">Domain overview</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 print:grid-cols-3">
@@ -469,6 +563,62 @@ export function AstronautHealthReport() {
             <ul className="list-disc pl-5 text-xs">{findings.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
           </section>}
 
+          <section aria-label="Ground Medical evidence attestation" className="space-y-2 rounded-lg border p-4">
+            <div className="report-avoid-break space-y-1">
+              <h3 className="font-semibold">Ground Medical evidence attestation (second stage, optional)</h3>
+              <p className="text-xs text-muted-foreground">
+                Every row below is already an accepted stored observation. Attestation is an additional, append-only
+                confirmation by an authenticated Ground Medical member for exactly this mission, crew member and provenance.
+                Rows without one remain accepted. Attestation never changes catalog or scientific review status
+                (PENDING_NIKOLAS_REVIEW) and is not a diagnosis or legal signature.
+              </p>
+              {attestationSummary && (
+                <p className="text-sm" role="status">
+                  {attestLoad === "loading" ? "Reading the encrypted attestation ledger…"
+                    : attestLoad === "error" ? "The attestation ledger could not be read; attestation status is unavailable, not absent."
+                    : `Attested ${attestationSummary.attested} · accepted without attestation ${attestationSummary.notAttested} · revoked ${attestationSummary.revoked} · earlier record version ${attestationSummary.stale} · ${attestationSummary.events} audit event(s).`}
+                </p>
+              )}
+            </div>
+            {canAttest ? (
+              <div className="space-y-2 print:hidden">
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" className="medical-action-secondary" disabled={attesting || !eligible.length} onClick={() => setSelected(new Set(eligible.map((e) => e.recordId)))}>
+                    Select all eligible ({eligible.length})
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" className="medical-action-secondary" disabled={attesting || !selected.size} onClick={() => setSelected(new Set())}>
+                    Clear selection
+                  </Button>
+                </div>
+                <label className="block text-sm" htmlFor="attest-reason">Reason (required, at least {ATTESTATION_REASON_MIN} characters; also used for revocations)</label>
+                <textarea id="attest-reason" className="medical-advisor-input w-full rounded border p-2 text-sm" rows={2} maxLength={500} value={attestReason} onChange={(e) => setAttestReason(e.target.value)} />
+                <label className="flex items-start gap-2 text-sm">
+                  <input type="checkbox" checked={attestConfirmed} onChange={(e) => setAttestConfirmed(e.target.checked)} />
+                  I confirm I reviewed the source evidence of each selected record for this mission and crew member.
+                </label>
+                <Button type="button" className="medical-action-primary" disabled={attesting || !selected.size || !attestConfirmed || attestReason.trim().length < ATTESTATION_REASON_MIN} onClick={() => void runAttestation("attest")}>
+                  Attest selected ({selected.size})
+                </Button>
+                {attestStatus && <p className="text-xs text-muted-foreground" role="status">{attestStatus}</p>}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground print:hidden">View only: attestation requires the Ground Medical role for this exact mission and crew member.</p>
+            )}
+            {scopedAttestations.length > 0 && (
+              <details className="text-xs" open>
+                <summary className="cursor-pointer">Attestation audit history (append-only)</summary>
+                <ol className="mt-1 list-decimal space-y-1 pl-5">
+                  {[...scopedAttestations].sort((a, b) => a.decidedAt.localeCompare(b.decidedAt) || a.eventId.localeCompare(b.eventId)).map((e) => (
+                    <li key={e.eventId} className="report-avoid-break break-words">
+                      {e.decidedAt} · {e.action === "attest" ? "Attested" : "Revoked"} {e.recordId} · Ground Medical {e.actorUserId} · event {e.eventId}
+                      {e.supersedesEventId ? ` (supersedes ${e.supersedesEventId})` : ""} · {e.reason}
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
+          </section>
+
           <section aria-label="Chronological history" className="space-y-2">
             <h3 className="font-semibold">Chronological history</h3>
             {unified.rows.length === 0 ? (
@@ -521,6 +671,42 @@ export function AstronautHealthReport() {
                         </td>
                         <td className="pr-2">
                           {r.provenance} · {r.status}
+                          {(() => {
+                            const state = attestationStateFor(r, scopedAttestations);
+                            const isEligible = eligible.some((e) => e.recordId === r.recordId);
+                            return (
+                              <>
+                                <span className="report-attestation block text-muted-foreground">
+                                  {ATTESTATION_STATUS_LABELS[state.status]}
+                                  {state.latest ? ` · ${state.latest.decidedAt.slice(0, 16)}Z` : ""}
+                                </span>
+                                {canAttest && (
+                                  <span className="flex flex-wrap items-center gap-2 print:hidden">
+                                    {isEligible && (
+                                      <label className="inline-flex items-center gap-1">
+                                        <input
+                                          type="checkbox"
+                                          aria-label={`Select ${r.recordId} for attestation`}
+                                          checked={selected.has(r.recordId)}
+                                          onChange={(e) => setSelected((prev) => {
+                                            const next = new Set(prev);
+                                            if (e.target.checked) next.add(r.recordId); else next.delete(r.recordId);
+                                            return next;
+                                          })}
+                                        />
+                                        Select
+                                      </label>
+                                    )}
+                                    {state.status === "attested" && (
+                                      <button type="button" className="underline" disabled={attesting} onClick={() => void runAttestation("revoke", r.recordId)}>
+                                        Revoke
+                                      </button>
+                                    )}
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
                         </td>
                         <td className="report-evidence-cell">
                           {r.sourceLabel}
@@ -602,7 +788,11 @@ export function AstronautHealthReport() {
             ))}
           </section>
 
-          <div className="print:hidden">
+          <div className="print:hidden space-y-2 rounded-lg border border-dashed p-3" aria-label="AI-assisted drafts (unverified)">
+            <p className="text-xs font-semibold">
+              AI-assisted drafts — UNVERIFIED. Kept separate from the scientific findings above, never counted as approved
+              interpretation, and excluded from the PDF and TXT exports.
+            </p>
             <MedicalAdvisorWorkbench
               key={`${report.missionId}:${report.crewMemberId}:${report.provenance}`}
               report={report}

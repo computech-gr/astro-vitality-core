@@ -482,6 +482,9 @@ export interface ReevaluationResult {
   extension: { extensionId: string; version: number } | null;
 }
 
+export const REEVALUATION_MAX_TERMS = 1000;
+export const REEVALUATION_MAX_BYTES = 5 * 1024 * 1024;
+
 /** Re-evaluate a previously exported request; read-only, never saves or approves anything. */
 export function reevaluateReviewRequest(
   request: unknown,
@@ -494,10 +497,15 @@ export function reevaluateReviewRequest(
     return { ok: false, reason: "Unsupported review request format." };
   if (r.scope.missionId !== scope.missionId || r.scope.crewMemberId !== scope.crewMemberId || r.scope.provenance !== scope.provenance)
     return { ok: false, reason: "The review request belongs to a different mission, crew member or provenance." };
+  if (r.terms.length > REEVALUATION_MAX_TERMS)
+    return { ok: false, reason: `The review request lists more than ${REEVALUATION_MAX_TERMS} terms and was not evaluated.` };
+  if (r.autoApproved !== false || r.catalogChangeApplied !== false)
+    return { ok: false, reason: "The file claims an approval or applied catalog change. Only unmodified exports can be re-evaluated." };
   const results: ReevaluationResult[] = [];
   for (const term of r.terms) {
     if (!term || typeof term.originalUnit !== "string" || !Array.isArray(term.originalLabels)) continue;
     const label = String(term.originalLabels[0] ?? term.normalizedLabel ?? "");
+    if (!label.trim() || label.length > 300 || term.originalUnit.length > 60) continue;
     const { classification, extension } = classifyWithGovernedExtensions({ label, unit: term.originalUnit }, evaluation);
     results.push({
       termId: String(term.termId),
