@@ -378,21 +378,31 @@ export function AstronautHealthReport() {
             </p>
           </section>
 
-          {findings && <section aria-label="Scientific Findings and Interpretation" className="report-avoid-break space-y-3 rounded-lg border p-4">
-            <h3 className="text-lg font-semibold">Scientific Findings &amp; Interpretation</h3>
-            <p className="text-sm font-semibold">Research interpretation only — not an automated medical opinion or diagnosis.</p>
+          {/* Keep individual findings together, not the whole section: a section taller than one A4 page made direct PDF export fail. */}
+          {findings && <section aria-label="Scientific Findings and Interpretation" className="space-y-3 rounded-lg border p-4">
+            <div className="report-avoid-break space-y-3">
+              <h3 className="text-lg font-semibold">Scientific Findings &amp; Interpretation</h3>
+              <p className="text-sm font-semibold">Research interpretation only — not an automated medical opinion or diagnosis.</p>
+            </div>
             <h4 className="font-semibold">Measured observations and descriptive changes</h4>
-            {findings.metrics.length === 0 ? <p className="text-sm">No eligible numeric evidence in this report scope.</p> : <ul className="list-disc space-y-2 pl-5 text-sm">{findings.metrics.map((m) => <li key={`${m.metricId}:${m.unit}:${m.first}`}>
+            {findings.metrics.length === 0 ? <p className="text-sm">No eligible numeric evidence in this report scope.</p> : <ul className="list-disc space-y-2 pl-5 text-sm">{findings.metrics.map((m) => <li key={`${m.metricId}:${m.unit}:${m.first}`} className="report-avoid-break">
               <strong>{m.label}</strong> ({m.metricId}): {m.count} observation(s); {m.delta === null ? "insufficient comparable time points" : `${m.earliestValue} → ${m.latestValue} ${m.unit} (first-to-last difference ${m.delta} ${m.unit})`}. {m.note} Evidence IDs: {m.evidenceIds.join(", ")}.
             </li>)}</ul>}
             <h4 className="font-semibold">Cross-domain scientific context</h4>
-            {findings.crossDomain.length ? <ul className="list-disc space-y-2 pl-5 text-sm">{findings.crossDomain.map((c) => <li key={c.domains.join("-")}>
-              {c.domains.join(" + ")}: {c.statement} Evidence IDs: {c.evidenceIds.join(", ")}.
-            </li>)}</ul> : <p className="text-sm">No governed cross-domain relationship has sufficient co-observed signal coverage. No association inferred.</p>}
+            {findings.crossDomain.length ? <ul className="list-disc space-y-2 pl-5 text-sm">{findings.crossDomain.map((c) => {
+              const observed = c.signals.filter((s) => !c.missingSignals.includes(s));
+              return <li key={c.domains.join("-")} className="report-avoid-break">
+                <strong>{c.domains.join(" + ")}</strong>: {c.statement}
+                <span className="block">Observed signals: {observed.join(", ") || "none"}.</span>
+                <span className="block">Missing signals: {c.missingSignals.join(", ") || "none"}.</span>
+                <span className="block">Evidence IDs: {c.evidenceIds.join(", ") || "none"}.</span>
+                <span className="block">Uncertainty: co-observation is not an association; missing signals are not negative findings.</span>
+              </li>;
+            })}</ul> : <p className="text-sm">No governed cross-domain relationship has sufficient co-observed signal coverage. No association inferred.</p>}
             <h4 className="font-semibold">Missing data and uncertainty</h4>
             <p className="text-sm">Missing domains: {findings.missingDomains.join(", ") || "none in selected report scope"}. A missing domain is not a negative finding.</p>
             <h4 className="font-semibold">Qualified human review</h4>
-            {findings.reviewItems.length ? <ul className="list-disc pl-5 text-sm">{findings.reviewItems.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm">Any clinical interpretation still requires independent qualified medical review.</p>}
+            {findings.reviewItems.length ? <ul className="list-disc pl-5 text-sm">{findings.reviewItems.map((item, i) => <li key={i} className="report-avoid-break">{item}</li>)}</ul> : <p className="text-sm">Any clinical interpretation still requires independent qualified medical review.</p>}
             <h4 className="font-semibold">Scientific limitations</h4>
             <ul className="list-disc pl-5 text-xs">{findings.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
           </section>}
