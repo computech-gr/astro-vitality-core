@@ -204,19 +204,21 @@ export function AstronautHealthReport() {
   const [attestStatus, setAttestStatus] = useState("");
   const [attesting, setAttesting] = useState(false);
 
+  const attestMissionId = member?.missionId;
+  const attestCrewId = member?.crewMemberId;
   useEffect(() => {
     setAttestations([]);
     setSelected(new Set());
     setAttestConfirmed(false);
     setAttestStatus("");
-    if (!member) { setAttestLoad("idle"); return; }
+    if (!attestMissionId || !attestCrewId) { setAttestLoad("idle"); return; }
     let active = true;
     setAttestLoad("loading");
-    void listAttestationEvents({ missionId: member.missionId, crewMemberId: member.crewMemberId, provenance })
+    void listAttestationEvents({ missionId: attestMissionId, crewMemberId: attestCrewId, provenance })
       .then((events) => { if (active) { setAttestations(events); setAttestLoad("ready"); } })
       .catch(() => { if (active) setAttestLoad("error"); });
     return () => { active = false; };
-  }, [member?.missionId, member?.crewMemberId, provenance, identity?.userId]);
+  }, [attestMissionId, attestCrewId, provenance, identity?.userId]);
 
   const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(attestations, unified.scope) : []), [attestations, unified]);
   const attestationSummary = useMemo(() => (unified ? summarizeAttestations(unified, scopedAttestations) : null), [unified, scopedAttestations]);
