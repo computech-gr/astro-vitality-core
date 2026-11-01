@@ -24,6 +24,7 @@ import {
 import { loadUnifiedReportInputs } from "@/domain/health-intelligence/unified-health-report-loader";
 import { reportExportBasename } from "@/domain/health-intelligence/report-export-identity";
 import { createReportPdf, downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
+import { buildScientificFindings, scientificFindingsPlainText } from "@/domain/health-intelligence/scientific-findings";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -163,6 +164,8 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
+  const findings = useMemo(() => unified ? buildScientificFindings(unified) : null, [unified]);
+
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
   const currentExport = useRef({ unified, userId: identity?.userId });
   currentExport.current = { unified, userId: identity?.userId };
@@ -181,7 +184,7 @@ export function AstronautHealthReport() {
         const previous = document.title;
         try { document.title = exportName; window.print(); } finally { document.title = previous; }
       } else if (kind === "text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${healthReportPlainText(report)}`;
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
       } else {
         if (!reportRef.current) throw new Error("Report is unavailable.");
@@ -362,6 +365,25 @@ export function AstronautHealthReport() {
               shown.
             </p>
           </section>
+
+          {findings && <section aria-label="Scientific Findings and Interpretation" className="report-avoid-break space-y-3 rounded-lg border p-4">
+            <h3 className="text-lg font-semibold">Scientific Findings &amp; Interpretation</h3>
+            <p className="text-sm font-semibold">Research interpretation only — not an automated medical opinion or diagnosis.</p>
+            <h4 className="font-semibold">Measured observations and descriptive changes</h4>
+            {findings.metrics.length === 0 ? <p className="text-sm">No eligible numeric evidence in this report scope.</p> : <ul className="list-disc space-y-2 pl-5 text-sm">{findings.metrics.map((m) => <li key={`${m.metricId}:${m.unit}:${m.first}`}>
+              <strong>{m.label}</strong> ({m.metricId}): {m.count} observation(s); {m.delta === null ? "insufficient comparable time points" : `${m.earliestValue} → ${m.latestValue} ${m.unit} (first-to-last difference ${m.delta} ${m.unit})`}. {m.note} Evidence IDs: {m.evidenceIds.join(", ")}.
+            </li>)}</ul>}
+            <h4 className="font-semibold">Cross-domain scientific context</h4>
+            {findings.crossDomain.length ? <ul className="list-disc space-y-2 pl-5 text-sm">{findings.crossDomain.map((c) => <li key={c.domains.join("-")}>
+              {c.domains.join(" + ")}: {c.statement} Evidence IDs: {c.evidenceIds.join(", ")}.
+            </li>)}</ul> : <p className="text-sm">No governed cross-domain relationship has sufficient co-observed signal coverage. No association inferred.</p>}
+            <h4 className="font-semibold">Missing data and uncertainty</h4>
+            <p className="text-sm">Missing domains: {findings.missingDomains.join(", ") || "none in selected report scope"}. A missing domain is not a negative finding.</p>
+            <h4 className="font-semibold">Qualified human review</h4>
+            {findings.reviewItems.length ? <ul className="list-disc pl-5 text-sm">{findings.reviewItems.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm">Any clinical interpretation still requires independent qualified medical review.</p>}
+            <h4 className="font-semibold">Scientific limitations</h4>
+            <ul className="list-disc pl-5 text-xs">{findings.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
+          </section>}
 
           <section aria-label="Chronological history" className="space-y-2">
             <h3 className="font-semibold">Chronological history</h3>
