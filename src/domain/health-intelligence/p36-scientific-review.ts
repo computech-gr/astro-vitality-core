@@ -595,3 +595,35 @@ export async function buildActivationManifest(
   const digest = await sha256Hex(canonicalJson({ ...body, generatedAt: null }));
   return { ...body, manifestDigest: digest };
 }
+
+// ---------- Exact-ID catalog lookup (read-only) ----------
+
+export interface CatalogEntryFact {
+  id: string;
+  catalog: "P36" | "P35.5 draft";
+  name: string;
+  domain: string;
+  /** Validated catalog unit; null when the catalog records none. */
+  unit: string | null;
+  status: string;
+}
+
+/** Exact ID lookup in the P36 registry, then the P35.5 draft catalog. Never fuzzy. */
+export function catalogEntryFor(id: string): CatalogEntryFact | null {
+  const m = P36.get(id) as (P36Metric & { domain?: string }) | undefined;
+  if (m) return { id, catalog: "P36", name: m.name, domain: m.domain ?? "unknown", unit: m.originalUnit?.trim() || null, status: m.sourceClassification ?? "unknown" };
+  const e = P355.get(id);
+  if (e) return { id, catalog: "P35.5 draft", name: e.name, domain: e.domain, unit: null, status: e.status };
+  return null;
+}
+
+/** Exact ID lookup of a P43 provisional semantic disposition (non-authoritative). */
+export function p43DispositionFor(sourceId: string): string | null {
+  return P43.get(sourceId)?.provisional_semantic_disposition ?? null;
+}
+
+/** Bone handbook v7 English layer, exact ID. */
+export function boneHandbookFact(id: string): { specimen: string | null; units: string[] } | null {
+  const en = BONE_EN.get(id);
+  return en ? { specimen: en.specimen_en?.trim() || null, units: splitHandbookUnits(en.unit_en) } : null;
+}
