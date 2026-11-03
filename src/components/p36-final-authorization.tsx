@@ -59,7 +59,7 @@ export function AuthorizationSummary({ auth }: { auth: ReturnType<typeof useP36A
                   ? "Choose a mission to read its authorization ledger."
                   : `Cloud ledger read for ${auth.mission?.label ?? missionId} · your role: ${auth.mission?.roles.join(" + ") ?? "none"}.`}
       </p>
-      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[...STATUS_ORDER.map((s) => [SCIENTIFIC_STATUS_LABELS[s], view?.counts[s] ?? 0] as const), ["Activation blocked", view?.counts.ACTIVATION_BLOCKED ?? 12] as const, ["Active", view?.counts.ACTIVE ?? 0] as const].map(([label, value]) => (
           <div key={label} className="rounded-lg border border-border p-3">
             <p className="text-xs text-muted-foreground">{label}</p>
