@@ -437,7 +437,7 @@ function matrixRow(t: DossierTerm, d: ScientificReviewDossier): DecisionMatrixRo
 
 export async function buildDecisionDossier(
   entries: readonly ScientificReviewEntry[],
-  options: { generatedAt: string | null; authorization?: AuthorizationView } = { generatedAt: null },
+  options: { generatedAt: string | null; authorization?: AuthorizationView | undefined } = { generatedAt: null },
 ): Promise<DecisionDossier> {
   const build = buildScientificReviewDossiers();
   const manifest = await buildActivationManifest(entries);

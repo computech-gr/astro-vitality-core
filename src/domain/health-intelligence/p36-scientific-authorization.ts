@@ -191,9 +191,9 @@ function refsOk(refs: unknown, dossier: ScientificReviewDossier): ValidationOutc
 
 export interface ValidationState {
   /** Verified recommendation referenced by an approval (same mission + term). */
-  recommendation?: VerifiedAuthorizationEvent;
+  recommendation?: VerifiedAuthorizationEvent | undefined;
   /** Latest verified final decision for this mission + term, if any. */
-  latestDecision?: VerifiedAuthorizationEvent;
+  latestDecision?: VerifiedAuthorizationEvent | undefined;
 }
 
 /**
