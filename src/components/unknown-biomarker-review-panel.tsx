@@ -39,6 +39,12 @@ import {
   savePendingReviewRequest,
   type PendingReviewRequest,
 } from "@/domain/health-intelligence/review-ledger";
+import {
+  ACTIVATION_PREREQUISITES,
+  BLOCK_REASON_LABELS,
+  buildReconciliationView,
+  handoffRowForTerm,
+} from "@/domain/health-intelligence/catalog-reconciliation-handoff";
 
 const STATUS_LABELS = {
   unclassified: "Unknown — not in catalog",
@@ -62,6 +68,7 @@ export function UnknownBiomarkerReviewPanel(props: {
 }) {
   const batchTerms = useMemo(() => buildUnknownBiomarkerTerms(props.rows), [props.rows]);
   const evaluation = useMemo(() => evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS), []);
+  const handoff = useMemo(() => buildReconciliationView(), []);
   const [requests, setRequests] = useState<PendingReviewRequest[]>([]);
   const [ledger, setLedger] = useState<ReviewerDecision[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -250,6 +257,9 @@ export function UnknownBiomarkerReviewPanel(props: {
                         <span className="text-muted-foreground">{term.originalUnit || "unit missing"}</span>
                         <Badge variant="outline">{STATUS_LABELS[term.classification]}</Badge>
                         {decided ? <Badge variant="secondary">{REVIEWER_DECISION_LABELS[decided.kind]} · {REQUIRED_SCIENTIFIC_GATE}</Badge> : null}
+                        {handoffRowForTerm(handoff, term.termId) ? (
+                          <Badge variant="outline">In P36 reconciliation handoff · {REQUIRED_SCIENTIFIC_GATE}</Badge>
+                        ) : null}
                       </div>
                       {term.candidateMetricIds.length ? <p className="text-xs">Possible catalog IDs: {term.candidateMetricIds.join(", ")}</p> : null}
                       <details className="text-xs">
@@ -305,6 +315,43 @@ export function UnknownBiomarkerReviewPanel(props: {
           <p>Draft extension v{proposal.proposedExtensionVersion}: {proposal.draftExtensions.length} mapping(s), {proposal.newMetricRequests.length} new-metric request(s), {proposal.keptExcluded.length} kept excluded. Not applied.</p>
         </div>
       ) : null}
+
+      <details className="text-xs" aria-label="P36 catalog reconciliation handoff">
+        <summary className="cursor-pointer text-sm font-medium">
+          P36 catalog reconciliation handoff — review only ({handoff.totalTerms} terms · {handoff.totalObservations} observations · {handoff.status})
+        </summary>
+        <div className="mt-2 space-y-2">
+          <p>
+            A read-only reconciliation list prepared for the independent scientific reviewer. Catalog {handoff.sourceCatalogVersion} → draft {handoff.proposedCatalogVersion}.
+            No metric is activated, no alias or unit is approved, no value is converted, and these rows stay out of saving, health pages, the report, PDF and sync.
+            Reviewer decisions recorded above are proposals only and are never a scientific approval.
+          </p>
+          {!handoff.ok ? (
+            <p role="alert" className="text-destructive">Handoff integrity check failed; every row remains blocked: {handoff.problems.join("; ")}</p>
+          ) : null}
+          <ul className="space-y-2" aria-label="Reconciliation handoff terms">
+            {handoff.rows.map((r) => (
+              <li key={r.termId} className="space-y-1 rounded-md border border-border p-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <strong className="break-words">{r.sourceLabel}</strong>
+                  <span className="text-muted-foreground">{r.sourceUnit}</span>
+                  <Badge variant="outline">{r.candidateCatalogStatus}</Badge>
+                  <Badge variant="secondary">{r.reviewStatus}</Badge>
+                </div>
+                <p className="break-words">
+                  Candidate: {r.candidateCatalogId ? `${r.candidateCatalogId} — ${r.candidateCatalogName}` : "none (unresolved)"} · catalog unit{" "}
+                  {r.catalogCrossCheck.catalogUnit ?? "not validated"} · {r.observations} observation(s) · term {r.termId}
+                </p>
+                <p className="break-words text-muted-foreground">Blocked: {r.blockReasons.map((b) => BLOCK_REASON_LABELS[b]).join("; ")}.</p>
+                <p className="break-words text-muted-foreground">{r.notes}</p>
+              </li>
+            ))}
+          </ul>
+          <p>
+            Before any separate activation patch: {ACTIVATION_PREREQUISITES.join("; ")}.
+          </p>
+        </div>
+      </details>
 
       <details className="text-xs">
         <summary className="cursor-pointer text-sm font-medium">Independent scientific catalog approvals ({evaluation.approvalHistory.length})</summary>
