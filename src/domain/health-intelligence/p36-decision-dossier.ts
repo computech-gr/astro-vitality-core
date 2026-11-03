@@ -493,14 +493,16 @@ export interface DossierVerification {
   problems: string[];
   /** True when the dossier's source digests equal the artifacts in this build. */
   sourcesCurrent: boolean;
+  /** Approvals the file states it contained at export. Informational only: never authorization. */
+  approvals: number;
 }
 
-/** Verify an exported dossier JSON: content digest, pending statuses and source digests. Read-only. */
+/** Verify an exported dossier JSON: content digest, statuses and source digests. Read-only; never establishes authorization. */
 export async function verifyDecisionDossier(input: unknown): Promise<DossierVerification> {
   const problems: string[] = [];
   const d = input as Partial<DecisionDossier> | null;
   if (!d || typeof d !== "object" || d.schema !== DECISION_DOSSIER_SCHEMA || !d.integrity || !Array.isArray(d.terms))
-    return { ok: false, problems: ["Not a P36 decision dossier."], sourcesCurrent: false };
+    return { ok: false, problems: ["Not a P36 decision dossier."], sourcesCurrent: false, approvals: 0 };
   if (d.status !== REQUIRED_SCIENTIFIC_GATE || d.activationAllowed !== false || d.appliesChanges !== false)
     problems.push("Dossier claims approval or activation.");
   const fa = d.finalAuthorization;
@@ -519,5 +521,5 @@ export async function verifyDecisionDossier(input: unknown): Promise<DossierVeri
   if (claimed !== recomputed) problems.push("Content digest does not match; the file was modified after export.");
   const current = await sourceArtifactDigests();
   const sourcesCurrent = canonicalJson(current) === canonicalJson(d.integrity.sourceArtifactDigests ?? []);
-  return { ok: problems.length === 0, problems, sourcesCurrent };
+  return { ok: problems.length === 0, problems, sourcesCurrent, approvals: typeof d.scientificApprovals === "number" ? d.scientificApprovals : 0 };
 }
