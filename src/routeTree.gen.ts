@@ -40,6 +40,7 @@ import { Route as MissionOfflineRouteImport } from './routes/mission.offline'
 import { Route as MissionOperationsRouteImport } from './routes/mission.operations'
 import { Route as MissionReadinessRouteImport } from './routes/mission.readiness'
 import { Route as MissionRecordsRouteImport } from './routes/mission.records'
+import { Route as MissionScientificReviewRouteImport } from './routes/mission.scientific-review'
 import { Route as MissionSimulationRouteImport } from './routes/mission.simulation'
 import { Route as MissionSubmissionRouteImport } from './routes/mission.submission'
 import { Route as MissionValidationRouteImport } from './routes/mission.validation'
@@ -209,6 +210,11 @@ const MissionRecordsRoute = MissionRecordsRouteImport.update({
   path: '/mission/records',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissionScientificReviewRoute = MissionScientificReviewRouteImport.update({
+  id: '/mission/scientific-review',
+  path: '/mission/scientific-review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MissionSimulationRoute = MissionSimulationRouteImport.update({
   id: '/mission/simulation',
   path: '/mission/simulation',
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/mission/operations': typeof MissionOperationsRoute
   '/mission/readiness': typeof MissionReadinessRoute
   '/mission/records': typeof MissionRecordsRoute
+  '/mission/scientific-review': typeof MissionScientificReviewRoute
   '/mission/simulation': typeof MissionSimulationRoute
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/mission/operations': typeof MissionOperationsRoute
   '/mission/readiness': typeof MissionReadinessRoute
   '/mission/records': typeof MissionRecordsRoute
+  '/mission/scientific-review': typeof MissionScientificReviewRoute
   '/mission/simulation': typeof MissionSimulationRoute
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/mission/operations': typeof MissionOperationsRoute
   '/mission/readiness': typeof MissionReadinessRoute
   '/mission/records': typeof MissionRecordsRoute
+  '/mission/scientific-review': typeof MissionScientificReviewRoute
   '/mission/simulation': typeof MissionSimulationRoute
   '/mission/submission': typeof MissionSubmissionRoute
   '/mission/validation': typeof MissionValidationRoute
@@ -418,6 +427,7 @@ export interface FileRouteTypes {
     | '/mission/operations'
     | '/mission/readiness'
     | '/mission/records'
+    | '/mission/scientific-review'
     | '/mission/simulation'
     | '/mission/submission'
     | '/mission/validation'
@@ -460,6 +470,7 @@ export interface FileRouteTypes {
     | '/mission/operations'
     | '/mission/readiness'
     | '/mission/records'
+    | '/mission/scientific-review'
     | '/mission/simulation'
     | '/mission/submission'
     | '/mission/validation'
@@ -502,6 +513,7 @@ export interface FileRouteTypes {
     | '/mission/operations'
     | '/mission/readiness'
     | '/mission/records'
+    | '/mission/scientific-review'
     | '/mission/simulation'
     | '/mission/submission'
     | '/mission/validation'
@@ -545,6 +557,7 @@ export interface RootRouteChildren {
   MissionOperationsRoute: typeof MissionOperationsRoute
   MissionReadinessRoute: typeof MissionReadinessRoute
   MissionRecordsRoute: typeof MissionRecordsRoute
+  MissionScientificReviewRoute: typeof MissionScientificReviewRoute
   MissionSimulationRoute: typeof MissionSimulationRoute
   MissionSubmissionRoute: typeof MissionSubmissionRoute
   MissionValidationRoute: typeof MissionValidationRoute
@@ -775,6 +788,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionRecordsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mission/scientific-review': {
+      id: '/mission/scientific-review'
+      path: '/mission/scientific-review'
+      fullPath: '/mission/scientific-review'
+      preLoaderRoute: typeof MissionScientificReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mission/simulation': {
       id: '/mission/simulation'
       path: '/mission/simulation'
@@ -874,6 +894,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionOperationsRoute: MissionOperationsRoute,
   MissionReadinessRoute: MissionReadinessRoute,
   MissionRecordsRoute: MissionRecordsRoute,
+  MissionScientificReviewRoute: MissionScientificReviewRoute,
   MissionSimulationRoute: MissionSimulationRoute,
   MissionSubmissionRoute: MissionSubmissionRoute,
   MissionValidationRoute: MissionValidationRoute,

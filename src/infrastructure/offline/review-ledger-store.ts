@@ -24,7 +24,9 @@ export type ReviewLedgerKind =
   /** v9.4: local receipt that an observation event was confirmed by (or conflicted with) the encrypted cloud store. */
   | "observation-sync-receipt"
   /** v9.4: append-only log of explicit "Sync observations & reviews" runs (counts and outcomes only). */
-  | "sync-run";
+  | "sync-run"
+  /** P36: documentary, hash-chained scientific review worksheet entries (catalog-level, never synced). */
+  | "catalog-scientific-review";
 
 export interface ReviewLedgerEntry {
   id: string;
