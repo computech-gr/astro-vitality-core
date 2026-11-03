@@ -7,10 +7,12 @@
  */
 import { CANONICAL_URL, loadReportFonts, renderReportDocument, type Block, type PdfWriter, type ReportDocument, type ReportFonts } from "./report-text-pdf";
 import { FIELD_BASIS_LABELS, type DecisionDossier, type DossierField } from "./p36-decision-dossier";
+import { SCIENTIFIC_STATUS_LABELS } from "./p36-scientific-authorization";
 
 const fieldRow = (label: string, f: DossierField): [string, string] => [label, `${f.value}  [${FIELD_BASIS_LABELS[f.basis]}${f.refs.length ? `; ${f.refs.join(", ")}` : ""}]`];
 
 export function buildDecisionDossierDocument(d: DecisionDossier): ReportDocument {
+  const fa = d.finalAuthorization.counts;
   const blocks: Block[] = [
     { kind: "banner", text: `${d.status} · NOT AN APPROVAL · NO ACTIVATION` },
     { kind: "h1", text: d.title },
@@ -55,6 +57,31 @@ export function buildDecisionDossierDocument(d: DecisionDossier): ReportDocument
       rows: d.decisionMatrix.map((r) => [`${r.sourceLabel} (${r.sourceUnit})`, r.identity, r.domain, r.specimen, r.method, r.protocol, r.unit, r.validation]),
     },
     { kind: "p", muted: true, text: `Every row: ${d.status}. Basis legend: ${Object.values(d.basisLegend).join(" · ")}.` },
+    { kind: "h2", text: "Final scientific authorization" },
+    {
+      kind: "kv",
+      rows: [
+        ["Source", d.finalAuthorization.source === "NOT_LOADED" ? "Cloud authorization ledger not loaded for this export" : `Cloud ledger read at export (mission ${d.finalAuthorization.authorityMissionId ?? "?"})`],
+        ["Pending / more evidence / rejected / approved", `${fa.PENDING_NIKOLAS_REVIEW} / ${fa.MORE_EVIDENCE_REQUIRED} / ${fa.SCIENTIFICALLY_REJECTED} / ${fa.SCIENTIFICALLY_APPROVED}`],
+        ["Activation blocked / active", `${fa.ACTIVATION_BLOCKED} / ${fa.ACTIVE}`],
+      ],
+    },
+    { kind: "alert", tone: "pending", title: "Not an authorization token", lines: [d.finalAuthorization.note] },
+    {
+      kind: "table",
+      columns: [
+        { title: "Term", width: 0.2 },
+        { title: "Scientific status", width: 0.2 },
+        { title: "Activation", width: 0.16 },
+        { title: "Latest decision", width: 0.44 },
+      ],
+      rows: d.finalAuthorization.terms.map((t) => [
+        t.sourceLabel,
+        `${SCIENTIFIC_STATUS_LABELS[t.scientificStatus]}${t.stale ? " (stale decision)" : ""}${t.ledgerIntegrity === "FAILED" ? " (ledger integrity failed)" : ""}`,
+        t.activationStatus === "ACTIVE" ? "Active" : "Blocked",
+        t.latestDecision ? `${t.latestDecision.action} by ${t.latestDecision.reviewerName} at ${t.latestDecision.decidedAt}` : "None",
+      ]),
+    },
   ];
   for (const t of d.terms) {
     blocks.push({ kind: "pagebreak" });
@@ -82,6 +109,35 @@ export function buildDecisionDossierDocument(d: DecisionDossier): ReportDocument
     blocks.push({ kind: "bullets", items: t.requiredDecisions.map((r) => `${r.id}: ${r.text}`) });
     blocks.push({ kind: "h3", text: "Unresolved activation blockers" });
     blocks.push({ kind: "bullets", items: t.blockers });
+    const auth = d.finalAuthorization.terms.find((x) => x.termId === t.termId);
+    if (auth) {
+      blocks.push({ kind: "h3", text: "Final scientific authorization" });
+      const ld = auth.latestDecision;
+      blocks.push({
+        kind: "kv",
+        rows: [
+          ["Scientific status", `${SCIENTIFIC_STATUS_LABELS[auth.scientificStatus]}${auth.stale ? " — latest decision is stale; re-review required" : ""}`],
+          ["Activation", auth.activationStatus === "ACTIVE" ? "Active" : "Blocked"],
+          ["Ledger", `${auth.ledgerIntegrity} · ${auth.historyEvents} event(s) · ${auth.recommendations} recommendation(s)`],
+          ...(ld
+            ? ([
+                ["Decision", `${ld.action} (event ${ld.eventId.slice(0, 16)}, hash ${ld.eventHash.slice(0, 16)})`],
+                ["Reviewer (declared)", `${ld.reviewerName} — ${ld.reviewerQualification}`],
+                ["Conflict of interest (declared)", ld.conflictOfInterestDeclaration],
+                ["Decided / received (UTC)", `${ld.decidedAt} / ${ld.receivedAt}`],
+                ["Canonical ID / domain / unit", `${ld.canonicalCatalogId ?? "—"} / ${ld.domain ?? "—"} / ${ld.validatedUnit ?? "—"}`],
+                ["Specimen or context", ld.specimenOrAcquisitionContext ?? "—"],
+                ["Method or instrument", ld.methodOrInstrument ?? "—"],
+                ["Protocol (version)", `${ld.protocol ?? "—"} (${ld.protocolVersion ?? "—"})`],
+                ["Source evidence", ld.sourceRefs.join(", ")],
+                ["Validation evidence", ld.validationEvidenceRefs.join(", ") || "—"],
+                ["Rationale", ld.rationale],
+              ] as [string, string][])
+            : []),
+        ],
+      });
+      if (auth.blockers.length) blocks.push({ kind: "bullets", items: auth.blockers.map((b) => `Activation blocker: ${b}`) });
+    }
     blocks.push({
       kind: "p",
       muted: true,
