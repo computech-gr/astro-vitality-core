@@ -1,0 +1,405 @@
+{
+  "schema": "mitochondria.p36-activation-manifest.v1",
+  "manifestVersion": "p36.1.0+p36-review.0",
+  "baseCatalogVersion": "p36.1.0",
+  "generatedAt": null,
+  "status": "PENDING_NIKOLAS_REVIEW",
+  "activationAllowed": false,
+  "appliesChanges": false,
+  "sourceArtifacts": [
+    "data/scientific/p36-unknown-biomarker-reconciliation-handoff.v1.json",
+    "data/scientific/p36-scientific-review-crosswalk.v1.json",
+    "data/scientific/p36-biomarker-source-registry.v1.json",
+    "data/scientific/p355-proposed-domain-catalog.v1.json",
+    "data/scientific/bone-health-handbook-v7.catalog.json",
+    "data/scientific/bone-health-handbook-v7.en.json",
+    "data/scientific/nikolas-immune-intake.v1.json",
+    "data/scientific/nikolas-behavioral-intake.v1.json",
+    "data/scientific/p38-nikolas-reconciliation.v1.json",
+    "data/scientific/p40-independent-review-ledger.v1.json",
+    "data/scientific/p42-semantic-triage.v1.json",
+    "data/scientific/p43-semantic-decision-proposals.v1.json",
+    "data/scientific/catalog-extensions.v1.json"
+  ],
+  "reviewHistory": {
+    "entries": 0,
+    "headHash": "GENESIS",
+    "integrity": "VERIFIED"
+  },
+  "counts": {
+    "terms": 12,
+    "observations": 36,
+    "withDecision": 0,
+    "readyForGovernedActivation": 0,
+    "blocked": 12
+  },
+  "terms": [
+    {
+      "termId": "ubt-7b25ce69",
+      "sourceLabel": "25(OH) Vitamin D",
+      "sourceUnit": "ng/mL",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "IMM-030",
+        "bone-019"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P36 catalog has no validated unit (originalUnit null); no automatic unit approval"
+      ],
+      "unresolvedQuestions": [
+        "The handoff proposes bone-019 (Bone), while P38-P43 propose IMM-030 (Immune) for the same analyte. Which single canonical identity and domain should own 25(OH) vitamin D?",
+        "Is the specimen serum, as listed in the Bone handbook?",
+        "Which assay method (for example immunoassay or LC-MS/MS) produced the values, and are results from different methods comparable?",
+        "The P36 catalog has no validated unit. Should ng/mL be the validated catalog unit, given the handbook also lists nmol/L? No conversion between them is permitted.",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-d900847d",
+      "sourceLabel": "BSC-001",
+      "sourceUnit": "h",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "BSC-001"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P35.5 draft catalog entry; no validated units"
+      ],
+      "unresolvedQuestions": [
+        "The observations use h while Nikolas's source lists min. Which unit should the catalog validate? No conversion is permitted.",
+        "BSC-001 is 'main sleep + naps'; P43 classifies the source measure as a distinct component. Do the observations include naps?",
+        "Which measurement method (actigraphy, sleep diary or polysomnography) produced the values?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-efe7e2fb",
+      "sourceLabel": "BSC-002",
+      "sourceUnit": "%",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "BSC-002"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P35.5 draft catalog entry; no validated units"
+      ],
+      "unresolvedQuestions": [
+        "Which measurement method produced sleep efficiency, and how is the denominator (time in bed) defined?",
+        "Are values from different devices or methods comparable?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-ed97000c",
+      "sourceLabel": "BSC-008",
+      "sourceUnit": "score",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "BSC-008"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "SCALE_UNVALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P35.5 draft catalog entry; no validated units",
+        "Scale explicitly unvalidated"
+      ],
+      "unresolvedQuestions": [
+        "The scale is unvalidated. Which instrument, item wording, range and anchors produced the 'score' values?",
+        "Nikolas's source lists an ordinal unit while the observations use 'score'. Are they the same scale?",
+        "BSC-008 combines sleep quality and perceived quantity; P43 classifies the source measure as a distinct component. Which component do the observations represent?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-d9870fc7",
+      "sourceLabel": "CTX",
+      "sourceUnit": "ng/mL",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "bone-001"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "No canonical catalog identity",
+        "Requires assay/protocol identity resolution, not a string alias"
+      ],
+      "unresolvedQuestions": [
+        "The handoff leaves CTX unresolved, but the P36 catalog and Bone handbook contain bone-001 (CTX / β-CTX). Is bone-001 the correct canonical identity?",
+        "The observations use ng/mL, which is not among the units in the Bone handbook (pg/mL or ng/L) or Nikolas's source (ng/L). Is the source unit correct? The magnitude cannot be assumed and no conversion is permitted.",
+        "Which specimen (serum or plasma), collection timing (fasting, morning) and assay were used?"
+      ]
+    },
+    {
+      "termId": "ubt-813d9e97",
+      "sourceLabel": "IMM-001",
+      "sourceUnit": "10^9/L",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "IMM-001"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P35.5 draft catalog entry; no validated units"
+      ],
+      "unresolvedQuestions": [
+        "Which specimen and analyzer method produced the values?",
+        "Should 10^9/L be the validated catalog unit for IMM-001?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-2e684454",
+      "sourceLabel": "IMM-002",
+      "sourceUnit": "10^9/L",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "IMM-002"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P35.5 draft catalog entry; no validated units"
+      ],
+      "unresolvedQuestions": [
+        "Is the value an absolute count (not a percentage of leukocytes), and which analyzer method produced it?",
+        "Should 10^9/L be the validated catalog unit for IMM-002?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-e0a346b9",
+      "sourceLabel": "IMM-003",
+      "sourceUnit": "10^9/L",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "IMM-003"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P35.5 draft catalog entry; no validated units"
+      ],
+      "unresolvedQuestions": [
+        "Is the value an absolute count (not a percentage of leukocytes), and which analyzer method produced it?",
+        "Should 10^9/L be the validated catalog unit for IMM-003?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-1d9912f9",
+      "sourceLabel": "IMM-007",
+      "sourceUnit": "mg/L",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "IMM-007"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P35.5 draft catalog entry; no validated units"
+      ],
+      "unresolvedQuestions": [
+        "Nikolas's source lists hsCRP, which P43 classifies as related but not interchangeable with C-reactive protein. Was the assay standard CRP or high-sensitivity CRP?",
+        "Should mg/L be the validated catalog unit for IMM-007?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-6c8bad01",
+      "sourceLabel": "P1NP",
+      "sourceUnit": "ng/mL",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "bone-009"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "No canonical catalog identity",
+        "Requires assay/protocol identity resolution, not a string alias"
+      ],
+      "unresolvedQuestions": [
+        "The handoff leaves P1NP unresolved, but the P36 catalog and Bone handbook contain bone-009 (P1NP / PINP). Is bone-009 the correct canonical identity?",
+        "The observations use ng/mL while the Bone handbook lists µg/L and Nikolas's source lists μg/L (a different character). Which exact unit string should the catalog validate? No automatic equivalence or conversion is permitted.",
+        "Was the assay intact or total P1NP, and which specimen was used?"
+      ]
+    },
+    {
+      "termId": "ubt-676690c9",
+      "sourceLabel": "PVT_MEDIAN_RT",
+      "sourceUnit": "ms",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "BSC-017"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "PROTOCOL_UNVALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "No canonical catalog identity",
+        "Requires assay/protocol identity resolution, not a string alias",
+        "Test protocol explicitly unvalidated"
+      ],
+      "unresolvedQuestions": [
+        "The PVT protocol is unvalidated. Which test duration, device, input method and inter-stimulus interval produced the values?",
+        "BSC-017 is the whole PVT; P43 classifies median reaction time as a distinct component. Should it become its own catalog metric or a component of BSC-017?",
+        "How were anticipations and false starts handled when computing the median?",
+        "Are specimen, method, assay platform and measurement protocol equivalent?",
+        "Are units and analyte definitions directly comparable?",
+        "Is there a credible source and independent reviewer sign-off?"
+      ]
+    },
+    {
+      "termId": "ubt-83a192f6",
+      "sourceLabel": "Urinary Calcium 24h",
+      "sourceUnit": "mg/24h",
+      "observations": 3,
+      "candidateCatalogIds": [
+        "bone-015"
+      ],
+      "status": "PENDING_NIKOLAS_REVIEW",
+      "activationAllowed": false,
+      "latestDecision": null,
+      "proposedExtension": null,
+      "blockers": [
+        "NO_INDEPENDENT_REVIEW_DECISION",
+        "CATALOG_UNIT_NOT_VALIDATED",
+        "IN_APP_RECORD_IS_NOT_GOVERNED_APPROVAL"
+      ],
+      "handoffBlockReasons": [
+        "Scientific review PENDING_NIKOLAS_REVIEW",
+        "P36 catalog has no validated unit (originalUnit null); no automatic unit approval"
+      ],
+      "unresolvedQuestions": [
+        "The observations use mg/24h while the Bone handbook lists mg/day. Which exact unit string should the catalog validate? No automatic equivalence is permitted.",
+        "Was the 24-hour urine collection verified as complete, and by which method?",
+        "No Nikolas source record was found for 24-hour urinary calcium. Which source document supports this term?"
+      ]
+    }
+  ],
+  "prerequisites": [
+    "A named, independent, qualified scientific reviewer (not the author of the candidate mapping) records an explicit decision for each term.",
+    "Each decision cites handbook or primary-source evidence references.",
+    "The reviewer confirms the specimen, assay or measurement method, and collection or test protocol.",
+    "The exact catalog unit is confirmed and is identical to the observed unit string; no conversion or equivalence is applied.",
+    "A separate governed catalog patch sets the validated unit on the target P36 metric (or promotes the P35.5 draft entry) with code review.",
+    "BSC-008 scale validation and PVT protocol validation evidence are supplied before either can be considered.",
+    "A separate code-reviewed patch adds the APPROVED extension and approval-history record to data/scientific/catalog-extensions.v1.json.",
+    "Blocked observations are re-imported and confirmed row by row afterwards; stored records are never rewritten.",
+    "PDF and report interpretation safeguards are reviewed in that separate activation patch."
+  ],
+  "manifestDigest": "eb87b08f4eef85f4577098cc7f98569a83472cfe373e16c3f1ad263ccec7802d"
+}
