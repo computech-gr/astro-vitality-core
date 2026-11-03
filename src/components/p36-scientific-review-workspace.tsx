@@ -25,6 +25,18 @@ import {
   type ScientificReviewEntry,
 } from "@/domain/health-intelligence/p36-scientific-review";
 import { appendScientificReviewEntry, listScientificReviewEntries } from "@/domain/health-intelligence/p36-scientific-review-ledger";
+import { buildDecisionDossier, verifyDecisionDossier, type DecisionDossier } from "@/domain/health-intelligence/p36-decision-dossier";
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
 
 type Draft = {
   decision: ScientificReviewDecision;
@@ -61,6 +73,8 @@ export function P36ScientificReviewWorkspace() {
   const [identity, setIdentity] = useState<{ userId: string | null; roles: string[] }>({ userId: null, roles: [] });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [dossier, setDossier] = useState<DecisionDossier | null>(null);
+  const [dossierMessage, setDossierMessage] = useState("");
 
   const reload = useCallback(async () => {
     setLoadState("loading");
@@ -69,10 +83,12 @@ export function P36ScientificReviewWorkspace() {
       setEntries(state.entries);
       setIntegrity(state.integrity);
       setManifest(await buildActivationManifest(state.entries));
+      setDossier(await buildDecisionDossier(state.entries));
       setLoadState("ready");
     } catch {
       setEntries([]);
       setManifest(await buildActivationManifest([]));
+      setDossier(await buildDecisionDossier([]));
       setLoadState("error");
     }
   }, []);
@@ -133,6 +149,40 @@ export function P36ScientificReviewWorkspace() {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 30_000);
     setMessage(`Activation manifest ${m.manifestVersion} downloaded to this device. It applies nothing; every term remains ${REQUIRED_SCIENTIFIC_GATE}.`);
+  };
+
+  const exportDossierJson = async () => {
+    const d = await buildDecisionDossier(entries, { generatedAt: new Date().toISOString() });
+    downloadBlob(new Blob([JSON.stringify(d, null, 2)], { type: "application/json" }), `MITOCHONDRIA_p36_scientific_decision_dossier_${d.integrity.contentDigest.slice(0, 12)}.json`);
+    setDossierMessage(`Decision dossier JSON downloaded (digest ${d.integrity.contentDigest.slice(0, 16)}…). Nothing was uploaded or approved.`);
+  };
+
+  const exportDossierPdf = async () => {
+    setBusy(true);
+    try {
+      const d = await buildDecisionDossier(entries, { generatedAt: new Date().toISOString() });
+      const { createDecisionDossierPdf } = await import("@/domain/health-intelligence/p36-decision-dossier-pdf");
+      const { blob, pages } = await createDecisionDossierPdf(d);
+      downloadBlob(blob, `MITOCHONDRIA_p36_scientific_decision_dossier_${d.integrity.contentDigest.slice(0, 12)}.pdf`);
+      setDossierMessage(`Decision dossier PDF downloaded (${pages} pages, digest ${d.integrity.contentDigest.slice(0, 16)}…). Every term remains ${REQUIRED_SCIENTIFIC_GATE}.`);
+    } catch (e) {
+      setDossierMessage(`The PDF could not be created: ${e instanceof Error ? e.message : "unknown error"}. The JSON export is unaffected.`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const verifyDossierFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return setDossierMessage("The file is larger than 5 MB and was not read.");
+    try {
+      const v = await verifyDecisionDossier(JSON.parse(await file.text()));
+      setDossierMessage(v.ok
+        ? `Integrity verified: content digest matches and every term is ${REQUIRED_SCIENTIFIC_GATE}. ${v.sourcesCurrent ? "Source artifacts match this version." : "Source artifacts have changed since this dossier was exported."}`
+        : `Integrity check FAILED: ${v.problems.join(" ")}`);
+    } catch {
+      setDossierMessage("The file is not valid JSON.");
+    }
   };
 
   return (
@@ -300,6 +350,54 @@ export function P36ScientificReviewWorkspace() {
         <p>Activation prerequisites (all required, each in a separate governed patch):</p>
         <ol className="list-decimal space-y-0.5 pl-5 text-xs">{GLOBAL_ACTIVATION_PREREQUISITES.map((p) => <li key={p}>{p}</li>)}</ol>
         <Button type="button" variant="outline" disabled={!manifest} onClick={() => void exportManifest()}>Download activation manifest (JSON)</Button>
+      </section>
+
+      <section aria-label="Scientific decision dossier" className="space-y-3 rounded-lg border border-border bg-card p-4 text-sm">
+        <h2 className="text-lg font-semibold">Scientific decision dossier for Nikolas</h2>
+        <p className="text-xs text-muted-foreground">
+          One consolidated dossier for all {dossier?.counts.terms ?? 12} terms: exact source references, proposed identity, domain, specimen, method, protocol, units,
+          uncertainties and required decisions. Each field states whether it is a verified source fact or an unresolved assumption; missing methods, units and validation are shown as missing.
+        </p>
+        {dossier ? (
+          <>
+            <p className="break-words text-xs text-muted-foreground">
+              {dossier.counts.blocked} blocked · {dossier.counts.requiredDecisions} required decisions · {dossier.counts.conflicts} source conflict(s) · {dossier.counts.missingMethods} without a recorded method ·
+              {" "}{dossier.scientificApprovals} approvals · digest {dossier.integrity.contentDigest.slice(0, 16)}… · sources {dossier.integrity.sourceIntegrity}
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[56rem] text-left text-xs" aria-label="Decision matrix">
+                <thead>
+                  <tr className="border-b border-border">
+                    {["Term (unit)", "Identity", "Domain", "Specimen", "Method", "Protocol", "Unit", "Validation / other"].map((h) => <th key={h} className="px-2 py-1 font-medium">{h}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dossier.decisionMatrix.map((r) => (
+                    <tr key={r.termId} className="border-b border-border align-top">
+                      <td className="px-2 py-1 font-medium">{r.sourceLabel} ({r.sourceUnit})</td>
+                      <td className="px-2 py-1">{r.identity}</td>
+                      <td className="px-2 py-1">{r.domain}</td>
+                      <td className="px-2 py-1">{r.specimen}</td>
+                      <td className="px-2 py-1">{r.method}</td>
+                      <td className="px-2 py-1">{r.protocol}</td>
+                      <td className="px-2 py-1">{r.unit}</td>
+                      <td className="px-2 py-1">{r.validation}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : null}
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" disabled={!dossier || busy} onClick={() => void exportDossierPdf()}>Download decision dossier (PDF)</Button>
+          <Button type="button" variant="outline" disabled={!dossier} onClick={() => void exportDossierJson()}>Download decision dossier (JSON)</Button>
+          <label className="inline-flex cursor-pointer items-center rounded-md border border-border px-3 py-2 text-sm">
+            Verify a dossier JSON
+            <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => { void verifyDossierFile(e.target.files?.[0]); e.target.value = ""; }} />
+          </label>
+        </div>
+        {dossierMessage ? <p role="status" className="text-sm text-muted-foreground">{dossierMessage}</p> : null}
       </section>
 
       {message ? <p role="status" className="text-sm text-muted-foreground">{message}</p> : null}
