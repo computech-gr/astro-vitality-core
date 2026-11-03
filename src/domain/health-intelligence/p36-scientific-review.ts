@@ -290,7 +290,7 @@ export function recorderRoleFor(roles: readonly string[]): RecorderRole | null {
   return null;
 }
 
-const EXTERNAL_REF = /^(doi:10\.\S+|pmid:\d+|url:https:\/\/\S+|doc:\S.{2,})$/;
+export const EXTERNAL_REF = /^(doi:10\.\S+|pmid:\d+|url:https:\/\/\S+|doc:\S.{2,})$/;
 const PROHIBITED: { pattern: RegExp; reason: string }[] = [
   { pattern: /\bdiagnos\w*/i, reason: "diagnoses" },
   { pattern: /\b(threshold|cut-?off|reference\s+range|normal\s+range|upper\s+limit|lower\s+limit)\b/i, reason: "clinical thresholds or reference ranges" },

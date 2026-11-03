@@ -26,6 +26,8 @@ import {
 } from "@/domain/health-intelligence/p36-scientific-review";
 import { appendScientificReviewEntry, listScientificReviewEntries } from "@/domain/health-intelligence/p36-scientific-review-ledger";
 import { buildDecisionDossier, verifyDecisionDossier, type DecisionDossier } from "@/domain/health-intelligence/p36-decision-dossier";
+import { AuthorizationSummary, TermAuthorizationPanel } from "@/components/p36-final-authorization";
+import { useP36Authorization } from "@/hooks/use-p36-authorization";
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -75,6 +77,8 @@ export function P36ScientificReviewWorkspace() {
   const [message, setMessage] = useState("");
   const [dossier, setDossier] = useState<DecisionDossier | null>(null);
   const [dossierMessage, setDossierMessage] = useState("");
+  const auth = useP36Authorization();
+  const authView = auth.view && auth.view.loaded ? auth.view : undefined;
 
   const reload = useCallback(async () => {
     setLoadState("loading");
@@ -83,15 +87,17 @@ export function P36ScientificReviewWorkspace() {
       setEntries(state.entries);
       setIntegrity(state.integrity);
       setManifest(await buildActivationManifest(state.entries));
-      setDossier(await buildDecisionDossier(state.entries));
       setLoadState("ready");
     } catch {
       setEntries([]);
       setManifest(await buildActivationManifest([]));
-      setDossier(await buildDecisionDossier([]));
       setLoadState("error");
     }
   }, []);
+
+  useEffect(() => {
+    void buildDecisionDossier(loadState === "ready" ? entries : [], { generatedAt: null, authorization: authView }).then(setDossier);
+  }, [entries, loadState, authView]);
 
   useEffect(() => {
     void reload();
@@ -152,7 +158,7 @@ export function P36ScientificReviewWorkspace() {
   };
 
   const exportDossierJson = async () => {
-    const d = await buildDecisionDossier(entries, { generatedAt: new Date().toISOString() });
+    const d = await buildDecisionDossier(entries, { generatedAt: new Date().toISOString(), authorization: authView });
     downloadBlob(new Blob([JSON.stringify(d, null, 2)], { type: "application/json" }), `MITOCHONDRIA_p36_scientific_decision_dossier_${d.integrity.contentDigest.slice(0, 12)}.json`);
     setDossierMessage(`Decision dossier JSON downloaded (digest ${d.integrity.contentDigest.slice(0, 16)}…). Nothing was uploaded or approved.`);
   };
@@ -160,7 +166,7 @@ export function P36ScientificReviewWorkspace() {
   const exportDossierPdf = async () => {
     setBusy(true);
     try {
-      const d = await buildDecisionDossier(entries, { generatedAt: new Date().toISOString() });
+      const d = await buildDecisionDossier(entries, { generatedAt: new Date().toISOString(), authorization: authView });
       const { createDecisionDossierPdf } = await import("@/domain/health-intelligence/p36-decision-dossier-pdf");
       const { blob, pages } = await createDecisionDossierPdf(d);
       downloadBlob(blob, `MITOCHONDRIA_p36_scientific_decision_dossier_${d.integrity.contentDigest.slice(0, 12)}.pdf`);
@@ -172,13 +178,14 @@ export function P36ScientificReviewWorkspace() {
     }
   };
 
+  const d0 = (v: { approvals: number }) => `${v.approvals} approval(s) recorded in the file at export`;
   const verifyDossierFile = async (file: File | undefined) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return setDossierMessage("The file is larger than 5 MB and was not read.");
     try {
       const v = await verifyDecisionDossier(JSON.parse(await file.text()));
       setDossierMessage(v.ok
-        ? `Integrity verified: content digest matches and every term is ${REQUIRED_SCIENTIFIC_GATE}. ${v.sourcesCurrent ? "Source artifacts match this version." : "Source artifacts have changed since this dossier was exported."}`
+        ? `Integrity verified: content digest matches; ${d0(v)}. This check never grants or proves authorization — only the live cloud ledger does. ${v.sourcesCurrent ? "Source artifacts match this version." : "Source artifacts have changed since this dossier was exported."}`
         : `Integrity check FAILED: ${v.problems.join(" ")}`);
     } catch {
       setDossierMessage("The file is not valid JSON.");
@@ -210,6 +217,8 @@ export function P36ScientificReviewWorkspace() {
           </div>
         ))}
       </section>
+
+      <AuthorizationSummary auth={auth} />
 
       {!build.ok ? <p role="alert" className="text-sm text-destructive">Source integrity check failed; every term remains blocked: {build.problems.join("; ")}</p> : null}
       <p role="status" className="text-xs text-muted-foreground">
@@ -286,6 +295,8 @@ export function P36ScientificReviewWorkspace() {
                 </p>
               ) : null}
 
+              <TermAuthorizationPanel dossier={d} state={auth.view?.terms.find((t) => t.termId === d.termId)} auth={auth} />
+
               {history.length ? (
                 <details className="text-xs">
                   <summary className="cursor-pointer font-medium">Audit history ({history.length}, append-only)</summary>
@@ -303,7 +314,7 @@ export function P36ScientificReviewWorkspace() {
 
               {canRecord && integrity.ok && loadState === "ready" ? (
                 <details className="rounded-md border border-border p-3">
-                  <summary className="cursor-pointer font-medium">Record independent reviewer worksheet entry</summary>
+                  <summary className="cursor-pointer font-medium">Record documentary worksheet entry (local only, not a decision)</summary>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     <select aria-label={`Decision for ${d.sourceLabel}`} className="rounded-md border border-border bg-background px-2 py-1.5" value={draft.decision} onChange={(e) => set({ decision: e.target.value as ScientificReviewDecision })}>
                       {Object.entries(SCIENTIFIC_REVIEW_DECISION_LABELS).map(([k, label]) => <option key={k} value={k}>{label}</option>)}

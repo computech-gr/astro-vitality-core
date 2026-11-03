@@ -28,6 +28,7 @@ import p43Proposals from "../../../data/scientific/p43-semantic-decision-proposa
 import governedRegistry from "../../../data/scientific/catalog-extensions.v1.json";
 import { canonicalJson } from "./observation-envelope";
 import { REQUIRED_SCIENTIFIC_GATE } from "./unknown-biomarker-review";
+import type { ActivationStatus, AuthorizationView, GateResult, ScientificStatus } from "./p36-scientific-authorization";
 import {
   ACTIVATION_BLOCKER_LABELS,
   GLOBAL_ACTIVATION_PREREQUISITES,
@@ -138,7 +139,8 @@ export interface DecisionDossier {
   status: typeof REQUIRED_SCIENTIFIC_GATE;
   activationAllowed: false;
   appliesChanges: false;
-  scientificApprovals: 0;
+  /** Count of verified, current Researcher approvals in the cloud authorization ledger at export (0 when not loaded). */
+  scientificApprovals: number;
   manifestVersion: string;
   baseCatalogVersion: string;
   basisLegend: Record<FieldBasis, string>;
@@ -146,6 +148,7 @@ export interface DecisionDossier {
   decisionMatrix: DecisionMatrixRow[];
   terms: DossierTerm[];
   activationPrerequisites: readonly string[];
+  finalAuthorization: FinalAuthorizationSection;
   integrity: {
     algorithm: "SHA-256";
     /** SHA-256 of the canonical (sorted-key) JSON of this dossier with contentDigest emptied and generatedAt null. */
@@ -156,6 +159,124 @@ export interface DecisionDossier {
     sourceProblems: string[];
     /** SHA-256 of each artifact's canonical JSON content (independent of whitespace). */
     sourceArtifactDigests: { path: string; canonicalSha256: string }[];
+  };
+}
+
+export interface FinalAuthorizationTerm {
+  termId: string;
+  sourceLabel: string;
+  scientificStatus: ScientificStatus;
+  activationStatus: ActivationStatus;
+  ledgerIntegrity: "VERIFIED" | "FAILED" | "NOT_LOADED";
+  stale: boolean;
+  recommendations: number;
+  historyEvents: number;
+  latestDecision: null | {
+    eventId: string;
+    eventHash: string;
+    action: string;
+    actorRole: string;
+    reviewerName: string;
+    reviewerQualification: string;
+    conflictOfInterestDeclaration: string;
+    decidedAt: string;
+    receivedAt: string;
+    canonicalCatalogId: string | null;
+    domain: string | null;
+    specimenOrAcquisitionContext: string | null;
+    methodOrInstrument: string | null;
+    protocol: string | null;
+    protocolVersion: string | null;
+    validatedUnit: string | null;
+    sourceRefs: string[];
+    validationEvidenceRefs: string[];
+    rationale: string;
+  };
+  gates: GateResult[];
+  blockers: string[];
+}
+
+export interface FinalAuthorizationSection {
+  source: "NOT_LOADED" | "CLOUD_LEDGER_READ_AT_EXPORT";
+  authorityMissionId: string | null;
+  /** An exported dossier never grants or proves authorization; only the live cloud ledger does. */
+  notAnAuthorizationToken: true;
+  note: string;
+  counts: Record<ScientificStatus | ActivationStatus, number>;
+  terms: FinalAuthorizationTerm[];
+}
+
+function finalAuthorizationSection(view: AuthorizationView | undefined, dossiers: readonly ScientificReviewDossier[]): FinalAuthorizationSection {
+  const note =
+    "Read-only copy for review. Final scientific decisions exist only in the append-only cloud authorization ledger and are re-verified on every read; this file cannot approve, activate or be imported as authorization. Reviewer qualifications and conflict declarations are recorded declarations, not verified credentials.";
+  if (!view || !view.loaded) {
+    const counts = { PENDING_NIKOLAS_REVIEW: dossiers.length, MORE_EVIDENCE_REQUIRED: 0, SCIENTIFICALLY_REJECTED: 0, SCIENTIFICALLY_APPROVED: 0, ACTIVATION_BLOCKED: dossiers.length, ACTIVE: 0 };
+    return {
+      source: "NOT_LOADED",
+      authorityMissionId: null,
+      notAnAuthorizationToken: true,
+      note,
+      counts,
+      terms: dossiers.map((d) => ({
+        termId: d.termId,
+        sourceLabel: d.sourceLabel,
+        scientificStatus: "PENDING_NIKOLAS_REVIEW",
+        activationStatus: "ACTIVATION_BLOCKED",
+        ledgerIntegrity: "NOT_LOADED",
+        stale: false,
+        recommendations: 0,
+        historyEvents: 0,
+        latestDecision: null,
+        gates: [],
+        blockers: ["Cloud authorization ledger not loaded for this export; no final decision is shown"],
+      })),
+    };
+  }
+  return {
+    source: "CLOUD_LEDGER_READ_AT_EXPORT",
+    authorityMissionId: view.missionId,
+    notAnAuthorizationToken: true,
+    note,
+    counts: view.counts,
+    terms: view.terms.map((t) => {
+      const p = t.latestDecision?.payload;
+      return {
+        termId: t.termId,
+        sourceLabel: t.sourceLabel,
+        scientificStatus: t.scientificStatus,
+        activationStatus: t.activationStatus,
+        ledgerIntegrity: t.integrity,
+        stale: t.stale,
+        recommendations: t.recommendations.length,
+        historyEvents: t.history.length,
+        latestDecision:
+          t.latestDecision && p
+            ? {
+                eventId: t.latestDecision.row.event_id,
+                eventHash: t.latestDecision.row.event_hash,
+                action: p.action,
+                actorRole: p.actorRole,
+                reviewerName: p.reviewerName,
+                reviewerQualification: p.reviewerQualification,
+                conflictOfInterestDeclaration: p.conflictOfInterestDeclaration,
+                decidedAt: p.decidedAt,
+                receivedAt: t.latestDecision.row.received_at,
+                canonicalCatalogId: p.canonicalCatalogId,
+                domain: p.domain,
+                specimenOrAcquisitionContext: p.specimenOrAcquisitionContext,
+                methodOrInstrument: p.methodOrInstrument,
+                protocol: p.protocol,
+                protocolVersion: p.protocolVersion,
+                validatedUnit: p.validatedUnit,
+                sourceRefs: p.sourceRefs,
+                validationEvidenceRefs: p.validationEvidenceRefs,
+                rationale: p.rationale,
+              }
+            : null,
+        gates: t.gates,
+        blockers: t.blockers,
+      };
+    }),
   };
 }
 
@@ -316,7 +437,7 @@ function matrixRow(t: DossierTerm, d: ScientificReviewDossier): DecisionMatrixRo
 
 export async function buildDecisionDossier(
   entries: readonly ScientificReviewEntry[],
-  options: { generatedAt: string | null } = { generatedAt: null },
+  options: { generatedAt: string | null; authorization?: AuthorizationView | undefined } = { generatedAt: null },
 ): Promise<DecisionDossier> {
   const build = buildScientificReviewDossiers();
   const manifest = await buildActivationManifest(entries);
@@ -328,6 +449,7 @@ export async function buildDecisionDossier(
     return termDossier(d, latest.get(d.termId), blockers);
   });
   const matrix = terms.map((t, i) => matrixRow(t, build.dossiers[i]!));
+  const finalAuthorization = finalAuthorizationSection(options.authorization, build.dossiers);
   const body: DecisionDossier = {
     schema: DECISION_DOSSIER_SCHEMA,
     title: "P36 Scientific Decision Dossier — 12 catalog reconciliation terms",
@@ -336,7 +458,7 @@ export async function buildDecisionDossier(
     status: REQUIRED_SCIENTIFIC_GATE,
     activationAllowed: false,
     appliesChanges: false,
-    scientificApprovals: 0,
+    scientificApprovals: finalAuthorization.counts.SCIENTIFICALLY_APPROVED,
     manifestVersion: manifest.manifestVersion,
     baseCatalogVersion: manifest.baseCatalogVersion,
     basisLegend: FIELD_BASIS_LABELS,
@@ -351,6 +473,7 @@ export async function buildDecisionDossier(
     decisionMatrix: matrix,
     terms,
     activationPrerequisites: GLOBAL_ACTIVATION_PREREQUISITES,
+    finalAuthorization,
     integrity: {
       algorithm: "SHA-256",
       contentDigest: "",
@@ -370,16 +493,27 @@ export interface DossierVerification {
   problems: string[];
   /** True when the dossier's source digests equal the artifacts in this build. */
   sourcesCurrent: boolean;
+  /** Approvals the file states it contained at export. Informational only: never authorization. */
+  approvals: number;
 }
 
-/** Verify an exported dossier JSON: content digest, pending statuses and source digests. Read-only. */
+/** Verify an exported dossier JSON: content digest, statuses and source digests. Read-only; never establishes authorization. */
 export async function verifyDecisionDossier(input: unknown): Promise<DossierVerification> {
   const problems: string[] = [];
   const d = input as Partial<DecisionDossier> | null;
   if (!d || typeof d !== "object" || d.schema !== DECISION_DOSSIER_SCHEMA || !d.integrity || !Array.isArray(d.terms))
-    return { ok: false, problems: ["Not a P36 decision dossier."], sourcesCurrent: false };
-  if (d.status !== REQUIRED_SCIENTIFIC_GATE || d.activationAllowed !== false || d.appliesChanges !== false || d.scientificApprovals !== 0)
+    return { ok: false, problems: ["Not a P36 decision dossier."], sourcesCurrent: false, approvals: 0 };
+  if (d.status !== REQUIRED_SCIENTIFIC_GATE || d.activationAllowed !== false || d.appliesChanges !== false)
     problems.push("Dossier claims approval or activation.");
+  const fa = d.finalAuthorization;
+  if (!fa || fa.notAnAuthorizationToken !== true || !Array.isArray(fa.terms)) problems.push("Final authorization section is missing or claims to be an authorization token.");
+  else {
+    const approved = fa.terms.filter((t) => t.scientificStatus === "SCIENTIFICALLY_APPROVED").length;
+    if (d.scientificApprovals !== approved) problems.push("Approval count does not match the final authorization section.");
+    if (fa.source === "NOT_LOADED" && approved !== 0) problems.push("An export without the cloud ledger claims approvals.");
+    if (fa.terms.some((t) => t.activationStatus === "ACTIVE" && (!t.gates.length || t.gates.some((g) => !g.passed))))
+      problems.push("A term claims activation without passing every activation gate.");
+  }
   if (d.terms.some((t) => t.status !== REQUIRED_SCIENTIFIC_GATE || t.activationAllowed !== false || !t.blockers?.length))
     problems.push("A term claims a non-pending status, activation or no blockers.");
   const claimed = d.integrity.contentDigest;
@@ -387,5 +521,5 @@ export async function verifyDecisionDossier(input: unknown): Promise<DossierVeri
   if (claimed !== recomputed) problems.push("Content digest does not match; the file was modified after export.");
   const current = await sourceArtifactDigests();
   const sourcesCurrent = canonicalJson(current) === canonicalJson(d.integrity.sourceArtifactDigests ?? []);
-  return { ok: problems.length === 0, problems, sourcesCurrent };
+  return { ok: problems.length === 0, problems, sourcesCurrent, approvals: typeof d.scientificApprovals === "number" ? d.scientificApprovals : 0 };
 }
