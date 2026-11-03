@@ -133,7 +133,7 @@ describe("P36 catalog reconciliation handoff (review-only)", () => {
 });
 
 const SHA = {
-  p36: "__P36__",
-  p355: "__P355__",
-  extensions: "__EXT__",
+  p36: "ce2271260428b152778ad67d1cad36306a7913dd3a4442abe3aa11ea65297148",
+  p355: "1ee9b54a30e07da2f218d3c72d92efdef974c253f596afd0b2221669a45e3dfc",
+  extensions: "24dead3960628d0ce61fad19844bbc19462bde42866435cda44b4aed03a000e4",
 };
