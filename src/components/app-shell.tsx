@@ -129,6 +129,7 @@ const navigation: readonly NavigationEntry[] = [
         items: [
           "Mission Documents",
           "Unknown Biomarker Review",
+          "Catalog Scientific Review",
           "Platform Overview",
           "Astronaut Health Twin",
           "Personalization",
@@ -361,6 +362,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Recorded Mission Data") return "/mission/records";
   if (label === "Mission Documents") return "/mission/documents";
   if (label === "Unknown Biomarker Review") return "/mission/intake#unknown-biomarker-review";
+  if (label === "Catalog Scientific Review") return "/mission/scientific-review";
   if (label === "Health Intelligence") return "/mission/intelligence";
   if (label === "Synthetic Research AI") return "/mission/health-report#synthetic-research-qa";
   if (label === "NASA Scientific Evidence") return "/mission/nasa-evidence";
