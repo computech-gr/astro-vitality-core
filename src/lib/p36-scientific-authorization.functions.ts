@@ -8,7 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { listAuthorizationCore, submitAuthorizationCore, type Rpc } from "./p36-scientific-authorization.server";
+import type { Rpc } from "./p36-scientific-authorization.server";
 
 const mission = z.string().min(1).max(128);
 const hex = z.string().regex(/^[0-9a-f]{64}$/);
@@ -48,6 +48,7 @@ export const listScientificAuthorization = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ missionId: mission }).strict().parse(input))
   .handler(async ({ data, context }) => {
     const rpc: Rpc = (fn, args) => (context.supabase.rpc as unknown as Rpc).call(context.supabase, fn, args);
+    const { listAuthorizationCore } = await import("./p36-scientific-authorization.server");
     return listAuthorizationCore({ rpc }, data.missionId);
   });
 
@@ -56,5 +57,6 @@ export const submitScientificAuthorization = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => submitInput.parse(input))
   .handler(async ({ data, context }) => {
     const rpc: Rpc = (fn, args) => (context.supabase.rpc as unknown as Rpc).call(context.supabase, fn, args);
+    const { submitAuthorizationCore } = await import("./p36-scientific-authorization.server");
     return submitAuthorizationCore({ rpc, userId: context.userId, now: () => new Date().toISOString() }, data);
   });
