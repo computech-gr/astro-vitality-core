@@ -12,6 +12,7 @@
 import handoffJson from "../../../data/scientific/p36-unknown-biomarker-reconciliation-handoff.v1.json";
 import p36Registry from "../../../data/scientific/p36-biomarker-source-registry.v1.json";
 import p355Catalog from "../../../data/scientific/p355-proposed-domain-catalog.v1.json";
+import governedRegistry from "../../../data/scientific/catalog-extensions.v1.json";
 import { REQUIRED_SCIENTIFIC_GATE, termIdFor } from "./unknown-biomarker-review";
 
 export const CATALOG_RECONCILIATION_HANDOFF_SCHEMA = "mitochondria.catalog-reconciliation-review-handoff.v1";
@@ -121,7 +122,7 @@ export function buildReconciliationView(handoff: CatalogReconciliationHandoff = 
   if (handoff.schema !== CATALOG_RECONCILIATION_HANDOFF_SCHEMA) problems.push(`Unexpected schema ${handoff.schema}`);
   if (handoff.status !== REQUIRED_SCIENTIFIC_GATE) problems.push(`Handoff status ${handoff.status} is not ${REQUIRED_SCIENTIFIC_GATE}`);
   if (handoff.activationAllowed !== false) problems.push("Handoff claims activation is allowed; refused");
-  if (handoff.sourceCatalogVersion !== p36Registry.schemaVersion && handoff.sourceCatalogVersion !== "p36.1.0")
+  if (handoff.sourceCatalogVersion !== governedRegistry.baseCatalogVersion)
     problems.push(`Source catalog version ${handoff.sourceCatalogVersion} is not recognized`);
   if (handoff.proposedCatalogVersion !== p355Catalog.version)
     problems.push(`Proposed catalog version ${handoff.proposedCatalogVersion} does not match P35.5 ${p355Catalog.version}`);
