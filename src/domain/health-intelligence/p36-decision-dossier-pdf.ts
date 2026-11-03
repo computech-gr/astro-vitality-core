@@ -12,7 +12,7 @@ const fieldRow = (label: string, f: DossierField): [string, string] => [label, `
 
 export function buildDecisionDossierDocument(d: DecisionDossier): ReportDocument {
   const blocks: Block[] = [
-    { kind: "banner", text: `${d.status} · RESEARCH ONLY · NO ACTIVATION · NOT A SCIENTIFIC APPROVAL` },
+    { kind: "banner", text: `${d.status} · NOT AN APPROVAL · NO ACTIVATION` },
     { kind: "h1", text: d.title },
     {
       kind: "kv",
