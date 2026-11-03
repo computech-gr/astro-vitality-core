@@ -1,0 +1,149 @@
+{
+  "schema": "mitochondria.p36-scientific-review-crosswalk.v1",
+  "handoff": "data/scientific/p36-unknown-biomarker-reconciliation-handoff.v1.json",
+  "status": "PENDING_NIKOLAS_REVIEW",
+  "activationAllowed": false,
+  "governance": "Reviewer aid only. Each link names an exact record ID in an existing repository artifact (P36 registry, P35.5 draft catalog, Bone handbook v7, Nikolas source intakes and the P38-P43 reconciliation worksheets) so the reviewer can inspect it. A link is never a mapping, alias, unit equivalence or approval; no link is inferred by fuzzy matching at runtime.",
+  "terms": [
+    {
+      "termId": "ubt-7b25ce69",
+      "p36Ids": ["bone-019"],
+      "p355Ids": ["IMM-030"],
+      "boneHandbookIds": ["bone-019"],
+      "nikolasSourceIds": ["IMM-NIK-079"],
+      "questions": [
+        "The handoff proposes bone-019 (Bone), while P38-P43 propose IMM-030 (Immune) for the same analyte. Which single canonical identity and domain should own 25(OH) vitamin D?",
+        "Is the specimen serum, as listed in the Bone handbook?",
+        "Which assay method (for example immunoassay or LC-MS/MS) produced the values, and are results from different methods comparable?",
+        "The P36 catalog has no validated unit. Should ng/mL be the validated catalog unit, given the handbook also lists nmol/L? No conversion between them is permitted."
+      ]
+    },
+    {
+      "termId": "ubt-d900847d",
+      "p36Ids": [],
+      "p355Ids": ["BSC-001"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["BHP-001"],
+      "questions": [
+        "The observations use h while Nikolas's source lists min. Which unit should the catalog validate? No conversion is permitted.",
+        "BSC-001 is 'main sleep + naps'; P43 classifies the source measure as a distinct component. Do the observations include naps?",
+        "Which measurement method (actigraphy, sleep diary or polysomnography) produced the values?"
+      ]
+    },
+    {
+      "termId": "ubt-efe7e2fb",
+      "p36Ids": [],
+      "p355Ids": ["BSC-002"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["BHP-003"],
+      "questions": [
+        "Which measurement method produced sleep efficiency, and how is the denominator (time in bed) defined?",
+        "Are values from different devices or methods comparable?"
+      ]
+    },
+    {
+      "termId": "ubt-ed97000c",
+      "p36Ids": [],
+      "p355Ids": ["BSC-008"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["BHP-013"],
+      "questions": [
+        "The scale is unvalidated. Which instrument, item wording, range and anchors produced the 'score' values?",
+        "Nikolas's source lists an ordinal unit while the observations use 'score'. Are they the same scale?",
+        "BSC-008 combines sleep quality and perceived quantity; P43 classifies the source measure as a distinct component. Which component do the observations represent?"
+      ]
+    },
+    {
+      "termId": "ubt-d9870fc7",
+      "p36Ids": ["bone-001"],
+      "p355Ids": [],
+      "boneHandbookIds": ["bone-001"],
+      "nikolasSourceIds": ["IMM-NIK-082"],
+      "questions": [
+        "The handoff leaves CTX unresolved, but the P36 catalog and Bone handbook contain bone-001 (CTX / β-CTX). Is bone-001 the correct canonical identity?",
+        "The observations use ng/mL, which is not among the units in the Bone handbook (pg/mL or ng/L) or Nikolas's source (ng/L). Is the source unit correct? The magnitude cannot be assumed and no conversion is permitted.",
+        "Which specimen (serum or plasma), collection timing (fasting, morning) and assay were used?"
+      ]
+    },
+    {
+      "termId": "ubt-813d9e97",
+      "p36Ids": [],
+      "p355Ids": ["IMM-001"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["IMM-NIK-001"],
+      "questions": [
+        "Which specimen and analyzer method produced the values?",
+        "Should 10^9/L be the validated catalog unit for IMM-001?"
+      ]
+    },
+    {
+      "termId": "ubt-2e684454",
+      "p36Ids": [],
+      "p355Ids": ["IMM-002"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["IMM-NIK-002"],
+      "questions": [
+        "Is the value an absolute count (not a percentage of leukocytes), and which analyzer method produced it?",
+        "Should 10^9/L be the validated catalog unit for IMM-002?"
+      ]
+    },
+    {
+      "termId": "ubt-e0a346b9",
+      "p36Ids": [],
+      "p355Ids": ["IMM-003"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["IMM-NIK-003"],
+      "questions": [
+        "Is the value an absolute count (not a percentage of leukocytes), and which analyzer method produced it?",
+        "Should 10^9/L be the validated catalog unit for IMM-003?"
+      ]
+    },
+    {
+      "termId": "ubt-1d9912f9",
+      "p36Ids": [],
+      "p355Ids": ["IMM-007"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["IMM-NIK-048"],
+      "questions": [
+        "Nikolas's source lists hsCRP, which P43 classifies as related but not interchangeable with C-reactive protein. Was the assay standard CRP or high-sensitivity CRP?",
+        "Should mg/L be the validated catalog unit for IMM-007?"
+      ]
+    },
+    {
+      "termId": "ubt-6c8bad01",
+      "p36Ids": ["bone-009"],
+      "p355Ids": [],
+      "boneHandbookIds": ["bone-009"],
+      "nikolasSourceIds": ["IMM-NIK-083"],
+      "questions": [
+        "The handoff leaves P1NP unresolved, but the P36 catalog and Bone handbook contain bone-009 (P1NP / PINP). Is bone-009 the correct canonical identity?",
+        "The observations use ng/mL while the Bone handbook lists µg/L and Nikolas's source lists μg/L (a different character). Which exact unit string should the catalog validate? No automatic equivalence or conversion is permitted.",
+        "Was the assay intact or total P1NP, and which specimen was used?"
+      ]
+    },
+    {
+      "termId": "ubt-676690c9",
+      "p36Ids": [],
+      "p355Ids": ["BSC-017"],
+      "boneHandbookIds": [],
+      "nikolasSourceIds": ["BHP-017"],
+      "questions": [
+        "The PVT protocol is unvalidated. Which test duration, device, input method and inter-stimulus interval produced the values?",
+        "BSC-017 is the whole PVT; P43 classifies median reaction time as a distinct component. Should it become its own catalog metric or a component of BSC-017?",
+        "How were anticipations and false starts handled when computing the median?"
+      ]
+    },
+    {
+      "termId": "ubt-83a192f6",
+      "p36Ids": ["bone-015"],
+      "p355Ids": [],
+      "boneHandbookIds": ["bone-015"],
+      "nikolasSourceIds": [],
+      "questions": [
+        "The observations use mg/24h while the Bone handbook lists mg/day. Which exact unit string should the catalog validate? No automatic equivalence is permitted.",
+        "Was the 24-hour urine collection verified as complete, and by which method?",
+        "No Nikolas source record was found for 24-hour urinary calcium. Which source document supports this term?"
+      ]
+    }
+  ]
+}
