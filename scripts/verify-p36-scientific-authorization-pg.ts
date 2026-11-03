@@ -48,13 +48,13 @@ psql(["-c", `insert into auth.users(id) values ('${RES2}'); insert into public.m
 function call(uid: string, fn: string, args: string[], role = "authenticated"): { data: unknown; error: { code?: string } | null } {
   const vars = args.flatMap((a, i) => ["-v", `a${i}=${a}`]);
   const placeholders = args.map((_, i) => `:'a${i}'`).join(",");
-  const sql = `\\set ON_ERROR_STOP 1\nset role ${role};\nselect set_config('request.jwt.claim.sub', '${uid}', false);\n\\t on\n\\a\nselect public.${fn}(${placeholders})::text;\n`;
+  const sql = `\\set ON_ERROR_STOP 1\n\\set VERBOSITY verbose\nset role ${role};\nselect set_config('request.jwt.claim.sub', '${uid}', false);\n\\t on\n\\a\nselect public.${fn}(${placeholders})::text;\n`;
   try {
     const out = execFileSync("psql", [...base, "-d", DB, ...vars, "-f", "-"], { env, encoding: "utf8", input: sql });
     return { data: JSON.parse(out.trim().split("\n").filter(Boolean).at(-1) ?? "null"), error: null };
   } catch (e) {
     const stderr = String((e as { stderr?: string }).stderr ?? "");
-    const code = /permission denied|required|denied|42501/.test(stderr) ? "42501" : /22023|digest|JSON|missing|kind|size/.test(stderr) ? "22023" : "XX000";
+    const code = /ERROR:\s+([0-9A-Z]{5}):/.exec(stderr)?.[1] ?? "XX000";
     return { data: null, error: { code } };
   }
 }
@@ -135,7 +135,7 @@ const recId = (rec as { eventId: string }).eventId;
 check(status(await submitAuthorizationCore(deps(GM), gmRec)) === "duplicate", "recommendation retry is an idempotent duplicate");
 
 // --- Ground Medical cannot decide
-const gmDec = await submitAuthorizationCore(deps(GM), decision(UCA, "REJECT")); console.log("DBG", JSON.stringify(gmDec));
+const gmDec = await submitAuthorizationCore(deps(GM), decision(UCA, "REJECT"));
 check(status(gmDec) === "fail:forbidden", "Ground Medical cannot record a final decision (server core)");
 check(status(await submitAuthorizationCore(deps(GM), decision(UCA, "APPROVE", { recommendationEventId: recId }))).startsWith("fail:"), "Ground Medical cannot approve (server core)");
 {
