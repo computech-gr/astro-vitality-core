@@ -83,7 +83,7 @@ describe("P36 scientific decision dossier", () => {
     const b = await buildDecisionDossier([], { generatedAt: "2026-11-04T08:00:00.000Z" });
     expect(a.integrity.contentDigest).toBe(b.integrity.contentDigest);
     const exported = JSON.parse(JSON.stringify(a));
-    expect(await verifyDecisionDossier(exported)).toEqual({ ok: true, problems: [], sourcesCurrent: true });
+    expect(await verifyDecisionDossier(exported)).toEqual({ ok: true, problems: [], sourcesCurrent: true, approvals: 0 });
     const edited = JSON.parse(JSON.stringify(a));
     edited.terms[0].fields.assayOrMethod.value = "LC-MS/MS";
     expect((await verifyDecisionDossier(edited)).ok).toBe(false);
