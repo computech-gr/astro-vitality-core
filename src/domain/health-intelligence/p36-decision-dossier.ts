@@ -293,7 +293,6 @@ function termDossier(d: ScientificReviewDossier, entry: ScientificReviewEntry | 
   };
 }
 
-const cell = (f: DossierField, short: string) => (f.basis === "VERIFIED_SOURCE_FACT" ? `Confirm (source: ${short})` : f.basis === "CONFLICTING_SOURCES" ? `Resolve conflict: ${short}` : f.basis === "NOT_VALIDATED" ? `Validate: ${short}` : `Confirm: ${short}`);
 
 function matrixRow(t: DossierTerm, d: ScientificReviewDossier): DecisionMatrixRow {
   const f = t.fields;
@@ -314,7 +313,6 @@ function matrixRow(t: DossierTerm, d: ScientificReviewDossier): DecisionMatrixRo
     status: REQUIRED_SCIENTIFIC_GATE,
   };
 }
-void cell;
 
 export async function buildDecisionDossier(
   entries: readonly ScientificReviewEntry[],
