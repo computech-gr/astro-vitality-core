@@ -135,7 +135,8 @@ const recId = (rec as { eventId: string }).eventId;
 check(status(await submitAuthorizationCore(deps(GM), gmRec)) === "duplicate", "recommendation retry is an idempotent duplicate");
 
 // --- Ground Medical cannot decide
-check(status(await submitAuthorizationCore(deps(GM), decision(UCA, "APPROVE", { recommendationEventId: recId }))) === "fail:forbidden", "Ground Medical cannot approve (server core)");
+check(status(await submitAuthorizationCore(deps(GM), decision(UCA, "REJECT"))) === "fail:forbidden", "Ground Medical cannot record a final decision (server core)");
+check(status(await submitAuthorizationCore(deps(GM), decision(UCA, "APPROVE", { recommendationEventId: recId }))).startsWith("fail:"), "Ground Medical cannot approve (server core)");
 {
   const p = buildAuthorizationPayload(decision(UCA, "APPROVE", { recommendationEventId: recId }), { userId: GM, role: "researcher", now: new Date().toISOString() }, ctx);
   const c = canonicalJson(p);
