@@ -107,6 +107,12 @@ export async function submitAuthorizationCore(
   const term = ledgers.get(input.termId);
   if (!term) return failure("invalid", "Unknown term; only the 12 handoff terms can be authorized.");
   if (term.integrity !== "VERIFIED") return failure("integrity");
+  // Retry of an already recorded submission: idempotent duplicate (the server time would differ).
+  const prior = listed.rows.find((r) => r.actor_user_id === deps.userId && r.submission_id === input.submissionId);
+  if (prior)
+    return prior.term_id === input.termId && prior.action === input.action && prior.authority_mission_id === input.authorityMissionId
+      ? { ok: true, status: "duplicate", eventId: prior.event_id, detail: null }
+      : { ok: true, status: "conflict", eventId: null, detail: "submission id already used with different content" };
   const role: AuthorizationActorRole = input.kind === "decision" ? "researcher" : input.actorRole;
   const payload = buildAuthorizationPayload(input, { userId: deps.userId, role, now: deps.now() }, ctx);
   const recommendation = input.recommendationEventId ? term.events.find((e) => e.row.event_id === input.recommendationEventId) : undefined;
