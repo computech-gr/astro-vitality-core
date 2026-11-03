@@ -297,3 +297,19 @@ describe("P36 decision dossier — final authorization section", () => {
     expect(text).toContain("Scientifically approved");
   });
 });
+
+describe("P36 authorization server core — fail closed before the migration", () => {
+  test("a missing RPC is reported as migration required and nothing is recorded", async () => {
+    const { listAuthorizationCore, submitAuthorizationCore, classifyAuthorizationError } = await import("@/lib/p36-scientific-authorization.server");
+    expect(classifyAuthorizationError("PGRST202")).toBe("migration_required");
+    expect(classifyAuthorizationError("42501")).toBe("forbidden");
+    const calls: string[] = [];
+    const rpc = async (fn: string) => (calls.push(fn), { data: null, error: { code: "PGRST202" } });
+    const listed = await listAuthorizationCore({ rpc }, "m1");
+    expect(listed.ok).toBe(false);
+    if (!listed.ok) expect(listed.code).toBe("migration_required");
+    const submitted = await submitAuthorizationCore({ rpc, userId: RES, now }, { ...decisionInput("REJECT"), actorRole: "researcher" });
+    expect(submitted.ok).toBe(false);
+    expect(calls).not.toContain("p36_sci_auth_append_v1");
+  });
+});
