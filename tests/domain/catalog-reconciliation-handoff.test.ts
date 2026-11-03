@@ -52,7 +52,7 @@ describe("P36 catalog reconciliation handoff (review-only)", () => {
   test("no approved catalog extension exists for any handoff term", () => {
     const evaluation = evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS);
     const ids = new Set(view.rows.map((r) => r.candidateCatalogId).filter(Boolean));
-    expect(evaluation.effective.filter((e) => ids.has(e.metricId))).toEqual([]);
+    expect(evaluation.effective.filter((e) => ids.has(e.targetMetricId))).toEqual([]);
     expect(evaluation.effective.length).toBe(0);
   });
 
@@ -94,7 +94,7 @@ describe("P36 catalog reconciliation handoff (review-only)", () => {
   test("handoff term IDs match the Unknown Biomarker Review grouping", () => {
     const rows = view.rows.map((r) => ({
       label: r.sourceLabel, unit: r.sourceUnit, value: "1", observedAt: "2026-10-01T00:00:00Z",
-      classification: classifyIntakeObservation(r.sourceLabel, r.sourceUnit), sourceKind: "csv", sourceLabel: "test",
+      classification: classifyIntakeObservation({ label: r.sourceLabel, unit: r.sourceUnit }), sourceKind: "csv", sourceLabel: "test",
     }));
     const terms = buildUnknownBiomarkerTerms(rows);
     expect(terms.map((t) => t.termId).sort()).toEqual(view.rows.map((r) => r.termId).sort());
@@ -102,7 +102,7 @@ describe("P36 catalog reconciliation handoff (review-only)", () => {
 
   test("handoff terms remain review-only in intake classification (no activation)", () => {
     for (const r of view.rows) {
-      const result = classifyWithGovernedExtensions(r.sourceLabel, r.sourceUnit, GOVERNED_CATALOG_EXTENSIONS);
+      const result = classifyWithGovernedExtensions({ label: r.sourceLabel, unit: r.sourceUnit }, evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS));
       expect(result.classification.status).not.toBe("matched");
     }
   });
