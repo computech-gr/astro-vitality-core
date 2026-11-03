@@ -26,7 +26,8 @@ import {
 } from "@/domain/health-intelligence/p36-scientific-review";
 import { appendScientificReviewEntry, listScientificReviewEntries } from "@/domain/health-intelligence/p36-scientific-review-ledger";
 import { buildDecisionDossier, verifyDecisionDossier, type DecisionDossier } from "@/domain/health-intelligence/p36-decision-dossier";
-import { AuthorizationSummary, TermAuthorizationPanel, useP36Authorization } from "@/components/p36-final-authorization";
+import { AuthorizationSummary, TermAuthorizationPanel } from "@/components/p36-final-authorization";
+import { useP36Authorization } from "@/hooks/use-p36-authorization";
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);

@@ -7,12 +7,12 @@ activation-blocked, with "the staged database change has not been applied".
 
 ## Who can do what
 
-| Action | Ground Medical | Researcher (same mission) | Others |
-| --- | --- | --- | --- |
-| Read the mission's authorization ledger | yes | yes | no |
-| Submit a recommendation (evidence only) | yes | yes | no |
-| Approve / Reject / Request more evidence | no | yes | no |
-| Approve a recommendation they authored | — | no (self-approval refused) | — |
+| Action                                   | Ground Medical | Researcher (same mission)  | Others |
+| ---------------------------------------- | -------------- | -------------------------- | ------ |
+| Read the mission's authorization ledger  | yes            | yes                        | no     |
+| Submit a recommendation (evidence only)  | yes            | yes                        | no     |
+| Approve / Reject / Request more evidence | no             | yes                        | no     |
+| Approve a recommendation they authored   | —              | no (self-approval refused) | —      |
 
 Roles come only from active `mission_memberships` rows checked in the database from `auth.uid()`.
 No role, account or permission is created by this change. Reviewer name, qualification and the
