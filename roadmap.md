@@ -1,9 +1,10 @@
 # P36 unified implementation
 
-- [ ] Audit and preserve current baseline; implement staged metadata-only scope-bound cloud handoff and guarded rollback.
-- [ ] Explicit submission/receipts/retry and dynamic paginated review with safe bulk proposals.
-- [ ] Independent scoped scientific authorization and governed promotion preparation without activation.
-- [ ] Disposable SQL/security/regression/browser validation and consolidated report/checklist/source ZIP.
+- [x] Audit and preserve current baseline; stage metadata-only scope-bound cloud handoff and guarded rollback.
+- [x] Explicit submission/receipts/retry and dynamic paginated review with safe bulk proposals.
+- [x] Scoped scientific authorization and governed promotion preparation without activation; source receipts remain independently owner-provisioned.
+- [ ] Disposable real-auth two-account browser acceptance and exact-revision CI blocked by absent isolated auth services/synchronized CI; production activation and local-record uploads are not authorized.
+- [x] Disposable SQL/security/regression/public-browser validation and consolidated report/checklist/source ZIP.
 
 # P36.8.1 date-only observation support
 

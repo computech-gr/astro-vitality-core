@@ -199,9 +199,9 @@ export function P36ScientificReviewWorkspace() {
         <p className="section-kicker">P36 · Scientific review &amp; governed activation preparation</p>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">Catalog Scientific Review</h1>
         <p className="max-w-3xl text-muted-foreground">
-          One review dossier for each of the {build.dossiers.length} terms in the P36 reconciliation handoff. Every term stays{" "}
-          <strong>{REQUIRED_SCIENTIFIC_GATE}</strong>. Entries recorded here are documentary: they never approve a mapping, activate a metric,
-          convert a unit, import blocked observations or change the catalogs, reports, PDF or sync.
+          The original {build.dossiers.length} documentary dossiers are preserved below. Additional terms are loaded only from an authorized scope;
+          a local registration is not a server submission. Worksheet entries never authorize a mapping. Independent scientific decisions are separate
+          from governed catalog activation, and neither rewrites held observations, converts units or changes report evidence.
         </p>
       </div>
 

@@ -86,6 +86,10 @@ export async function cloudAuthorizationContext(terms: readonly CloudTerm[]): Pr
     const prior = dossiers.find((d) => d.termId === t.termId);
     if (prior) {
       if (normalizeLabel(prior.sourceLabel) !== normalizeLabel(t.originalLabels[0] ?? "") || prior.sourceUnit !== t.exactUnit) throw new Error("Legacy identity collision.");
+      const index = dossiers.findIndex((d) => d.termId === t.termId);
+      const dynamic = cloudTermDossier(t);
+      dossiers[index] = dynamic;
+      termFingerprints.set(t.termId, await sha256Hex(canonicalJson(dynamic)));
       continue;
     }
     const d = cloudTermDossier(t);

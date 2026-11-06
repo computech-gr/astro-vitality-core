@@ -49,3 +49,4 @@
 - Ground Medical review state lives in the framework-free p368b-ground-medical-review-scope module: auto and manual mission selection share one load path and only current-epoch, authorized-mission responses are accepted, so it is testable without a DOM.
 
 - Date-only v2 rules live in src/domain/health-intelligence/AGENTS.md.
+- Dynamic P36 metadata and scientific authorization use separate default-off caller-scoped RPCs staged in pending SQL and tested only through P36_DISPOSABLE_SOCKET; independently provisioned source receipts block label-based medical validation and no code path applies catalog promotion.
