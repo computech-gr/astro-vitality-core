@@ -25,7 +25,7 @@ The README was read as patch instructions rather than copied into the app. The s
 ## Verification
 
 - Focused parser, geometry and review-selection tests: **31 passed, 0 failed**.
-- Complete test suite: **1123 passed, 0 failed**, 183 files, 11459 assertions.
+- Complete test suite: **1123 passed, 0 failed**, 183 files, 12203 assertions.
 - Security boundary audit, lint, formatting and every non-build/non-typecheck step from the existing project check chain passed. Lint: **0 errors, 12 existing warnings**.
 - Initial full-suite failures were caused by the absent ignored deterministic release sample. Running the existing `sample:release` generator restored its sealed bytes; the same suite then passed without weakening assertions or changing evidence gates.
 - Latest managed preview compilation reported **build OK**.
