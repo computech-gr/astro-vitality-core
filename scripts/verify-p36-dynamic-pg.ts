@@ -1,0 +1,40 @@
+/** Disposable socket-only SQL verification. Never uses managed PG* configuration. */
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { resolve, dirname } from "node:path";
+import { spawnSync } from "node:child_process";
+import { canonicalJson } from "../src/domain/health-intelligence/observation-envelope";
+import { termIdFor } from "../src/domain/health-intelligence/unknown-biomarker-review";
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const socket = process.env["P36_DISPOSABLE_SOCKET"];
+if (!socket?.startsWith("/tmp/p36-unified/socket")) throw Error("Explicit isolated socket required; live database prohibited.");
+const base = ["-h", socket, "-p", "55439", "-U", "lovable", "-v", "ON_ERROR_STOP=1", "-X", "-At"];
+function sql(q: string, db = "p36_dynamic_it", fail = false) { const r = spawnSync("psql", [...base, "-d", db], { input: q, encoding: "utf8", cwd: root }); if (fail ? r.status === 0 : r.status !== 0) throw Error(`Unexpected SQL result: ${r.stderr}`); return r.stdout.trim(); }
+sql("create database p36_dynamic_it;", "postgres");
+sql(`create role authenticated; create role anon; create role service_role; create schema auth; create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
+create table missions(id text primary key); create table crew_members(id text primary key); create table mission_crew_assignments(mission_id text,crew_member_id text,status text); create table mission_memberships(mission_id text,user_id uuid,crew_member_id text,role text,active boolean);
+insert into missions values('M1'),('M2'); insert into crew_members values('C1'),('C2'); insert into mission_crew_assignments values('M1','C1','active'),('M1','C2','active'),('M2','C2','active');
+insert into mission_memberships values('M1','00000000-0000-0000-0000-000000000001','C1','crew_self',true),('M1','00000000-0000-0000-0000-000000000002',null,'ground_medical',true),('M1','00000000-0000-0000-0000-000000000003',null,'researcher',true);`);
+for (const f of ["20261107000000_p36_dynamic_handoff.sql", "20261107010000_p36_dynamic_authorization.sql"]) sql(readFileSync(resolve(root, "supabase/pending", f), "utf8"));
+const payload = { schema: "mitochondria.p36-cloud-handoff.v1", scope: { missionId: "M1", crewMemberId: "C1", provenance: "synthetic" }, requestId: "ubr-12345678", scientificStatus: "PENDING_NIKOLAS_REVIEW", catalogChangeApplied: false, terms: Array.from({ length: 197 }, (_, i) => ({ termId: termIdFor(`Test term ${i}`, "bpm"), originalLabels: [`Test term ${i}`], exactUnit: "bpm", classification: "unclassified", candidateMetricIds: ["cv-001"], sourceDocumentSha256: ["a".repeat(64)], evidencePointers: [], method: null, specimen: null })) };
+const canonical = canonicalJson(payload);
+const literal = (s: string) => "'" + s.replaceAll("'", "''") + "'";
+const auth = (id: number) => `set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-${String(id).padStart(12,"0")}';`;
+const append = (c = canonical) => `select public.p36_dynamic_handoff_append_v1('M1','C1','synthetic','ubr-12345678',${literal(c)},encode(sha256(convert_to(${literal(c)},'UTF8')),'hex'))->>'status';`;
+let count = 0;
+const check = (yes: boolean) => { if (!yes) throw Error("assertion failed"); count++; };
+check(sql(auth(1)+append()).endsWith("inserted"));
+check(sql("select count(*) from p36_dynamic_handoff_terms;") === "197");
+check(sql(auth(1)+append()).endsWith("duplicate"));
+const changed = structuredClone(payload); const first = changed.terms[0]; if (!first) throw Error(); first.classification = "source_unvalidated";
+check(sql(auth(1)+append(canonicalJson(changed))).endsWith("conflict"));
+check(sql(auth(3)+"select jsonb_array_length(p36_dynamic_handoff_list_v1('M1','C1','synthetic',0,100));").endsWith("1"));
+check(sql(auth(3)+"select jsonb_array_length(p36_dynamic_handoff_list_v1('M1','C1','real',0,100));").endsWith("0"));
+sql(auth(1)+"select p36_dynamic_handoff_list_v1('M1','C2','synthetic',0,100);",undefined,true); count++;
+sql(auth(3)+"select p36_dynamic_handoff_list_v1('M2','C2','synthetic',0,100);",undefined,true); count++;
+for (const q of ["select * from p36_dynamic_handoff_submissions", "delete from p36_dynamic_handoff_terms", "truncate p36_dynamic_handoff_submissions", "select p36_dynamic_scope('M1','C1',false)"]) { sql(auth(1)+q,undefined,true); count++; }
+sql(readFileSync(resolve(root,"supabase/pending/20261107000000_p36_dynamic_handoff.rollback.sql"),"utf8"),undefined,true); count++;
+check(sql("select count(*) from p36_dynamic_handoff_terms;") === "197");
+sql("update mission_memberships set active=false where role='crew_self';");
+sql(auth(1)+append(),undefined,true);count++;
+console.log(`PASS: ${count} disposable SQL checks; 197-term insert, replay, conflicts, two-account readback, scope/RLS/ACL/rollback/revocation. Synthetic metadata only; not browser authentication acceptance.`);
