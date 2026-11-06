@@ -277,6 +277,7 @@ export function latestDecisions(ledger: readonly ReviewerDecision[]): Map<string
 // ---------- Governed registry (versioned catalog extensions) ----------
 
 export interface CatalogExtension {
+  matchingContext?: { method: string | null; specimen: string | null };
   extensionId: string;
   version: number;
   kind: "alias_to_existing_metric";
@@ -303,6 +304,7 @@ export interface CatalogExtensionRegistry {
   approvalHistory: ApprovalRecord[];
 }
 export interface EffectiveExtension {
+  matchingContext?: { method: string | null; specimen: string | null };
   extensionId: string;
   version: number;
   normalizedLabel: string;
@@ -355,7 +357,8 @@ export function evaluateCatalogExtensionRegistry(registry: CatalogExtensionRegis
       reject("Source unit differs from the catalog unit (no conversion permitted)");
       continue;
     }
-    candidates.push({ extensionId: ext.extensionId, version: ext.version, normalizedLabel: normalizeLabel(ext.sourceLabel), unit: ext.sourceUnit.trim(), targetMetricId: target.id });
+    if (ext.matchingContext && (!ext.matchingContext.method?.trim() || !ext.matchingContext.specimen?.trim())) { reject("Method and specimen matching context is incomplete"); continue; }
+    candidates.push({ extensionId: ext.extensionId, version: ext.version, normalizedLabel: normalizeLabel(ext.sourceLabel), unit: ext.sourceUnit, targetMetricId: target.id, ...(ext.matchingContext ? { matchingContext: ext.matchingContext } : {}) });
   }
   // Two approved extensions for the same label+unit are ambiguous: neither applies.
   const effective = candidates.filter((c) => {
@@ -379,14 +382,15 @@ export interface ExtendedClassification {
 
 /** Base P36 classification first; approved extensions apply only to non-matched rows. */
 export function classifyWithGovernedExtensions(
-  input: { label: string; unit: string },
+  input: { label: string; unit: string; method?: string; specimen?: string; sourceValidation?: "unvalidated" },
   evaluation: RegistryEvaluation = evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS),
 ): ExtendedClassification {
   const base = classifyIntakeObservation(input);
+  if (input.sourceValidation === "unvalidated") return { classification: { status: "unclassified", originalLabel: input.label, originalUnit: input.unit, candidateMetricIds: [], reviewRequired: true }, extension: null };
   if (base.status === "matched") return { classification: base, extension: null };
   const label = normalizeLabel(input.label);
-  const unit = input.unit.trim();
-  const ext = evaluation.effective.find((e) => e.normalizedLabel === label && e.unit === unit);
+  const unit = input.unit;
+  const ext = evaluation.effective.find((e) => e.normalizedLabel === label && e.unit === unit && (!e.matchingContext || e.matchingContext.method === input.method && e.matchingContext.specimen === input.specimen));
   const domain = ext ? domainForMetric(ext.targetMetricId) : null;
   if (!ext || !domain) return { classification: base, extension: null };
   return {

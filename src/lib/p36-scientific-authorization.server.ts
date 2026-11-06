@@ -16,11 +16,14 @@ import {
   verifyAuthorizationLedger,
   type AuthorizationActorRole,
   type AuthorizationLedgerRow,
+  type AuthorizationContext,
   type SubmissionInput,
 } from "@/domain/health-intelligence/p36-scientific-authorization";
 
 export type Rpc = (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { code?: string } | null }>;
 export interface AuthorizationDeps {
+  context?: AuthorizationContext;
+  scope?: { crewMemberId: string; provenance: "synthetic" | "real" };
   rpc: Rpc;
   userId: string;
   now: () => string;
@@ -63,6 +66,10 @@ function cleanRow(r: unknown): AuthorizationLedgerRow | null {
     } else if (typeof v !== "string") return null;
     out[k] = v;
   }
+  if (o["crew_member_id"] !== undefined) {
+    if (typeof o["crew_member_id"] !== "string" || !["synthetic", "real"].includes(String(o["provenance"]))) return null;
+    out["crew_member_id"] = o["crew_member_id"]; out["provenance"] = o["provenance"];
+  }
   return out as unknown as AuthorizationLedgerRow;
 }
 
@@ -99,22 +106,27 @@ export async function submitAuthorizationCore(
   deps: AuthorizationDeps,
   input: SubmissionInput & { actorRole: AuthorizationActorRole },
 ): Promise<SubmitResult | AuthorizationFailure> {
-  const ctx = await authorizationContext();
+  const ctx = deps.context ?? await authorizationContext();
   if (!ctx.sourceIntegrityOk) return failure("integrity", "Bundled handoff or crosswalk failed its integrity check.");
   const listed = await listAuthorizationCore(deps, input.authorityMissionId);
   if (!listed.ok) return listed;
   const ledgers = await verifyAuthorizationLedger(listed.rows, input.authorityMissionId, ctx);
   const term = ledgers.get(input.termId);
-  if (!term) return failure("invalid", "Unknown term; only the 12 handoff terms can be authorized.");
+  if (!term) return failure("invalid", "Unknown term in the authorized handoff.");
   if (term.integrity !== "VERIFIED") return failure("integrity");
   // Retry of an already recorded submission: idempotent duplicate (the server time would differ).
   const prior = listed.rows.find((r) => r.actor_user_id === deps.userId && r.submission_id === input.submissionId);
-  if (prior)
-    return prior.term_id === input.termId && prior.action === input.action && prior.authority_mission_id === input.authorityMissionId
+  if (prior) {
+    const previous = JSON.parse(prior.payload_canonical);
+    const next = buildAuthorizationPayload(input, { userId: deps.userId, role: previous.actorRole, now: previous.decidedAt }, ctx);
+    if (deps.scope) Object.assign(next, deps.scope);
+    return canonicalJson(previous) === canonicalJson(next)
       ? { ok: true, status: "duplicate", eventId: prior.event_id, detail: null }
       : { ok: true, status: "conflict", eventId: null, detail: "submission id already used with different content" };
+  }
   const role: AuthorizationActorRole = input.kind === "decision" ? "researcher" : input.actorRole;
   const payload = buildAuthorizationPayload(input, { userId: deps.userId, role, now: deps.now() }, ctx);
+  if (deps.scope) Object.assign(payload, deps.scope);
   const recommendation = input.recommendationEventId ? term.events.find((e) => e.row.event_id === input.recommendationEventId) : undefined;
   const latestDecision = [...term.events].reverse().find((e) => e.payload.kind === "decision");
   const v = validateAuthorizationPayload(payload, ctx, { recommendation, latestDecision });

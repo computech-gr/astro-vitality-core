@@ -16,7 +16,7 @@ const shortText = z.string().max(500);
 const nullableText = z.string().max(500).nullable();
 const refs = z.array(z.string().min(1).max(300)).max(30);
 
-const submitInput = z
+export const submitInput = z
   .object({
     termId: z.string().regex(/^ubt-[0-9a-f]{8}$/),
     kind: z.enum(["recommendation", "decision"]),

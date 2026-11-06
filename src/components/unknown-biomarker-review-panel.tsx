@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { P36HandoffSubmission } from "@/components/p36-handoff-submission";
 import { loadMissionIdentity } from "@/infrastructure/mission-identity";
 import {
   buildCatalogExtensionProposal,
@@ -228,6 +229,7 @@ export function UnknownBiomarkerReviewPanel(props: {
               {requests.map((r) => (
                 <li key={r.requestId} className="break-words">
                   {r.requestId} · {r.createdAt} · registered by {r.createdByRole === "ground_medical" ? "Ground Medical" : "crew member"} · {r.terms.length} term(s) · {r.status}
+                  {props.reviewerUserId && submitter ? <P36HandoffSubmission request={r} userId={props.reviewerUserId} /> : null}
                 </li>
               ))}
             </ul>
@@ -408,7 +410,7 @@ export function UnknownBiomarkerReviewPanel(props: {
 
       {message ? <p role="status" className="text-sm text-muted-foreground">{message}</p> : null}
       <p className="text-xs text-muted-foreground">
-        A qualified reviewer must separately approve canonical ID, specimen, method, units, reference context and catalog version before any reclassification. Requests and decisions are stored encrypted on this device only and are not synchronized.
+        A qualified reviewer must separately approve canonical ID, specimen, method, units, reference context and catalog version before any reclassification. Original requests and evidence remain encrypted on this device. Metadata cloud submission is explicit and separate from scientific approval.
       </p>
     </section>
   );

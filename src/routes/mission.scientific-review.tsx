@@ -8,7 +8,7 @@ export const Route = createFileRoute("/mission/scientific-review")({
       path: "/mission/scientific-review",
       title: "Catalog Scientific Review | The Mitochondria",
       description:
-        "Review-only dossiers for the 12 P36 catalog reconciliation terms with evidence, exact unit comparison and a prepared, unapplied activation manifest.",
+        "Original P36 dossiers and authorized submitted terms with exact units, independent Researcher decisions and separately governed catalog promotion.",
     }),
   component: P36ScientificReviewWorkspace,
 });

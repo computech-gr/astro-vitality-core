@@ -6,6 +6,7 @@
  * activates a catalog extension.
  */
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,8 @@ import {
   type TermAuthorizationState,
 } from "@/domain/health-intelligence/p36-scientific-authorization";
 import { submitScientificAuthorization } from "@/lib/p36-scientific-authorization.functions";
+import { submitDynamicAuthorization } from "@/lib/p36-dynamic-authorization.functions";
+import type { ReviewScope } from "@/domain/health-intelligence/unknown-biomarker-review";
 import type { useP36Authorization } from "@/hooks/use-p36-authorization";
 
 const STATUS_ORDER: ScientificStatus[] = ["PENDING_NIKOLAS_REVIEW", "MORE_EVIDENCE_REQUIRED", "SCIENTIFICALLY_REJECTED", "SCIENTIFICALLY_APPROVED"];
@@ -102,7 +105,9 @@ const emptyDraft = (): Draft => ({
 });
 const splitRefs = (s: string) => s.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
 
-export function TermAuthorizationPanel({ dossier, state, auth }: { dossier: ScientificReviewDossier; state: TermAuthorizationState | undefined; auth: ReturnType<typeof useP36Authorization> }) {
+export function TermAuthorizationPanel({ dossier, state, auth, scope }: { dossier: ScientificReviewDossier; state: TermAuthorizationState | undefined; auth: ReturnType<typeof useP36Authorization>; scope?: ReviewScope }) {
+  const submitLegacy = useServerFn(submitScientificAuthorization);
+  const submitDynamic = useServerFn(submitDynamicAuthorization);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -123,7 +128,7 @@ export function TermAuthorizationPanel({ dossier, state, auth }: { dossier: Scie
       if (!fresh.signedIn || !fresh.userId || fresh.userId !== auth.userId) return setMessage("Your sign-in could not be confirmed. Nothing was recorded.");
       const rec = independentRecs.find((r) => r.row.event_id === draft.recommendationEventId);
       const mapping = kind === "recommendation" || action === "APPROVE";
-      const res = await submitScientificAuthorization({
+      const input = {
         data: {
           termId: dossier.termId,
           kind,
@@ -148,7 +153,8 @@ export function TermAuthorizationPanel({ dossier, state, auth }: { dossier: Scie
           recommendationEventId: action === "APPROVE" ? draft.recommendationEventId || null : null,
           supersedesEventId: kind === "decision" ? state?.latestDecision?.row.event_id ?? null : null,
         },
-      });
+      };
+      const res = scope ? await submitDynamic({ data: { ...input.data, scope } }) : await submitLegacy(input);
       if (!res.ok) return setMessage(res.message);
       if (res.status === "inserted" || res.status === "duplicate") {
         setMessage(`${kind === "decision" ? FINAL_ACTION_LABELS[action as FinalAction] : "Recommendation"} recorded in the append-only cloud ledger${res.status === "duplicate" ? " (already recorded)" : ""}. No metric was activated.`);
@@ -167,7 +173,7 @@ export function TermAuthorizationPanel({ dossier, state, auth }: { dossier: Scie
     <div className="space-y-2 rounded-md border border-border p-3 text-xs" aria-label={`Final authorization for ${dossier.sourceLabel}`}>
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-medium">Final scientific authorization</h3>
-        <Badge variant="secondary">{state ? SCIENTIFIC_STATUS_LABELS[state.scientificStatus] : "Pending Nikolas review"}</Badge>
+        <Badge variant="secondary">{state ? SCIENTIFIC_STATUS_LABELS[state.scientificStatus] : "Pending Researcher review"}</Badge>
         <Badge variant="outline">{state?.activationStatus === "ACTIVE" ? "Active" : "Activation blocked"}</Badge>
         {state?.stale ? <Badge variant="destructive">Stale decision — re-review required</Badge> : null}
         {state?.integrity === "FAILED" ? <Badge variant="destructive">Ledger integrity failed</Badge> : null}

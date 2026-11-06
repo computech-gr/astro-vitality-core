@@ -28,6 +28,7 @@ import { appendScientificReviewEntry, listScientificReviewEntries } from "@/doma
 import { buildDecisionDossier, verifyDecisionDossier, type DecisionDossier } from "@/domain/health-intelligence/p36-decision-dossier";
 import { AuthorizationSummary, TermAuthorizationPanel } from "@/components/p36-final-authorization";
 import { useP36Authorization } from "@/hooks/use-p36-authorization";
+import { P36DynamicReviewWorkspace } from "@/components/p36-dynamic-review-workspace";
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -198,9 +199,9 @@ export function P36ScientificReviewWorkspace() {
         <p className="section-kicker">P36 · Scientific review &amp; governed activation preparation</p>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">Catalog Scientific Review</h1>
         <p className="max-w-3xl text-muted-foreground">
-          One review dossier for each of the {build.dossiers.length} terms in the P36 reconciliation handoff. Every term stays{" "}
-          <strong>{REQUIRED_SCIENTIFIC_GATE}</strong>. Entries recorded here are documentary: they never approve a mapping, activate a metric,
-          convert a unit, import blocked observations or change the catalogs, reports, PDF or sync.
+          The original {build.dossiers.length} documentary dossiers are preserved below. Additional terms are loaded only from an authorized scope;
+          a local registration is not a server submission. Worksheet entries never authorize a mapping. Independent scientific decisions are separate
+          from governed catalog activation, and neither rewrites held observations, converts units or changes report evidence.
         </p>
       </div>
 
@@ -219,6 +220,7 @@ export function P36ScientificReviewWorkspace() {
       </section>
 
       <AuthorizationSummary auth={auth} />
+      <P36DynamicReviewWorkspace auth={auth} />
 
       {!build.ok ? <p role="alert" className="text-sm text-destructive">Source integrity check failed; every term remains blocked: {build.problems.join("; ")}</p> : null}
       <p role="status" className="text-xs text-muted-foreground">
@@ -364,7 +366,7 @@ export function P36ScientificReviewWorkspace() {
       </section>
 
       <section aria-label="Scientific decision dossier" className="space-y-3 rounded-lg border border-border bg-card p-4 text-sm">
-        <h2 className="text-lg font-semibold">Scientific decision dossier for Nikolas</h2>
+        <h2 className="text-lg font-semibold">Scientific decision dossier for Researcher review</h2>
         <p className="text-xs text-muted-foreground">
           One consolidated dossier for all {dossier?.counts.terms ?? 12} terms: exact source references, proposed identity, domain, specimen, method, protocol, units,
           uncertainties and required decisions. Each field states whether it is a verified source fact or an unresolved assumption; missing methods, units and validation are shown as missing.
