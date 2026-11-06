@@ -1,0 +1,5 @@
+{
+  "schema": "mitochondria.p36-verified-revisions.v1",
+  "governance": "Governed registry of code revisions whose full validation gates (regression, security, SQL negative, typecheck, lint, formatting and production build) passed on the exact synchronized commit with independently reviewable evidence. Entries are added only through governed code review with verifiable CI evidence; the application never writes this file. An empty registry is valid and means governed promotion preparation is unavailable. Revisions are never generated, guessed or accepted from user input.",
+  "revisions": []
+}
