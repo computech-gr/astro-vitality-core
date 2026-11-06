@@ -45,8 +45,14 @@ if (store.includes("supabase.from(") || store.includes("supabaseAdmin"))
   fail("store must never write to the cloud");
 
 // Per-row review, domain routing, duplicate warnings, review-only fallback
+// Classification goes through the governed wrapper, which must itself delegate
+// to the deterministic base classifier (catalog extensions may only add exact matches).
+const governed = read("src/domain/health-intelligence/unknown-biomarker-review.ts");
+if (!workspace.includes("classifyIntakeObservation") && !workspace.includes("classifyWithGovernedExtensions"))
+  fail("workspace missing classifyIntakeObservation / classifyWithGovernedExtensions");
+if (workspace.includes("classifyWithGovernedExtensions") && !/classifyWithGovernedExtensions[\s\S]*classifyIntakeObservation\(/.test(governed))
+  fail("governed classifier must delegate to classifyIntakeObservation");
 for (const token of [
-  "classifyIntakeObservation",
   "Domain routing preview",
   "review-only",
   "Possible duplicate",

@@ -3,17 +3,19 @@
 Status: PHASE 1 ONLY. Pure, read-only, local-only. No SQL, migration, Cloud write, UI change, approval or publish.
 
 ## Read-only inventory (reusable pieces)
-| Area | Path | Notes |
-|---|---|---|
-| Term grouping (label + exact unit, FNV ID `ubt-xxxxxxxx`) | `src/domain/health-intelligence/unknown-biomarker-review.ts` | `buildUnknownBiomarkerTerms`, `termIdFor`, ground-medical-only decisions, always `PENDING_NIKOLAS_REVIEW`. |
-| Local pending requests (the 197-term request lives here) | `src/domain/health-intelligence/review-ledger.ts` (`savePendingReviewRequest`, `listUnknownBiomarkerReviewState`) over `infrastructure/offline/review-ledger-store.ts` | Encrypted IndexedDB on ONE device. Never queued for sync. No server copy exists. |
-| Fixed 12-term handoff | `data/scientific/p36-unknown-biomarker-reconciliation-handoff.v1.json`, `catalog-reconciliation-handoff.ts` | Display-only. |
-| Scientific Review route | `src/routes/mission.scientific-review.tsx` → `components/p36-scientific-review-workspace.tsx` → `p36-scientific-review.ts` | `buildScientificReviewDossiers` joins only the 12 crosswalk IDs; validation rejects other terms ("only the 12 handoff terms"). |
-| Local worksheet ledger | `p36-scientific-review-ledger.ts` | SHA-256 chained, catalog-level, never synced. |
-| Staged authorization | `supabase/pending/20261104000000_p36_scientific_authorization.sql` (+ rollback), `src/lib/p36-scientific-authorization.{functions,server}.ts`, `p36-scientific-authorization.ts`, `components/p36-final-authorization.tsx`, harness `scripts/verify-p36-scientific-authorization-pg.ts` | NOT applied. Append-only events table, SECURITY DEFINER append/list, membership-derived roles, independent recommendation by a different account, exact unit, stale/duplicate/conflict detection. Does not activate catalog. `term_id` constraint `^ubt-[0-9a-f]{8}$` already fits dynamic terms. |
-| Activation | `data/scientific/catalog-extensions.v1.json` + `classifyWithGovernedExtensions` | Only code-reviewed APPROVED entries; app never writes it. |
+
+| Area                                                      | Path                                                                                                                                                                                                                                                                                    | Notes                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Term grouping (label + exact unit, FNV ID `ubt-xxxxxxxx`) | `src/domain/health-intelligence/unknown-biomarker-review.ts`                                                                                                                                                                                                                            | `buildUnknownBiomarkerTerms`, `termIdFor`, ground-medical-only decisions, always `PENDING_NIKOLAS_REVIEW`.                                                                                                                                                                                        |
+| Local pending requests (the 197-term request lives here)  | `src/domain/health-intelligence/review-ledger.ts` (`savePendingReviewRequest`, `listUnknownBiomarkerReviewState`) over `infrastructure/offline/review-ledger-store.ts`                                                                                                                  | Encrypted IndexedDB on ONE device. Never queued for sync. No server copy exists.                                                                                                                                                                                                                  |
+| Fixed 12-term handoff                                     | `data/scientific/p36-unknown-biomarker-reconciliation-handoff.v1.json`, `catalog-reconciliation-handoff.ts`                                                                                                                                                                             | Display-only.                                                                                                                                                                                                                                                                                     |
+| Scientific Review route                                   | `src/routes/mission.scientific-review.tsx` → `components/p36-scientific-review-workspace.tsx` → `p36-scientific-review.ts`                                                                                                                                                              | `buildScientificReviewDossiers` joins only the 12 crosswalk IDs; validation rejects other terms ("only the 12 handoff terms").                                                                                                                                                                    |
+| Local worksheet ledger                                    | `p36-scientific-review-ledger.ts`                                                                                                                                                                                                                                                       | SHA-256 chained, catalog-level, never synced.                                                                                                                                                                                                                                                     |
+| Staged authorization                                      | `supabase/pending/20261104000000_p36_scientific_authorization.sql` (+ rollback), `src/lib/p36-scientific-authorization.{functions,server}.ts`, `p36-scientific-authorization.ts`, `components/p36-final-authorization.tsx`, harness `scripts/verify-p36-scientific-authorization-pg.ts` | NOT applied. Append-only events table, SECURITY DEFINER append/list, membership-derived roles, independent recommendation by a different account, exact unit, stale/duplicate/conflict detection. Does not activate catalog. `term_id` constraint `^ubt-[0-9a-f]{8}$` already fits dynamic terms. |
+| Activation                                                | `data/scientific/catalog-extensions.v1.json` + `classifyWithGovernedExtensions`                                                                                                                                                                                                         | Only code-reviewed APPROVED entries; app never writes it.                                                                                                                                                                                                                                         |
 
 ## What Phase 1 adds
+
 - `src/domain/health-intelligence/p36-dynamic-handoff.ts`
   - `buildDynamicHandoff(scope, requests)`: merges legacy 12 + local pending request terms for one exact mission/crew/provenance; legacy overlaps counted once; rejects cross-scope, approval-claiming, applied-change and tampered-ID requests; every term `LOCAL_ONLY`.
   - Canonical key = normalized label + exact unit + method + specimen (method/specimen recorded as `unrecorded` because intake does not capture them → permanent blockers until evidence exists).
@@ -24,9 +26,11 @@ Status: PHASE 1 ONLY. Pure, read-only, local-only. No SQL, migration, Cloud writ
 Not changed: route, workspace, records, sync, PDFs, catalog, staged SQL, wording.
 
 ## Why Phase 1 stops here
+
 Server visibility of dynamic terms requires a new table + RPCs. Shipping UI that lists 197 terms as "reviewable" without that would imply cross-device availability that does not exist. Per the contract's release gates, SQL is proposed below for owner review, not written to `supabase/pending/`.
 
 ## Proposed Phase 2 SQL (for review only — not staged, not applied)
+
 ```sql
 create table public.p36_dynamic_handoff_terms (
   mission_id text not null references public.missions(id),
@@ -54,14 +58,17 @@ create table public.p36_dynamic_handoff_terms (
 -- (ground_medical/researcher of the mission, or the crew member's own scope).
 -- Triggers reject UPDATE/DELETE/TRUNCATE for every role.
 ```
+
 Rollback: `drop function p36_dynamic_handoff_list_v1, p36_dynamic_handoff_append_v1; drop table public.p36_dynamic_handoff_terms;`
 
 Then: disposable two-account harness (cross-mission deny, self-declared role deny, replay, duplicate, conflict, tamper, mixed unit, unvalidated), per-request sync state in UI, Scientific Review listing dynamic terms, wiring to the staged authorization ledger, generic "Researcher" wording.
 
 ## Owner-approval checkpoint
+
 Reply with explicit approval of each, separately:
+
 1. Stage the Phase 2 SQL above (plus rollback) in `supabase/pending/` and test it only in the disposable harness.
 2. Build the Scientific Review UI that lists dynamic terms as LOCAL_ONLY with an explicit submit action (disabled until 3).
 3. Apply the dynamic-handoff migration and `20261104000000_p36_scientific_authorization.sql` to live Cloud.
 4. Upload the existing 197-term request.
-None of these is implied by this phase.
+   None of these is implied by this phase.
