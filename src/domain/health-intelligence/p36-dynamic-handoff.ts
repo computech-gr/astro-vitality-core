@@ -18,7 +18,7 @@
  *    excerpts or documents — only labels, exact units, term IDs, hashes and
  *    evidence pointers.
  */
-import { listHandoffRows, type HandoffRow } from "./catalog-reconciliation-handoff";
+import { buildReconciliationView, type HandoffRow } from "./catalog-reconciliation-handoff";
 import { REQUIRED_SCIENTIFIC_GATE, normalizeLabel, termIdFor, type ReviewScope, type UnknownBiomarkerTerm } from "./unknown-biomarker-review";
 import type { PendingReviewRequest } from "./review-ledger";
 
@@ -115,7 +115,7 @@ function validRequest(r: PendingReviewRequest, scope: ReviewScope): string | nul
 export function buildDynamicHandoff(
   scope: ReviewScope,
   requests: readonly PendingReviewRequest[],
-  legacyRows: readonly HandoffRow[] = listHandoffRows(),
+  legacyRows: readonly HandoffRow[] = buildReconciliationView().rows,
 ): DynamicHandoffView {
   const legacyIds = new Set(legacyRows.map((r) => r.termId));
   const byKey = new Map<string, DynamicTerm>();
