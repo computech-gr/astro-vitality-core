@@ -50,7 +50,7 @@ export type ScientificStatus = "PENDING_NIKOLAS_REVIEW" | "MORE_EVIDENCE_REQUIRE
 export type ActivationStatus = "ACTIVATION_BLOCKED" | "ACTIVE";
 
 export const SCIENTIFIC_STATUS_LABELS: Record<ScientificStatus, string> = {
-  PENDING_NIKOLAS_REVIEW: "Pending Nikolas review",
+  PENDING_NIKOLAS_REVIEW: "Pending Researcher review",
   MORE_EVIDENCE_REQUIRED: "More evidence required",
   SCIENTIFICALLY_REJECTED: "Scientifically rejected",
   SCIENTIFICALLY_APPROVED: "Scientifically approved",
@@ -77,6 +77,8 @@ export interface AuthorizationFields {
 }
 
 export interface AuthorizationPayload extends AuthorizationFields {
+  crewMemberId?: string;
+  provenance?: "synthetic" | "real";
   schema: typeof AUTHORIZATION_EVENT_SCHEMA;
   termId: string;
   sourceLabel: string;
@@ -99,6 +101,8 @@ export interface AuthorizationPayload extends AuthorizationFields {
 
 /** A row as returned by p36_sci_auth_list_v1 (snake_case, server-assigned columns). */
 export interface AuthorizationLedgerRow {
+  crew_member_id?: string;
+  provenance?: "synthetic" | "real";
   authority_mission_id: string;
   event_id: string;
   term_id: string;
@@ -206,7 +210,7 @@ export function validateAuthorizationPayload(p: AuthorizationPayload, ctx: Autho
   const no = (reason: string): ValidationOutcome => ({ ok: false, reason });
   if (!p || p.schema !== AUTHORIZATION_EVENT_SCHEMA) return no("Unsupported authorization payload schema.");
   const dossier = ctx.dossiers.find((d) => d.termId === p.termId);
-  if (!dossier) return no("Unknown term; only the 12 handoff terms can be authorized.");
+  if (!dossier) return no("Unknown term in the authorized handoff.");
   if (p.sourceLabel !== dossier.sourceLabel || p.sourceUnit !== dossier.sourceUnit) return no("Source label or unit does not match the handoff term.");
   if (p.researchOnly !== true || p.activationApplied !== false) return no("Authorization events never activate catalogs.");
   const pairs: Record<AuthorizationKind, AuthorizationAction[]> = { recommendation: ["RECOMMEND"], decision: ["APPROVE", "REJECT", "REQUEST_MORE_EVIDENCE"] };
@@ -234,6 +238,7 @@ export function validateAuthorizationPayload(p: AuthorizationPayload, ctx: Autho
 
   const mappingRequired = p.kind === "recommendation" || p.action === "APPROVE";
   if (mappingRequired) {
+    if (dossier.unresolvedQuestions.some((q) => q.includes("Source explicitly unvalidated"))) return no("Source explicitly unvalidated; mapping recommendations and approval are blocked.");
     const id = text(p.canonicalCatalogId);
     if (!id) return no("Choose the canonical catalog ID.");
     if (!dossier.candidateCatalogIds.includes(id)) return no(`${id} is not a candidate for this term; free-form or automatic aliases are not permitted.`);
@@ -280,7 +285,7 @@ export function validateAuthorizationPayload(p: AuthorizationPayload, ctx: Autho
 
   const rec = state.recommendation;
   if (!p.recommendationEventId || !rec || rec.row.event_id !== p.recommendationEventId) return no("Approval must reference a recorded recommendation for this term.");
-  if (rec.payload.kind !== "recommendation" || rec.payload.termId !== p.termId || rec.payload.authorityMissionId !== p.authorityMissionId)
+  if (rec.payload.kind !== "recommendation" || rec.payload.termId !== p.termId || rec.payload.authorityMissionId !== p.authorityMissionId || rec.payload.crewMemberId !== p.crewMemberId || rec.payload.provenance !== p.provenance)
     return no("The referenced recommendation belongs to another term or mission.");
   if (rec.payload.actorUserId === p.actorUserId) return no("Self-approval is not permitted: you authored this mapping recommendation.");
   if (rec.payload.canonicalCatalogId !== p.canonicalCatalogId || rec.payload.validatedUnit !== p.validatedUnit || rec.payload.domain !== p.domain)
@@ -381,7 +386,8 @@ export async function verifyAuthorizationLedger(rows: readonly AuthorizationLedg
     }
     const prev = heads.get(row.term_id) ?? AUTHORIZATION_GENESIS;
     if (row.prev_event_hash !== prev) { fail("hash chain is broken"); continue; }
-    const hash = await sha256Hex(eventHashInput(prev, sha, row.actor_user_id, row.actor_role, row.authority_mission_id, row.term_id));
+    const hashMission = row.crew_member_id ? `${row.authority_mission_id}|${row.crew_member_id}|${row.provenance}` : row.authority_mission_id;
+    const hash = await sha256Hex(eventHashInput(prev, sha, row.actor_user_id, row.actor_role, hashMission, row.term_id));
     if (hash !== row.event_hash) { fail("event hash mismatch"); continue; }
     if (
       payload.termId !== row.term_id ||
@@ -391,6 +397,7 @@ export async function verifyAuthorizationLedger(rows: readonly AuthorizationLedg
       payload.actorRole !== row.actor_role ||
       payload.authorityMissionId !== row.authority_mission_id ||
       payload.submissionId !== row.submission_id ||
+      payload.crewMemberId !== row.crew_member_id || payload.provenance !== row.provenance ||
       (payload.recommendationEventId ?? null) !== (row.references_recommendation_id ?? null) ||
       (payload.supersedesEventId ?? null) !== (row.supersedes_event_id ?? null)
     ) { fail("columns do not match the signed payload"); continue; }
@@ -522,8 +529,8 @@ export interface AuthorizationView {
   counts: Record<ScientificStatus | ActivationStatus, number>;
 }
 
-export async function buildAuthorizationView(rows: readonly AuthorizationLedgerRow[] | null, missionId: string | null, registry?: CatalogExtensionRegistry): Promise<AuthorizationView> {
-  const ctx = await authorizationContext();
+export async function buildAuthorizationView(rows: readonly AuthorizationLedgerRow[] | null, missionId: string | null, registry?: CatalogExtensionRegistry, context?: AuthorizationContext): Promise<AuthorizationView> {
+  const ctx = context ?? await authorizationContext();
   const ledgers = rows && missionId ? await verifyAuthorizationLedger(rows, missionId, ctx) : null;
   const terms = ctx.dossiers.map((d) => evaluateTermAuthorization(d, ledgers?.get(d.termId), ctx, registry));
   const counts = { PENDING_NIKOLAS_REVIEW: 0, MORE_EVIDENCE_REQUIRED: 0, SCIENTIFICALLY_REJECTED: 0, SCIENTIFICALLY_APPROVED: 0, ACTIVATION_BLOCKED: 0, ACTIVE: 0 };
