@@ -29,7 +29,7 @@ Promotion exports are code-review artifacts only. Exact units, method/specimen m
 - ESLint: **0 errors, 12 existing warnings**. Security source audit passed.
 - Foundation, SEO, P21 catalog/mapping/freeze/handoff verifiers passed. Full aggregate `check` was not run because it includes manually prohibited build/typecheck steps and service-dependent gates.
 - Automatic preview compilation reported `build OK`; standalone production build/typecheck and exact synchronized GitHub Actions validation are **unverified**. No manual build/typecheck was run.
-- Formatting check: two Markdown files flagged: pre-existing Phase 1 audit and the new scope note. No unrelated historical document reformatting was performed.
+- Formatting check initially flagged the pre-existing Phase 1 audit and new scope note; the new scope note and delivery documents were formatted. The pre-existing audit remains unchanged and flagged.
 - Public signed-out Scientific Review browser checks at 1280×1800 and 390×844: page rendered, dynamic heading present, no page errors or horizontal overflow. Screenshots inspected. Populated authenticated dynamic workflow, submission/consent/reload UI, PDF export and true cross-device acceptance are **unverified**.
 
 ## Risk register / unresolved release blockers
