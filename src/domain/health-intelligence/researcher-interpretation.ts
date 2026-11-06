@@ -16,6 +16,8 @@ import { CONTEXT_LINKS, CROSS_DOMAIN_SIGNAL_IDS, type ScientificFindings, type S
 import { evidenceTierOf, governedHandbookEntry } from "./scientific-health-summary";
 import { attestationStateFor, type AttestationEvent } from "./evidence-attestation";
 
+import { compareObservationDates, observationDay, observationDateKey } from "./observation-date";
+
 export const RESEARCHER_DOMAINS = ["bone", "cardiovascular", "immune", "behavioral"] as const;
 export type ResearcherDomain = (typeof RESEARCHER_DOMAINS)[number];
 
@@ -125,10 +127,7 @@ export const INTERPRETATION_BOUNDARIES: readonly string[] = [
   "Generated locally and deterministically; no AI or network service is used.",
 ];
 
-const utcDay = (iso: string) => {
-  const t = Date.parse(iso);
-  return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : iso.slice(0, 10);
-};
+const utcDay = observationDay;
 const isResearcherDomain = (b: string): b is ResearcherDomain => (RESEARCHER_DOMAINS as readonly string[]).includes(b);
 
 function handbookContext(domain: ResearcherDomain, metricId: string, comparison: SeriesComparison, direction: InterpretationSeries["direction"]): HandbookContext {
@@ -166,10 +165,10 @@ function handbookContext(domain: ResearcherDomain, metricId: string, comparison:
 }
 
 function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows: ReportRow[], all: ReportRow[], events: readonly AttestationEvent[]): InterpretationSeries {
-  const sorted = [...rows].sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+  const sorted = [...rows].sort(compareObservationDates);
   const first = sorted[0]!;
   const last = sorted[sorted.length - 1]!;
-  const distinctTimePoints = new Set(sorted.map((r) => r.observedAt)).size;
+  const distinctTimePoints = new Set(sorted.map(observationDateKey)).size;
   const distinctUtcDays = new Set(sorted.map((r) => utcDay(r.observedAt))).size;
   const numeric = m.earliestValue !== null && m.latestValue !== null;
   const comparison: SeriesComparison =
@@ -209,6 +208,7 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
   }
   const otherUnits = [...new Set(all.filter((r) => r.badge === domain && r.metricId === m.metricId && r.unit !== u).map((r) => r.unit))].sort();
   const limitations = [
+    ...(sorted.some((r) => r.datePrecision === "date") ? ["Date-only readings have no observation time or timezone; date coverage is not UTC alignment. Mixed precision or repeated same-date readings are not ordered for comparison."] : []),
     ...(otherUnits.length ? [`Also recorded in ${otherUnits.join(", ")}; series in different units are listed separately and never compared or converted.`] : []),
     ...(comparison === "multi_day_comparison" && sorted.length === 2 ? ["Only two readings; no trend is established."] : []),
     "Individual baseline, method, timing, specimen handling and confounders are not evaluated.",
@@ -260,7 +260,8 @@ export function buildCrossDomainAssessments(
         rows,
         readings: rows.length,
         distinctTimePoints: new Set(rows.map((r) => r.observedAt)).size,
-        utcDays: [...new Set(rows.map((r) => utcDay(r.observedAt)))].sort(),
+        // Date-only coverage is not proof of UTC temporal alignment.
+        utcDays: [...new Set(rows.filter((r) => r.datePrecision !== "date").map((r) => utcDay(r.observedAt)))].sort(),
       };
     });
     const missingSignals = signals.filter((s) => s.readings === 0).map((s) => s.signal);
@@ -308,7 +309,7 @@ export function buildResearcherInterpretation(
       const rows = domainRows.filter((r) => ids.has(r.recordId) && r.metricId === m.metricId && r.unit === m.unit);
       return rows.length ? [buildSeries(domain, m, rows, report.rows, attestations)] : [];
     }).sort((a, b) => a.metricId.localeCompare(b.metricId) || a.unit.localeCompare(b.unit));
-    const times = domainRows.map((r) => r.observedAt).sort((a, b) => Date.parse(a) - Date.parse(b));
+    const times = [...domainRows].sort(compareObservationDates).map((r) => r.observedAt);
     const source = GOVERNED[domain];
     const governance = {
       source,

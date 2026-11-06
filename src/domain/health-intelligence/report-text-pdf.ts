@@ -16,6 +16,8 @@ import { EVIDENCE_TIER_LABELS, type ScientificHealthSummary } from "./scientific
 import { attestationStateFor, ATTESTATION_STATUS_LABELS, summarizeAttestations, type AttestationEvent } from "./evidence-attestation";
 import { attestationLine, buildResearcherInterpretation, handbookLine } from "./researcher-interpretation";
 
+import { observationDay, observationDateLabel } from "./observation-date";
+
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
 // ---------------- Document model ----------------
@@ -82,10 +84,7 @@ export function formatRefList(refs: readonly string[]): string {
 /** Shows "label (id)" only when the label adds information. */
 export const metricName = (label: string | null | undefined, id: string) => (label && label !== id ? `${label} (${id})` : id);
 
-const utcDay = (iso: string) => {
-  const t = Date.parse(iso);
-  return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : iso.slice(0, 10);
-};
+const utcDay = observationDay;
 /** Two or more points within one UTC day are never labelled as a longitudinal change. */
 export const isSameDaySpan = (first: string, last: string) => utcDay(first) === utcDay(last);
 export const SAME_DAY_NOTE = "same UTC day; not a longitudinal change";
@@ -427,7 +426,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
       ],
       rows: rowStates.map(({ r, s }) => {
         const gm = s.status === "attested" ? "Attested" : s.status === "revoked" ? "Revoked" : s.status === "stale_record_changed" ? "Stale" : "Pending";
-        return [r.observedAt.replace(".000Z", "Z"), REPORT_SOURCE_LABELS[r.badge], r.metricLabel === r.metricId ? r.metricId : `${r.metricId} ${r.metricLabel}`, r.value, r.unit, gm, refs.get(r.recordId)!];
+        return [observationDateLabel(r).replace(".000Z", "Z"), REPORT_SOURCE_LABELS[r.badge], r.metricLabel === r.metricId ? r.metricId : `${r.metricId} ${r.metricLabel}`, r.value, r.unit, gm, refs.get(r.recordId)!];
       }),
     });
   } else blocks.push({ kind: "p", text: "No included records in this scope." });
@@ -458,7 +457,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
             { title: "Observed (UTC) / metric", width: 0.24 },
             { title: "Source and evidence trace", width: 0.38 },
           ],
-          rows: u.rows.map((r) => [refs.get(r.recordId)!, r.recordId, `${r.observedAt.replace(".000Z", "Z")} ${r.metricId}`, `${r.sourceLabel} · ${r.evidence}${r.qualityNote ? ` · ${r.qualityNote}` : ""}`]),
+          rows: u.rows.map((r) => [refs.get(r.recordId)!, r.recordId, `${observationDateLabel(r).replace(".000Z", "Z")} ${r.metricId}`, `${r.sourceLabel} · ${r.evidence}${r.qualityNote ? ` · ${r.qualityNote}` : ""}`]),
         }
       : { kind: "p", text: "No evidence records." },
   );

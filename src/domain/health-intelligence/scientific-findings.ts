@@ -3,6 +3,8 @@
  */
 import type { UnifiedHealthReport, ReportRow } from "./unified-health-report";
 
+import { compareObservationDates, comparableObservationDates, observationDateKey } from "./observation-date";
+
 export interface ScientificMetricFinding {
   metricId: string;
   label: string;
@@ -77,13 +79,13 @@ export function buildScientificFindings(report: UnifiedHealthReport): Scientific
     grouped.set(key, [...(grouped.get(key) ?? []), row]);
   }
   const metrics: ScientificMetricFinding[] = [...grouped.values()].map((unsorted) => {
-    const rows = [...unsorted].sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+    const rows = [...unsorted].sort(compareObservationDates);
     const first = rows[0]!;
     const last = rows[rows.length - 1]!;
     const firstNumber = finiteNumber(first.value);
     const lastNumber = finiteNumber(last.value);
-    const distinctTimes = new Set(rows.map((r) => r.observedAt)).size;
-    const canCompare = rows.length >= 2 && distinctTimes >= 2 && firstNumber !== null && lastNumber !== null;
+    const distinctTimes = new Set(rows.map(observationDateKey)).size;
+    const canCompare = rows.length >= 2 && distinctTimes >= 2 && comparableObservationDates(rows) && firstNumber !== null && lastNumber !== null;
     // Express the difference at the recorded precision so binary floating-point artefacts
     // (e.g. 5.9 - 6.1 = -0.1999999999999993) never appear as reported values.
     const delta = canCompare ? differenceAtRecordedPrecision(first.value, last.value, firstNumber, lastNumber) : null;
@@ -112,7 +114,7 @@ export function buildScientificFindings(report: UnifiedHealthReport): Scientific
     const present = matched.filter((item) => item.rows.length > 0);
     const missingSignals = matched.filter((item) => item.rows.length === 0).map((item) => item.signal);
     const evidenceIds = [...new Set(present.flatMap((item) => item.rows.map((r) => r.recordId)))];
-    const times = present.flatMap((item) => item.rows.map((r) => r.observedAt)).filter((t) => Number.isFinite(Date.parse(t))).sort((a, b) => Date.parse(a) - Date.parse(b));
+    const times = present.flatMap((item) => item.rows).sort(compareObservationDates).map((r) => r.observedAt);
     const observedTimeRange = times.length ? `${times[0]} to ${times[times.length - 1]}` : null;
     const observedSignalCounts = present.map((item) => `${item.signal}: ${item.rows.length} observation(s)`);
     return {
