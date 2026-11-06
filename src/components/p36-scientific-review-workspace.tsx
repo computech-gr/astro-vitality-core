@@ -28,6 +28,7 @@ import { appendScientificReviewEntry, listScientificReviewEntries } from "@/doma
 import { buildDecisionDossier, verifyDecisionDossier, type DecisionDossier } from "@/domain/health-intelligence/p36-decision-dossier";
 import { AuthorizationSummary, TermAuthorizationPanel } from "@/components/p36-final-authorization";
 import { useP36Authorization } from "@/hooks/use-p36-authorization";
+import { P36DynamicReviewWorkspace } from "@/components/p36-dynamic-review-workspace";
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -219,6 +220,7 @@ export function P36ScientificReviewWorkspace() {
       </section>
 
       <AuthorizationSummary auth={auth} />
+      <P36DynamicReviewWorkspace auth={auth} />
 
       {!build.ok ? <p role="alert" className="text-sm text-destructive">Source integrity check failed; every term remains blocked: {build.problems.join("; ")}</p> : null}
       <p role="status" className="text-xs text-muted-foreground">
@@ -364,7 +366,7 @@ export function P36ScientificReviewWorkspace() {
       </section>
 
       <section aria-label="Scientific decision dossier" className="space-y-3 rounded-lg border border-border bg-card p-4 text-sm">
-        <h2 className="text-lg font-semibold">Scientific decision dossier for Nikolas</h2>
+        <h2 className="text-lg font-semibold">Scientific decision dossier for Researcher review</h2>
         <p className="text-xs text-muted-foreground">
           One consolidated dossier for all {dossier?.counts.terms ?? 12} terms: exact source references, proposed identity, domain, specimen, method, protocol, units,
           uncertainties and required decisions. Each field states whether it is a verified source fact or an unresolved assumption; missing methods, units and validation are shown as missing.
