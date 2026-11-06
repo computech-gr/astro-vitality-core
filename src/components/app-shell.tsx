@@ -231,10 +231,10 @@ const navigation: readonly NavigationEntry[] = [
         title: "Competition Materials",
         items: [
           "NASA Competition Presentation (PDF)",
-          "Sample Astronaut Health Report (PDF)",
           "View Narrated Presentation Online (PPTX)",
           "NASA Evaluator Quick Start (PDF)",
           "Master Technical Manual (PDF)",
+          "Sample Astronaut Health Report (PDF)",
           "Watch NASA Demo Video",
         ],
       },
