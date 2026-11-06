@@ -50,8 +50,12 @@ export interface TextReportInput {
   attestations: readonly AttestationEvent[];
   identity: { missionName: string | null; crewDisplayName: string | null };
   title: string;
-  /** Record IDs assessed as adverse by an independently approved, versioned rule. */
-  adverseRecordIds?: readonly string[];
+  /**
+   * Record-level annotations from an independently approved, versioned rule.
+   * Validated by resolveAdverseAnnotations; anything not fully traceable is ignored
+   * and values stay neutral. Never derived from raw values here.
+   */
+  adverseAssessment?: AdverseAssessmentInput;
 }
 
 const isCorrectionHistory = (reason: string) => /^Marked erroneous|^Superseded by correction/.test(reason);
@@ -228,7 +232,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
         m.delta === null ? "insufficient time points" : sameDayIds.has(m.metricId) && isSameDaySpan(m.first, m.last) ? `${m.delta} ${m.unit} (${SAME_DAY_NOTE})` : `${m.delta} ${m.unit}`,
         ref(m.evidenceIds),
       ]),
-      adverseRows: metrics.flatMap((m, i) => m.evidenceIds.some((id) => input.adverseRecordIds?.includes(id)) ? [i] : []),
+      adverseRows: metrics.flatMap((m, i) => (m.evidenceIds.some((id) => adverse.accepted.has(id)) ? [i] : [])),
     });
     blocks.push({ kind: "p", text: "Values and units are shown exactly as recorded; no unit conversion or display equivalence is applied. First/last differences are descriptive at the recorded precision; they are not trends, thresholds or clinical changes.", muted: true });
   } else blocks.push({ kind: "p", text: "No included observations in this scope." });
@@ -461,7 +465,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
             { title: "Source and evidence trace", width: 0.38 },
           ],
           rows: u.rows.map((r) => [refs.get(r.recordId)!, r.recordId, `${observationDateLabel(r).replace(".000Z", "Z")} ${r.metricId}`, `${r.sourceLabel} · ${r.evidence}${r.qualityNote ? ` · ${r.qualityNote}` : ""}`]),
-          adverseRows: u.rows.flatMap((r, i) => input.adverseRecordIds?.includes(r.recordId) ? [i] : []),
+          adverseRows: u.rows.flatMap((r, i) => (adverse.accepted.has(r.recordId) ? [i] : [])),
         }
       : { kind: "p", text: "No evidence records." },
   );
