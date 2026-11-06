@@ -30,6 +30,7 @@ export function useP36Authorization() {
       void loadMissionIdentity().then((id) => {
       if (!live || current !== generation) return;
       if (!id.signedIn || id.error || !id.userId) {
+        lastUser.current = null;
         setUserId(null);
         setMissions([]);
         setMissionId(null);
