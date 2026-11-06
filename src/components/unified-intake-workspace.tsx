@@ -1,6 +1,7 @@
 import {
   extractCsvCandidates,
   extractTextTableCandidates,
+  extractFiveColumnLabCandidates,
 } from "@/domain/health-intelligence/universal-intake-parser";
 import {
   detectIntakeFormat,
@@ -111,7 +112,10 @@ function parseIntakeText(
   documentName?: string,
   documentSha256?: string,
 ): IntakeRow[] {
-  const rows: IntakeRow[] = extractTextTableCandidates(text, MAX_ROWS).map((item) =>
+  const rows: IntakeRow[] = [
+    ...extractTextTableCandidates(text, MAX_ROWS),
+    ...extractFiveColumnLabCandidates(text, MAX_ROWS),
+  ].slice(0, MAX_ROWS).map((item) =>
     newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }),
   );
   for (const line of text.split(/\r?\n/).slice(0, 1000)) {
