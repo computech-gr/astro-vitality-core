@@ -1,3 +1,10 @@
+# P36.7 PDF intake candidate extraction
+
+- [x] Inspect patch and reproduce pipe-separated PDF candidate failure.
+- [x] Integrate candidate recognizer, preserving exact values/units and date-only metadata.
+- [ ] Run focused/full permitted checks and desktop/mobile browser intake.
+- [ ] Actual 11-page report acceptance requires locating or supplying the original PDF.
+
 # P36.5 Mission/astronaut report export
 
 - [x] Authorized display-name cover and immutable IDs; exact sanitized PDF/TXT basename; separate Print and local-only A4 PDF generation.
