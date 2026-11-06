@@ -1,6 +1,6 @@
 /** Mission-scoped, fail-closed loader for the P36 cloud authorization ledger. Late responses from a previous mission are discarded. */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { loadMissionIdentity } from "@/infrastructure/mission-identity";
+import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/mission-identity";
 import { buildAuthorizationView, type AuthorizationLedgerRow, type AuthorizationView } from "@/domain/health-intelligence/p36-scientific-authorization";
 import { listScientificAuthorization } from "@/lib/p36-scientific-authorization.functions";
 
@@ -23,11 +23,16 @@ export function useP36Authorization() {
 
   useEffect(() => {
     let live = true;
-    void loadMissionIdentity().then((id) => {
-      if (!live) return;
+    let generation = 0;
+    const refresh = () => {
+      const current = ++generation;
+      void loadMissionIdentity().then((id) => {
+      if (!live || current !== generation) return;
       if (!id.signedIn || id.error || !id.userId) {
         setUserId(null);
         setMissions([]);
+        setMissionId(null);
+        setView(null);
         setLoad("signed_out");
         return;
       }
@@ -39,13 +44,24 @@ export function useP36Authorization() {
         byMission.set(m.missionId, cur);
       }
       const list = [...byMission.values()].sort((a, b) => a.label.localeCompare(b.label));
-      setUserId(id.userId);
+      const nextUser = id.userId;
+      setUserId((prev) => {
+        // Account changed: never carry a mission selection or view across accounts.
+        if (prev !== nextUser) setView(null);
+        return nextUser;
+      });
       setMissions(list);
-      setMissionId(list.length === 1 ? list[0]!.missionId : null);
+      setMissionId((prev) =>
+        prev && list.some((m) => m.missionId === prev) ? prev : list.length === 1 ? list[0]!.missionId : null,
+      );
       setLoad(list.length ? "ready" : "no_role");
-    });
+      });
+    };
+    refresh();
+    const unsubscribe = subscribeMissionIdentity(refresh);
     return () => {
       live = false;
+      unsubscribe();
     };
   }, []);
 
