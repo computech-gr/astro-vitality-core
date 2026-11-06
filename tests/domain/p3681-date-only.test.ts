@@ -54,6 +54,7 @@ describe("P36.8.1 calendar precision and source fidelity", () => {
       { label: "25(OH) Vitamin D", unit: "ng/mL ή nmol/L", value: "9.31" },
     ].map((r, i) => ({ ...r, key: String(i), observedAt: date, datePrecision: "date" as const, classification: classifyWithGovernedExtensions(r).classification, selected: false }));
     expect(setIntakeReviewSelection(rows, true).rows.map((r) => r.selected)).toEqual([true, false, false, false]);
+    expect(isIntakeRowEligible({ ...rows[0], key: "flagged", label: "cv-001", unit: "bpm", value: "62", observedAt: date, datePrecision: "date", sourceValidation: "unvalidated", classification: classifyWithGovernedExtensions({ label: "cv-001", unit: "bpm" }).classification, selected: false })).toBe(false);
     expect(isIntakeRowEligible({ ...rows[0], key: "bad", label: "cv-001", unit: "bpm", value: "NaN", observedAt: date, datePrecision: "date", classification: classifyWithGovernedExtensions({ label: "cv-001", unit: "bpm" }).classification, selected: false })).toBe(false);
   });
   test("date duplicates are scope/unit/precision aware and never collide with midnight instants", () => {

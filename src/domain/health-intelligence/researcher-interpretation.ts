@@ -79,7 +79,7 @@ export interface DomainInterpretation {
   included: number;
   series: InterpretationSeries[];
   evidenceIds: string[];
-  coverage: { first: string | null; last: string | null; distinctUtcDays: number };
+  coverage: { first: string | null; last: string | null; distinctUtcDays: number; dateOnly?: boolean };
   governance: { source: string | null; status: string };
   summary: string;
   limitations: string[];
@@ -330,7 +330,7 @@ export function buildResearcherInterpretation(
       included: domainRows.length,
       series,
       evidenceIds: domainRows.map((r) => r.recordId),
-      coverage: { first: times[0] ?? null, last: times.at(-1) ?? null, distinctUtcDays: new Set(times.map(utcDay)).size },
+      coverage: { first: times[0] ?? null, last: times.at(-1) ?? null, distinctUtcDays: new Set(times.map(utcDay)).size, dateOnly: domainRows.some((r) => r.datePrecision === "date") },
       governance,
       summary,
       limitations: domainRows.length
@@ -379,7 +379,7 @@ export function researcherInterpretationPlainText(model: ResearcherInterpretatio
   out.push("Approval layers (separate):", ...model.approvalLayers.map((l) => `- ${l.layer}: ${l.count ?? "n/a"}. ${l.meaning}`));
   for (const d of model.domains) {
     out.push("", `${d.label.toUpperCase()}`, d.summary, `Governance: ${d.governance.source ? `${d.governance.source}. ` : ""}${d.governance.status}`);
-    if (d.coverage.first) out.push(`Coverage: ${d.coverage.first} to ${d.coverage.last}; ${d.coverage.distinctUtcDays} UTC day(s).`);
+    if (d.coverage.first) out.push(`Coverage: ${d.coverage.first} to ${d.coverage.last}; ${d.coverage.distinctUtcDays} ${d.coverage.dateOnly ? "recorded calendar day(s); timezone not supplied for date-only records" : "UTC day(s)"}.`);
     for (const s of d.series) {
       out.push(
         `- ${s.label} (${s.metricId}) [${s.unit}]: ${s.observation}`,

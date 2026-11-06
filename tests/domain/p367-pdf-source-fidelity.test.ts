@@ -20,7 +20,7 @@ describe("P36.7 geometry/source fidelity", () => {
     const text = "25(OH) Vitamin D | 9,31 | ng/mL ή nmol/L | 2026-11-05 | Unvalidated";
     expect(extractFiveColumnLabCandidates(text)[0]).toEqual({
       label: "25(OH) Vitamin D", value: "9,31", unit: "ng/mL ή nmol/L",
-      observedAt: "", datePrecision: "date", collectionDate: "2026-11-05", excerpt: text,
+      observedAt: "", datePrecision: "date", collectionDate: "2026-11-05", sourceValidation: "unvalidated", excerpt: text,
     });
   });
   it("does not scientifically equate or convert a mismatched unit", () => {

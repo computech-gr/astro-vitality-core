@@ -13,6 +13,7 @@ export interface IntakeReviewRow {
   observedAt: string;
   datePrecision?: ObservationDatePrecision;
   collectionDate?: string;
+  sourceValidation?: "unvalidated";
   classification: IntakeClassification;
   selected: boolean;
 }
@@ -25,6 +26,7 @@ export function isIntakeRowEligible(row: IntakeReviewRow): boolean {
 }
 
 export function intakeRowExclusionReason(row: IntakeReviewRow): string | null {
+  if (row.sourceValidation === "unvalidated") return "Source explicitly marks this measurement unvalidated; scientific/source review required.";
   const current = classifyWithGovernedExtensions(row).classification;
   if (current.status !== "matched") return current.status === "unit_review_required" ? "Exact reported unit does not match the approved catalog; unit review required." : current.status === "ambiguous" ? "Ambiguous catalog identity; scientific review required." : "No approved catalog mapping; scientific review required.";
   if (row.classification.status !== "matched" || row.classification.metricId !== current.metricId) return "Catalog classification is not current.";
@@ -40,7 +42,7 @@ export function intakeSelectionCounts(rows: readonly IntakeReviewRow[]) {
   return {
     selected,
     matched: rows.filter((r) => r.classification.status === "matched").length,
-    reviewOnly: rows.filter((r) => r.classification.status !== "matched").length,
+    reviewOnly: rows.filter((r) => r.classification.status !== "matched" || r.sourceValidation === "unvalidated").length,
     missingDate: rows.filter((r) => !r.observedAt).length,
     invalidDate: rows.filter((r) => Boolean(r.observedAt) && !validObservationDate(r)).length,
     dateOnly: rows.filter((r) => r.datePrecision === "date").length,

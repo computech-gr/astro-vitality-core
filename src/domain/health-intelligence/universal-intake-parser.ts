@@ -1,6 +1,6 @@
 /** Local, deterministic candidate extraction; never authorizes storage or infers dates. */
 import { isCalendarDate, isExplicitInstant, type ObservationDatePrecision } from "./observation-date";
-export type Candidate = {label:string;value:string;unit:string;observedAt:string;datePrecision?:ObservationDatePrecision;collectionDate?:string;excerpt:string};
+export type Candidate = {label:string;value:string;unit:string;observedAt:string;datePrecision?:ObservationDatePrecision;collectionDate?:string;sourceValidation?:"unvalidated";excerpt:string};
 export function candidateDate(value:string): Pick<Candidate,"observedAt"|"datePrecision"|"collectionDate"> | null {
  if(!value)return {observedAt:""};
  if(isCalendarDate(value))return {observedAt:value,datePrecision:"date",collectionDate:value};
@@ -83,7 +83,7 @@ export function extractFiveColumnLabCandidates(text:string,max=200):Candidate[] 
   if(trailing&&!flags.test(trailing))continue;
   if(!Number.isFinite(Number(value.replace(',', '.'))))continue;
   // Date is collection metadata only. Explicit user confirmation is required.
-  rows.push({label,value,unit,observedAt:'',datePrecision:'date',collectionDate:cells[dateIndex],excerpt:line.slice(0,350)});
+  rows.push({label,value,unit,observedAt:'',datePrecision:'date',collectionDate:cells[dateIndex],...(trailing.toLowerCase()==='unvalidated'?{sourceValidation:'unvalidated' as const}:{}),excerpt:line.slice(0,350)});
   if(rows.length>=max)break;
  }
  return rows;

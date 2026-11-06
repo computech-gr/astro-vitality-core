@@ -66,6 +66,7 @@ type IntakeRow = {
   observedAt: string;
   datePrecision?: ObservationDatePrecision;
   collectionDate?: string;
+  sourceValidation?: "unvalidated";
   excerpt: string;
   sourceKind: ObservationSourceKind;
   sourceLabel: string;
@@ -400,7 +401,7 @@ export function UnifiedIntakeWorkspace() {
 
   const selection = intakeSelectionCounts(rows);
   const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
-  const reviewOnlyRows = rows.filter((row) => row.classification.status !== "matched");
+  const reviewOnlyRows = rows.filter((row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated").map((row) => row.classification.status === "matched" && row.sourceValidation === "unvalidated" ? { ...row, classification: { status: "unit_review_required" as const, candidateMetricIds: [row.classification.metricId], originalLabel: row.label, originalUnit: row.unit, reviewRequired: true as const } } : row);
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
         findUnifiedDuplicates(history, {
