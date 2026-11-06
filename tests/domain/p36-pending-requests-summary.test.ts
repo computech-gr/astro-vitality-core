@@ -59,7 +59,7 @@ describe("p36 pending requests summary", () => {
     const dynamicTerm = term("Novel Analyte", "ng/mL");
     const inputs: ScopeInput[] = [
       { scope: scopeA, requests: [request("ubr-00000001", [legacyTerm, dynamicTerm])], receipts: [receipt("ubr-00000001", scopeA, "SUBMITTED", "2026-11-02T00:00:00Z")] },
-      { scope: scopeB, requests: [request("ubr-00000002", [term("Other Analyte", "pg/mL")])], receipts: [] },
+      { scope: scopeB, requests: [request("ubr-00000002", [term("Other Analyte", "pg/mL")], scopeB)], receipts: [] },
     ];
     const s = buildPendingRequestsSummary(inputs);
     expect(s.totalRequests).toBe(2);
