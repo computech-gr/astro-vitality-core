@@ -14,7 +14,7 @@ No catalog, scientific source, database, sync, authorization, stored record, Hea
 
 ## Reproduction and deviations
 
-The previous parser returned zero candidates for a five-column date-only table. The supplied patch also returned zero when given ` | ` separators emitted by the existing PDF geometry serializer. The shared geometry reconstruction/serializer was preserved; the new recognizer accepts its existing pipe separators alongside tabs and multiple spaces.
+The previous parser returned zero candidates for a five-column date-only table. The supplied patch also returned zero when given `|` separators emitted by the existing PDF geometry serializer. The shared geometry reconstruction/serializer was preserved; the new recognizer accepts its existing pipe separators alongside tabs and multiple spaces.
 
 The supplied digit-led `25(OH) Vitamin D` regression failed because the patch required names to begin with a letter. Names may now begin with a digit but must contain a letter. This permits the supplied laboratory name without loosening extraction to unrestricted clinical prose.
 
@@ -39,14 +39,14 @@ A clearly labelled representative 11-page synthetic PDF, created only under `/tm
 
 Representative-fixture results (not the NASA report):
 
-| Category | Count | Reason |
-| --- | ---: | --- |
-| Extracted/classified candidates | 22 | Two finite laboratory results per page |
-| Catalog matched | 11 | Heart rate with exact `bpm` unit |
-| Unit review required | 11 | Vitamin D with literal ambiguous `ng/mL or nmol/L` |
-| Eligible to select/save | 0 | All observation timestamps blank |
-| Held/excluded from save | 22 | Missing full observation timestamp; 11 also need unit review |
-| Non-numeric rows rejected/skipped | 11 | PTH result `--`, no finite measurement |
+| Category                          | Count | Reason                                                       |
+| --------------------------------- | ----: | ------------------------------------------------------------ |
+| Extracted/classified candidates   |    22 | Two finite laboratory results per page                       |
+| Catalog matched                   |    11 | Heart rate with exact `bpm` unit                             |
+| Unit review required              |    11 | Vitamin D with literal ambiguous `ng/mL or nmol/L`           |
+| Eligible to select/save           |     0 | All observation timestamps blank                             |
+| Held/excluded from save           |    22 | Missing full observation timestamp; 11 also need unit review |
+| Non-numeric rows rejected/skipped |    11 | PTH result `--`, no finite measurement                       |
 
 Categories overlap: matched and unit-review rows partition the 22 candidates; all 22 are held from saving. The 11 non-numeric rows are fixture-known counts, not new UI diagnostics.
 
