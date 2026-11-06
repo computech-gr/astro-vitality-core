@@ -1,5 +1,9 @@
 # P36 Production Activation Checklist (owner-gated)
 
+> **Superseded:** the migration order and hashes below are replaced by
+> `docs/P36_AUTHORITATIVE_MIGRATION_SEQUENCE.md`. The fixed-dossier file is not a prerequisite of
+> the dynamic pair, and the dynamic harness uses `P36_DISPOSABLE_SOCKET`. This text is kept unchanged as history.
+
 Nothing in this checklist has been performed. Each step requires explicit owner authorization.
 
 1. **Verify the staged SQL bytes** against the exact hashes in `docs/P36_FINAL_UX_VALIDATION_REPORT.md` before any application.

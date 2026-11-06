@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname } from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { canonicalJson } from "../src/domain/health-intelligence/observation-envelope";
 import { termIdFor } from "../src/domain/health-intelligence/unknown-biomarker-review";
 import { cloudAuthorizationContext } from "../src/domain/health-intelligence/p36-cloud-handoff";
@@ -12,8 +12,9 @@ const socket = process.env["P36_DISPOSABLE_SOCKET"];
 if (!socket?.startsWith("/tmp/p36-unified/socket")) throw Error("Explicit isolated socket required; live database prohibited.");
 const base = ["-h", socket, "-p", "55439", "-U", "lovable", "-v", "ON_ERROR_STOP=1", "-X", "-At"];
 function sql(q: string, db = "p36_dynamic_it", fail = false) { const r = spawnSync("psql", [...base, "-d", db], { input: q, encoding: "utf8", cwd: root }); if (fail ? r.status === 0 : r.status !== 0) throw Error(`Unexpected SQL result: ${r.stderr}`); return r.stdout.trim(); }
+sql("drop database if exists p36_dynamic_it with (force);", "postgres");
 sql("create database p36_dynamic_it;", "postgres");
-sql(`create role authenticated; create role anon; create role service_role; create schema auth; create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
+sql(`do $r$ begin create role authenticated; exception when duplicate_object then null; end $r$; do $r$ begin create role anon; exception when duplicate_object then null; end $r$; do $r$ begin create role service_role; exception when duplicate_object then null; end $r$; create schema auth; create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
 create table missions(id text primary key); create table crew_members(id text primary key); create table mission_crew_assignments(mission_id text,crew_member_id text,status text); create table mission_memberships(mission_id text,user_id uuid,crew_member_id text,role text,active boolean);
 insert into missions values('M1'),('M2'); insert into crew_members values('C1'),('C2'); insert into mission_crew_assignments values('M1','C1','active'),('M1','C2','active'),('M2','C2','active');
 insert into mission_memberships values('M1','00000000-0000-0000-0000-000000000001','C1','crew_self',true),('M1','00000000-0000-0000-0000-000000000002',null,'ground_medical',true),('M1','00000000-0000-0000-0000-000000000003',null,'researcher',true);`);
@@ -25,6 +26,13 @@ const auth = (id: number) => `set role authenticated; set request.jwt.claim.sub=
 const append = (c = canonical) => `select public.p36_dynamic_handoff_append_v1('M1','C1','synthetic','ubr-12345678',${literal(c)},encode(sha256(convert_to(${literal(c)},'UTF8')),'hex'))->>'status';`;
 let count = 0;
 const check = (yes: boolean) => { if (!yes) throw Error("assertion failed"); count++; };
+const sqlErr = (q: string) => { const r = spawnSync("psql", [...base, "-d", "p36_dynamic_it"], { input: q, encoding: "utf8", cwd: root }); if (r.status === 0) throw Error("expected SQL failure"); return r.stderr; };
+// Database admission is closed by default: EXECUTE grants alone never admit writes.
+check(sqlErr(auth(1)+append()).includes("admission is closed"));
+check(sql("select count(*) from p36_dynamic_handoff_submissions;") === "0");
+check(sqlErr(auth(1)+"update p36_dynamic_admission set handoff_open=true;").includes("permission denied"));
+check(sqlErr("delete from p36_dynamic_admission;").includes("cannot be removed"));
+sql("update p36_dynamic_admission set handoff_open=true, authorization_open=true, change_note='disposable harness only';");
 check(sql(auth(1)+append()).endsWith("inserted"));
 check(sql("select count(*) from p36_dynamic_handoff_terms;") === "197");
 const ctx = await cloudAuthorizationContext(payload.terms.map((t) => ({ ...t, classification: "unclassified" as const })));
@@ -37,6 +45,9 @@ check(sql(auth(2)+appendEvent(rec)).includes("independently verified source rece
 // Invented receipts exist ONLY in this disposable test DB. Never seed production validation.
 sql(`insert into p36_dynamic_source_validation values('M1','C1','synthetic','${term.termId}','${"a".repeat(64)}','cv-001','bpm','synthetic ECG acquisition','synthetic ECG device','synthetic test protocol','v1.0','doi:10.0000/synthetic','disposable test harness',now());`);
 const recResult=JSON.parse(sql(auth(2)+appendEvent(rec)).split('\n').at(-1)??'{}'); check(recResult.status==="inserted");
+// An approval citing a DOI that is not the receipt's own validation reference is refused.
+const unbound = makeEvent({ ...input, kind:"decision",action:"APPROVE",submissionId:crypto.randomUUID(),reviewerName:"Synthetic Researcher", conflictOfInterestDeclaration:"No conflict, synthetic only",independenceConfirmed:true,validationEvidenceRefs:["doi:10.0000/unrelated"],recommendationEventId:recResult.event_id },3);
+check(sql(auth(3)+appendEvent(unbound)).includes("independently verified source receipt required"));
 const decision = makeEvent({ ...input, kind:"decision",action:"APPROVE",submissionId:crypto.randomUUID(),reviewerName:"Synthetic Researcher", conflictOfInterestDeclaration:"No conflict, synthetic only",independenceConfirmed:true,validationEvidenceRefs:["doi:10.0000/synthetic"],recommendationEventId:recResult.event_id },3);
 const decisionResult=JSON.parse(sql(auth(3)+appendEvent(decision)).split('\n').at(-1)??'{}'); if(decisionResult.status!=="inserted") throw Error(JSON.stringify(decisionResult)); check(true);
 check(sql(auth(3)+appendEvent(decision)).includes("duplicate"));
@@ -54,6 +65,28 @@ sql(auth(3)+"select p36_dynamic_handoff_list_v1('M2','C2','synthetic',0,100);",u
 for (const q of ["select * from p36_dynamic_handoff_submissions", "delete from p36_dynamic_handoff_terms", "truncate p36_dynamic_handoff_submissions", "select p36_dynamic_scope('M1','C1',false)"]) { sql(auth(1)+q,undefined,true); count++; }
 sql(readFileSync(resolve(root,"supabase/pending/20261107000000_p36_dynamic_handoff.rollback.sql"),"utf8"),undefined,true); count++;
 check(sql("select count(*) from p36_dynamic_handoff_terms;") === "197");
+// Revocation serialization: while a concurrent transaction holds the authorizing membership row
+// (as an in-flight revocation would), the append waits on the row lock instead of reading stale state.
+const holder = spawn("psql", [...base, "-d", "p36_dynamic_it"], { cwd: root });
+holder.stdin.write("begin; select 1 from mission_memberships where role='crew_self' for update; select pg_sleep(4); rollback;\n"); holder.stdin.end();
+await new Promise((r) => setTimeout(r, 800));
+check(sqlErr(auth(1)+"set lock_timeout='700ms';"+append()).includes("lock timeout"));
+await new Promise((r) => holder.on("close", r));
+// A revocation committed while the append waited is honored after the lock is released.
+const revoker = spawn("psql", [...base, "-d", "p36_dynamic_it"], { cwd: root });
+revoker.stdin.write("begin; update mission_memberships set active=false where role='crew_self'; select pg_sleep(1.5); commit;\n"); revoker.stdin.end();
+await new Promise((r) => setTimeout(r, 500));
+const changedReq = structuredClone(payload); changedReq.requestId = "ubr-87654321";
+const raced = canonicalJson(changedReq);
+check(sqlErr(auth(1)+`select public.p36_dynamic_handoff_append_v1('M1','C1','synthetic','ubr-87654321',${literal(raced)},encode(sha256(convert_to(${literal(raced)},'UTF8')),'hex'));`).includes("scope denied"));
+await new Promise((r) => revoker.on("close", r));
+check(sql("select count(*) from p36_dynamic_handoff_submissions where request_id='ubr-87654321';") === "0");
+// Retaining disable: closing admission keeps every record and reads stay available.
+sql("update p36_dynamic_admission set handoff_open=false, authorization_open=false, change_note='disposable retaining disable';");
+check(sql("select count(*) from p36_dynamic_handoff_terms;") === "197");
+check(sql(auth(3)+"select jsonb_array_length(p36_dynamic_handoff_list_v1('M1','C1','synthetic',0,100));").endsWith("1"));
+check(sqlErr(auth(2)+appendEvent({ ...rec, submissionId: crypto.randomUUID() })).includes("admission is closed"));
+sql("update p36_dynamic_admission set handoff_open=true, authorization_open=true;");
 sql("update mission_memberships set active=false where role='crew_self';");
 sql(auth(1)+append(),undefined,true);count++;
-console.log(`PASS: ${count} disposable SQL checks; 197-term insert, replay, conflicts, two-account readback, Ground Medical recommendation, independent Researcher decision, source-receipt absence, scope/RLS/ACL/rollback/revocation. Synthetic metadata only; not browser authentication acceptance.`);
+console.log(`PASS: ${count} disposable SQL checks; closed-by-default admission + retaining disable, revocation row-lock serialization, approval bound to receipt validation reference, 197-term insert, replay, conflicts, two-account readback, Ground Medical recommendation, independent Researcher decision, source-receipt absence, scope/RLS/ACL/rollback/revocation. Synthetic metadata only; not browser authentication acceptance.`);

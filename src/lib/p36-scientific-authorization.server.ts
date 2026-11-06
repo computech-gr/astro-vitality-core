@@ -29,11 +29,12 @@ export interface AuthorizationDeps {
   now: () => string;
 }
 
-export type AuthorizationErrorCode = "migration_required" | "forbidden" | "invalid" | "integrity" | "unavailable";
+export type AuthorizationErrorCode = "migration_required" | "admission_closed" | "forbidden" | "invalid" | "integrity" | "unavailable";
 export type AuthorizationFailure = { ok: false; code: AuthorizationErrorCode; message: string };
 
 const MESSAGES: Record<AuthorizationErrorCode, string> = {
   migration_required: "Final scientific authorization is unavailable: the staged database change has not been applied.",
+  admission_closed: "The database admission switch for this workflow is closed by the owner. Nothing was recorded; your local evidence is unchanged.",
   forbidden: "The server refused: this action needs an active membership with the required role for the selected mission.",
   invalid: "The server rejected the submission as invalid. Nothing was recorded.",
   integrity: "The authorization history for this term failed verification; nothing was recorded.",
@@ -43,6 +44,7 @@ export const failure = (code: AuthorizationErrorCode, message = MESSAGES[code]):
 
 export function classifyAuthorizationError(code: string | undefined): AuthorizationErrorCode {
   if (code === "PGRST202" || code === "PGRST205" || code === "42883" || code === "42P01") return "migration_required";
+  if (code === "55000") return "admission_closed";
   if (code === "42501") return "forbidden";
   if (code === "22023" || code === "22P02") return "invalid";
   return "unavailable";

@@ -50,9 +50,9 @@ describe("p36 verified revisions registry", () => {
     expect(loadVerifiedRevisions(null).revisions).toEqual([]);
   });
 
-  test("duplicate revisions are rejected individually without hiding tampering", () => {
+  test("a duplicate revision fails the whole registry closed", () => {
     const view = loadVerifiedRevisions(registry([validRevision, validRevision]));
-    expect(view.revisions).toHaveLength(1);
+    expect(view.revisions).toHaveLength(0);
     expect(view.problems.some((p) => p.includes("duplicate"))).toBe(true);
   });
 

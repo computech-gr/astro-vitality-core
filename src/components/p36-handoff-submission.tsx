@@ -10,7 +10,7 @@ import { canonicalJson } from "@/domain/health-intelligence/observation-envelope
 import type { PendingReviewRequest } from "@/domain/health-intelligence/review-ledger";
 import { submitDynamicHandoff } from "@/lib/p36-dynamic-handoff.functions";
 
-export function P36HandoffSubmission({ request, userId }: { request: PendingReviewRequest; userId: string }) {
+export function P36HandoffSubmission({ request, userId, onSubmitted }: { request: PendingReviewRequest; userId: string; onSubmitted?: () => void }) {
   const [state, setState] = useState<HandoffSyncState>("LOCAL_ONLY");
   const [preview, setPreview] = useState<CloudHandoff | null>(null);
   const [consent, setConsent] = useState(false);
@@ -45,7 +45,7 @@ export function P36HandoffSubmission({ request, userId }: { request: PendingRevi
       const result = res.status === "conflict" ? "CONFLICT" : "SUBMITTED";
       await appendHandoffReceipt({ requestId: request.requestId, scope: request.scope, actorUserId: userId, status: result, receivedAt: res.receivedAt || new Date().toISOString(), submissionId: res.submissionId, payloadSha256: res.payloadSha256 });
       if (current !== epoch.current) return;
-      setState(result); setConsent(false);
+      setState(result); setConsent(false); onSubmitted?.();
       setMessage(result === "CONFLICT" ? "Changed payload for this request was refused. Original local evidence and server copy are unchanged." : `Server receipt ${res.submissionId} at ${res.receivedAt}. Metadata submitted; scientific review is still pending.`);
     } catch (e) {
       if (current === epoch.current) { setState("FAILED"); setMessage(e instanceof Error ? e.message : "Submission failed. Retry with the same request; the server prevents duplicates."); }

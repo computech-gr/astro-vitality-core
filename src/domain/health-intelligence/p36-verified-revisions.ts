@@ -51,16 +51,14 @@ export function loadVerifiedRevisions(input: unknown = registryJson): VerifiedRe
   }
   const seen = new Set<string>();
   const problems: string[] = [];
-  const revisions: VerifiedRevision[] = [];
   for (const r of parsed.data.revisions) {
-    if (seen.has(r.revision)) {
-      problems.push(`duplicate revision ${r.revision.slice(0, 12)}… rejected`);
-      continue;
-    }
+    if (seen.has(r.revision)) problems.push(`duplicate revision ${r.revision.slice(0, 12)}…`);
     seen.add(r.revision);
-    revisions.push(r);
   }
-  return { revisions, problems };
+  // Any integrity problem fails the WHOLE registry closed: a tampered registry
+  // must not still offer its remaining entries as verified choices.
+  if (problems.length) return { revisions: [], problems: [...problems, "registry rejected"] };
+  return { revisions: [...parsed.data.revisions], problems };
 }
 
 /** True only when the exact revision is present in the governed registry. */

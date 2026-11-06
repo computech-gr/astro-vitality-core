@@ -303,6 +303,7 @@ describe("P36 authorization server core — fail closed before the migration", (
     const { listAuthorizationCore, submitAuthorizationCore, classifyAuthorizationError } = await import("@/lib/p36-scientific-authorization.server");
     expect(classifyAuthorizationError("PGRST202")).toBe("migration_required");
     expect(classifyAuthorizationError("42501")).toBe("forbidden");
+    expect(classifyAuthorizationError("55000")).toBe("admission_closed");
     const calls: string[] = [];
     const rpc = async (fn: string) => (calls.push(fn), { data: null, error: { code: "PGRST202" } });
     const listed = await listAuthorizationCore({ rpc }, "m1");

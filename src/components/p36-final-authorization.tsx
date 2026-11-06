@@ -39,15 +39,23 @@ export function AuthorizationSummary({ auth }: { auth: ReturnType<typeof useP36A
         Decisions are append-only in the cloud ledger and re-verified on every read. Reviewer qualifications and conflict declarations are recorded as
         declared; the application cannot verify credentials. Approval never activates a metric.
       </p>
-      {missions.length > 1 ? (
-        <select aria-label="Authority mission" className="rounded-md border border-border bg-background px-2 py-1.5" value={missionId ?? ""} onChange={(e) => setMissionId(e.target.value || null)}>
-          <option value="">Choose a mission</option>
-          {missions.map((m) => (
-            <option key={m.missionId} value={m.missionId}>
-              {m.label} ({m.roles.join(" + ")})
-            </option>
-          ))}
-        </select>
+      {missions.length ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <select aria-label="Authority mission" className="rounded-md border border-border bg-background px-2 py-1.5" value={missionId ?? ""} onChange={(e) => setMissionId(e.target.value || null)}>
+            <option value="">Choose a mission</option>
+            {missions.map((m) => (
+              <option key={m.missionId} value={m.missionId}>
+                {m.label} ({m.roles.join(" + ")})
+              </option>
+            ))}
+          </select>
+          {missionId ? (
+            <details className="text-xs">
+              <summary className="cursor-pointer">Technical identifiers</summary>
+              <p className="break-all text-muted-foreground">mission {missionId}</p>
+            </details>
+          ) : null}
+        </div>
       ) : null}
       <p role="status" className="text-xs text-muted-foreground">
         {load === "signed_out"

@@ -1,3 +1,11 @@
+# P36 final blocker remediation
+
+- [x] Fix crew roster, stale identity, Researcher local-data leak, cloud-aware summary statuses/batches, scoped duplicates, mission dropdown, registry fail-closed.
+- [x] Staged SQL: closed-by-default admission, revocation row locks, receipt-bound approvals, rollback order guard; 33 disposable SQL checks.
+- [x] Verifier/format/dependency fixes; full tests, typecheck, lint, build pass; one authoritative migration sequence.
+- [ ] Two-account authenticated browser acceptance — blocked: no isolated auth/data services.
+- [ ] Exact-commit CI and production ACL/history attestation — blocked: owner-provided synchronization/access.
+
 # P36 final UX and release readiness
 
 - [x] Authorized selectors: mission dropdown, searchable crew-name dropdown, governed provenance, verified-revision dropdown (fail-closed empty registry), technical IDs in expandable details.

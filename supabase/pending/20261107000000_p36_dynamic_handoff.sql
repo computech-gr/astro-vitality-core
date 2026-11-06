@@ -30,6 +30,27 @@ grant select on public.p36_dynamic_handoff_terms to service_role;
 alter table public.p36_dynamic_handoff_terms enable row level security;
 -- No direct application SELECT policies: all access uses caller-scoped RPCs.
 
+-- Database-level admission control (retaining disable). Closed by default:
+-- granting EXECUTE never admits writes on its own, independent of app flags.
+-- Only the trusted schema owner may open/close admission with plain SQL;
+-- closing never deletes or rewrites any record, and list RPCs stay readable
+-- so preserved evidence remains reviewable.
+create table public.p36_dynamic_admission (
+  singleton boolean primary key default true check (singleton),
+  handoff_open boolean not null default false,
+  authorization_open boolean not null default false,
+  changed_at timestamptz not null default clock_timestamp(),
+  change_note text not null default 'initial: closed'
+);
+insert into public.p36_dynamic_admission(singleton) values (true);
+revoke all on public.p36_dynamic_admission from public, anon, authenticated, service_role;
+grant select on public.p36_dynamic_admission to service_role;
+alter table public.p36_dynamic_admission enable row level security;
+create function public.p36_dynamic_admission_reject_delete() returns trigger language plpgsql set search_path=public,pg_temp as $$
+begin raise exception 'p36 admission row cannot be removed; close admission instead' using errcode='42501'; end $$;
+create trigger p36_dynamic_admission_no_delete before delete on public.p36_dynamic_admission for each row execute function public.p36_dynamic_admission_reject_delete();
+create trigger p36_dynamic_admission_no_truncate before truncate on public.p36_dynamic_admission for each statement execute function public.p36_dynamic_admission_reject_delete();
+
 create function public.p36_dynamic_scope(p_mission text, p_crew text, p_write boolean)
 returns text language plpgsql stable security definer set search_path = public, pg_temp as $$
 declare v_role text;
@@ -57,7 +78,15 @@ create function public.p36_dynamic_handoff_append_v1(p_mission_id text,p_crew_me
 returns jsonb language plpgsql volatile security definer set search_path=public,pg_temp as $$
 declare v_role text; v_p jsonb; v_t jsonb; v_row public.p36_dynamic_handoff_submissions; v_key text; v_n int;
 begin
+  if not coalesce((select a.handoff_open from public.p36_dynamic_admission a where a.singleton), false) then
+    raise exception 'p36 dynamic handoff admission is closed' using errcode='55000'; end if;
   v_role := public.p36_dynamic_scope(p_mission_id,p_crew_member_id,true);
+  -- Serialize with concurrent revocation: lock the authorizing rows, re-evaluated after any in-flight change.
+  perform 1 from public.mission_crew_assignments where mission_id=p_mission_id and crew_member_id=p_crew_member_id and status='active' for share;
+  if not found then raise exception 'scope unavailable' using errcode='42501'; end if;
+  perform 1 from public.mission_memberships m where m.mission_id=p_mission_id and m.user_id=auth.uid() and m.active and m.role=v_role
+    and (m.crew_member_id=p_crew_member_id or (m.crew_member_id is null and m.role='ground_medical')) for share;
+  if not found then raise exception 'scope denied' using errcode='42501'; end if;
   if p_provenance not in ('synthetic','real') or p_request_id !~ '^ubr-[0-9a-f]{8}$' or octet_length(p_payload_canonical) not between 2 and 1048576 then raise exception 'invalid metadata' using errcode='22023'; end if;
   if encode(sha256(convert_to(p_payload_canonical,'UTF8')),'hex') is distinct from p_payload_sha256 then raise exception 'digest mismatch' using errcode='22023'; end if;
   v_p := p_payload_canonical::jsonb;
@@ -106,6 +135,7 @@ begin
     order by received_seq limit least(greatest(coalesce(p_limit,100),1),100)) s),'[]'::jsonb);
 end $$;
 revoke all on sequence public.p36_dynamic_handoff_submissions_received_seq_seq from public,anon,authenticated,service_role;
+revoke all on function public.p36_dynamic_admission_reject_delete() from public,anon,authenticated,service_role;
 revoke all on function public.p36_dynamic_scope(text,text,boolean), public.p36_dynamic_reject_mutation(), public.p36_dynamic_handoff_append_v1(text,text,text,text,text,text), public.p36_dynamic_handoff_list_v1(text,text,text,bigint,int) from public,anon,authenticated,service_role;
 grant execute on function public.p36_dynamic_handoff_append_v1(text,text,text,text,text,text), public.p36_dynamic_handoff_list_v1(text,text,text,bigint,int) to authenticated;
 commit;

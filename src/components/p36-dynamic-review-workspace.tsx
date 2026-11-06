@@ -17,13 +17,8 @@ import { TermAuthorizationPanel } from "./p36-final-authorization";
 import { P36HandoffSubmission } from "./p36-handoff-submission";
 import { P36PendingRequestsSummary } from "./p36-pending-requests-summary";
 import type { useP36Authorization } from "@/hooks/use-p36-authorization";
-
-interface CrewChoice {
-  missionId: string;
-  crewId: string;
-  name: string;
-  roles: string[];
-}
+import { loadMissionCrewRoster } from "@/infrastructure/mission-crew-roster";
+import { buildCrewChoices, canHoldLocalRequests, rolesForScope, type CrewChoice, type RosterCrewMember } from "@/domain/health-intelligence/p36-crew-choices";
 
 /** Searchable authorized-crew selector: displays names, resolves to exact authorized IDs. */
 function CrewSelector({
@@ -95,33 +90,46 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
   const [selected, setSelected] = useState<string[]>([]);
   const [commit, setCommit] = useState("");
   const [memberships, setMemberships] = useState<MissionMembershipContext[]>([]);
+  const [roster, setRoster] = useState<RosterCrewMember[]>([]);
+  const [rosterMessage, setRosterMessage] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
   const epoch = useRef(0);
   const listCloud = useServerFn(listDynamicHandoff);
   const listAuthority = useServerFn(listDynamicAuthorization);
   const revisions = useMemo(() => loadVerifiedRevisions(), []);
   const scope = useMemo<ReviewScope | null>(() => auth.missionId && crew ? { missionId: auth.missionId, crewMemberId: crew, provenance } : null, [auth.missionId, crew, provenance]);
 
-  useEffect(() => { void loadMissionIdentity().then((id) => { setMemberships(id.memberships); }); }, []);
+  // Memberships are bound to the signed-in account: cleared and reloaded on every account change; late responses discarded.
+  useEffect(() => {
+    let live = true;
+    setMemberships([]);
+    if (!auth.userId) return;
+    void loadMissionIdentity().then((id) => {
+      if (live && id.signedIn && !id.error && id.userId === auth.userId) setMemberships(id.memberships);
+    });
+    return () => { live = false; };
+  }, [auth.userId]);
+  // Mission-level reviewers receive the caller-readable mission roster; crew-bound members only their own crew.
+  useEffect(() => {
+    let live = true;
+    setRoster([]); setRosterMessage("");
+    const missionId = auth.missionId;
+    if (!missionId || !auth.userId || !memberships.some((m) => m.missionId === missionId && !m.crewMemberId && (m.role === "ground_medical" || m.role === "researcher"))) return;
+    void loadMissionCrewRoster(missionId).then((r) => {
+      if (!live) return;
+      if (r.ok) setRoster(r.crew); else setRosterMessage(r.message);
+    });
+    return () => { live = false; };
+  }, [auth.missionId, auth.userId, memberships]);
   useEffect(() => { ++epoch.current; setCrew(""); setCloud([]); setLocal([]); setView(null); setSelected([]); setMessage(""); }, [auth.missionId, auth.userId]);
 
-  const crewChoices = useMemo<CrewChoice[]>(() => {
-    const byCrew = new Map<string, CrewChoice>();
-    for (const m of memberships) {
-      if (m.missionId !== auth.missionId) continue;
-      if (m.crewMemberId) {
-        const cur = byCrew.get(m.crewMemberId) ?? { missionId: m.missionId, crewId: m.crewMemberId, name: m.crewDisplayName ?? m.crewMemberId, roles: [] };
-        if (!cur.roles.includes(m.role)) cur.roles.push(m.role);
-        byCrew.set(m.crewMemberId, cur);
-      }
-    }
-    return [...byCrew.values()].sort((a, b) => a.name.localeCompare(b.name));
-  }, [memberships, auth.missionId]);
+  const crewChoices = useMemo<CrewChoice[]>(() => buildCrewChoices(memberships, roster, auth.missionId), [memberships, roster, auth.missionId]);
+  // A selected crew that is no longer authorized (revocation/account change) is cleared.
+  useEffect(() => { if (crew && !crewChoices.some((c) => c.crewId === crew)) setCrew(""); }, [crew, crewChoices]);
 
   /** Roles the signed-in account holds for the exact selected scope (mission-level roles included). */
-  const scopeRoles = useMemo(() => {
-    if (!scope) return [] as string[];
-    return [...new Set(memberships.filter((m) => m.missionId === scope.missionId && (m.crewMemberId === scope.crewMemberId || !m.crewMemberId)).map((m) => m.role))];
-  }, [memberships, scope]);
+  const scopeRoles = useMemo(() => (scope ? rolesForScope(memberships, scope.missionId, scope.crewMemberId) : []), [memberships, scope]);
+  const showLocalSummary = canHoldLocalRequests(memberships, null);
   const canSubmit = scopeRoles.includes("ground_medical") || scopeRoles.includes("crew_self");
   const researcherOnly = scopeRoles.includes("researcher") && !canSubmit;
 
@@ -181,7 +189,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
   };
   return <section aria-label="Dynamic submitted scientific terms" className="space-y-3 border-y border-border py-5">
     <h2 className="text-xl font-semibold">Submitted and device-local terms</h2>
-    <P36PendingRequestsSummary userId={auth.userId} />
+    {showLocalSummary ? <P36PendingRequestsSummary userId={auth.userId} refreshKey={refreshKey} focusScope={scope} /> : null}
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
         <select aria-label="Scientific review provenance" className="border border-border bg-background px-3 py-2" value={provenance} onChange={(e) => setProvenance(e.target.value as "synthetic" | "real")}><option value="synthetic">Synthetic</option><option value="real">Real</option></select>
@@ -189,12 +197,13 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
         {auth.missionId ? <details className="text-xs"><summary className="cursor-pointer">Technical identifiers</summary><p className="break-all text-muted-foreground">mission {auth.missionId}</p></details> : null}
       </div>
       {auth.missionId ? <CrewSelector choices={crewChoices} value={crew} onChange={setCrew} /> : null}
+      {rosterMessage ? <p role="status" className="text-xs text-destructive">{rosterMessage}</p> : null}
     </div>
     {!auth.missionId ? <p>Select an authorized mission above to read submitted terms. The original 12 documentary dossiers remain below.</p> : null}
     {researcherOnly ? <p className="text-xs text-muted-foreground">Researcher view: only successfully submitted and authorized cloud terms are shown. Device-local registrations and submission controls are not part of the Researcher workflow.</p> : null}
     {loading ? <p role="status">Reading authorized cloud metadata and encrypted local requests…</p> : null}
     {message ? <p role="status" className="break-words text-sm">{message}</p> : null}
-    {!researcherOnly && auth.userId ? local.map((r) => <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId!} />) : null}
+    {!researcherOnly && auth.userId ? local.map((r) => <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId!} onSubmitted={() => { setRefreshKey((k) => k + 1); void reload(); }} />) : null}
     <Input aria-label="Search dynamic terms" placeholder="Search label, exact unit or term ID" value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} />
     <p className="text-xs">{terms.length} {researcherOnly ? "submitted" : "additional"} term(s) · {cloud.length} cloud term(s) · {selected.length} proposal selection(s). Grouping is not scientific approval. Recommendations and approvals require an independently verified source receipt; uploaded labels never validate a source.</p>
     {scope && !loading && terms.length === 0 ? <p>{researcherOnly ? "No successfully submitted terms are available in this exact scope." : "No submitted or device-local terms available in this exact scope. A request registered on another browser is not present here until explicitly submitted."}</p> : null}
