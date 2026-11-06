@@ -1,3 +1,11 @@
+# P36 final UX and release readiness
+
+- [ ] Authorized selectors: mission dropdown, searchable crew-name dropdown, governed provenance, verified-revision dropdown (fail-closed empty registry), technical IDs in expandable details.
+- [ ] Consolidated pending-requests summary grouped by mission/crew/provenance with batch expansion, statuses, receipts and non-destructive duplicate detection.
+- [ ] Role-aware workflows: Ground Medical preview/consent/submit; Researcher sees only submitted authorized cloud terms.
+- [ ] Validation: regression/security/typecheck/lint/format/build; disposable SQL and two-account browser tests if services exist; report blockers.
+- [ ] Delivery: one source ZIP, one validation report, migration hashes, production activation checklist. No deploy, no production migration, no real-data upload.
+
 # P36 unified implementation
 
 - [x] Audit and preserve current baseline; stage metadata-only scope-bound cloud handoff and guarded rollback.
