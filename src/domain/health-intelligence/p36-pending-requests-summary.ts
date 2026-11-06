@@ -152,7 +152,7 @@ export interface ScopeInput {
   requests: readonly PendingReviewRequest[];
   receipts: readonly HandoffReceipt[];
   /** Authorized cloud inventory for this exact scope, if it was read. */
-  cloud?: CloudInventory;
+  cloud?: CloudInventory | undefined;
 }
 
 export function buildPendingRequestsSummary(
