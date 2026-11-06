@@ -1,5 +1,24 @@
 -- PENDING: scoped dynamic counterpart; original staged authorization bytes are unchanged.
 begin;
+-- Independently verified documentary receipts are owner-provisioned, never user claims.
+-- No receipt is seeded. Absence blocks mapping authorization even with a label match.
+create table public.p36_dynamic_source_validation (
+  mission_id text not null references public.missions(id),
+  crew_member_id text not null references public.crew_members(id),
+  provenance text not null check (provenance in ('synthetic','real')),
+  term_id text not null,
+  source_sha256 text not null check (source_sha256 ~ '^[0-9a-f]{64}$'),
+  canonical_metric_id text not null,
+  exact_unit text not null,
+  specimen text not null, method text not null, protocol text not null, protocol_version text not null,
+  validation_reference text not null,
+  verified_by text not null,
+  verified_at timestamptz not null,
+  primary key(mission_id,crew_member_id,provenance,term_id,source_sha256)
+);
+revoke all on public.p36_dynamic_source_validation from public,anon,authenticated,service_role;
+grant select on public.p36_dynamic_source_validation to service_role;
+alter table public.p36_dynamic_source_validation enable row level security;
 create table public.p36_dynamic_authorization_events (
   authority_mission_id text not null references public.missions(id),
   crew_member_id text not null references public.crew_members(id),
@@ -45,6 +64,8 @@ create trigger p36_dynamic_auth_no_delete before delete on public.p36_dynamic_au
   for each row execute function public.p36_dynamic_auth_reject_mutation();
 create trigger p36_dynamic_auth_no_truncate before truncate on public.p36_dynamic_authorization_events
   for each statement execute function public.p36_dynamic_auth_reject_mutation();
+create trigger p36_dynamic_validation_immutable before update or delete on public.p36_dynamic_source_validation for each row execute function public.p36_dynamic_auth_reject_mutation();
+create trigger p36_dynamic_validation_no_truncate before truncate on public.p36_dynamic_source_validation for each statement execute function public.p36_dynamic_auth_reject_mutation();
 
 create function public.p36_dynamic_auth_has_role(p_mission_id text, p_roles text[]) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
@@ -112,6 +133,8 @@ begin
   end if;
 
   perform public.p36_dynamic_scope(p_mission_id,p_crew_member_id,false);
+  if not exists(select 1 from public.mission_memberships m where m.mission_id=p_mission_id and m.user_id=v_uid and m.active
+    and (m.crew_member_id=p_crew_member_id or m.crew_member_id is null) and m.role=v_role) then raise exception 'role not authorized for requested crew' using errcode='42501'; end if;
   if v_p->>'crewMemberId' is distinct from p_crew_member_id or v_p->>'provenance' is distinct from p_provenance then raise exception 'scope mismatch' using errcode='22023'; end if;
   -- Direct RPC callers must bind to an immutable submitted term, not arbitrary aliases.
   if not exists(select 1 from public.p36_dynamic_handoff_terms t join public.p36_dynamic_handoff_submissions s using(submission_id)
@@ -123,16 +146,25 @@ begin
     where s.mission_id=p_mission_id and s.crew_member_id=p_crew_member_id and s.provenance=p_provenance and t.term_id=v_term
     group by t.term_id having count(distinct t.metadata)>1) then return jsonb_build_object('status','rejected','detail','conflicting term metadata'); end if;
   if v_action='APPROVE' then
+    if jsonb_typeof(v_p->'validationEvidenceRefs') is distinct from 'array' then return jsonb_build_object('status','rejected','detail','validation evidence array required'); end if;
     foreach v_field in array array['reviewerName','reviewerQualification','specimenOrAcquisitionContext','methodOrInstrument','protocol','protocolVersion'] loop
       if lower(btrim(coalesce(v_p->>v_field,''))) ~ '^(unknown|tbd|pending|none|n/a|placeholder|todo)$' then return jsonb_build_object('status','rejected','detail','placeholder evidence'); end if;
     end loop;
     if not exists(select 1 from jsonb_array_elements_text(v_p->'validationEvidenceRefs') r where r ~ '^(doi:10\.[^ ]+|pmid:[0-9]+)$') then return jsonb_build_object('status','rejected','detail','primary validation evidence required'); end if;
   end if;
+  if v_action in ('RECOMMEND','APPROVE') and not exists(select 1 from public.p36_dynamic_source_validation v
+    join public.p36_dynamic_handoff_terms t on t.term_id=v.term_id join public.p36_dynamic_handoff_submissions s using(submission_id)
+    where v.mission_id=p_mission_id and v.crew_member_id=p_crew_member_id and v.provenance=p_provenance and v.term_id=v_term
+    and s.mission_id=v.mission_id and s.crew_member_id=v.crew_member_id and s.provenance=v.provenance
+    and t.metadata->'sourceDocumentSha256' ? v.source_sha256 and v.canonical_metric_id=v_p->>'canonicalCatalogId'
+    and v.exact_unit=v_p->>'validatedUnit' and v.specimen=v_p->>'specimenOrAcquisitionContext' and v.method=v_p->>'methodOrInstrument'
+    and v.protocol=v_p->>'protocol' and v.protocol_version=v_p->>'protocolVersion') then
+    return jsonb_build_object('status','rejected','detail','independently verified source receipt required; label match is not validation'); end if;
   -- Idempotency on (actor, submission)
   select * into v_existing from public.p36_dynamic_authorization_events
     where actor_user_id = v_uid and submission_id = p_submission_id;
   if found then
-    if v_existing.payload_sha256 = v_sha and v_existing.authority_mission_id = p_mission_id then
+    if v_existing.payload_sha256 = v_sha and v_existing.authority_mission_id = p_mission_id and v_existing.crew_member_id=p_crew_member_id and v_existing.provenance=p_provenance then
       return jsonb_build_object('status','duplicate','event_id',v_existing.event_id,'event_hash',v_existing.event_hash,
         'received_at',v_existing.received_at,'received_seq',v_existing.received_seq);
     end if;
@@ -197,6 +229,8 @@ begin
   perform pg_advisory_xact_lock(hashtext('p36_dynamic_auth|' || p_mission_id || '|' || p_crew_member_id || '|' || p_provenance || '|' || v_term));
 
   if v_action = 'APPROVE' then
+    if exists(select 1 from public.p36_dynamic_authorization_events where authority_mission_id=p_mission_id and crew_member_id=p_crew_member_id and provenance=p_provenance and term_id=v_term and kind='recommendation' and actor_user_id=v_uid) then
+      return jsonb_build_object('status','rejected','detail','researcher previously recommended this term; independent reviewer required'); end if;
     select * into v_rec from public.p36_dynamic_authorization_events
       where authority_mission_id = p_mission_id and crew_member_id=p_crew_member_id and provenance=p_provenance and event_id = v_p->>'recommendationEventId';
     if not found or v_rec.kind <> 'recommendation' or v_rec.term_id <> v_term then

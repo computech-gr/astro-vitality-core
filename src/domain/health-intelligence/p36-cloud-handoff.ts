@@ -46,7 +46,7 @@ export function validateCloudHandoff(input: unknown): CloudHandoff {
 export async function prepareCloudHandoff(request: PendingReviewRequest): Promise<CloudHandoff> {
   const view = buildDynamicHandoff(request.scope, [request]);
   if (view.rejectedRequests.length) throw new Error(view.rejectedRequests[0]?.reason ?? "Invalid request");
-  const terms = await Promise.all(view.terms.map(async (t): Promise<CloudTerm> => ({
+  const terms = await Promise.all(view.terms.filter((t) => t.requestIds.includes(request.requestId)).map(async (t): Promise<CloudTerm> => ({
     termId: t.termId, originalLabels: t.originalLabels, exactUnit: t.exactUnit,
     classification: t.classification, candidateMetricIds: t.candidateMetricIds,
     sourceDocumentSha256: t.sourceDocumentSha256,
