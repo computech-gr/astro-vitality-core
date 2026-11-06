@@ -58,7 +58,7 @@ export function extractFiveColumnLabCandidates(text:string,max=200):Candidate[] 
  for(const original of text.split(/\r?\n/)) {
   const line=original.trim();
   if(!line||line.length>500||/[<>≤≥]/.test(line))continue;
-  // PDF geometry produces tab-like or multi-space separated columns.
+  // Existing geometry emits pipes; plain tables may use tabs or multiple spaces.
   const cells=line.split(/\s+\|\s+|\t+| {2,}/).map(x=>x.trim()).filter(Boolean);
   if(cells.length<4)continue;
   const dateIndex=cells.findIndex((c,i)=>i>=2&&date.test(c));
@@ -69,7 +69,7 @@ export function extractFiveColumnLabCandidates(text:string,max=200):Candidate[] 
   const unit=cells.slice(valueIndex+1,dateIndex).join(' ').trim();
   const value=cells[valueIndex] ?? '';
   const trailing=cells.slice(dateIndex+1).join(' ');
-  if(!/^[\p{L}][\p{L}\p{N}\s+()_./β-]{1,100}$/u.test(label))continue;
+  if(!/^[\p{L}\p{N}][\p{L}\p{N}\s+()_./β-]{1,100}$/u.test(label)||!/[\p{L}]/u.test(label))continue;
   if(!unit||unit.length>90||/^(?:—|-|N\/?A)$/i.test(unit))continue;
   if(trailing&&!flags.test(trailing))continue;
   if(!Number.isFinite(Number(value.replace(',', '.'))))continue;
