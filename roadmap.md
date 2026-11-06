@@ -2,8 +2,9 @@
 
 - [x] Inspect patch and reproduce pipe-separated PDF candidate failure.
 - [x] Integrate candidate recognizer, preserving exact values/units and date-only metadata.
-- [ ] Run focused/full permitted checks and desktop/mobile browser intake.
-- [ ] Actual 11-page report acceptance requires locating or supplying the original PDF.
+- [x] Focused tests (31), full suite (1123), lint/security/format/project verifiers and desktop/mobile representative PDF intake pass; automatic compilation is OK.
+- [ ] Actual 11-page NASA report acceptance blocked: original PDF absent from uploads, project and uploaded archives.
+- [ ] Complete bun run check including typecheck/production build blocked by platform execution restrictions; those steps were not manually run.
 
 # P36.5 Mission/astronaut report export
 
