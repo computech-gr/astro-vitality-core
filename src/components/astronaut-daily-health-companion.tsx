@@ -47,7 +47,8 @@ const qualityClass: Record<ReturnType<typeof qualityPresentation>["tone"], strin
   neutral: "border-border bg-muted text-muted-foreground",
 };
 
-const utcMinute = (iso: string) => new Date(iso).toISOString().slice(0, 16).replace("T", " ");
+import { isCalendarDate, observationDateLabel } from "@/domain/health-intelligence/observation-date";
+const utcMinute = (iso: string) => isCalendarDate(iso) ? `${iso} (date only)` : new Date(iso).toISOString().slice(0, 16).replace("T", " ");
 
 function MetricChart({ items, unit }: { items: ScientificObservation[]; unit: string }) {
   const geometry = chartGeometry(items);
@@ -90,8 +91,8 @@ function MetricChart({ items, unit }: { items: ScientificObservation[]; unit: st
         ))}
       </svg>
       <p className="text-xs text-muted-foreground">
-        {new Date(first.item.observedAt).toLocaleDateString()} →{" "}
-        {new Date(last.item.observedAt).toLocaleDateString()} · {geometry.points.length}{" "}
+        {first.item.datePrecision === "date" ? first.item.observedAt : new Date(first.item.observedAt).toLocaleDateString()} →{" "}
+        {last.item.datePrecision === "date" ? last.item.observedAt : new Date(last.item.observedAt).toLocaleDateString()} · {geometry.points.length}{" "}
         observations
         {geometry.truncated ? " (latest 30 shown)" : ""} · {unit} · range shown is the observed
         minimum/maximum only; no clinical thresholds
@@ -656,7 +657,7 @@ export function AstronautDailyHealthCompanion() {
                       </div>
                       <p className="text-sm">
                         Latest recorded: {current.latest.value} {current.unit} ·{" "}
-                        {new Date(current.latest.observedAt).toLocaleString()} · source{" "}
+                        {current.latest.datePrecision === "date" ? observationDateLabel(current.latest) : new Date(current.latest.observedAt).toLocaleString()} · source{" "}
                         {current.latest.sourceId}
                       </p>
                       <div className="flex flex-wrap gap-3">
