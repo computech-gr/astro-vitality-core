@@ -167,6 +167,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
   const pages = Math.max(1, Math.ceil(filtered.length / 20));
   const bulk = draftBulkProposal(terms, selected);
   const dynamicAuth = { ...auth, view, load: view?.loaded ? "ready" as const : "error" as const, reload };
+  const isVerifiedSelection = revisions.revisions.some((r) => r.revision === commit);
   const exportPromotion = async (termId: string) => {
     try {
       const state = view?.terms.find((t) => t.termId === termId);
@@ -178,7 +179,6 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
       setMessage("Promotion proposal downloaded for code review. No catalog was changed; future imports remain blocked until approved deployment and row-by-row re-import.");
     } catch (e) { setMessage(e instanceof Error ? e.message : "Promotion blocked."); }
   };
-  const isVerifiedSelection = revisions.revisions.some((r) => r.revision === commit);
   return <section aria-label="Dynamic submitted scientific terms" className="space-y-3 border-y border-border py-5">
     <h2 className="text-xl font-semibold">Submitted and device-local terms</h2>
     <P36PendingRequestsSummary userId={auth.userId} />
