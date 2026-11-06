@@ -5,6 +5,7 @@ Date: 2026-11-06 (UTC). Scope: authorized selectors, consolidated pending-reques
 ## Changes delivered
 
 ### 1. Authorized selectors replace technical ID inputs
+
 - **Mission**: dropdown populated only from the signed-in account's authorized Ground Medical / Researcher mission memberships (existing `AuthorizationSummary`, unchanged behavior, labels from mission code/name).
 - **Crew member**: new searchable `CrewSelector` in `src/components/p36-dynamic-review-workspace.tsx` displays crew display names from authorized memberships and resolves selections to exact authorized IDs; free-text ID entry removed.
 - **Provenance**: existing governed Synthetic/Real selection retained.
@@ -12,6 +13,7 @@ Date: 2026-11-06 (UTC). Scope: authorized selectors, consolidated pending-reques
 - Technical IDs (mission, crew, request, revision) are shown in expandable "Technical identifiers" details for audit.
 
 ### 2. Consolidated pending review requests
+
 - New pure module `src/domain/health-intelligence/p36-pending-requests-summary.ts` and component `src/components/p36-pending-requests-summary.tsx`.
 - One summary across all locally stored and submitted requests, grouped by exact mission/crew/provenance scope: total requests, total unique terms, original 12-term batch count, additional submitted batch count (computed from data, never hardcoded), local-only / submitted / conflict status per request, request date and latest submission receipt.
 - Every scope batch is expandable; per-request technical identifiers are expandable.
@@ -19,22 +21,23 @@ Date: 2026-11-06 (UTC). Scope: authorized selectors, consolidated pending-reques
 - Invalid stored entries (wrong scope, claimed approval, tampered term identity, empty) are rejected and listed, never shown as terms.
 
 ### 3. Role-aware workflows
+
 - Ground Medical / Crew Self: per-request metadata preview, explicit consent checkbox and submission (`P36HandoffSubmission`) retained for the selected authorized scope.
 - Researcher-only accounts (researcher role without ground_medical/crew_self for the scope) see **only successfully submitted and authorized cloud terms**; device-local registrations, submission controls and local-only terms are hidden, with an explanatory note.
 - Independent recommendation/approval, source-validation requirements, immutable audit history and all scientific restrictions are unchanged.
 
 ## Validation results
 
-| Gate | Result |
-| --- | --- |
-| New domain tests (verified revisions, pending-requests summary) | 14/14 pass |
-| Full test suite | **1,184 pass / 0 fail** (189 files; +14 new) |
-| Typecheck (`tsc -b --noEmit`) | Pass |
-| Lint | 0 errors, 12 warnings (unchanged pre-existing baseline; new files add none) |
-| Security boundary audit (`security:audit`) | PASS |
-| Production build (`bun run build`) | Pass |
-| Formatting gate (`format:check`: docs/md/yml only) | Pass (source TS is outside the project's Prettier gate; existing source files also warn) |
-| Signed-out browser check (desktop 1280px + mobile 390px) | Pass: revision dropdown disabled with "No verified revisions registered", free-text revision input absent, mission prompt shown, no page errors |
+| Gate                                                            | Result                                                                                                                                          |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| New domain tests (verified revisions, pending-requests summary) | 14/14 pass                                                                                                                                      |
+| Full test suite                                                 | **1,184 pass / 0 fail** (189 files; +14 new)                                                                                                    |
+| Typecheck (`tsc -b --noEmit`)                                   | Pass                                                                                                                                            |
+| Lint                                                            | 0 errors, 12 warnings (unchanged pre-existing baseline; new files add none)                                                                     |
+| Security boundary audit (`security:audit`)                      | PASS                                                                                                                                            |
+| Production build (`bun run build`)                              | Pass                                                                                                                                            |
+| Formatting gate (`format:check`: docs/md/yml only)              | Pass (source TS is outside the project's Prettier gate; existing source files also warn)                                                        |
+| Signed-out browser check (desktop 1280px + mobile 390px)        | Pass: revision dropdown disabled with "No verified revisions registered", free-text revision input absent, mission prompt shown, no page errors |
 
 ## Exact migration hashes (staged, NOT applied)
 
