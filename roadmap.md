@@ -1,10 +1,10 @@
 # P36 final UX and release readiness
 
-- [ ] Authorized selectors: mission dropdown, searchable crew-name dropdown, governed provenance, verified-revision dropdown (fail-closed empty registry), technical IDs in expandable details.
-- [ ] Consolidated pending-requests summary grouped by mission/crew/provenance with batch expansion, statuses, receipts and non-destructive duplicate detection.
-- [ ] Role-aware workflows: Ground Medical preview/consent/submit; Researcher sees only submitted authorized cloud terms.
-- [ ] Validation: regression/security/typecheck/lint/format/build; disposable SQL and two-account browser tests if services exist; report blockers.
-- [ ] Delivery: one source ZIP, one validation report, migration hashes, production activation checklist. No deploy, no production migration, no real-data upload.
+- [x] Authorized selectors: mission dropdown, searchable crew-name dropdown, governed provenance, verified-revision dropdown (fail-closed empty registry), technical IDs in expandable details.
+- [x] Consolidated pending-requests summary grouped by mission/crew/provenance with batch expansion, statuses, receipts and non-destructive duplicate detection.
+- [x] Role-aware workflows: Ground Medical preview/consent/submit; Researcher sees only submitted authorized cloud terms.
+- [x] Validation: 1,184 tests, typecheck, lint (0 errors/12 warnings), security audit, production build, signed-out desktop/mobile browser check. Disposable SQL and two-account browser tests blocked: no isolated PostgreSQL socket or auth services in this environment.
+- [x] Delivery: one source ZIP, one validation report, migration hashes, production activation checklist. No deploy, no production migration, no real-data upload.
 
 # P36 unified implementation
 
