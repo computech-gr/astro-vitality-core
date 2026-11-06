@@ -386,7 +386,7 @@ export function classifyWithGovernedExtensions(
   evaluation: RegistryEvaluation = evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS),
 ): ExtendedClassification {
   const base = classifyIntakeObservation(input);
-  if (input.sourceValidation === "unvalidated") return { classification: { status: "unclassified", originalLabel: input.label, originalUnit: input.unit, candidateMetricIds: [] }, extension: null };
+  if (input.sourceValidation === "unvalidated") return { classification: { status: "unclassified", originalLabel: input.label, originalUnit: input.unit, candidateMetricIds: [], reviewRequired: true }, extension: null };
   if (base.status === "matched") return { classification: base, extension: null };
   const label = normalizeLabel(input.label);
   const unit = input.unit;
