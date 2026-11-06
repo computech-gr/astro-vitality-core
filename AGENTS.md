@@ -48,4 +48,4 @@
 - Competition Materials links open in a new tab (opensInNewTab in app-shell); PDFs render with the pdf.js legacy build from same-origin static files under /competition/assets/pdf/, staged from docs/competition at build (package script plus a Vite safeguard plugin, copies gitignored) because worker-side GitHub fetching returned 502; the security policy frames only the Office Online PPTX viewer.
 - Ground Medical review state lives in the framework-free p368b-ground-medical-review-scope module: auto and manual mission selection share one load path and only current-epoch, authorized-mission responses are accepted, so it is testable without a DOM.
 
-- Unified date-only observations use the v2 envelope and observation-date helpers; transport ordering uses recordedAt, while catalogs/legacy instants stay unchanged, to avoid inventing UTC collection times.
+- Unified date-only envelopes use v2/date helpers and recordedAt transport ordering; never infer a collection instant.

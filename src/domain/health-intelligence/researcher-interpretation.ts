@@ -330,7 +330,7 @@ export function buildResearcherInterpretation(
       included: domainRows.length,
       series,
       evidenceIds: domainRows.map((r) => r.recordId),
-      coverage: { first: times[0] ?? null, last: times.at(-1) ?? null, distinctUtcDays: new Set(times.map(utcDay)).size, dateOnly: domainRows.some((r) => r.datePrecision === "date") },
+      coverage: { first: times[0] ?? null, last: times.at(-1) ?? null, distinctUtcDays: new Set(times.map(utcDay)).size, ...(domainRows.some((r) => r.datePrecision === "date") ? { dateOnly: true } : {}) },
       governance,
       summary,
       limitations: domainRows.length
