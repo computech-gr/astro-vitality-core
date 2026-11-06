@@ -1,4 +1,4 @@
-// Browser-safe registry of the three competition PDFs shown by the in-app viewer.
+// Browser-safe registry of the four competition PDFs shown by the in-app viewer.
 // P53: the committed docs/competition PDFs ship as same-origin static files under
 // /competition/assets/pdf/ (staged at build time); nothing is fetched from GitHub.
 
@@ -11,13 +11,13 @@ export const competitionPdfs = {
     title: "NASA Evaluator Quick Start Guide",
     file: "MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
   },
-  sample: {
-    title: "Synthetic Astronaut Health Report — Sample",
-    file: "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
-  },
   manual: {
     title: "Master Operations & Technical Manual",
     file: "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+  },
+  sample: {
+    title: "Synthetic Astronaut Health Report — Sample",
+    file: "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
   },
 } as const;
 
