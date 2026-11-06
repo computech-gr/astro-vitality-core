@@ -5,8 +5,9 @@
  * anything. Every candidate still goes through strict P36 catalog matching
  * and per-row human confirmation in the Unified Intake workspace.
  */
+import { observationDateKey, type ObservationDateFields } from "./observation-date";
 import { unzipSync } from "fflate";
-import { extractCsvCandidates, type Candidate } from "./universal-intake-parser";
+import { candidateDate, extractCsvCandidates, type Candidate } from "./universal-intake-parser";
 
 export type IntakeFileFormat = "csv" | "xlsx" | "json" | "document" | "unsupported";
 
@@ -133,9 +134,10 @@ export function extractFhirCandidates(input: unknown, max = 200): AdapterResult 
     const unit = text(observation.valueQuantity?.unit) || text(observation.valueQuantity?.code);
     if (!unit) return skip("valueQuantity unit is required.");
     const rawTime = observation.effectiveDateTime ?? observation.effectiveInstant;
-    const observedAt = rawTime === undefined ? "" : explicitTimestamp(rawTime);
+    const dateFields = candidateDate(rawTime === undefined ? "" : String(rawTime));
+    const observedAt = dateFields?.observedAt ?? null;
     if (observedAt === null)
-      return skip("effectiveDateTime must be a full timestamp with time zone.");
+      return skip("effectiveDateTime must be an ISO calendar date or explicit zoned timestamp.");
     const { label, trace } = fhirLabel(observation);
     if (!label) return skip("Observation code has no usable text, display or code.");
     if (rows.length >= max) return skip("row limit reached.");
@@ -144,6 +146,7 @@ export function extractFhirCandidates(input: unknown, max = 200): AdapterResult 
       label,
       value,
       unit,
+      ...dateFields,
       observedAt,
       excerpt:
         `FHIR Observation${id ? ` ${id}` : ""}${trace ? ` [${trace}]` : ""}: ${value} ${unit}${observedAt ? ` @ ${observedAt}` : ""}`.slice(
@@ -189,16 +192,17 @@ export function extractJsonCandidates(textValue: string, max = 200): AdapterResu
     const label = LABEL_KEYS.map((key) => text(record[key])).find(Boolean) ?? "";
     const value = numericText(record["value"]);
     const unit = text(record["unit"]);
-    const rawTime = record["observed_at"] ?? record["observedAt"];
-    const observedAt = rawTime === undefined || rawTime === "" ? "" : explicitTimestamp(rawTime);
+    const rawTime = record["observed_at"] ?? record["observedAt"] ?? record["collectionDate"] ?? record["collection_date"];
+    const dateFields = candidateDate(rawTime === undefined ? "" : String(rawTime));
+    const observedAt = dateFields?.observedAt ?? null;
     if (!label || value === null || !unit || observedAt === null || rows.length >= max) {
       skipped += 1;
       notes.push(
-        `Item ${index + 1}: needs label, numeric value, unit and a valid zoned timestamp.`,
+        `Item ${index + 1}: needs label, numeric value, unit and a valid ISO date or zoned timestamp.`,
       );
       return;
     }
-    rows.push({ label, value, unit, observedAt, excerpt: JSON.stringify(record).slice(0, 350) });
+    rows.push({ label, value, unit, ...dateFields, observedAt, excerpt: JSON.stringify(record).slice(0, 350) });
   });
   return { rows, skipped, notes };
 }
@@ -331,14 +335,13 @@ export function extractXlsxCandidates(bytes: Uint8Array, max = 200): AdapterResu
  * are reported for explicit acknowledgment, never silently dropped or merged.
  */
 export function batchDuplicateKeys(
-  rows: ReadonlyArray<{ key: string; metricId: string; observedAt: string; value: string }>,
+  rows: ReadonlyArray<{ key: string; metricId: string; observedAt: string; value: string; unit?: string } & Partial<ObservationDateFields>>,
 ): string[] {
   const seen = new Set<string>();
   const repeats: string[] = [];
   for (const row of rows) {
     if (!row.metricId) continue;
-    const time = Date.parse(row.observedAt);
-    const identity = `${row.metricId}|${Number.isFinite(time) ? time : row.observedAt}|${row.value.trim()}`;
+    const identity = `${row.metricId}|${row.unit ?? ""}|${observationDateKey(row)}|${row.value.trim()}`;
     if (seen.has(identity)) repeats.push(row.key);
     else seen.add(identity);
   }

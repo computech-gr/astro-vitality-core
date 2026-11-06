@@ -18,13 +18,16 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { OBSERVATION_SYNC_BATCH_MAX, OBSERVATION_SYNC_PAGE_MAX, type ObservationSyncEvent } from "@/domain/health-intelligence/observation-sync";
 
+import { DATED_OBSERVATION_SCHEMA, UNIFIED_OBSERVATION_SCHEMA, validateUnifiedObservation, type UnifiedObservation } from "@/domain/health-intelligence/observation-envelope";
+import { isExplicitInstant } from "@/domain/health-intelligence/observation-date";
+
 const id = z.string().min(1).max(128);
-const iso = z.string().min(10).max(40).refine((v) => Number.isFinite(Date.parse(v)), "invalid instant");
+const iso = z.string().min(10).max(40).refine((v) => isExplicitInstant(v), "invalid instant");
 const scopeSchema = z.object({ missionId: id, crewMemberId: id, provenance: z.enum(["synthetic", "real"]) }).strict();
 
 const observationSchema = z
   .object({
-    schema: z.literal("mitochondria.unified-observation.v1"),
+    schema: z.enum([UNIFIED_OBSERVATION_SCHEMA, DATED_OBSERVATION_SCHEMA]),
     id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9-]{7,127}$/),
     missionId: id,
     crewMemberId: id,
@@ -32,7 +35,9 @@ const observationSchema = z
     domain: z.string().min(1).max(64),
     value: z.string().min(1).max(64),
     originalUnit: z.string().min(1).max(64),
-    observedAt: iso,
+    observedAt: z.string().min(10).max(40),
+    datePrecision: z.enum(["date", "instant"]).optional(),
+    collectionDate: z.string().max(10).optional(),
     source: z
       .object({
         kind: z.enum(["manual", "csv", "xlsx", "json", "fhir", "pdf_text", "ocr", "device", "self_assessment"]),
@@ -61,7 +66,8 @@ const observationSchema = z
       .optional(),
     recordedAt: iso,
   })
-  .strict();
+  .strict()
+  .refine((value) => !validateUnifiedObservation(value as UnifiedObservation), "Invalid observation envelope/date precision");
 
 const eventSchema = z
   .object({
