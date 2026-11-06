@@ -10,6 +10,7 @@ import {
   validateUnifiedObservation,
   type UnifiedObservation,
 } from "./observation-envelope";
+import { compareObservationDates, observationDateKey, type ObservationDateFields } from "./observation-date";
 
 const SOURCE = "unified-intake";
 const SOURCE_VERSION = "1.0";
@@ -17,13 +18,17 @@ const SOURCE_VERSION = "1.0";
 /** Same metric, instant and value — a warning only, never a silent rejection. */
 export function findUnifiedDuplicates(
   history: readonly UnifiedObservation[],
-  draft: Pick<UnifiedObservation, "metricId" | "observedAt" | "value">,
+  draft: Pick<UnifiedObservation, "metricId" | "observedAt" | "value"> & Partial<ObservationDateFields> & Partial<Pick<UnifiedObservation, "originalUnit" | "missionId" | "crewMemberId" | "provenance">>,
 ): UnifiedObservation[] {
   return history.filter(
     (entry) =>
       entry.status !== "erroneous" &&
       entry.metricId === draft.metricId &&
-      entry.observedAt === draft.observedAt &&
+      observationDateKey(entry) === observationDateKey(draft) &&
+      (!draft.originalUnit || entry.originalUnit === draft.originalUnit) &&
+      (!draft.missionId || entry.missionId === draft.missionId) &&
+      (!draft.crewMemberId || entry.crewMemberId === draft.crewMemberId) &&
+      (!draft.provenance || entry.provenance === draft.provenance) &&
       entry.value.trim() === draft.value.trim(),
   );
 }
@@ -60,7 +65,8 @@ export async function saveUnifiedObservation(observation: UnifiedObservation): P
     id: `unified-observation:${observation.id}:${observation.status === "erroneous" ? "status" : "entry"}`,
     kind: "observation",
     mission: { missionId: observation.missionId, crewMemberId: observation.crewMemberId },
-    eventTimestamp: observation.observedAt,
+    // Transport ordering is recording time for dates, never fabricated UTC midnight.
+    eventTimestamp: observation.datePrecision === "date" ? observation.recordedAt : observation.observedAt,
     sourceId: SOURCE,
     sourceVersion: SOURCE_VERSION,
     classification: "medical_sensitive",
@@ -139,9 +145,7 @@ export async function listUnifiedObservations(
   store: OfflineMissionStore = getOfflineMissionStore(),
 ): Promise<UnifiedObservation[]> {
   const events = await scopedEvents(missionId, crewMemberId, store);
-  return collapseUnifiedObservationVersions(events).sort((a, b) =>
-    b.observedAt.localeCompare(a.observedAt),
-  );
+  return collapseUnifiedObservationVersions(events).sort((a, b) => compareObservationDates(b, a));
 }
 
 /**
@@ -172,7 +176,7 @@ export async function importUnifiedObservationEvent(
       id,
       kind: "observation",
       mission: { missionId: event.observation.missionId, crewMemberId: event.observation.crewMemberId },
-      eventTimestamp: event.observation.observedAt,
+      eventTimestamp: event.observation.datePrecision === "date" ? event.observation.recordedAt : event.observation.observedAt,
       createdAt: new Date().toISOString(),
       sourceId: SOURCE,
       sourceVersion: SOURCE_VERSION,

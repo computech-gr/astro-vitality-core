@@ -6,8 +6,13 @@
  * remain unchanged.
  */
 import type { HealthDomainId } from "@/domain/health-domains/registry";
+import { isCalendarDate, validObservationDate, type ObservationDatePrecision } from "./observation-date";
 
 export const UNIFIED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v1";
+export const DATED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v2";
+export function isUnifiedObservationSchema(schema: unknown): boolean {
+  return schema === UNIFIED_OBSERVATION_SCHEMA || schema === DATED_OBSERVATION_SCHEMA;
+}
 
 export type ObservationSourceKind =
   "manual" | "csv" | "xlsx" | "json" | "fhir" | "pdf_text" | "ocr" | "device" | "self_assessment";
@@ -25,7 +30,7 @@ export interface UnifiedObservationSource {
 }
 
 export interface UnifiedObservation {
-  schema: typeof UNIFIED_OBSERVATION_SCHEMA;
+  schema: typeof UNIFIED_OBSERVATION_SCHEMA | typeof DATED_OBSERVATION_SCHEMA;
   id: string;
   missionId: string;
   crewMemberId: string;
@@ -35,8 +40,11 @@ export interface UnifiedObservation {
   /** Value and unit are stored exactly as reported; no unit conversion. */
   value: string;
   originalUnit: string;
-  /** ISO 8601 UTC instant of the observation. */
+  /** Explicit zoned ISO instant, or ISO calendar date when precision is date. */
   observedAt: string;
+  datePrecision?: ObservationDatePrecision;
+  /** Exact source collection date; never a fabricated observation instant. */
+  collectionDate?: string;
   source: UnifiedObservationSource;
   provenance: "synthetic" | "real";
   quality: {
@@ -68,15 +76,18 @@ const OBSERVATION_ID = /^[a-z0-9][a-z0-9-]{7,127}$/i;
 const SAFE_DECIMAL = /^[-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
 
 export function validateUnifiedObservation(observation: UnifiedObservation): string | null {
-  if (observation.schema !== UNIFIED_OBSERVATION_SCHEMA) return "Unknown observation schema.";
+  if (!isUnifiedObservationSchema(observation.schema)) return "Unknown observation schema.";
+  if (observation.schema === DATED_OBSERVATION_SCHEMA && !observation.datePrecision) return "Date precision is required for v2 observations.";
+  if (observation.schema === UNIFIED_OBSERVATION_SCHEMA && observation.datePrecision === "date") return "Date-only observations require the v2 schema.";
+  if (observation.collectionDate !== undefined && !isCalendarDate(observation.collectionDate)) return "Collection date must be a valid ISO calendar date.";
   if (!OBSERVATION_ID.test(observation.id)) return "Invalid observation id.";
   if (!observation.missionId || !observation.crewMemberId)
     return "Mission and crew identity are required.";
   if (!observation.metricId.trim()) return "A canonical catalog metric ID is required.";
   if (!SAFE_DECIMAL.test(observation.value.trim())) return "Value must be a plain decimal number.";
   if (!observation.originalUnit.trim()) return "The original reported unit is required.";
-  if (Number.isNaN(Date.parse(observation.observedAt)))
-    return "Observation time must be a valid date.";
+  if (!validObservationDate(observation))
+    return "Observation date must be a valid calendar date or explicit zoned instant at its declared precision.";
   if (Number.isNaN(Date.parse(observation.recordedAt)))
     return "Recording time must be a valid date.";
   if (observation.provenance !== "synthetic" && observation.provenance !== "real")

@@ -1,3 +1,11 @@
+# P36.8.1 date-only observation support
+
+- [ ] Integrate supplied source patch and explicit calendar-date observation model across intake, encrypted storage, corrections, sync, projections and reports.
+- [ ] Verify exact catalog/unit eligibility, selection and missing-data reasons; preserve scientific approval boundaries.
+- [ ] Run focused/full tests, security and desktop/mobile intake/export verification.
+- [ ] Original NASA PDF acceptance requires the actual report, which is not included in this patch archive.
+- [ ] Live cross-device writes and production publication remain owner-gated; no live migration or stored-record changes.
+
 # P36.7 PDF intake candidate extraction
 
 - [x] Inspect patch and reproduce pipe-separated PDF candidate failure.
