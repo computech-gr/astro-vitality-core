@@ -123,6 +123,12 @@ const check = (ok: boolean, name: string) => {
 
 const a = device(GM);
 const o1 = mk("synthe2e-0001", "cv-001", "cardiovascular", "62", "bpm", 30);
+if (process.env["P3681_DATE_ONLY"] === "1") {
+  o1.schema = "mitochondria.unified-observation.v2";
+  o1.datePrecision = "date";
+  o1.observedAt = "2026-10-14";
+  o1.collectionDate = "2026-10-14";
+}
 const o2 = mk("synthe2e-0002", "cv-027", "cardiovascular", "48", "ms", 31);
 for (const o of [o1, o2]) await importUnifiedObservationEvent({ eventId: `${o.id}:entry`, eventKind: "entry", observation: o }, a.store);
 const review = buildStoredObservationReview(await a.history(), SCOPE, []);
@@ -147,6 +153,7 @@ const histB = await b.history();
 const viewB = buildStoredObservationReview(histB, SCOPE, await listAttestationEvents(SCOPE, b.ledger));
 check(viewB.views.length === 2 && viewB.views.every((v) => v.groundMedical === "attested"), "device B shows both records Attested");
 check(JSON.stringify(histB.find((o) => o.id === o1.id)) === JSON.stringify(o1) || JSON.stringify(Object.entries(histB.find((o) => o.id === o1.id)!).sort()) === JSON.stringify(Object.entries(o1).sort()), "imported value, unit and metadata are unchanged");
+if (process.env["P3681_DATE_ONLY"] === "1") check(histB.find((o) => o.id === o1.id)?.observedAt === "2026-10-14" && histB.find((o) => o.id === o1.id)?.datePrecision === "date", "date-only precision preserved through real SQL encryption, import and attestation");
 const idsA = plan.events.map((e) => `${e.eventId}/${e.recordFingerprint}`).sort().join();
 const idsB = (await listAttestationEvents(SCOPE, b.ledger)).map((e) => `${e.eventId}/${e.recordFingerprint}`).sort().join();
 check(idsA === idsB, "same attestation event IDs and record fingerprints on both devices");

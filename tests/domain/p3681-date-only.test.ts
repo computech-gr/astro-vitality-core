@@ -42,7 +42,8 @@ describe("P36.8.1 calendar precision and source fidelity", () => {
     expect(extractXlsxCandidates(workbook).rows[0]?.observedAt).toBe(date);
     expect(extractJsonCandidates(JSON.stringify([{ metricId: "cv-001", value: 62, unit: "bpm", collectionDate: date }])).rows[0]).toMatchObject({ observedAt: date, datePrecision: "date" });
     const timestamp = "2026-11-05T08:17:23+02:00";
-    expect(extractJsonCandidates(JSON.stringify([{ metricId: "cv-001", value: 62, unit: "bpm", observedAt: timestamp, collectionDate: date }])).rows[0]?.observedAt).toBe(timestamp);
+    expect(extractJsonCandidates(JSON.stringify([{ metricId: "cv-001", value: 62, unit: "bpm", observedAt: timestamp, collectionDate: date }])).rows[0]).toMatchObject({ observedAt: timestamp, collectionDate: date });
+    expect(extractCsvCandidates(`label,value,unit,collection_date,observed_at\ncv-001,62,bpm,${date},${timestamp}`).rows[0]).toMatchObject({ observedAt: timestamp, collectionDate: date });
     expect(extractFhirCandidates({ resourceType: "Observation", code: { text: "Heart rate" }, valueQuantity: { value: 62, unit: "bpm" }, effectiveDateTime: date, issued: timestamp }).rows[0]).toMatchObject({ observedAt: date, datePrecision: "date" });
   });
   test("selection consults current catalog; absent time alone is never an exclusion", () => {
