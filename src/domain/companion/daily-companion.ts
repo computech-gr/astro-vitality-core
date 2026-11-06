@@ -89,6 +89,8 @@ export function participation(completed: readonly string[], total: number) {
   return { done, total, percent: total ? Math.round((100 * done) / total) : 0 };
 }
 
+import { compareObservationDates, validObservationDate, observationDay } from "@/domain/health-intelligence/observation-date";
+
 const MAX_POINTS = 30;
 
 /**
@@ -98,8 +100,8 @@ const MAX_POINTS = 30;
  */
 export function chartGeometry(items: readonly ScientificObservation[]) {
   const sorted = [...items]
-    .filter((o) => Number.isFinite(o.value) && Number.isFinite(Date.parse(o.observedAt)))
-    .sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+    .filter((o) => Number.isFinite(o.value) && validObservationDate(o))
+    .sort(compareObservationDates);
   const truncated = sorted.length > MAX_POINTS;
   const pts = sorted.slice(-MAX_POINTS);
   if (pts.length < 2) return null;
@@ -107,8 +109,9 @@ export function chartGeometry(items: readonly ScientificObservation[]) {
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
-  const t0 = Date.parse(pts[0]!.observedAt);
-  const span = Date.parse(pts[pts.length - 1]!.observedAt) - t0;
+  const dateOnly = pts.some((p) => p.datePrecision === "date");
+  const t0 = dateOnly ? 0 : Date.parse(pts[0]!.observedAt);
+  const span = dateOnly ? 0 : Date.parse(pts[pts.length - 1]!.observedAt) - t0;
   const points = pts.map((item, i) => {
     const fraction = span > 0 ? (Date.parse(item.observedAt) - t0) / span : i / (pts.length - 1);
     return {
@@ -129,15 +132,18 @@ export function filterTrendObservations(
   source: string,
 ): ScientificObservation[] {
   const valid = observations.filter(
-    (o) => Number.isFinite(o.value) && Number.isFinite(Date.parse(o.observedAt)),
+    (o) => Number.isFinite(o.value) && validObservationDate(o),
   );
-  const latest = Math.max(...valid.map((o) => Date.parse(o.observedAt)));
+  const dateOnly = valid.some((o) => o.datePrecision === "date");
+  const latest = Math.max(...valid.filter((o) => o.datePrecision !== "date").map((o) => Date.parse(o.observedAt)));
+  const latestDay = [...valid].sort(compareObservationDates).at(-1)?.observedAt;
+  const dayCutoff = latestDay && windowDays !== "all" ? calendarDayOrdinal(observationDay(latestDay)) - Number(windowDays) : -Infinity;
   const cutoff = windowDays === "all" ? -Infinity : latest - Number(windowDays) * 86400000;
   return valid
     .filter(
-      (o) => (source === "all" || o.sourceId === source) && Date.parse(o.observedAt) >= cutoff,
+      (o) => (source === "all" || o.sourceId === source) && (dateOnly ? calendarDayOrdinal(observationDay(o.observedAt)) >= dayCutoff : Date.parse(o.observedAt) >= cutoff),
     )
-    .sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+    .sort(compareObservationDates);
 }
 
 /** Hardcoded illustration: never inserted into evidence records or exported. */
@@ -146,3 +152,13 @@ export const SYNTHETIC_TREND_SERIES = {
   hrv: { label: "Heart rate variability (ms)", unit: "ms", values: [42, 45, 40, 47, 44] },
   sleep: { label: "Sleep duration (hours)", unit: "hours", values: [7.2, 6.8, 7.5, 7.0, 7.4] },
 } as const;
+
+/** Gregorian day ordinal for calendar filtering, not a timestamp. */
+function calendarDayOrdinal(date: string): number {
+  const [y = 0, m = 0, d = 0] = date.split("-").map(Number);
+  const year = y - (m <= 2 ? 1 : 0);
+  const era = Math.floor(year / 400);
+  const yo = year - era * 400;
+  const month = m + (m > 2 ? -3 : 9);
+  return era * 146097 + yo * 365 + Math.floor(yo / 4) - Math.floor(yo / 100) + Math.floor((153 * month + 2) / 5) + d - 1;
+}

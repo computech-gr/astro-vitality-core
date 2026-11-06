@@ -86,7 +86,6 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
   return {
     key: crypto.randomUUID(),
     value: "",
-    observedAt: "",
     excerpt: "",
     sourceKind: "manual",
     sourceLabel: "Manual entry",
@@ -407,7 +406,7 @@ export function UnifiedIntakeWorkspace() {
         findUnifiedDuplicates(history, {
           metricId: row.classification.status === "matched" ? row.classification.metricId : "",
           observedAt: row.observedAt,
-          datePrecision: row.datePrecision,
+          ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
           originalUnit: row.unit,
           missionId: membership.missionId,
           crewMemberId: membership.crewMemberId,
@@ -421,7 +420,7 @@ export function UnifiedIntakeWorkspace() {
       key: row.key,
       metricId: row.classification.status === "matched" ? row.classification.metricId : "",
       observedAt: row.observedAt,
-      datePrecision: row.datePrecision,
+      ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
       unit: row.unit,
       value: row.value,
     })),

@@ -201,9 +201,10 @@ describe("FHIR R4 Observation adapter", () => {
         { resource: { resourceType: "Patient" } },
       ],
     });
-    expect(r.rows).toHaveLength(1);
-    expect(r.skipped).toBe(6);
-    expect(r.notes).toHaveLength(6);
+    expect(r.rows).toHaveLength(2);
+    expect(r.rows[1]).toMatchObject({ observedAt: "2026-10-02", datePrecision: "date" });
+    expect(r.skipped).toBe(5);
+    expect(r.notes).toHaveLength(5);
   });
   test("JSON adapter routes FHIR resources", () => {
     expect(extractJsonCandidates(JSON.stringify(observation())).rows[0]?.excerpt).toStartWith(

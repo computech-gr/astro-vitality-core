@@ -17,7 +17,7 @@ import {
   type MeasurementDomainId,
 } from "@/domain/health-measurements/profiles";
 import type { UnifiedObservation } from "./observation-envelope";
-import { isUnifiedObservationSchema, validateUnifiedObservation } from "./observation-envelope";
+import { isUnifiedObservationSchema } from "./observation-envelope";
 import { getCanonicalMetric } from "@/domain/metric-registry";
 
 import { compareObservationDates, observationDateKey, observationDateLabel, validObservationDate, type ObservationDatePrecision } from "./observation-date";
@@ -294,7 +294,7 @@ function fromUnified(
       out.exclusions.push({ recordId: o.id, badge, category: "excluded", reason: `Superseded by correction ${by}` });
       continue;
     }
-    if (!o.originalUnit.trim() || !validObservationDate(o) || validateUnifiedObservation(o)) {
+    if (!o.originalUnit.trim() || !validObservationDate(o)) {
       out.exclusions.push({ recordId: o.id, badge, category: "excluded", reason: "Missing unit or observation time" });
       continue;
     }
@@ -426,9 +426,7 @@ function fromDeviceRecords(
       metricLabel: typeof o.metric?.displayName === "string" ? o.metric.displayName : code,
       value: String(o.value.number),
       unit,
-      observedAt: o.datePrecision === "date" ? o.observedAt : new Date(o.observedAt).toISOString(),
-      ...(o.datePrecision ? { datePrecision: o.datePrecision } : {}),
-      ...(o.collectionDate ? { collectionDate: o.collectionDate } : {}),
+      observedAt: new Date(o.observedAt).toISOString(),
       provenance,
       status: "included",
       sourceLabel: deviceName ? `${deviceName} (${source.sourceId})` : source.sourceId,
