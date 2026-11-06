@@ -97,7 +97,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
     {message ? <p role="status" className="break-words text-sm">{message}</p> : null}
     {local.map((r) => auth.userId ? <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId} /> : null)}
     <Input aria-label="Search dynamic terms" placeholder="Search label, exact unit or term ID" value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} />
-    <p className="text-xs">{terms.length} additional term(s) · {cloud.length} cloud term(s) · {selected.length} proposal selection(s). Grouping is not scientific approval.</p>
+    <p className="text-xs">{terms.length} additional term(s) · {cloud.length} cloud term(s) · {selected.length} proposal selection(s). Grouping is not scientific approval. Recommendations and approvals require an independently verified source receipt; uploaded labels never validate a source.</p>
     {scope && !loading && terms.length === 0 ? <p>No submitted or device-local terms available in this exact scope. A request registered on another browser is not present here until explicitly submitted.</p> : null}
     <ul className="space-y-3">{filtered.slice(Math.min(page, pages - 1) * 20, (Math.min(page, pages - 1) + 1) * 20).map((t) => {
       const cloudTerm = cloud.find((c) => c.termId === t.termId);

@@ -71,6 +71,7 @@ begin
   v_n := jsonb_array_length(v_p->'terms');
   if v_n not between 1 and 1000 then raise exception 'term limit' using errcode='22023'; end if;
   for v_t in select value from jsonb_array_elements(v_p->'terms') loop
+    if not (v_t ?& array['termId','originalLabels','exactUnit','classification','candidateMetricIds','sourceDocumentSha256','evidencePointers','method','specimen']) then raise exception 'required metadata missing' using errcode='22023'; end if;
     if jsonb_typeof(v_t) is distinct from 'object' or v_t->>'termId' !~ '^ubt-[0-9a-f]{8}$' or v_t->'method' is distinct from 'null'::jsonb or v_t->'specimen' is distinct from 'null'::jsonb or
        v_t->>'classification' not in ('unclassified','ambiguous','unit_review_required','source_unvalidated') or jsonb_typeof(v_t->'exactUnit') is distinct from 'string' or char_length(v_t->>'exactUnit')>64 then raise exception 'invalid term' using errcode='22023'; end if;
     for v_key in select jsonb_object_keys(v_t) loop
