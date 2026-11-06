@@ -1,3 +1,10 @@
+# P36 unified implementation
+
+- [ ] Audit and preserve current baseline; implement staged metadata-only scope-bound cloud handoff and guarded rollback.
+- [ ] Explicit submission/receipts/retry and dynamic paginated review with safe bulk proposals.
+- [ ] Independent scoped scientific authorization and governed promotion preparation without activation.
+- [ ] Disposable SQL/security/regression/browser validation and consolidated report/checklist/source ZIP.
+
 # P36.8.1 date-only observation support
 
 - [x] Integrate supplied partial source patch and explicit v2 calendar-date model across intake, encrypted storage, corrections, sync, projections and reports.
