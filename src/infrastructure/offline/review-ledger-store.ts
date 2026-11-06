@@ -17,6 +17,8 @@ export type ReviewLedgerKind =
   | "evidence-attestation"
   | "unknown-biomarker-request"
   | "unknown-biomarker-decision"
+  /** Explicit metadata-only P36 handoff receipts; original evidence stays untouched. */
+  | "p36-handoff-receipt"
   /** v9: local receipt that an event was accepted by (or conflicted with) the cloud review ledger. */
   | "review-sync-receipt"
   /** v9: correction audit intents received from the cloud (metadata only, no values). */
