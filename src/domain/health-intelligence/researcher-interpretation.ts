@@ -49,6 +49,7 @@ export interface InterpretationSeries {
   readings: number;
   distinctTimePoints: number;
   distinctUtcDays: number;
+  dateOnly?: boolean;
   first: string;
   last: string;
   /** Values exactly as recorded. */
@@ -218,6 +219,7 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
     label: m.label,
     unit: u,
     readings: sorted.length,
+    dateOnly: sorted.some((r) => r.datePrecision === "date"),
     distinctTimePoints,
     distinctUtcDays,
     first: first.observedAt,
@@ -320,7 +322,7 @@ export function buildResearcherInterpretation(
     const compared = series.filter((s) => s.comparison === "multi_day_comparison").length;
     const sameDay = series.filter((s) => s.comparison === "same_utc_day_only").length;
     const summary = domainRows.length
-      ? `${domainRows.length} included observation(s) across ${series.length} metric/unit series; ${compared} with two or more comparable time points on different UTC days, ${sameDay} same-UTC-day only, ${series.length - compared - sameDay} with insufficient comparable time points.`
+      ? `${domainRows.length} included observation(s) across ${series.length} metric/unit series; ${compared} with two or more comparable time points on different recorded days, ${sameDay} same-UTC-day only, ${series.length - compared - sameDay} with insufficient comparable time points.`
       : "No included observations in this reporting scope. No physiological conclusion can be drawn, and missing data is not evidence of normal or healthy status.";
     return {
       domain,
@@ -381,7 +383,7 @@ export function researcherInterpretationPlainText(model: ResearcherInterpretatio
     for (const s of d.series) {
       out.push(
         `- ${s.label} (${s.metricId}) [${s.unit}]: ${s.observation}`,
-        `  Readings ${s.readings}; time points ${s.distinctTimePoints}; UTC days ${s.distinctUtcDays}. Evidence: ${s.evidenceIds.join(", ")}.`,
+        `  Readings ${s.readings}; time points ${s.distinctTimePoints}; ${s.dateOnly ? "calendar days (timezone not supplied)" : "UTC days"} ${s.distinctUtcDays}. Evidence: ${s.evidenceIds.join(", ")}.`,
         `  Provenance: ${s.provenance}. Quality: ${s.quality}`,
         `  Evidence tiers: ${s.evidenceTiers.storedModule} module, ${s.evidenceTiers.intakeAccepted} intake-accepted, ${s.evidenceTiers.device} device. Ground Medical: ${attestationLine(s.attestation)}.`,
         `  Biological context: ${handbookLine(s.handbook)}`,

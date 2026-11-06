@@ -5,7 +5,7 @@
  * anything. Every candidate still goes through strict P36 catalog matching
  * and per-row human confirmation in the Unified Intake workspace.
  */
-import { observationDateKey, type ObservationDateFields } from "./observation-date";
+import { isCalendarDate, isExplicitInstant, observationDateKey, type ObservationDateFields } from "./observation-date";
 import { unzipSync } from "fflate";
 import { candidateDate, extractCsvCandidates, type Candidate } from "./universal-intake-parser";
 
@@ -35,13 +35,12 @@ export function detectIntakeFormat(fileName: string): IntakeFileFormat {
 export type AdapterResult = { rows: Candidate[]; skipped: number; notes: string[] };
 
 const NUMERIC = /^[-+]?(?:\d+(?:\.\d+)?|\.\d+)$/;
-const ISO_WITH_ZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 /** Only full timestamps with an explicit time zone are accepted; never a date-only value. */
 export function explicitTimestamp(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
-  if (!ISO_WITH_ZONE.test(trimmed) || Number.isNaN(Date.parse(trimmed))) return null;
+  if (!isExplicitInstant(trimmed)) return null;
   return trimmed;
 }
 
@@ -96,7 +95,7 @@ function fhirLabel(observation: FhirObservation): { label: string; trace: string
 
 /**
  * FHIR R4 Observation or Bundle of Observations. Requires numeric valueQuantity,
- * a unit and effectiveDateTime/effectiveInstant with explicit zone. `issued`
+ * a unit and effectiveDateTime (ISO date or zoned instant) / effectiveInstant. `issued`
  * (report time) is never used as observation time; components, ranges,
  * interpretations and non-Observation resources are not extracted.
  */
@@ -165,7 +164,7 @@ const LABEL_KEYS = ["label", "variable", "metric", "metric_id", "metricId", "nam
 /**
  * Plain JSON: an array of measurement objects, or { observations: [...] }.
  * Each needs a label/variable, numeric value and unit; observed_at is optional
- * but, when present, must be a full timestamp with zone. FHIR resources are
+ * but, when present, must be an ISO calendar date or zoned timestamp. FHIR resources are
  * routed to the FHIR adapter.
  */
 export function extractJsonCandidates(textValue: string, max = 200): AdapterResult {
@@ -194,7 +193,9 @@ export function extractJsonCandidates(textValue: string, max = 200): AdapterResu
     const unit = text(record["unit"]);
     const rawTime = record["observed_at"] ?? record["observedAt"] ?? record["collectionDate"] ?? record["collection_date"];
     const dateFields = candidateDate(rawTime === undefined ? "" : String(rawTime));
+    const collectionDate = record["collectionDate"] ?? record["collection_date"];
     const observedAt = dateFields?.observedAt ?? null;
+    if (collectionDate !== undefined && !isCalendarDate(collectionDate)) { skipped += 1; notes.push(`Item ${index + 1}: invalid collection date.`); return; }
     if (!label || value === null || !unit || observedAt === null || rows.length >= max) {
       skipped += 1;
       notes.push(
@@ -202,7 +203,7 @@ export function extractJsonCandidates(textValue: string, max = 200): AdapterResu
       );
       return;
     }
-    rows.push({ label, value, unit, ...dateFields, observedAt, excerpt: JSON.stringify(record).slice(0, 350) });
+    rows.push({ label, value, unit, ...dateFields, ...(typeof collectionDate === "string" ? { collectionDate } : {}), observedAt, excerpt: JSON.stringify(record).slice(0, 350) });
   });
   return { rows, skipped, notes };
 }
@@ -312,7 +313,7 @@ function csvField(value: string): string {
 /**
  * First worksheet only, same header rules as CSV. Excel date serials and
  * locale-formatted dates are not converted: such rows are skipped so an
- * observation time is never guessed. Store timestamps as ISO text cells.
+ * observation time is never guessed. Store dates or zoned timestamps as ISO text cells.
  */
 export function extractXlsxCandidates(bytes: Uint8Array, max = 200): AdapterResult {
   const grid = xlsxCells(bytes).filter((row) => row.some(Boolean));

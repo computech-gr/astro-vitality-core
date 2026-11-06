@@ -6,7 +6,7 @@
  * remain unchanged.
  */
 import type { HealthDomainId } from "@/domain/health-domains/registry";
-import { isCalendarDate, validObservationDate, type ObservationDatePrecision } from "./observation-date";
+import { isCalendarDate, isExplicitInstant, validObservationDate, type ObservationDatePrecision } from "./observation-date";
 
 export const UNIFIED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v1";
 export const DATED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v2";
@@ -88,7 +88,7 @@ export function validateUnifiedObservation(observation: UnifiedObservation): str
   if (!observation.originalUnit.trim()) return "The original reported unit is required.";
   if (!validObservationDate(observation))
     return "Observation date must be a valid calendar date or explicit zoned instant at its declared precision.";
-  if (Number.isNaN(Date.parse(observation.recordedAt)))
+  if (!isExplicitInstant(observation.recordedAt))
     return "Recording time must be a valid date.";
   if (observation.provenance !== "synthetic" && observation.provenance !== "real")
     return "Provenance must be explicitly synthetic or real.";

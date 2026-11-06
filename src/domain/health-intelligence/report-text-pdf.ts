@@ -343,7 +343,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
         rows: d.series.map((s) => [
           `${metricName(s.label, s.metricId)} | ${s.unit}`,
           s.observation,
-          `${s.readings} reading(s), ${s.distinctUtcDays} UTC day(s). ${s.provenance}. Quality: ${s.quality} Ground Medical: ${attestationLine(s.attestation)}.`,
+          `${s.readings} reading(s), ${s.distinctUtcDays} ${s.dateOnly ? "calendar day(s); timezone not supplied" : "UTC day(s)"}. ${s.provenance}. Quality: ${s.quality} Ground Medical: ${attestationLine(s.attestation)}.`,
           ref(s.evidenceIds),
         ]),
       });
@@ -416,7 +416,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     blocks.push({
       kind: "table",
       columns: [
-        { title: "Observed (UTC)", width: 0.22 },
+        { title: u.rows.some((r) => r.datePrecision === "date") ? "Observed date / instant" : "Observed (UTC)", width: 0.22 },
         { title: "Source", width: 0.13 },
         { title: "Metric", width: 0.21 },
         { title: "Value", width: 0.1 },
@@ -454,7 +454,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
           columns: [
             { title: "Ref", width: 0.08 },
             { title: "Record ID", width: 0.3 },
-            { title: "Observed (UTC) / metric", width: 0.24 },
+            { title: u.rows.some((r) => r.datePrecision === "date") ? "Observed date / instant / metric" : "Observed (UTC) / metric", width: 0.24 },
             { title: "Source and evidence trace", width: 0.38 },
           ],
           rows: u.rows.map((r) => [refs.get(r.recordId)!, r.recordId, `${observationDateLabel(r).replace(".000Z", "Z")} ${r.metricId}`, `${r.sourceLabel} · ${r.evidence}${r.qualityNote ? ` · ${r.qualityNote}` : ""}`]),
