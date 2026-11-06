@@ -234,6 +234,7 @@ const navigation: readonly NavigationEntry[] = [
           "View Narrated Presentation Online (PPTX)",
           "NASA Evaluator Quick Start (PDF)",
           "Master Technical Manual (PDF)",
+          "Sample Astronaut Health Report (PDF)",
           "Watch NASA Demo Video",
         ],
       },
@@ -332,6 +333,8 @@ function itemHref(label: string, fallback: string) {
   if (label === "Watch NASA Demo Video") return "/competition/demo-video";
   if (label === "View Narrated Presentation Online (PPTX)")
     return "/competition/narrated-presentation";
+  if (label === "Sample Astronaut Health Report (PDF)")
+    return "/competition/pdf/sample";
   if (label === "NASA Competition Presentation (PDF)")
     return "/competition/pdf/presentation";
   if (label === "NASA Evaluator Quick Start (PDF)")

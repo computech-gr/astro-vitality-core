@@ -41,6 +41,7 @@ export const INDEXABLE_ROUTES = [
   "/competition/pdf/presentation",
   "/competition/pdf/evaluator",
   "/competition/pdf/manual",
+  "/competition/pdf/sample",
   "/competition/team",
   "/technology",
   ...TECHNOLOGY_TOPIC_ROUTES,

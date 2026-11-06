@@ -9,6 +9,7 @@ export const COMPETITION_PDF_FILES = [
   "MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
   "MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
   "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+  "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
 ];
 const URL_PREFIX = "/competition/assets/pdf/";
 const OUTPUT_DIR = "competition/assets/pdf/";

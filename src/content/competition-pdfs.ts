@@ -1,4 +1,4 @@
-// Browser-safe registry of the three competition PDFs shown by the in-app viewer.
+// Browser-safe registry of the four competition PDFs shown by the in-app viewer.
 // P53: the committed docs/competition PDFs ship as same-origin static files under
 // /competition/assets/pdf/ (staged at build time); nothing is fetched from GitHub.
 
@@ -14,6 +14,10 @@ export const competitionPdfs = {
   manual: {
     title: "Master Operations & Technical Manual",
     file: "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+  },
+  sample: {
+    title: "Synthetic Astronaut Health Report — Sample",
+    file: "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
   },
 } as const;
 

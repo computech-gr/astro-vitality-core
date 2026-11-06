@@ -120,12 +120,13 @@ describe("official competition team destinations", () => {
     expect(shell.slice(pdf, viewer).split("\n").length).toBe(2);
   });
 
-  test("the PDF viewer registry serves only the three committed competition PDFs", () => {
-    expect(Object.keys(competitionPdfs)).toEqual(["presentation", "evaluator", "manual"]);
+  test("the PDF viewer registry serves only the four committed competition PDFs", () => {
+    expect(Object.keys(competitionPdfs)).toEqual(["presentation", "evaluator", "manual", "sample"]);
     expect(Object.values(competitionPdfs).map((document) => document.file)).toEqual([
       "MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
       "MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
       "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+      "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
     ]);
     for (const document of Object.values(competitionPdfs)) {
       expect(
@@ -198,4 +199,11 @@ describe("P53 same-origin competition PDFs", () => {
       "public/competition/assets/pdf/",
     );
   });
+});
+
+test("P36.8.2 sample health report is reachable from Competition Materials at /competition/pdf/sample", () => {
+  const shell = readFileSync("src/components/app-shell.tsx", "utf8");
+  expect(shell).toContain('"Sample Astronaut Health Report (PDF)"');
+  expect(shell).toMatch(/Sample Astronaut Health Report \(PDF\)"\)\s*return "\/competition\/pdf\/sample"/);
+  expect(findCompetitionPdf("sample")?.file).toBe("MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf");
 });
