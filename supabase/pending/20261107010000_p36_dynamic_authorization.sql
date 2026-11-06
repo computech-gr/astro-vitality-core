@@ -127,7 +127,7 @@ begin
     end if;
     if v_role is distinct from 'researcher' then v_rej := 'decision actorRole must be researcher'; end if;
   else
-    if v_role is null or v_role not in ('ground_medical','researcher') or not public.p36_dynamic_auth_has_role(p_mission_id, array[v_role]) then
+    if v_role is distinct from 'ground_medical' or not public.p36_dynamic_auth_has_role(p_mission_id, array['ground_medical']) then
       raise exception 'recommendations require an active ground_medical or researcher membership' using errcode = '42501';
     end if;
   end if;
@@ -160,6 +160,8 @@ begin
     and v.exact_unit=v_p->>'validatedUnit' and v.specimen=v_p->>'specimenOrAcquisitionContext' and v.method=v_p->>'methodOrInstrument'
     and v.protocol=v_p->>'protocol' and v.protocol_version=v_p->>'protocolVersion') then
     return jsonb_build_object('status','rejected','detail','independently verified source receipt required; label match is not validation'); end if;
+  if v_action in ('RECOMMEND','APPROVE') and lower(coalesce(v_p->>'sourceLabel','') || ' ' || coalesce(v_p->>'methodOrInstrument','')) ~ '(high.?sensitivity|hs.?crp)' then
+    return jsonb_build_object('status','rejected','detail','hsCRP requires separately governed assay identity; no CRP substitution'); end if;
   -- Idempotency on (actor, submission)
   select * into v_existing from public.p36_dynamic_authorization_events
     where actor_user_id = v_uid and submission_id = p_submission_id;

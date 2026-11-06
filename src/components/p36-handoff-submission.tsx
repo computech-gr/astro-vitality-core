@@ -27,7 +27,7 @@ export function P36HandoffSubmission({ request, userId }: { request: PendingRevi
       const r = receipts.filter((r) => r.requestId === request.requestId && r.payloadSha256 === sha).at(-1);
       if (r) { setState(r.status); setMessage(`Recorded server receipt ${r.submissionId} at ${r.receivedAt}. Refresh Scientific Review to verify current cloud availability.`); }
     }).catch(() => { if (current === epoch.current) setMessage("Local receipt could not be checked; cloud status is unknown."); });
-    return () => { ++epoch.current; };
+    return () => { epoch.current = current + 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- key binds immutable request scope and account
   }, [key]);
   const submit = async () => {

@@ -217,6 +217,7 @@ export function validateAuthorizationPayload(p: AuthorizationPayload, ctx: Autho
   if (!pairs[p.kind]?.includes(p.action)) return no("Action does not match the event kind.");
   if (p.kind === "decision" && p.actorRole !== "researcher") return no("Only an authorized Researcher can record a final scientific decision.");
   if (p.actorRole !== "researcher" && p.actorRole !== "ground_medical") return no("Unsupported actor role.");
+  if (p.crewMemberId && p.kind === "recommendation" && p.actorRole !== "ground_medical") return no("Dynamic recommendations require Ground Medical; Researcher decisions remain independent.");
   if (!/^[0-9a-f]{64}$/.test(p.sourceFingerprint ?? "") || !/^[0-9a-f]{64}$/.test(p.termDossierFingerprint ?? "")) return no("Catalog and source fingerprints are required.");
   if (!realText(p.catalogVersion, 2)) return no("Catalog version is required.");
   if (!Number.isFinite(Date.parse(p.decidedAt)) || !p.decidedAt.endsWith("Z")) return no("Decision time must be a UTC timestamp.");
@@ -247,6 +248,7 @@ export function validateAuthorizationPayload(p: AuthorizationPayload, ctx: Autho
     if (text(p.domain) !== entry.domain) return no(`Domain "${text(p.domain)}" contradicts the catalog domain "${entry.domain}" of ${id}.`);
     if (p.validatedUnit !== dossier.sourceUnit) return no(`Unit must be the exact source unit text "${dossier.sourceUnit}"; no aliases or conversions are permitted.`);
     if (entry.unit && entry.unit !== p.validatedUnit) return no(`The catalog unit "${entry.unit}" differs from "${p.validatedUnit}"; incompatible units cannot be approved.`);
+    if (p.crewMemberId && /high.?sensitivity|hs.?crp/i.test(`${p.sourceLabel} ${p.methodOrInstrument}`) && /c-reactive|\bcrp\b/i.test(entry.name) && !/high.?sensitivity|hs.?crp/i.test(entry.name)) return no("hsCRP cannot be substituted for standard CRP.");
     if (CRP_TERM_IDS.has(p.termId) && HS_CRP.test(`${p.methodOrInstrument ?? ""} ${p.rationale}`))
       return no("High-sensitivity CRP is related to but not interchangeable with C-reactive protein; it needs its own catalog metric.");
   }

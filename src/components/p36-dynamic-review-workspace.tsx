@@ -60,7 +60,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
     } catch (e) { if (current === epoch.current) setMessage(e instanceof Error ? e.message : "Unable to read this scope."); }
     finally { if (current === epoch.current) setLoading(false); }
   }, [scope, auth.userId, listCloud, listAuthority]);
-  useEffect(() => { void reload(); return () => { ++epoch.current; }; }, [reload]);
+  useEffect(() => { void reload(); const current = epoch.current; return () => { epoch.current = current + 1; }; }, [reload]);
   useEffect(() => {
     const focus = () => { void reload(); };
     window.addEventListener("focus", focus);
