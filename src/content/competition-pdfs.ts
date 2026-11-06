@@ -11,6 +11,10 @@ export const competitionPdfs = {
     title: "NASA Evaluator Quick Start Guide",
     file: "MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
   },
+  sample: {
+    title: "Synthetic Astronaut Health Report — Sample",
+    file: "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
+  },
   manual: {
     title: "Master Operations & Technical Manual",
     file: "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",

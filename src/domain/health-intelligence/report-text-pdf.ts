@@ -30,7 +30,7 @@ export type Block =
   | { kind: "alert"; tone: "pending" | "complete" | "info"; title: string; lines: string[] }
   | { kind: "bullets"; items: string[] }
   | { kind: "kv"; rows: [string, string][] }
-  | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][] }
+  | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][]; adverseRows?: number[] }
   | { kind: "link"; text: string; url: string }
   | { kind: "pagebreak" };
 
@@ -50,6 +50,8 @@ export interface TextReportInput {
   attestations: readonly AttestationEvent[];
   identity: { missionName: string | null; crewDisplayName: string | null };
   title: string;
+  /** Record IDs assessed as adverse by an independently approved, versioned rule. */
+  adverseRecordIds?: readonly string[];
 }
 
 const isCorrectionHistory = (reason: string) => /^Marked erroneous|^Superseded by correction/.test(reason);
@@ -226,6 +228,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
         m.delta === null ? "insufficient time points" : sameDayIds.has(m.metricId) && isSameDaySpan(m.first, m.last) ? `${m.delta} ${m.unit} (${SAME_DAY_NOTE})` : `${m.delta} ${m.unit}`,
         ref(m.evidenceIds),
       ]),
+      adverseRows: metrics.flatMap((m, i) => m.evidenceIds.some((id) => input.adverseRecordIds?.includes(id)) ? [i] : []),
     });
     blocks.push({ kind: "p", text: "Values and units are shown exactly as recorded; no unit conversion or display equivalence is applied. First/last differences are descriptive at the recorded precision; they are not trends, thresholds or clinical changes.", muted: true });
   } else blocks.push({ kind: "p", text: "No included observations in this scope." });
@@ -458,6 +461,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
             { title: "Source and evidence trace", width: 0.38 },
           ],
           rows: u.rows.map((r) => [refs.get(r.recordId)!, r.recordId, `${observationDateLabel(r).replace(".000Z", "Z")} ${r.metricId}`, `${r.sourceLabel} · ${r.evidence}${r.qualityNote ? ` · ${r.qualityNote}` : ""}`]),
+          adverseRows: u.rows.flatMap((r, i) => input.adverseRecordIds?.includes(r.recordId) ? [i] : []),
         }
       : { kind: "p", text: "No evidence records." },
   );
@@ -787,7 +791,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     drawHeader();
     pdf.setDrawColor(200, 200, 200);
     pdf.setLineWidth(0.1);
-    for (const row of t.rows) {
+    for (const [rowIndex, row] of t.rows.entries()) {
       let cells = row.map((c, i) => cellLines(c ?? "", size, widths[i]! - 2 * pad));
       // A row taller than a page is split across pages with the header repeated.
       while (cells.some((c) => c.length)) {
@@ -803,7 +807,10 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
         let x = L.marginX;
         cells.forEach((c, i) => {
           font("normal", size);
+          // Explicitly governed adverse annotations only. Never infer risk from raw values.
+          if (t.adverseRows?.includes(rowIndex)) pdf.setTextColor(180, 30, 40);
           c.slice(0, take).forEach((l, j) => pdf.text(l, x + pad, y + pad + lh * (j + 0.75)));
+          if (t.adverseRows?.includes(rowIndex)) pdf.setTextColor(17, 17, 17);
           x += widths[i]!;
         });
         y += h;

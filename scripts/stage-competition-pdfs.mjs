@@ -8,6 +8,7 @@ const names = [
   "MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
   "MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
   "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
+  "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
 ];
 mkdirSync(destination, { recursive: true });
 for (const name of names) {
