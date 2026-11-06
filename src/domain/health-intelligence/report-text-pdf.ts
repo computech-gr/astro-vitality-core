@@ -17,6 +17,7 @@ import { attestationStateFor, ATTESTATION_STATUS_LABELS, summarizeAttestations, 
 import { attestationLine, buildResearcherInterpretation, handbookLine } from "./researcher-interpretation";
 
 import { observationDay, observationDateLabel } from "./observation-date";
+import { NOT_ASSESSED_TEXT, resolveAdverseAnnotations, type AdverseAssessmentInput } from "./adverse-annotations";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
@@ -99,11 +100,22 @@ const normKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(
 const CONFOUNDER_RE = /^Possible confounding or related context \(documented\): (.+?) — handbook-listed related measures: (.+?)\.?$/;
 const MISSING_DOMAIN_RE = /^(No included data for|Missing domains)\b/i;
 
+function adverseStatement(accepted: ReadonlyMap<string, { demonstration: boolean }>): string {
+  if (!accepted.size) return `Adverse-value assessment: ${NOT_ASSESSED_TEXT}. No independently approved, versioned rule has annotated these observations; all values are shown neutrally.`;
+  const demo = [...accepted.values()].some((a) => a.demonstration);
+  return demo
+    ? "Adverse-value assessment: rows marked DEMONSTRATION ANNOTATION are illustrative synthetic examples printed in dark red with a text marker; they are not approved medical decisions. All other values: " + NOT_ASSESSED_TEXT + "."
+    : "Adverse-value assessment: rows marked ADVERSE are annotated by the named approved, versioned rule and printed in dark red with the same text marker. All other values: " + NOT_ASSESSED_TEXT + ".";
+}
+
 export function buildReportDocument(input: TextReportInput): ReportDocument {
   const { unified: u, findings, summary, history, identity } = input;
   const refs = evidenceRefs(u.rows);
   const ref = (ids: readonly string[]) => (ids.length ? formatRefList(ids.map((id) => refs.get(id) ?? id)) : "none");
   const synthetic = u.scope.provenance === "synthetic";
+  const adverse = resolveAdverseAnnotations(u.rows, u.scope.provenance, input.adverseAssessment);
+  const markerFor = (ids: readonly string[]) =>
+    ids.filter((id) => adverse.accepted.has(id)).map((id) => `${refs.get(id) ?? id}: ${adverse.accepted.get(id)!.marker}`).join("; ");
   const banner = synthetic ? "SYNTHETIC / RESEARCH ONLY" : "REAL DATA / RESEARCH ONLY - NOT FOR CLINICAL USE";
   const attest = summarizeAttestations(u, input.attestations);
   const first = u.rows[0]?.observedAt ?? null;
@@ -230,10 +242,11 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
         String(m.count),
         m.earliestValue === null || m.latestValue === null ? "-" : `${m.earliestValue} -> ${m.latestValue} ${m.unit}`,
         m.delta === null ? "insufficient time points" : sameDayIds.has(m.metricId) && isSameDaySpan(m.first, m.last) ? `${m.delta} ${m.unit} (${SAME_DAY_NOTE})` : `${m.delta} ${m.unit}`,
-        ref(m.evidenceIds),
+        markerFor(m.evidenceIds) ? `${ref(m.evidenceIds)} - ${markerFor(m.evidenceIds)}` : ref(m.evidenceIds),
       ]),
       adverseRows: metrics.flatMap((m, i) => (m.evidenceIds.some((id) => adverse.accepted.has(id)) ? [i] : [])),
     });
+    blocks.push({ kind: "p", text: adverseStatement(adverse.accepted), bold: true });
     blocks.push({ kind: "p", text: "Values and units are shown exactly as recorded; no unit conversion or display equivalence is applied. First/last differences are descriptive at the recorded precision; they are not trends, thresholds or clinical changes.", muted: true });
   } else blocks.push({ kind: "p", text: "No included observations in this scope." });
   if (findings?.crossDomain.length) {
@@ -464,7 +477,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
             { title: u.rows.some((r) => r.datePrecision === "date") ? "Observed date / instant / metric" : "Observed (UTC) / metric", width: 0.24 },
             { title: "Source and evidence trace", width: 0.38 },
           ],
-          rows: u.rows.map((r) => [refs.get(r.recordId)!, r.recordId, `${observationDateLabel(r).replace(".000Z", "Z")} ${r.metricId}`, `${r.sourceLabel} · ${r.evidence}${r.qualityNote ? ` · ${r.qualityNote}` : ""}`]),
+          rows: u.rows.map((r) => [refs.get(r.recordId)!, r.recordId, `${observationDateLabel(r).replace(".000Z", "Z")} ${r.metricId}`, `${r.sourceLabel} · ${r.evidence}${r.qualityNote ? ` · ${r.qualityNote}` : ""}${adverse.accepted.has(r.recordId) ? ` · ${adverse.accepted.get(r.recordId)!.marker}` : ""}`]),
           adverseRows: u.rows.flatMap((r, i) => (adverse.accepted.has(r.recordId) ? [i] : [])),
         }
       : { kind: "p", text: "No evidence records." },
