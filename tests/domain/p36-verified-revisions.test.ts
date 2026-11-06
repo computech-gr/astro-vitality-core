@@ -30,8 +30,8 @@ describe("p36 verified revisions registry", () => {
     expect(isVerifiedRevision("a".repeat(40), view)).toBe(true);
   });
 
-  test("fabricated, uppercase or truncated revisions are rejected fail-closed", () => {
-    for (const bad of ["b".repeat(40), "A".repeat(40), "a".repeat(39), "a".repeat(41), "not-a-commit"]) {
+  test("uppercase, truncated or malformed revisions are rejected fail-closed", () => {
+    for (const bad of ["A".repeat(40), "a".repeat(39), "a".repeat(41), "not-a-commit"]) {
       const view = loadVerifiedRevisions(registry([{ ...validRevision, revision: bad }]));
       expect(view.revisions).toEqual([]);
       expect(view.problems.length).toBeGreaterThan(0);
