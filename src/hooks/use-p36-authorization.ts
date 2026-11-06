@@ -20,6 +20,7 @@ export function useP36Authorization() {
   const [load, setLoad] = useState<AuthorizationLoad>("loading");
   const [error, setError] = useState("");
   const epoch = useRef(0);
+  const lastUser = useRef<string | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -44,15 +45,14 @@ export function useP36Authorization() {
         byMission.set(m.missionId, cur);
       }
       const list = [...byMission.values()].sort((a, b) => a.label.localeCompare(b.label));
-      const nextUser = id.userId;
-      setUserId((prev) => {
-        // Account changed: never carry a mission selection or view across accounts.
-        if (prev !== nextUser) setView(null);
-        return nextUser;
-      });
+      // Account changed: never carry a mission selection or view across accounts.
+      const accountChanged = lastUser.current !== id.userId;
+      lastUser.current = id.userId;
+      if (accountChanged) setView(null);
+      setUserId(id.userId);
       setMissions(list);
       setMissionId((prev) =>
-        prev && list.some((m) => m.missionId === prev) ? prev : list.length === 1 ? list[0]!.missionId : null,
+        !accountChanged && prev && list.some((m) => m.missionId === prev) ? prev : list.length === 1 ? list[0]!.missionId : null,
       );
       setLoad(list.length ? "ready" : "no_role");
       });
