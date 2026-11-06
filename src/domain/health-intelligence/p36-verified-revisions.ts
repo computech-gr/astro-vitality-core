@@ -8,7 +8,7 @@
  * closed: the registry reads as empty and the problems are reported.
  */
 import { z } from "zod";
-import registryJson from "../../data/scientific/p36-verified-revisions.v1.json";
+import registryJson from "../../../data/scientific/p36-verified-revisions.v1.json";
 
 export const VERIFIED_REVISIONS_SCHEMA = "mitochondria.p36-verified-revisions.v1";
 
