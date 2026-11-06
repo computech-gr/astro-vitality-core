@@ -2,6 +2,8 @@ import type { UnifiedObservation } from "./observation-envelope";
 import { domainReadableObservations } from "./observation-store";
 import { HEALTH_DOMAINS, type HealthDomainId } from "@/domain/health-domains/registry";
 
+import { compareObservationDates, comparableObservationDates, observationDateLabel } from "./observation-date";
+
 export const REPORT_DISCLAIMER =
   "Research-use-only assessment. Not clinically validated. Not a medical diagnosis or treatment recommendation.";
 export interface ReportFinding {
@@ -46,7 +48,7 @@ export function buildHealthHistoryReport(
     ...domainReadableObservations(scoped).filter(
       (o) => o.provenance === provenance && o.supersedesId && o.status !== "erroneous",
     ),
-  ].sort((a, b) => a.observedAt.localeCompare(b.observedAt));
+  ].sort(compareObservationDates);
   const findings: ReportFinding[] = [];
   for (const domain of HEALTH_DOMAINS) {
     const entries = observations.filter((o) => o.domain === domain.id);
@@ -74,6 +76,7 @@ export function buildHealthHistoryReport(
       const firstNumber = Number(first.value.replace(",", ".")),
         lastNumber = Number(last.value.replace(",", "."));
       if (
+        !comparableObservationDates(series) ||
         first.originalUnit !== last.originalUnit ||
         !Number.isFinite(firstNumber) ||
         !Number.isFinite(lastNumber)
@@ -82,7 +85,7 @@ export function buildHealthHistoryReport(
           domain: domain.id,
           kind: "limitation",
           observationIds: series.map((o) => o.id),
-          text: `${metricId}: repeated results use incompatible units or non-comparable values; no numerical trend is inferred.`,
+          text: `${metricId}: repeated results use incompatible units, date precision or non-comparable values; no numerical trend is inferred.`,
         });
         continue;
       }
@@ -138,7 +141,7 @@ export function healthReportPlainText(report: HealthHistoryReport): string {
   lines.push("", "SOURCE OBSERVATIONS");
   for (const o of report.observations)
     lines.push(
-      `${o.observedAt} | ${o.domain} | ${o.metricId} | ${o.value} ${o.originalUnit} | ${o.source.label} | ${o.id}`,
+      `${observationDateLabel(o)} | ${o.domain} | ${o.metricId} | ${o.value} ${o.originalUnit} | ${o.source.label} | ${o.id}`,
     );
   lines.push(
     "",

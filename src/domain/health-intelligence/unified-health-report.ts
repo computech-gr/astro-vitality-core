@@ -17,8 +17,10 @@ import {
   type MeasurementDomainId,
 } from "@/domain/health-measurements/profiles";
 import type { UnifiedObservation } from "./observation-envelope";
-import { UNIFIED_OBSERVATION_SCHEMA } from "./observation-envelope";
+import { isUnifiedObservationSchema } from "./observation-envelope";
 import { getCanonicalMetric } from "@/domain/metric-registry";
+
+import { compareObservationDates, observationDateKey, observationDateLabel, validObservationDate, type ObservationDatePrecision } from "./observation-date";
 
 export type ReportSourceBadge =
   | "bone"
@@ -80,6 +82,8 @@ export interface ReportRow {
   value: string;
   unit: string;
   observedAt: string;
+  datePrecision?: ObservationDatePrecision;
+  collectionDate?: string;
   provenance: Provenance;
   status: "included";
   sourceLabel: string;
@@ -182,7 +186,7 @@ interface Candidate {
 
 function rowKey(r: ReportRow): string {
   const family = r.badge === "wearable" || r.badge === "device" ? "device" : r.badge;
-  return [family, r.metricId, Date.parse(r.observedAt), r.value.trim().replace(",", "."), r.unit.trim(), r.provenance].join("|");
+  return [family, r.metricId, observationDateKey(r), r.value.trim().replace(",", "."), r.unit.trim(), r.provenance].join("|");
 }
 
 /** Domain module entries → rows / exclusions. Corrections collapse append-only. */
@@ -259,7 +263,7 @@ function fromUnified(
   for (const o of observations)
     if (o.supersedesId && o.status !== "erroneous") superseded.set(o.supersedesId, o.id);
   for (const o of observations) {
-    if (o.schema !== UNIFIED_OBSERVATION_SCHEMA) continue;
+    if (!isUnifiedObservationSchema(o.schema)) continue;
     if (o.missionId !== scope.missionId || o.crewMemberId !== scope.crewMemberId) {
       out.otherScope++;
       continue;
@@ -290,7 +294,7 @@ function fromUnified(
       out.exclusions.push({ recordId: o.id, badge, category: "excluded", reason: `Superseded by correction ${by}` });
       continue;
     }
-    if (!o.originalUnit.trim() || !isInstant(o.observedAt)) {
+    if (!o.originalUnit.trim() || !validObservationDate(o)) {
       out.exclusions.push({ recordId: o.id, badge, category: "excluded", reason: "Missing unit or observation time" });
       continue;
     }
@@ -301,7 +305,9 @@ function fromUnified(
       metricLabel: o.metricId,
       value: o.value.trim(),
       unit: o.originalUnit,
-      observedAt: new Date(o.observedAt).toISOString(),
+      observedAt: o.datePrecision === "date" ? o.observedAt : new Date(o.observedAt).toISOString(),
+      ...(o.datePrecision ? { datePrecision: o.datePrecision } : {}),
+      ...(o.collectionDate ? { collectionDate: o.collectionDate } : {}),
       provenance: o.provenance,
       status: "included",
       sourceLabel: o.source.label,
@@ -474,12 +480,15 @@ export function buildUnifiedHealthReport(
   let outOfFilter = 0;
   const rows = unique
     .filter((r) => {
-      const t = Date.parse(r.observedAt);
-      const ok = sourceSet.has(r.badge) && (from === null || t >= from) && (to === null || t <= to);
+      const t = r.datePrecision === "date" ? null : Date.parse(r.observedAt);
+      // A date-only reading is included only in calendar-date filters; an exact
+      // intraday boundary cannot establish whether an untimed reading falls inside.
+      const dateOK = (!filters.from || (/^\d{4}-\d{2}-\d{2}$/.test(filters.from) && r.observedAt >= filters.from)) && (!filters.to || (/^\d{4}-\d{2}-\d{2}$/.test(filters.to) && r.observedAt <= filters.to));
+      const ok = sourceSet.has(r.badge) && (t === null ? dateOK : (from === null || t >= from) && (to === null || t <= to));
       if (!ok) outOfFilter++;
       return ok;
     })
-    .sort((a, b) => a.observedAt.localeCompare(b.observedAt) || a.recordId.localeCompare(b.recordId));
+    .sort((a, b) => compareObservationDates(a, b) || a.recordId.localeCompare(b.recordId));
   const exclusions = acc.exclusions
     .filter((e) => e.badge === "unclassified" || sourceSet.has(e.badge))
     .sort((a, b) => a.recordId.localeCompare(b.recordId));
@@ -519,7 +528,7 @@ export function buildUnifiedHealthReport(
       otherProvenanceIgnored: acc.otherProvenance,
       nonObservationMetadata: acc.metadata,
     },
-    limitations: [...UNIFIED_REPORT_LIMITATIONS],
+    limitations: [...UNIFIED_REPORT_LIMITATIONS, ...(rows.some((r) => r.datePrecision === "date") ? ["Date-only readings retain calendar precision: no observation time, timezone or UTC instant is inferred. Same-date and mixed-precision readings are not ordered for physiological comparison; exact intraday filters exclude untimed readings."] : [])],
   };
 }
 
@@ -539,7 +548,7 @@ export function unifiedReportPlainText(report: UnifiedHealthReport): string {
     "",
     "CHRONOLOGICAL HISTORY",
     ...report.rows.map(
-      (r) => `${r.observedAt} | ${REPORT_SOURCE_LABELS[r.badge]} | ${r.metricId} ${r.metricLabel} | ${r.value} ${r.unit} | ${r.provenance} | ${r.sourceLabel} | ${r.recordId} | ${r.evidence}${r.qualityNote ? ` | ${r.qualityNote}` : ""}`,
+      (r) => `${observationDateLabel(r)} | ${REPORT_SOURCE_LABELS[r.badge]} | ${r.metricId} ${r.metricLabel} | ${r.value} ${r.unit} | ${r.provenance} | ${r.sourceLabel} | ${r.recordId} | ${r.evidence}${r.qualityNote ? ` | ${r.qualityNote}` : ""}`,
     ),
     "",
     "EXCLUDED AND PENDING",

@@ -690,7 +690,7 @@ export function AstronautHealthReport() {
                         <td className="report-date-cell py-2 pr-2 tabular-nums">
                           <time dateTime={r.observedAt}>
                             <span className="block">{r.observedAt.slice(0, 10)}</span>
-                            <span className="block">{r.observedAt.slice(11)}</span>
+                            <span className="block">{r.datePrecision === "date" ? "Date only; no time/timezone" : r.observedAt.slice(11)}</span>
                           </time>
                         </td>
                         <td className="pr-2">

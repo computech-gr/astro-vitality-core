@@ -13,14 +13,14 @@ describe("P36.7 geometry/source fidelity", () => {
     expect(geometry[0]?.cells.map(cell => cell.text)).toEqual(columns);
     const text = geometryLinesToText(geometry);
     expect(extractFiveColumnLabCandidates(text)).toEqual([{
-      label: "Heart rate", value: "81", unit: "bpm", observedAt: "", excerpt: text,
+      label: "Heart rate", value: "81", unit: "bpm", observedAt: "", datePrecision: "date", collectionDate: "2026-11-05", excerpt: text,
     }]);
   });
   it("preserves decimal commas, Unicode ambiguity and original evidence", () => {
     const text = "25(OH) Vitamin D | 9,31 | ng/mL ή nmol/L | 2026-11-05 | Unvalidated";
     expect(extractFiveColumnLabCandidates(text)[0]).toEqual({
       label: "25(OH) Vitamin D", value: "9,31", unit: "ng/mL ή nmol/L",
-      observedAt: "", excerpt: text,
+      observedAt: "", datePrecision: "date", collectionDate: "2026-11-05", sourceValidation: "unvalidated", excerpt: text,
     });
   });
   it("does not scientifically equate or convert a mismatched unit", () => {

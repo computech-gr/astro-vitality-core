@@ -24,13 +24,14 @@ export const CATALOG_EXTENSION_PROPOSAL_SCHEMA = "mitochondria.catalog-extension
 export const CATALOG_EXTENSION_REGISTRY_SCHEMA = "mitochondria.catalog-extension-registry.v1";
 export const REQUIRED_SCIENTIFIC_GATE = "PENDING_NIKOLAS_REVIEW" as const;
 
-type ReviewOnlyStatus = "unclassified" | "ambiguous" | "unit_review_required";
+type ReviewOnlyStatus = "unclassified" | "ambiguous" | "unit_review_required" | "source_unvalidated";
 
 export interface ReviewSourceRow {
   label: string;
   unit: string;
   value: string;
   observedAt: string;
+  sourceValidation?: "unvalidated";
   classification: IntakeClassification;
   sourceKind: string;
   sourceLabel: string;
@@ -146,7 +147,8 @@ const p36ById = new Map(P36_METRICS.map((m) => [m.id, m]));
 export function buildUnknownBiomarkerTerms(rows: readonly ReviewSourceRow[]): UnknownBiomarkerTerm[] {
   const terms = new Map<string, UnknownBiomarkerTerm>();
   for (const row of rows) {
-    if (row.classification.status === "matched") continue;
+    if (row.classification.status === "matched" && row.sourceValidation !== "unvalidated") continue;
+    const status: ReviewOnlyStatus = row.sourceValidation === "unvalidated" ? "source_unvalidated" : row.classification.status === "matched" ? "unclassified" : row.classification.status;
     const unit = row.unit.trim();
     const termId = termIdFor(row.label, unit);
     let term = terms.get(termId);
@@ -156,7 +158,7 @@ export function buildUnknownBiomarkerTerms(rows: readonly ReviewSourceRow[]): Un
         normalizedLabel: normalizeLabel(row.label),
         originalLabels: [],
         originalUnit: unit,
-        classification: row.classification.status,
+        classification: status,
         candidateMetricIds: [],
         observations: [],
         duplicateRowsCollapsed: 0,
@@ -165,7 +167,7 @@ export function buildUnknownBiomarkerTerms(rows: readonly ReviewSourceRow[]): Un
     }
     const label = row.label.trim();
     if (!term.originalLabels.includes(label)) term.originalLabels.push(label);
-    for (const id of row.classification.candidateMetricIds)
+    for (const id of row.classification.status === "matched" ? [row.classification.metricId] : row.classification.candidateMetricIds)
       if (!term.candidateMetricIds.includes(id)) term.candidateMetricIds.push(id);
     // Same term from a different classification path is treated as the stricter state.
     if (term.classification !== row.classification.status && row.classification.status === "ambiguous")

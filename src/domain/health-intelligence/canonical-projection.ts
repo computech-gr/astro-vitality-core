@@ -22,8 +22,10 @@
  */
 import type { HealthDomainId } from "@/domain/health-domains/registry";
 import { MEASUREMENT_PROFILES, type MeasurementDomainId } from "@/domain/health-measurements/profiles";
-import { UNIFIED_OBSERVATION_SCHEMA } from "./observation-envelope";
+import { isUnifiedObservationSchema } from "./observation-envelope";
 import type { ScientificObservation } from "./live-evidence";
+
+import { validObservationDate, observationDateKey, type ObservationDatePrecision } from "./observation-date";
 
 export type ProjectionFormat = "scalar-envelope" | "unified-observation" | "domain-entry";
 
@@ -129,7 +131,9 @@ function projectUnified(row: ProjectableRecord, o: Record<string, unknown>): Out
   if (value === undefined) return { skip: { ...tag, reason: "Value is not a plain numeric measurement" } };
   const unit = text(o["originalUnit"]);
   if (!unit) return { skip: { ...tag, reason: "Missing reported unit" } };
-  const observedAt = instant(o["observedAt"]);
+  const datePrecision = o["datePrecision"] as ObservationDatePrecision | undefined;
+  const observedAt = text(o["observedAt"]);
+  if (observedAt && !validObservationDate({ observedAt, ...(datePrecision ? { datePrecision } : {}) })) return { skip: { ...tag, reason: "Invalid observation date at declared precision" } };
   if (!observedAt) return { skip: { ...tag, reason: "Missing or invalid observation time" } };
   const provenance = o["provenance"] === "synthetic" || o["provenance"] === "real" ? o["provenance"] : undefined;
   if (!provenance) return { skip: { ...tag, reason: "Provenance is not declared synthetic or real" } };
@@ -149,6 +153,7 @@ function projectUnified(row: ProjectableRecord, o: Record<string, unknown>): Out
         value,
         unit,
         observedAt,
+        ...(datePrecision ? { datePrecision } : {}),
         quality: "unknown",
         sourceId: row.sourceId,
         location: row.location,
@@ -258,7 +263,7 @@ function projectLegacy(row: ProjectableRecord): Outcome {
 function projectOne(row: ProjectableRecord): Outcome {
   const envelope = obj(row.payload);
   const unified = obj(envelope?.["observation"]);
-  if (unified && unified["schema"] === UNIFIED_OBSERVATION_SCHEMA) return projectUnified(row, unified);
+  if (unified && isUnifiedObservationSchema(unified["schema"])) return projectUnified(row, unified);
   const entry = obj(envelope?.["entry"]);
   if (envelope && entry && (text(entry["variableId"]) || text(envelope["metricCode"])))
     return projectEntry(row, envelope, entry);
@@ -267,7 +272,7 @@ function projectOne(row: ProjectableRecord): Outcome {
 
 function duplicateKey(o: ScientificObservation): string {
   const family = o.healthDomain ? `handbook:${o.healthDomain}` : `device:${o.sourceId}`;
-  return [family, o.metricCode, o.unit.trim(), Date.parse(o.observedAt), o.value, o.provenance ?? o.classification].join("|");
+  return [family, o.metricCode, o.unit.trim(), observationDateKey(o), o.value, o.provenance ?? o.classification].join("|");
 }
 
 /** Pure, deterministic and side-effect free. */

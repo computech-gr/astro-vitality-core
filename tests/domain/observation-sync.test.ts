@@ -237,6 +237,28 @@ describe("v9.4 server authorization (pre-check before any decryption)", () => {
 });
 
 describe("v9.4 two-device scenario", () => {
+  test("v2 date-only observations and exact Ground Medical attestations reconcile on two devices", async () => {
+    const cloud = new FakeCloud();
+    const a = device(cloud, GM_USER);
+    const o = obs({ schema: "mitochondria.unified-observation.v2", datePrecision: "date", observedAt: "2026-10-30", collectionDate: "2026-10-30", value: "62" });
+    await a.save(o);
+    const review = buildStoredObservationReview(await a.history(), SCOPE, []);
+    const plan = planAttestation(review.report, [o.id], [], { actorUserId: GM_USER, rolesForScope: ["ground_medical"], scope: SCOPE, decidedAt: "2026-11-01T10:00:00Z" }, { reason: REASON, confirmed: true });
+    if (!plan.ok) throw new Error(plan.reason);
+    await appendAttestationEvents(plan.events, SCOPE, { actorUserId: GM_USER, rolesForScope: ["ground_medical"] }, a.ledger);
+    expect((await a.syncObs()).uploaded.inserted).toBe(1);
+    expect((await a.syncReviews(true)).status).toBe("ok");
+    expect(JSON.stringify(cloud.obsRows)).not.toContain("2026-10-30");
+    expect(JSON.stringify(cloud.obsRows)).not.toContain("bpm");
+    const b = device(cloud, GM_USER);
+    expect((await b.syncObs()).downloaded.imported).toBe(1);
+    await b.syncReviews(false);
+    expect(await b.history()).toEqual([o]);
+    expect(buildStoredObservationReview(await b.history(), SCOPE, await listAttestationEvents(SCOPE, b.ledger)).views[0]?.groundMedical).toBe("attested");
+    expect((await b.syncObs()).uploaded.inserted).toBe(0);
+    expect(cloud.obsRows.length).toBe(1);
+  });
+
   test("fresh device receives the same 2 observations and reconciles the 2 attestations to Attested; replays add nothing", async () => {
     const cloud = new FakeCloud();
     const a = device(cloud, GM_USER);

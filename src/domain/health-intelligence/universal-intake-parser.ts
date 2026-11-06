@@ -1,8 +1,13 @@
 /** Local, deterministic candidate extraction; never authorizes storage or infers dates. */
-export type Candidate = {label:string;value:string;unit:string;observedAt:string;excerpt:string};
+import { isCalendarDate, isExplicitInstant, type ObservationDatePrecision } from "./observation-date";
+export type Candidate = {label:string;value:string;unit:string;observedAt:string;datePrecision?:ObservationDatePrecision;collectionDate?:string;sourceValidation?:"unvalidated";excerpt:string};
+export function candidateDate(value:string): Pick<Candidate,"observedAt"|"datePrecision"|"collectionDate"> | null {
+ if(!value)return {observedAt:""};
+ if(isCalendarDate(value))return {observedAt:value,datePrecision:"date",collectionDate:value};
+ if(isExplicitInstant(value))return {observedAt:value,datePrecision:"instant"};
+ return null;
+}
 const numeric = /^[-+]?(?:\d+(?:\.\d+)?|\.\d+)$/;
-const iso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
-function validDate(value:string) { return iso.test(value) && !Number.isNaN(Date.parse(value)); }
 /** RFC4180-style quoted fields, including embedded commas and escaped quotes. */
 export function csvCells(text:string):string[][] {
   const rows:string[][]=[];let row:string[]=[],field='',quoted=false;
@@ -22,13 +27,17 @@ export function extractCsvCandidates(text:string,max=200):{rows:Candidate[];skip
  const names=['label','variable','metric','metric_id','name'];
  const labelIndex=first.findIndex(x=>names.includes(x));
  const header=labelIndex>=0&&first.includes('value')&&first.includes('unit');
- const positions=header?[labelIndex,first.indexOf('value'),first.indexOf('unit'),first.indexOf('observed_at')]:[0,1,2,3];
+ const collectionIndex=first.findIndex(x=>['collection_date','collectiondate'].includes(x));
+ const timeIndex=first.findIndex(x=>['observed_at','observedat'].includes(x));
+ const positions=header?[labelIndex,first.indexOf('value'),first.indexOf('unit'),(timeIndex>=0?timeIndex:first.findIndex(x=>['collection_date','collectiondate','date'].includes(x)))]:[0,1,2,3];
  const rows:Candidate[]=[];let skipped=0;
  for(const cellsRow of cells.slice(header?1:0)){
   const [li,vi,ui,ti]=positions;const label=cellsRow[li ?? -1]??'',value=cellsRow[vi ?? -1]??'',unit=cellsRow[ui ?? -1]??'',observedAt=(ti ?? -1)<0?'':(cellsRow[ti ?? -1]??'');
-  if(!label||!numeric.test(value)||!unit||(observedAt&&!validDate(observedAt))){skipped++;continue;}
+  const collectionDate=collectionIndex>=0?cellsRow[collectionIndex]:undefined;
+  const dateFields=candidateDate(observedAt||collectionDate||'');
+  if(!label||!numeric.test(value)||!unit||!dateFields||(collectionDate&&!isCalendarDate(collectionDate))){skipped++;continue;}
   if(rows.length>=max){skipped++;continue;}
-  rows.push({label,value,unit,observedAt,excerpt:cellsRow.join(',').slice(0,350)});
+  rows.push({label,value,unit,...dateFields,...(collectionDate?{collectionDate}:{}),excerpt:cellsRow.join(',').slice(0,350)});
  }
  return {rows,skipped};
 }
@@ -37,10 +46,10 @@ export function extractTextTableCandidates(text:string,max=200):Candidate[]{
  const out:Candidate[]=[];
  for(const line of text.split(/\r?\n/)){
   if(line.length>500)continue;
-  const m=/^\s*([A-Za-z][A-Za-z0-9-]{1,35})\s+([-+]?(?:\d+(?:\.\d+)?|\.\d+))\s+(.+?)\s+(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))(?:\s+.*)?$/.exec(line);
-  if(!m||!validDate((m[4] ?? "")))continue;
+  const m=/^\s*([A-Za-z][A-Za-z0-9-]{1,35})\s+([-+]?(?:\d+(?:\.\d+)?|\.\d+))\s+(.+?)\s+(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))?)(?:\s+.*)?$/.exec(line);
+  if(!m||!candidateDate((m[4] ?? "")))continue;
   const unit=(m[3] ?? "").trim();if(!unit||/\s{2,}/.test(unit))continue;
-  out.push({label:(m[1] ?? ""),value:(m[2] ?? ""),unit,observedAt:(m[4] ?? ""),excerpt:line.slice(0,350)});
+  out.push({label:(m[1] ?? ""),value:(m[2] ?? ""),unit,...candidateDate(m[4] ?? ""),observedAt:(m[4] ?? ""),excerpt:line.slice(0,350)});
   if(out.length>=max)break;
  }
  return out;
@@ -62,7 +71,7 @@ export function extractFiveColumnLabCandidates(text:string,max=200):Candidate[] 
   const cells=line.split(/\s+\|\s+|\t+| {2,}/).map(x=>x.trim()).filter(Boolean);
   if(cells.length<4)continue;
   const dateIndex=cells.findIndex((c,i)=>i>=2&&date.test(c));
-  if(dateIndex<3)continue;
+  if(dateIndex<3||!isCalendarDate(cells[dateIndex]))continue;
   const valueIndex=cells.findIndex((c,i)=>i>0&&i<dateIndex-1&&numericValue.test(c));
   if(valueIndex<1)continue;
   const label=cells.slice(0,valueIndex).join(' ');
@@ -74,7 +83,7 @@ export function extractFiveColumnLabCandidates(text:string,max=200):Candidate[] 
   if(trailing&&!flags.test(trailing))continue;
   if(!Number.isFinite(Number(value.replace(',', '.'))))continue;
   // Date is collection metadata only. Explicit user confirmation is required.
-  rows.push({label,value,unit,observedAt:'',excerpt:line.slice(0,350)});
+  rows.push({label,value,unit,observedAt:'',datePrecision:'date',collectionDate:cells[dateIndex],...(trailing.toLowerCase()==='unvalidated'?{sourceValidation:'unvalidated' as const}:{}),excerpt:line.slice(0,350)});
   if(rows.length>=max)break;
  }
  return rows;

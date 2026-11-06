@@ -41,6 +41,7 @@ describe("unified intake review selection", () => {
     expect(result.rows.map((r) => r.selected)).toEqual([true, true, false, false, false]);
     expect(intakeSelectionCounts(result.rows)).toEqual({
       selected: 2,
+      matched: 2, reviewOnly: 3, missingDate: 0, invalidDate: 0, dateOnly: 0,
       eligible: 2,
       excluded: 3,
       allSelected: true,

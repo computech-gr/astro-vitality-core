@@ -13,7 +13,7 @@
  *   bound to the record fingerprint (evidence-attestation.ts).
  */
 import { classifyWithGovernedExtensions } from "./unknown-biomarker-review";
-import { canonicalJson, UNIFIED_OBSERVATION_SCHEMA, validateUnifiedObservation, type UnifiedObservation } from "./observation-envelope";
+import { canonicalJson, isUnifiedObservationSchema, validateUnifiedObservation, type UnifiedObservation } from "./observation-envelope";
 import type { AttestationEvent } from "./evidence-attestation";
 
 export const OBSERVATION_SYNC_BATCH_MAX = 50;
@@ -45,7 +45,7 @@ export function classifyObservationSyncError(code: string | undefined): Observat
 
 const EVENT_ID = /^[A-Za-z0-9][A-Za-z0-9-]{7,127}:(entry|status)$/;
 const ALLOWED_TOP = new Set([
-  "schema", "id", "missionId", "crewMemberId", "metricId", "domain", "value", "originalUnit", "observedAt", "source",
+  "schema", "id", "missionId", "crewMemberId", "metricId", "domain", "value", "originalUnit", "observedAt", "datePrecision", "collectionDate", "source",
   "provenance", "quality", "reviewState", "status", "statusReason", "supersedesId", "correction", "recordedAt",
 ]);
 const ALLOWED_SOURCE = new Set(["kind", "label", "documentName", "documentSha256", "excerpt"]);
@@ -68,7 +68,7 @@ export function checkObservationSyncEvent(event: ObservationSyncEvent, scope: Sy
   if (event.eventId !== `${o.id}:${event.eventKind}`) return "Event ID does not match the observation ID and kind.";
   if (unknownKey(o, ALLOWED_TOP) || unknownKey(o.source, ALLOWED_SOURCE) || unknownKey(o.quality, ALLOWED_QUALITY) || unknownKey(o.correction, ALLOWED_CORRECTION))
     return "Unexpected field in observation payload.";
-  if (o.schema !== UNIFIED_OBSERVATION_SCHEMA) return "Unknown observation schema.";
+  if (!isUnifiedObservationSchema(o.schema)) return "Unknown observation schema.";
   const issue = validateUnifiedObservation(o);
   if (issue) return issue;
   if (o.missionId !== scope.missionId || o.crewMemberId !== scope.crewMemberId) return "Observation belongs to another mission or crew member.";

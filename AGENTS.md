@@ -47,3 +47,5 @@
 - Bun `mock.module` stand-ins for shared app modules spread the real module's exports and restore it in `afterAll`; Bun mocks are process-wide, so a partial stand-in removes exports for later test files and fails only under some file orders (as on GitHub runners).
 - Competition Materials links open in a new tab (opensInNewTab in app-shell); PDFs render with the pdf.js legacy build from same-origin static files under /competition/assets/pdf/, staged from docs/competition at build (package script plus a Vite safeguard plugin, copies gitignored) because worker-side GitHub fetching returned 502; the security policy frames only the Office Online PPTX viewer.
 - Ground Medical review state lives in the framework-free p368b-ground-medical-review-scope module: auto and manual mission selection share one load path and only current-epoch, authorized-mission responses are accepted, so it is testable without a DOM.
+
+- Date-only v2 rules live in src/domain/health-intelligence/AGENTS.md.

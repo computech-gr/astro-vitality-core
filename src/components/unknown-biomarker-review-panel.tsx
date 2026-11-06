@@ -47,6 +47,7 @@ import {
 } from "@/domain/health-intelligence/catalog-reconciliation-handoff";
 
 const STATUS_LABELS = {
+  source_unvalidated: "Source marks measurement unvalidated",
   unclassified: "Unknown — not in catalog",
   ambiguous: "Ambiguous name",
   unit_review_required: "Unit mismatch",

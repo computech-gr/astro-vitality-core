@@ -3,6 +3,8 @@ import type { HealthDomainId } from "@/domain/health-domains/registry";
 import { REVIEWED_INTELLIGENCE_PATTERNS_V1_1 } from "./patterns";
 
 /** A read-only projection. Neither correlation nor successive values establish causation. */
+import { compareObservationDates, validObservationDate, comparableObservationDates, type ObservationDatePrecision } from "./observation-date";
+
 export interface ScientificObservation {
   id: string;
   missionId: string;
@@ -11,6 +13,7 @@ export interface ScientificObservation {
   value: number;
   unit: string;
   observedAt: string;
+  datePrecision?: ObservationDatePrecision;
   quality: DataQualityLevel;
   sourceId: string;
   location: "local" | "cloud";
@@ -98,7 +101,7 @@ export function buildScientificEvidenceReport(input: {
       !item.metricCode ||
       !item.unit ||
       !Number.isFinite(item.value) ||
-      !Number.isFinite(Date.parse(item.observedAt))
+      !validObservationDate(item)
     )
       continue;
     if (!qualityLevels.includes(item.quality)) continue;
@@ -108,7 +111,7 @@ export function buildScientificEvidenceReport(input: {
       unique.set(item.id, item);
   }
   const observations = [...unique.values()].sort(
-    (a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt),
+    compareObservationDates,
   );
   const groups = new Map<string, ScientificObservation[]>();
   for (const item of observations) {
@@ -119,7 +122,7 @@ export function buildScientificEvidenceReport(input: {
     .map((samples) => {
       const latest = samples[samples.length - 1]!; // groups always non-empty
       const previous = samples.length > 1 ? samples[samples.length - 2] : undefined;
-      const usable = samples.filter((s) => s.quality === "good");
+      const usable = samples.filter((s) => s.quality === "good" && s.datePrecision !== "date");
       // Strictly descriptive, not an approved personal baseline. Avoid including latest sample.
       const historical = usable.filter((s) => s.id !== latest.id);
       const baseline =
@@ -141,7 +144,7 @@ export function buildScientificEvidenceReport(input: {
         count: samples.length,
         earliest: samples[0]!,
         latest,
-        ...(previous ? { previous, changeFromPrevious: latest.value - previous.value } : {}),
+        ...(previous ? { previous, ...(comparableObservationDates([previous, latest]) ? { changeFromPrevious: latest.value - previous.value } : {}) } : {}),
         ...(baseline ? { baseline } : {}),
         status:
           latest.quality === "poor" || latest.quality === "unknown"

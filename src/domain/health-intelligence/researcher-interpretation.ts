@@ -16,6 +16,8 @@ import { CONTEXT_LINKS, CROSS_DOMAIN_SIGNAL_IDS, type ScientificFindings, type S
 import { evidenceTierOf, governedHandbookEntry } from "./scientific-health-summary";
 import { attestationStateFor, type AttestationEvent } from "./evidence-attestation";
 
+import { compareObservationDates, observationDay, observationDateKey } from "./observation-date";
+
 export const RESEARCHER_DOMAINS = ["bone", "cardiovascular", "immune", "behavioral"] as const;
 export type ResearcherDomain = (typeof RESEARCHER_DOMAINS)[number];
 
@@ -47,6 +49,7 @@ export interface InterpretationSeries {
   readings: number;
   distinctTimePoints: number;
   distinctUtcDays: number;
+  dateOnly?: boolean;
   first: string;
   last: string;
   /** Values exactly as recorded. */
@@ -76,7 +79,7 @@ export interface DomainInterpretation {
   included: number;
   series: InterpretationSeries[];
   evidenceIds: string[];
-  coverage: { first: string | null; last: string | null; distinctUtcDays: number };
+  coverage: { first: string | null; last: string | null; distinctUtcDays: number; dateOnly?: boolean };
   governance: { source: string | null; status: string };
   summary: string;
   limitations: string[];
@@ -125,10 +128,7 @@ export const INTERPRETATION_BOUNDARIES: readonly string[] = [
   "Generated locally and deterministically; no AI or network service is used.",
 ];
 
-const utcDay = (iso: string) => {
-  const t = Date.parse(iso);
-  return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : iso.slice(0, 10);
-};
+const utcDay = observationDay;
 const isResearcherDomain = (b: string): b is ResearcherDomain => (RESEARCHER_DOMAINS as readonly string[]).includes(b);
 
 function handbookContext(domain: ResearcherDomain, metricId: string, comparison: SeriesComparison, direction: InterpretationSeries["direction"]): HandbookContext {
@@ -166,10 +166,10 @@ function handbookContext(domain: ResearcherDomain, metricId: string, comparison:
 }
 
 function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows: ReportRow[], all: ReportRow[], events: readonly AttestationEvent[]): InterpretationSeries {
-  const sorted = [...rows].sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+  const sorted = [...rows].sort(compareObservationDates);
   const first = sorted[0]!;
   const last = sorted[sorted.length - 1]!;
-  const distinctTimePoints = new Set(sorted.map((r) => r.observedAt)).size;
+  const distinctTimePoints = new Set(sorted.map(observationDateKey)).size;
   const distinctUtcDays = new Set(sorted.map((r) => utcDay(r.observedAt))).size;
   const numeric = m.earliestValue !== null && m.latestValue !== null;
   const comparison: SeriesComparison =
@@ -209,6 +209,7 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
   }
   const otherUnits = [...new Set(all.filter((r) => r.badge === domain && r.metricId === m.metricId && r.unit !== u).map((r) => r.unit))].sort();
   const limitations = [
+    ...(sorted.some((r) => r.datePrecision === "date") ? ["Date-only readings have no observation time or timezone; date coverage is not UTC alignment. Mixed precision or repeated same-date readings are not ordered for comparison."] : []),
     ...(otherUnits.length ? [`Also recorded in ${otherUnits.join(", ")}; series in different units are listed separately and never compared or converted.`] : []),
     ...(comparison === "multi_day_comparison" && sorted.length === 2 ? ["Only two readings; no trend is established."] : []),
     "Individual baseline, method, timing, specimen handling and confounders are not evaluated.",
@@ -218,6 +219,7 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
     label: m.label,
     unit: u,
     readings: sorted.length,
+    dateOnly: sorted.some((r) => r.datePrecision === "date"),
     distinctTimePoints,
     distinctUtcDays,
     first: first.observedAt,
@@ -260,7 +262,8 @@ export function buildCrossDomainAssessments(
         rows,
         readings: rows.length,
         distinctTimePoints: new Set(rows.map((r) => r.observedAt)).size,
-        utcDays: [...new Set(rows.map((r) => utcDay(r.observedAt)))].sort(),
+        // Date-only coverage is not proof of UTC temporal alignment.
+        utcDays: [...new Set(rows.filter((r) => r.datePrecision !== "date").map((r) => utcDay(r.observedAt)))].sort(),
       };
     });
     const missingSignals = signals.filter((s) => s.readings === 0).map((s) => s.signal);
@@ -308,7 +311,7 @@ export function buildResearcherInterpretation(
       const rows = domainRows.filter((r) => ids.has(r.recordId) && r.metricId === m.metricId && r.unit === m.unit);
       return rows.length ? [buildSeries(domain, m, rows, report.rows, attestations)] : [];
     }).sort((a, b) => a.metricId.localeCompare(b.metricId) || a.unit.localeCompare(b.unit));
-    const times = domainRows.map((r) => r.observedAt).sort((a, b) => Date.parse(a) - Date.parse(b));
+    const times = [...domainRows].sort(compareObservationDates).map((r) => r.observedAt);
     const source = GOVERNED[domain];
     const governance = {
       source,
@@ -319,7 +322,7 @@ export function buildResearcherInterpretation(
     const compared = series.filter((s) => s.comparison === "multi_day_comparison").length;
     const sameDay = series.filter((s) => s.comparison === "same_utc_day_only").length;
     const summary = domainRows.length
-      ? `${domainRows.length} included observation(s) across ${series.length} metric/unit series; ${compared} with two or more comparable time points on different UTC days, ${sameDay} same-UTC-day only, ${series.length - compared - sameDay} with insufficient comparable time points.`
+      ? `${domainRows.length} included observation(s) across ${series.length} metric/unit series; ${compared} with two or more comparable time points on different recorded days, ${sameDay} same-UTC-day only, ${series.length - compared - sameDay} with insufficient comparable time points.`
       : "No included observations in this reporting scope. No physiological conclusion can be drawn, and missing data is not evidence of normal or healthy status.";
     return {
       domain,
@@ -327,7 +330,7 @@ export function buildResearcherInterpretation(
       included: domainRows.length,
       series,
       evidenceIds: domainRows.map((r) => r.recordId),
-      coverage: { first: times[0] ?? null, last: times.at(-1) ?? null, distinctUtcDays: new Set(times.map(utcDay)).size },
+      coverage: { first: times[0] ?? null, last: times.at(-1) ?? null, distinctUtcDays: new Set(times.map(utcDay)).size, ...(domainRows.some((r) => r.datePrecision === "date") ? { dateOnly: true } : {}) },
       governance,
       summary,
       limitations: domainRows.length
@@ -376,11 +379,11 @@ export function researcherInterpretationPlainText(model: ResearcherInterpretatio
   out.push("Approval layers (separate):", ...model.approvalLayers.map((l) => `- ${l.layer}: ${l.count ?? "n/a"}. ${l.meaning}`));
   for (const d of model.domains) {
     out.push("", `${d.label.toUpperCase()}`, d.summary, `Governance: ${d.governance.source ? `${d.governance.source}. ` : ""}${d.governance.status}`);
-    if (d.coverage.first) out.push(`Coverage: ${d.coverage.first} to ${d.coverage.last}; ${d.coverage.distinctUtcDays} UTC day(s).`);
+    if (d.coverage.first) out.push(`Coverage: ${d.coverage.first} to ${d.coverage.last}; ${d.coverage.distinctUtcDays} ${d.coverage.dateOnly ? "recorded calendar day(s); timezone not supplied for date-only records" : "UTC day(s)"}.`);
     for (const s of d.series) {
       out.push(
         `- ${s.label} (${s.metricId}) [${s.unit}]: ${s.observation}`,
-        `  Readings ${s.readings}; time points ${s.distinctTimePoints}; UTC days ${s.distinctUtcDays}. Evidence: ${s.evidenceIds.join(", ")}.`,
+        `  Readings ${s.readings}; time points ${s.distinctTimePoints}; ${s.dateOnly ? "calendar days (timezone not supplied)" : "UTC days"} ${s.distinctUtcDays}. Evidence: ${s.evidenceIds.join(", ")}.`,
         `  Provenance: ${s.provenance}. Quality: ${s.quality}`,
         `  Evidence tiers: ${s.evidenceTiers.storedModule} module, ${s.evidenceTiers.intakeAccepted} intake-accepted, ${s.evidenceTiers.device} device. Ground Medical: ${attestationLine(s.attestation)}.`,
         `  Biological context: ${handbookLine(s.handbook)}`,

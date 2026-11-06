@@ -79,7 +79,10 @@ interface Props {
   reload: () => Promise<void>;
 }
 
+import { isCalendarDate } from "@/domain/health-intelligence/observation-date";
+
 function formatObservedAt(iso: string): string {
+  if (isCalendarDate(iso)) return `${iso} (date only; time/timezone not supplied)`;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return `${date.toLocaleString()} (local) · ${date.toISOString()} (UTC)`;
@@ -482,7 +485,7 @@ function ReviewDialog(props: {
       setMetricId(state.observation.metricId);
       setValue(state.observation.value);
       setUnit(state.observation.originalUnit);
-      setObservedAt(new Date(state.observation.observedAt).toISOString());
+      setObservedAt(state.observation.observedAt);
     }
   }, [state]);
   if (!state) return null;
@@ -525,8 +528,8 @@ function ReviewDialog(props: {
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="corr-observed">Observed at (ISO, UTC)</Label>
-              <Input id="corr-observed" value={observedAt} onChange={(e) => setObservedAt(e.target.value)} placeholder="2026-10-14T07:35:00.000Z" />
+              <Label htmlFor="corr-observed">Observed date or zoned ISO timestamp</Label>
+              <Input id="corr-observed" type={isCalendarDate(state.observation.observedAt) ? "date" : "text"} value={observedAt} onChange={(e) => setObservedAt(e.target.value)} placeholder="2026-10-14T07:35:00.000Z" />
             </div>
             <p className="break-words text-xs text-muted-foreground">Provenance ({state.observation.provenance}) and source ({state.observation.source.label}) are preserved from the original.</p>
           </div>

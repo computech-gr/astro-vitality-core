@@ -22,7 +22,7 @@ export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain:
       </p>
       {domain.coverage.first && (
         <p className="text-xs text-muted-foreground">
-          Coverage: {domain.coverage.first} to {domain.coverage.last}; {domain.coverage.distinctUtcDays} UTC day(s).
+          Coverage: {domain.coverage.first} to {domain.coverage.last}; {domain.coverage.distinctUtcDays} {domain.coverage.dateOnly ? "recorded calendar day(s); timezone not supplied for date-only records" : "UTC day(s)"}.
         </p>
       )}
       {domain.series.length > 0 && (
@@ -36,7 +36,7 @@ export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain:
               <p className="break-words">{s.observation}</p>
               <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5 text-xs">
                 <dt className="text-muted-foreground">Sampling</dt>
-                <dd>{s.readings} reading(s), {s.distinctTimePoints} time point(s), {s.distinctUtcDays} UTC day(s)</dd>
+                <dd>{s.readings} reading(s), {s.distinctTimePoints} time point(s), {s.distinctUtcDays} {s.dateOnly ? "calendar day(s); timezone not supplied" : "UTC day(s)"}</dd>
                 <dt className="text-muted-foreground">Provenance</dt>
                 <dd className="break-words">{s.provenance}</dd>
                 <dt className="text-muted-foreground">Quality</dt>

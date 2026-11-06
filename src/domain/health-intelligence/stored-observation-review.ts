@@ -19,7 +19,9 @@ import {
   type AttestationStatus,
 } from "./evidence-attestation";
 import { buildUnifiedHealthReport, type ReportRow, type ReportScope, type UnifiedHealthReport } from "./unified-health-report";
-import { UNIFIED_OBSERVATION_SCHEMA, validateUnifiedObservation, type UnifiedObservation } from "./observation-envelope";
+import { DATED_OBSERVATION_SCHEMA, isUnifiedObservationSchema, validateUnifiedObservation, type UnifiedObservation } from "./observation-envelope";
+
+import { isCalendarDate, validObservationDate, observationDateKey, type ObservationDatePrecision } from "./observation-date";
 
 export type ObservationLifecycle = "active" | "erroneous" | "superseded";
 export const LIFECYCLE_LABELS: Record<ObservationLifecycle, string> = {
@@ -164,6 +166,7 @@ export interface CorrectionDraft {
   unit: string;
   /** ISO 8601 instant (UTC). */
   observedAt: string;
+  datePrecision?: ObservationDatePrecision;
   reason: string;
   confirmed: boolean;
 }
@@ -227,7 +230,7 @@ export function planObservationCorrection(
     return { ok: false, reason: "This record belongs to a different mission or crew member. Correction refused." };
   if (original.provenance !== ctx.scope.provenance)
     return { ok: false, reason: "This record has a different provenance than the selected scope. Correction refused." };
-  if (original.schema !== UNIFIED_OBSERVATION_SCHEMA || validateUnifiedObservation(original))
+  if (!isUnifiedObservationSchema(original.schema) || validateUnifiedObservation(original))
     return { ok: false, reason: "The original record is not a valid stored observation." };
   const lifecycle = observationLifecycle(original, history);
   if (lifecycle !== "active")
@@ -243,21 +246,21 @@ export function planObservationCorrection(
   const unit = draft.unit.trim();
   if (!unit) return { ok: false, reason: "The exact reported unit is required." };
   const metricId = draft.metricId.trim();
-  const at = Date.parse(draft.observedAt);
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/.test(draft.observedAt.trim()) || !Number.isFinite(at))
-    return { ok: false, reason: "Observation time must be an explicit ISO date-time with a time zone (UTC)." };
-  if (at > Date.parse(ctx.decidedAt) + 5 * 60_000) return { ok: false, reason: "Observation time cannot be in the future." };
+  const datePrecision = draft.datePrecision ?? (isCalendarDate(draft.observedAt) ? "date" : "instant");
+  if (!validObservationDate({ observedAt: draft.observedAt, datePrecision })) return { ok: false, reason: "Observation requires a valid calendar date or explicit zoned timestamp." };
+  if (datePrecision === "instant" && Date.parse(draft.observedAt) > Date.parse(ctx.decidedAt) + 5 * 60_000) return { ok: false, reason: "Observation time cannot be in the future." };
+  if (datePrecision === "date" && draft.observedAt > ctx.decidedAt.slice(0, 10)) return { ok: false, reason: "Observation date cannot be in the future." };
   // Exact catalog metric + unit pairing; no unit conversion, no inference.
   const classification = classifyWithGovernedExtensions({ label: metricId, unit }).classification;
   if (classification.status !== "matched" || classification.metricId !== metricId)
     return { ok: false, reason: `"${metricId}" with unit "${unit}" is not an exact catalog metric/unit pair. Units are never converted.` };
   if (!original.source?.label?.trim()) return { ok: false, reason: "The original source is missing; correction refused." };
-  const observedAt = new Date(at).toISOString();
+  const observedAt = datePrecision === "date" ? draft.observedAt : new Date(draft.observedAt).toISOString();
   if (
     metricId === original.metricId &&
     value === original.value.trim() &&
     unit === original.originalUnit.trim() &&
-    observedAt === new Date(original.observedAt).toISOString()
+    observationDateKey({ observedAt, datePrecision }) === observationDateKey(original)
   )
     return { ok: false, reason: "Nothing changed. Use Mark erroneous if the record is wrong without a corrected value." };
   const decidedAt = new Date(ctx.decidedAt).toISOString();
@@ -266,6 +269,7 @@ export function planObservationCorrection(
   void _drop;
   const corrected: UnifiedObservation = {
     ...base,
+    ...(datePrecision === "date" || original.schema === DATED_OBSERVATION_SCHEMA ? { schema: DATED_OBSERVATION_SCHEMA, datePrecision } : {}),
     id: deterministicUuid(intentId),
     metricId,
     domain: classification.domain,

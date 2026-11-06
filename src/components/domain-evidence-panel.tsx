@@ -5,6 +5,7 @@ import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/
 import { supabase } from "@/integrations/supabase/client";
 import { loadCrewScientificEvidence } from "@/infrastructure/scientific-evidence";
 import { groupNonChartable } from "@/domain/health-intelligence/canonical-projection";
+import { observationDateLabel } from "@/domain/health-intelligence/observation-date";
 import type { ScientificEvidenceReport } from "@/domain/health-intelligence/live-evidence";
 import {
   getHealthDomain,
@@ -278,7 +279,7 @@ export function DomainEvidencePanel({
                   </p>
                 )}
                 <p className="text-muted-foreground">
-                  {new Date(metric.latest.observedAt).toLocaleString()}
+                  {metric.latest.datePrecision === "date" ? observationDateLabel(metric.latest) : new Date(metric.latest.observedAt).toLocaleString()}
                 </p>
                 {metric.baseline && (
                   <p>
