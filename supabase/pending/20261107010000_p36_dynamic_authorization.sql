@@ -117,6 +117,8 @@ begin
   end;
   if jsonb_typeof(v_p) <> 'object' then raise exception 'payload must be an object' using errcode = '22023'; end if;
 
+  if not coalesce((select a.authorization_open from public.p36_dynamic_admission a where a.singleton), false) then
+    raise exception 'p36 dynamic authorization admission is closed' using errcode='55000'; end if;
   v_kind := v_p->>'kind'; v_action := v_p->>'action'; v_term := v_p->>'termId'; v_role := v_p->>'actorRole';
   if v_kind is null or v_kind not in ('recommendation','decision') then raise exception 'invalid kind' using errcode = '22023'; end if;
 
@@ -135,6 +137,12 @@ begin
   perform public.p36_dynamic_scope(p_mission_id,p_crew_member_id,false);
   if not exists(select 1 from public.mission_memberships m where m.mission_id=p_mission_id and m.user_id=v_uid and m.active
     and (m.crew_member_id=p_crew_member_id or m.crew_member_id is null) and m.role=v_role) then raise exception 'role not authorized for requested crew' using errcode='42501'; end if;
+  -- Serialize with concurrent revocation of the authorizing membership/assignment.
+  perform 1 from public.mission_crew_assignments where mission_id=p_mission_id and crew_member_id=p_crew_member_id and status='active' for share;
+  if not found then raise exception 'scope unavailable' using errcode='42501'; end if;
+  perform 1 from public.mission_memberships m where m.mission_id=p_mission_id and m.user_id=v_uid and m.active
+    and (m.crew_member_id=p_crew_member_id or m.crew_member_id is null) and m.role=v_role for share;
+  if not found then raise exception 'role not authorized for requested crew' using errcode='42501'; end if;
   if v_p->>'crewMemberId' is distinct from p_crew_member_id or v_p->>'provenance' is distinct from p_provenance then raise exception 'scope mismatch' using errcode='22023'; end if;
   -- Direct RPC callers must bind to an immutable submitted term, not arbitrary aliases.
   if not exists(select 1 from public.p36_dynamic_handoff_terms t join public.p36_dynamic_handoff_submissions s using(submission_id)
@@ -158,7 +166,9 @@ begin
     and s.mission_id=v.mission_id and s.crew_member_id=v.crew_member_id and s.provenance=v.provenance
     and t.metadata->'sourceDocumentSha256' ? v.source_sha256 and v.canonical_metric_id=v_p->>'canonicalCatalogId'
     and v.exact_unit=v_p->>'validatedUnit' and v.specimen=v_p->>'specimenOrAcquisitionContext' and v.method=v_p->>'methodOrInstrument'
-    and v.protocol=v_p->>'protocol' and v.protocol_version=v_p->>'protocolVersion') then
+    and v.protocol=v_p->>'protocol' and v.protocol_version=v_p->>'protocolVersion'
+    -- An approval must cite the receipt's own independently verified validation reference.
+    and (v_action <> 'APPROVE' or (jsonb_typeof(v_p->'validationEvidenceRefs') = 'array' and (v_p->'validationEvidenceRefs') ? v.validation_reference))) then
     return jsonb_build_object('status','rejected','detail','independently verified source receipt required; label match is not validation'); end if;
   if v_action in ('RECOMMEND','APPROVE') and lower(coalesce(v_p->>'sourceLabel','') || ' ' || coalesce(v_p->>'methodOrInstrument','')) ~ '(high.?sensitivity|hs.?crp)' then
     return jsonb_build_object('status','rejected','detail','hsCRP requires separately governed assay identity; no CRP substitution'); end if;

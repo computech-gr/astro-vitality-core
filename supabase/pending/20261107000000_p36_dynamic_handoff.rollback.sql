@@ -9,6 +9,8 @@ drop function public.p36_dynamic_handoff_list_v1(text,text,text,bigint,int);
 drop function public.p36_dynamic_handoff_append_v1(text,text,text,text,text,text);
 drop table public.p36_dynamic_handoff_terms;
 drop table public.p36_dynamic_handoff_submissions;
+drop table public.p36_dynamic_admission;
+drop function public.p36_dynamic_admission_reject_delete();
 drop function public.p36_dynamic_scope(text,text,boolean);
 drop function public.p36_dynamic_reject_mutation();
 commit;
