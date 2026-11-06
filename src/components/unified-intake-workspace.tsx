@@ -28,6 +28,7 @@ import { type IntakeClassification } from "@/domain/health-domains/unified-intak
 import { DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import {
   UNIFIED_OBSERVATION_SCHEMA,
+  DATED_OBSERVATION_SCHEMA,
   type ObservationSourceKind,
   type UnifiedObservation,
 } from "@/domain/health-intelligence/observation-envelope";
@@ -51,8 +52,11 @@ import {
   editIntakeReviewRow,
   intakeSelectionCounts,
   isIntakeRowEligible,
+  intakeRowExclusionReason,
   setIntakeReviewSelection,
 } from "@/domain/health-intelligence/intake-review-selection";
+
+import { type ObservationDatePrecision } from "@/domain/health-intelligence/observation-date";
 
 type IntakeRow = {
   key: string;
@@ -60,6 +64,8 @@ type IntakeRow = {
   value: string;
   unit: string;
   observedAt: string;
+  datePrecision?: ObservationDatePrecision;
+  collectionDate?: string;
   excerpt: string;
   sourceKind: ObservationSourceKind;
   sourceLabel: string;
@@ -86,6 +92,7 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
     sourceLabel: "Manual entry",
     selected: false,
     ...partial,
+    observedAt: partial.observedAt || partial.collectionDate || "",
     classification: classify(partial.label, partial.unit),
   };
 }
@@ -213,6 +220,7 @@ export function UnifiedIntakeWorkspace() {
   const [manualValue, setManualValue] = useState("");
   const [manualUnit, setManualUnit] = useState("");
   const [manualObservedAt, setManualObservedAt] = useState("");
+  const [manualPrecision, setManualPrecision] = useState<ObservationDatePrecision>("date");
 
   useEffect(() => {
     if (!membership) {
@@ -370,7 +378,7 @@ export function UnifiedIntakeWorkspace() {
       setStatus("Manual entry needs a label, value and unit.");
       return;
     }
-    const observedAt = manualObservedAt ? new Date(manualObservedAt).toISOString() : "";
+    const observedAt = manualObservedAt;
     addRows(
       [
         newRow({
@@ -378,6 +386,7 @@ export function UnifiedIntakeWorkspace() {
           value: manualValue,
           unit: manualUnit,
           observedAt,
+          datePrecision: manualPrecision,
           sourceKind: "manual",
           sourceLabel: "Manual entry",
         }),
@@ -398,6 +407,11 @@ export function UnifiedIntakeWorkspace() {
         findUnifiedDuplicates(history, {
           metricId: row.classification.status === "matched" ? row.classification.metricId : "",
           observedAt: row.observedAt,
+          datePrecision: row.datePrecision,
+          originalUnit: row.unit,
+          missionId: membership.missionId,
+          crewMemberId: membership.crewMemberId,
+          ...(provenance ? { provenance } : {}),
           value: row.value,
         }),
       )
@@ -407,6 +421,8 @@ export function UnifiedIntakeWorkspace() {
       key: row.key,
       metricId: row.classification.status === "matched" ? row.classification.metricId : "",
       observedAt: row.observedAt,
+      datePrecision: row.datePrecision,
+      unit: row.unit,
       value: row.value,
     })),
   );
@@ -432,10 +448,12 @@ export function UnifiedIntakeWorkspace() {
     if (!canSave || !membership || !provenance) return;
     setBusy(true);
     try {
+      const fresh = await loadMissionIdentity();
+      if (!fresh.signedIn || fresh.error || fresh.userId !== identity?.userId || !fresh.memberships.some((m) => m.missionId === membership.missionId && m.crewMemberId === membership.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Your authorization for this mission and crew is no longer valid. Nothing saved.");
       for (const row of saveableRows) {
         if (row.classification.status !== "matched") continue;
         const observation: UnifiedObservation = {
-          schema: UNIFIED_OBSERVATION_SCHEMA,
+          schema: row.datePrecision === "date" ? DATED_OBSERVATION_SCHEMA : UNIFIED_OBSERVATION_SCHEMA,
           id: crypto.randomUUID(),
           missionId: membership.missionId,
           crewMemberId: membership.crewMemberId,
@@ -443,7 +461,9 @@ export function UnifiedIntakeWorkspace() {
           domain: row.classification.domain,
           value: row.value.trim(),
           originalUnit: row.unit.trim(),
-          observedAt: new Date(row.observedAt).toISOString(),
+          observedAt: row.observedAt,
+          ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
+          ...(row.collectionDate ? { collectionDate: row.collectionDate } : {}),
           source: {
             kind: row.sourceKind,
             label: row.sourceLabel,
@@ -583,17 +603,19 @@ export function UnifiedIntakeWorkspace() {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="intake-manual-observed">Observed at (device local time)</Label>
+            <Label htmlFor="intake-manual-observed">Observation date / explicit timestamp</Label>
+            <select aria-label="Manual observation precision" value={manualPrecision} onChange={(e) => { setManualPrecision(e.target.value as ObservationDatePrecision); setManualObservedAt(""); }} className="w-full rounded-md border border-border bg-background p-2 text-sm"><option value="date">Date only</option><option value="instant">Explicit timestamp</option></select>
             <Input
               id="intake-manual-observed"
-              type="datetime-local"
+              type={manualPrecision === "date" ? "date" : "text"}
+              placeholder={manualPrecision === "instant" ? "2026-11-05T08:00:00Z" : undefined}
               value={manualObservedAt}
               onChange={(event) => setManualObservedAt(event.target.value)}
             />
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Entered in your device local time; stored as UTC.
+          Date-only observations retain their calendar date without a time or timezone. Timestamped observations require an explicit timezone.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={addManualRow}>
@@ -663,7 +685,7 @@ export function UnifiedIntakeWorkspace() {
           ) : null}
           <p aria-live="polite" className="text-sm text-muted-foreground">
             Selected: {selection.selected} · Eligible: {selection.eligible} · Excluded:{" "}
-            {selection.excluded}
+            {selection.excluded} · Catalog matched: {selection.matched} · Review-only: {selection.reviewOnly} · Missing date: {selection.missingDate} · Invalid date: {selection.invalidDate} · Date-only: {selection.dateOnly}
           </p>
           <div
             className="max-w-full overflow-x-auto"
@@ -737,23 +759,20 @@ export function UnifiedIntakeWorkspace() {
                       />
                     </td>
                     <td className="py-2 pr-3">
+                      <select aria-label={`Date precision for ${row.label}`} value={row.datePrecision ?? "instant"} onChange={(e) => editRow(row.key, { datePrecision: e.target.value as ObservationDatePrecision, observedAt: "" })} className="mb-1 w-52 rounded-md border border-border bg-background p-1 text-xs">
+                        <option value="date">Date only</option><option value="instant">Explicit timestamp</option>
+                      </select>
                       <Input
                         aria-label={`Observation date for ${row.label}`}
-                        type="datetime-local"
-                        value={
-                          row.observedAt && !Number.isNaN(Date.parse(row.observedAt))
-                            ? new Date(row.observedAt).toISOString().slice(0, 16)
-                            : row.observedAt
-                        }
-                        onChange={(event) =>
-                          editRow(row.key, {
-                            observedAt: event.target.value
-                              ? new Date(event.target.value).toISOString()
-                              : "",
-                          })
-                        }
+                        type={row.datePrecision === "date" ? "date" : "text"}
+                        title={row.collectionDate ? `Source collection date: ${row.collectionDate}; time not supplied` : undefined}
+                        placeholder={row.datePrecision !== "date" ? "2026-11-05T08:00:00Z" : undefined}
+                        value={row.observedAt}
+                        onChange={(event) => editRow(row.key, { observedAt: event.target.value })}
                         className="h-8 w-52"
                       />
+                      {row.datePrecision === "date" && <p className="text-xs text-muted-foreground">Time / timezone not supplied</p>}
+                      {intakeRowExclusionReason(row) && <p className="max-w-52 text-xs text-destructive">{intakeRowExclusionReason(row)}</p>}
                     </td>
                     <td className="py-2 pr-3">
                       {row.classification.status === "matched" ? (
@@ -811,7 +830,7 @@ export function UnifiedIntakeWorkspace() {
               checked={reviewerConfirmed}
               onChange={(event) => setReviewerConfirmed(event.target.checked)}
             />
-            I reviewed every selected row (label, value, original unit and observation time) and
+            I reviewed every selected row (label, value, original unit and observation date/precision) and
             confirm it matches the source.
           </label>
           <Button
