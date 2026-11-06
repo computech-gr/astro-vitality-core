@@ -401,7 +401,7 @@ export function UnifiedIntakeWorkspace() {
 
   const selection = intakeSelectionCounts(rows);
   const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
-  const reviewOnlyRows = rows.filter((row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated").map((row) => row.classification.status === "matched" && row.sourceValidation === "unvalidated" ? { ...row, classification: { status: "unit_review_required" as const, candidateMetricIds: [row.classification.metricId], originalLabel: row.label, originalUnit: row.unit, reviewRequired: true as const } } : row);
+  const reviewOnlyRows = rows.filter((row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated");
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
         findUnifiedDuplicates(history, {

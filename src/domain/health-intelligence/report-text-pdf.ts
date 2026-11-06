@@ -238,7 +238,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
           { title: "Context", width: 0.2 },
           { title: "Observed signals", width: 0.25 },
           { title: "Missing signals", width: 0.22 },
-          { title: "Time coverage (UTC)", width: 0.18 },
+          { title: u.rows.some((r) => r.datePrecision === "date") ? "Date / instant coverage" : "Time coverage (UTC)", width: 0.18 },
           { title: "Evidence", width: 0.15 },
         ],
         rows: findings.crossDomain.map((c) => [c.domains.join(" / "), c.observedSignalCounts.join("; ") || "none", c.missingSignals.join(", ") || "none", c.observedTimeRange ? c.observedTimeRange.replace(/\.000Z/g, "Z") : "none", ref(c.evidenceIds)]),
@@ -255,7 +255,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
       { title: "Domain", width: 0.31 },
       { title: "Included records", width: 0.17 },
       { title: "Distinct metrics", width: 0.17 },
-      { title: "Recorded UTC coverage", width: 0.35 },
+      { title: u.rows.some((r) => r.datePrecision === "date") ? "Recorded date / instant coverage" : "Recorded UTC coverage", width: 0.35 },
     ],
     rows: u.summaries.map((s) => [
       REPORT_SOURCE_LABELS[s.badge],
