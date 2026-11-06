@@ -38,7 +38,7 @@ check(sql(auth(2)+appendEvent(rec)).includes("independently verified source rece
 sql(`insert into p36_dynamic_source_validation values('M1','C1','synthetic','${term.termId}','${"a".repeat(64)}','cv-001','bpm','synthetic ECG acquisition','synthetic ECG device','synthetic test protocol','v1','doi:10.0000/synthetic','disposable test harness',now());`);
 const recResult=JSON.parse(sql(auth(2)+appendEvent(rec)).split('\n').at(-1)??'{}'); check(recResult.status==="inserted");
 const decision = makeEvent({ ...input, kind:"decision",action:"APPROVE",submissionId:crypto.randomUUID(),reviewerName:"Synthetic Researcher", conflictOfInterestDeclaration:"No conflict, synthetic only",independenceConfirmed:true,validationEvidenceRefs:["doi:10.0000/synthetic"],recommendationEventId:recResult.event_id },3);
-check(JSON.parse(sql(auth(3)+appendEvent(decision)).split('\n').at(-1)??'{}').status==="inserted");
+const decisionResult=JSON.parse(sql(auth(3)+appendEvent(decision)).split('\n').at(-1)??'{}'); if(decisionResult.status!=="inserted") throw Error(JSON.stringify(decisionResult)); check(true);
 check(sql(auth(3)+appendEvent(decision)).includes("duplicate"));
 const self={...decision,actorUserId:rec.actorUserId,submissionId:crypto.randomUUID()};
 sql(auth(2)+appendEvent(self),undefined,true);count++;
