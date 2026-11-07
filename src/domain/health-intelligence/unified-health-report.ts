@@ -302,7 +302,9 @@ function fromUnified(
       recordId: o.id,
       badge,
       metricId: o.metricId,
-      metricLabel: o.metricId,
+      metricLabel: o.catalogBasis?.kind === "synthetic_demo"
+        ? `${o.catalogBasis.displayName} — SYNTHETIC DEMO (not scientifically validated)`
+        : o.metricId,
       value: o.value.trim(),
       unit: o.originalUnit,
       observedAt: o.datePrecision === "date" ? o.observedAt : new Date(o.observedAt).toISOString(),
