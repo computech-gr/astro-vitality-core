@@ -211,7 +211,7 @@ describe("P41.1 a relevant, valid citation still needs independent scientific re
     const { deps } = observedDeps(AI);
     const r = await draftInterpretationCore({ key: "gcsf", concept: GCSF, refIds: [PALMER], selection: "automatic_batch" }, deps);
     if (!r.ok) throw new Error(r.message);
-    const rec = (REGISTRY as { identity: InterpretationIdentity }[]).find((x) => x.identity.displayName === "G-CSF")!;
+    const rec = (REGISTRY.records as { identity: InterpretationIdentity }[]).find((x) => x.identity.displayName === "G-CSF")!;
     const identity = rec.identity;
     const draft = toInterpretationDraft(r.bundle);
     expect(draft.evidenceStrength.level).toBe("not_assessed");
