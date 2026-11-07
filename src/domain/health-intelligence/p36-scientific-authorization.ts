@@ -50,7 +50,7 @@ export type ScientificStatus = "PENDING_NIKOLAS_REVIEW" | "MORE_EVIDENCE_REQUIRE
 export type ActivationStatus = "ACTIVATION_BLOCKED" | "ACTIVE";
 
 export const SCIENTIFIC_STATUS_LABELS: Record<ScientificStatus, string> = {
-  PENDING_NIKOLAS_REVIEW: "Pending Researcher review",
+  PENDING_NIKOLAS_REVIEW: "Pending Scientific Review",
   MORE_EVIDENCE_REQUIRED: "More evidence required",
   SCIENTIFICALLY_REJECTED: "Scientifically rejected",
   SCIENTIFICALLY_APPROVED: "Scientifically approved",

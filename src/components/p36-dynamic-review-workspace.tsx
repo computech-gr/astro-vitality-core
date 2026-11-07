@@ -13,6 +13,9 @@ import { loadVerifiedRevisions } from "@/domain/health-intelligence/p36-verified
 import type { ReviewScope } from "@/domain/health-intelligence/unknown-biomarker-review";
 import { listDynamicHandoff } from "@/lib/p36-dynamic-handoff.functions";
 import { listDynamicAuthorization } from "@/lib/p36-dynamic-authorization.functions";
+import { catalogEntryFor } from "@/domain/health-intelligence/p36-scientific-review";
+import { SCIENTIFIC_STATUS_LABELS } from "@/domain/health-intelligence/p36-scientific-authorization";
+import { P36CompactReviewTable } from "@/components/p36-compact-review-table";
 import { TermAuthorizationPanel } from "./p36-final-authorization";
 import { P36HandoffSubmission } from "./p36-handoff-submission";
 import { P36PendingRequestsSummary } from "./p36-pending-requests-summary";
@@ -52,7 +55,7 @@ function CrewSelector({
       <Input
         className="max-w-xs"
         aria-label="Search authorized crew members"
-        placeholder={choices.length ? "Search crew member name" : "No authorized crew membership for this mission"}
+        placeholder={choices.length ? "Search crew member name" : "No caller-visible crew in this mission"}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         disabled={!choices.length}
@@ -61,13 +64,13 @@ function CrewSelector({
         <ul className="max-h-48 max-w-md overflow-auto rounded-md border border-border" aria-label="Authorized crew members">
           {matches.map((c) => (
             <li key={c.crewId}>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 className="w-full px-3 py-2 text-left text-sm hover:bg-accent focus:bg-accent"
                 onClick={() => { onChange(c.crewId); setQuery(""); }}
               >
                 {c.name} <span className="text-xs text-muted-foreground">· your role: {c.roles.join(" + ")}</span>
-              </button>
+              </Button>
             </li>
           ))}
           {!matches.length ? <li className="px-3 py-2 text-xs text-muted-foreground">No authorized crew member matches this search.</li> : null}
@@ -85,8 +88,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
   const [view, setView] = useState<AuthorizationView | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
+  const [rosterLoading, setRosterLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [commit, setCommit] = useState("");
   const [memberships, setMemberships] = useState<MissionMembershipContext[]>([]);
@@ -112,12 +114,14 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
   // Mission-level reviewers receive the caller-readable mission roster; crew-bound members only their own crew.
   useEffect(() => {
     let live = true;
-    setRoster([]); setRosterMessage("");
+    setRoster([]); setRosterMessage(""); setRosterLoading(false);
     const missionId = auth.missionId;
     if (!missionId || !auth.userId || !memberships.some((m) => m.missionId === missionId && !m.crewMemberId && (m.role === "ground_medical" || m.role === "researcher"))) return;
+    setRosterLoading(true);
     void loadMissionCrewRoster(missionId).then((r) => {
       if (!live) return;
-      if (r.ok) setRoster(r.crew); else setRosterMessage(r.message);
+      setRosterLoading(false);
+      if (r.ok) { setRoster(r.crew); if (!r.crew.length) setRosterMessage("No eligible crew is visible to this account. This does not establish that the mission has no crew."); } else setRosterMessage(r.message);
     });
     return () => { live = false; };
   }, [auth.missionId, auth.userId, memberships]);
@@ -135,14 +139,14 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
 
   const reload = useCallback(async () => {
     const current = ++epoch.current;
-    setCloud([]); setLocal([]); setView(null); setSelected([]); setPage(0);
+    setCloud([]); setLocal([]); setView(null); setSelected([]); setLoading(false);
     if (!scope || !auth.userId) return;
     setLoading(true); setMessage("");
     try {
       const identity = await loadMissionIdentity();
       if (!identity.signedIn || identity.error || identity.userId !== auth.userId || !identity.memberships.some((m) => m.missionId === scope.missionId && (m.crewMemberId === scope.crewMemberId || !m.crewMemberId && ["ground_medical", "researcher"].includes(m.role)))) throw new Error("Authorization for this scope could not be confirmed.");
       if (current !== epoch.current) return;
-      const [localResult, cloudResult] = await Promise.all([listUnknownBiomarkerReviewState(scope), listCloud({ data: scope })]);
+      const [localResult, cloudResult] = await Promise.all([canHoldLocalRequests(identity.memberships, scope.missionId) ? listUnknownBiomarkerReviewState(scope) : Promise.resolve({ requests: [] }), listCloud({ data: scope })]);
       if (current !== epoch.current) return;
       setLocal(localResult.requests);
       if (!cloudResult.ok) { setMessage(cloudResult.message); return; }
@@ -171,10 +175,8 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
   // Researchers see only successfully submitted, authorized cloud terms — never device-local registrations.
   const terms = researcherOnly ? cloudTerms : [...cloudTerms, ...(localView?.terms.filter((t) => !cloudIds.has(t.termId) && !t.inLegacyHandoff) ?? [])];
   const safeIds = new Set(groupForProposal(terms).filter((g) => g.selectable).flatMap((g) => g.termIds));
-  const filtered = terms.filter((t) => `${t.originalLabels.join(" ")} ${t.exactUnit} ${t.termId}`.toLowerCase().includes(search.toLowerCase()));
-  const pages = Math.max(1, Math.ceil(filtered.length / 20));
   const bulk = draftBulkProposal(terms, selected);
-  const dynamicAuth = { ...auth, view, load: view?.loaded ? "ready" as const : "error" as const, reload };
+  const dynamicAuth = { ...auth, mission: auth.mission ? { ...auth.mission, roles: scopeRoles.filter((r): r is "ground_medical" | "researcher" => r === "ground_medical" || r === "researcher") } : null, view, load: view?.loaded ? "ready" as const : "error" as const, reload };
   const isVerifiedSelection = revisions.revisions.some((r) => r.revision === commit);
   const exportPromotion = async (termId: string) => {
     try {
@@ -197,27 +199,36 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
         {auth.missionId ? <details className="text-xs"><summary className="cursor-pointer">Technical identifiers</summary><p className="break-all text-muted-foreground">mission {auth.missionId}</p></details> : null}
       </div>
       {auth.missionId ? <CrewSelector choices={crewChoices} value={crew} onChange={setCrew} /> : null}
-      {rosterMessage ? <p role="status" className="text-xs text-destructive">{rosterMessage}</p> : null}
+      {rosterLoading ? <p role="status">Reading the authorized crew roster…</p> : null}
+    {rosterMessage ? <p role="status" className="text-xs text-destructive">{rosterMessage}</p> : null}
     </div>
     {!auth.missionId ? <p>Select an authorized mission above to read submitted terms. The original 12 documentary dossiers remain below.</p> : null}
     {researcherOnly ? <p className="text-xs text-muted-foreground">Researcher view: only successfully submitted and authorized cloud terms are shown. Device-local registrations and submission controls are not part of the Researcher workflow.</p> : null}
     {loading ? <p role="status">Reading authorized cloud metadata and encrypted local requests…</p> : null}
     {message ? <p role="status" className="break-words text-sm">{message}</p> : null}
-    {!researcherOnly && auth.userId ? local.map((r) => <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId!} onSubmitted={() => { setRefreshKey((k) => k + 1); void reload(); }} />) : null}
-    <Input aria-label="Search dynamic terms" placeholder="Search label, exact unit or term ID" value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} />
+    {!researcherOnly && auth.userId ? local.map((r) => <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId} onSubmitted={() => { setRefreshKey((k) => k + 1); void reload(); }} />) : null}
     <p className="text-xs">{terms.length} {researcherOnly ? "submitted" : "additional"} term(s) · {cloud.length} cloud term(s) · {selected.length} proposal selection(s). Grouping is not scientific approval. Recommendations and approvals require an independently verified source receipt; uploaded labels never validate a source.</p>
     {scope && !loading && terms.length === 0 ? <p>{researcherOnly ? "No successfully submitted terms are available in this exact scope." : "No submitted or device-local terms available in this exact scope. A request registered on another browser is not present here until explicitly submitted."}</p> : null}
-    <ul className="space-y-3">{filtered.slice(Math.min(page, pages - 1) * 20, (Math.min(page, pages - 1) + 1) * 20).map((t) => {
+    <P36CompactReviewTable key={`${auth.userId}|${scope?.missionId}|${crew}|${provenance}`} label="Authorized cloud and device-local inventory" rows={terms.map((t) => ({
+      id: t.termId, name: t.originalLabels.join(" / "), unit: t.exactUnit,
+      domain: [...new Set(t.candidateMetricIds.map((id) => catalogEntryFor(id)?.domain).filter(Boolean))].join(" / ") || "Unresolved",
+      candidates: t.candidateMetricIds,
+      evidence: t.classification === "source_unvalidated" ? "Source unvalidated" : "Scientific evidence incomplete",
+      decision: SCIENTIFIC_STATUS_LABELS[view?.terms.find((v) => v.termId === t.termId)?.scientificStatus ?? "PENDING_NIKOLAS_REVIEW"],
+      activation: view?.terms.find((v) => v.termId === t.termId)?.activationStatus === "ACTIVE" ? "Active" : "Activation blocked",
+      origin: cloudIds.has(t.termId) ? "Cloud submitted · synchronized readback" : "Device-local · not submitted",
+    }))} renderDetail={(id) => {
+      const t = terms.find((term) => term.termId === id);
+      if (!t) return null;
       const cloudTerm = cloud.find((c) => c.termId === t.termId);
-      return <li key={t.termId} className="space-y-2 rounded-md border border-border p-3 text-sm">
+      return <div className="space-y-2 text-sm">
         <div className="flex flex-wrap items-start gap-2"><input aria-label={`Select proposal ${t.originalLabels[0]}`} type="checkbox" disabled={!safeIds.has(t.termId)} checked={selected.includes(t.termId)} onChange={(e) => setSelected((s) => e.target.checked ? [...s, t.termId] : s.filter((id) => id !== t.termId))} /><strong className="break-words">{t.originalLabels.join(" / ")}</strong><span>{t.exactUnit || "unit missing"}</span><Badge variant="outline">{cloudTerm ? "SUBMITTED" : "LOCAL_ONLY — not shared"}</Badge></div>
         <p className="break-words text-xs">{t.termId} · {t.classification} · candidate IDs {t.candidateMetricIds.join(", ") || "none"} · method/specimen unrecorded · scientific review pending</p>
         <details><summary className="cursor-pointer">Evidence fingerprints</summary><ul>{t.sourceDocumentSha256.map((h) => <li className="break-all" key={h}>{h} (not source validation)</li>)}</ul><p>{t.evidencePointers.length} opaque evidence pointer(s); no clinical values sent.</p></details>
         {cloudTerm && scope ? <TermAuthorizationPanel dossier={cloudTermDossier(cloudTerm)} state={view?.terms.find((s) => s.termId === t.termId)} auth={dynamicAuth} scope={scope} /> : <p>Local-only evidence cannot authorize a cloud scientific decision.</p>}
         <Button variant="outline" disabled={view?.terms.find((s) => s.termId === t.termId)?.scientificStatus !== "SCIENTIFICALLY_APPROVED" || !isVerifiedSelection} onClick={() => void exportPromotion(t.termId)}>Prepare governed promotion artifact</Button>
-      </li>;
-    })}</ul>
-    <div className="flex items-center gap-3"><Button variant="outline" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>Previous</Button><span>Page {Math.min(page, pages - 1) + 1} / {pages}</span><Button variant="outline" disabled={page >= pages - 1} onClick={() => setPage((p) => p + 1)}>Next</Button></div>
+      </div>;
+    }} />
     {selected.length ? <p role="status" className="text-sm">{bulk.ok ? `Proposal prepared for ${bulk.proposal.termIds.length} terms → ${bulk.proposal.candidateMetricId}, exact unit ${bulk.proposal.exactUnit}. Each term requires its own recommendation and independent decision; nothing approved or persisted.` : bulk.reason}</p> : null}
     <div className="space-y-1">
       <select aria-label="Validated revision for governed promotion" className="border border-border bg-background px-3 py-2" value={commit} onChange={(e) => setCommit(e.target.value)} disabled={!revisions.revisions.length}>
