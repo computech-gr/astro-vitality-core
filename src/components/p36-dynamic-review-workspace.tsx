@@ -85,6 +85,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
   const [provenance, setProvenance] = useState<"synthetic" | "real">("synthetic");
   const [local, setLocal] = useState<PendingReviewRequest[]>([]);
   const [cloud, setCloud] = useState<CloudTerm[]>([]);
+  const [cloudRead, setCloudRead] = useState<"idle" | "ready" | "unavailable">("idle");
   const [view, setView] = useState<AuthorizationView | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -139,7 +140,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
 
   const reload = useCallback(async () => {
     const current = ++epoch.current;
-    setCloud([]); setLocal([]); setView(null); setSelected([]); setLoading(false);
+    setCloud([]); setCloudRead("idle"); setLocal([]); setView(null); setSelected([]); setLoading(false);
     if (!scope || !auth.userId) return;
     setLoading(true); setMessage("");
     try {
@@ -149,8 +150,9 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
       const [localResult, cloudResult] = await Promise.all([canHoldLocalRequests(identity.memberships, scope.missionId) ? listUnknownBiomarkerReviewState(scope) : Promise.resolve({ requests: [] }), listCloud({ data: scope })]);
       if (current !== epoch.current) return;
       setLocal(localResult.requests);
-      if (!cloudResult.ok) { setMessage(cloudResult.message); return; }
+      if (!cloudResult.ok) { setCloudRead("unavailable"); setMessage(cloudResult.message); return; }
       setCloud(cloudResult.terms);
+      setCloudRead("ready");
       const authority = await listAuthority({ data: scope });
       if (current !== epoch.current) return;
       if (authority.ok) {
@@ -159,7 +161,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
         setView(next);
       }
       setMessage(`${cloudResult.submissions.length} server receipt(s); ${cloudResult.conflicts.length} conflicting term(s) held. ${authority.ok ? "Scoped authorization history verified." : authority.message}`);
-    } catch (e) { if (current === epoch.current) setMessage(e instanceof Error ? e.message : "Unable to read this scope."); }
+    } catch (e) { if (current === epoch.current) { setCloudRead("unavailable"); setMessage(e instanceof Error ? e.message : "Unable to read this scope."); } }
     finally { if (current === epoch.current) setLoading(false); }
   }, [scope, auth.userId, listCloud, listAuthority]);
   useEffect(() => { void reload(); const current = epoch.current; return () => { epoch.current = current + 1; }; }, [reload]);
@@ -208,7 +210,8 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
     {message ? <p role="status" className="break-words text-sm">{message}</p> : null}
     {!researcherOnly && auth.userId ? local.map((r) => <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId ?? ""} onSubmitted={() => { setRefreshKey((k) => k + 1); void reload(); }} />) : null}
     <p className="text-xs">{terms.length} {researcherOnly ? "submitted" : "additional"} term(s) · {cloud.length} cloud term(s) · {selected.length} proposal selection(s). Grouping is not scientific approval. Recommendations and approvals require an independently verified source receipt; uploaded labels never validate a source.</p>
-    {scope && !loading && terms.length === 0 ? <p>{researcherOnly ? "No successfully submitted terms are available in this exact scope." : "No submitted or device-local terms available in this exact scope. A request registered on another browser is not present here until explicitly submitted."}</p> : null}
+    {scope && !loading && cloudRead === "unavailable" ? <p role="status">Cloud inventory unavailable — not verified empty. Local registration is not server submission.</p> : null}
+    {scope && !loading && cloudRead === "ready" && terms.length === 0 ? <p>{researcherOnly ? "No successfully submitted terms are available in this exact scope." : "No submitted or device-local terms available in this exact scope. A request registered on another browser is not present here until explicitly submitted."}</p> : null}
     <P36CompactReviewTable key={`${auth.userId}|${scope?.missionId}|${crew}|${provenance}`} label="Authorized cloud and device-local inventory" rows={terms.map((t) => ({
       id: t.termId, name: t.originalLabels.join(" / "), unit: t.exactUnit,
       domain: [...new Set(t.candidateMetricIds.map((id) => catalogEntryFor(id)?.domain).filter(Boolean))].join(" / ") || "Unresolved",
