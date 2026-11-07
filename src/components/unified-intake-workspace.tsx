@@ -1135,9 +1135,19 @@ export function UnifiedIntakeWorkspace() {
           <div role="status" aria-live="polite" className="space-y-1 text-xs">
             <strong>Batch processing results</strong>
             {batchFiles.map((file, i) => (
-              <p key={`${file.name}-${i}`} className="break-all">
-                {file.name}: {file.state} ({file.count} candidate row(s))
-              </p>
+              <div key={`${file.name}-${i}`} className="break-words">
+                <p>
+                  <span className="font-medium">{file.name}</span>: {file.state} ({file.count}{" "}
+                  candidate row(s))
+                </p>
+                {file.flags?.length ? (
+                  <ul className="ml-4 list-disc text-muted-foreground">
+                    {file.flags.map((flag) => (
+                      <li key={flag}>{flag}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
             ))}
           </div>
         )}
@@ -1146,12 +1156,219 @@ export function UnifiedIntakeWorkspace() {
           are isolated and extracted rows remain unchecked.
         </p>
         <p className="text-xs text-muted-foreground">
+          Document reading runs on this device: PDF text-layer tables are rebuilt from column
+          positions (any column order, multi-page, repeated headers). Pages without a text layer use
+          on-device OCR, which can misread digits and decimal points, so OCR rows are always
+          low-confidence and never bulk-selected. No on-device AI extraction model is available;
+          unresolved rows stay in manual review.
+        </p>
+        <p className="text-xs text-muted-foreground">
           Documents are processed on this device only. Original files are never uploaded
           automatically; the document name and SHA-256 fingerprint are kept with each row for
           traceability. Device observations and self-assessments use the same envelope through their
           own workflows.
         </p>
       </section>
+
+      {documents.length ? (
+        <section
+          className="space-y-4 rounded-lg border border-border bg-card p-5"
+          aria-labelledby="intake-document-summary"
+        >
+          <h2 id="intake-document-summary" className="text-lg font-semibold">
+            Document processing summary
+          </h2>
+          {documents.map((doc) => {
+            const recon = doc.reconstruction;
+            const docRows = rows.filter((row) => row.documentSha256 === doc.sha256);
+            const summary = summarizeDocumentRows(docRows, recon?.observations.length ?? docRows.length);
+            const check = identityChecks.get(doc.sha256) ?? null;
+            const key = resolutionKey(doc.sha256);
+            const resolved = Boolean(key) && identityResolutions.has(key);
+            const missingTime = docRows.filter((row) => !row.observedAt).length;
+            return (
+              <article
+                key={doc.sha256}
+                className="space-y-3 rounded-md border border-border p-4"
+                data-testid="p42-document-summary"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="break-all font-medium">{doc.fileName}</p>
+                    <p className="break-all text-xs text-muted-foreground">
+                      SHA-256 {doc.sha256} · {doc.method} · rules {recon?.rulesVersion ?? "—"}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => removeDocumentRows(doc.sha256)}
+                  >
+                    Remove unsaved rows of this document
+                  </Button>
+                </div>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+                  {(
+                    [
+                      ["Pages inspected", doc.pages ?? "—"],
+                      ["Table headers", recon?.headers.length ?? 0],
+                      ["Source rows detected", summary.sourceRows],
+                      ["Observations extracted", summary.extracted],
+                      ["Safely matched", summary.safelyMatched],
+                      ["Ambiguous matches", summary.ambiguous],
+                      ["Unit review", summary.unitReview],
+                      ["Unknown biomarkers", summary.unknown],
+                      ["Unsupported result types", summary.unsupportedResultTypes],
+                      ["Potential duplicates (in document)", summary.potentialDuplicates],
+                      ["Rows requiring manual review", summary.manualReview],
+                      ["Rejected", summary.rejected],
+                      ["Rows saved", doc.saved],
+                    ] as const
+                  ).map(([term, value]) => (
+                    <div key={term} className="flex justify-between gap-2 border-b border-border/50 py-1">
+                      <dt className="text-muted-foreground">{term}</dt>
+                      <dd className="font-medium tabular-nums">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {recon?.sections.length ? (
+                  <p className="text-xs text-muted-foreground">
+                    Sections:{" "}
+                    {recon.sections
+                      .map(
+                        (sec) =>
+                          `${sec.heading} (${sec.rows} row(s)${sec.domain ? ` → ${DOMAIN_LABELS[sec.domain]}` : ", heading not mapped to a domain"})`,
+                      )
+                      .join(" · ")}
+                  </p>
+                ) : null}
+                {recon && (recon.rowNumbers.missing.length || recon.rowNumbers.duplicated.length) ? (
+                  <p className="text-xs text-destructive">
+                    {recon.rowNumbers.missing.length
+                      ? `Source row number(s) not found: ${recon.rowNumbers.missing.join(", ")}. `
+                      : ""}
+                    {recon.rowNumbers.duplicated.length
+                      ? `Row number(s) appearing twice: ${recon.rowNumbers.duplicated.join(", ")}.`
+                      : ""}{" "}
+                    Check the original pages; nothing was filled in.
+                  </p>
+                ) : null}
+                {recon && recon.issues.length ? (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer">
+                      {recon.issues.length} row(s) that could not be reconstructed safely — exact row,
+                      reason and action
+                    </summary>
+                    <ul className="mt-2 space-y-1">
+                      {recon.issues.slice(0, 200).map((issue, i) => (
+                        <li key={i}>
+                          {issue.rowNumber ? `Row ${issue.rowNumber}` : "Row"}
+                          {issue.page ? `, page ${issue.page}` : ""}
+                          {issue.line ? `, line ${issue.line}` : ""}: {issue.message} — {issue.action}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                ) : null}
+                {recon ? (
+                  <div className="space-y-2 rounded-md bg-muted/40 p-3 text-sm">
+                    <p className="font-medium">Document identity (compared on this device only)</p>
+                    <p className="text-xs">
+                      Patient: {recon.identity.patientName ?? "not stated"} · Record:{" "}
+                      {recon.identity.recordId ?? "not stated"} · Stated date:{" "}
+                      {recon.identity.examDateText ?? "not stated"} · Stated time:{" "}
+                      {recon.identity.examTimeText ?? "not stated"}
+                      {recon.identity.declaresSimulated
+                        ? " · The document declares simulated data / not a clinical record"
+                        : ""}
+                    </p>
+                    {!membership ? (
+                      <p className="text-xs text-muted-foreground">
+                        Select the authorized mission and crew to compare identity.
+                      </p>
+                    ) : check?.status === "match" ? (
+                      <p className="text-xs">{check.detail}</p>
+                    ) : check?.status === "not_stated" ? (
+                      <p className="text-xs">{check.detail}</p>
+                    ) : check?.status === "conflict" ? (
+                      <div className="space-y-1 text-xs" data-testid="p42-identity-conflict">
+                        <p className="font-medium text-destructive">
+                          Identity conflict: {check.detail}
+                        </p>
+                        {check.resolvable ? (
+                          canResolveIdentityConflict(rolesForScope) ? (
+                            <label className="flex items-start gap-2">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5"
+                                checked={resolved}
+                                onChange={(event) =>
+                                  setIdentityResolutions((previous) => {
+                                    const next = new Set(previous);
+                                    if (event.target.checked) next.add(key);
+                                    else next.delete(key);
+                                    return next;
+                                  })
+                                }
+                              />
+                              As Ground Medical for this crew member, I confirm this document
+                              belongs to {membership.crewLabel} (resolution kept for this session
+                              only).
+                            </label>
+                          ) : (
+                            <p>
+                              Only a Ground Medical member of this mission can resolve it. All rows
+                              of this document stay held.
+                            </p>
+                          )
+                        ) : null}
+                      </div>
+                    ) : null}
+                    {recon.identity.timestampCandidates.length ? (
+                      <div className="space-y-1">
+                        <p className="text-xs">
+                          Examination time stated in the document — apply it explicitly to the{" "}
+                          {missingTime} row(s) without an observation time
+                          {recon.identity.timestampNote ? `. ${recon.identity.timestampNote}` : ""}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {recon.identity.timestampCandidates.map((candidate) => (
+                            <Button
+                              key={`${candidate.value}-${candidate.interpretation}`}
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-auto whitespace-normal py-1 text-left"
+                              disabled={busy || missingTime === 0}
+                              onClick={() =>
+                                applyTimestamp(
+                                  doc.sha256,
+                                  candidate.value,
+                                  candidate.precision,
+                                  candidate.interpretation,
+                                )
+                              }
+                            >
+                              Apply {candidate.value} — {candidate.interpretation}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {recon.identity.timestampNote ??
+                          "No examination date is stated in the document; enter observation dates per row."}
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
+        </section>
+      ) : null}
 
       {rows.length ? (
         <section className="space-y-4 rounded-lg border border-border bg-card p-5">
