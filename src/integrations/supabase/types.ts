@@ -2509,6 +2509,14 @@ export type Database = {
         }
         Returns: Json
       }
+      p37_catalog_activation_queue_v1: {
+        Args: { p_mission_id: string }
+        Returns: Json
+      }
+      p37_catalog_activator_membership: {
+        Args: { p_mission_id: string; p_submission_id: string }
+        Returns: string
+      }
       p37_catalog_approve_v1: {
         Args: {
           p_canonical_name: string
