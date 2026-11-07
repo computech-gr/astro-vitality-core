@@ -699,10 +699,12 @@ export function UnifiedIntakeWorkspace() {
                   provenance,
                 })
               : null;
+            // Diagnose with the same scope-aware classification the review table uses
+            // (mission synthetic demo catalog, provenance).
             const diagnosis = diagnoseDocumentIntake({
               textLength: doc.textLength,
               reconstruction: parsed.reconstruction,
-              rows: batch,
+              rows: reclassifyRows(batch, provenance, scopeMissionId),
               identity: identityCheck,
             });
             state = diagnosis.message;
