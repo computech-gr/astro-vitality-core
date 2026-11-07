@@ -2,7 +2,8 @@
 
 - [x] Read-only inspection: production P37 cannot run the test (no source receipt; and the label "25(OH) Vitamin D" already resolves in the base catalog as unit-review-required bone-019, so a production entry would be excluded on devices).
 - [x] Prepared isolated synthetic demo lifecycle (pending SQL, rollback, scope authorization), demo signing key, device runtime, intake annotation, no-duplicate request rule, Researcher/Ground Medical panels; 19 domain tests, 126 disposable SQL assertions, existing P37 verifiers (84, 73) and 1,270 tests pass.
-- [ ] Live Preview test — blocked on owner approval of the demo migration and the one-row scope write; then Researcher decision, Ground Medical activation, device sync and recognition checks.
+- [x] Owner-approved demo database change and one-term allow-list installed (byte-identical, hashes verified).
+- [ ] Live Preview test — owner performs Researcher demo decision and Ground Medical demo activation manually.
 
 # P36 controlled Metadata Handoff activation
 

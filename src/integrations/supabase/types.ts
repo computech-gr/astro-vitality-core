@@ -1918,6 +1918,124 @@ export type Database = {
           },
         ]
       }
+      p37_demo_catalog_events: {
+        Row: {
+          activation_event_id: string | null
+          actor_user_id: string
+          decision_event_id: string | null
+          demo_id: string
+          entry: Json | null
+          entry_sha256: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          mission_id: string
+          provenance: string
+          reason: string | null
+          recorded_at: string
+          request_sha256: string
+          seq: number
+          submission_id: string
+          term_id: string
+        }
+        Insert: {
+          activation_event_id?: string | null
+          actor_user_id: string
+          decision_event_id?: string | null
+          demo_id: string
+          entry?: Json | null
+          entry_sha256?: string | null
+          event_type: string
+          id?: string
+          idempotency_key: string
+          mission_id: string
+          provenance?: string
+          reason?: string | null
+          recorded_at?: string
+          request_sha256: string
+          seq?: never
+          submission_id: string
+          term_id: string
+        }
+        Update: {
+          activation_event_id?: string | null
+          actor_user_id?: string
+          decision_event_id?: string | null
+          demo_id?: string
+          entry?: Json | null
+          entry_sha256?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string
+          mission_id?: string
+          provenance?: string
+          reason?: string | null
+          recorded_at?: string
+          request_sha256?: string
+          seq?: never
+          submission_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p37_demo_catalog_events_activation_event_id_fkey"
+            columns: ["activation_event_id"]
+            isOneToOne: false
+            referencedRelation: "p37_demo_catalog_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p37_demo_catalog_events_decision_event_id_fkey"
+            columns: ["decision_event_id"]
+            isOneToOne: false
+            referencedRelation: "p37_demo_catalog_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p37_demo_catalog_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p37_demo_catalog_events_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "p36_dynamic_handoff_submissions"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
+      p37_demo_scope: {
+        Row: {
+          authorization_ref: string
+          granted_at: string
+          submission_id: string
+          term_id: string
+        }
+        Insert: {
+          authorization_ref: string
+          granted_at?: string
+          submission_id: string
+          term_id: string
+        }
+        Update: {
+          authorization_ref?: string
+          granted_at?: string
+          submission_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p37_demo_scope_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "p36_dynamic_handoff_submissions"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
       p37_scientific_approvers: {
         Row: {
           authorization_ref: string
@@ -2544,6 +2662,40 @@ export type Database = {
         Returns: Json
       }
       p37_catalog_snapshot_v1: { Args: never; Returns: Json }
+      p37_demo_activate_v1: {
+        Args: {
+          p_decision_event_id: string
+          p_expected_entry_sha256: string
+          p_idempotency_key: string
+        }
+        Returns: Json
+      }
+      p37_demo_catalog_snapshot_v1: {
+        Args: { p_mission_id: string }
+        Returns: Json
+      }
+      p37_demo_decide_v1: {
+        Args: {
+          p_acknowledgement: string
+          p_display_name: string
+          p_domain: string
+          p_idempotency_key: string
+          p_mission_id: string
+          p_submission_id: string
+          p_term_id: string
+        }
+        Returns: Json
+      }
+      p37_demo_keys: { Args: { p_entry: Json }; Returns: string[] }
+      p37_demo_lifecycle_v1: { Args: { p_mission_id: string }; Returns: Json }
+      p37_demo_revoke_v1: {
+        Args: {
+          p_activation_event_id: string
+          p_idempotency_key: string
+          p_reason: string
+        }
+        Returns: Json
+      }
       review_sync_append_v1: {
         Args: {
           p_attestations: Json
