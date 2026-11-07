@@ -3,6 +3,8 @@ import { listGlobalReviewMissionsCore, listGlobalReviewSubmissionsCore, cleanSub
 import { ALL_CREWS, ALL_MISSIONS, dashboardCounts, filterTerms, flattenTerms, groupByMissionAndCrew, missionsForSelection, paginate, sortTerms } from "../../src/lib/p36-global-review-view";
 import type { GlobalReviewSubmission } from "../../src/lib/p36-global-review.server";
 import type { Rpc } from "../../src/lib/p36-scientific-authorization.server";
+import { appendTriageCore, cleanTriageEvent, listTriageCore } from "../../src/lib/p36-global-triage.server";
+import { latestTriageByTerm, triageInputProblem } from "../../src/lib/p36-global-triage-rules";
 
 const hex = (c: string) => c.repeat(64);
 const term = (i: number, decision: string | null = null) => ({
@@ -80,7 +82,7 @@ describe("P36 global review dashboard", () => {
 
   test("209 pending terms count as awaiting triage and activation-blocked, never approved", () => {
     const c = dashboardCounts(rows);
-    expect(c).toEqual({ submittedTerms: 209, pending: 209, awaitingTriage: 209, moreEvidence: 0, rejected: 0, approved: 0, activationBlocked: 209 });
+    expect(c).toEqual({ submittedTerms: 209, pending: 209, awaitingTriage: 209, accepted: 0, moreEvidence: 0, rejected: 0, approved: 0, activationBlocked: 209 });
   });
 
   test("search by request ID returns only that receipt's 12 terms", () => {
@@ -96,5 +98,49 @@ describe("P36 global review dashboard", () => {
     expect(p.pages).toBe(9);
     expect(p.page).toBe(9);
     expect(p.items.length).toBe(9);
+  });
+});
+
+
+describe("P36 global triage", () => {
+  const ev = (id: string, prev: string | null, action: string) => ({ event_id: id, submission_id: "4fc8aee1-deb3-4f4c-9173-46c2a3401fa7", term_id: "ubt-7c10c994",
+    action, reason: action === "ACCEPT_FOR_REVIEW" ? null : "Documented reason text", evidence_requirements: action === "REQUEST_MORE_EVIDENCE" ? ["unit"] : [],
+    previous_event_id: prev, recorded_at: "2026-11-07T09:00:00Z", recorded_by_caller: true, access_basis: "global_scientific_review" });
+  const A = "11111111-1111-4111-8111-111111111111", B = "22222222-2222-4222-8222-222222222222";
+
+  test("triage is not installed: fails closed and records nothing", async () => {
+    const r = await listTriageCore(rpcReturning(null, { code: "PGRST202" }), "M1", "synthetic");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.code).toBe("migration_required");
+  });
+
+  test("rejection and evidence requests require a reason; evidence requests require a requirement", () => {
+    expect(triageInputProblem({ action: "REJECT_REVIEW_REQUEST", reason: " ", evidenceRequirements: [] })).toBe("A documented reason is required.");
+    expect(triageInputProblem({ action: "REQUEST_MORE_EVIDENCE", reason: "Unit basis missing", evidenceRequirements: [] })).toBe("Name at least one missing evidence requirement.");
+    expect(triageInputProblem({ action: "ACCEPT_FOR_REVIEW", reason: null, evidenceRequirements: [] })).toBeNull();
+  });
+
+  test("an invalid request is refused before any database call", async () => {
+    let called = false;
+    const r = await appendTriageCore(async () => { called = true; return { data: null, error: null }; }, { missionId: "M1", provenance: "synthetic",
+      submissionId: A, termId: "ubt-7c10c994", action: "REJECT_REVIEW_REQUEST", reason: null, evidenceRequirements: [], expectedPreviousEventId: null, idempotencyKey: B });
+    expect(r.ok).toBe(false);
+    expect(called).toBe(false);
+  });
+
+  test("a concurrent decision is reported as stale, not recorded", async () => {
+    const r = await appendTriageCore(rpcReturning({ status: "stale", latest_event_id: A }), { missionId: "M1", provenance: "synthetic",
+      submissionId: A, termId: "ubt-7c10c994", action: "ACCEPT_FOR_REVIEW", reason: null, evidenceRequirements: [], expectedPreviousEventId: null, idempotencyKey: B });
+    expect(r.ok).toBe(false);
+  });
+
+  test("a history row carrying a user ID is rejected", () => {
+    expect(cleanTriageEvent({ ...ev(A, null, "ACCEPT_FOR_REVIEW"), actor_user_id: "u" })).toBeNull();
+    expect(cleanTriageEvent(ev(A, null, "APPROVE"))).toBeNull();
+  });
+
+  test("latest triage follows the append-only chain", () => {
+    const events = [ev(A, null, "ACCEPT_FOR_REVIEW"), ev(B, A, "REQUEST_MORE_EVIDENCE")].map((e) => cleanTriageEvent(e)!);
+    expect(latestTriageByTerm(events).get("4fc8aee1-deb3-4f4c-9173-46c2a3401fa7:ubt-7c10c994")?.action).toBe("REQUEST_MORE_EVIDENCE");
   });
 });

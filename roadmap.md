@@ -466,4 +466,8 @@
 - [x] Scientific Review mission combo box and grouped read-only view; fails closed until the database change is installed.
 - [x] Owner-approved schema installed byte-identically as migration 0021; demo reviewer grant and synthetic-only sharing for MITO_DEMO_2026 applied and audited.
 - [x] Authenticated Researcher readback in Preview: 12 + 197 = 209 pending terms; dashboard, crew picker, search/filters/sort/pagination and per-term detail verified; unshared mission and direct table reads denied.
-- [ ] Triage actions (accept for review / request more evidence / reject) — blocked: needs a new owner-approved review-action database change; global review stays read-only.
+- [x] Triage database change, rollback and one-line Researcher grant staged; throwaway-database verifier 84/84 PASS (incl. true concurrent writes).
+- [x] Triage form, history and separate triage/scientific counts in the review screen; fails closed until installed.
+- [x] Synthetic lifecycle test: unknown → accepted → approved extension → recognized in a later intake; unit/context/ambiguity/revocation safeguards.
+- [ ] Apply `supabase/pending/20261107040000_p36_global_triage.sql`, then `20261107040001_p36_global_triage_demo.authorize.sql` — blocked: explicit owner approval.
+- [ ] Bridge from cloud scientific approval to a code-reviewed catalog-extensions entry; support new (non-alias) metrics; pass method/specimen from intake — blocked: owner design decision and scientific authorization (closed).
