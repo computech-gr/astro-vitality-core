@@ -527,3 +527,12 @@
 - [x] Same gate in single drafts, 5/25 batch and the server; irrelevant sources never reach the AI; no usable source → "Insufficient relevant scientific evidence" and no AI call.
 - [x] 15 P41.1 regression tests; approval still needs Researcher appraisal and server attestation.
 - [ ] Nikolas's signed-in check of the updated panel — blocked: his Researcher session.
+
+## P42 Universal medical document intelligence
+
+- [x] Root cause found: numbered 4-column tables without per-row dates matched no parser; 200-row cap; "1,400" read as 1.4.
+- [x] Header-role table reconstruction (any column order, English/Greek, multi-page, repeated headers, wrapped rows, OCR token fallback) with safe value normalization.
+- [x] Alex Morgan PDF: 328/328 rows, 54/94/81/99 per section, page/row provenance, repeats kept; real OCR output fixture shows OCR limits.
+- [x] Processing summary, actionable diagnostics, identity check (Ground Medical resolution), reviewer-applied examination time, filters, reject, bulk selection limited to safely matched rows, safe retry and interrupted-save recovery.
+- [ ] "IMMUNE MONITORING" heading → Immune domain — blocked: governed P39 heading-rules update (sealed evidence uses v1).
+- [ ] Bone unit-review rows (97) and 175 unknown terms — blocked: scientific decisions by the Researcher.
