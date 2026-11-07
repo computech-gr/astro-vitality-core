@@ -22,6 +22,12 @@ import type { HealthDomainId } from "@/domain/health-domains/registry";
 import { normalizeCatalogText } from "./catalog-lifecycle";
 import { classifyWithGovernedExtensions } from "./unknown-biomarker-review";
 import type { EvaluatedDemoCatalog } from "./synthetic-demo-catalog";
+import {
+  proposeDomainFromSources,
+  type DomainBasis,
+  type SourceDocumentEvidence,
+  type TermDomainProposal,
+} from "./source-section-classification";
 
 export const PREFLIGHT_CATEGORIES = [
   "already_active",
@@ -53,6 +59,8 @@ export interface PreflightTermInput {
   exactUnit: string;
   classification: string;
   candidateMetricIds: readonly string[];
+  /** SHA-256 of the source documents the term cites (joins P39 section evidence). */
+  sourceDocumentSha256?: readonly string[] | undefined;
 }
 export interface PreflightDemoEvent {
   submissionId: string;
@@ -75,6 +83,10 @@ export interface PreflightOptions {
   overrides?: ReadonlyMap<string, PreflightOverride>;
   /** True when the label + exact unit already matches the handbook / governed / production catalog. */
   existingMatch: (label: string, unit: string) => string | null;
+  /** P39 source-section evidence of cited documents (joined by SHA-256 only). */
+  sourceDocuments?: readonly SourceDocumentEvidence[];
+  /** Keys whose high-confidence source-section domain the Researcher accepted (in memory). */
+  acceptedSectionProposals?: ReadonlySet<string>;
 }
 export interface CatalogReference {
   source: string;
@@ -95,6 +107,12 @@ export interface PreflightRow {
   references: CatalogReference[];
   proposedDisplayName: string;
   proposedDomain: HealthDomainId | null;
+  /** Where the proposed domain comes from (P39 precedence). */
+  domainBasis: DomainBasis | null;
+  /** P39 source-section proposal (evidence, confidence, conflicts), when evidence was supplied. */
+  sectionProposal: TermDomainProposal | null;
+  /** True when the domain is a source-section proposal the Researcher has accepted. */
+  sectionAccepted: boolean;
   displayName: string;
   domain: HealthDomainId | null;
   /** Labels the server will store as aliases (the submitted original labels, never invented). */
@@ -238,8 +256,20 @@ export function buildBulkDemoPreflight(
     const refs = referencesFor(t);
     const refDomains = [...new Set(refs.map((r) => r.domain))];
     const proposedName = proposedDisplayName(t, refs);
-    const proposedDomain = refDomains.length === 1 ? refDomains[0]! : null;
+    // P39 precedence: (1) authorized mappings are handled as existing matches / active
+    // entries below; (2) explicit source section; (3) catalog references; (5) human review.
+    const sectionProposal = o.sourceDocuments
+      ? proposeDomainFromSources(t, o.sourceDocuments, refDomains)
+      : null;
+    let proposedDomain: HealthDomainId | null = refDomains.length === 1 ? refDomains[0]! : null;
+    let domainBasis: DomainBasis | null = proposedDomain ? "catalog_reference" : null;
+    if (sectionProposal?.prepopulate && sectionProposal.domain) {
+      proposedDomain = sectionProposal.domain;
+      domainBasis = "source_section";
+    }
     const ov = o.overrides?.get(key);
+    const sectionAccepted =
+      domainBasis === "source_section" && !ov?.domain && !!o.acceptedSectionProposals?.has(key);
     const displayName = (ov?.displayName ?? proposedName).trim();
     const domain = ov?.domain ?? proposedDomain;
     const triageAction = o.triage.get(key) ?? null;
@@ -256,6 +286,9 @@ export function buildBulkDemoPreflight(
       references: refs,
       proposedDisplayName: proposedName,
       proposedDomain,
+      domainBasis,
+      sectionProposal,
+      sectionAccepted,
       displayName,
       domain,
       aliases: [...new Set(labels)].sort(),
@@ -302,6 +335,10 @@ export function buildBulkDemoPreflight(
       );
       continue;
     }
+    if (sectionProposal?.conflict && refDomains.length && !ov?.domain) {
+      block("conflicting_identity", sectionProposal.reason);
+      continue;
+    }
     if (refDomains.length > 1 && !ov?.domain) {
       block(
         "conflicting_identity",
@@ -329,10 +366,18 @@ export function buildBulkDemoPreflight(
     for (const k of keys) claimed.set(k, t.termId);
     if (displayName.length < 3 || displayName.length > 120)
       block("blocked", "The display name must be 3 to 120 characters; edit it to continue.");
-    else if (!domain || !DOMAINS.includes(domain))
+    else if (!domain || !DOMAINS.includes(domain)) {
       block(
         "blocked",
         "No existing catalog reference names a domain for this term; choose the domain explicitly.",
+      );
+      if (sectionProposal && sectionProposal.confidence !== "none")
+        row.reasons.push(sectionProposal.reason);
+    } else if (domainBasis === "source_section" && !ov?.domain && !sectionAccepted)
+      block("blocked", `${SECTION_PROPOSAL_REASON} ${sectionProposal!.reason}`);
+    if (sectionAccepted)
+      row.warnings.push(
+        `Domain accepted from the source section (${sectionProposal!.reason}). Classification evidence only, not scientific validation.`,
       );
     if (refDomains.length > 1 && ov?.domain)
       row.warnings.push(`References disagreed on the domain; the Researcher chose ${ov.domain}.`);
@@ -367,6 +412,12 @@ export function preflightCounts(rows: readonly PreflightRow[]) {
       counts.blocked,
   };
 }
+
+export const SECTION_PROPOSAL_REASON =
+  "Domain proposed from the source section; review and accept the proposals to continue.";
+/** High-confidence source-section proposals awaiting the Researcher's (bulk) acceptance. */
+export const awaitsSectionAcceptance = (r: PreflightRow) =>
+  r.category === "blocked" && r.reasons.some((x) => x.startsWith(SECTION_PROPOSAL_REASON));
 
 /** Terms that become eligible only after the Researcher chooses a domain (no reference names one). */
 export const needsDomainChoice = (r: PreflightRow) =>
