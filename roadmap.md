@@ -1,7 +1,7 @@
 # P36 narrow permission remediation
 
 - [x] Read-only live ACL investigation: Step 1 committed; sandbox_exec receives direct SELECT/INSERT from postgres table defaults, not PUBLIC or an inherited parent role.
-- [ ] Prepare P36-only INSERT revocation, guarded restoration instructions and disposable inherited-role/SECURITY DEFINER tests.
+- [x] Prepare three-table INSERT-only revocation and separately approved restoration; 177 new disposable assertions plus 149 equivalence and 38 SQL regression checks pass.
 - [ ] Live permission remediation and Steps 2–4 remain blocked pending separately approved exact SQL and platform compatibility evidence.
 
 # P36 tool-compatible installation preparation

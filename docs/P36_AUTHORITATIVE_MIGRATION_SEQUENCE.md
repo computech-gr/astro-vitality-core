@@ -18,6 +18,10 @@ feature that needs its own decision.
 
 ## Tool-compatible execution sequence (supersedes forward execution below)
 
+### Live stop checkpoint — 7 November 2026
+
+Step 1 is now committed as `drizzle/migrations/0016_p36_dynamic_handoff_tool.sql`, exact approved hash; never replay it. Steps 2–4 were stopped before execution. The live default ACL grants `sandbox_exec` direct INSERT on the three new handoff/admission tables. A preparation-only INSERT revocation is staged in `20261107000002_p36_handoff_executor_insert_remediation.sql` (SHA-256 `11c08f81f112f6b32234c2cb0a1f55143082678e4d36fa56f9ae1c811005c6ef`), with separately gated restoration. It has not been applied. Platform compatibility is unverified; approval and successful effective-ACL readback are required before initialization. The unchanged authorization SQL will inherit the same executor INSERT grants on its two future tables, so Step 3 must not be treated as security-cleared merely because handoff remediation passes. See `P36_EXECUTOR_PERMISSION_REMEDIATION.md` for the complete checkpoint.
+
 Prepared replacements only; **no live execution is authorized**. Original forward SQL and rollback bytes remain unchanged.
 
 1. Apply `supabase/pending/20261107000000_p36_dynamic_handoff.tool.sql` through the migration tool in its managed transaction. SHA-256: `79286f4cd359e793cb9c773301fd212963726690913eff815f819c77841f7e78`.
