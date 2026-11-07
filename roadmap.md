@@ -3,7 +3,9 @@
 - [x] Read-only inspection: production P37 cannot run the test (no source receipt; and the label "25(OH) Vitamin D" already resolves in the base catalog as unit-review-required bone-019, so a production entry would be excluded on devices).
 - [x] Prepared isolated synthetic demo lifecycle (pending SQL, rollback, scope authorization), demo signing key, device runtime, intake annotation, no-duplicate request rule, Researcher/Ground Medical panels; 19 domain tests, 126 disposable SQL assertions, existing P37 verifiers (84, 73) and 1,270 tests pass.
 - [x] Owner-approved demo database change and one-term allow-list installed (byte-identical, hashes verified).
-- [ ] Live Preview test — owner performs Researcher demo decision and Ground Medical demo activation manually.
+- [x] Live Preview test — owner recorded the Researcher demo decision and Ground Medical demo activation (demo catalog v2).
+- [x] Automatic integration: activated demo entry recognized in normal intake, saved as labelled synthetic records, shown on Bone Health and in the Medical Report, offline from the signed snapshot, auto-refreshed online, sync re-validated server-side; revocation stops new recognition and keeps history. New-exam browser runs as Ground Medical and Crew Self passed (local device only).
+- [ ] Live revocation and live cross-device sync of a demo record not exercised (would change shared state; covered by tests).
 
 # P36 controlled Metadata Handoff activation
 
