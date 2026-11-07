@@ -74,6 +74,9 @@ const RECEIPT: SourceValidationReceipt = {
   verifiedAt: "2026-11-07T10:00:00Z",
 };
 const grant = (userId: string): Grant => ({ userId, revoked: false });
+const gm = (userId: string, missionId = "M-TEST", active = true) => [
+  { userId, missionId, role: "ground_medical", active },
+];
 const exam = (
   extra: Partial<{
     unit: string;
@@ -218,29 +221,51 @@ describe("P37 synthetic lifecycle: approval -> activation -> automatic recogniti
     expect(classifyWithGovernedExtensions(exam()).classification.status).toBe("unclassified");
   });
 
-  test("activation requires a separate authorized identity and the exact proposal digest", () => {
+  test("activation is role-based: active Ground Medical of the approval mission, not the approver", () => {
     const base = {
       approvalEventId,
       expectedProposalSha256: proposalSha,
       activatorId: ACTIVATOR,
-      activatorGrant: grant(ACTIVATOR),
+      activatorMemberships: gm(ACTIVATOR),
       eventId: "act-1",
       at: "2026-11-07T12:00:00Z",
     };
-    expect(activateCatalogEntry(events, { ...base, activatorGrant: null }).ok).toBe(false);
+    expect(activateCatalogEntry(events, { ...base, activatorMemberships: [] }).ok).toBe(false);
+    expect(
+      activateCatalogEntry(events, { ...base, activatorMemberships: gm(ACTIVATOR, "M-OTHER") }).ok,
+    ).toBe(false);
     expect(
       activateCatalogEntry(events, {
         ...base,
-        activatorGrant: { userId: ACTIVATOR, revoked: true },
+        activatorMemberships: gm(ACTIVATOR, "M-TEST", false),
+      }).ok,
+    ).toBe(false);
+    expect(
+      activateCatalogEntry(events, {
+        ...base,
+        activatorMemberships: [
+          { userId: ACTIVATOR, missionId: "M-TEST", role: "mission_operator", active: true },
+        ],
       }).ok,
     ).toBe(false);
     expect(
       activateCatalogEntry(events, {
         ...base,
         activatorId: APPROVER,
-        activatorGrant: grant(APPROVER),
+        activatorMemberships: gm(APPROVER),
       }).ok,
     ).toBe(false);
+    expect(activateCatalogEntry(events, { ...base, approvalEventId: "unknown" })).toEqual(
+      activateCatalogEntry(events, { ...base, activatorMemberships: [] }),
+    );
+    // Any other active Ground Medical member of the same mission is eligible.
+    expect(
+      activateCatalogEntry(events, {
+        ...base,
+        activatorId: SUBMITTER,
+        activatorMemberships: gm(SUBMITTER),
+      }).ok,
+    ).toBe(true);
     expect(
       activateCatalogEntry(events, { ...base, expectedProposalSha256: "b".repeat(64) }).ok,
     ).toBe(false);
@@ -291,7 +316,7 @@ describe("P37 synthetic lifecycle: approval -> activation -> automatic recogniti
       approvalEventId: "ap-2",
       expectedProposalSha256: ap.value.proposalSha256,
       activatorId: ACTIVATOR,
-      activatorGrant: grant(ACTIVATOR),
+      activatorMemberships: gm(ACTIVATOR),
       eventId: "act-2",
       at: "2026-11-07T12:31:00Z",
     });
@@ -467,7 +492,7 @@ describe("P37 synthetic lifecycle: approval -> activation -> automatic recogniti
       revokeCatalogEntry(events, {
         activationEventId,
         activatorId: ACTIVATOR,
-        activatorGrant: null,
+        activatorMemberships: gm(ACTIVATOR, "M-OTHER"),
         reason: "Synthetic revocation test",
         eventId: "rev-1",
         at: "2026-11-07T13:00:00Z",
@@ -477,7 +502,7 @@ describe("P37 synthetic lifecycle: approval -> activation -> automatic recogniti
       revokeCatalogEntry(events, {
         activationEventId,
         activatorId: ACTIVATOR,
-        activatorGrant: grant(ACTIVATOR),
+        activatorMemberships: gm(ACTIVATOR),
         reason: "short",
         eventId: "rev-1",
         at: "2026-11-07T13:00:00Z",
@@ -486,7 +511,7 @@ describe("P37 synthetic lifecycle: approval -> activation -> automatic recogniti
     const rev = revokeCatalogEntry(events, {
       activationEventId,
       activatorId: ACTIVATOR,
-      activatorGrant: grant(ACTIVATOR),
+      activatorMemberships: gm(ACTIVATOR),
       reason: "Synthetic revocation test",
       eventId: "rev-1",
       at: "2026-11-07T13:00:00Z",
