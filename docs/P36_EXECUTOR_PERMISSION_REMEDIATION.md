@@ -10,11 +10,11 @@ Affected installed tables: `public.p36_dynamic_admission`, `public.p36_dynamic_h
 
 Effective live access:
 
-| Role | SELECT | INSERT | UPDATE/DELETE/TRUNCATE/TRIGGER/REFERENCES |
-| --- | --- | --- | --- |
-| sandbox_exec | yes | yes | no |
-| anon / authenticated | no | no | no |
-| service_role | yes | no | no |
+| Role                 | SELECT | INSERT | UPDATE/DELETE/TRUNCATE/TRIGGER/REFERENCES |
+| -------------------- | ------ | ------ | ----------------------------------------- |
+| sandbox_exec         | yes    | yes    | no                                        |
+| anon / authenticated | no     | no     | no                                        |
+| service_role         | yes    | no     | no                                        |
 
 Executor sequence SELECT/USAGE also comes from defaults. Executor has no EXECUTE on any installed P36 function. All three tables have RLS enabled with zero policies; BYPASSRLS lets the executor use its granted INSERT despite that protection. Helpers and caller-scoped definer functions remain postgres-owned with pinned `public, pg_temp` search paths. Authorized RPCs alone have authenticated EXECUTE.
 
