@@ -5,7 +5,7 @@
 - [x] Live INSERT revocation completed; effective API/executor direct writes denied and unaffected catalog fingerprint preserved.
 - [x] Owner acknowledged the remediation trailing-LF discrepancy; Step 2 initialized exactly one closed singleton.
 - [ ] Step 3 committed; stop: executor INSERT on two new tables and submitted SQL omitted one of two final LFs. Step 4 blocked; narrow remediation staged for separate approval, no replay/history rewrite.
-- [ ] Validate exact Step 3 two-table remediation, independent byte comparison, rollback and scoped RPC regression; live execution remains separately gated.
+- [x] Independent Step 3 byte comparison confirms only one omitted trailing LF; exact two-table remediation passes 261 disposable assertions and 38 hardened RPC regression checks. Both live switches false; execution remains separately gated.
 
 # P36 tool-compatible installation preparation
 
