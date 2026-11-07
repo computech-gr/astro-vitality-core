@@ -599,6 +599,7 @@ export function UnifiedIntakeWorkspace() {
           ...row,
           missionId: membership.missionId,
           provenance,
+          sourceDomain: sectionDomain(row),
         }).syntheticDemo;
         if (row.classification.metricId.startsWith("demo:")) {
           if (provenance !== "synthetic" || demoBasis?.demoId !== row.classification.metricId)
