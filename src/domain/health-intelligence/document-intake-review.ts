@@ -95,7 +95,9 @@ export function extractionBlockingReason(row: ExtractionRowLike): string | null 
 }
 
 /** Bulk "select" never includes in-document repeats, low-confidence or blocked rows. */
-export function isBulkSelectable(row: ExtractionRowLike & { rejected?: boolean | undefined }): boolean {
+export function isBulkSelectable(
+  row: ExtractionRowLike & { rejected?: boolean | undefined },
+): boolean {
   if (row.rejected) return false;
   const e = row.extraction;
   if (!e) return true;
@@ -120,7 +122,8 @@ export function compareDocumentIdentity(
   if (identity.declaresSimulated && scope.provenance === "real")
     return {
       status: "conflict",
-      detail: "The document declares itself simulated / not a clinical record, but Real provenance is selected. Select Synthetic provenance; this cannot be overridden.",
+      detail:
+        "The document declares itself simulated / not a clinical record, but Real provenance is selected. Select Synthetic provenance; this cannot be overridden.",
       resolvable: false,
     };
   if (identity.patientNames.length > 1)
@@ -130,12 +133,19 @@ export function compareDocumentIdentity(
       resolvable: true,
     };
   const name = identity.patientName;
-  if (!name) return { status: "not_stated", detail: "The document states no patient name; confirm the crew member yourself." };
+  if (!name)
+    return {
+      status: "not_stated",
+      detail: "The document states no patient name; confirm the crew member yourself.",
+    };
   const doc = normalizePersonName(name);
   const crew = normalizePersonName(scope.crewLabel);
   const boundary = crew.length > doc.length ? crew.slice(doc.length, doc.length + 2) : "";
   if (doc && (crew === doc || (crew.startsWith(doc) && /^(?: [—–\-(,]| ?[—–(,])/.test(boundary))))
-    return { status: "match", detail: `Document patient "${name}" matches the selected crew member "${scope.crewLabel}".` };
+    return {
+      status: "match",
+      detail: `Document patient "${name}" matches the selected crew member "${scope.crewLabel}".`,
+    };
   return {
     status: "conflict",
     detail: `Document patient "${name}" does not match the selected crew member "${scope.crewLabel}".`,
@@ -144,7 +154,8 @@ export function compareDocumentIdentity(
 }
 
 /** Only Ground Medical may resolve a resolvable identity conflict for its own scope. */
-export const canResolveIdentityConflict = (roles: readonly string[]) => roles.includes("ground_medical");
+export const canResolveIdentityConflict = (roles: readonly string[]) =>
+  roles.includes("ground_medical");
 
 export function identityHoldReason(check: IdentityCheck, resolved: boolean): string | null {
   if (check.status !== "conflict") return null;
@@ -154,13 +165,27 @@ export function identityHoldReason(check: IdentityCheck, resolved: boolean): str
 
 /** Reviewer-applied examination time for every unsaved row of one document that has none yet. */
 export function applyDocumentTimestamp<
-  T extends { documentSha256?: string | undefined; observedAt: string; datePrecision?: "date" | "instant" | undefined; selected: boolean },
->(rows: readonly T[], sha256: string, candidate: TimestampCandidate): { rows: T[]; applied: number } {
+  T extends {
+    documentSha256?: string | undefined;
+    observedAt: string;
+    datePrecision?: "date" | "instant" | undefined;
+    selected: boolean;
+  },
+>(
+  rows: readonly T[],
+  sha256: string,
+  candidate: TimestampCandidate,
+): { rows: T[]; applied: number } {
   let applied = 0;
   const next = rows.map((row) => {
     if (row.documentSha256 !== sha256 || row.observedAt) return row;
     applied++;
-    return { ...row, observedAt: candidate.value, datePrecision: candidate.precision, selected: false };
+    return {
+      ...row,
+      observedAt: candidate.value,
+      datePrecision: candidate.precision,
+      selected: false,
+    };
   });
   return { rows: next, applied };
 }
@@ -187,7 +212,10 @@ export interface DocumentIntakeSummary {
   identityHeld: number;
 }
 
-export function summarizeDocumentRows(rows: readonly SummaryRow[], sourceRows: number): DocumentIntakeSummary {
+export function summarizeDocumentRows(
+  rows: readonly SummaryRow[],
+  sourceRows: number,
+): DocumentIntakeSummary {
   const live = rows.filter((r) => !r.rejected);
   const matched = live.filter((r) => r.classification.status === "matched");
   const safely = matched.filter((r) => !extractionBlockingReason(r) && !r.identityHold);
@@ -198,7 +226,9 @@ export function summarizeDocumentRows(rows: readonly SummaryRow[], sourceRows: n
     ambiguous: live.filter((r) => r.classification.status === "ambiguous").length,
     unitReview: live.filter((r) => r.classification.status === "unit_review_required").length,
     unknown: live.filter((r) => r.classification.status === "unclassified").length,
-    unsupportedResultTypes: live.filter((r) => r.extraction?.issues.some((i) => i.code === "unsupported_result_type")).length,
+    unsupportedResultTypes: live.filter((r) =>
+      r.extraction?.issues.some((i) => i.code === "unsupported_result_type"),
+    ).length,
     potentialDuplicates: live.filter((r) => r.extraction?.repeat).length,
     manualReview: live.filter(
       (r) =>
@@ -237,11 +267,24 @@ export interface Diagnosis {
 export function diagnoseExtractionError(message: string): Diagnosis {
   const m = message.toLowerCase();
   if (m.includes("unsupported file type") || m.includes("only pdf, png"))
-    return { code: "unsupported_format", message: `Unsupported file format. ${message}`, flags: [] };
+    return {
+      code: "unsupported_format",
+      message: `Unsupported file format. ${message}`,
+      flags: [],
+    };
   if (m.includes("ocr unavailable"))
-    return { code: "ocr_unavailable", message: `This page has no text layer and on-device OCR is unavailable: ${message} Enter the rows manually or use CSV.`, flags: [] };
+    return {
+      code: "ocr_unavailable",
+      message: `This page has no text layer and on-device OCR is unavailable: ${message} Enter the rows manually or use CSV.`,
+      flags: [],
+    };
   if (m.includes("no readable text"))
-    return { code: "no_extractable_text", message: "No extractable text: the document has no text layer and OCR read nothing. Enter the rows manually or use CSV.", flags: [] };
+    return {
+      code: "no_extractable_text",
+      message:
+        "No extractable text: the document has no text layer and OCR read nothing. Enter the rows manually or use CSV.",
+      flags: [],
+    };
   return { code: "extraction_failed", message: `Extraction failed: ${message}`, flags: [] };
 }
 
@@ -252,17 +295,35 @@ export function diagnoseDocumentIntake(input: {
   identity: IdentityCheck | null;
 }): Diagnosis {
   const flags: Diagnosis["flags"] = [];
-  const s = summarizeDocumentRows(input.rows, input.reconstruction?.observations.length ?? input.rows.length);
+  const s = summarizeDocumentRows(
+    input.rows,
+    input.reconstruction?.observations.length ?? input.rows.length,
+  );
   if (input.identity?.status === "conflict")
-    flags.push({ code: "identity_conflict", message: `Identity conflict — ${input.identity.detail}` });
+    flags.push({
+      code: "identity_conflict",
+      message: `Identity conflict — ${input.identity.detail}`,
+    });
   const unitIssues = input.rows.filter((r) =>
     r.extraction?.issues.some((i) => i.code === "missing_unit" || i.code === "ambiguous_unit"),
   ).length;
-  if (unitIssues) flags.push({ code: "missing_or_ambiguous_units", message: `${unitIssues} row(s) with a missing or ambiguous unit (never inferred).` });
+  if (unitIssues)
+    flags.push({
+      code: "missing_or_ambiguous_units",
+      message: `${unitIssues} row(s) with a missing or ambiguous unit (never inferred).`,
+    });
   if (s.unsupportedResultTypes)
-    flags.push({ code: "unsupported_result_types", message: `${s.unsupportedResultTypes} row(s) with a categorical, yes/no or clock-time result (kept verbatim, review-only).` });
+    flags.push({
+      code: "unsupported_result_types",
+      message: `${s.unsupportedResultTypes} row(s) with a categorical, yes/no or clock-time result (kept verbatim, review-only).`,
+    });
   if (!input.textLength)
-    return { code: "no_extractable_text", message: "No extractable text was found in this document. Enter the rows manually or use CSV.", flags };
+    return {
+      code: "no_extractable_text",
+      message:
+        "No extractable text was found in this document. Enter the rows manually or use CSV.",
+      flags,
+    };
   if (!input.rows.length)
     return {
       code: "table_reconstruction_failed",
@@ -279,7 +340,11 @@ export function diagnoseDocumentIntake(input: {
       flags,
     };
   if (input.identity?.status === "conflict")
-    return { code: "identity_conflict", message: `Extraction complete, but rows are held: ${input.identity.detail}`, flags: flags.filter((f) => f.code !== "identity_conflict") };
+    return {
+      code: "identity_conflict",
+      message: `Extraction complete, but rows are held: ${input.identity.detail}`,
+      flags: flags.filter((f) => f.code !== "identity_conflict"),
+    };
   return {
     code: "review_required",
     message: `Extraction complete — review required: ${s.extracted} observation(s) from ${s.sourceRows} source row(s); ${s.safelyMatched} safely matched, ${s.manualReview} need manual review. Nothing is selected or saved automatically.`,

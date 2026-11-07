@@ -185,24 +185,85 @@ export function normalizeHeaderText(text: string): string {
 }
 
 const ROLE_VOCABULARY: Readonly<Record<ColumnRole, readonly string[]>> = {
-  row_number: ["no", "no.", "nr", "nr.", "#", "n", "n.", "item", "seq", "s/n", "α/α", "αα", "α.α.", "αρ", "αρ.", "α/α."],
+  row_number: [
+    "no",
+    "no.",
+    "nr",
+    "nr.",
+    "#",
+    "n",
+    "n.",
+    "item",
+    "seq",
+    "s/n",
+    "α/α",
+    "αα",
+    "α.α.",
+    "αρ",
+    "αρ.",
+    "α/α.",
+  ],
   label: [
-    "measurement", "measurements", "test", "tests", "test name", "analyte", "parameter", "biomarker",
-    "observation", "examination", "exam", "investigation", "name", "variable", "metric",
-    "test / observation", "εξεταση", "εξετασεις", "παραμετρος", "μετρηση", "δεικτης", "ονομασια",
+    "measurement",
+    "measurements",
+    "test",
+    "tests",
+    "test name",
+    "analyte",
+    "parameter",
+    "biomarker",
+    "observation",
+    "examination",
+    "exam",
+    "investigation",
+    "name",
+    "variable",
+    "metric",
+    "test / observation",
+    "εξεταση",
+    "εξετασεις",
+    "παραμετρος",
+    "μετρηση",
+    "δεικτης",
+    "ονομασια",
   ],
   result: [
-    "result", "results", "value", "measured value", "finding", "αποτελεσμα", "αποτελεσματα", "τιμη",
+    "result",
+    "results",
+    "value",
+    "measured value",
+    "finding",
+    "αποτελεσμα",
+    "αποτελεσματα",
+    "τιμη",
     "ευρημα",
   ],
   other_result: ["previous", "previous result", "prior result", "προηγουμενο", "προηγουμενη τιμη"],
   unit: [
-    "unit", "units", "unit / scale", "unit/scale", "scale", "uom", "μοναδα", "μοναδες", "μοναδα μετρησης",
-    "μον.", "μον",
+    "unit",
+    "units",
+    "unit / scale",
+    "unit/scale",
+    "scale",
+    "uom",
+    "μοναδα",
+    "μοναδες",
+    "μοναδα μετρησης",
+    "μον.",
+    "μον",
   ],
   reference: [
-    "reference", "reference range", "reference interval", "ref. range", "ref range", "ref.",
-    "normal range", "normal values", "τιμες αναφορας", "φυσιολογικες τιμες", "ευρος αναφορας",
+    "reference",
+    "reference range",
+    "reference interval",
+    "ref. range",
+    "ref range",
+    "ref.",
+    "normal range",
+    "normal values",
+    "τιμες αναφορας",
+    "φυσιολογικες τιμες",
+    "ευρος αναφορας",
   ],
   date: ["date", "collected", "collection date", "sample date", "ημερομηνια", "ημ/νια"],
   specimen: ["specimen", "sample", "sample type", "matrix", "δειγμα"],
@@ -257,12 +318,40 @@ function mapHeaderWords(text: string): { cells: string[]; roles: ColumnRole[] } 
 const MINUS = /^[\u2212\u2010\u2011\u2012\u2013\u2014\uFE63\uFF0D]/;
 const YES_NO = new Set(
   [
-    "yes", "no", "present", "absent", "positive", "negative", "detected", "not detected", "reactive",
-    "non-reactive", "nonreactive", "ναι", "οχι", "θετικο", "αρνητικο", "θετικη", "αρνητικη", "παρον", "απον",
+    "yes",
+    "no",
+    "present",
+    "absent",
+    "positive",
+    "negative",
+    "detected",
+    "not detected",
+    "reactive",
+    "non-reactive",
+    "nonreactive",
+    "ναι",
+    "οχι",
+    "θετικο",
+    "αρνητικο",
+    "θετικη",
+    "αρνητικη",
+    "παρον",
+    "απον",
   ].map(normalizeHeaderText),
 );
 const SUPERSCRIPT: Record<string, string> = {
-  "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+",
+  "⁰": "0",
+  "¹": "1",
+  "²": "2",
+  "³": "3",
+  "⁴": "4",
+  "⁵": "5",
+  "⁶": "6",
+  "⁷": "7",
+  "⁸": "8",
+  "⁹": "9",
+  "⁻": "-",
+  "⁺": "+",
 };
 const GROUPED_COMMA = /^\d{1,3}(?:,\d{3})+$/;
 const GROUPED_DOT = /^\d{1,3}(?:\.\d{3})+$/;
@@ -295,7 +384,9 @@ function decimalEvidence(raw: string): "dot" | "comma" | null {
 }
 
 /** The document's own decimal convention from unambiguous result cells. */
-export function inferDecimalConvention(values: readonly string[]): DocumentReconstruction["decimalConvention"] {
+export function inferDecimalConvention(
+  values: readonly string[],
+): DocumentReconstruction["decimalConvention"] {
   let dot = 0;
   let comma = 0;
   for (const v of values) {
@@ -314,11 +405,22 @@ export function parseResultValue(
 ): ParsedValue {
   const raw = rawInput.trim();
   const notes: string[] = [];
-  if (!raw || /^(?:—|–|-|n\/?a|nd)$/i.test(raw)) return { kind: "missing", raw, normalized: "", notes };
+  if (!raw || /^(?:—|–|-|n\/?a|nd)$/i.test(raw))
+    return { kind: "missing", raw, normalized: "", notes };
   if (/^[<>≤≥]=?\s*[\d.,]/.test(raw) || /^(?:less|greater) than\b/i.test(raw))
-    return { kind: "comparator", raw, normalized: "", notes: ["Censored result (comparison sign); kept verbatim."] };
+    return {
+      kind: "comparator",
+      raw,
+      normalized: "",
+      notes: ["Censored result (comparison sign); kept verbatim."],
+    };
   if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(raw))
-    return { kind: "time_of_day", raw, normalized: "", notes: ["Clock-time result; never converted."] };
+    return {
+      kind: "time_of_day",
+      raw,
+      normalized: "",
+      notes: ["Clock-time result; never converted."],
+    };
   let v = raw.replace(/\s+/g, " ");
   let sign = "";
   if (MINUS.test(v)) {
@@ -337,18 +439,33 @@ export function parseResultValue(
     v = v.replace(/[ \u00a0\u202f]/g, "");
   }
   const sci =
-    /^(\d+(?:[.,]\d+)?)\s*(?:[eE]([+-]?\d{1,2})|[x×·]\s*10\s*(?:\^\s*([+-]?\d{1,2})|([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]{1,2})))$/.exec(v);
+    /^(\d+(?:[.,]\d+)?)\s*(?:[eE]([+-]?\d{1,2})|[x×·]\s*10\s*(?:\^\s*([+-]?\d{1,2})|([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]{1,2})))$/.exec(
+      v,
+    );
   if (sci) {
     const mant = (sci[1] ?? "").replace(",", ".");
-    const expText = sci[2] ?? sci[3] ?? [...(sci[4] ?? "")].map((c) => SUPERSCRIPT[c] ?? "").join("");
+    const expText =
+      sci[2] ?? sci[3] ?? [...(sci[4] ?? "")].map((c) => SUPERSCRIPT[c] ?? "").join("");
     const shifted = shiftDecimal(mant, Number(expText));
-    if (shifted === null) return { kind: "ambiguous_number", raw, normalized: "", notes: ["Scientific notation out of range."] };
+    if (shifted === null)
+      return {
+        kind: "ambiguous_number",
+        raw,
+        normalized: "",
+        notes: ["Scientific notation out of range."],
+      };
     if ((sci[1] ?? "").includes(",") && convention === "dot")
-      return { kind: "ambiguous_number", raw, normalized: "", notes: ["Comma in a dot-decimal document."] };
+      return {
+        kind: "ambiguous_number",
+        raw,
+        normalized: "",
+        notes: ["Comma in a dot-decimal document."],
+      };
     notes.push("Scientific notation written as a plain decimal (exact).");
     return { kind: "numeric", raw, normalized: `${sign}${shifted}`, notes };
   }
-  if (/^\d+$/.test(v)) return { kind: "numeric", raw, normalized: `${sign}${v.replace(/^0+(?=\d)/, "")}`, notes };
+  if (/^\d+$/.test(v))
+    return { kind: "numeric", raw, normalized: `${sign}${v.replace(/^0+(?=\d)/, "")}`, notes };
   if (GROUPED_COMMA.test(v)) {
     if (convention === "dot") {
       notes.push("Comma thousands separators removed (document uses decimal points).");
@@ -362,7 +479,9 @@ export function parseResultValue(
       kind: "ambiguous_number",
       raw,
       normalized: "",
-      notes: ["Comma could be a thousands separator or a decimal comma; the document does not settle it."],
+      notes: [
+        "Comma could be a thousands separator or a decimal comma; the document does not settle it.",
+      ],
     };
   }
   if (GROUPED_DOT.test(v) && convention === "comma") {
@@ -375,16 +494,31 @@ export function parseResultValue(
   }
   if (/^\d{1,3}(?:\.\d{3})+,\d+$/.test(v) && convention !== "dot") {
     notes.push("Dot thousands separators removed; decimal comma read as decimal point.");
-    return { kind: "numeric", raw, normalized: `${sign}${v.replace(/\./g, "").replace(",", ".")}`, notes };
+    return {
+      kind: "numeric",
+      raw,
+      normalized: `${sign}${v.replace(/\./g, "").replace(",", ".")}`,
+      notes,
+    };
   }
   if (/^(?:\d+\.\d+|\.\d+)$/.test(v)) {
     if (convention === "comma" && GROUPED_DOT.test(v))
-      return { kind: "ambiguous_number", raw, normalized: "", notes: ["Dot in a decimal-comma document."] };
+      return {
+        kind: "ambiguous_number",
+        raw,
+        normalized: "",
+        notes: ["Dot in a decimal-comma document."],
+      };
     return { kind: "numeric", raw, normalized: `${sign}${v.startsWith(".") ? `0${v}` : v}`, notes };
   }
   if (/^(?:\d+,\d+|,\d+)$/.test(v)) {
     if (convention === "dot")
-      return { kind: "ambiguous_number", raw, normalized: "", notes: ["Comma in a dot-decimal document."] };
+      return {
+        kind: "ambiguous_number",
+        raw,
+        normalized: "",
+        notes: ["Comma in a dot-decimal document."],
+      };
     notes.push("Decimal comma read as decimal point.");
     const d = v.replace(",", ".");
     return { kind: "numeric", raw, normalized: `${sign}${d.startsWith(".") ? `0${d}` : d}`, notes };
@@ -392,8 +526,18 @@ export function parseResultValue(
   if (YES_NO.has(normalizeHeaderText(raw)))
     return { kind: "yes_no", raw, normalized: "", notes: ["Yes/no result; kept verbatim."] };
   if (/\p{L}/u.test(raw))
-    return { kind: "categorical", raw, normalized: "", notes: ["Categorical finding; kept verbatim."] };
-  return { kind: "ambiguous_number", raw, normalized: "", notes: ["Result format not recognized."] };
+    return {
+      kind: "categorical",
+      raw,
+      normalized: "",
+      notes: ["Categorical finding; kept verbatim."],
+    };
+  return {
+    kind: "ambiguous_number",
+    raw,
+    normalized: "",
+    notes: ["Result format not recognized."],
+  };
 }
 
 const VALUE_KIND_TEXT: Record<ValueKind, string> = {
@@ -410,23 +554,66 @@ export const valueKindText = (kind: ValueKind) => VALUE_KIND_TEXT[kind];
 
 // --- Identity -----------------------------------------------------------------
 const PATIENT_KEYS = new Set(
-  ["patient", "patient name", "name", "subject", "astronaut", "crew member", "ασθενης", "ονοματεπωνυμο", "εξεταζομενος", "εξεταζομενη", "ονομα"].map(normalizeHeaderText),
+  [
+    "patient",
+    "patient name",
+    "name",
+    "subject",
+    "astronaut",
+    "crew member",
+    "ασθενης",
+    "ονοματεπωνυμο",
+    "εξεταζομενος",
+    "εξεταζομενη",
+    "ονομα",
+  ].map(normalizeHeaderText),
 );
 const RECORD_KEYS = new Set(
-  ["record", "record id", "record no", "record no.", "mrn", "patient id", "medical record", "medical record number", "examination id", "exam id", "αρ. μητρωου", "αριθμος μητρωου", "κωδικος ασθενη"].map(normalizeHeaderText),
+  [
+    "record",
+    "record id",
+    "record no",
+    "record no.",
+    "mrn",
+    "patient id",
+    "medical record",
+    "medical record number",
+    "examination id",
+    "exam id",
+    "αρ. μητρωου",
+    "αριθμος μητρωου",
+    "κωδικος ασθενη",
+  ].map(normalizeHeaderText),
 );
 const DATE_KEYS = new Set(
-  ["date", "exam date", "examination date", "test date", "date of examination", "ημερομηνια", "ημερομηνια εξετασης"].map(normalizeHeaderText),
+  [
+    "date",
+    "exam date",
+    "examination date",
+    "test date",
+    "date of examination",
+    "ημερομηνια",
+    "ημερομηνια εξετασης",
+  ].map(normalizeHeaderText),
 );
-const TIME_KEYS = new Set(["time", "exam time", "examination time", "ωρα", "ωρα εξετασης"].map(normalizeHeaderText));
-const SIMULATED = /\b(?:simulated|synthetic)\b[^|]{0,30}\b(?:data|record|report|patient)\b|\bnot a clinical record\b|συνθετικ|προσομοιωμεν/i;
+const TIME_KEYS = new Set(
+  ["time", "exam time", "examination time", "ωρα", "ωρα εξετασης"].map(normalizeHeaderText),
+);
+const SIMULATED =
+  /\b(?:simulated|synthetic)\b[^|]{0,30}\b(?:data|record|report|patient)\b|\bnot a clinical record\b|συνθετικ|προσομοιωμεν/i;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-function dateCandidates(text: string): { dates: { iso: string; how: string }[]; note: string | null } {
+function dateCandidates(text: string): {
+  dates: { iso: string; how: string }[];
+  note: string | null;
+} {
   const t = text.trim();
   const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
-  if (iso) return isCalendarDate(t) ? { dates: [{ iso: t, how: "ISO date" }], note: null } : { dates: [], note: "Invalid date." };
+  if (iso)
+    return isCalendarDate(t)
+      ? { dates: [{ iso: t, how: "ISO date" }], note: null }
+      : { dates: [], note: "Invalid date." };
   const m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(t);
   if (!m) return { dates: [], note: `Date "${t}" is not in a recognized numeric format.` };
   const a = Number(m[1]);
@@ -436,15 +623,26 @@ function dateCandidates(text: string): { dates: { iso: string; how: string }[]; 
   const monthFirst = `${y}-${pad(a)}-${pad(b)}`;
   const out: { iso: string; how: string }[] = [];
   if (isCalendarDate(dayFirst)) out.push({ iso: dayFirst, how: "read as day/month/year" });
-  if (monthFirst !== dayFirst && isCalendarDate(monthFirst)) out.push({ iso: monthFirst, how: "read as month/day/year" });
+  if (monthFirst !== dayFirst && isCalendarDate(monthFirst))
+    out.push({ iso: monthFirst, how: "read as month/day/year" });
   return {
     dates: out,
-    note: out.length > 1 ? `"${t}" can be read as day/month or month/day; choose explicitly.` : out.length ? null : "Invalid date.",
+    note:
+      out.length > 1
+        ? `"${t}" can be read as day/month or month/day; choose explicitly.`
+        : out.length
+          ? null
+          : "Invalid date.",
   };
 }
 
-function timeWithZone(text: string): { hhmm: string; offset: string | null; zoneText: string | null } | null {
-  const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(utc|gmt|z|(?:utc|gmt)?\s*[+-]\d{1,2}(?::?\d{2})?)?$/i.exec(text.trim());
+function timeWithZone(
+  text: string,
+): { hhmm: string; offset: string | null; zoneText: string | null } | null {
+  const m =
+    /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(utc|gmt|z|(?:utc|gmt)?\s*[+-]\d{1,2}(?::?\d{2})?)?$/i.exec(
+      text.trim(),
+    );
   if (!m) return null;
   const h = Number(m[1]);
   const min = Number(m[2]);
@@ -457,7 +655,11 @@ function timeWithZone(text: string): { hhmm: string; offset: string | null; zone
   const o = /([+-])(\d{1,2})(?::?(\d{2}))?$/.exec(zone);
   if (!o || Number(o[2]) > 14) return null;
   const offset = `${o[1]}${pad(Number(o[2]))}:${o[3] ?? "00"}`;
-  return { hhmm, offset: offset === "+00:00" || offset === "-00:00" ? "Z" : offset, zoneText: zone };
+  return {
+    hhmm,
+    offset: offset === "+00:00" || offset === "-00:00" ? "Z" : offset,
+    zoneText: zone,
+  };
 }
 
 function extractIdentity(lines: readonly DocumentLineInput[]): DocumentIdentity {
@@ -485,7 +687,8 @@ function extractIdentity(lines: readonly DocumentLineInput[]): DocumentIdentity 
       if (!value) continue;
       metadata.push({ key: (kv[1] ?? "").trim(), value, line: i + 1 });
       if (PATIENT_KEYS.has(key)) {
-        if (!names.some((n) => normalizePersonName(n) === normalizePersonName(value))) names.push(value);
+        if (!names.some((n) => normalizePersonName(n) === normalizePersonName(value)))
+          names.push(value);
       } else if (RECORD_KEYS.has(key)) recordId ??= value;
       else if (DATE_KEYS.has(key)) dateText ??= value;
       else if (TIME_KEYS.has(key)) timeText ??= value;
@@ -497,16 +700,32 @@ function extractIdentity(lines: readonly DocumentLineInput[]): DocumentIdentity 
     const d = dateCandidates(dateText);
     note = d.note;
     const tz = timeText ? timeWithZone(timeText) : null;
-    if (timeText && !tz) note = [note, `Time "${timeText}" is not a recognized clock time; not used.`].filter(Boolean).join(" ");
+    if (timeText && !tz)
+      note = [note, `Time "${timeText}" is not a recognized clock time; not used.`]
+        .filter(Boolean)
+        .join(" ");
     else if (tz && !tz.offset)
-      note = [note, `Time "${timeText}" has no stated timezone; only the calendar date can be used.`].filter(Boolean).join(" ");
+      note = [
+        note,
+        `Time "${timeText}" has no stated timezone; only the calendar date can be used.`,
+      ]
+        .filter(Boolean)
+        .join(" ");
     for (const date of d.dates) {
       if (tz?.offset) {
         const value = `${date.iso}T${tz.hhmm}${tz.offset}`;
         if (isExplicitInstant(value))
-          candidates.push({ value, precision: "instant", interpretation: `${dateText} ${timeText} (${date.how}, timezone ${tz.zoneText} as stated)` });
+          candidates.push({
+            value,
+            precision: "instant",
+            interpretation: `${dateText} ${timeText} (${date.how}, timezone ${tz.zoneText} as stated)`,
+          });
       }
-      candidates.push({ value: date.iso, precision: "date", interpretation: `${dateText} (${date.how}, date only)` });
+      candidates.push({
+        value: date.iso,
+        precision: "date",
+        interpretation: `${dateText} (${date.how}, date only)`,
+      });
     }
   }
   return {
@@ -558,7 +777,10 @@ interface PendingRow {
 }
 
 /** Assign geometry cells to header columns by x position (tolerant left edge). */
-function alignByX(cells: readonly { x: number; text: string }[], xs: readonly number[]): string[][] {
+function alignByX(
+  cells: readonly { x: number; text: string }[],
+  xs: readonly number[],
+): string[][] {
   const out: string[][] = xs.map(() => []);
   const tolerance = 12;
   for (const cell of cells) {
@@ -575,7 +797,12 @@ const isValueToken = (token: string) => {
 };
 
 /** Token layout (OCR / single-spaced text): "<no> <label…> <value> <unit…>". Always low confidence. */
-function splitTokens(rest: string): { label: string; value: string; unit: string; issues: ObservationIssue[] } {
+function splitTokens(rest: string): {
+  label: string;
+  value: string;
+  unit: string;
+  issues: ObservationIssue[];
+} {
   const tokens = rest.trim().split(/\s+/);
   const issues: ObservationIssue[] = [];
   const j = tokens.findIndex((t, i) => i >= 1 && isValueToken(t));
@@ -584,13 +811,27 @@ function splitTokens(rest: string): { label: string; value: string; unit: string
       label: rest.trim(),
       value: "",
       unit: "",
-      issues: [{ code: "token_split_failed", message: "Result could not be separated from the label in single-spaced text.", blocking: true }],
+      issues: [
+        {
+          code: "token_split_failed",
+          message: "Result could not be separated from the label in single-spaced text.",
+          blocking: true,
+        },
+      ],
     };
   const label = tokens.slice(0, j).join(" ");
   const unit = tokens.slice(j + 1).join(" ");
   const pureNumber = /^[\u2212+-]?\d+(?:[.,]\d+)?$/;
-  if (tokens.slice(0, j).some((t) => pureNumber.test(t)) || tokens.slice(j + 1).some((t) => pureNumber.test(t)))
-    issues.push({ code: "token_split_ambiguous", message: "Another standalone number sits in the label or unit; the column split is uncertain.", blocking: true });
+  if (
+    tokens.slice(0, j).some((t) => pureNumber.test(t)) ||
+    tokens.slice(j + 1).some((t) => pureNumber.test(t))
+  )
+    issues.push({
+      code: "token_split_ambiguous",
+      message:
+        "Another standalone number sits in the label or unit; the column split is uncertain.",
+      blocking: true,
+    });
   return { label, value: tokens[j] ?? "", unit, issues };
 }
 
@@ -614,7 +855,8 @@ export function reconstructDocumentTables(
     pagesByKey.set(k, set);
   });
   const isFurniture = (text: string, page: number | null) =>
-    isPageMarkLine(text) || (page !== null && (pagesByKey.get(pageFurnitureKey(text))?.size ?? 0) >= 2);
+    isPageMarkLine(text) ||
+    (page !== null && (pagesByKey.get(pageFurnitureKey(text))?.size ?? 0) >= 2);
 
   const headers: DocumentReconstruction["headers"] = [];
   const pending: PendingRow[] = [];
@@ -624,7 +866,12 @@ export function reconstructDocumentTables(
   let sub: string | null = null;
   const section = (): ReconstructedSection =>
     top
-      ? { heading: sub ?? top.text, path: sub ? [top.text, sub] : [top.text], domain: top.domain, rule: top.rule }
+      ? {
+          heading: sub ?? top.text,
+          path: sub ? [top.text, sub] : [top.text],
+          domain: top.domain,
+          rule: top.rule,
+        }
       : { heading: null, path: [], domain: null, rule: null };
 
   // Headerless numbered rows (typical OCR output): activated only by a run of ≥3 increasing numbered lines.
@@ -648,7 +895,9 @@ export function reconstructDocumentTables(
     const lineNo = index + 1;
     const text = l.text.trim();
     if (!text || text.length > 600) return;
-    const delimited = l.cells?.length ? l.cells.map((c) => c.text.trim()).filter(Boolean) : splitDelimited(text);
+    const delimited = l.cells?.length
+      ? l.cells.map((c) => c.text.trim()).filter(Boolean)
+      : splitDelimited(text);
 
     // Header rows (repeated headers on continuation pages simply re-activate the mapping).
     const roles = mapHeaderCells(delimited);
@@ -693,7 +942,11 @@ export function reconstructDocumentTables(
         labels.push(text);
         prev.cells.set("label", labels);
         prev.excerpt = `${prev.excerpt} ${text}`.slice(0, 350);
-        prev.issues.push({ code: "wrapped_row_merged", message: `Wrapped label continued on line ${lineNo}; check the joined label.`, blocking: false });
+        prev.issues.push({
+          code: "wrapped_row_merged",
+          message: `Wrapped label continued on line ${lineNo}; check the joined label.`,
+          blocking: false,
+        });
         return;
       }
     }
@@ -726,12 +979,21 @@ export function reconstructDocumentTables(
           layout = l.cells?.length ? "geometry" : "delimited";
         } else if (delimited.length <= 1 && tokenNumber && hasRowNumberRole) {
           const t = splitTokens(tokenNumber[2] ?? "");
-          const byRole = new Map<ColumnRole, string>([["row_number", tokenNumber[1] ?? ""], ["label", t.label], ["result", t.value], ["unit", t.unit]]);
+          const byRole = new Map<ColumnRole, string>([
+            ["row_number", tokenNumber[1] ?? ""],
+            ["label", t.label],
+            ["result", t.value],
+            ["unit", t.unit],
+          ]);
           columns = h.roles.map((r) => (byRole.get(r) ? [byRole.get(r)!] : []));
           layout = "tokens";
           rowIssues.push(...t.issues);
           if (h.roles.some((r) => !["row_number", "label", "result", "unit"].includes(r)))
-            rowIssues.push({ code: "column_mismatch", message: "Single-spaced text cannot be split into this table's extra columns.", blocking: true });
+            rowIssues.push({
+              code: "column_mismatch",
+              message: "Single-spaced text cannot be split into this table's extra columns.",
+              blocking: true,
+            });
         } else {
           columns = null;
         }
@@ -746,7 +1008,13 @@ export function reconstructDocumentTables(
             excerpt: text.slice(0, 350),
             tableHeader: h.text,
             layout: "delimited",
-            issues: [{ code: "column_mismatch", message: `${delimited.length} cell(s) found for ${h.roles.length} column(s); columns could not be aligned.`, blocking: true }],
+            issues: [
+              {
+                code: "column_mismatch",
+                message: `${delimited.length} cell(s) found for ${h.roles.length} column(s); columns could not be aligned.`,
+                blocking: true,
+              },
+            ],
             section: section(),
           });
           return;
@@ -783,7 +1051,11 @@ export function reconstructDocumentTables(
       const t = splitTokens(tokenNumber[2] ?? "");
       pending.push({
         sourceRowNumber: tokenNumber[1] ?? null,
-        cells: new Map<ColumnRole, string[]>([["label", [t.label]], ["result", t.value ? [t.value] : []], ["unit", t.unit ? [t.unit] : []]]),
+        cells: new Map<ColumnRole, string[]>([
+          ["label", [t.label]],
+          ["result", t.value ? [t.value] : []],
+          ["unit", t.unit ? [t.unit] : []],
+        ]),
         page: l.page,
         line: lineNo,
         excerpt: text.slice(0, 350),
@@ -791,7 +1063,11 @@ export function reconstructDocumentTables(
         layout: "tokens",
         issues: [
           ...t.issues,
-          { code: "headerless_table", message: "No table header was read; columns inferred from the numbered-row pattern.", blocking: false },
+          {
+            code: "headerless_table",
+            message: "No table header was read; columns inferred from the numbered-row pattern.",
+            blocking: false,
+          },
         ],
         section: section(),
       });
@@ -812,7 +1088,11 @@ export function reconstructDocumentTables(
     // A dash / "N/A" placeholder means the source reports no unit.
     if (/^(?:—|–|-|n\/?a)$/i.test(unit)) unit = "";
     if (results.length > 1)
-      issues.push({ code: "multiple_results", message: `${results.length} result columns in one row; choose the result explicitly.`, blocking: true });
+      issues.push({
+        code: "multiple_results",
+        message: `${results.length} result columns in one row; choose the result explicitly.`,
+        blocking: true,
+      });
     // A result cell that carries its own unit ("12.3 mg/L") when the table has no unit column.
     if (!p.cells.has("unit") && !unit) {
       const m = /^([^\s]+)\s+(.+)$/.exec(rawValue);
@@ -822,16 +1102,41 @@ export function reconstructDocumentTables(
       }
     }
     const parsed = parseResultValue(rawValue, convention);
-    if (parsed.kind !== "numeric" && parsed.kind !== "ambiguous_number" && parsed.kind !== "missing")
-      issues.push({ code: "unsupported_result_type", message: `Unsupported result type for numeric storage: ${valueKindText(parsed.kind)} ("${parsed.raw}").`, blocking: true });
+    if (
+      parsed.kind !== "numeric" &&
+      parsed.kind !== "ambiguous_number" &&
+      parsed.kind !== "missing"
+    )
+      issues.push({
+        code: "unsupported_result_type",
+        message: `Unsupported result type for numeric storage: ${valueKindText(parsed.kind)} ("${parsed.raw}").`,
+        blocking: true,
+      });
     if (parsed.kind === "ambiguous_number")
-      issues.push({ code: "ambiguous_number", message: `${parsed.notes.join(" ")} Source shows "${parsed.raw}"; enter the value explicitly after checking the original.`, blocking: true });
+      issues.push({
+        code: "ambiguous_number",
+        message: `${parsed.notes.join(" ")} Source shows "${parsed.raw}"; enter the value explicitly after checking the original.`,
+        blocking: true,
+      });
     if (!unit && parsed.kind !== "yes_no" && parsed.kind !== "categorical")
-      issues.push({ code: "missing_unit", message: "No unit is reported in the source; units are never inferred.", blocking: true });
+      issues.push({
+        code: "missing_unit",
+        message: "No unit is reported in the source; units are never inferred.",
+        blocking: true,
+      });
     if (unit && /\s(?:or|ή|ή)\s/i.test(unit))
-      issues.push({ code: "ambiguous_unit", message: `The source lists alternative units ("${unit}"); the exact unit must be chosen explicitly.`, blocking: true });
+      issues.push({
+        code: "ambiguous_unit",
+        message: `The source lists alternative units ("${unit}"); the exact unit must be chosen explicitly.`,
+        blocking: true,
+      });
     if (options.ocr)
-      issues.push({ code: "ocr_text", message: "Read by on-device OCR: verify every digit, decimal point and unit symbol against the original.", blocking: false });
+      issues.push({
+        code: "ocr_text",
+        message:
+          "Read by on-device OCR: verify every digit, decimal point and unit symbol against the original.",
+        blocking: false,
+      });
     const blocking = issues.some((x) => x.blocking);
     const confidence: ExtractionConfidence =
       options.ocr || p.layout === "tokens" || blocking
@@ -876,7 +1181,12 @@ export function reconstructDocumentTables(
     unitsByLabel.set(labelKey, units);
     const key = `${labelKey}\u0000${o.unit}`;
     const first = firstByKey.get(key);
-    if (first) o.repeat = { firstRowNumber: first.sourceRowNumber, firstLine: first.line, sameValue: first.rawValue === o.rawValue };
+    if (first)
+      o.repeat = {
+        firstRowNumber: first.sourceRowNumber,
+        firstLine: first.line,
+        sameValue: first.rawValue === o.rawValue,
+      };
     else firstByKey.set(key, o);
   }
   for (const o of observations) {
@@ -885,10 +1195,13 @@ export function reconstructDocumentTables(
   }
 
   // Row-number integrity: gaps and duplicates are reported, never filled.
-  const nums = observations.map((o) => Number(o.sourceRowNumber)).filter((n) => Number.isInteger(n) && n > 0);
+  const nums = observations
+    .map((o) => Number(o.sourceRowNumber))
+    .filter((n) => Number.isInteger(n) && n > 0);
   const max = nums.length ? Math.max(...nums) : null;
   const seen = new Map<string, number>();
-  for (const o of observations) if (o.sourceRowNumber) seen.set(o.sourceRowNumber, (seen.get(o.sourceRowNumber) ?? 0) + 1);
+  for (const o of observations)
+    if (o.sourceRowNumber) seen.set(o.sourceRowNumber, (seen.get(o.sourceRowNumber) ?? 0) + 1);
   const missing: number[] = [];
   if (max !== null && Math.min(...nums) <= 1 && max <= 5000) {
     const have = new Set(nums);
@@ -896,21 +1209,49 @@ export function reconstructDocumentTables(
   }
   const duplicated = [...seen.entries()].filter(([, c]) => c > 1).map(([n]) => n);
   for (const n of missing)
-    issues.push({ line: null, page: null, rowNumber: String(n), message: `Source row ${n} was not found in the extracted text.`, action: "Check the original page and enter the row manually if it exists." });
+    issues.push({
+      line: null,
+      page: null,
+      rowNumber: String(n),
+      message: `Source row ${n} was not found in the extracted text.`,
+      action: "Check the original page and enter the row manually if it exists.",
+    });
   for (const n of duplicated)
-    issues.push({ line: null, page: null, rowNumber: n, message: `Row number ${n} appears more than once.`, action: "Review both rows against the original; neither is merged or dropped." });
+    issues.push({
+      line: null,
+      page: null,
+      rowNumber: n,
+      message: `Row number ${n} appears more than once.`,
+      action: "Review both rows against the original; neither is merged or dropped.",
+    });
   for (const o of observations)
     for (const issue of o.issues.filter((x) => x.blocking))
-      issues.push({ line: o.line, page: o.page, rowNumber: o.sourceRowNumber, message: `${o.label || "(no label)"}: ${issue.message}`, action: "Review-only until resolved explicitly by the reviewer." });
+      issues.push({
+        line: o.line,
+        page: o.page,
+        rowNumber: o.sourceRowNumber,
+        message: `${o.label || "(no label)"}: ${issue.message}`,
+        action: "Review-only until resolved explicitly by the reviewer.",
+      });
 
-  const sectionCounts = new Map<string, { heading: string; domain: HealthDomainId | null; page: number | null; rows: number }>();
+  const sectionCounts = new Map<
+    string,
+    { heading: string; domain: HealthDomainId | null; page: number | null; rows: number }
+  >();
   for (const o of observations) {
     const heading = o.section.path[0] ?? "(no section)";
-    const entry = sectionCounts.get(heading) ?? { heading, domain: o.section.domain, page: o.page, rows: 0 };
+    const entry = sectionCounts.get(heading) ?? {
+      heading,
+      domain: o.section.domain,
+      page: o.page,
+      rows: 0,
+    };
     entry.rows++;
     sectionCounts.set(heading, entry);
   }
-  const pageNumbers = inspected.map((l) => l.page).filter((p): p is number => typeof p === "number");
+  const pageNumbers = inspected
+    .map((l) => l.page)
+    .filter((p): p is number => typeof p === "number");
   return {
     rulesVersion: DOCUMENT_TABLE_RULES_VERSION,
     linesInspected: inspected.length,

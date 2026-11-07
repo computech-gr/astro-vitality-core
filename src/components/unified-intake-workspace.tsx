@@ -252,7 +252,11 @@ function parseIntakeText(
   const tableExcerpts = new Set(reconstruction.observations.map((o) => o.excerpt.trim()));
   const tableRows: IntakeRow[] = reconstruction.observations.map((o) => {
     const section: CandidateSourceSection = {
-      status: o.section.domain ? "recognized" : o.section.heading ? "unrecognized_heading" : "no_section",
+      status: o.section.domain
+        ? "recognized"
+        : o.section.heading
+          ? "unrecognized_heading"
+          : "no_section",
       heading: o.section.heading,
       path: o.section.path,
       domain: o.section.domain,
@@ -281,8 +285,14 @@ function parseIntakeText(
       },
     });
   });
-  const legacy = parseLegacyText(text, sourceKind, sourceLabel, documentName, documentSha256, linePages)
-    .filter((row) => !tableExcerpts.has(row.excerpt.trim()));
+  const legacy = parseLegacyText(
+    text,
+    sourceKind,
+    sourceLabel,
+    documentName,
+    documentSha256,
+    linePages,
+  ).filter((row) => !tableExcerpts.has(row.excerpt.trim()));
   return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction };
 }
 
@@ -526,9 +536,18 @@ export function UnifiedIntakeWorkspace() {
     setDuplicateAcknowledged(false);
   };
 
-  const applyTimestamp = (sha256: string, value: string, precision: "date" | "instant", interpretation: string) => {
+  const applyTimestamp = (
+    sha256: string,
+    value: string,
+    precision: "date" | "instant",
+    interpretation: string,
+  ) => {
     const result = applyDocumentTimestamp(rows, sha256, { value, precision, interpretation });
-    setRows(result.rows.map((row) => (row.documentSha256 === sha256 ? { ...row, classification: classify(row) } : row)));
+    setRows(
+      result.rows.map((row) =>
+        row.documentSha256 === sha256 ? { ...row, classification: classify(row) } : row,
+      ),
+    );
     resetReview();
     setStatus(
       `Applied ${value} (${interpretation}) to ${result.applied} unsaved row(s) of this document that had no observation time. Rows stay unchecked; verify each before saving.`,
@@ -539,7 +558,9 @@ export function UnifiedIntakeWorkspace() {
     setRows((previous) => previous.filter((row) => row.documentSha256 !== sha256));
     setDocuments((previous) => previous.filter((d) => d.sha256 !== sha256));
     resetReview();
-    setStatus("Unsaved rows of that document were removed from review. It can be processed again; saved observations are unchanged.");
+    setStatus(
+      "Unsaved rows of that document were removed from review. It can be processed again; saved observations are unchanged.",
+    );
   };
 
   // P42: review filters (display only; eligibility and saving are unchanged).
@@ -567,7 +588,8 @@ export function UnifiedIntakeWorkspace() {
   const visibleRows = rows.filter(
     (row) =>
       (!filterDomain || domainOf(row) === filterDomain) &&
-      (!filterPage || String(row.extraction?.page ?? row.sourceSection?.page ?? "") === filterPage) &&
+      (!filterPage ||
+        String(row.extraction?.page ?? row.sourceSection?.page ?? "") === filterPage) &&
       (!filterStatus ||
         (filterStatus === "ambiguity"
           ? row.classification.status === "ambiguous" ||
@@ -578,7 +600,13 @@ export function UnifiedIntakeWorkspace() {
   );
   const visibleKeys = new Set(visibleRows.map((row) => row.key));
   const filtered = visibleRows.length !== rows.length;
-  const pageOptions = [...new Set(rows.map((row) => row.extraction?.page ?? row.sourceSection?.page).filter((p): p is number => typeof p === "number"))].sort((a, b) => a - b);
+  const pageOptions = [
+    ...new Set(
+      rows
+        .map((row) => row.extraction?.page ?? row.sourceSection?.page)
+        .filter((p): p is number => typeof p === "number"),
+    ),
+  ].sort((a, b) => a - b);
 
   const [batchFiles, setBatchFiles] = useState<
     Array<{ name: string; state: string; count: number; flags?: string[] }>
@@ -843,7 +871,10 @@ export function UnifiedIntakeWorkspace() {
       const savedByDocument = new Map<string, number>();
       for (const row of savedNow)
         if (row.documentSha256)
-          savedByDocument.set(row.documentSha256, (savedByDocument.get(row.documentSha256) ?? 0) + 1);
+          savedByDocument.set(
+            row.documentSha256,
+            (savedByDocument.get(row.documentSha256) ?? 0) + 1,
+          );
       setDocuments((previous) =>
         previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
       );
@@ -1182,7 +1213,10 @@ export function UnifiedIntakeWorkspace() {
           {documents.map((doc) => {
             const recon = doc.reconstruction;
             const docRows = rows.filter((row) => row.documentSha256 === doc.sha256);
-            const summary = summarizeDocumentRows(docRows, recon?.observations.length ?? docRows.length);
+            const summary = summarizeDocumentRows(
+              docRows,
+              recon?.observations.length ?? docRows.length,
+            );
             const check = identityChecks.get(doc.sha256) ?? null;
             const key = resolutionKey(doc.sha256);
             const resolved = Boolean(key) && identityResolutions.has(key);
@@ -1229,7 +1263,10 @@ export function UnifiedIntakeWorkspace() {
                       ["Rows saved", doc.saved],
                     ] as const
                   ).map(([term, value]) => (
-                    <div key={term} className="flex justify-between gap-2 border-b border-border/50 py-1">
+                    <div
+                      key={term}
+                      className="flex justify-between gap-2 border-b border-border/50 py-1"
+                    >
                       <dt className="text-muted-foreground">{term}</dt>
                       <dd className="font-medium tabular-nums">{value}</dd>
                     </div>
@@ -1249,7 +1286,8 @@ export function UnifiedIntakeWorkspace() {
                       .join(" · ")}
                   </p>
                 ) : null}
-                {recon && (recon.rowNumbers.missing.length || recon.rowNumbers.duplicated.length) ? (
+                {recon &&
+                (recon.rowNumbers.missing.length || recon.rowNumbers.duplicated.length) ? (
                   <p className="text-xs text-destructive">
                     {recon.rowNumbers.missing.length
                       ? `Source row number(s) not found: ${recon.rowNumbers.missing.join(", ")}. `
@@ -1263,15 +1301,16 @@ export function UnifiedIntakeWorkspace() {
                 {recon && recon.issues.length ? (
                   <details className="text-xs">
                     <summary className="cursor-pointer">
-                      {recon.issues.length} row(s) that could not be reconstructed safely — exact row,
-                      reason and action
+                      {recon.issues.length} row(s) that could not be reconstructed safely — exact
+                      row, reason and action
                     </summary>
                     <ul className="mt-2 space-y-1">
                       {recon.issues.slice(0, 200).map((issue, i) => (
                         <li key={i}>
                           {issue.rowNumber ? `Row ${issue.rowNumber}` : "Row"}
                           {issue.page ? `, page ${issue.page}` : ""}
-                          {issue.line ? `, line ${issue.line}` : ""}: {issue.message} — {issue.action}
+                          {issue.line ? `, line ${issue.line}` : ""}: {issue.message} —{" "}
+                          {issue.action}
                         </li>
                       ))}
                     </ul>
