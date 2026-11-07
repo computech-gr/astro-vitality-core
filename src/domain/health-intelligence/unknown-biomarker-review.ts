@@ -18,6 +18,9 @@ import {
   type IntakeClassification,
 } from "@/domain/health-domains/unified-intake-classification";
 import { domainForMetric } from "@/domain/health-domains/document-domain-projection";
+import type { HealthDomainId } from "@/domain/health-domains/registry";
+import { canonicalCatalogEntry, recognizeBiomarker, type EvaluatedCatalog, type Provenance } from "./catalog-lifecycle";
+import { getActiveCatalog } from "./active-catalog-runtime";
 
 export const UNKNOWN_BIOMARKER_REVIEW_SCHEMA = "mitochondria.unknown-biomarker-review.v2";
 export const CATALOG_EXTENSION_PROPOSAL_SCHEMA = "mitochondria.catalog-extension-proposal.v1";
@@ -378,12 +381,24 @@ export function evaluateCatalogExtensionRegistry(registry: CatalogExtensionRegis
 export interface ExtendedClassification {
   classification: IntakeClassification;
   extension: { extensionId: string; version: number } | null;
+  /** Set when an activated catalog entry (P37) recognized the row. */
+  recognition?: { canonicalId: string; catalogVersion: number } | null;
 }
 
-/** Base P36 classification first; approved extensions apply only to non-matched rows. */
+export interface GovernedClassificationInput {
+  label: string; unit: string; method?: string | undefined; specimen?: string | undefined; sourceValidation?: "unvalidated" | undefined;
+  provenance?: Provenance | undefined;
+  /** "canonical": the label is an already-assigned canonical ID (stored-record review, sync). */
+  identity?: "canonical" | undefined;
+  /** For canonical re-validation of historical records only: accept since-revoked entries. */
+  includeRevoked?: boolean | undefined;
+}
+
+/** Base P36 classification first; approved extensions, then the verified active catalog, apply only to non-matched rows. */
 export function classifyWithGovernedExtensions(
-  input: { label: string; unit: string; method?: string; specimen?: string; sourceValidation?: "unvalidated" },
+  input: GovernedClassificationInput,
   evaluation: RegistryEvaluation = evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS),
+  catalog: EvaluatedCatalog = getActiveCatalog(),
 ): ExtendedClassification {
   const base = classifyIntakeObservation(input);
   if (input.sourceValidation === "unvalidated") return { classification: { status: "unclassified", originalLabel: input.label, originalUnit: input.unit, candidateMetricIds: [], reviewRequired: true }, extension: null };
@@ -392,6 +407,19 @@ export function classifyWithGovernedExtensions(
   const unit = input.unit;
   const ext = evaluation.effective.find((e) => e.normalizedLabel === label && e.unit === unit && (!e.matchingContext || e.matchingContext.method === input.method && e.matchingContext.specimen === input.specimen));
   const domain = ext ? domainForMetric(ext.targetMetricId) : null;
+  if ((!ext || !domain) && base.status === "unclassified") {
+    const matched = (canonicalId: string, d: HealthDomainId) => ({
+      classification: { status: "matched" as const, metricId: canonicalId, domain: d, originalLabel: input.label.trim(), originalUnit: unit.trim(), reviewRequired: true as const },
+      extension: null, recognition: { canonicalId, catalogVersion: catalog.catalogVersion },
+    });
+    if (input.identity === "canonical") {
+      const entry = canonicalCatalogEntry(input.label, unit, catalog, input.includeRevoked === true);
+      if (entry) return matched(entry.canonicalId, entry.domain);
+    } else {
+      const r = recognizeBiomarker({ label: input.label, unit, specimen: input.specimen, method: input.method, provenance: input.provenance }, catalog);
+      if (r.status === "RECOGNIZED") return matched(r.canonicalId, r.domain);
+    }
+  }
   if (!ext || !domain) return { classification: base, extension: null };
   return {
     classification: {
