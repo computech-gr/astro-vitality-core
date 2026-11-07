@@ -1667,6 +1667,100 @@ export type Database = {
         }
         Relationships: []
       }
+      p36_global_triage_events: {
+        Row: {
+          access_basis: string
+          action: string
+          actor_user_id: string
+          evidence_requirements: string[]
+          id: string
+          idempotency_key: string
+          mission_id: string
+          previous_event_id: string | null
+          provenance: string
+          reason: string | null
+          recorded_at: string
+          request_sha256: string
+          submission_id: string
+          term_id: string
+        }
+        Insert: {
+          access_basis: string
+          action: string
+          actor_user_id: string
+          evidence_requirements?: string[]
+          id?: string
+          idempotency_key: string
+          mission_id: string
+          previous_event_id?: string | null
+          provenance: string
+          reason?: string | null
+          recorded_at?: string
+          request_sha256: string
+          submission_id: string
+          term_id: string
+        }
+        Update: {
+          access_basis?: string
+          action?: string
+          actor_user_id?: string
+          evidence_requirements?: string[]
+          id?: string
+          idempotency_key?: string
+          mission_id?: string
+          previous_event_id?: string | null
+          provenance?: string
+          reason?: string | null
+          recorded_at?: string
+          request_sha256?: string
+          submission_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_global_triage_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_global_triage_events_previous_event_id_fkey"
+            columns: ["previous_event_id"]
+            isOneToOne: false
+            referencedRelation: "p36_global_triage_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_global_triage_events_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "p36_dynamic_handoff_submissions"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
+      p36_global_triage_writers: {
+        Row: {
+          authorization_ref: string
+          granted_at: string
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          authorization_ref: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          authorization_ref?: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       p36_metric_unit_catalog: {
         Row: {
           metric_id: string
@@ -2194,6 +2288,24 @@ export type Database = {
       }
       p36_global_review_missions_v1: {
         Args: { p_provenance: string }
+        Returns: Json
+      }
+      p36_global_triage_append_v1: {
+        Args: {
+          p_action: string
+          p_evidence_requirements: string[]
+          p_expected_previous_event_id: string
+          p_idempotency_key: string
+          p_mission_id: string
+          p_provenance: string
+          p_reason: string
+          p_submission_id: string
+          p_term_id: string
+        }
+        Returns: Json
+      }
+      p36_global_triage_list_v1: {
+        Args: { p_mission_id: string; p_provenance: string }
         Returns: Json
       }
       p36_list_synthetic_review_history: {
