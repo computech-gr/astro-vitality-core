@@ -16,7 +16,22 @@ The fixed-dossier file is **not** a prerequisite of either dynamic file (no refe
 objects). Requiring it first, as the final UX checklist did, was wrong. It is a separate, optional
 feature that needs its own decision.
 
-## The single sequence
+## Tool-compatible execution sequence (supersedes forward execution below)
+
+Prepared replacements only; **no live execution is authorized**. Original forward SQL and rollback bytes remain unchanged.
+
+1. Apply `supabase/pending/20261107000000_p36_dynamic_handoff.tool.sql` through the migration tool in its managed transaction. SHA-256: `79286f4cd359e793cb9c773301fd212963726690913eff815f819c77841f7e78`.
+2. Verify schema, trusted function ownership, grants/RLS and zero admission rows. Missing admission denies writes. Then execute the single statement in `supabase/pending/20261107000001_p36_closed_admission.initialize.sql` through the supported data tool, **under separately explicit installation authorization**. SHA-256: `46c4d8ac23c65d9d5d5ded5d4c609da734441e9e5bcbe11ed58addbd9fc05002`. Verify exactly one singleton with both switches false and `change_note = 'initial: closed'` before proceeding. This is initialization, not activation.
+3. Apply `supabase/pending/20261107010000_p36_dynamic_authorization.tool.sql` through the migration tool. SHA-256: `8c038a0a797441a0245092dbaa5a14567ef39ba88884d8b0a2ce4be4d01b0a4d`. Verify new objects, immutable triggers, grants/RLS, trusted ownership and both switches false.
+4. Apply `supabase/pending/20261107020000_p36_authorized_crew_roster.tool.sql` through the migration tool. SHA-256: `d4d410a42933af335b3dfa48f077793cd6f763b77338fad4369a6009408faca3`. Verify caller-scoped RPC permissions and closed admission.
+
+The three DDL copies remove only outer transaction wrappers; the handoff copy additionally moves its exact singleton INSERT into step 2. No function bodies, defaults, grants, policies, triggers or scientific checks change. Do not apply original and replacement copies cumulatively. Original forward hashes below are retained as traceability, not alternative tool execution instructions.
+
+Each DDL step is atomic through the migration tool's transaction; initialization is one atomic data statement. The four-step sequence is **not** atomic as a whole. Equivalent failure safety is fail-closed: before initialization no singleton exists and appends refuse; after initialization both switches are false. Any failed check stops the sequence with earlier committed schema retained. Never automatically retry initialization or execute a rollback; inspect first. Existing rollback scripts remain valid and require separate execution authorization/compatible transport.
+
+Disposable PostgreSQL validation: 149 assertions, including failure injection after every DDL statement, initialization failure/replay, original/replacement catalog/ACL/RLS/default/function/trigger/index/constraint equivalence, missing-row handoff/authorization denial, trusted local ownership, base-row preservation and guarded rollbacks. Existing 38 SQL security checks also pass against replacements. Tests emulate tool transactions; they do not attest live transport acceptance or genuine browser authentication. Full report: `docs/P36_TOOL_COMPATIBLE_PREPARATION_RESULTS.md`.
+
+## Original approved sequence (traceability only)
 
 Forward (once, in this order, each file atomically, bytes must match the hashes):
 
@@ -24,7 +39,7 @@ Forward (once, in this order, each file atomically, bytes must match the hashes)
 2. `supabase/pending/20261107010000_p36_dynamic_authorization.sql` — SHA-256 `47c3498fad113acec0c9776636ae1378adbcdcf5b719cfc7c4e4d98124d33b06`
 3. `supabase/pending/20261107020000_p36_authorized_crew_roster.sql` — SHA-256 `79cbac14e37717c98977f199974df0575449050cee38ec0612703567e01b66f0`; narrow authenticated active-assignment/name read for mission-wide reviewers. Depends on the handoff scope model; does not change table RLS or write admission.
 
-After both files are applied, admission stays **closed**: no writes are accepted even with application
+After the sequence is applied, admission stays **closed**: no writes are accepted even with application
 flags on. Opening admission is a separate trusted-SQL step
 (`update public.p36_dynamic_admission set handoff_open = true, change_note = '…'`, later
 `authorization_open = true`) and needs its own authorization.

@@ -1,3 +1,9 @@
+# P36 tool-compatible installation preparation
+
+- [x] Preserve original SQL/rollback bytes; prepare three wrapper-free DDL copies and exact single-statement closed-admission initialization.
+- [x] Validate catalog/security equivalence and failure safety (149 disposable assertions), existing replacement SQL suite (38 checks), and 1,199 regression tests.
+- [ ] Live installation blocked pending explicit replacement-hash and initialization approval; all admissions, flags, records and memberships unchanged.
+
 # P36 compact Scientific Review
 
 - [x] Preserve complete dossiers/exports behind compact searchable, filtered, paginated tables; distinguish documentary, local and cloud inventory.
