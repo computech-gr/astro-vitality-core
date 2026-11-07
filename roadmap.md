@@ -489,3 +489,13 @@
 - [x] Synthetic lifecycle test: unknown → accepted → approved extension → recognized in a later intake; unit/context/ambiguity/revocation safeguards.
 - [ ] Apply `supabase/pending/20261107040000_p36_global_triage.sql`, then `20261107040001_p36_global_triage_demo.authorize.sql` — blocked: explicit owner approval.
 - [ ] Bridge from cloud scientific approval to a code-reviewed catalog-extensions entry; support new (non-alias) metrics; pass method/specimen from intake — blocked: owner design decision and scientific authorization (closed).
+
+## P39 Permanent source-aware biomarker classification
+
+- [x] Reusable section classifier for PDF, CSV, XLSX and text (exact label + unit + whole-heading section, page/line/row provenance, conflicts never guessed).
+- [x] Value-free evidence registry for the cited synthetic report (SHA-256 bound; 364 rows across 4 sections, matching the declared counts).
+- [x] Researcher screen: 115 high-confidence proposals (70 cardiovascular, 45 immune) with one explicit acceptance; Hydration intake and Sedentary time stay manual.
+- [x] Later examinations: section-aware recognition; a conflicting section stays review-only; offline signed catalog unchanged.
+- [x] 30 regression tests; 67 active entries preserved; no decisions, activations or production changes.
+- [ ] Record the 115 demo decisions, then Ground Medical activation — blocked: the Researcher's and Ground Medical member's own actions in Preview.
+- [ ] P1NP / CTX identity conflicts and the 17 ambiguous-unit terms — blocked: scientific choice and the 12-term submission's source documents.
