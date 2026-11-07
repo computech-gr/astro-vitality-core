@@ -9,7 +9,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { FlaskConical, ListChecks, RotateCcw } from "lucide-react";
+import { FileSearch, FlaskConical, ListChecks, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ import {
   PREFLIGHT_CATEGORIES,
   PREFLIGHT_CATEGORY_LABEL,
   buildBulkDemoPreflight,
+  awaitsSectionAcceptance,
   catalogExistingMatch,
   needsDomainChoice,
   preflightCounts,
@@ -43,6 +44,29 @@ import {
   SYNTHETIC_DEMO_LABEL,
 } from "@/domain/health-intelligence/synthetic-demo-catalog";
 import type { HealthDomainId } from "@/domain/health-domains/registry";
+import {
+  evidenceRegistryDocuments,
+  extractGridSourceEvidence,
+  extractTextSourceEvidence,
+  sectionCoverage,
+  type SourceDocumentEvidence,
+} from "@/domain/health-intelligence/source-section-classification";
+import { csvCells } from "@/domain/health-intelligence/universal-intake-parser";
+import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
+import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
+
+/** Committed, SHA-256-bound section evidence of owner-supplied source documents (fails closed). */
+const REGISTRY_DOCS = evidenceRegistryDocuments(sourceSectionRegistry);
+async function fileSha256(file: File): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+const DOMAIN_WORD: Record<HealthDomainId, string> = {
+  bone: "Bone",
+  immune: "Immune",
+  cardiovascular: "Cardiovascular",
+  behavioral: "Behavioral",
+};
 
 const PAGE = 25;
 const DOMAINS: [HealthDomainId, string][] = [
@@ -82,7 +106,12 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const [overrides, setOverrides] = useState<Map<string, PreflightOverride>>(new Map());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<PreflightCategory | "all" | "needs_domain">("all");
+  const [category, setCategory] = useState<
+    PreflightCategory | "all" | "needs_domain" | "awaiting_section"
+  >("all");
+  const [extraDocs, setExtraDocs] = useState<SourceDocumentEvidence[]>([]);
+  const [acceptedSection, setAcceptedSection] = useState<Set<string>>(new Set());
+  const [docNote, setDocNote] = useState("");
   const [domainFilter, setDomainFilter] = useState<HealthDomainId | "all" | "none">("all");
   const [page, setPage] = useState(0);
   const [bulkDomain, setBulkDomain] = useState<HealthDomainId>("bone");
@@ -130,6 +159,7 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
         exactUnit: t.exactUnit,
         classification: t.classification,
         candidateMetricIds: t.candidateMetricIds,
+        sourceDocumentSha256: t.sourceDocumentSha256,
       })),
     );
     return buildBulkDemoPreflight(terms, {
@@ -138,16 +168,85 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
       events: data.events,
       overrides,
       existingMatch,
+      sourceDocuments: [...REGISTRY_DOCS, ...extraDocs],
+      acceptedSectionProposals: acceptedSection,
     });
-  }, [data, overrides, existingMatch]);
+  }, [data, overrides, existingMatch, extraDocs, acceptedSection]);
   const counts = preflightCounts(rows);
   const domainChoice = rows.filter(needsDomainChoice).length;
+  const awaiting = rows.filter(awaitsSectionAcceptance);
+  const acceptedRows = rows.filter((r) => r.sectionAccepted);
+  const proposalDomains = (list: PreflightRow[]) =>
+    DOMAINS.map(([d, l]) => [l, list.filter((r) => r.domain === d).length] as const).filter(
+      ([, n]) => n > 0,
+    );
+  const citedDocs = useMemo(
+    () =>
+      new Set(
+        (data?.subs ?? []).flatMap((s) => s.terms.flatMap((t) => t.sourceDocumentSha256 ?? [])),
+      ),
+    [data],
+  );
+  const docs = [...REGISTRY_DOCS, ...extraDocs].filter((d) => citedDocs.has(d.sha256));
+  const loadSourceDocument = async (file: File) => {
+    setDocNote(`Reading ${file.name} on this device…`);
+    try {
+      const sha = await fileSha256(file);
+      if (!citedDocs.has(sha)) {
+        setDocNote(
+          `No submitted term of this mission cites ${file.name} (SHA-256 ${sha.slice(0, 12)}…). Nothing was proposed.`,
+        );
+        return;
+      }
+      if ([...REGISTRY_DOCS, ...extraDocs].some((d) => d.sha256 === sha)) {
+        setDocNote(`${file.name} is already loaded; its proposals are shown below.`);
+        return;
+      }
+      let evidence: SourceDocumentEvidence;
+      if (/\.csv$/i.test(file.name))
+        evidence = extractGridSourceEvidence(csvCells(await file.text()), {
+          sha256: sha,
+          fileName: file.name,
+          kind: "csv",
+        });
+      else if (/\.xlsx$/i.test(file.name))
+        evidence = extractGridSourceEvidence(xlsxCells(new Uint8Array(await file.arrayBuffer())), {
+          sha256: sha,
+          fileName: file.name,
+          kind: "xlsx",
+        });
+      else if (/\.pdf$/i.test(file.name)) {
+        const { extractBoneDocument } = await import("@/domain/bone-health/document-extraction");
+        const doc = await extractBoneDocument(file);
+        evidence = extractTextSourceEvidence(
+          doc.text,
+          { sha256: sha, fileName: file.name, kind: "pdf", pages: doc.pages },
+          doc.linePages,
+        );
+      } else
+        evidence = extractTextSourceEvidence(await file.text(), {
+          sha256: sha,
+          fileName: file.name,
+          kind: "text",
+        });
+      setExtraDocs((d) => [...d, evidence]);
+      setDocNote(
+        `${file.name}: ${evidence.rows.length} rows under ${evidence.headings.filter((h) => h.domain).length} recognized medical sections. Read on this device only; nothing was uploaded or recorded.`,
+      );
+    } catch (e) {
+      setDocNote(
+        `${file.name} could not be read (${e instanceof Error ? e.message : "unknown error"}). Nothing was proposed.`,
+      );
+    }
+  };
 
   const filtered = rows.filter((r) => {
     if (
       category === "needs_domain"
         ? !needsDomainChoice(r)
-        : category !== "all" && r.category !== category
+        : category === "awaiting_section"
+          ? !awaitsSectionAcceptance(r)
+          : category !== "all" && r.category !== category
     )
       return false;
     if (
@@ -276,6 +375,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
             </p>
             <div className="flex flex-wrap gap-2 text-xs">
               <Badge variant="default">Eligible {counts.eligible}</Badge>
+              <Badge variant="secondary">
+                Domain proposed from source section · awaiting acceptance {awaiting.length}
+              </Badge>
               <Badge variant="secondary">Eligible after a domain choice {domainChoice}</Badge>
               <Badge variant="secondary">Already active {counts.already_active}</Badge>
               <Badge variant="secondary">
@@ -287,7 +389,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               </Badge>
               <Badge variant="outline">Ambiguous or missing unit {counts.ambiguous_unit}</Badge>
               <Badge variant="outline">Conflicting identity {counts.conflicting_identity}</Badge>
-              <Badge variant="outline">Other blocked {counts.blocked - domainChoice}</Badge>
+              <Badge variant="outline">
+                Other blocked {counts.blocked - domainChoice - awaiting.length}
+              </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               In the owner-authorized demo scope: {[...scope.keys()].length} terms ·{" "}
@@ -296,6 +400,89 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                 : "no scientific approver grant"}{" "}
               · {data.canTriage ? "you may accept terms for review" : "no triage grant"}.
             </p>
+          </div>
+
+          <div
+            className="space-y-2 rounded-md border border-border p-3"
+            data-testid="p39-section-proposals"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <FileSearch className="h-4 w-4" aria-hidden />
+              <p className="text-sm font-medium">Domain proposals from source-document sections</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              A domain is proposed only when the term&apos;s cited source document (matched by
+              SHA-256) lists the exact label and exact unit under a recognized medical section, and
+              no catalog reference disagrees. Section evidence is not scientific validation and
+              records nothing: accepting proposals only fills the domain column for your review.
+            </p>
+            {docs.length ? (
+              <ul className="space-y-1 text-xs">
+                {docs.map((d) => (
+                  <li key={d.sha256}>
+                    <span className="font-medium">{d.fileName}</span> · SHA-256{" "}
+                    <span className="font-mono">{d.sha256.slice(0, 12)}…</span>
+                    {d.pages ? ` · ${d.pages} pages` : ""} ·{" "}
+                    {sectionCoverage(d)
+                      .filter((c) => c.domain)
+                      .map(
+                        (c) =>
+                          `${c.heading} → ${DOMAIN_WORD[c.domain!]}${c.page ? ` (p. ${c.page})` : ""}: ${c.rows}${c.declaredCount !== null ? ` of ${c.declaredCount}` : ""} rows`,
+                      )
+                      .join(" · ")}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No cited source document is loaded yet.
+              </p>
+            )}
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="p39-source-file" className="text-xs">
+                  Load another cited source document (PDF, CSV, XLSX or text; read on this device)
+                </Label>
+                <Input
+                  id="p39-source-file"
+                  type="file"
+                  accept=".pdf,.csv,.xlsx,.txt"
+                  className="h-8 text-xs"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) void loadSourceDocument(f);
+                  }}
+                />
+              </div>
+              <Button
+                size="sm"
+                disabled={!awaiting.length}
+                onClick={() =>
+                  setAcceptedSection((s) => new Set([...s, ...awaiting.map((r) => r.key)]))
+                }
+              >
+                Accept {awaiting.length} proposed domains
+                {awaiting.length
+                  ? ` (${proposalDomains(awaiting)
+                      .map(([l, n]) => `${l} ${n}`)
+                      .join(", ")})`
+                  : ""}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!acceptedRows.length}
+                onClick={() => setAcceptedSection(new Set())}
+              >
+                Clear {acceptedRows.length} accepted
+              </Button>
+            </div>
+            {docNote ? (
+              <p role="status" className="text-xs text-muted-foreground">
+                {docNote}
+              </p>
+            ) : null}
           </div>
 
           <div className="grid gap-2 sm:grid-cols-4">
@@ -327,6 +514,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                   </option>
                 ))}
                 <option value="needs_domain">Needs a domain choice</option>
+                <option value="awaiting_section">
+                  Source-section proposal awaiting acceptance
+                </option>
               </select>
             </div>
             <div className="space-y-1">
@@ -439,7 +629,10 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                   const editable =
                     r.category === "eligible" ||
                     needsDomainChoice(r) ||
+                    awaitsSectionAcceptance(r) ||
                     r.category === "conflicting_identity";
+                  const sp = r.sectionProposal;
+                  const firstEvidence = sp?.evidence[0];
                   return (
                     <tr key={r.key} className="border-t border-border align-top">
                       <td className="p-1">
@@ -459,7 +652,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                         <Badge variant={r.category === "eligible" ? "default" : "outline"}>
                           {needsDomainChoice(r)
                             ? "Needs a domain choice"
-                            : PREFLIGHT_CATEGORY_LABEL[r.category]}
+                            : awaitsSectionAcceptance(r)
+                              ? "Domain proposed · accept to continue"
+                              : PREFLIGHT_CATEGORY_LABEL[r.category]}
                         </Badge>
                         <div className="text-muted-foreground">
                           {r.triageAction === "ACCEPT_FOR_REVIEW"
@@ -508,6 +703,15 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                         {r.references.length
                           ? r.references.map((x) => `${x.id} (${x.source})`).join("; ")
                           : "No catalog reference"}
+                        {sp && firstEvidence ? (
+                          <div data-testid="p39-row-section">
+                            Source section: {firstEvidence.path.join(" › ") || "none"}
+                            {firstEvidence.page ? `, page ${firstEvidence.page}` : ""}, line{" "}
+                            {firstEvidence.line} · {sp.confidence} confidence
+                            {sp.domain ? ` → ${DOMAIN_WORD[sp.domain]}` : ""}
+                            {r.sectionAccepted ? " · accepted" : ""}
+                          </div>
+                        ) : null}
                         {[...r.reasons, ...r.warnings].map((x) => (
                           <div key={x}>{x}</div>
                         ))}

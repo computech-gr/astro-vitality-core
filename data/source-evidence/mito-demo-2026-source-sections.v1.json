@@ -1,0 +1,6256 @@
+{
+ "schema": "mitochondria.source-section-evidence-registry.v1",
+ "status": "SOURCE_DOCUMENT_SECTION_EVIDENCE — classification evidence only, not scientific validation",
+ "note": "Derived deterministically from the owner-supplied synthetic source report by scripts/p39-source-section-evidence.ts. Labels, exact units, headings, table context and page/line locations only: no results, dates, flags or identity. Section provenance is classification evidence, never scientific validation, approval or activation.",
+ "documents": [
+  {
+   "schema": "mitochondria.source-section-evidence.v1",
+   "rulesVersion": "mitochondria.source-section-rules.v1",
+   "sha256": "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce",
+   "fileName": "NASA_Astronaut_Simulated_Medical_Report.pdf",
+   "kind": "pdf",
+   "pages": 11,
+   "headings": [
+    {
+     "heading": "ORBITAL MEDICAL DIAGNOSTICS",
+     "domain": null,
+     "page": 1,
+     "line": 1,
+     "declaredCount": null
+    },
+    {
+     "heading": "RESULTS BY DEPARTMENT",
+     "domain": null,
+     "page": 1,
+     "line": 10,
+     "declaredCount": null
+    },
+    {
+     "heading": "BONE HEALTH",
+     "domain": "bone",
+     "page": 1,
+     "line": 11,
+     "declaredCount": 63
+    },
+    {
+     "heading": "CARDIOVASCULAR HEALTH",
+     "domain": "cardiovascular",
+     "page": 3,
+     "line": 82,
+     "declaredCount": 93
+    },
+    {
+     "heading": "IMMUNE SYSTEM",
+     "domain": "immune",
+     "page": 5,
+     "line": 181,
+     "declaredCount": 108
+    },
+    {
+     "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+     "domain": "behavioral",
+     "page": 8,
+     "line": 297,
+     "declaredCount": 100
+    },
+    {
+     "heading": "END OF SYNTHETIC REPORT",
+     "domain": null,
+     "page": 11,
+     "line": 405,
+     "declaredCount": null
+    }
+   ],
+   "rows": [
+    {
+     "label": "CTX / β-CTX",
+     "unit": "pg/mL ή ng/L",
+     "page": 1,
+     "line": 13,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "NTX",
+     "unit": "assay-specific",
+     "page": 1,
+     "line": 15,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Pyridinoline (PYD)",
+     "unit": "nmol/mmol creatinine",
+     "page": 1,
+     "line": 16,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Deoxypyridinoline (DPD)",
+     "unit": "nmol/mmol creatinine",
+     "page": 1,
+     "line": 17,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Helical Peptide",
+     "unit": "assay-specific",
+     "page": 1,
+     "line": 18,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Hydroxyproline",
+     "unit": "mg/day ή ratio",
+     "page": 1,
+     "line": 19,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Hydroxylysine",
+     "unit": "assay-specific",
+     "page": 1,
+     "line": 20,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "TRAP5b",
+     "unit": "U/L ή assay-specific",
+     "page": 1,
+     "line": 21,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "P1NP / PINP",
+     "unit": "μg/L",
+     "page": 1,
+     "line": 22,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "PICP",
+     "unit": "μg/L",
+     "page": 1,
+     "line": 23,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "BSAP / BAP",
+     "unit": "μg/L ή U/L",
+     "page": 1,
+     "line": 24,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Osteocalcin",
+     "unit": "ng/mL",
+     "page": 1,
+     "line": 25,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Serum Total Calcium",
+     "unit": "mg/dL ή mmol/L",
+     "page": 1,
+     "line": 26,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Ionized Calcium",
+     "unit": "mmol/L",
+     "page": 1,
+     "line": 27,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Calcium 24h",
+     "unit": "mg/day",
+     "page": 1,
+     "line": 28,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Serum Phosphate",
+     "unit": "mg/dL ή mmol/L",
+     "page": 1,
+     "line": 29,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Phosphorus",
+     "unit": "mg/day",
+     "page": 1,
+     "line": 30,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "PTH",
+     "unit": "pg/mL",
+     "page": 1,
+     "line": 31,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "25(OH) Vitamin D",
+     "unit": "ng/mL ή nmol/L",
+     "page": 1,
+     "line": 32,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "1,25(OH)₂ Vitamin D",
+     "unit": "pg/mL",
+     "page": 1,
+     "line": 33,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "FGF23",
+     "unit": "pg/mL ή RU/mL",
+     "page": 1,
+     "line": 34,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sclerostin",
+     "unit": "pmol/L ή ng/mL",
+     "page": 1,
+     "line": 35,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "RANKL",
+     "unit": "assay-specific",
+     "page": 2,
+     "line": 38,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "OPG",
+     "unit": "assay-specific",
+     "page": 2,
+     "line": 39,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "DKK1",
+     "unit": "assay-specific",
+     "page": 2,
+     "line": 40,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Stable Ca isotope ratio",
+     "unit": "δ44/42Ca ‰",
+     "page": 2,
+     "line": 41,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Stable Ca tracer kinetics",
+     "unit": "fractional absorption / model",
+     "page": 2,
+     "line": 42,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Citrate",
+     "unit": "mg/day",
+     "page": 2,
+     "line": 43,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Oxalate",
+     "unit": "mg/day",
+     "page": 2,
+     "line": 44,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Magnesium",
+     "unit": "mg/day",
+     "page": 2,
+     "line": 45,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Sodium",
+     "unit": "mmol/day",
+     "page": 2,
+     "line": 46,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Potassium",
+     "unit": "mmol/day",
+     "page": 2,
+     "line": 47,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Sulfate",
+     "unit": "mmol/day",
+     "page": 2,
+     "line": 48,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Uric Acid",
+     "unit": "mg/day",
+     "page": 2,
+     "line": 49,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urinary Creatinine",
+     "unit": "mg/day",
+     "page": 2,
+     "line": 50,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urine pH",
+     "unit": "pH",
+     "page": 2,
+     "line": 51,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Total Urine Volume",
+     "unit": "mL/day",
+     "page": 2,
+     "line": 52,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Calcium Oxalate Supersaturation",
+     "unit": "dimensionless/index",
+     "page": 2,
+     "line": 53,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Brushite / Ca Phosphate Supersaturation",
+     "unit": "dimensionless/index",
+     "page": 2,
+     "line": 54,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Uric Acid Supersaturation",
+     "unit": "dimensionless/index",
+     "page": 2,
+     "line": 55,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sodium Urate Supersaturation",
+     "unit": "dimensionless/index",
+     "page": 2,
+     "line": 56,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Struvite Supersaturation",
+     "unit": "dimensionless/index",
+     "page": 2,
+     "line": 57,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Total Hip aBMD",
+     "unit": "g/cm²",
+     "page": 2,
+     "line": 58,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Femoral Neck aBMD",
+     "unit": "g/cm²",
+     "page": 2,
+     "line": 59,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Lumbar Spine aBMD",
+     "unit": "g/cm²",
+     "page": 2,
+     "line": 60,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Total vBMD",
+     "unit": "mg HA/cm³",
+     "page": 2,
+     "line": 61,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cortical vBMD",
+     "unit": "mg HA/cm³",
+     "page": 2,
+     "line": 62,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Trabecular vBMD",
+     "unit": "mg HA/cm³",
+     "page": 2,
+     "line": 63,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Trabecular Thickness",
+     "unit": "mm",
+     "page": 2,
+     "line": 64,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Trabecular Number",
+     "unit": "1/mm",
+     "page": 2,
+     "line": 65,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Trabecular Separation",
+     "unit": "mm",
+     "page": 2,
+     "line": 66,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cortical Thickness",
+     "unit": "mm",
+     "page": 2,
+     "line": 67,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Bone Failure Load",
+     "unit": "N",
+     "page": 2,
+     "line": 68,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Estimated Bone Strength",
+     "unit": "N ή model-specific",
+     "page": 2,
+     "line": 69,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Resistance Exercise Adherence",
+     "unit": "% sessions",
+     "page": 2,
+     "line": 70,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Resistance Exercise Load",
+     "unit": "ανεξέλ",
+     "page": 2,
+     "line": 72,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dietary Calcium Intake",
+     "unit": "mg/day",
+     "page": 2,
+     "line": 73,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dietary Vitamin D Intake",
+     "unit": "IU/day",
+     "page": 2,
+     "line": 74,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dietary Protein Intake",
+     "unit": "g/day",
+     "page": 3,
+     "line": 77,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dietary Sodium Intake",
+     "unit": "mg/day",
+     "page": 3,
+     "line": 78,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fluid Intake",
+     "unit": "mL/day",
+     "page": 3,
+     "line": 79,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Mission Duration",
+     "unit": "days",
+     "page": 3,
+     "line": 80,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Microgravity Exposure",
+     "unit": "hours/days",
+     "page": 3,
+     "line": 81,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BONE HEALTH",
+      "path": [
+       "BONE HEALTH"
+      ],
+      "domain": "bone",
+      "rule": "bone health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Resting heart rate",
+     "unit": "bpm",
+     "page": 3,
+     "line": 84,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Active heart rate",
+     "unit": "bpm",
+     "page": 3,
+     "line": 85,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Maximum heart rate",
+     "unit": "bpm",
+     "page": 3,
+     "line": 86,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Heart rate recovery 1 min",
+     "unit": "bpm",
+     "page": 3,
+     "line": 87,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HRV RMSSD",
+     "unit": "ms",
+     "page": 3,
+     "line": 88,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HRV SDNN",
+     "unit": "ms",
+     "page": 3,
+     "line": 89,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HRV LF/HF",
+     "unit": "ratio",
+     "page": 3,
+     "line": 90,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Systolic blood pressure",
+     "unit": "mmHg",
+     "page": 3,
+     "line": 91,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Diastolic blood pressure",
+     "unit": "mmHg",
+     "page": 3,
+     "line": 92,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Mean arterial pressure",
+     "unit": "mmHg",
+     "page": 3,
+     "line": 93,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Pulse pressure",
+     "unit": "mmHg",
+     "page": 3,
+     "line": 94,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Orthostatic systolic change",
+     "unit": "mmHg",
+     "page": 3,
+     "line": 95,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Orthostatic diastolic change",
+     "unit": "mmHg",
+     "page": 3,
+     "line": 96,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Orthostatic heart rate change",
+     "unit": "bpm",
+     "page": 3,
+     "line": 97,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "SpO2",
+     "unit": "%",
+     "page": 3,
+     "line": 98,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Respiratory rate",
+     "unit": "breaths/min",
+     "page": 3,
+     "line": 99,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Body temperature",
+     "unit": "°C",
+     "page": 3,
+     "line": 100,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "ECG PR interval",
+     "unit": "ms",
+     "page": 3,
+     "line": 101,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "ECG QRS duration",
+     "unit": "ms",
+     "page": 3,
+     "line": 102,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "ECG QT interval",
+     "unit": "ms",
+     "page": 3,
+     "line": 103,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "ECG QTc interval",
+     "unit": "ms",
+     "page": 3,
+     "line": 104,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "ECG rhythm",
+     "unit": "category",
+     "page": 3,
+     "line": 105,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Premature atrial contractions",
+     "unit": "count/day",
+     "page": 3,
+     "line": 106,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Premature ventricular contractions",
+     "unit": "count/day",
+     "page": 3,
+     "line": 107,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Arrhythmia episodes",
+     "unit": "count/day",
+     "page": 3,
+     "line": 108,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "ST segment deviation",
+     "unit": "mm",
+     "page": 3,
+     "line": 109,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Troponin I",
+     "unit": "ng/L",
+     "page": 3,
+     "line": 110,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Troponin T",
+     "unit": "ng/L",
+     "page": 3,
+     "line": 111,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "NT-proBNP",
+     "unit": "pg/mL",
+     "page": 4,
+     "line": 114,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "BNP",
+     "unit": "pg/mL",
+     "page": 4,
+     "line": 115,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CK-MB",
+     "unit": "ng/mL",
+     "page": 4,
+     "line": 116,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Total cholesterol",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 117,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "LDL cholesterol",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 118,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HDL cholesterol",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 119,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Triglycerides",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 120,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Apolipoprotein B",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 121,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Lipoprotein(a)",
+     "unit": "nmol/L",
+     "page": 4,
+     "line": 122,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fasting glucose",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 123,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HbA1c",
+     "unit": "%",
+     "page": 4,
+     "line": 124,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fasting insulin",
+     "unit": "μIU/mL",
+     "page": 4,
+     "line": 125,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HOMA-IR",
+     "unit": "ratio",
+     "page": 4,
+     "line": 126,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "High sensitivity CRP",
+     "unit": "mg/L",
+     "page": 4,
+     "line": 127,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "D-dimer",
+     "unit": "mg/L FEU",
+     "page": 4,
+     "line": 128,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fibrinogen",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 129,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Platelet count",
+     "unit": "10^3/μL",
+     "page": 4,
+     "line": 130,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Hemoglobin",
+     "unit": "g/dL",
+     "page": 4,
+     "line": 131,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Hematocrit",
+     "unit": "%",
+     "page": 4,
+     "line": 132,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Serum sodium",
+     "unit": "mmol/L",
+     "page": 4,
+     "line": 133,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Serum potassium",
+     "unit": "mmol/L",
+     "page": 4,
+     "line": 134,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Serum magnesium",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 135,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Serum creatinine",
+     "unit": "mg/dL",
+     "page": 4,
+     "line": 136,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "eGFR",
+     "unit": "mL/min/1.73m²",
+     "page": 4,
+     "line": 137,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cardiac output",
+     "unit": "L/min",
+     "page": 4,
+     "line": 138,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Stroke volume",
+     "unit": "mL",
+     "page": 4,
+     "line": 139,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Ejection fraction",
+     "unit": "%",
+     "page": 4,
+     "line": 140,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "End diastolic volume",
+     "unit": "mL",
+     "page": 4,
+     "line": 141,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "End systolic volume",
+     "unit": "mL",
+     "page": 4,
+     "line": 142,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Left ventricular mass",
+     "unit": "g",
+     "page": 4,
+     "line": 143,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Carotid intima media thickness",
+     "unit": "mm",
+     "page": 4,
+     "line": 144,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Arterial stiffness PWV",
+     "unit": "m/s",
+     "page": 4,
+     "line": 145,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Augmentation index",
+     "unit": "%",
+     "page": 4,
+     "line": 146,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Baroreflex sensitivity",
+     "unit": "ms/mmHg",
+     "page": 4,
+     "line": 147,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "VO2 max",
+     "unit": "mL/kg/min",
+     "page": 4,
+     "line": 148,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Exercise tolerance",
+     "unit": "minutes",
+     "page": 4,
+     "line": 149,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Exercise workload",
+     "unit": "W",
+     "page": 4,
+     "line": 150,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Daily steps",
+     "unit": "steps/day",
+     "page": 5,
+     "line": 153,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sedentary time",
+     "unit": "hours/day",
+     "page": 5,
+     "line": 154,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Hydration intake",
+     "unit": "L/day",
+     "page": 5,
+     "line": 155,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urine output",
+     "unit": "L/day",
+     "page": 5,
+     "line": 156,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fluid shift assessment",
+     "unit": "ordinal",
+     "page": 5,
+     "line": 157,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Lower limb venous ultrasound",
+     "unit": "category",
+     "page": 5,
+     "line": 158,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Peripheral edema score",
+     "unit": "0-3",
+     "page": 5,
+     "line": 159,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Syncope episodes",
+     "unit": "count",
+     "page": 5,
+     "line": 160,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Chest pain score",
+     "unit": "0-10",
+     "page": 5,
+     "line": 161,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Palpitations score",
+     "unit": "0-10",
+     "page": 5,
+     "line": 162,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dyspnea score",
+     "unit": "0-10",
+     "page": 5,
+     "line": 163,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dizziness score",
+     "unit": "0-10",
+     "page": 5,
+     "line": 164,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cardiac symptoms present",
+     "unit": "boolean",
+     "page": 5,
+     "line": 165,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Exercise heart rate variability",
+     "unit": "ms",
+     "page": 5,
+     "line": 166,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep heart rate",
+     "unit": "bpm",
+     "page": 5,
+     "line": 167,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Blood pressure morning",
+     "unit": "mmHg",
+     "page": 5,
+     "line": 168,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Blood pressure evening",
+     "unit": "mmHg",
+     "page": 5,
+     "line": 169,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cardiac MRI fibrosis",
+     "unit": "%",
+     "page": 5,
+     "line": 170,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Coronary calcium score",
+     "unit": "Agatston",
+     "page": 5,
+     "line": 171,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Endothelial function FMD",
+     "unit": "%",
+     "page": 5,
+     "line": 172,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Vascular resistance",
+     "unit": "dyn·s/cm5",
+     "page": 5,
+     "line": 173,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Blood volume",
+     "unit": "L",
+     "page": 5,
+     "line": 174,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Plasma volume",
+     "unit": "L",
+     "page": 5,
+     "line": 175,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Red cell mass",
+     "unit": "L",
+     "page": 5,
+     "line": 176,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cardiovascular medication",
+     "unit": "boolean",
+     "page": 5,
+     "line": 177,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Exercise adherence",
+     "unit": "%",
+     "page": 5,
+     "line": 178,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Radiation exposure cardiovascular",
+     "unit": "mSv",
+     "page": 5,
+     "line": 179,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cardiac event history",
+     "unit": "count",
+     "page": 5,
+     "line": 180,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "CARDIOVASCULAR HEALTH",
+      "path": [
+       "CARDIOVASCULAR HEALTH"
+      ],
+      "domain": "cardiovascular",
+      "rule": "cardiovascular health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "WBC",
+     "unit": "10^3/μL",
+     "page": 5,
+     "line": 183,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Absolute neutrophil count",
+     "unit": "cells/μL",
+     "page": 5,
+     "line": 184,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Neutrophils",
+     "unit": "%",
+     "page": 5,
+     "line": 185,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Absolute lymphocyte count",
+     "unit": "cells/μL",
+     "page": 5,
+     "line": 186,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Lymphocytes",
+     "unit": "%",
+     "page": 5,
+     "line": 187,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Monocytes",
+     "unit": "%",
+     "page": 6,
+     "line": 190,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Eosinophils",
+     "unit": "%",
+     "page": 6,
+     "line": 191,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Basophils",
+     "unit": "%",
+     "page": 6,
+     "line": 192,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Absolute monocyte count",
+     "unit": "cells/μL",
+     "page": 6,
+     "line": 193,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Absolute eosinophil count",
+     "unit": "cells/μL",
+     "page": 6,
+     "line": 194,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CD3+ T cells",
+     "unit": "cells/μL",
+     "page": 6,
+     "line": 195,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CD4+ T cells",
+     "unit": "cells/μL",
+     "page": 6,
+     "line": 196,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CD8+ T cells",
+     "unit": "cells/μL",
+     "page": 6,
+     "line": 197,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CD4/CD8 ratio",
+     "unit": "ratio",
+     "page": 6,
+     "line": 198,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CD19+ B cells",
+     "unit": "cells/μL",
+     "page": 6,
+     "line": 199,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CD16+ CD56+ NK cells",
+     "unit": "cells/μL",
+     "page": 6,
+     "line": 200,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Naive CD4 T cells",
+     "unit": "%",
+     "page": 6,
+     "line": 201,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Memory CD4 T cells",
+     "unit": "%",
+     "page": 6,
+     "line": 202,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Naive CD8 T cells",
+     "unit": "%",
+     "page": 6,
+     "line": 203,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Memory CD8 T cells",
+     "unit": "%",
+     "page": 6,
+     "line": 204,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Treg cells",
+     "unit": "%",
+     "page": 6,
+     "line": 205,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Activated CD4 T cells",
+     "unit": "%",
+     "page": 6,
+     "line": 206,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Activated CD8 T cells",
+     "unit": "%",
+     "page": 6,
+     "line": 207,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "NK cytotoxic activity",
+     "unit": "%",
+     "page": 6,
+     "line": 208,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "T cell proliferation",
+     "unit": "index",
+     "page": 6,
+     "line": 209,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "B cell proliferation",
+     "unit": "index",
+     "page": 6,
+     "line": 210,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgG",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 211,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgA",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 212,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgM",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 213,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgE",
+     "unit": "IU/mL",
+     "page": 6,
+     "line": 214,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgG1",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 215,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgG2",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 216,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgG3",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 217,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IgG4",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 218,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Complement C3",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 219,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Complement C4",
+     "unit": "mg/dL",
+     "page": 6,
+     "line": 220,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CH50",
+     "unit": "U/mL",
+     "page": 6,
+     "line": 221,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CRP",
+     "unit": "mg/L",
+     "page": 6,
+     "line": 222,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "ESR",
+     "unit": "mm/h",
+     "page": 6,
+     "line": 223,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-1 beta",
+     "unit": "pg/mL",
+     "page": 6,
+     "line": 224,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-2",
+     "unit": "pg/mL",
+     "page": 6,
+     "line": 225,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-4",
+     "unit": "pg/mL",
+     "page": 6,
+     "line": 226,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-6",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 229,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-8",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 230,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-10",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 231,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-12",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 232,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IL-17",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 233,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "TNF-alpha",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 234,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IFN-gamma",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 235,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "TGF-beta",
+     "unit": "ng/mL",
+     "page": 7,
+     "line": 236,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "MCP-1",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 237,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "IP-10",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 238,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "GM-CSF",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 239,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "G-CSF",
+     "unit": "pg/mL",
+     "page": 7,
+     "line": 240,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Neopterin",
+     "unit": "nmol/L",
+     "page": 7,
+     "line": 241,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Procalcitonin",
+     "unit": "ng/mL",
+     "page": 7,
+     "line": 242,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Serum cortisol 08:00",
+     "unit": "μg/dL",
+     "page": 7,
+     "line": 243,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "DHEA-S",
+     "unit": "μg/dL",
+     "page": 7,
+     "line": 244,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cortisol/DHEA ratio",
+     "unit": "ratio",
+     "page": 7,
+     "line": 245,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "EBV DNA viral load",
+     "unit": "copies/mL",
+     "page": 7,
+     "line": 246,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "CMV DNA viral load",
+     "unit": "copies/mL",
+     "page": 7,
+     "line": 247,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "VZV DNA viral load",
+     "unit": "copies/mL",
+     "page": 7,
+     "line": 248,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HSV-1 shedding",
+     "unit": "boolean",
+     "page": 7,
+     "line": 249,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "HSV-2 shedding",
+     "unit": "boolean",
+     "page": 7,
+     "line": 250,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Salivary EBV DNA",
+     "unit": "copies/mL",
+     "page": 7,
+     "line": 251,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Salivary IgA",
+     "unit": "mg/dL",
+     "page": 7,
+     "line": 252,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Salivary cortisol",
+     "unit": "nmol/L",
+     "page": 7,
+     "line": 253,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Salivary alpha amylase",
+     "unit": "U/mL",
+     "page": 7,
+     "line": 254,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Microbiome alpha diversity",
+     "unit": "Shannon",
+     "page": 7,
+     "line": 255,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Microbiome beta diversity",
+     "unit": "index",
+     "page": 7,
+     "line": 256,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Gut Firmicutes/Bacteroidetes",
+     "unit": "ratio",
+     "page": 7,
+     "line": 257,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fecal calprotectin",
+     "unit": "μg/g",
+     "page": 7,
+     "line": 258,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Skin microbiome diversity",
+     "unit": "Shannon",
+     "page": 7,
+     "line": 259,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Oral microbiome diversity",
+     "unit": "Shannon",
+     "page": 7,
+     "line": 260,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Blood culture",
+     "unit": "category",
+     "page": 7,
+     "line": 261,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Urine culture",
+     "unit": "category",
+     "page": 7,
+     "line": 262,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Respiratory pathogen PCR",
+     "unit": "category",
+     "page": 7,
+     "line": 263,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Body temperature",
+     "unit": "°C",
+     "page": 7,
+     "line": 264,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fever episodes",
+     "unit": "count/week",
+     "page": 7,
+     "line": 265,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Infection symptoms score",
+     "unit": "0-10",
+     "page": 8,
+     "line": 268,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Upper respiratory symptoms",
+     "unit": "0-10",
+     "page": 8,
+     "line": 269,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Wound healing score",
+     "unit": "0-10",
+     "page": 8,
+     "line": 270,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Allergy symptoms score",
+     "unit": "0-10",
+     "page": 8,
+     "line": 271,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Vaccination antibody titer",
+     "unit": "AU/mL",
+     "page": 8,
+     "line": 272,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Vaccine response",
+     "unit": "%",
+     "page": 8,
+     "line": 273,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Oxidative stress 8-OHdG",
+     "unit": "ng/mL",
+     "page": 8,
+     "line": 274,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Malondialdehyde",
+     "unit": "μmol/L",
+     "page": 8,
+     "line": 275,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Total antioxidant capacity",
+     "unit": "mmol/L",
+     "page": 8,
+     "line": 276,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Glutathione reduced",
+     "unit": "μmol/L",
+     "page": 8,
+     "line": 277,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Glutathione oxidized",
+     "unit": "μmol/L",
+     "page": 8,
+     "line": 278,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "GSH/GSSG ratio",
+     "unit": "ratio",
+     "page": 8,
+     "line": 279,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "DNA damage gamma-H2AX",
+     "unit": "foci/cell",
+     "page": 8,
+     "line": 280,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Radiation dose",
+     "unit": "mSv",
+     "page": 8,
+     "line": 281,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep duration immune context",
+     "unit": "hours",
+     "page": 8,
+     "line": 282,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Exercise load immune context",
+     "unit": "minutes/day",
+     "page": 8,
+     "line": 283,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dietary protein immune context",
+     "unit": "g/day",
+     "page": 8,
+     "line": 284,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Vitamin D immune context",
+     "unit": "ng/mL",
+     "page": 8,
+     "line": 285,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Zinc",
+     "unit": "μg/dL",
+     "page": 8,
+     "line": 286,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Selenium",
+     "unit": "μg/L",
+     "page": 8,
+     "line": 287,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Ferritin",
+     "unit": "ng/mL",
+     "page": 8,
+     "line": 288,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Transferrin saturation",
+     "unit": "%",
+     "page": 8,
+     "line": 289,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Albumin",
+     "unit": "g/dL",
+     "page": 8,
+     "line": 290,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Immune adverse events",
+     "unit": "count",
+     "page": 8,
+     "line": 291,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Immune medication",
+     "unit": "boolean",
+     "page": 8,
+     "line": 292,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Immunosuppressant use",
+     "unit": "boolean",
+     "page": 8,
+     "line": 293,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Antibiotic exposure",
+     "unit": "days/month",
+     "page": 8,
+     "line": 294,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cytokine panel QC",
+     "unit": "category",
+     "page": 8,
+     "line": 295,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sample processing delay",
+     "unit": "minutes",
+     "page": 8,
+     "line": 296,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "IMMUNE SYSTEM",
+      "path": [
+       "IMMUNE SYSTEM"
+      ],
+      "domain": "immune",
+      "rule": "immune system"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep duration",
+     "unit": "hours",
+     "page": 8,
+     "line": 299,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep efficiency",
+     "unit": "%",
+     "page": 8,
+     "line": 300,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep latency",
+     "unit": "minutes",
+     "page": 8,
+     "line": 301,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Wake after sleep onset",
+     "unit": "minutes",
+     "page": 8,
+     "line": 302,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Number of awakenings",
+     "unit": "count",
+     "page": 9,
+     "line": 305,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "REM sleep duration",
+     "unit": "minutes",
+     "page": 9,
+     "line": 306,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Deep sleep duration",
+     "unit": "minutes",
+     "page": 9,
+     "line": 307,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Light sleep duration",
+     "unit": "minutes",
+     "page": 9,
+     "line": 308,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep midpoint",
+     "unit": "hour",
+     "page": 9,
+     "line": 309,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep regularity index",
+     "unit": "0-100",
+     "page": 9,
+     "line": 310,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep debt",
+     "unit": "hours",
+     "page": 9,
+     "line": 311,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Circadian phase shift",
+     "unit": "hours",
+     "page": 9,
+     "line": 312,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Melatonin onset",
+     "unit": "hour",
+     "page": 9,
+     "line": 313,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Actigraphy rest activity amplitude",
+     "unit": "index",
+     "page": 9,
+     "line": 314,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep quality",
+     "unit": "0-10",
+     "page": 9,
+     "line": 315,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Insomnia severity index",
+     "unit": "0-28",
+     "page": 9,
+     "line": 316,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Epworth sleepiness scale",
+     "unit": "0-24",
+     "page": 9,
+     "line": 317,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Karolinska sleepiness scale",
+     "unit": "1-9",
+     "page": 9,
+     "line": 318,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Fatigue score",
+     "unit": "0-10",
+     "page": 9,
+     "line": 319,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Mental fatigue",
+     "unit": "0-10",
+     "page": 9,
+     "line": 320,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Physical fatigue",
+     "unit": "0-10",
+     "page": 9,
+     "line": 321,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Energy level",
+     "unit": "0-10",
+     "page": 9,
+     "line": 322,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Mood score",
+     "unit": "0-10",
+     "page": 9,
+     "line": 323,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Positive affect",
+     "unit": "0-10",
+     "page": 9,
+     "line": 324,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Negative affect",
+     "unit": "0-10",
+     "page": 9,
+     "line": 325,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Perceived stress",
+     "unit": "0-10",
+     "page": 9,
+     "line": 326,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Anxiety score",
+     "unit": "0-10",
+     "page": 9,
+     "line": 327,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Depression screening PHQ-9",
+     "unit": "0-27",
+     "page": 9,
+     "line": 328,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Anxiety screening GAD-7",
+     "unit": "0-21",
+     "page": 9,
+     "line": 329,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Irritability score",
+     "unit": "0-10",
+     "page": 9,
+     "line": 330,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Loneliness score",
+     "unit": "0-10",
+     "page": 9,
+     "line": 331,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Social isolation score",
+     "unit": "0-10",
+     "page": 9,
+     "line": 332,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Team cohesion score",
+     "unit": "0-10",
+     "page": 9,
+     "line": 333,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Interpersonal conflict events",
+     "unit": "count",
+     "page": 9,
+     "line": 334,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Social interaction duration",
+     "unit": "minutes/day",
+     "page": 9,
+     "line": 335,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Communication quality",
+     "unit": "0-10",
+     "page": 9,
+     "line": 336,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Workload NASA TLX",
+     "unit": "0-100",
+     "page": 9,
+     "line": 337,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cognitive workload",
+     "unit": "0-10",
+     "page": 9,
+     "line": 338,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Task completion rate",
+     "unit": "%",
+     "page": 9,
+     "line": 339,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Task error rate",
+     "unit": "%",
+     "page": 9,
+     "line": 340,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Attention score",
+     "unit": "0-100",
+     "page": 9,
+     "line": 341,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Reaction time",
+     "unit": "ms",
+     "page": 10,
+     "line": 344,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Psychomotor vigilance lapses",
+     "unit": "count",
+     "page": 10,
+     "line": 345,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "PVT mean reaction time",
+     "unit": "ms",
+     "page": 10,
+     "line": 346,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "PVT fastest 10 percent",
+     "unit": "ms",
+     "page": 10,
+     "line": 347,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "PVT slowest 10 percent",
+     "unit": "ms",
+     "page": 10,
+     "line": 348,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Working memory n-back accuracy",
+     "unit": "%",
+     "page": 10,
+     "line": 349,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Working memory response time",
+     "unit": "ms",
+     "page": 10,
+     "line": 350,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Stroop interference",
+     "unit": "ms",
+     "page": 10,
+     "line": 351,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Digit symbol substitution score",
+     "unit": "count",
+     "page": 10,
+     "line": 352,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Spatial orientation errors",
+     "unit": "count",
+     "page": 10,
+     "line": 353,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Decision making accuracy",
+     "unit": "%",
+     "page": 10,
+     "line": 354,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Executive function score",
+     "unit": "0-100",
+     "page": 10,
+     "line": 355,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Risk taking score",
+     "unit": "0-10",
+     "page": 10,
+     "line": 356,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Psychomotor coordination score",
+     "unit": "0-100",
+     "page": 10,
+     "line": 357,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sustained attention score",
+     "unit": "0-100",
+     "page": 10,
+     "line": 358,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cognitive flexibility score",
+     "unit": "0-100",
+     "page": 10,
+     "line": 359,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Memory recall score",
+     "unit": "%",
+     "page": 10,
+     "line": 360,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Situational awareness score",
+     "unit": "0-100",
+     "page": 10,
+     "line": 361,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Motivation score",
+     "unit": "0-10",
+     "page": 10,
+     "line": 362,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Resilience score",
+     "unit": "0-10",
+     "page": 10,
+     "line": 363,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Coping ability",
+     "unit": "0-10",
+     "page": 10,
+     "line": 364,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Perceived control",
+     "unit": "0-10",
+     "page": 10,
+     "line": 365,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Emotional regulation",
+     "unit": "0-10",
+     "page": 10,
+     "line": 366,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Burnout score",
+     "unit": "0-10",
+     "page": 10,
+     "line": 367,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Headache severity",
+     "unit": "0-10",
+     "page": 10,
+     "line": 368,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Dizziness severity",
+     "unit": "0-10",
+     "page": 10,
+     "line": 369,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Nausea severity",
+     "unit": "0-10",
+     "page": 10,
+     "line": 370,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Motion sickness score",
+     "unit": "0-10",
+     "page": 10,
+     "line": 371,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Appetite score",
+     "unit": "0-10",
+     "page": 10,
+     "line": 372,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Daily caloric intake",
+     "unit": "kcal",
+     "page": 10,
+     "line": 373,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Hydration intake",
+     "unit": "L/day",
+     "page": 10,
+     "line": 374,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Caffeine intake",
+     "unit": "mg/day",
+     "page": 10,
+     "line": 375,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Exercise minutes",
+     "unit": "minutes/day",
+     "page": 10,
+     "line": 376,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Exercise adherence",
+     "unit": "%",
+     "page": 10,
+     "line": 377,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sedentary time",
+     "unit": "hours/day",
+     "page": 10,
+     "line": 378,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Screen time",
+     "unit": "hours/day",
+     "page": 10,
+     "line": 379,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Work hours",
+     "unit": "hours/day",
+     "page": 10,
+     "line": 380,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Rest breaks",
+     "unit": "count/day",
+     "page": 11,
+     "line": 383,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Shift duration",
+     "unit": "hours",
+     "page": 11,
+     "line": 384,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Time since last rest day",
+     "unit": "days",
+     "page": 11,
+     "line": 385,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Noise exposure",
+     "unit": "dBA",
+     "page": 11,
+     "line": 386,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cabin light exposure",
+     "unit": "lux",
+     "page": 11,
+     "line": 387,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Blue light evening exposure",
+     "unit": "lux",
+     "page": 11,
+     "line": 388,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Cabin CO2 exposure",
+     "unit": "ppm",
+     "page": 11,
+     "line": 389,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Environmental temperature",
+     "unit": "°C",
+     "page": 11,
+     "line": 390,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Privacy satisfaction",
+     "unit": "0-10",
+     "page": 11,
+     "line": 391,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Mission morale",
+     "unit": "0-10",
+     "page": 11,
+     "line": 392,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Adaptation to confinement",
+     "unit": "0-10",
+     "page": 11,
+     "line": 393,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Homesickness",
+     "unit": "0-10",
+     "page": 11,
+     "line": 394,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Daily journal sentiment",
+     "unit": "index",
+     "page": 11,
+     "line": 395,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Behavioral event count",
+     "unit": "count",
+     "page": 11,
+     "line": 396,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Safety incident count",
+     "unit": "count",
+     "page": 11,
+     "line": 397,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Psychological support contacts",
+     "unit": "count",
+     "page": 11,
+     "line": 398,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Self-reported concerns",
+     "unit": "category",
+     "page": 11,
+     "line": 399,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Medication affecting alertness",
+     "unit": "boolean",
+     "page": 11,
+     "line": 400,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Sleep aid use",
+     "unit": "boolean",
+     "page": 11,
+     "line": 401,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Operational readiness",
+     "unit": "0-100",
+     "page": 11,
+     "line": 402,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Crew performance assessment",
+     "unit": "0-100",
+     "page": 11,
+     "line": 403,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    },
+    {
+     "label": "Daily check-in completed",
+     "unit": "boolean",
+     "page": 11,
+     "line": 404,
+     "locator": "page_line",
+     "tableHeader": "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+     "section": {
+      "heading": "BEHAVIORAL & PSYCHOLOGICAL HEALTH",
+      "path": [
+       "BEHAVIORAL & PSYCHOLOGICAL HEALTH"
+      ],
+      "domain": "behavioral",
+      "rule": "behavioral and psychological health"
+     },
+     "excerpt": ""
+    }
+   ]
+  }
+ ]
+}
