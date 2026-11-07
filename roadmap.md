@@ -458,3 +458,11 @@
 - [ ] Apply `supabase/pending/20261101000000_v9_review_sync.sql` — blocked: owner approval.
 - [x] Searchable text-based Download PDF (executive summary, separated sections, repeated headers, appendices); 90/360-row stress verified in browser; Print separate.
 - [ ] Branded Chrome/Edge/Safari and physical-device PDF checks — blocked: real devices.
+
+## P36 Global Scientific Researcher access
+
+- [x] Inspected: no existing global reviewer capability; the 12- and 197-term cloud submissions are in MITO_DEMO_2026 (Alex Morgan), while the Researcher account is a member only of FV01 Security Test B.
+- [x] Pending SQL + rollback + single-statement demo authorization prepared; disposable PostgreSQL verifier 105/105 PASS.
+- [x] Scientific Review mission combo box and grouped read-only view; fails closed until the database change is installed.
+- [ ] Apply `supabase/pending/20261107030000_p36_global_scientific_review.sql`, then `20261107030001_p36_global_review_demo.authorize.sql` — blocked: explicit owner approval.
+- [ ] Authenticated Researcher readback of 209 terms in Preview — blocked: the two approvals above, then a signed-in check as the Researcher account.
