@@ -219,3 +219,15 @@ describe("P37 synthetic lifecycle: approval -> activation -> automatic recogniti
     expect((await verifySignedCatalogSnapshot(signed)).ok).toBe(false);
   });
 });
+
+describe("P37 in-app synthetic demonstration runner", () => {
+  test("every step passes and the device catalog is untouched", async () => {
+    resetActiveCatalogForTests();
+    const { runSyntheticCatalogLifecycleDemo } = await import("../../src/domain/health-intelligence/catalog-lifecycle-demo");
+    const steps = await runSyntheticCatalogLifecycleDemo(() => "2026-11-07T14:00:00Z");
+    expect(steps.filter((s) => !s.pass)).toEqual([]);
+    expect(steps.length).toBe(17);
+    expect(steps.find((s) => s.step.startsWith("Second examination"))?.actual).toBe("RECOGNIZED · ext:synthetic-demo-marker-z · v2 · 0 unknown requests");
+    expect(getActiveCatalog().catalogVersion).toBe(0);
+  });
+});
