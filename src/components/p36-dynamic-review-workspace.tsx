@@ -206,7 +206,7 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
     {researcherOnly ? <p className="text-xs text-muted-foreground">Researcher view: only successfully submitted and authorized cloud terms are shown. Device-local registrations and submission controls are not part of the Researcher workflow.</p> : null}
     {loading ? <p role="status">Reading authorized cloud metadata and encrypted local requests…</p> : null}
     {message ? <p role="status" className="break-words text-sm">{message}</p> : null}
-    {!researcherOnly && auth.userId ? local.map((r) => <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId} onSubmitted={() => { setRefreshKey((k) => k + 1); void reload(); }} />) : null}
+    {!researcherOnly && auth.userId ? local.map((r) => <P36HandoffSubmission key={r.requestId} request={r} userId={auth.userId ?? ""} onSubmitted={() => { setRefreshKey((k) => k + 1); void reload(); }} />) : null}
     <p className="text-xs">{terms.length} {researcherOnly ? "submitted" : "additional"} term(s) · {cloud.length} cloud term(s) · {selected.length} proposal selection(s). Grouping is not scientific approval. Recommendations and approvals require an independently verified source receipt; uploaded labels never validate a source.</p>
     {scope && !loading && terms.length === 0 ? <p>{researcherOnly ? "No successfully submitted terms are available in this exact scope." : "No submitted or device-local terms available in this exact scope. A request registered on another browser is not present here until explicitly submitted."}</p> : null}
     <P36CompactReviewTable key={`${auth.userId}|${scope?.missionId}|${crew}|${provenance}`} label="Authorized cloud and device-local inventory" rows={terms.map((t) => ({
