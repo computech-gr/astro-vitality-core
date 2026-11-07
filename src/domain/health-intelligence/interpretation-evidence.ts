@@ -27,6 +27,7 @@ import {
   type InterpretationDomain,
   type InterpretationDraft,
 } from "./biomarker-interpretation";
+import { assessRelevance, selectableForDraft } from "./literature-relevance";
 
 export const EVIDENCE_BUNDLE_SCHEMA = "mitochondria.interpretation-evidence-bundle.v1" as const;
 export const AI_DRAFT_SCHEMA_VERSION = "p41.1" as const;
@@ -118,6 +119,12 @@ export interface EvidenceBundle {
   draft: EvidenceDraft | null;
   status: BundleStatus;
   gaps: string[];
+  /** P41.1: which references the server sent to the AI and which were excluded (and why). Absent on older bundles. */
+  relevanceGate?: {
+    mode: "researcher_explicit" | "automatic_batch";
+    usedRefIds: string[];
+    excluded: { refId: string; classification: "relevant" | "potentially_relevant" | "irrelevant" | "insufficient_information"; reason: string }[];
+  };
 }
 
 // ------------------------------------------------------------ privacy-safe concept queries
@@ -157,7 +164,8 @@ export function pubmedQueries(c: LiteratureConcept): string[] {
 }
 export const ntrsQuery = (c: LiteratureConcept) => queryTerm(c.label);
 
-const SPACEFLIGHT_WORDS = /\b(space ?flights?|microgravity|astronauts?|cosmonauts?|international space station|\bISS\b|bed rest|head-down tilt|weightlessness|spaceflight analog)/i;
+// Clinical "bed rest" (e.g. after embryo transfer or for foot ulcers) is not a spaceflight analog; only head-down bed rest is (P41.1).
+const SPACEFLIGHT_WORDS = /\b(space ?flights?|microgravity|astronauts?|cosmonauts?|international space station|\bISS\b|head-down (?:tilt|bed rest)|weightlessness|spaceflight analog)/i;
 export const populationTag = (text: string): PopulationTag => (SPACEFLIGHT_WORDS.test(text) ? "spaceflight_or_analog" : "terrestrial_or_unspecified");
 
 // ------------------------------------------------------------ identifiers
@@ -306,7 +314,10 @@ function citationFor(r: EvidenceReference): Citation {
  * empty basis so the Researcher must appraise it; approval is never implied.
  */
 export function toInterpretationDraft(bundle: EvidenceBundle): InterpretationDraft {
-  const verified = (bundle.draft?.claims ?? []).filter((c) => c.verification === "excerpt_found_in_inspected_text");
+  // P41.1 defence in depth: a claim citing any reference that is not at least
+  // potentially relevant (re-assessed here, also for older stored bundles) is dropped.
+  const usable = new Set(bundle.references.filter((r) => selectableForDraft(assessRelevance(r, bundle.concept), r)).map((r) => r.refId));
+  const verified = (bundle.draft?.claims ?? []).filter((c) => c.verification === "excerpt_found_in_inspected_text" && c.support.length > 0 && c.support.every((s) => usable.has(s.refId)));
   const used = new Set(verified.flatMap((c) => c.support.map((s) => s.refId)));
   const citations = bundle.references.filter((r) => used.has(r.refId)).map(citationFor);
   const merge = (field: DraftField): Claim | null => {

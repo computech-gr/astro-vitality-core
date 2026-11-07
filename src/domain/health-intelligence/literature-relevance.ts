@@ -174,7 +174,7 @@ export function assessRelevance(ref: EvidenceReference, concept: LiteratureConce
   return out(
     "irrelevant",
     intervention.length
-      ? `${label} is mentioned only as one of the interventions in a study about another topic (“${clip(ref.title, 110)}”): “${clip(first)}”`
+      ? `${label} is mentioned only as an administered intervention, in a study about another topic (“${clip(ref.title, 110)}”): “${clip(first)}”`
       : `${label} is mentioned only in passing; the study (“${clip(ref.title, 110)}”) does not measure or study it: “${clip(first)}”`,
   );
 }
