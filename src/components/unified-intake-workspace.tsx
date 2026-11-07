@@ -16,6 +16,7 @@ import {
   extractGridSourceEvidence,
   extractTextSourceEvidence,
   sectionForExcerpt,
+  SOURCE_SECTION_RULES_VERSION,
   type CandidateSourceSection,
   type SourceDocumentEvidence,
 } from "@/domain/health-intelligence/source-section-classification";
@@ -249,7 +250,7 @@ function parseIntakeText(
     documentLinesFromText(text, linePages, geometry),
     { ocr: sourceKind === "ocr" },
   );
-  const tableExcerpts = new Set(reconstruction.observations.map((o) => o.excerpt));
+  const tableExcerpts = new Set(reconstruction.observations.map((o) => o.excerpt.trim()));
   const tableRows: IntakeRow[] = reconstruction.observations.map((o) => {
     const section: CandidateSourceSection = {
       status: o.section.domain ? "recognized" : o.section.heading ? "unrecognized_heading" : "no_section",
@@ -260,7 +261,7 @@ function parseIntakeText(
       line: o.line,
       locator: o.page ? "page_line" : "text_line",
       tableHeader: o.tableHeader,
-      rulesVersion: "mitochondria.source-section-rules.v1",
+      rulesVersion: SOURCE_SECTION_RULES_VERSION,
     };
     return newRow({
       label: o.label,
