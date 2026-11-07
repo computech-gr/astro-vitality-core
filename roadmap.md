@@ -2,7 +2,7 @@
 
 - [x] Preserve complete dossiers/exports behind compact searchable, filtered, paginated tables; distinguish documentary, local and cloud inventory.
 - [x] Diagnose live missing dynamic migrations and Researcher-excluding table policies; stage narrow roster RPC without applying it.
-- [ ] Complete local automated and desktop/mobile validation.
+- [x] 1,199 tests, 38 disposable SQL checks, lint/security/format and 56 project gates pass; desktop/mobile table/drawer checks pass. Dependency audit and three external evidence gates remain blocked; managed compilation is OK, standalone production-build/exact-commit CI evidence is unavailable.
 - [ ] Genuine two-account acceptance blocked until independently isolated auth/data services and approved staging migrations are available.
 
 # P36 final blocker remediation
