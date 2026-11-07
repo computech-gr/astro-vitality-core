@@ -20,7 +20,7 @@ import { longitudinalLines } from "./longitudinal-comparison";
 
 import { observationDay, observationDateLabel } from "./observation-date";
 import { NOT_ASSESSED_TEXT, resolveAdverseAnnotations, type AdverseAssessmentInput } from "./adverse-annotations";
-import { buildBiomarkerAssessment, SEVERITY_LABELS, SEVERITY_MARKERS, SEVERITY_ORDER, severityCountsLine, type Severity } from "./biomarker-health-assessment";
+import { buildBiomarkerAssessment, SEVERITY_LABELS, SEVERITY_MARKERS, SEVERITY_ORDER, severityCountsLine, type ReferenceRegistry, type Severity } from "./biomarker-health-assessment";
 import { registryInterpretationSnapshot } from "./biomarker-interpretation-ledger";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
@@ -63,6 +63,8 @@ export interface TextReportInput {
   adverseAssessment?: AdverseAssessmentInput;
   /** P40: last verified local interpretation snapshot (same one the screen used); registry-only when omitted. */
   interpretations?: InterpretationSnapshot;
+  /** P54: verified reference registry; the bundled (validated) registry when omitted. */
+  referenceRegistry?: ReferenceRegistry;
 }
 
 const isCorrectionHistory = (reason: string) => /^Marked erroneous|^Superseded by correction/.test(reason);
@@ -128,7 +130,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
   const adverse = resolveAdverseAnnotations(u.rows, u.scope.provenance, input.adverseAssessment);
   // P54: same biomarker assessment builder as the screen and TXT (verified references only).
   const assessment = researcherModel
-    ? buildBiomarkerAssessment(u, researcherModel, input.interpretations ?? registryInterpretationSnapshot(), { adverse })
+    ? buildBiomarkerAssessment(u, researcherModel, input.interpretations ?? registryInterpretationSnapshot(), { adverse, ...(input.referenceRegistry ? { registry: input.referenceRegistry } : {}) })
     : null;
   const markerFor = (ids: readonly string[]) =>
     ids.filter((id) => adverse.accepted.has(id)).map((id) => `${refs.get(id) ?? id}: ${adverse.accepted.get(id)!.marker}`).join("; ");
