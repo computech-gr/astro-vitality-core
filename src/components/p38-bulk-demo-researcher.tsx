@@ -369,22 +369,21 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
         <p className="text-xs text-muted-foreground">{note}</p>
       ) : null}
       {!data || visibility !== "visible" ? null : (
-      <div
-        aria-labelledby="p38-r-title"
-        className="space-y-3 rounded-lg border-2 border-dashed border-border p-4"
-        data-testid="p38-bulk-researcher"
-      >
-      <div className="space-y-1">
-        <h4 id="p38-r-title" className="font-semibold">
-          Preflight, selection and bulk decisions
-        </h4>
-        <p className="text-sm text-muted-foreground">
-          {SYNTHETIC_DEMO_LABEL}. Names and domains are proposed only from existing catalog
-          references; specimen, method, reference intervals and source validation are never
-          proposed. Decisions do not activate anything: Ground Medical activates separately.
-        </p>
-      </div>
-        <>
+        <div
+          aria-labelledby="p38-r-title"
+          className="space-y-3 rounded-lg border-2 border-dashed border-border p-4"
+          data-testid="p38-bulk-researcher"
+        >
+          <div className="space-y-1">
+            <h4 id="p38-r-title" className="font-semibold">
+              Preflight, selection and bulk decisions
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              {SYNTHETIC_DEMO_LABEL}. Names and domains are proposed only from existing catalog
+              references; specimen, method, reference intervals and source validation are never
+              proposed. Decisions do not activate anything: Ground Medical activates separately.
+            </p>
+          </div>
           <div data-testid="p38-preflight-counts" className="space-y-1">
             <p className="text-sm font-medium">
               Preflight of {counts.total} submitted terms (before any write)
@@ -394,7 +393,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               <Badge variant="secondary" data-testid="p54-awaiting-triage">
                 Eligible · awaiting review acceptance (triage) {workflow.awaitingTriage}
               </Badge>
-              <Badge variant="secondary">Eligible · ready for decision {workflow.readyForDecision}</Badge>
+              <Badge variant="secondary">
+                Eligible · ready for decision {workflow.readyForDecision}
+              </Badge>
               <Badge variant="secondary">
                 Domain proposed from source section · awaiting acceptance {awaiting.length}
               </Badge>
@@ -848,11 +849,25 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                 ))}
               {run.results.length ? (
                 <details data-testid="p54-bulk-item-results">
-                  <summary className="cursor-pointer">Per-item results ({run.results.length})</summary>
+                  <summary className="cursor-pointer">
+                    Per-item results ({run.results.length})
+                  </summary>
                   <ul className="mt-1 max-h-64 space-y-0.5 overflow-auto">
                     {run.results.map((r) => (
-                      <li key={r.ref} className={r.status === "rejected" || r.status === "stale" ? "text-destructive" : ""}>
-                        {r.termId}: {r.status === "recorded" ? "recorded" : r.status === "duplicate" ? "already recorded" : r.status === "stale" ? "changed meanwhile" : r.status}
+                      <li
+                        key={r.ref}
+                        className={
+                          r.status === "rejected" || r.status === "stale" ? "text-destructive" : ""
+                        }
+                      >
+                        {r.termId}:{" "}
+                        {r.status === "recorded"
+                          ? "recorded"
+                          : r.status === "duplicate"
+                            ? "already recorded"
+                            : r.status === "stale"
+                              ? "changed meanwhile"
+                              : r.status}
                         {r.detail ? ` — ${r.detail}` : ""}
                       </li>
                     ))}
@@ -893,7 +908,7 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               ) : null}
             </div>
           ) : null}
-      </div>
+        </div>
       )}
     </BulkResearcherSection>
   );
