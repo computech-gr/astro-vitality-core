@@ -16,6 +16,7 @@ import { EVIDENCE_TIER_LABELS, type ScientificHealthSummary } from "./scientific
 import { attestationStateFor, ATTESTATION_STATUS_LABELS, summarizeAttestations, type AttestationEvent } from "./evidence-attestation";
 import { attestationLine, buildResearcherInterpretation, interpretationSourceLine } from "./researcher-interpretation";
 import { seriesInterpretationText, type InterpretationSnapshot } from "./biomarker-interpretation";
+import { longitudinalLines } from "./longitudinal-comparison";
 
 import { observationDay, observationDateLabel } from "./observation-date";
 import { NOT_ASSESSED_TEXT, resolveAdverseAnnotations, type AdverseAssessmentInput } from "./adverse-annotations";
@@ -386,6 +387,9 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
         ]),
       });
       blocks.push({ kind: "bullets", items: d.series.map((s) => `${metricName(s.label, s.metricId)} [${s.unit}] ${seriesInterpretationText(s.interpretation).join(" ")}`) });
+      const longitudinal = d.series.filter((s) => s.longitudinal.points.length >= 2);
+      if (longitudinal.length)
+        blocks.push({ kind: "bullets", items: longitudinal.map((s) => `${metricName(s.label, s.metricId)} [${s.unit}] examination comparison: ${longitudinalLines(s.longitudinal).join(" ")}`) });
       const limits = [...new Set([...d.series.flatMap((s) => s.limitations), ...d.limitations])];
       blocks.push({ kind: "p", text: `Limitations: ${limits.join(" ")}`, muted: true });
     }

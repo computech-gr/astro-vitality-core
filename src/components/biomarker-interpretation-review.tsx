@@ -18,8 +18,11 @@ import {
   citationLines,
   deriveInterpretationTasks,
   interpretationKey,
+  LIFECYCLE_LABELS,
   planApproval,
+  planAttestation,
   planDraft,
+  planRejectDraft,
   planRevocation,
   planTaskOpened,
   requiredAcknowledgement,
@@ -47,6 +50,10 @@ import { getSyntheticDemoCatalogs, subscribeSyntheticDemoCatalogs } from "@/doma
 import { getActiveCatalog, subscribeActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
 import { downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 import { notifyInterpretationChanged } from "@/hooks/use-interpretation-snapshot";
+import { useServerFn } from "@tanstack/react-start";
+import { attestInterpretationDecision } from "@/lib/interpretation-research.functions";
+import { InterpretationBacklogPanel, InterpretationEvidencePanel, ResearchCandidatesPanel } from "@/components/interpretation-research-panels";
+import { candidateIdFor, candidateKey, identityConcept } from "@/domain/health-intelligence/interpretation-research-candidates";
 
 const DOMAIN_LABELS: Record<InterpretationDomain, string> = {
   bone: "Bone",
@@ -62,7 +69,7 @@ const ENV_LABELS: Record<InterpretationIdentity["environment"], string> = {
 };
 const STATUS_LABELS = { approved: "Approved", pending: "Pending scientific review", revoked: "Revoked" } as const;
 const PAGE = 25;
-type StatusFilter = "open" | "approved" | "revoked" | "all";
+type StatusFilter = "open" | "approved" | "revoked" | "awaiting_attestation" | "rejected" | "all";
 
 type ClaimField = "function" | "increaseContext" | "decreaseContext" | "generalContext" | "spaceflightRelevance" | "associatedBiomarkers";
 const CLAIM_FIELDS: { field: ClaimField; label: string; hint: string }[] = [
@@ -201,8 +208,12 @@ export function BiomarkerInterpretationReview() {
       (x) =>
         (domain === "all" || x.identity.domain === domain) &&
         (env === "all" || x.identity.environment === env) &&
-        (status === "all" || (status === "open" ? x.open : x.status === status)) &&
-        (!q || x.identity.displayName.toLowerCase().includes(q) || x.identity.catalogId.toLowerCase().includes(q)),
+        (status === "all" || (status === "open" ? x.open : status === "awaiting_attestation" || status === "rejected" ? x.record?.lifecycle === status : x.status === status)) &&
+        (!q ||
+          x.identity.displayName.toLowerCase().includes(q) ||
+          x.identity.catalogId.toLowerCase().includes(q) ||
+          (x.identity.unit ?? "").toLowerCase() === q ||
+          (x.record?.aliases ?? []).some((a) => a.toLowerCase().includes(q))),
     );
   }, [snapshot, tasks, domain, env, status, query]);
   useEffect(() => setPage(0), [domain, env, status, query]);
@@ -283,11 +294,13 @@ export function BiomarkerInterpretationReview() {
             <option value="open">Open review tasks</option>
             <option value="approved">Approved</option>
             <option value="revoked">Revoked</option>
+            <option value="awaiting_attestation">Awaiting server attestation</option>
+            <option value="rejected">Draft rejected</option>
             <option value="all">All</option>
           </select>
         </label>
         <label className="min-w-48 flex-1 space-y-1">
-          <span className="block text-xs text-muted-foreground">Search name or catalog ID</span>
+          <span className="block text-xs text-muted-foreground">Search name, alias, catalog ID or exact unit</span>
           <input className="w-full rounded border bg-background p-2" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
         <Button type="button" variant="outline" disabled={!events.length} onClick={exportPackage}>
@@ -318,8 +331,8 @@ export function BiomarkerInterpretationReview() {
                 <td className="p-2">{DOMAIN_LABELS[x.identity.domain]}</td>
                 <td className="p-2">{ENV_LABELS[x.identity.environment]}</td>
                 <td className="p-2">
-                  {STATUS_LABELS[x.status]}
-                  {x.record?.latestDraft ? " · draft saved" : ""}
+                  {x.record ? LIFECYCLE_LABELS[x.record.lifecycle] : STATUS_LABELS[x.status]}
+                  {x.record?.latestDraft && x.record.lifecycle !== "draft" ? " · draft saved" : ""}
                   {x.record?.pendingContent ? " · handbook text" : ""}
                   {x.record?.proposedLinks.length ? ` · proposed link ${x.record.proposedLinks.map((p) => p.catalogId).join(", ")}` : ""}
                 </td>
@@ -351,6 +364,7 @@ export function BiomarkerInterpretationReview() {
           record={selected.record ?? null}
           snapshot={snapshot}
           canReview={canReview}
+          userId={identity?.userId ?? null}
           freshActor={freshActor}
           onRecorded={async (text) => {
             await reload();
@@ -360,6 +374,9 @@ export function BiomarkerInterpretationReview() {
           onClose={() => setSelectedKey(null)}
         />
       )}
+
+      <InterpretationBacklogPanel snapshot={snapshot} canReview={canReview} userId={identity?.userId ?? null} />
+      <ResearchCandidatesPanel snapshot={snapshot} canReview={canReview} userId={identity?.userId ?? null} onOpenKey={(k) => setSelectedKey(k)} />
     </section>
   );
 }
@@ -369,6 +386,7 @@ function InterpretationEditor(props: {
   record: ResolvedInterpretation | null;
   snapshot: InterpretationSnapshot;
   canReview: boolean;
+  userId: string | null;
   freshActor: () => Promise<ActorContext>;
   onRecorded: (message: string) => Promise<void>;
   onClose: () => void;
@@ -442,12 +460,35 @@ function InterpretationEditor(props: {
       return { ...d, citations: d.citations.filter((c) => c.id !== id), content };
     });
 
-  const run = async (kind: "draft" | "approve" | "revoke") => {
+  const attestFn = useServerFn(attestInterpretationDecision);
+  /** Ask the server to re-check and sign one APPROVE/REVOKE event; store the attestation only after local signature verification. */
+  const attest = async (eventHash: string): Promise<string | null> => {
+    const ctx = await props.freshActor();
+    const list = await listInterpretationEvents();
+    const event = list.find((e) => e.hash === eventHash);
+    if (!event) return "The decision is not in this device's review history.";
+    const r = await attestFn({ data: { event: event as unknown as Record<string, unknown> } }).catch(() => null);
+    if (!r) return "The attestation service could not be reached.";
+    if (!r.ok) return r.message;
+    const plan = await planAttestation(list, r.attestation, ctx);
+    if (!plan.ok) return plan.reason;
+    await appendInterpretationEvent(plan.body);
+    return null;
+  };
+
+  const run = async (kind: "draft" | "approve" | "revoke" | "reject" | "attest") => {
     if (busy) return;
     setBusy(true);
     setNote("");
     try {
-      if (!target.unit && kind !== "revoke") throw new Error("Set the exact unit this interpretation applies to.");
+      if (kind === "attest") {
+        const hash = targetRecord?.awaitingAttestation?.eventHash;
+        const problem = hash ? await attest(hash) : "No decision is awaiting attestation.";
+        if (problem) setNote(`Not applied: ${problem}`);
+        else await props.onRecorded(`Server attestation stored for ${target.displayName}; the decision now applies on this device.`);
+        return;
+      }
+      if (!target.unit && kind !== "revoke" && kind !== "reject") throw new Error("Set the exact unit this interpretation applies to.");
       const ctx = await props.freshActor();
       const list = await listInterpretationEvents();
       const plan =
@@ -455,18 +496,27 @@ function InterpretationEditor(props: {
           ? planDraft(list, target, draft, ctx)
           : kind === "approve"
             ? await planApproval(list, target, draft, ack ? ackText : "", ctx)
-            : planRevocation(list, targetRecord, reason, ctx);
+            : kind === "reject"
+              ? planRejectDraft(list, target, rejectReason, ctx)
+              : planRevocation(list, targetRecord, reason, ctx);
       if (!plan.ok) {
         setNote(plan.reason);
         return;
       }
-      await appendInterpretationEvent(plan.body);
+      const sealed = await appendInterpretationEvent(plan.body);
+      let attestProblem: string | null = null;
+      if (kind === "approve" || kind === "revoke") attestProblem = await attest(sealed.hash);
+      const label = target.environment === "synthetic_demo" ? "SYNTHETIC DEMO interpretation" : "Interpretation";
       await props.onRecorded(
         kind === "draft"
           ? `Draft saved for ${target.displayName} (${target.unit}). Not approved.`
-          : kind === "approve"
-            ? `${target.environment === "synthetic_demo" ? "SYNTHETIC DEMO interpretation" : "Interpretation"} approved for ${target.displayName} (${target.unit}). Stored on this device; download the approval package to add it to the shared registry.`
-            : `Interpretation revoked for ${target.displayName}. Reports now show it as pending scientific review.`,
+          : kind === "reject"
+            ? `Draft rejected for ${target.displayName}. Nothing was approved; the rejection is kept in the history.`
+            : attestProblem
+              ? `${kind === "approve" ? "Approval" : "Revocation"} recorded on this device but NOT applied: ${attestProblem} Reports keep the previous status. Retry with “Request server attestation”.`
+              : kind === "approve"
+                ? `${label} approved and server-attested for ${target.displayName} (${target.unit}). Stored on this device; download the approval package to add it to the shared registry.`
+                : `Interpretation revoked (server-attested) for ${target.displayName}. Reports now show it as pending scientific review.`,
       );
     } catch (e) {
       setNote(e instanceof Error ? e.message : "Nothing was recorded.");
@@ -474,6 +524,7 @@ function InterpretationEditor(props: {
       setBusy(false);
     }
   };
+  const [rejectReason, setRejectReason] = useState("");
 
   const disabled = !props.canReview || busy;
   return (
@@ -492,7 +543,7 @@ function InterpretationEditor(props: {
       </div>
 
       <p className="text-sm">
-        Status: <strong>{STATUS_LABELS[targetRecord?.status ?? "pending"]}</strong>
+        Status: <strong>{targetRecord ? LIFECYCLE_LABELS[targetRecord.lifecycle] : STATUS_LABELS.pending}</strong>
         {targetRecord?.reviewer ? ` · ${targetRecord.reviewer.name ?? targetRecord.reviewer.userId} · ${targetRecord.decidedAt}` : ""}
         {targetRecord?.basis === "device_local" ? " · device-local (not yet in the shared registry)" : targetRecord?.basis === "registry" ? " · shared registry" : ""}
       </p>
@@ -601,6 +652,24 @@ function InterpretationEditor(props: {
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" disabled={disabled} onClick={() => void run("draft")}>Save draft</Button>
       </div>
+      {targetRecord?.latestDraft && (
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="min-w-0 flex-1 space-y-1 text-sm">
+            <span className="block">Reject the saved draft — reason (at least 10 characters)</span>
+            <input className="w-full rounded border bg-background p-2" disabled={disabled} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} />
+          </label>
+          <Button type="button" variant="outline" disabled={disabled || rejectReason.trim().length < 10} onClick={() => void run("reject")}>Reject draft</Button>
+        </div>
+      )}
+      {targetRecord?.rejection && <p className="text-xs text-muted-foreground">Draft rejected {targetRecord.rejection.at}: {targetRecord.rejection.reason}</p>}
+      {targetRecord?.awaitingAttestation && (
+        <div className="space-y-1 rounded-md border border-border p-2 text-sm" role="status">
+          <p>
+            A decision recorded {targetRecord.awaitingAttestation.recordedAt} is awaiting server attestation and is <strong>not applied</strong>. The server re-checks your active Researcher role and the exact content before signing.
+          </p>
+          <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={() => void run("attest")}>Request server attestation</Button>
+        </div>
+      )}
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" checked={ack} disabled={disabled} onChange={(e) => setAck(e.target.checked)} />
         <span>{ackText}</span>
@@ -619,6 +688,19 @@ function InterpretationEditor(props: {
         </div>
       )}
       {note && <p className="text-sm" role="alert">{note}</p>}
+
+      <InterpretationEvidencePanel
+        researchKey={interpretationKey(target)}
+        relatedKeys={target.unit ? [candidateKey(candidateIdFor(target.displayName, target.unit)), ...(record?.aliases ?? []).map((a) => candidateKey(candidateIdFor(a, target.unit!)))] : []}
+        concept={identityConcept(target, record?.aliases ?? [])}
+        canReview={props.canReview}
+        userId={props.userId}
+        onUseDraft={(d) => {
+          setDraft(d);
+          setAck(false);
+          setNote("Excerpt-verified claims loaded into the editor (unsaved). Check every statement against its source, set the evidence strength, then save or approve. Unresolved claims were not loaded.");
+        }}
+      />
 
       {(targetRecord?.approvalHistory.length ?? 0) > 0 && (
         <details className="text-xs" open>

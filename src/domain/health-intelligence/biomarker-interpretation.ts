@@ -22,6 +22,12 @@
  */
 import { canonicalJson } from "./observation-envelope";
 import { sha256Hex } from "./catalog-lifecycle";
+import {
+  BUNDLED_ATTESTATION_KEYS,
+  verifyAttestation,
+  type AttestationTrustedKey,
+  type SignedAttestation,
+} from "./interpretation-attestation";
 
 export const INTERPRETATION_REGISTRY_SCHEMA = "mitochondria.biomarker-interpretation-registry.v1" as const;
 export const INTERPRETATION_EVENT_SCHEMA = "mitochondria.biomarker-interpretation-event.v1" as const;
@@ -60,7 +66,30 @@ export interface InterpretationIdentity {
 export interface Claim {
   text: string;
   citationIds: string[];
+  /** P41: general biomedical vs spaceflight-specific evidence (optional; absent on P40 claims). */
+  evidenceScope?: "general_biomedical" | "spaceflight_specific";
 }
+/**
+ * P41: documented measurement context an interpretation applies to. Every field
+ * is null unless documented by a cited source; a different specimen, method,
+ * assay or protocol is never treated as equivalent.
+ */
+export interface MeasurementContext {
+  specimen: string | null;
+  method: string | null;
+  assayType: string | null;
+  collectionProtocol: string | null;
+  population: string | null;
+  measurementContext: string | null;
+}
+export const EMPTY_MEASUREMENT_CONTEXT: MeasurementContext = {
+  specimen: null,
+  method: null,
+  assayType: null,
+  collectionProtocol: null,
+  population: null,
+  measurementContext: null,
+};
 export interface InterpretationContent {
   function: Claim | null;
   increaseContext: Claim | null;
@@ -116,6 +145,10 @@ export interface RegistryRecord {
   contentSha256: string | null;
   /** Proposals only (never applied): e.g. a submitted candidate handbook ID with identical unit. */
   proposedLinks: { catalogId: string; basis: string }[];
+  /** P41: recognized source labels for this identity (display/search only; never an equivalence). */
+  aliases?: string[];
+  /** P41: documented measurement context (nulls when undocumented). */
+  measurementContext?: MeasurementContext;
   /** Catalog activation the record was backfilled from (never modified). */
   activation: {
     termId: string;
@@ -171,6 +204,8 @@ export async function interpretationContentSha256(
       content: draft.content,
       citations: draft.citations,
       evidenceStrength: draft.evidenceStrength,
+      // P41: the documented measurement context is bound only when present (P40 fingerprints unchanged).
+      ...(draft.context ? { context: draft.context } : {}),
     }),
   );
 }
@@ -245,6 +280,8 @@ export interface InterpretationDraft {
   content: InterpretationContent;
   citations: Citation[];
   evidenceStrength: EvidenceStrength;
+  /** P41: documented specimen/method/assay/protocol/population (optional). */
+  context?: MeasurementContext;
 }
 
 export const EMPTY_CONTENT: InterpretationContent = {
@@ -258,7 +295,7 @@ export const EMPTY_CONTENT: InterpretationContent = {
   limitations: [],
 };
 
-const THRESHOLD_LANGUAGE = /\breference (?:interval|range)s?\b|\bnormal range\b|\bcut-?offs?\b|\bthresholds?\b|\balert (?:level|limit)s?\b/i;
+export const THRESHOLD_LANGUAGE = /\breference (?:interval|range)s?\b|\bnormal range\b|\bcut-?offs?\b|\bthresholds?\b|\balert (?:level|limit)s?\b/i;
 
 /** Returns null when an approval may be recorded; otherwise the exact reason it is refused. */
 export function approvalProblem(identity: InterpretationIdentity, d: InterpretationDraft): string | null {
@@ -288,7 +325,11 @@ export const requiredAcknowledgement = (i: InterpretationIdentity) =>
 
 // ------------------------------------------------------------ device-local event chain
 
-export type InterpretationAction = "TASK_OPENED" | "DRAFT_SAVED" | "APPROVE" | "REVOKE";
+/**
+ * P41 adds ATTEST (server signature over an earlier APPROVE/REVOKE event) and
+ * REJECT_DRAFT (Researcher rejects the current draft; nothing is approved).
+ */
+export type InterpretationAction = "TASK_OPENED" | "DRAFT_SAVED" | "APPROVE" | "REVOKE" | "ATTEST" | "REJECT_DRAFT";
 export interface InterpretationEventBody {
   schema: typeof INTERPRETATION_EVENT_SCHEMA;
   seq: number;
@@ -304,6 +345,8 @@ export interface InterpretationEventBody {
   reason: string | null;
   acknowledgement: string | null;
   taskOrigin: string | null;
+  /** P41: present only on ATTEST events (absent keys keep P40 event hashes unchanged). */
+  attestation?: SignedAttestation;
 }
 export interface InterpretationEvent extends InterpretationEventBody {
   hash: string;
@@ -333,9 +376,32 @@ export async function verifyInterpretationChain(
       if (e.acknowledgement !== requiredAcknowledgement(e.identity)) return { ok: false, reason: `Event ${e.seq} acknowledgement missing` };
     }
     if (e.action === "REVOKE" && !filled(e.reason, 10)) return { ok: false, reason: `Event ${e.seq} revocation has no reason` };
+    if (e.action === "REJECT_DRAFT" && !filled(e.reason, 10)) return { ok: false, reason: `Event ${e.seq} rejection has no reason` };
+    if (e.action === "ATTEST") {
+      const st = e.attestation?.statement;
+      const target = st ? events.slice(0, i).find((x) => x.hash === st.eventHash) : undefined;
+      if (!st || !target || (target.action !== "APPROVE" && target.action !== "REVOKE") || target.key !== e.key || st.key !== e.key || st.action !== target.action || st.contentSha256 !== target.contentSha256 || st.actorUserId !== target.actorUserId)
+        return { ok: false, reason: `Event ${e.seq} attestation does not match an earlier decision` };
+    } else if (e.attestation !== undefined) return { ok: false, reason: `Event ${e.seq} carries an unexpected attestation` };
     prev = hash;
   }
   return { ok: true };
+}
+
+/**
+ * Event hashes of APPROVE/REVOKE decisions carrying a valid trusted server
+ * attestation (signature + statement matching the attested event).
+ */
+export async function attestedDecisionHashes(
+  events: readonly InterpretationEvent[],
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
+): Promise<Set<string>> {
+  const out = new Set<string>();
+  for (const e of events) {
+    if (e.action !== "ATTEST" || !e.attestation) continue;
+    if (await verifyAttestation(e.attestation, trustedKeys)) out.add(e.attestation.statement.eventHash);
+  }
+  return out;
 }
 
 export interface ActorContext {
@@ -408,6 +474,53 @@ export function planRevocation(
   return { ok: true, body: nextBody(events, ctx, { action: "REVOKE", identity: current.identity, draft: null, contentSha256: current.contentSha256, reason: reason.trim(), acknowledgement: null, taskOrigin: null }) };
 }
 
+/** P41: Researcher rejects the current draft (e.g. an AI-assisted draft); nothing is approved or removed. */
+export function planRejectDraft(events: readonly InterpretationEvent[], identity: InterpretationIdentity, reason: string, ctx: ActorContext): PlanResult {
+  if (!canReviewInterpretations(ctx.roles)) return { ok: false, reason: "Only a Researcher can reject interpretation drafts." };
+  if (!filled(reason, 10)) return { ok: false, reason: "Give a rejection reason (at least 10 characters)." };
+  return { ok: true, body: nextBody(events, ctx, { action: "REJECT_DRAFT", identity, draft: null, contentSha256: null, reason: reason.trim(), acknowledgement: null, taskOrigin: null }) };
+}
+
+/**
+ * P41: record the server's signed attestation of an earlier decision on this
+ * device. The signature is verified before it is stored; an attestation for a
+ * different caller, event or fingerprint is refused.
+ */
+export async function planAttestation(
+  events: readonly InterpretationEvent[],
+  attestation: SignedAttestation,
+  ctx: Pick<ActorContext, "userId" | "now" | "name">,
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
+): Promise<PlanResult> {
+  const st = attestation.statement;
+  const target = events.find((e) => e.hash === st.eventHash);
+  if (!target || (target.action !== "APPROVE" && target.action !== "REVOKE")) return { ok: false, reason: "The attested decision is not in this device's review history." };
+  if (st.actorUserId !== ctx.userId || target.actorUserId !== ctx.userId) return { ok: false, reason: "The attestation belongs to a different account." };
+  if (events.some((e) => e.action === "ATTEST" && e.attestation?.statement.eventHash === st.eventHash)) return { ok: false, reason: "This decision is already attested." };
+  if (!(await verifyAttestation(attestation, trustedKeys))) return { ok: false, reason: "The server attestation failed signature verification; nothing was applied." };
+  const last = events.at(-1);
+  return {
+    ok: true,
+    body: {
+      schema: INTERPRETATION_EVENT_SCHEMA,
+      seq: (last?.seq ?? 0) + 1,
+      prevHash: last?.hash ?? GENESIS_HASH,
+      action: "ATTEST",
+      key: target.key,
+      identity: target.identity,
+      actorUserId: ctx.userId,
+      actorName: ctx.name,
+      recordedAt: ctx.now,
+      draft: null,
+      contentSha256: target.contentSha256,
+      reason: null,
+      acknowledgement: null,
+      taskOrigin: null,
+      attestation,
+    },
+  };
+}
+
 // ------------------------------------------------------------ resolution and snapshot
 
 export interface ResolvedInterpretation {
@@ -434,7 +547,26 @@ export interface ResolvedInterpretation {
   activation: RegistryRecord["activation"];
   inRegistry: boolean;
   taskOrigin: string | null;
+  /** P41 lifecycle shown to Researchers; reports use `status` only. */
+  lifecycle: InterpretationLifecycle;
+  /** P41: a device-local approval recorded but not (yet) attested by the server; never applied. */
+  awaitingAttestation: { eventHash: string; recordedAt: string } | null;
+  /** P41: latest Researcher draft rejection, if the draft was rejected after the last draft save. */
+  rejection: { reason: string; at: string } | null;
+  aliases: string[];
+  measurementContext: MeasurementContext | null;
+  /** Specimen text as documented by the source registry record (display only). */
+  specimenText: string | null;
 }
+export type InterpretationLifecycle = "pending_review" | "draft" | "awaiting_attestation" | "approved" | "rejected" | "revoked";
+export const LIFECYCLE_LABELS: Record<InterpretationLifecycle, string> = {
+  pending_review: "Pending scientific review",
+  draft: "Draft",
+  awaiting_attestation: "Approval awaiting server attestation (not applied)",
+  approved: "Approved",
+  rejected: "Draft rejected",
+  revoked: "Revoked",
+};
 export interface InterpretationSnapshot {
   schema: typeof INTERPRETATION_SNAPSHOT_SCHEMA;
   registryVersion: number;
@@ -469,15 +601,36 @@ function fromRecord(rec: RegistryRecord): ResolvedInterpretation {
     activation: rec.activation,
     inRegistry: true,
     taskOrigin: rec.activation ? "registry_backfill_from_activation" : "registry",
+    lifecycle: approved ? "approved" : rec.reviewStatus === "REVOKED" ? "revoked" : "pending_review",
+    awaitingAttestation: null,
+    rejection: null,
+    aliases: rec.aliases ?? [],
+    measurementContext: rec.measurementContext ?? null,
+    specimenText: rec.specimenText,
   };
 }
 
-/** Registry + verified device-local events → resolved records (sync; events must be verified). */
+function lifecycleOf(r: ResolvedInterpretation): InterpretationLifecycle {
+  if (r.status === "approved") return "approved";
+  if (r.awaitingAttestation) return "awaiting_attestation";
+  if (r.rejection) return "rejected";
+  if (r.latestDraft) return "draft";
+  return r.status === "revoked" ? "revoked" : "pending_review";
+}
+
+/**
+ * Registry + verified device-local events → resolved records (sync; events must be verified).
+ * P41: a device-local APPROVE is applied only when its hash is in `attested`
+ * (valid server attestation, see attestedDecisionHashes); otherwise it is shown
+ * as awaiting attestation and reports keep the pending text. Revocations apply
+ * immediately (they can only remove authority).
+ */
 export function resolveInterpretations(
   registry: InterpretationRegistry,
   events: readonly InterpretationEvent[],
   ledger: InterpretationSnapshot["ledger"] = { events: 0, head: GENESIS_HASH, verified: true, note: null },
   excluded: InterpretationSnapshot["excluded"] = [],
+  attested: ReadonlySet<string> = new Set(),
 ): InterpretationSnapshot {
   const map = new Map<string, ResolvedInterpretation>();
   for (const rec of registry.records) map.set(rec.key, fromRecord(rec));
@@ -505,10 +658,20 @@ export function resolveInterpretations(
         activation: null,
         inRegistry: false,
         taskOrigin: null,
+        lifecycle: "pending_review",
+        awaitingAttestation: null,
+        rejection: null,
+        aliases: [],
+        measurementContext: null,
+        specimenText: null,
       };
     const reviewer = { userId: e.actorUserId, name: e.actorName };
     if (e.action === "TASK_OPENED") map.set(e.key, { ...base, taskOrigin: base.taskOrigin ?? e.taskOrigin });
-    else if (e.action === "DRAFT_SAVED") map.set(e.key, { ...base, latestDraft: e.draft });
+    else if (e.action === "DRAFT_SAVED") map.set(e.key, { ...base, latestDraft: e.draft, rejection: null });
+    else if (e.action === "REJECT_DRAFT") map.set(e.key, { ...base, rejection: { reason: e.reason ?? "", at: e.recordedAt }, awaitingAttestation: null });
+    else if (e.action === "ATTEST") continue;
+    else if (e.action === "APPROVE" && e.draft && !attested.has(e.hash))
+      map.set(e.key, { ...base, latestDraft: e.draft, awaitingAttestation: { eventHash: e.hash, recordedAt: e.recordedAt }, rejection: null });
     else if (e.action === "APPROVE" && e.draft)
       map.set(e.key, {
         ...base,
@@ -521,6 +684,9 @@ export function resolveInterpretations(
         decidedAt: e.recordedAt,
         contentSha256: e.contentSha256,
         latestDraft: null,
+        awaitingAttestation: null,
+        rejection: null,
+        measurementContext: e.draft.context ?? base.measurementContext,
         approvalHistory: [...base.approvalHistory, { action: "APPROVE", eventId: e.hash, reviewer, decidedAt: e.recordedAt, contentSha256: e.contentSha256, reason: null, basis: "device_local" }],
       });
     else if (e.action === "REVOKE" && base.status === "approved")
@@ -534,7 +700,7 @@ export function resolveInterpretations(
         approvalHistory: [...base.approvalHistory, { action: "REVOKE", eventId: e.hash, reviewer, decidedAt: e.recordedAt, contentSha256: base.contentSha256, reason: e.reason, basis: "device_local" }],
       });
   }
-  const records = [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+  const records = [...map.values()].map((r) => ({ ...r, lifecycle: lifecycleOf(r) })).sort((a, b) => a.key.localeCompare(b.key));
   return { schema: INTERPRETATION_SNAPSHOT_SCHEMA, registryVersion: registry.version, ledger, records, excluded, digest: null };
 }
 
@@ -542,6 +708,7 @@ export function resolveInterpretations(
 export async function buildVerifiedSnapshot(
   rawRegistry: unknown,
   events: readonly InterpretationEvent[],
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
 ): Promise<InterpretationSnapshot> {
   const validated = validateRegistry(rawRegistry);
   const excluded = [...validated.excluded];
@@ -565,7 +732,8 @@ export async function buildVerifiedSnapshot(
   const ledger = check.ok
     ? { events: sorted.length, head: sorted.at(-1)?.hash ?? GENESIS_HASH, verified: true, note: null }
     : { events: sorted.length, head: GENESIS_HASH, verified: false, note: `Device review history failed its integrity check (${check.reason}); only the shared registry is used.` };
-  const snap = resolveInterpretations(registry, check.ok ? sorted : [], ledger, excluded);
+  const attested = check.ok ? await attestedDecisionHashes(sorted, trustedKeys) : new Set<string>();
+  const snap = resolveInterpretations(registry, check.ok ? sorted : [], ledger, excluded, attested);
   const digestable = snap.records.map(({ latestDraft: _d, ...r }) => r);
   return { ...snap, digest: await sha256Hex(canonicalJson({ registryVersion: snap.registryVersion, records: digestable })) };
 }
@@ -843,17 +1011,25 @@ export function buildApprovalPackage(events: readonly InterpretationEvent[], exp
 export async function mergeApprovalPackage(
   registry: InterpretationRegistry,
   pkg: unknown,
-): Promise<{ ok: true; registry: InterpretationRegistry; changed: string[] } | { ok: false; reason: string }> {
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
+): Promise<{ ok: true; registry: InterpretationRegistry; changed: string[]; skippedUnattested: string[] } | { ok: false; reason: string }> {
   const p = pkg as Partial<ApprovalPackage> | null;
   if (!p || p.schema !== INTERPRETATION_PACKAGE_SCHEMA || !Array.isArray(p.events)) return { ok: false, reason: "Not an interpretation approval package" };
   const events = [...p.events].sort((a, b) => a.seq - b.seq);
   const check = await verifyInterpretationChain(events);
   if (!check.ok) return { ok: false, reason: check.reason };
   if ((events.at(-1)?.hash ?? GENESIS_HASH) !== p.ledgerHead) return { ok: false, reason: "Package head does not match its events" };
+  // P41: only decisions the server attested (verified Researcher membership) may enter the shared registry.
+  const attested = await attestedDecisionHashes(events, trustedKeys);
   const records = new Map(registry.records.map((r) => [r.key, r]));
   const changed: string[] = [];
+  const skippedUnattested: string[] = [];
   for (const e of events) {
     if (e.action !== "APPROVE" && e.action !== "REVOKE") continue;
+    if (!attested.has(e.hash)) {
+      skippedUnattested.push(e.hash);
+      continue;
+    }
     const cur = records.get(e.key);
     const reviewer = { userId: e.actorUserId, name: e.actorName };
     const history = cur?.approvalHistory ?? [];
@@ -883,10 +1059,36 @@ export async function mergeApprovalPackage(
       changed.push(e.key);
     }
   }
-  if (!changed.length) return { ok: false, reason: "The package contains no new approvals or revocations" };
+  if (!changed.length)
+    return { ok: false, reason: skippedUnattested.length ? "The package contains no server-attested approvals or revocations" : "The package contains no new approvals or revocations" };
   return {
     ok: true,
     registry: { ...registry, version: registry.version + 1, records: [...records.values()].sort((a, b) => a.key.localeCompare(b.key)) },
     changed: [...new Set(changed)],
+    skippedUnattested,
+  };
+}
+
+/**
+ * P41: approved, cited direction-specific context for one examination pair
+ * (previous → current). Pending, revoked or missing records yield the pending
+ * text; nothing is generated.
+ */
+export function directionContext(
+  r: ResolvedInterpretation | null,
+  direction: SeriesDirection,
+): { status: "approved" | "pending" | "unavailable" | "revoked"; line: string; citations: string[] } {
+  if (!r) return { status: "unavailable", line: `${PENDING_INTERPRETATION_TEXT}.`, citations: [] };
+  if (r.status !== "approved" || !r.content) return { status: r.status === "revoked" ? "revoked" : "pending", line: `${PENDING_INTERPRETATION_TEXT}.`, citations: [] };
+  const order = r.citations.map((c) => c.id);
+  const c = r.content;
+  const claim = direction === "higher" ? c.increaseContext : direction === "lower" ? c.decreaseContext : null;
+  const label = r.synthetic ? `${SYNTHETIC_DEMO_INTERPRETATION_LABEL}. ` : "";
+  if (direction === "no_recorded_difference") return { status: "approved", line: `${label}No recorded difference; direction-specific context is not applied.`, citations: citationLines(r.citations) };
+  if (!claim) return { status: "approved", line: `${label}The approved interpretation documents no context for a ${direction ?? "recorded"} value.`, citations: citationLines(r.citations) };
+  return {
+    status: "approved",
+    line: `${label}General context documented for a ${direction} value (describes the measure in general, not a conclusion about this crew member; not an improvement, deterioration or diagnosis): ${claim.text}${cite(claim.citationIds, order)}`,
+    citations: citationLines(r.citations),
   };
 }

@@ -508,3 +508,14 @@
 - [x] 20 P40 tests; full suite 1,348 pass; lint 0 errors.
 - [ ] Researcher writes the first interpretations — blocked: Nikolas's own review with real citations.
 - [ ] Merge the first approval package into the shared registry — blocked: owner review of the downloaded package.
+
+## P41 Dynamic scientific interpretation
+
+- [x] Server-attested Researcher approvals/revocations (unattested device decisions shown as awaiting attestation, never applied or merged); draft rejection with reason.
+- [x] Live literature retrieval (PubMed, NASA NTRS, Crossref) with retries, rate limits, cache, provenance and inspection level; concept-only privacy guard.
+- [x] Evidence-aware AI drafts: verbatim-excerpt check, fabricated citations unresolved, threshold/diagnostic/causal/value-judgement wording rejected; loaded into the editor only by the Researcher.
+- [x] Preflight inventory of the 416 records, resumable batch drafting (no batch approval), unknown-biomarker research candidates.
+- [x] Examination-to-examination comparison (absolute and % change, repeats, precision, comparability) on screen, PDF and TXT; neutral display.
+- [x] 28 P41 tests incl. synthetic end-to-end and offline rebuild.
+- [ ] Researcher's first real review and approval — blocked: Nikolas's own review in Preview.
+- [ ] Publish so the published app gets attestation and literature functions — blocked: owner decision.

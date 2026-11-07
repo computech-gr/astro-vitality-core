@@ -8,12 +8,12 @@ import {
   SYNTHETIC_DEMO_APPROVAL_ACK,
   approvalProblem,
   buildApprovalPackage,
-  buildVerifiedSnapshot,
+  buildVerifiedSnapshot as buildSnap,
   deriveInterpretationTasks,
   interpretationCoverage,
   interpretationKey,
   matchInterpretation,
-  mergeApprovalPackage,
+  mergeApprovalPackage as mergePkg,
   planApproval,
   planDraft,
   planRevocation,
@@ -40,6 +40,11 @@ import { buildScientificFindings } from "../../src/domain/health-intelligence/sc
 import { buildResearcherInterpretation, researcherInterpretationPlainText } from "../../src/domain/health-intelligence/researcher-interpretation";
 import { buildReportDocument } from "../../src/domain/health-intelligence/report-text-pdf";
 import type { ReportRow, UnifiedHealthReport } from "../../src/domain/health-intelligence/unified-health-report";
+import { TEST_ATTESTATION_KEYS, withAttestation } from "../helpers/interpretation-attestation";
+
+// P41: device-local approvals apply only with a trusted server attestation (test key here).
+const buildVerifiedSnapshot = (raw: unknown, events: readonly InterpretationEvent[]) => buildSnap(raw, events, TEST_ATTESTATION_KEYS);
+const mergeApprovalPackage = (reg: Parameters<typeof mergePkg>[0], pkg: unknown) => mergePkg(reg, pkg, TEST_ATTESTATION_KEYS);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const REGISTRY = JSON.parse(readFileSync(join(ROOT, REGISTRY_FILE), "utf8"));
@@ -87,7 +92,8 @@ async function chain(...plans: ({ ok: true; body: Parameters<typeof sealInterpre
 }
 async function approveVitD(): Promise<InterpretationEvent[]> {
   const plan = await planApproval([], VITD_ID, CITED, SYNTHETIC_DEMO_APPROVAL_ACK, RESEARCHER);
-  return chain(plan);
+  const events = await chain(plan);
+  return withAttestation(events, events[0]!);
 }
 
 const row = (id: string, value: string, at: string, over: Partial<ReportRow> = {}): ReportRow => ({
@@ -289,12 +295,16 @@ describe("P40 offline snapshot, integrity and parity", () => {
     const plan = await planApproval([], VITD_ID, CITED, SYNTHETIC_DEMO_APPROVAL_ACK, RESEARCHER);
     if (!plan.ok) throw new Error(plan.reason);
     await appendInterpretationEvent(plan.body, store);
+    const first = await listInterpretationEvents(store);
+    const attest = (await withAttestation(first, first[0]!)).at(-1)!;
+    const { hash: _h, ...attestBody } = attest;
+    await appendInterpretationEvent(attestBody, store);
     const events = await listInterpretationEvents(store);
-    expect(events.length).toBe(1);
-    const snap = await loadVerifiedInterpretationSnapshot(store);
+    expect(events.length).toBe(2);
+    const snap = await loadVerifiedInterpretationSnapshot(store, TEST_ATTESTATION_KEYS);
     expect(snap.ledger.verified).toBe(true);
     expect(snap.records.find((r) => r.key === interpretationKey(VITD_ID))?.basis).toBe("device_local");
-    expect((await loadVerifiedInterpretationSnapshot(store)).digest).toBe(snap.digest);
+    expect((await loadVerifiedInterpretationSnapshot(store, TEST_ATTESTATION_KEYS)).digest).toBe(snap.digest);
     // A second event at the same position is refused, not overwritten.
     await expect(appendInterpretationEvent(plan.body, store)).rejects.toThrow();
   });

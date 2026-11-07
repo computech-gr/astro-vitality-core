@@ -1,0 +1,11 @@
+{
+  "schema": "mitochondria.interpretation-attestation-keys.v1",
+  "governance": "Public Ed25519 keys trusted to attest Researcher interpretation approvals and revocations (P41). The private key is derived only on the server from the existing secret P37_CATALOG_SIGNING_KEY with the domain-separation label 'mitochondria.p41.interpretation-attestation.v1|', so it cannot sign catalog snapshots. The server signs only after re-checking the decision and an active Researcher membership of the signed-in caller. Empty means no device-local approval is ever applied.",
+  "keys": [
+    {
+      "keyId": "p41-interpretation-attestation-2026-11-07",
+      "environment": "interpretation_attestation",
+      "publicKeySpkiBase64": "MCowBQYDK2VwAyEA1hUijJDzo3AFDlsIsKln2laN7oogFsMJmlPSwosGDPk="
+    }
+  ]
+}
