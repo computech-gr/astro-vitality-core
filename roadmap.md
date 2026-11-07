@@ -546,3 +546,8 @@
 - [ ] First verified reference intervals — blocked: independent verification evidence.
 - [ ] Turn on AI preliminary assessment — blocked: owner decision on the server flag.
 - [ ] Signed-in Ground Medical and Researcher checks of the new controls — blocked: their sessions.
+
+## P38 bulk Researcher section on Scientific Review
+
+- [x] Anchored "Bulk Synthetic Demo Researcher Decisions" section and jump link on /mission/scientific-review, wrapping the existing P38 component for the selected authorized synthetic mission; full interface only with the Researcher capability and demo scope.
+- [x] Reachability/visibility regression test; Researcher browser check (no decisions recorded).
