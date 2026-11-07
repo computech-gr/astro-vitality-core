@@ -80,7 +80,7 @@ describe("P36 global review dashboard", () => {
 
   test("209 pending terms count as awaiting triage and activation-blocked, never approved", () => {
     const c = dashboardCounts(rows);
-    expect(c).toEqual({ submittedTerms: 209, pending: 209, awaitingTriage: 209, moreEvidence: 0, rejected: 0, approved: 0, activationBlocked: 209 });
+    expect(c).toEqual({ submittedTerms: 209, pending: 209, awaitingTriage: 209, accepted: 0, moreEvidence: 0, rejected: 0, approved: 0, activationBlocked: 209 });
   });
 
   test("search by request ID returns only that receipt's 12 terms", () => {

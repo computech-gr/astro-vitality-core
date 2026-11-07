@@ -1,5 +1,6 @@
 /** Pure, browser-safe grouping for the read-only Global Scientific Review panel. */
 import type { GlobalReviewMission, GlobalReviewSubmission, GlobalReviewTerm } from "./p36-global-review.server";
+import type { TriageEvent } from "./p36-global-triage.server";
 
 export const ALL_MISSIONS = "__all_authorized_missions__";
 
@@ -41,26 +42,39 @@ export function groupByMissionAndCrew(submissions: GlobalReviewSubmission[]): Mi
 /* ---------- Term-level dashboard, filtering and pagination ---------- */
 
 export const ALL_CREWS = "__all_crews__";
-export type ReviewState = "awaiting_triage" | "more_evidence" | "rejected" | "approved";
+/** Triage state (from triage history) — never scientific approval. */
+export type ReviewState = "awaiting_triage" | "accepted" | "more_evidence" | "rejected";
 export const REVIEW_STATE_LABEL: Record<ReviewState, string> = {
   awaiting_triage: "Awaiting triage",
+  accepted: "Accepted for scientific review",
   more_evidence: "More evidence requested",
   rejected: "Review request rejected",
-  approved: "Scientifically approved",
+};
+export type ScientificState = "pending" | "approved" | "rejected";
+export const SCIENTIFIC_STATE_LABEL: Record<ScientificState, string> = {
+  pending: "Pending scientific decision", approved: "Scientifically approved", rejected: "Scientifically rejected",
 };
 
-export interface TermRow { key: string; submission: GlobalReviewSubmission; term: GlobalReviewTerm; state: ReviewState }
+export interface TermRow { key: string; submission: GlobalReviewSubmission; term: GlobalReviewTerm; state: ReviewState; scientific: ScientificState; triage: TriageEvent | null }
 
-export function reviewState(decision: GlobalReviewTerm["decision"]): ReviewState {
-  if (decision === "APPROVE") return "approved";
-  if (decision === "REJECT") return "rejected";
-  if (decision === "REQUEST_MORE_EVIDENCE") return "more_evidence";
+export function triageState(latest: TriageEvent | null | undefined): ReviewState {
+  if (latest?.action === "ACCEPT_FOR_REVIEW") return "accepted";
+  if (latest?.action === "REQUEST_MORE_EVIDENCE") return "more_evidence";
+  if (latest?.action === "REJECT_REVIEW_REQUEST") return "rejected";
   return "awaiting_triage";
 }
 
+export function scientificState(decision: GlobalReviewTerm["decision"]): ScientificState {
+  return decision === "APPROVE" ? "approved" : decision === "REJECT" ? "rejected" : "pending";
+}
+
 /** One row per submitted term; a term repeated across receipts stays distinct by receipt. */
-export function flattenTerms(submissions: GlobalReviewSubmission[]): TermRow[] {
-  return submissions.flatMap((s) => s.terms.map((t) => ({ key: `${s.submissionId}:${t.termId}`, submission: s, term: t, state: reviewState(t.decision) })));
+export function flattenTerms(submissions: GlobalReviewSubmission[], triage: Map<string, TriageEvent> = new Map()): TermRow[] {
+  return submissions.flatMap((s) => s.terms.map((t) => {
+    const key = `${s.submissionId}:${t.termId}`;
+    const latest = triage.get(key) ?? null;
+    return { key, submission: s, term: t, state: triageState(latest), scientific: scientificState(t.decision), triage: latest };
+  }));
 }
 
 export function crewOptions(submissions: GlobalReviewSubmission[]) {
@@ -95,15 +109,20 @@ export function paginate<T>(rows: T[], page: number, size: number) {
   return { page: current, pages, items: rows.slice((current - 1) * size, current * size) };
 }
 
-/** Cloud-submitted metadata only; device-local requests and dossiers are counted elsewhere. */
+/**
+ * Cloud-submitted metadata only; device-local requests and dossiers are counted elsewhere.
+ * Triage counts and scientific approval are separate: acceptance is never approval,
+ * and every term stays activation-blocked because no governed activation path exists.
+ */
 export function dashboardCounts(rows: TermRow[]) {
-  const c = { submittedTerms: rows.length, pending: 0, awaitingTriage: 0, moreEvidence: 0, rejected: 0, approved: 0, activationBlocked: rows.length };
+  const c = { submittedTerms: rows.length, pending: 0, awaitingTriage: 0, accepted: 0, moreEvidence: 0, rejected: 0, approved: 0, activationBlocked: rows.length };
   for (const r of rows) {
     if (r.state === "awaiting_triage") c.awaitingTriage++;
+    else if (r.state === "accepted") c.accepted++;
     else if (r.state === "more_evidence") c.moreEvidence++;
-    else if (r.state === "rejected") c.rejected++;
-    else c.approved++;
-    if (r.state !== "approved" && r.state !== "rejected") c.pending++;
+    else c.rejected++;
+    if (r.scientific === "approved") c.approved++;
+    if (r.scientific === "pending") c.pending++;
   }
   return c;
 }
