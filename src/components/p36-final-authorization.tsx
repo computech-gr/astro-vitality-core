@@ -5,7 +5,7 @@
  * database; this UI only hides controls the caller cannot use. Nothing here
  * activates a catalog extension.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,10 @@ import {
   ACTIVATION_GATE_LABELS,
   FINAL_ACTION_LABELS,
   SCIENTIFIC_STATUS_LABELS,
+  authorizationContext,
+  buildAuthorizationPayload,
+  validateAuthorizationPayload,
+  type AuthorizationContext,
   type FinalAction,
   type ScientificStatus,
   type TermAuthorizationState,
@@ -24,6 +28,7 @@ import { submitScientificAuthorization } from "@/lib/p36-scientific-authorizatio
 import { submitDynamicAuthorization } from "@/lib/p36-dynamic-authorization.functions";
 import type { ReviewScope } from "@/domain/health-intelligence/unknown-biomarker-review";
 import type { useP36Authorization } from "@/hooks/use-p36-authorization";
+import { scientificDisplayStatus } from "@/domain/health-intelligence/p36-review-table";
 
 const STATUS_ORDER: ScientificStatus[] = ["PENDING_NIKOLAS_REVIEW", "MORE_EVIDENCE_REQUIRED", "SCIENTIFICALLY_REJECTED", "SCIENTIFICALLY_APPROVED"];
 
@@ -119,16 +124,50 @@ export function TermAuthorizationPanel({ dossier, state, auth, scope }: { dossie
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [context, setContext] = useState<AuthorizationContext | null>(null);
+  useEffect(() => {
+    let live = true;
+    void authorizationContext().then((base) => {
+      if (live) setContext({ ...base, dossiers: [dossier] });
+    });
+    return () => { live = false; };
+  }, [dossier]);
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
   const roles = auth.mission?.roles ?? [];
   const ready = auth.load === "ready" && Boolean(auth.missionId) && state?.integrity === "VERIFIED";
   const canDecide = ready && roles.includes("researcher");
-  const canRecommend = ready && roles.length > 0;
+  const canRecommend = ready && (scope ? roles.includes("ground_medical") : roles.some((r) => r === "ground_medical" || r === "researcher"));
   const decision = state?.latestDecision?.payload;
   const independentRecs = (state?.recommendations ?? []).filter((r) => r.payload.actorUserId !== auth.userId);
+  const decisionEligibility = (action: FinalAction): string | null => {
+    if (!canDecide || !auth.userId || !auth.missionId || !context) return "A verified ledger and an authorized Researcher account are required.";
+    const rec = independentRecs.find((r) => r.row.event_id === draft.recommendationEventId);
+    const payload = buildAuthorizationPayload({
+      ...draft, termId: dossier.termId, kind: "decision", action, authorityMissionId: auth.missionId, submissionId: "preview",
+      canonicalCatalogId: action === "APPROVE" ? rec?.payload.canonicalCatalogId ?? null : null,
+      domain: action === "APPROVE" ? rec?.payload.domain ?? null : null,
+      specimenOrAcquisitionContext: draft.specimen || null, methodOrInstrument: draft.method || null,
+      validatedUnit: action === "APPROVE" ? draft.unit : null,
+      sourceRefs: splitRefs(draft.sourceRefs), validationEvidenceRefs: splitRefs(draft.validationRefs),
+      conflictOfInterestDeclaration: draft.coi, independenceConfirmed: draft.independent,
+      recommendationEventId: action === "APPROVE" ? draft.recommendationEventId || null : null,
+      supersedesEventId: state?.latestDecision?.row.event_id ?? null,
+    }, { userId: auth.userId, role: "researcher", now: new Date().toISOString() }, context);
+    if (scope) { payload.crewMemberId = scope.crewMemberId; payload.provenance = scope.provenance; }
+    const result = validateAuthorizationPayload(payload, context, { recommendation: rec, latestDecision: state?.latestDecision ?? undefined });
+    if (!result.ok) return result.reason;
+    // A successful cloud recommendation was already checked against the independently
+    // provisioned source receipt. Server/RPC rechecks that receipt on every approval.
+    if (scope && action === "APPROVE" && !rec) return "An independently source-validated Ground Medical recommendation is required.";
+    return null;
+  };
 
   const submit = async (kind: "recommendation" | "decision", action: "RECOMMEND" | FinalAction) => {
     if (busy || !auth.missionId) return;
+    if (kind === "decision") {
+      const reason = decisionEligibility(action as FinalAction);
+      if (reason) return setMessage(reason);
+    }
     setBusy(true);
     setMessage("");
     try {
@@ -181,7 +220,7 @@ export function TermAuthorizationPanel({ dossier, state, auth, scope }: { dossie
     <div className="space-y-2 rounded-md border border-border p-3 text-xs" aria-label={`Final authorization for ${dossier.sourceLabel}`}>
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-medium">Final scientific authorization</h3>
-        <Badge variant="secondary">{state ? SCIENTIFIC_STATUS_LABELS[state.scientificStatus] : "Pending Researcher review"}</Badge>
+        <Badge variant="secondary">{state ? SCIENTIFIC_STATUS_LABELS[state.scientificStatus] : "Pending Scientific Review"}</Badge>
         <Badge variant="outline">{state?.activationStatus === "ACTIVE" ? "Active" : "Activation blocked"}</Badge>
         {state?.stale ? <Badge variant="destructive">Stale decision — re-review required</Badge> : null}
         {state?.integrity === "FAILED" ? <Badge variant="destructive">Ledger integrity failed</Badge> : null}
@@ -252,9 +291,10 @@ export function TermAuthorizationPanel({ dossier, state, auth, scope }: { dossie
                   I am independent of this mapping: I did not author the recommendation and have no undeclared conflict of interest.
                 </label>
                 <div className="flex flex-wrap gap-2 sm:col-span-2">
-                  <Button type="button" disabled={busy} onClick={() => void submit("decision", "APPROVE")}>Approve mapping</Button>
-                  <Button type="button" variant="outline" disabled={busy} onClick={() => void submit("decision", "REJECT")}>Reject mapping</Button>
-                  <Button type="button" variant="outline" disabled={busy} onClick={() => void submit("decision", "REQUEST_MORE_EVIDENCE")}>Request more evidence</Button>
+                  <Button type="button" title={decisionEligibility("APPROVE") ?? undefined} disabled={busy || Boolean(decisionEligibility("APPROVE"))} onClick={() => void submit("decision", "APPROVE")}>Approve</Button>
+                  <Button type="button" variant="outline" title={decisionEligibility("REJECT") ?? undefined} disabled={busy || Boolean(decisionEligibility("REJECT"))} onClick={() => void submit("decision", "REJECT")}>Reject</Button>
+                  <Button type="button" variant="outline" title={decisionEligibility("REQUEST_MORE_EVIDENCE") ?? undefined} disabled={busy || Boolean(decisionEligibility("REQUEST_MORE_EVIDENCE"))} onClick={() => void submit("decision", "REQUEST_MORE_EVIDENCE")}>Request More Evidence</Button>
+                  <p className="w-full text-muted-foreground">{decisionEligibility("APPROVE") ?? "Approval remains separate from governed catalog activation; source receipts are rechecked on submission."}</p>
                 </div>
               </>
             ) : (
@@ -264,6 +304,7 @@ export function TermAuthorizationPanel({ dossier, state, auth, scope }: { dossie
         </details>
       ) : null}
       {message ? <p role="status" className="break-words">{message}</p> : null}
+      {!canDecide ? <div className="space-y-2"><div className="flex flex-wrap gap-2"><Button disabled>Approve</Button><Button variant="outline" disabled>Reject</Button><Button variant="outline" disabled>Request More Evidence</Button></div><p className="text-muted-foreground">{scientificDisplayStatus("PENDING_NIKOLAS_REVIEW")} · decisions require a verified ledger and an authorized independent Researcher.</p></div> : null}
     </div>
   );
 }
