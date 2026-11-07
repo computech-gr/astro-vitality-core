@@ -181,7 +181,9 @@ describe("v9 searchable text PDF: document model", () => {
   test("findings, limitations, hypotheses, reviewer decisions and attestation are separate sections; no AI draft content", () => {
     const doc = buildReportDocument(inputFor(rows(4)));
     const h2 = doc.blocks.filter((b) => b.kind === "h2").map((b) => (b.kind === "h2" ? b.text : ""));
-    expect(h2.slice(0, 6)).toEqual([
+    expect(h2.slice(0, 7)).toEqual([
+      // P54: the verified-reference biomarker assessment precedes the numbered sections.
+      "Biomarker health assessment (verified references only)",
       "1. Descriptive findings",
       "2. Limitations, missing data and uncertainty",
       // v9.5: shared researcher interpretation sits between limitations and handbook hypotheses.
