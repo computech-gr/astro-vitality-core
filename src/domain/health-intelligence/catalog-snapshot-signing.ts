@@ -110,6 +110,33 @@ export async function signCatalogSnapshot(
   return { schema: SIGNED_SNAPSHOT_SCHEMA, keyId, signature: b64(sig), snapshot };
 }
 
+/** Ed25519 signature (base64) over canonicalJson(payload); shared by separately scoped snapshot kinds. */
+export async function signCanonicalPayload(payload: unknown, privateKey: CryptoKey) {
+  return b64(
+    await crypto.subtle.sign(ALG, privateKey, new TextEncoder().encode(canonicalJson(payload))),
+  );
+}
+/** Verify an Ed25519 signature over canonicalJson(payload) with one public SPKI key; never throws. */
+export async function verifyCanonicalPayload(
+  payload: unknown,
+  signatureBase64: string,
+  publicKeySpkiBase64: string,
+): Promise<boolean> {
+  try {
+    const pub = await crypto.subtle.importKey("spki", unb64(publicKeySpkiBase64), ALG, false, [
+      "verify",
+    ]);
+    return await crypto.subtle.verify(
+      ALG,
+      pub,
+      unb64(signatureBase64),
+      new TextEncoder().encode(canonicalJson(payload)),
+    );
+  } catch {
+    return false;
+  }
+}
+
 export type VerifyResult =
   { ok: true; snapshot: ActiveCatalogSnapshot } | { ok: false; reason: string };
 

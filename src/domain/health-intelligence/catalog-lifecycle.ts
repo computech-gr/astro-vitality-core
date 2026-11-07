@@ -39,7 +39,8 @@ export type LifecycleState =
   | "CATALOG_REVOKED"
   | "RECOGNIZED";
 export type Provenance = "synthetic" | "real";
-export type CatalogEnvironment = "test" | "production";
+/** "synthetic_demo" keys sign only demo snapshots; production loaders never accept that environment. */
+export type CatalogEnvironment = "test" | "production" | "synthetic_demo";
 
 export const normalizeCatalogText = (v: string) =>
   v.trim().toLocaleLowerCase("en-US").replace(/\s+/g, " ");
