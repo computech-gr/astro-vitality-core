@@ -2060,6 +2060,14 @@ export type Database = {
         }
         Returns: Json
       }
+      p36_dynamic_crew_roster_v1: {
+        Args: { p_mission_id: string }
+        Returns: {
+          crew_member_id: string
+          display_name: string
+          mission_id: string
+        }[]
+      }
       p36_dynamic_handoff_append_v1: {
         Args: {
           p_crew_member_id: string
