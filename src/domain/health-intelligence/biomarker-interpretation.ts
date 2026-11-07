@@ -543,7 +543,22 @@ export async function buildVerifiedSnapshot(
   rawRegistry: unknown,
   events: readonly InterpretationEvent[],
 ): Promise<InterpretationSnapshot> {
-  const { registry, excluded } = validateRegistry(rawRegistry);
+  const validated = validateRegistry(rawRegistry);
+  const excluded = [...validated.excluded];
+  // Approved/revoked registry records must reproduce their bound content fingerprint, otherwise they are pending.
+  const records: RegistryRecord[] = [];
+  for (const rec of validated.registry.records) {
+    if (rec.reviewStatus !== "PENDING_SCIENTIFIC_REVIEW" && rec.content) {
+      const sha = await interpretationContentSha256(rec.identity, { content: rec.content, citations: rec.citations, evidenceStrength: rec.evidenceStrength });
+      if (sha !== rec.contentSha256 || rec.approvalHistory.some((h) => h.action === "APPROVE" && h.contentSha256 !== null && h.contentSha256 !== rec.contentSha256 && h === rec.approvalHistory.at(-1))) {
+        excluded.push({ key: rec.key, reason: "Approved content fingerprint mismatch" });
+        records.push({ ...rec, reviewStatus: "PENDING_SCIENTIFIC_REVIEW", reviewer: null, approvalHistory: [], contentSha256: null, content: null, contentOrigin: "none" });
+        continue;
+      }
+    }
+    records.push(rec);
+  }
+  const registry = { ...validated.registry, records };
   const sorted = [...events].sort((a, b) => a.seq - b.seq);
   const check = await verifyInterpretationChain(sorted);
   const ledger = check.ok
