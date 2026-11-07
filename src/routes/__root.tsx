@@ -25,7 +25,10 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <title>Page not found | The Mitochondria</title>
       <meta name="robots" content="noindex, nofollow" />
-      <meta name="description" content="This page could not be found. Return to The Mitochondria home page or Project Guide." />
+      <meta
+        name="description"
+        content="This page could not be found. Return to The Mitochondria home page or Project Guide."
+      />
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
@@ -33,8 +36,12 @@ function NotFoundComponent() {
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button asChild><Link to="/">Home</Link></Button>
-          <Button asChild variant="outline"><Link to="/project/guide">Project Guide</Link></Button>
+          <Button asChild>
+            <Link to="/">Home</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/project/guide">Project Guide</Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -138,10 +145,12 @@ function RootComponent() {
     });
     const stopGroundSync = initializeGroundSyncRuntime();
     // Last verified activated-catalog snapshot (works offline; unverified data is ignored).
-    void import("@/domain/health-intelligence/active-catalog-runtime").then(async (m) => {
-      const storage = m.browserSnapshotStorage();
-      if (storage) await m.loadInstalledCatalog({ storage });
-    }).catch((error) => console.warn("Active catalog load failed", error));
+    void import("@/domain/health-intelligence/active-catalog-runtime")
+      .then(async (m) => {
+        const storage = m.browserSnapshotStorage();
+        if (storage) await m.loadInstalledCatalog({ storage });
+      })
+      .catch((error) => console.warn("Active catalog load failed", error));
     return stopGroundSync;
   }, []);
 

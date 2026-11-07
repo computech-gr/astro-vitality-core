@@ -19,7 +19,12 @@ import {
 } from "@/domain/health-domains/unified-intake-classification";
 import { domainForMetric } from "@/domain/health-domains/document-domain-projection";
 import type { HealthDomainId } from "@/domain/health-domains/registry";
-import { canonicalCatalogEntry, recognizeBiomarker, type EvaluatedCatalog, type Provenance } from "./catalog-lifecycle";
+import {
+  canonicalCatalogEntry,
+  recognizeBiomarker,
+  type EvaluatedCatalog,
+  type Provenance,
+} from "./catalog-lifecycle";
 import { getActiveCatalog } from "./active-catalog-runtime";
 
 export const UNKNOWN_BIOMARKER_REVIEW_SCHEMA = "mitochondria.unknown-biomarker-review.v2";
@@ -27,7 +32,8 @@ export const CATALOG_EXTENSION_PROPOSAL_SCHEMA = "mitochondria.catalog-extension
 export const CATALOG_EXTENSION_REGISTRY_SCHEMA = "mitochondria.catalog-extension-registry.v1";
 export const REQUIRED_SCIENTIFIC_GATE = "PENDING_NIKOLAS_REVIEW" as const;
 
-type ReviewOnlyStatus = "unclassified" | "ambiguous" | "unit_review_required" | "source_unvalidated";
+type ReviewOnlyStatus =
+  "unclassified" | "ambiguous" | "unit_review_required" | "source_unvalidated";
 
 export interface ReviewSourceRow {
   label: string;
@@ -143,15 +149,26 @@ export function termIdFor(label: string, unit: string): string {
   return stableId("ubt", `${normalizeLabel(label)}|${unit.trim()}`);
 }
 
-const P36_METRICS = p36Registry.metrics as readonly { id: string; name: string; originalUnit?: string }[];
+const P36_METRICS = p36Registry.metrics as readonly {
+  id: string;
+  name: string;
+  originalUnit?: string;
+}[];
 const p36ById = new Map(P36_METRICS.map((m) => [m.id, m]));
 
 /** Group review-only rows into catalog terms; matched rows are ignored. */
-export function buildUnknownBiomarkerTerms(rows: readonly ReviewSourceRow[]): UnknownBiomarkerTerm[] {
+export function buildUnknownBiomarkerTerms(
+  rows: readonly ReviewSourceRow[],
+): UnknownBiomarkerTerm[] {
   const terms = new Map<string, UnknownBiomarkerTerm>();
   for (const row of rows) {
     if (row.classification.status === "matched" && row.sourceValidation !== "unvalidated") continue;
-    const status: ReviewOnlyStatus = row.sourceValidation === "unvalidated" ? "source_unvalidated" : row.classification.status === "matched" ? "unclassified" : row.classification.status;
+    const status: ReviewOnlyStatus =
+      row.sourceValidation === "unvalidated"
+        ? "source_unvalidated"
+        : row.classification.status === "matched"
+          ? "unclassified"
+          : row.classification.status;
     const unit = row.unit.trim();
     const termId = termIdFor(row.label, unit);
     let term = terms.get(termId);
@@ -170,10 +187,15 @@ export function buildUnknownBiomarkerTerms(rows: readonly ReviewSourceRow[]): Un
     }
     const label = row.label.trim();
     if (!term.originalLabels.includes(label)) term.originalLabels.push(label);
-    for (const id of row.classification.status === "matched" ? [row.classification.metricId] : row.classification.candidateMetricIds)
+    for (const id of row.classification.status === "matched"
+      ? [row.classification.metricId]
+      : row.classification.candidateMetricIds)
       if (!term.candidateMetricIds.includes(id)) term.candidateMetricIds.push(id);
     // Same term from a different classification path is treated as the stricter state.
-    if (term.classification !== row.classification.status && row.classification.status === "ambiguous")
+    if (
+      term.classification !== row.classification.status &&
+      row.classification.status === "ambiguous"
+    )
       term.classification = "ambiguous";
     const evidence: ReviewEvidence = {
       sourceKind: row.sourceKind,
@@ -186,16 +208,27 @@ export function buildUnknownBiomarkerTerms(rows: readonly ReviewSourceRow[]): Un
     const observationKey = stableId("ubo", `${termId}|${row.value.trim()}|${observedAt ?? ""}`);
     const existing = term.observations.find((o) => o.observationKey === observationKey);
     if (!existing) {
-      term.observations.push({ observationKey, value: row.value.trim(), observedAt, evidence: [evidence] });
+      term.observations.push({
+        observationKey,
+        value: row.value.trim(),
+        observedAt,
+        evidence: [evidence],
+      });
       continue;
     }
-    const evidenceKey = (e: ReviewEvidence) => JSON.stringify([e.sourceKind, e.sourceLabel, e.documentSha256, e.excerpt]);
-    if (existing.evidence.some((e) => evidenceKey(e) === evidenceKey(evidence))) term.duplicateRowsCollapsed++;
+    const evidenceKey = (e: ReviewEvidence) =>
+      JSON.stringify([e.sourceKind, e.sourceLabel, e.documentSha256, e.excerpt]);
+    if (existing.evidence.some((e) => evidenceKey(e) === evidenceKey(evidence)))
+      term.duplicateRowsCollapsed++;
     else existing.evidence.push(evidence);
   }
   return [...terms.values()]
     .map((t) => ({ ...t, candidateMetricIds: [...t.candidateMetricIds].sort() }))
-    .sort((a, b) => a.normalizedLabel.localeCompare(b.normalizedLabel) || a.originalUnit.localeCompare(b.originalUnit));
+    .sort(
+      (a, b) =>
+        a.normalizedLabel.localeCompare(b.normalizedLabel) ||
+        a.originalUnit.localeCompare(b.originalUnit),
+    );
 }
 
 /** Only an authenticated ground-medical reviewer for the exact scope may record decisions. */
@@ -246,12 +279,23 @@ export function recordReviewerDecision(
       return fail("A new metric proposal needs a name, unit and domain.");
     if (!["bone", "immune", "cardiovascular", "behavioral"].includes(proposedDomain))
       return fail("The proposed domain must be one of the four health modules.");
-    if (P36_METRICS.some((m) => normalizeLabel(m.name) === normalizeLabel(proposedName!) && m.originalUnit?.trim() === proposedUnit))
-      return fail("An identical name and unit already exist in the catalog; propose a mapping instead.");
+    if (
+      P36_METRICS.some(
+        (m) =>
+          normalizeLabel(m.name) === normalizeLabel(proposedName!) &&
+          m.originalUnit?.trim() === proposedUnit,
+      )
+    )
+      return fail(
+        "An identical name and unit already exist in the catalog; propose a mapping instead.",
+      );
   }
   const sequence = ledger.length + 1;
   const decision: ReviewerDecision = {
-    decisionId: stableId("ubd", `${sequence}|${term.termId}|${input.kind}|${context.reviewerUserId}|${context.decidedAt}`),
+    decisionId: stableId(
+      "ubd",
+      `${sequence}|${term.termId}|${input.kind}|${context.reviewerUserId}|${context.decidedAt}`,
+    ),
     sequence,
     termId: term.termId,
     kind: input.kind,
@@ -271,7 +315,9 @@ export function recordReviewerDecision(
 }
 
 /** Latest decision per term (history stays in the ledger). */
-export function latestDecisions(ledger: readonly ReviewerDecision[]): Map<string, ReviewerDecision> {
+export function latestDecisions(
+  ledger: readonly ReviewerDecision[],
+): Map<string, ReviewerDecision> {
   const latest = new Map<string, ReviewerDecision>();
   for (const d of [...ledger].sort((a, b) => a.sequence - b.sequence)) latest.set(d.termId, d);
   return latest;
@@ -324,49 +370,102 @@ export interface RegistryEvaluation {
 export const GOVERNED_CATALOG_EXTENSIONS = governedRegistry as unknown as CatalogExtensionRegistry;
 
 /** Fail closed: anything not fully, explicitly approved is not effective. */
-export function evaluateCatalogExtensionRegistry(registry: CatalogExtensionRegistry): RegistryEvaluation {
+export function evaluateCatalogExtensionRegistry(
+  registry: CatalogExtensionRegistry,
+): RegistryEvaluation {
   const notEffective: RegistryEvaluation["notEffective"] = [];
-  const valid = registry.schema === CATALOG_EXTENSION_REGISTRY_SCHEMA && registry.requiredScientificGate === REQUIRED_SCIENTIFIC_GATE;
+  const valid =
+    registry.schema === CATALOG_EXTENSION_REGISTRY_SCHEMA &&
+    registry.requiredScientificGate === REQUIRED_SCIENTIFIC_GATE;
   const extensions = Array.isArray(registry.extensions) ? registry.extensions : [];
   const history = Array.isArray(registry.approvalHistory) ? registry.approvalHistory : [];
   const highest = new Map<string, CatalogExtension>();
   for (const ext of extensions) {
     const prior = highest.get(ext.extensionId);
     if (prior && prior.version >= ext.version) {
-      notEffective.push({ extensionId: ext.extensionId, version: ext.version, reason: "Superseded or duplicate version" });
+      notEffective.push({
+        extensionId: ext.extensionId,
+        version: ext.version,
+        reason: "Superseded or duplicate version",
+      });
       continue;
     }
-    if (prior) notEffective.push({ extensionId: prior.extensionId, version: prior.version, reason: "Superseded by a later version" });
+    if (prior)
+      notEffective.push({
+        extensionId: prior.extensionId,
+        version: prior.version,
+        reason: "Superseded by a later version",
+      });
     highest.set(ext.extensionId, ext);
   }
   const candidates: EffectiveExtension[] = [];
   for (const ext of highest.values()) {
-    const reject = (reason: string) => notEffective.push({ extensionId: ext.extensionId, version: ext.version, reason });
-    if (!valid) { reject("Registry schema or scientific gate is invalid"); continue; }
-    if (ext.status !== "APPROVED") { reject(`Status ${ext.status}`); continue; }
-    if (ext.kind !== "alias_to_existing_metric") { reject("Unsupported extension kind"); continue; }
+    const reject = (reason: string) =>
+      notEffective.push({ extensionId: ext.extensionId, version: ext.version, reason });
+    if (!valid) {
+      reject("Registry schema or scientific gate is invalid");
+      continue;
+    }
+    if (ext.status !== "APPROVED") {
+      reject(`Status ${ext.status}`);
+      continue;
+    }
+    if (ext.kind !== "alias_to_existing_metric") {
+      reject("Unsupported extension kind");
+      continue;
+    }
     const records = history
       .filter((h) => h.extensionId === ext.extensionId && h.version === ext.version)
       .sort((a, b) => Date.parse(a.decidedAt) - Date.parse(b.decidedAt));
     const last = records.at(-1);
-    if (!last || last.decision !== "APPROVED") { reject("No approval record for this version"); continue; }
-    if (!last.reviewer?.trim() || !Number.isFinite(Date.parse(last.decidedAt)) || !last.handbookEvidenceRefs?.length) {
+    if (!last || last.decision !== "APPROVED") {
+      reject("No approval record for this version");
+      continue;
+    }
+    if (
+      !last.reviewer?.trim() ||
+      !Number.isFinite(Date.parse(last.decidedAt)) ||
+      !last.handbookEvidenceRefs?.length
+    ) {
       reject("Approval record lacks reviewer, decision time or handbook evidence");
       continue;
     }
     const target = p36ById.get(ext.targetMetricId);
-    if (!target || !domainForMetric(target.id)) { reject("Target metric is not a routed P36 metric"); continue; }
+    if (!target || !domainForMetric(target.id)) {
+      reject("Target metric is not a routed P36 metric");
+      continue;
+    }
     if (!target.originalUnit?.trim() || target.originalUnit.trim() !== ext.sourceUnit.trim()) {
       reject("Source unit differs from the catalog unit (no conversion permitted)");
       continue;
     }
-    if (ext.matchingContext && (!ext.matchingContext.method?.trim() || !ext.matchingContext.specimen?.trim())) { reject("Method and specimen matching context is incomplete"); continue; }
-    candidates.push({ extensionId: ext.extensionId, version: ext.version, normalizedLabel: normalizeLabel(ext.sourceLabel), unit: ext.sourceUnit, targetMetricId: target.id, ...(ext.matchingContext ? { matchingContext: ext.matchingContext } : {}) });
+    if (
+      ext.matchingContext &&
+      (!ext.matchingContext.method?.trim() || !ext.matchingContext.specimen?.trim())
+    ) {
+      reject("Method and specimen matching context is incomplete");
+      continue;
+    }
+    candidates.push({
+      extensionId: ext.extensionId,
+      version: ext.version,
+      normalizedLabel: normalizeLabel(ext.sourceLabel),
+      unit: ext.sourceUnit,
+      targetMetricId: target.id,
+      ...(ext.matchingContext ? { matchingContext: ext.matchingContext } : {}),
+    });
   }
   // Two approved extensions for the same label+unit are ambiguous: neither applies.
   const effective = candidates.filter((c) => {
-    const clash = candidates.some((o) => o !== c && o.normalizedLabel === c.normalizedLabel && o.unit === c.unit);
-    if (clash) notEffective.push({ extensionId: c.extensionId, version: c.version, reason: "Conflicts with another approved extension" });
+    const clash = candidates.some(
+      (o) => o !== c && o.normalizedLabel === c.normalizedLabel && o.unit === c.unit,
+    );
+    if (clash)
+      notEffective.push({
+        extensionId: c.extensionId,
+        version: c.version,
+        reason: "Conflicts with another approved extension",
+      });
     return !clash;
   });
   const maxVersion = extensions.reduce((m, e) => Math.max(m, e.version), 0);
@@ -386,7 +485,11 @@ export interface ExtendedClassification {
 }
 
 export interface GovernedClassificationInput {
-  label: string; unit: string; method?: string | undefined; specimen?: string | undefined; sourceValidation?: "unvalidated" | undefined;
+  label: string;
+  unit: string;
+  method?: string | undefined;
+  specimen?: string | undefined;
+  sourceValidation?: "unvalidated" | undefined;
   provenance?: Provenance | undefined;
   /** "canonical": the label is an already-assigned canonical ID (stored-record review, sync). */
   identity?: "canonical" | undefined;
@@ -401,22 +504,61 @@ export function classifyWithGovernedExtensions(
   catalog: EvaluatedCatalog = getActiveCatalog(),
 ): ExtendedClassification {
   const base = classifyIntakeObservation(input);
-  if (input.sourceValidation === "unvalidated") return { classification: { status: "unclassified", originalLabel: input.label, originalUnit: input.unit, candidateMetricIds: [], reviewRequired: true }, extension: null };
+  if (input.sourceValidation === "unvalidated")
+    return {
+      classification: {
+        status: "unclassified",
+        originalLabel: input.label,
+        originalUnit: input.unit,
+        candidateMetricIds: [],
+        reviewRequired: true,
+      },
+      extension: null,
+    };
   if (base.status === "matched") return { classification: base, extension: null };
   const label = normalizeLabel(input.label);
   const unit = input.unit;
-  const ext = evaluation.effective.find((e) => e.normalizedLabel === label && e.unit === unit && (!e.matchingContext || e.matchingContext.method === input.method && e.matchingContext.specimen === input.specimen));
+  const ext = evaluation.effective.find(
+    (e) =>
+      e.normalizedLabel === label &&
+      e.unit === unit &&
+      (!e.matchingContext ||
+        (e.matchingContext.method === input.method &&
+          e.matchingContext.specimen === input.specimen)),
+  );
   const domain = ext ? domainForMetric(ext.targetMetricId) : null;
   if ((!ext || !domain) && base.status === "unclassified") {
     const matched = (canonicalId: string, d: HealthDomainId) => ({
-      classification: { status: "matched" as const, metricId: canonicalId, domain: d, originalLabel: input.label.trim(), originalUnit: unit.trim(), reviewRequired: true as const },
-      extension: null, recognition: { canonicalId, catalogVersion: catalog.catalogVersion },
+      classification: {
+        status: "matched" as const,
+        metricId: canonicalId,
+        domain: d,
+        originalLabel: input.label.trim(),
+        originalUnit: unit.trim(),
+        reviewRequired: true as const,
+      },
+      extension: null,
+      recognition: { canonicalId, catalogVersion: catalog.catalogVersion },
     });
     if (input.identity === "canonical") {
-      const entry = canonicalCatalogEntry(input.label, unit, catalog, input.includeRevoked === true);
+      const entry = canonicalCatalogEntry(
+        input.label,
+        unit,
+        catalog,
+        input.includeRevoked === true,
+      );
       if (entry) return matched(entry.canonicalId, entry.domain);
     } else {
-      const r = recognizeBiomarker({ label: input.label, unit, specimen: input.specimen, method: input.method, provenance: input.provenance }, catalog);
+      const r = recognizeBiomarker(
+        {
+          label: input.label,
+          unit,
+          specimen: input.specimen,
+          method: input.method,
+          provenance: input.provenance,
+        },
+        catalog,
+      );
       if (r.status === "RECOGNIZED") return matched(r.canonicalId, r.domain);
     }
   }
@@ -444,14 +586,23 @@ export function buildCatalogExtensionProposal(
   const latest = latestDecisions(ledger);
   const nextVersion = registry.extensions.reduce((m, e) => Math.max(m, e.version), 0) + 1;
   const draftExtensions: CatalogExtension[] = [];
-  const newMetricRequests: { termId: string; proposedName: string; proposedUnit: string; proposedDomain: string; decisionId: string }[] = [];
+  const newMetricRequests: {
+    termId: string;
+    proposedName: string;
+    proposedUnit: string;
+    proposedDomain: string;
+    decisionId: string;
+  }[] = [];
   const keptExcluded: { termId: string; kind: ReviewerDecisionKind; decisionId: string }[] = [];
   for (const term of terms) {
     const d = latest.get(term.termId);
     if (!d) continue;
     if (d.kind === "propose_alias_to_existing_metric" && d.targetMetricId)
       draftExtensions.push({
-        extensionId: stableId("ext", `${term.normalizedLabel}|${term.originalUnit}|${d.targetMetricId}`),
+        extensionId: stableId(
+          "ext",
+          `${term.normalizedLabel}|${term.originalUnit}|${d.targetMetricId}`,
+        ),
         version: nextVersion,
         kind: "alias_to_existing_metric",
         sourceLabel: term.originalLabels[0] ?? term.normalizedLabel,
@@ -460,8 +611,19 @@ export function buildCatalogExtensionProposal(
         status: REQUIRED_SCIENTIFIC_GATE,
         evidenceRefs: [],
       });
-    else if (d.kind === "propose_new_catalog_metric" && d.proposedName && d.proposedUnit && d.proposedDomain)
-      newMetricRequests.push({ termId: term.termId, proposedName: d.proposedName, proposedUnit: d.proposedUnit, proposedDomain: d.proposedDomain, decisionId: d.decisionId });
+    else if (
+      d.kind === "propose_new_catalog_metric" &&
+      d.proposedName &&
+      d.proposedUnit &&
+      d.proposedDomain
+    )
+      newMetricRequests.push({
+        termId: term.termId,
+        proposedName: d.proposedName,
+        proposedUnit: d.proposedUnit,
+        proposedDomain: d.proposedDomain,
+        decisionId: d.decisionId,
+      });
     else keptExcluded.push({ termId: term.termId, kind: d.kind, decisionId: d.decisionId });
   }
   return {
@@ -525,28 +687,52 @@ export function reevaluateReviewRequest(
   scope: ReviewScope,
   evaluation: RegistryEvaluation = evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS),
 ): { ok: true; results: ReevaluationResult[] } | { ok: false; reason: string } {
-  if (!request || typeof request !== "object") return { ok: false, reason: "Not a review request file." };
+  if (!request || typeof request !== "object")
+    return { ok: false, reason: "Not a review request file." };
   const r = request as Partial<ReviewRequestExport>;
   if (r.schema !== UNKNOWN_BIOMARKER_REVIEW_SCHEMA || !Array.isArray(r.terms) || !r.scope)
     return { ok: false, reason: "Unsupported review request format." };
-  if (r.scope.missionId !== scope.missionId || r.scope.crewMemberId !== scope.crewMemberId || r.scope.provenance !== scope.provenance)
-    return { ok: false, reason: "The review request belongs to a different mission, crew member or provenance." };
+  if (
+    r.scope.missionId !== scope.missionId ||
+    r.scope.crewMemberId !== scope.crewMemberId ||
+    r.scope.provenance !== scope.provenance
+  )
+    return {
+      ok: false,
+      reason: "The review request belongs to a different mission, crew member or provenance.",
+    };
   if (r.terms.length > REEVALUATION_MAX_TERMS)
-    return { ok: false, reason: `The review request lists more than ${REEVALUATION_MAX_TERMS} terms and was not evaluated.` };
+    return {
+      ok: false,
+      reason: `The review request lists more than ${REEVALUATION_MAX_TERMS} terms and was not evaluated.`,
+    };
   if (r.autoApproved !== false || r.catalogChangeApplied !== false)
-    return { ok: false, reason: "The file claims an approval or applied catalog change. Only unmodified exports can be re-evaluated." };
+    return {
+      ok: false,
+      reason:
+        "The file claims an approval or applied catalog change. Only unmodified exports can be re-evaluated.",
+    };
   const results: ReevaluationResult[] = [];
   for (const term of r.terms) {
-    if (!term || typeof term.originalUnit !== "string" || !Array.isArray(term.originalLabels)) continue;
+    if (!term || typeof term.originalUnit !== "string" || !Array.isArray(term.originalLabels))
+      continue;
     const label = String(term.originalLabels[0] ?? term.normalizedLabel ?? "");
     if (!label.trim() || label.length > 300 || term.originalUnit.length > 60) continue;
-    const { classification, extension } = classifyWithGovernedExtensions({ label, unit: term.originalUnit }, evaluation);
+    const { classification, extension } = classifyWithGovernedExtensions(
+      { label, unit: term.originalUnit },
+      evaluation,
+    );
     results.push({
       termId: String(term.termId),
       label,
       unit: term.originalUnit,
       previous: String(term.classification),
-      outcome: classification.status !== "matched" ? "still_review_only" : extension ? "matched_by_approved_extension" : "matched_by_base_catalog",
+      outcome:
+        classification.status !== "matched"
+          ? "still_review_only"
+          : extension
+            ? "matched_by_approved_extension"
+            : "matched_by_base_catalog",
       metricId: classification.status === "matched" ? classification.metricId : null,
       extension,
     });

@@ -23,7 +23,10 @@ import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-revi
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
-import { getActiveCatalog, subscribeActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
+import {
+  getActiveCatalog,
+  subscribeActiveCatalog,
+} from "@/domain/health-intelligence/active-catalog-runtime";
 import { Link } from "@tanstack/react-router";
 import { type IntakeClassification } from "@/domain/health-domains/unified-intake-classification";
 import { DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
@@ -84,12 +87,22 @@ type IntakeRow = {
 const MAX_ROWS = 200;
 
 /** Base P36 catalog first; only governed, fully approved catalog extensions can add matches. */
-function classify(row: { label: string; unit: string; specimen?: string | undefined; method?: string | undefined; provenance?: "synthetic" | "real" | undefined; sourceValidation?: "unvalidated" | undefined }): IntakeClassification {
+function classify(row: {
+  label: string;
+  unit: string;
+  specimen?: string | undefined;
+  method?: string | undefined;
+  provenance?: "synthetic" | "real" | undefined;
+  sourceValidation?: "unvalidated" | undefined;
+}): IntakeClassification {
   return classifyWithGovernedExtensions(row).classification;
 }
 
 /** Re-stamp scope provenance and re-run classification (e.g. after a verified catalog update). */
-function reclassifyRows(rows: readonly IntakeRow[], provenance: "" | "synthetic" | "real"): IntakeRow[] {
+function reclassifyRows(
+  rows: readonly IntakeRow[],
+  provenance: "" | "synthetic" | "real",
+): IntakeRow[] {
   return rows.map((row) => {
     const next: IntakeRow = { ...row };
     if (provenance) next.provenance = provenance;
@@ -139,9 +152,9 @@ function parseIntakeText(
   const rows: IntakeRow[] = [
     ...extractTextTableCandidates(text, MAX_ROWS),
     ...extractFiveColumnLabCandidates(text, MAX_ROWS),
-  ].slice(0, MAX_ROWS).map((item) =>
-    newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }),
-  );
+  ]
+    .slice(0, MAX_ROWS)
+    .map((item) => newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }));
   for (const line of text.split(/\r?\n/).slice(0, 1000)) {
     if (line.length > 350 || BLOCKED_LINE.test(line)) continue;
     const match = /^\s*(.+?)\s*[:=]\s*([-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;,|]+)\s*$/.exec(
@@ -169,7 +182,6 @@ async function sha256Hex(file: File): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
-
 
 export function UnifiedIntakeWorkspace() {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
@@ -215,7 +227,10 @@ export function UnifiedIntakeWorkspace() {
     () =>
       membership && identity?.signedIn && !identity.error
         ? identity.memberships
-            .filter((m) => m.missionId === membership.missionId && m.crewMemberId === membership.crewMemberId)
+            .filter(
+              (m) =>
+                m.missionId === membership.missionId && m.crewMemberId === membership.crewMemberId,
+            )
             .map((m) => m.role)
         : [],
     [identity, membership],
@@ -274,7 +289,9 @@ export function UnifiedIntakeWorkspace() {
   }, [provenance]);
 
   const addRows = (incoming: IntakeRow[], note: string) => {
-    setRows((previous) => [...previous, ...reclassifyRows(incoming, provenance)].slice(0, MAX_ROWS));
+    setRows((previous) =>
+      [...previous, ...reclassifyRows(incoming, provenance)].slice(0, MAX_ROWS),
+    );
     resetReview();
     setStatus(note);
   };
@@ -429,7 +446,9 @@ export function UnifiedIntakeWorkspace() {
 
   const selection = intakeSelectionCounts(rows);
   const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
-  const reviewOnlyRows = rows.filter((row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated");
+  const reviewOnlyRows = rows.filter(
+    (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
+  );
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
         findUnifiedDuplicates(history, {
@@ -477,11 +496,25 @@ export function UnifiedIntakeWorkspace() {
     setBusy(true);
     try {
       const fresh = await loadMissionIdentity();
-      if (!fresh.signedIn || fresh.error || fresh.userId !== identity?.userId || !fresh.memberships.some((m) => m.missionId === membership.missionId && m.crewMemberId === membership.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Your authorization for this mission and crew is no longer valid. Nothing saved.");
+      if (
+        !fresh.signedIn ||
+        fresh.error ||
+        fresh.userId !== identity?.userId ||
+        !fresh.memberships.some(
+          (m) =>
+            m.missionId === membership.missionId &&
+            m.crewMemberId === membership.crewMemberId &&
+            (m.role === "crew_self" || m.role === "ground_medical"),
+        )
+      )
+        throw new Error(
+          "Your authorization for this mission and crew is no longer valid. Nothing saved.",
+        );
       for (const row of saveableRows) {
         if (row.classification.status !== "matched") continue;
         const observation: UnifiedObservation = {
-          schema: row.datePrecision === "date" ? DATED_OBSERVATION_SCHEMA : UNIFIED_OBSERVATION_SCHEMA,
+          schema:
+            row.datePrecision === "date" ? DATED_OBSERVATION_SCHEMA : UNIFIED_OBSERVATION_SCHEMA,
           id: crypto.randomUUID(),
           missionId: membership.missionId,
           crewMemberId: membership.crewMemberId,
@@ -515,7 +548,10 @@ export function UnifiedIntakeWorkspace() {
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
       setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
-      notifyReviewDataChanged({ missionId: membership.missionId, crewMemberId: membership.crewMemberId });
+      notifyReviewDataChanged({
+        missionId: membership.missionId,
+        crewMemberId: membership.crewMemberId,
+      });
       setStatus(
         `${saveableRows.length} observation(s) saved encrypted on this device. Research reference only — not a scientific approval; no cloud records written.`,
       );
@@ -632,7 +668,18 @@ export function UnifiedIntakeWorkspace() {
           </div>
           <div className="space-y-1">
             <Label htmlFor="intake-manual-observed">Observation date / explicit timestamp</Label>
-            <select aria-label="Manual observation precision" value={manualPrecision} onChange={(e) => { setManualPrecision(e.target.value as ObservationDatePrecision); setManualObservedAt(""); }} className="w-full rounded-md border border-border bg-background p-2 text-sm"><option value="date">Date only</option><option value="instant">Explicit timestamp</option></select>
+            <select
+              aria-label="Manual observation precision"
+              value={manualPrecision}
+              onChange={(e) => {
+                setManualPrecision(e.target.value as ObservationDatePrecision);
+                setManualObservedAt("");
+              }}
+              className="w-full rounded-md border border-border bg-background p-2 text-sm"
+            >
+              <option value="date">Date only</option>
+              <option value="instant">Explicit timestamp</option>
+            </select>
             <Input
               id="intake-manual-observed"
               type={manualPrecision === "date" ? "date" : "text"}
@@ -643,7 +690,8 @@ export function UnifiedIntakeWorkspace() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Date-only observations retain their calendar date without a time or timezone. Timestamped observations require an explicit timezone.
+          Date-only observations retain their calendar date without a time or timezone. Timestamped
+          observations require an explicit timezone.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={addManualRow}>
@@ -713,7 +761,9 @@ export function UnifiedIntakeWorkspace() {
           ) : null}
           <p aria-live="polite" className="text-sm text-muted-foreground">
             Selected: {selection.selected} · Eligible: {selection.eligible} · Excluded:{" "}
-            {selection.excluded} · Catalog matched: {selection.matched} · Review-only: {selection.reviewOnly} · Missing date: {selection.missingDate} · Invalid date: {selection.invalidDate} · Date-only: {selection.dateOnly}
+            {selection.excluded} · Catalog matched: {selection.matched} · Review-only:{" "}
+            {selection.reviewOnly} · Missing date: {selection.missingDate} · Invalid date:{" "}
+            {selection.invalidDate} · Date-only: {selection.dateOnly}
           </p>
           <div
             className="max-w-full overflow-x-auto"
@@ -801,30 +851,58 @@ export function UnifiedIntakeWorkspace() {
                       />
                     </td>
                     <td className="py-2 pr-3">
-                      <select aria-label={`Date precision for ${row.label}`} value={row.datePrecision ?? "instant"} onChange={(e) => editRow(row.key, { datePrecision: e.target.value as ObservationDatePrecision, observedAt: "" })} className="mb-1 w-52 rounded-md border border-border bg-background p-1 text-xs">
-                        <option value="date">Date only</option><option value="instant">Explicit timestamp</option>
+                      <select
+                        aria-label={`Date precision for ${row.label}`}
+                        value={row.datePrecision ?? "instant"}
+                        onChange={(e) =>
+                          editRow(row.key, {
+                            datePrecision: e.target.value as ObservationDatePrecision,
+                            observedAt: "",
+                          })
+                        }
+                        className="mb-1 w-52 rounded-md border border-border bg-background p-1 text-xs"
+                      >
+                        <option value="date">Date only</option>
+                        <option value="instant">Explicit timestamp</option>
                       </select>
                       <Input
                         aria-label={`Observation date for ${row.label}`}
                         type={row.datePrecision === "date" ? "date" : "text"}
-                        title={row.collectionDate ? `Source collection date: ${row.collectionDate}; time not supplied` : undefined}
-                        placeholder={row.datePrecision !== "date" ? "2026-11-05T08:00:00Z" : undefined}
+                        title={
+                          row.collectionDate
+                            ? `Source collection date: ${row.collectionDate}; time not supplied`
+                            : undefined
+                        }
+                        placeholder={
+                          row.datePrecision !== "date" ? "2026-11-05T08:00:00Z" : undefined
+                        }
                         value={row.observedAt}
                         onChange={(event) => editRow(row.key, { observedAt: event.target.value })}
                         className="h-8 w-52"
                       />
-                      {row.datePrecision === "date" && <p className="text-xs text-muted-foreground">Time / timezone not supplied</p>}
-                      {intakeRowExclusionReason(row) && <p className="max-w-52 text-xs text-destructive">{intakeRowExclusionReason(row)}</p>}
+                      {row.datePrecision === "date" && (
+                        <p className="text-xs text-muted-foreground">
+                          Time / timezone not supplied
+                        </p>
+                      )}
+                      {intakeRowExclusionReason(row) && (
+                        <p className="max-w-52 text-xs text-destructive">
+                          {intakeRowExclusionReason(row)}
+                        </p>
+                      )}
                     </td>
                     <td className="py-2 pr-3">
-                      {row.classification.status === "matched" && row.classification.metricId.startsWith("ext:") ? (
+                      {row.classification.status === "matched" &&
+                      row.classification.metricId.startsWith("ext:") ? (
                         (() => {
                           const id = row.classification.metricId;
                           const entry = getActiveCatalog().active.find((e) => e.canonicalId === id);
                           return (
                             <Badge variant="secondary" data-testid="p37-recognized">
-                              RECOGNIZED — ACTIVE CATALOG v{getActiveCatalog().catalogVersion}: {entry?.canonicalName ?? id} ({id}) · {entry?.unit ?? row.unit} →{" "}
-                              {DOMAIN_LABELS[row.classification.domain]} · matched by label, exact unit, specimen and method
+                              RECOGNIZED — ACTIVE CATALOG v{getActiveCatalog().catalogVersion}:{" "}
+                              {entry?.canonicalName ?? id} ({id}) · {entry?.unit ?? row.unit} →{" "}
+                              {DOMAIN_LABELS[row.classification.domain]} · matched by label, exact
+                              unit, specimen and method
                             </Badge>
                           );
                         })()
@@ -883,8 +961,8 @@ export function UnifiedIntakeWorkspace() {
               checked={reviewerConfirmed}
               onChange={(event) => setReviewerConfirmed(event.target.checked)}
             />
-            I reviewed every selected row (label, value, original unit and observation date/precision) and
-            confirm it matches the source.
+            I reviewed every selected row (label, value, original unit and observation
+            date/precision) and confirm it matches the source.
           </label>
           <Button
             type="button"
@@ -900,7 +978,11 @@ export function UnifiedIntakeWorkspace() {
       <UnknownBiomarkerReviewPanel
         key={`${membership?.missionId ?? ""}|${membership?.crewMemberId ?? ""}|${provenance}|${identity?.userId ?? ""}`}
         rows={reviewOnlyRows}
-        scope={membership && provenance ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance } : null}
+        scope={
+          membership && provenance
+            ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance }
+            : null
+        }
         reviewerUserId={identity?.signedIn && !identity.error ? (identity.userId ?? null) : null}
         rolesForScope={rolesForScope}
       />
@@ -908,7 +990,11 @@ export function UnifiedIntakeWorkspace() {
       <StoredObservationsReview
         key={`${membership?.missionId ?? ""}|${membership?.crewMemberId ?? ""}|${identity?.userId ?? ""}`}
         history={history}
-        membership={membership ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId } : null}
+        membership={
+          membership
+            ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId }
+            : null
+        }
         provenance={provenance}
         userId={identity?.signedIn && !identity.error ? (identity.userId ?? null) : null}
         rolesForScope={rolesForScope}
