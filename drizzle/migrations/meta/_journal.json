@@ -127,6 +127,13 @@
       "when": 1794037266140,
       "tag": "0017_p36_handoff_executor_insert_remediation",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794037470181,
+      "tag": "0018_p36_dynamic_authorization_tool",
+      "breakpoints": true
     }
   ]
 }
