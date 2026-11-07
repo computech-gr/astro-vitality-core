@@ -85,8 +85,9 @@ export function identifyTerm(labels: readonly string[], unit: string, candidateM
   const exact = hits.filter((r) => r.identity.unit === unit.trim());
   const domains = [...new Set(hits.map((r) => r.identity.domain))];
   const matches = hits.map((r) => ({ key: r.key, catalogId: r.identity.catalogId, unit: r.identity.unit, domain: r.identity.domain, status: r.status }));
+  const exactDomains = new Set(exact.map((r) => r.identity.domain));
   let identification: IdentificationStatus;
-  if (domains.length > 1) identification = "domain_conflict";
+  if (exactDomains.size > 1 || (!exact.length && domains.length > 1)) identification = "domain_conflict";
   else if (exact.some((r) => r.status === "approved")) identification = "matched_approved_interpretation";
   else if (exact.length) identification = "matched_registry_record";
   else if (hits.some((r) => r.identity.unit !== null)) identification = "unit_conflict";

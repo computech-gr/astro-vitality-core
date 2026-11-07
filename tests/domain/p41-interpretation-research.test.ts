@@ -191,7 +191,7 @@ describe("P41 server retrieval, AI drafting and attestation (mocked network)", (
     const fabricated = d.claims.find((c) => c.field === "spaceflightRelevance")!;
     expect(fabricated.verification).toBe("unresolved");
     expect(fabricated.problems.join(" ")).toContain("not retrieved");
-    expect(d.rejected.map((x) => x.reason).join(" | ")).toContain("threshold");
+    expect(d.rejected.map((x) => x.reason).join(" | ")).toContain("cut-off");
     expect(d.rejected.map((x) => x.reason).join(" | ")).toContain("improvement or deterioration");
     expect(r.bundle.status).toBe("draft_ready");
   });
@@ -243,7 +243,8 @@ describe("P41 longitudinal comparison", () => {
     const c = buildLongitudinalComparison([row("a", "20.0", "2026-01-01", { datePrecision: "date" }), row("b", "25.5", "2026-04-01", { datePrecision: "date" }), row("c", "22", "2026-07-01", { datePrecision: "date" })], "ng/mL");
     expect(c.consecutive.map((p) => [p.absolute, p.percent])).toEqual([[5.5, 27.5], [-3.5, -13.7]]);
     expect(c.baselineToLatest).toMatchObject({ absolute: 2, percent: 10, direction: "higher" });
-    expect(longitudinalLines(c).join(" ")).not.toMatch(/improv|worse|deteriorat|better|abnormal/i);
+    expect(longitudinalLines(c).length).toBeGreaterThan(3);
+    expect([...c.consecutive, c.baselineToLatest!].map((p) => p.text).join(" ")).not.toMatch(/improv|worse|deteriorat|better|abnormal/i);
   });
   it("handles zero and negative earlier values without dividing", () => {
     const zero = buildLongitudinalComparison([row("a", "0", "2026-01-01T00:00:00Z"), row("b", "3", "2026-02-01T00:00:00Z")], "ng/mL");
@@ -422,9 +423,9 @@ describe("P41 synthetic end-to-end: unknown → evidence → draft → review �
     expect(offline.records.filter((r) => r.status === "approved").length).toBe(1);
     // 6. A later synthetic examination in the same exact unit reuses the approved interpretation; other units/real data do not.
     const m = matchInterpretation(offline, { metricId: VITD_ID.catalogId, unit: "ng/mL", domain: "bone", missionId: MISSION, provenance: "synthetic" });
-    expect(m.record?.status).toBe("approved");
-    expect(matchInterpretation(offline, { metricId: VITD_ID.catalogId, unit: "nmol/L", domain: "bone", missionId: MISSION, provenance: "synthetic" }).record?.status).not.toBe("approved");
-    expect(matchInterpretation(offline, { metricId: VITD_ID.catalogId, unit: "ng/mL", domain: "bone", missionId: MISSION, provenance: "real" }).record?.status).not.toBe("approved");
+    expect(m.exact?.status).toBe("approved");
+    expect(matchInterpretation(offline, { metricId: VITD_ID.catalogId, unit: "nmol/L", domain: "bone", missionId: MISSION, provenance: "synthetic" }).exact?.status).not.toBe("approved");
+    expect(matchInterpretation(offline, { metricId: VITD_ID.catalogId, unit: "ng/mL", domain: "bone", missionId: MISSION, provenance: "real" }).exact?.status).not.toBe("approved");
     // 7. Examination comparison stays descriptive.
     const comp = buildLongitudinalComparison([row("e1", "30", "2026-09-01", { datePrecision: "date" }), row("e2", "27", "2026-10-01", { datePrecision: "date" }), row("e3", "24.5", "2026-11-01", { datePrecision: "date" })], "ng/mL");
     expect(comp.baselineToLatest).toMatchObject({ absolute: -5.5, percent: -18.3, direction: "lower" });

@@ -197,6 +197,8 @@ export const excerptFound = (excerpt: string, text: string | null) => !!text && 
 
 const PROHIBITED: [RegExp, string][] = [
   [THRESHOLD_LANGUAGE, "mentions a reference interval or threshold (needs a separately validated assay-specific rule)"],
+  [/\b(?:below|above|under|over|less than|greater than|more than|exceed\w*|at least|at most)\s*\d|[<>\u2264\u2265]\s*\d/i, "compares a value with a numeric cut-off"],
+  [/\b(?:deficien\w*|insufficien\w*|abnormal\w*|normal range|optimal|sufficient level)/i, "classifies a value as normal, abnormal, deficient or optimal"],
   [/\bdiagnos\w*|\bdisease state\b|\bpatholog\w* (?:is|are) (?:present|confirmed)/i, "states or implies a diagnosis"],
   [/\balways\b|\bnecessarily\b|\bproves?\b|\bdefinitively\b/i, "states certainty the evidence cannot support"],
   [/\b(?:improv\w*|deteriorat\w*|worsen\w*|healthier|unhealthy|better|worse)\b/i, "judges a change as improvement or deterioration"],
