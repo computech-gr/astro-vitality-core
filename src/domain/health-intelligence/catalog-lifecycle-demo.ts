@@ -40,6 +40,15 @@ const LABEL = "Synthetic Demo Marker Z",
   SPECIMEN = "Synthetic serum",
   METHOD = "Synthetic immunoassay",
   ID = "ext:synthetic-demo-marker-z";
+/** Role-based activation: any active Ground Medical member of the approval mission. */
+const DEMO_GROUND_MEDICAL = [
+  {
+    userId: "synthetic-activator",
+    missionId: "SYNTHETIC-DEMO",
+    role: "ground_medical",
+    active: true,
+  },
+] as const;
 
 export async function runSyntheticCatalogLifecycleDemo(
   now: () => string = () => new Date().toISOString(),
