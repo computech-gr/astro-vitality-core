@@ -169,6 +169,13 @@
       "when": 1794046329350,
       "tag": "0023_p37_catalog_activation",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794047887163,
+      "tag": "0024_p37_ground_medical_activation",
+      "breakpoints": true
     }
   ]
 }
