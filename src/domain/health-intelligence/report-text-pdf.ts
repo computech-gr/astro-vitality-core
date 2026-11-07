@@ -20,6 +20,8 @@ import { longitudinalLines } from "./longitudinal-comparison";
 
 import { observationDay, observationDateLabel } from "./observation-date";
 import { NOT_ASSESSED_TEXT, resolveAdverseAnnotations, type AdverseAssessmentInput } from "./adverse-annotations";
+import { buildBiomarkerAssessment, SEVERITY_LABELS, SEVERITY_MARKERS, SEVERITY_ORDER, severityCountsLine, type Severity } from "./biomarker-health-assessment";
+import { registryInterpretationSnapshot } from "./biomarker-interpretation-ledger";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
@@ -33,7 +35,7 @@ export type Block =
   | { kind: "alert"; tone: "pending" | "complete" | "info"; title: string; lines: string[] }
   | { kind: "bullets"; items: string[] }
   | { kind: "kv"; rows: [string, string][] }
-  | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][]; adverseRows?: number[] }
+  | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][]; adverseRows?: number[]; rowTones?: Severity[] }
   | { kind: "link"; text: string; url: string }
   | { kind: "pagebreak" };
 
@@ -124,6 +126,10 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
   const ref = (ids: readonly string[]) => (ids.length ? formatRefList(ids.map((id) => refs.get(id) ?? id)) : "none");
   const synthetic = u.scope.provenance === "synthetic";
   const adverse = resolveAdverseAnnotations(u.rows, u.scope.provenance, input.adverseAssessment);
+  // P54: same biomarker assessment builder as the screen and TXT (verified references only).
+  const assessment = researcherModel
+    ? buildBiomarkerAssessment(u, researcherModel, input.interpretations ?? registryInterpretationSnapshot(), { adverse })
+    : null;
   const markerFor = (ids: readonly string[]) =>
     ids.filter((id) => adverse.accepted.has(id)).map((id) => `${refs.get(id) ?? id}: ${adverse.accepted.get(id)!.marker}`).join("; ");
   const banner = synthetic ? "SYNTHETIC / RESEARCH ONLY" : "REAL DATA / RESEARCH ONLY - NOT FOR CLINICAL USE";
@@ -847,9 +853,12 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
         cells.forEach((c, i) => {
           font("normal", size);
           // Explicitly governed adverse annotations only. Never infer risk from raw values.
-          if (t.adverseRows?.includes(rowIndex)) pdf.setTextColor(180, 30, 40);
+          // P54: verified-reference severity tones (always paired with a printed text marker).
+          const tone = t.rowTones?.[rowIndex];
+          const rgb = t.adverseRows?.includes(rowIndex) || tone === "red" ? [180, 30, 40] : tone === "amber" ? [150, 90, 0] : tone === "normal" ? [20, 100, 50] : null;
+          if (rgb) pdf.setTextColor(rgb[0]!, rgb[1]!, rgb[2]!);
           c.slice(0, take).forEach((l, j) => pdf.text(l, x + pad, y + pad + lh * (j + 0.75)));
-          if (t.adverseRows?.includes(rowIndex)) pdf.setTextColor(17, 17, 17);
+          if (rgb) pdf.setTextColor(17, 17, 17);
           x += widths[i]!;
         });
         y += h;
