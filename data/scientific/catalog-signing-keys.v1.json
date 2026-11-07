@@ -1,0 +1,5 @@
+{
+  "schema": "mitochondria.catalog-signing-keys.v1",
+  "governance": "Public Ed25519 keys trusted to sign active-catalog snapshots for offline devices. Production keys are added only by the owner after provisioning the private key as the server secret P37_CATALOG_SIGNING_KEY. Empty means no snapshot is trusted and only the bundled catalog is used.",
+  "keys": []
+}

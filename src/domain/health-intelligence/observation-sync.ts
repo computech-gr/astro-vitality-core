@@ -79,7 +79,7 @@ export function checkObservationSyncEvent(event: ObservationSyncEvent, scope: Sy
   if (o.correction && (o.correction.actorRole !== "ground_medical" || o.correction.originalRecordId !== o.supersedesId))
     return "Correction metadata is inconsistent.";
   // Exact catalog metric + unit pair; units are never converted.
-  const c = classifyWithGovernedExtensions({ label: o.metricId, unit: o.originalUnit }).classification;
+  const c = classifyWithGovernedExtensions({ label: o.metricId, unit: o.originalUnit, identity: "canonical", includeRevoked: true }).classification;
   if (c.status !== "matched" || c.metricId !== o.metricId || c.domain !== o.domain)
     return `"${o.metricId}" with unit "${o.originalUnit}" is not an exact catalog metric/unit pair. Units are never converted.`;
   return null;

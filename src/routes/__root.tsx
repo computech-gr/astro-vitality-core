@@ -137,6 +137,11 @@ function RootComponent() {
       console.warn("Offline mission runtime initialization failed", error);
     });
     const stopGroundSync = initializeGroundSyncRuntime();
+    // Last verified activated-catalog snapshot (works offline; unverified data is ignored).
+    void import("@/domain/health-intelligence/active-catalog-runtime").then(async (m) => {
+      const storage = m.browserSnapshotStorage();
+      if (storage) await m.loadInstalledCatalog({ storage });
+    }).catch((error) => console.warn("Active catalog load failed", error));
     return stopGroundSync;
   }, []);
 

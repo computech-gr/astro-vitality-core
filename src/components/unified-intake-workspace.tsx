@@ -23,6 +23,7 @@ import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-revi
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
+import { getActiveCatalog, subscribeActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
 import { Link } from "@tanstack/react-router";
 import { type IntakeClassification } from "@/domain/health-domains/unified-intake-classification";
 import { DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
@@ -67,6 +68,10 @@ type IntakeRow = {
   datePrecision?: ObservationDatePrecision;
   collectionDate?: string;
   sourceValidation?: "unvalidated";
+  /** Reported specimen / measurement method; required to recognize activated catalog entries. */
+  specimen?: string;
+  method?: string;
+  provenance?: "synthetic" | "real";
   excerpt: string;
   sourceKind: ObservationSourceKind;
   sourceLabel: string;
@@ -79,8 +84,20 @@ type IntakeRow = {
 const MAX_ROWS = 200;
 
 /** Base P36 catalog first; only governed, fully approved catalog extensions can add matches. */
-function classify(label: string, unit: string): IntakeClassification {
-  return classifyWithGovernedExtensions({ label, unit }).classification;
+function classify(row: { label: string; unit: string; specimen?: string | undefined; method?: string | undefined; provenance?: "synthetic" | "real" | undefined; sourceValidation?: "unvalidated" | undefined }): IntakeClassification {
+  return classifyWithGovernedExtensions(row).classification;
+}
+
+/** Re-stamp scope provenance and re-run classification (e.g. after a verified catalog update). */
+function reclassifyRows(rows: readonly IntakeRow[], provenance: "" | "synthetic" | "real"): IntakeRow[] {
+  return rows.map((row) => {
+    const next: IntakeRow = { ...row };
+    if (provenance) next.provenance = provenance;
+    else delete next.provenance;
+    next.classification = classify(next);
+    next.selected = next.selected && isIntakeRowEligible(next);
+    return next;
+  });
 }
 
 function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): IntakeRow {
@@ -93,7 +110,7 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
     selected: false,
     ...partial,
     observedAt: partial.observedAt || partial.collectionDate || "",
-    classification: classify(partial.label, partial.unit),
+    classification: classify({ ...partial }),
   };
 }
 
@@ -245,8 +262,19 @@ export function UnifiedIntakeWorkspace() {
     setDuplicateAcknowledged(false);
   };
 
+  // Scope provenance or a newly verified catalog snapshot changes recognition; confirmation resets.
+  useEffect(() => {
+    const refresh = () => {
+      setRows((previous) => (previous.length ? reclassifyRows(previous, provenance) : previous));
+      setReviewerConfirmed(false);
+      setDuplicateAcknowledged(false);
+    };
+    refresh();
+    return subscribeActiveCatalog(refresh);
+  }, [provenance]);
+
   const addRows = (incoming: IntakeRow[], note: string) => {
-    setRows((previous) => [...previous, ...incoming].slice(0, MAX_ROWS));
+    setRows((previous) => [...previous, ...reclassifyRows(incoming, provenance)].slice(0, MAX_ROWS));
     resetReview();
     setStatus(note);
   };
@@ -757,6 +785,20 @@ export function UnifiedIntakeWorkspace() {
                         onChange={(event) => editRow(row.key, { unit: event.target.value })}
                         className="h-8 w-24"
                       />
+                      <Input
+                        aria-label={`Specimen for ${row.label}`}
+                        placeholder="Specimen"
+                        value={row.specimen ?? ""}
+                        onChange={(event) => editRow(row.key, { specimen: event.target.value })}
+                        className="mt-1 h-8 w-24 text-xs"
+                      />
+                      <Input
+                        aria-label={`Method for ${row.label}`}
+                        placeholder="Method"
+                        value={row.method ?? ""}
+                        onChange={(event) => editRow(row.key, { method: event.target.value })}
+                        className="mt-1 h-8 w-24 text-xs"
+                      />
                     </td>
                     <td className="py-2 pr-3">
                       <select aria-label={`Date precision for ${row.label}`} value={row.datePrecision ?? "instant"} onChange={(e) => editRow(row.key, { datePrecision: e.target.value as ObservationDatePrecision, observedAt: "" })} className="mb-1 w-52 rounded-md border border-border bg-background p-1 text-xs">
@@ -775,7 +817,12 @@ export function UnifiedIntakeWorkspace() {
                       {intakeRowExclusionReason(row) && <p className="max-w-52 text-xs text-destructive">{intakeRowExclusionReason(row)}</p>}
                     </td>
                     <td className="py-2 pr-3">
-                      {row.classification.status === "matched" ? (
+                      {row.classification.status === "matched" && row.classification.metricId.startsWith("ext:") ? (
+                        <Badge variant="secondary">
+                          Recognized (activated catalog v{getActiveCatalog().catalogVersion}): {row.classification.metricId} →{" "}
+                          {DOMAIN_LABELS[row.classification.domain]}
+                        </Badge>
+                      ) : row.classification.status === "matched" ? (
                         <Badge variant="secondary">
                           Matched: {row.classification.metricId} →{" "}
                           {DOMAIN_LABELS[row.classification.domain]}
