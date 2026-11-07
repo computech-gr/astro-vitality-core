@@ -218,7 +218,13 @@ describe("P41.1 a relevant, valid citation still needs independent scientific re
     expect(approvalProblem(identity, draft)).not.toBeNull();
     // Even with the Researcher's appraisal, a device approval is only "awaiting attestation" until the server signs it.
     const researcher: ActorContext = { userId: "researcher-p411", name: "Researcher", roles: ["researcher"], now: "2026-11-08T10:00:00.000Z" };
-    const appraised = { ...draft, evidenceStrength: { level: "low" as const, basis: "One analog cohort abstract reviewed by the Researcher." } };
+    // The draft has no "function" statement, so approval is blocked until the Researcher writes one from the cited source.
+    expect((await planApproval([], identity, { ...draft, evidenceStrength: { level: "low" as const, basis: "Reviewed." } }, SYNTHETIC_DEMO_APPROVAL_ACK, researcher)).ok).toBe(false);
+    const appraised = {
+      ...draft,
+      content: { ...draft.content, function: { text: "Synthetic test statement: G-CSF is a cytokine reported in plasma in the cited analog cohort.", citationIds: [PALMER], evidenceScope: "general_biomedical" as const } },
+      evidenceStrength: { level: "low" as const, basis: "One analog cohort abstract reviewed by the Researcher." },
+    };
     expect((await planApproval([], identity, appraised, SYNTHETIC_DEMO_APPROVAL_ACK, { ...researcher, roles: ["ground_medical"] })).ok).toBe(false);
     const plan = await planApproval([], identity, appraised, SYNTHETIC_DEMO_APPROVAL_ACK, researcher);
     if (!plan.ok) throw new Error(plan.reason);
