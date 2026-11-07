@@ -473,12 +473,110 @@ export function UnifiedIntakeWorkspace() {
     setDuplicateAcknowledged(next.duplicateAcknowledged);
   };
 
-  const setAllSelected = (selected: boolean) => {
-    const next = setIntakeReviewSelection(rows, selected);
+  const setAllSelected = (selected: boolean, onlyKeys?: ReadonlySet<string>) => {
+    const next = setIntakeReviewSelection(rows, selected, onlyKeys);
     setRows(next.rows);
     setReviewerConfirmed(next.reviewerConfirmed);
     setDuplicateAcknowledged(next.duplicateAcknowledged);
   };
+
+  // P42: identity of each processed document vs the selected crew scope.
+  const identityChecks = useMemo(
+    () =>
+      new Map(
+        documents.map((d) => [
+          d.sha256,
+          d.reconstruction && membership
+            ? compareDocumentIdentity(d.reconstruction.identity, {
+                crewLabel: membership.crewLabel,
+                provenance,
+              })
+            : null,
+        ]),
+      ),
+    [documents, membership, provenance],
+  );
+  const resolutionKey = (sha256: string) =>
+    membership ? `${sha256}|${membership.missionId}|${membership.crewMemberId}` : "";
+  useEffect(() => {
+    setRows((previous) => {
+      let changed = false;
+      const next = previous.map((row) => {
+        const check = row.documentSha256 ? (identityChecks.get(row.documentSha256) ?? null) : null;
+        const resolved =
+          Boolean(membership && row.documentSha256) &&
+          identityResolutions.has(
+            `${row.documentSha256}|${membership?.missionId}|${membership?.crewMemberId}`,
+          );
+        const hold = check ? identityHoldReason(check, resolved) : null;
+        if ((row.identityHold ?? null) === hold) return row;
+        changed = true;
+        return { ...row, identityHold: hold, selected: hold ? false : row.selected };
+      });
+      return changed ? next : previous;
+    });
+  }, [identityChecks, identityResolutions, membership]);
+
+  const rejectRow = (key: string, rejected: boolean) => {
+    const next = editIntakeReviewRow(rows, key, { rejected, selected: false });
+    setRows(next.rows);
+    setReviewerConfirmed(false);
+    setDuplicateAcknowledged(false);
+  };
+
+  const applyTimestamp = (sha256: string, value: string, precision: "date" | "instant", interpretation: string) => {
+    const result = applyDocumentTimestamp(rows, sha256, { value, precision, interpretation });
+    setRows(result.rows.map((row) => (row.documentSha256 === sha256 ? { ...row, classification: classify(row) } : row)));
+    resetReview();
+    setStatus(
+      `Applied ${value} (${interpretation}) to ${result.applied} unsaved row(s) of this document that had no observation time. Rows stay unchecked; verify each before saving.`,
+    );
+  };
+
+  const removeDocumentRows = (sha256: string) => {
+    setRows((previous) => previous.filter((row) => row.documentSha256 !== sha256));
+    setDocuments((previous) => previous.filter((d) => d.sha256 !== sha256));
+    resetReview();
+    setStatus("Unsaved rows of that document were removed from review. It can be processed again; saved observations are unchanged.");
+  };
+
+  // P42: review filters (display only; eligibility and saving are unchanged).
+  const [filterDomain, setFilterDomain] = useState("");
+  const [filterPage, setFilterPage] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const statusOf = (row: IntakeRow): string =>
+    row.rejected
+      ? "rejected"
+      : row.identityHold
+        ? "identity_hold"
+        : extractionBlockingReason(row)
+          ? row.extraction?.issues.some((i) => i.code === "unsupported_result_type")
+            ? "unsupported"
+            : "extraction_review"
+          : row.classification.status === "matched"
+            ? row.extraction?.repeat
+              ? "repeat"
+              : "matched"
+            : row.classification.status;
+  const domainOf = (row: IntakeRow): string =>
+    row.classification.status === "matched"
+      ? row.classification.domain
+      : (row.sourceSection?.domain ?? "none");
+  const visibleRows = rows.filter(
+    (row) =>
+      (!filterDomain || domainOf(row) === filterDomain) &&
+      (!filterPage || String(row.extraction?.page ?? row.sourceSection?.page ?? "") === filterPage) &&
+      (!filterStatus ||
+        (filterStatus === "ambiguity"
+          ? row.classification.status === "ambiguous" ||
+            row.classification.status === "unit_review_required" ||
+            Boolean(row.extraction && extractionBlockingReason(row)) ||
+            row.extraction?.confidence === "low"
+          : statusOf(row) === filterStatus)),
+  );
+  const visibleKeys = new Set(visibleRows.map((row) => row.key));
+  const filtered = visibleRows.length !== rows.length;
+  const pageOptions = [...new Set(rows.map((row) => row.extraction?.page ?? row.sourceSection?.page).filter((p): p is number => typeof p === "number"))].sort((a, b) => a - b);
 
   const [batchFiles, setBatchFiles] = useState<
     Array<{ name: string; state: string; count: number; flags?: string[] }>
@@ -672,13 +770,23 @@ export function UnifiedIntakeWorkspace() {
   };
 
   const selection = intakeSelectionCounts(rows);
+  const visibleSelection = intakeSelectionCounts(visibleRows);
   const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
   const reviewOnlyRows = rows.filter(
     (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
   );
   // Rows matched by an activated mission SYNTHETIC DEMO entry are ordinary matched rows
   // (saveable after human review), so they never reach the unknown-biomarker request.
-  const unknownRequestRows = reviewOnlyRows;
+  // P42: rejected rows, identity-held rows and rows whose label could not be separated
+  // safely never become unknown-biomarker requests (identity not safely established).
+  const unknownRequestRows = reviewOnlyRows.filter(
+    (row) =>
+      !row.rejected &&
+      !row.identityHold &&
+      !row.extraction?.issues.some(
+        (i) => i.code === "token_split_failed" || i.code === "column_mismatch",
+      ),
+  );
   const missionDemoCatalog = membership ? (demoCatalogs.get(membership.missionId) ?? null) : null;
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
@@ -791,6 +899,13 @@ export function UnifiedIntakeWorkspace() {
         await saveUnifiedObservation(observation);
       }
       const savedKeys = new Set(saveableRows.map((row) => row.key));
+      const savedByDocument = new Map<string, number>();
+      for (const row of saveableRows)
+        if (row.documentSha256)
+          savedByDocument.set(row.documentSha256, (savedByDocument.get(row.documentSha256) ?? 0) + 1);
+      setDocuments((previous) =>
+        previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
+      );
       setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
