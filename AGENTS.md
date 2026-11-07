@@ -51,3 +51,4 @@
 - Date-only v2 rules live in src/domain/health-intelligence/AGENTS.md.
 - Dynamic P36 metadata and scientific authorization use separate default-off caller-scoped RPCs staged in pending SQL and tested only through P36_DISPOSABLE_SOCKET; independently provisioned source receipts block label-based medical validation and no code path applies catalog promotion.
 - Compact P36 tables are presentation-only and open the complete existing dossiers; mission-wide roster reads use the staged caller-scoped active-assignment RPC, never broader table policies, so Researcher visibility cannot expose unrelated crew.
+- P36 tool-compatible DDL uses managed transactions and a separately authorized atomic closed-admission INSERT; missing rows fail closed, originals stay immutable, and each verified step must precede the next because the sequence is not one transaction.
