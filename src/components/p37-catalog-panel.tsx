@@ -21,10 +21,8 @@ import { ScientificApproveWorkspace } from "@/components/p37-scientific-approve"
 import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
 import { P38BulkDemoResearcher } from "@/components/p38-bulk-demo-researcher";
 import { subscribeOpenBulkDemo } from "@/components/p38-bulk-navigation";
-import {
-  BULK_RESEARCHER_ANCHOR,
-  BulkResearcherSection,
-} from "@/components/p38-bulk-researcher-section";
+import { BULK_RESEARCHER_ANCHOR } from "@/components/p38-bulk-researcher-anchor";
+import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
 import { bulkResearcherVisibility } from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import {
   activateCatalogEntryFn,

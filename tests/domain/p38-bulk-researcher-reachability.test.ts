@@ -8,8 +8,8 @@ import { bulkResearcherVisibility } from "@/domain/health-intelligence/p38-bulk-
 import {
   BULK_RESEARCHER_ANCHOR,
   BULK_RESEARCHER_HEADING,
-  BulkResearcherSection,
-} from "@/components/p38-bulk-researcher-section";
+} from "@/components/p38-bulk-researcher-anchor";
+import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const src = (p: string) => readFileSync(join(ROOT, p), "utf8");

@@ -4,7 +4,7 @@ import { BiomarkerInterpretationReview } from "@/components/biomarker-interpreta
 import {
   BULK_RESEARCHER_ANCHOR,
   BULK_RESEARCHER_HEADING,
-} from "@/components/p38-bulk-researcher-section";
+} from "@/components/p38-bulk-researcher-anchor";
 import { operationalRouteHead } from "@/infrastructure/seo";
 
 export const Route = createFileRoute("/mission/scientific-review")({
