@@ -449,6 +449,27 @@ export function UnifiedIntakeWorkspace() {
   const reviewOnlyRows = rows.filter(
     (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
   );
+  // SYNTHETIC DEMO coverage is an annotation only: rows stay review-only and unsaveable,
+  // but an already demo-activated term never generates a duplicate unknown-biomarker request.
+  const demoCoverage = new Map(
+    reviewOnlyRows.flatMap((row) => {
+      const r = syntheticDemoCoverage(
+        {
+          label: row.label,
+          unit: row.unit,
+          provenance: row.provenance,
+          sourceValidation: row.sourceValidation,
+          missionId: membership?.missionId,
+        },
+        demoCatalogs,
+        row.classification,
+      );
+      return r ? [[row.key, r] as const] : [];
+    }),
+  );
+  const unknownRequestRows = reviewOnlyRows.map((row) =>
+    demoCoverage.has(row.key) ? { ...row, syntheticDemo: { demoId: demoCoverage.get(row.key)!.demoId } } : row,
+  );
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
         findUnifiedDuplicates(history, {
@@ -911,6 +932,17 @@ export function UnifiedIntakeWorkspace() {
                           Matched: {row.classification.metricId} →{" "}
                           {DOMAIN_LABELS[row.classification.domain]}
                         </Badge>
+                      ) : demoCoverage.has(row.key) ? (
+                        (() => {
+                          const d = demoCoverage.get(row.key)!;
+                          return (
+                            <Badge variant="outline" data-testid="p37-demo-recognized">
+                              SYNTHETIC DEMO RECOGNIZED — demo catalog v{d.demoCatalogVersion}:{" "}
+                              {d.displayName} ({d.demoId}) · {d.unit} → {DOMAIN_LABELS[d.domain]} ·
+                              not a scientific approval · review-only, not saved
+                            </Badge>
+                          );
+                        })()
                       ) : row.classification.status === "unit_review_required" ? (
                         <Badge variant="outline">Unit review required — review-only</Badge>
                       ) : row.classification.status === "ambiguous" ? (
@@ -977,7 +1009,7 @@ export function UnifiedIntakeWorkspace() {
 
       <UnknownBiomarkerReviewPanel
         key={`${membership?.missionId ?? ""}|${membership?.crewMemberId ?? ""}|${provenance}|${identity?.userId ?? ""}`}
-        rows={reviewOnlyRows}
+        rows={unknownRequestRows}
         scope={
           membership && provenance
             ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance }
