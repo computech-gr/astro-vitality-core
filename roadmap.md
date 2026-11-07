@@ -536,3 +536,13 @@
 - [x] Processing summary, actionable diagnostics, identity check (Ground Medical resolution), reviewer-applied examination time, filters, reject, bulk selection limited to safely matched rows, safe retry and interrupted-save recovery.
 - [ ] "IMMUNE MONITORING" heading → Immune domain — blocked: governed P39 heading-rules update (sealed evidence uses v1).
 - [ ] Bone unit-review rows (97) and 175 unknown terms — blocked: scientific decisions by the Researcher.
+
+## P54 Unified astronaut health assessment
+
+- [x] Per-biomarker status, previous comparable result, neutral change, interpretation, evidence and limitations on screen, PDF and TXT from one read model.
+- [x] RED/AMBER/NORMAL only from verified exact-ID/unit/domain references or approved adverse rules; otherwise NEUTRAL with a reason; icon + text + colour.
+- [x] Offline preliminary assessment; optional AI draft (Ground Medical, synthetic, default-off flag) with session-only clinician review.
+- [x] P38 bulk workflow reused: counts, per-item results, failed-item reselection, link from Global Scientific Review.
+- [ ] First verified reference intervals — blocked: independent verification evidence.
+- [ ] Turn on AI preliminary assessment — blocked: owner decision on the server flag.
+- [ ] Signed-in Ground Medical and Researcher checks of the new controls — blocked: their sessions.

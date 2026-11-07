@@ -36,6 +36,10 @@
   --color-signal: var(--signal);
   --color-quality-good: var(--quality-good);
   --color-quality-degraded: var(--quality-degraded);
+  --color-severity-red: var(--severity-red);
+  --color-severity-amber: var(--severity-amber);
+  --color-severity-normal: var(--severity-normal);
+  --color-severity-neutral: var(--severity-neutral);
 }
 
 :root {
@@ -66,6 +70,11 @@
   /* P45: data-quality states (not health risk). */
   --quality-good: oklch(0.78 0.15 155);
   --quality-degraded: oklch(0.8 0.15 80);
+  /* P54 biomarker severity: always paired with a text marker, never colour alone. */
+  --severity-red: oklch(0.66 0.21 25);
+  --severity-amber: oklch(0.8 0.15 75);
+  --severity-normal: oklch(0.78 0.15 155);
+  --severity-neutral: oklch(0.74 0.03 235);
   --primary-glow: oklch(0.79 0.145 206 / 35%);
   --cyan-haze: oklch(0.68 0.15 215 / 15%);
   --hero-overlay: oklch(0.11 0.025 245 / 94%);
@@ -95,6 +104,10 @@
   min-width: 0;
   overflow-wrap: anywhere;
   --muted-foreground: var(--report-muted);
+  --severity-red: #b91c1c;
+  --severity-amber: #92400e;
+  --severity-normal: #166534;
+  --severity-neutral: #475569;
 }
 .report-print h2 { color: var(--report-heading-strong); letter-spacing: 0; }
 .report-print h3 { color: var(--report-heading); border-bottom: 2px solid var(--report-border); padding-bottom: .4rem; }

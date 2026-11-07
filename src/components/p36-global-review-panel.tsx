@@ -24,6 +24,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { appendGlobalTriage, listGlobalReviewMissions, listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
 import { EVIDENCE_REQUIREMENTS, latestTriageByTerm, triageInputProblem, type EvidenceRequirement, type TriageAction, type TriageEvent } from "@/lib/p36-global-triage-rules";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
+import { openBulkDemoDecisions } from "@/components/p38-bulk-navigation";
 import {
   ALL_CREWS, ALL_MISSIONS, REVIEW_STATE_LABEL, SCIENTIFIC_STATE_LABEL, canChooseAllMissions, crewOptions, dashboardCounts, filterTerms,
   flattenTerms, missionsForSelection, paginate, sortTerms, type ReviewState, type TermRow, type TermSort,
@@ -372,6 +373,16 @@ export function P36GlobalReviewPanel() {
             <Stat label="Scientifically approved" value={counts.approved} note="Only through independent authorization" />
             <Stat label="Activation-blocked" value={counts.activationBlocked} note="Catalog activation is separately governed" />
           </div>
+          {selectedMission ? (
+            <div className="flex flex-col gap-1 rounded-md border border-dashed border-border p-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                Eligible terms of this mission can be accepted for review and given SYNTHETIC DEMO decisions in bulk (not scientific approval; Ground Medical activates separately).
+              </p>
+              <Button size="sm" variant="secondary" onClick={() => openBulkDemoDecisions(selectedMission.missionId)}>
+                Open bulk synthetic demo decisions
+              </Button>
+            </div>
+          ) : null}
 
           <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
             <Input aria-label="Search submitted terms" placeholder="Search label, unit, candidate, term or request…" value={query}

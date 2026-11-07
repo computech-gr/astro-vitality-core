@@ -1,0 +1,6 @@
+{
+  "schema": "mitochondria.verified-reference-intervals.v1",
+  "version": 1,
+  "note": "Independently verified reference intervals and decision thresholds, bound to an exact catalog ID, exact unit and domain. Intentionally EMPTY: no reference interval or threshold has been independently verified for this project. Entries may only be added through a reviewed patch citing a named verifier, verification reference and source; the app never writes this file and never infers, converts or borrows values.",
+  "entries": []
+}

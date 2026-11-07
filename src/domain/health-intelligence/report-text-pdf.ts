@@ -20,6 +20,8 @@ import { longitudinalLines } from "./longitudinal-comparison";
 
 import { observationDay, observationDateLabel } from "./observation-date";
 import { NOT_ASSESSED_TEXT, resolveAdverseAnnotations, type AdverseAssessmentInput } from "./adverse-annotations";
+import { buildBiomarkerAssessment, SEVERITY_LABELS, SEVERITY_MARKERS, SEVERITY_ORDER, severityCountsLine, type ReferenceRegistry, type Severity } from "./biomarker-health-assessment";
+import { registryInterpretationSnapshot } from "./biomarker-interpretation-ledger";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
@@ -33,7 +35,7 @@ export type Block =
   | { kind: "alert"; tone: "pending" | "complete" | "info"; title: string; lines: string[] }
   | { kind: "bullets"; items: string[] }
   | { kind: "kv"; rows: [string, string][] }
-  | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][]; adverseRows?: number[] }
+  | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][]; adverseRows?: number[]; rowTones?: Severity[] }
   | { kind: "link"; text: string; url: string }
   | { kind: "pagebreak" };
 
@@ -61,6 +63,8 @@ export interface TextReportInput {
   adverseAssessment?: AdverseAssessmentInput;
   /** P40: last verified local interpretation snapshot (same one the screen used); registry-only when omitted. */
   interpretations?: InterpretationSnapshot;
+  /** P54: verified reference registry; the bundled (validated) registry when omitted. */
+  referenceRegistry?: ReferenceRegistry;
 }
 
 const isCorrectionHistory = (reason: string) => /^Marked erroneous|^Superseded by correction/.test(reason);
@@ -124,6 +128,10 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
   const ref = (ids: readonly string[]) => (ids.length ? formatRefList(ids.map((id) => refs.get(id) ?? id)) : "none");
   const synthetic = u.scope.provenance === "synthetic";
   const adverse = resolveAdverseAnnotations(u.rows, u.scope.provenance, input.adverseAssessment);
+  // P54: same biomarker assessment builder as the screen and TXT (verified references only).
+  const assessment = researcherModel
+    ? buildBiomarkerAssessment(u, researcherModel, input.interpretations ?? registryInterpretationSnapshot(), { adverse, ...(input.referenceRegistry ? { registry: input.referenceRegistry } : {}) })
+    : null;
   const markerFor = (ids: readonly string[]) =>
     ids.filter((id) => adverse.accepted.has(id)).map((id) => `${refs.get(id) ?? id}: ${adverse.accepted.get(id)!.marker}`).join("; ");
   const banner = synthetic ? "SYNTHETIC / RESEARCH ONLY" : "REAL DATA / RESEARCH ONLY - NOT FOR CLINICAL USE";
@@ -196,6 +204,17 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
       ...(researcherModel?.syntheticDemoInterpretations ? [`${researcherModel.syntheticDemoInterpretations} series use SYNTHETIC DEMO interpretations; these are not production scientific validation.`] : []),
     ],
   });
+  if (assessment) {
+    blocks.push({
+      kind: "alert",
+      tone: assessment.counts.red || assessment.counts.amber ? "pending" : "info",
+      title: `BIOMARKER STATUS: ${assessment.counts.red} RED · ${assessment.counts.amber} AMBER · ${assessment.counts.normal} NORMAL · ${assessment.counts.neutral} NEUTRAL`,
+      lines: [
+        severityCountsLine(assessment),
+        "Status comes only from applicable, independently verified references; a numerical increase or decrease is never classified as harmful. Not a diagnosis.",
+      ],
+    });
+  }
   blocks.push(
     {
       kind: "kv",
@@ -241,6 +260,50 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     { kind: "pagebreak" },
   );
   fresh([REPORT_DISCLAIMER]);
+
+  // ---- P54 Biomarker health assessment (verified references only) ----
+  if (assessment) {
+    blocks.push({ kind: "h2", text: "Biomarker health assessment (verified references only)" });
+    blocks.push({ kind: "p", text: `Severity key: ${SEVERITY_ORDER.map((s) => `${SEVERITY_MARKERS[s]} = ${SEVERITY_LABELS[s]}`).join("; ")}. Colour is always paired with the printed marker.`, muted: true });
+    blocks.push({ kind: "bullets", items: [...assessment.policy] });
+    if (assessment.entries.length) {
+      blocks.push({
+        kind: "table",
+        columns: [
+          { title: "Biomarker (domain)", width: 0.24 },
+          { title: "Latest (date)", width: 0.19 },
+          { title: "Previous / change", width: 0.23 },
+          { title: "Status", width: 0.2 },
+          { title: "Evidence", width: 0.14 },
+        ],
+        rows: assessment.entries.map((e) => [
+          `${metricName(e.name, e.metricId)} [${e.unit}] - ${e.domainLabel}${e.nonClinicalLabel ? " (SYNTHETIC DEMO, non-clinical)" : ""}`,
+          `${e.latest.value} ${e.unit} - ${e.latest.observedAt}${e.latest.precision === "date" ? " (date only)" : ""}`,
+          e.previous ? `${e.previous.value} ${e.unit}; ${e.change.status === "compared" && e.change.absolute !== null ? `${e.change.absolute > 0 ? "+" : ""}${e.change.absolute} ${e.unit}${e.change.percent !== null ? ` (${e.change.percent > 0 ? "+" : ""}${e.change.percent}%)` : ""}` : "not compared"}` : "none comparable",
+          `${e.marker} - ${e.statusLabel}`,
+          ref(e.evidenceIds),
+        ]),
+        rowTones: assessment.entries.map((e) => e.classification.severity),
+      });
+      blocks.push({
+        kind: "bullets",
+        items: assessment.entries.map((e) =>
+          [
+            `${e.marker} ${metricName(e.name, e.metricId)} [${e.unit}]:`,
+            ...(e.nonClinicalLabel ? [`${e.nonClinicalLabel}.`] : []),
+            `Basis: ${e.classification.explanation}`,
+            `Reference: ${e.referenceText ?? "none verified"}${e.referenceCitation ? ` (${e.referenceCitation})` : ""}.`,
+            `What it measures: ${e.explanation}`,
+            ...(e.higherValues ? [`Higher values: ${e.higherValues}`] : []),
+            ...(e.lowerValues ? [`Lower values: ${e.lowerValues}`] : []),
+            ...(e.spaceflightContext ? [`Spaceflight context: ${e.spaceflightContext}`] : []),
+            `Citations: ${e.citations.length ? e.citations.join("; ") : "none"}. Evidence quality: ${e.evidenceQuality}.`,
+            `Reviewer status: ${e.reviewerStatus}`,
+          ].join(" "),
+        ),
+      });
+    } else blocks.push({ kind: "p", text: "No included biomarker observations in this scope." });
+  }
 
   // ---- 1. Descriptive findings ----
   blocks.push({ kind: "h2", text: "1. Descriptive findings" });
@@ -847,9 +910,12 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
         cells.forEach((c, i) => {
           font("normal", size);
           // Explicitly governed adverse annotations only. Never infer risk from raw values.
-          if (t.adverseRows?.includes(rowIndex)) pdf.setTextColor(180, 30, 40);
+          // P54: verified-reference severity tones (always paired with a printed text marker).
+          const tone = t.rowTones?.[rowIndex];
+          const rgb = t.adverseRows?.includes(rowIndex) || tone === "red" ? [180, 30, 40] : tone === "amber" ? [150, 90, 0] : tone === "normal" ? [20, 100, 50] : null;
+          if (rgb) pdf.setTextColor(rgb[0]!, rgb[1]!, rgb[2]!);
           c.slice(0, take).forEach((l, j) => pdf.text(l, x + pad, y + pad + lh * (j + 0.75)));
-          if (t.adverseRows?.includes(rowIndex)) pdf.setTextColor(17, 17, 17);
+          if (rgb) pdf.setTextColor(17, 17, 17);
           x += widths[i]!;
         });
         y += h;

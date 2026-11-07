@@ -20,6 +20,7 @@ import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-ru
 import { ScientificApproveWorkspace } from "@/components/p37-scientific-approve";
 import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
 import { P38BulkDemoResearcher } from "@/components/p38-bulk-demo-researcher";
+import { subscribeOpenBulkDemo } from "@/components/p38-bulk-navigation";
 import {
   activateCatalogEntryFn,
   getCatalogLifecycle,
@@ -325,6 +326,8 @@ export function P37CatalogPanel() {
   const [missions, setMissions] = useState<GlobalReviewMission[]>([]);
   const [missionId, setMissionId] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [scrollToBulk, setScrollToBulk] = useState(false);
+  const [bulkNote, setBulkNote] = useState("");
   const [note, setNote] = useState("");
   const [data, setData] = useState<{
     canApprove: boolean;
@@ -375,6 +378,29 @@ export function P37CatalogPanel() {
 
   const mission = missions.find((m) => m.missionId === missionId) ?? null;
 
+  // P54: "Open bulk decisions" from the Global Scientific Review table. Only a
+  // mission in this panel's own authorized list is accepted.
+  useEffect(
+    () =>
+      subscribeOpenBulkDemo((id) => {
+        if (!missions.some((m) => m.missionId === id)) {
+          setBulkNote("This mission is not available for catalog decisions with this account. Nothing was changed.");
+          document.getElementById("p37-title")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        setBulkNote("");
+        setMissionId(id);
+        setScrollToBulk(true);
+      }),
+    [missions],
+  );
+  useEffect(() => {
+    if (!scrollToBulk || state === "loading" || state === "idle") return;
+    setScrollToBulk(false);
+    const target = document.getElementById("p38-bulk-researcher") ?? document.getElementById("p37-title");
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [scrollToBulk, state]);
+
   return (
     <section aria-labelledby="p37-title" className="space-y-4 rounded-lg border border-border p-4">
       <div>
@@ -390,6 +416,11 @@ export function P37CatalogPanel() {
       </div>
       <OfflineCatalogStatus />
       <SyntheticDemo />
+      {bulkNote ? (
+        <p role="status" className="text-sm text-muted-foreground">
+          {bulkNote}
+        </p>
+      ) : null}
 
       {missions.length ? (
         <div className="space-y-1">
