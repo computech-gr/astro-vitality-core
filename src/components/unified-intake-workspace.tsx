@@ -392,6 +392,9 @@ export function UnifiedIntakeWorkspace() {
   );
 
   const [rows, setRows] = useState<IntakeRow[]>([]);
+  const [documents, setDocuments] = useState<ProcessedDocument[]>([]);
+  /** Ground Medical identity-conflict resolutions: `${sha256}|${missionId}|${crewMemberId}` (memory only). */
+  const [identityResolutions, setIdentityResolutions] = useState<ReadonlySet<string>>(new Set());
   const demoCatalogs = useSyncExternalStore(
     subscribeSyntheticDemoCatalogs,
     getSyntheticDemoCatalogs,
@@ -580,9 +583,6 @@ export function UnifiedIntakeWorkspace() {
   const [batchFiles, setBatchFiles] = useState<
     Array<{ name: string; state: string; count: number; flags?: string[] }>
   >([]);
-  const [documents, setDocuments] = useState<ProcessedDocument[]>([]);
-  /** Ground Medical identity-conflict resolutions: `${sha256}|${missionId}|${crewMemberId}` (memory only). */
-  const [identityResolutions, setIdentityResolutions] = useState<ReadonlySet<string>>(new Set());
   const MAX_BATCH_FILES = 20;
   const MAX_FILE_BYTES = 15 * 1024 * 1024;
   const processBatch = async (files: File[]) => {
