@@ -1,14 +1,15 @@
 import { it } from "bun:test";
-import { writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { extractPdfGeometry, repoPath } from "./documents/p42-pdf-helpers";
 import { reconstructDocumentTables, documentLinesFromText } from "@/domain/health-intelligence/document-table-reconstruction";
-import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
-it("explore", async () => {
+it("ocr", async () => {
   const g = await extractPdfGeometry(repoPath("tests/fixtures/p42/Alex_Morgan_Complete_Examination_2026-11-07.pdf"));
-  const r = reconstructDocumentTables(documentLinesFromText(g.text, g.linePages, g.geometry));
-  const cls = r.observations.map(o => classifyWithGovernedExtensions({ label: o.label, unit: o.unit }).classification);
-  const counts: Record<string, number> = {};
-  cls.forEach(c => counts[c.status] = (counts[c.status] ?? 0) + 1);
-  writeFileSync("/tmp/p42/recon.json", JSON.stringify({ ...r, observations: r.observations.map((o, i) => ({ n: o.sourceRowNumber, l: o.label, v: o.rawValue, nv: o.value, k: o.valueKind, u: o.unit, s: o.section.heading, d: o.section.domain, p: o.page, c: o.confidence, iss: o.issues.map(x => x.code), rep: o.repeat, cls: cls[i]!.status, m: (cls[i] as any).metricId ?? (cls[i] as any).candidateMetricIds })) }, null, 1));
-  console.log(r.observations.length, JSON.stringify(counts), JSON.stringify(r.sections), JSON.stringify(r.rowNumbers), r.decimalConvention, JSON.stringify(r.identity), r.headers.length);
+  const truth = reconstructDocumentTables(documentLinesFromText(g.text, g.linePages, g.geometry));
+  const fx = JSON.parse(readFileSync(repoPath("tests/fixtures/p42/alex-morgan-ocr-tesseract.v1.json"), "utf8"));
+  const r = reconstructDocumentTables(fx.lines.map((l: any) => ({ text: l.text, page: l.page })), { ocr: true });
+  const t = new Map(truth.observations.map(o => [o.sourceRowNumber, o]));
+  let same = 0, diffV = 0, diffL = 0, diffU = 0;
+  for (const o of r.observations) { const x = t.get(o.sourceRowNumber); if (!x) continue; if (x.value === o.value && x.label === o.label && x.unit === o.unit) same++; if (x.value !== o.value) diffV++; if (x.label !== o.label) diffL++; if (x.unit !== o.unit) diffU++; }
+  console.log(r.observations.length, r.headers.length, JSON.stringify(r.rowNumbers), same, diffV, diffL, diffU, JSON.stringify(r.sections), r.observations.filter(o => o.confidence !== "low").length, r.observations.filter(o=>o.issues.some(i=>i.blocking)).length);
+  console.log(JSON.stringify(r.identity.timestampCandidates.map(c=>c.value)), r.identity.patientName);
 });
