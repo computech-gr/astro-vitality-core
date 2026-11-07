@@ -471,13 +471,13 @@ function extractIdentity(lines: readonly DocumentLineInput[]): DocumentIdentity 
     const text = l.text.trim();
     if (!text || text.length > 400) return;
     if (SIMULATED.test(text)) declaresSimulated = true;
-    const parts = l.cells?.length ? l.cells.map((c) => c.text) : text.split(/\s*\|\s*/);
+    const parts = (l.cells?.length ? l.cells.map((c) => c.text) : [text]).flatMap((p) => p.split(/\s*\|\s*/));
     for (const part of parts) {
       const kv = /^([^:|]{1,40}):\s*(.+)$/.exec(part.trim());
       if (!kv) continue;
       const key = normalizeHeaderText(kv[1] ?? "");
       const value = (kv[2] ?? "").trim();
-      if (!value || /:\s*\S+:/.test(value)) continue;
+      if (!value) continue;
       metadata.push({ key: (kv[1] ?? "").trim(), value, line: i + 1 });
       if (PATIENT_KEYS.has(key)) {
         if (!names.some((n) => normalizePersonName(n) === normalizePersonName(value))) names.push(value);
@@ -669,6 +669,30 @@ export function reconstructDocumentTables(
     const hasRowNumberRole = active?.roles.includes("row_number") ?? false;
     const looksNumbered = ROW_NUMBER.test(first) || (delimited.length <= 1 && !!tokenNumber);
 
+    // Continuation of a wrapped label: an un-numbered line inside a numbered table whose
+    // cells sit only in the label column (geometry) or that starts in lower case (text).
+    if (active && hasRowNumberRole && !looksNumbered) {
+      const h: ActiveHeader = active;
+      const prev = pending[pending.length - 1];
+      const labelIndex = h.roles.indexOf("label");
+      const labelOnly =
+        prev !== undefined &&
+        prev.page === l.page &&
+        lineNo - prev.line <= 2 &&
+        (l.cells?.length && h.xs
+          ? alignByX(l.cells, h.xs).every((col, i) => !col.length || i === labelIndex) &&
+            (l.cells[0]?.x ?? 0) >= (h.xs[labelIndex] ?? 0) - 12
+          : delimited.length === 1 && /^[\p{Ll}(]/u.test(text));
+      if (prev && labelOnly) {
+        const labels = prev.cells.get("label") ?? [];
+        labels.push(text);
+        prev.cells.set("label", labels);
+        prev.excerpt = `${prev.excerpt} ${text}`.slice(0, 350);
+        prev.issues.push({ code: "wrapped_row_merged", message: `Wrapped label continued on line ${lineNo}; check the joined label.`, blocking: false });
+        return;
+      }
+    }
+
     // Section headings use the unchanged P39 rule (verbatim text, versioned aliases only).
     if (!looksNumbered) {
       const heading = documentLineHeading(text);
@@ -684,25 +708,7 @@ export function reconstructDocumentTables(
 
     if (active) {
       const h: ActiveHeader = active;
-      // Continuation of a wrapped label: an un-numbered line inside a numbered table.
-      if (hasRowNumberRole && !looksNumbered) {
-        const prev = pending[pending.length - 1];
-        const labelOnly =
-          prev &&
-          prev.page === l.page &&
-          lineNo - prev.line <= 2 &&
-          (l.cells?.length && h.xs
-            ? alignByX(l.cells, h.xs).every((col, i) => !col.length || h.roles[i] === "label")
-            : delimited.length === 1 && /^[\p{Ll}(]/u.test(text));
-        if (prev && labelOnly) {
-          const labels = prev.cells.get("label") ?? [];
-          labels.push(text);
-          prev.cells.set("label", labels);
-          prev.excerpt = `${prev.excerpt} ${text}`.slice(0, 350);
-          prev.issues.push({ code: "wrapped_row_merged", message: `Wrapped label continued on line ${lineNo}; check the joined label.`, blocking: false });
-        }
-        return;
-      }
+      if (hasRowNumberRole && !looksNumbered) return;
       if (hasRowNumberRole || delimited.length >= 2) {
         let columns: string[][] | null = null;
         let layout: ExtractionLayout = "delimited";
