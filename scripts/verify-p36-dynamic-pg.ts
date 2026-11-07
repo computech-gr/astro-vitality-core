@@ -18,7 +18,15 @@ sql(`do $r$ begin create role authenticated; exception when duplicate_object the
 create table missions(id text primary key); create table crew_members(id text primary key,display_name text); create table mission_crew_assignments(mission_id text,crew_member_id text,status text); create table mission_memberships(mission_id text,user_id uuid,crew_member_id text,role text,active boolean);
 insert into missions values('M1'),('M2'); insert into crew_members values('C1','Synthetic Crew One'),('C2','Synthetic Crew Two'); insert into mission_crew_assignments values('M1','C1','active'),('M1','C2','active'),('M2','C2','active');
 insert into mission_memberships values('M1','00000000-0000-0000-0000-000000000001','C1','crew_self',true),('M1','00000000-0000-0000-0000-000000000002',null,'ground_medical',true),('M1','00000000-0000-0000-0000-000000000003',null,'researcher',true);`);
-for (const f of ["20261107000000_p36_dynamic_handoff.sql", "20261107010000_p36_dynamic_authorization.sql", "20261107020000_p36_authorized_crew_roster.sql"]) sql(readFileSync(resolve(root, "supabase/pending", f), "utf8"));
+const toolCompatible = process.env["P36_TOOL_COMPATIBLE"] === "1";
+for (const f of ["20261107000000_p36_dynamic_handoff.sql", "20261107010000_p36_dynamic_authorization.sql", "20261107020000_p36_authorized_crew_roster.sql"]) {
+  const path = toolCompatible ? f.replace(".sql", ".tool.sql") : f;
+  const content = readFileSync(resolve(root, "supabase/pending", path), "utf8");
+  sql(toolCompatible ? `BEGIN;\n${content}\nCOMMIT;` : content);
+  if (toolCompatible && f === "20261107000000_p36_dynamic_handoff.sql") {
+    sql(readFileSync(resolve(root, "supabase/pending/20261107000001_p36_closed_admission.initialize.sql"), "utf8"));
+  }
+}
 const payload = { schema: "mitochondria.p36-cloud-handoff.v1", scope: { missionId: "M1", crewMemberId: "C1", provenance: "synthetic" }, requestId: "ubr-12345678", scientificStatus: "PENDING_NIKOLAS_REVIEW", catalogChangeApplied: false, terms: Array.from({ length: 197 }, (_, i) => ({ termId: termIdFor(`Test term ${i}`, "bpm"), originalLabels: [`Test term ${i}`], exactUnit: "bpm", classification: "unclassified", candidateMetricIds: ["cv-001"], sourceDocumentSha256: ["a".repeat(64)], evidencePointers: [], method: null, specimen: null })) };
 const canonical = canonicalJson(payload);
 const literal = (s: string) => "'" + s.replaceAll("'", "''") + "'";
