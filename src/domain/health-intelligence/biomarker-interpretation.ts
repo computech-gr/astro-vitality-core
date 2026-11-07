@@ -704,6 +704,7 @@ export function resolveInterpretations(
 export async function buildVerifiedSnapshot(
   rawRegistry: unknown,
   events: readonly InterpretationEvent[],
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
 ): Promise<InterpretationSnapshot> {
   const validated = validateRegistry(rawRegistry);
   const excluded = [...validated.excluded];
@@ -727,7 +728,8 @@ export async function buildVerifiedSnapshot(
   const ledger = check.ok
     ? { events: sorted.length, head: sorted.at(-1)?.hash ?? GENESIS_HASH, verified: true, note: null }
     : { events: sorted.length, head: GENESIS_HASH, verified: false, note: `Device review history failed its integrity check (${check.reason}); only the shared registry is used.` };
-  const snap = resolveInterpretations(registry, check.ok ? sorted : [], ledger, excluded);
+  const attested = check.ok ? await attestedDecisionHashes(sorted, trustedKeys) : new Set<string>();
+  const snap = resolveInterpretations(registry, check.ok ? sorted : [], ledger, excluded, attested);
   const digestable = snap.records.map(({ latestDraft: _d, ...r }) => r);
   return { ...snap, digest: await sha256Hex(canonicalJson({ registryVersion: snap.registryVersion, records: digestable })) };
 }
