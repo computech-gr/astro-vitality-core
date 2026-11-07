@@ -245,7 +245,8 @@ describe("P40 report series interpretation", () => {
       expect(s.citations.length).toBe(1);
       expect(s.uncertainty.length).toBeGreaterThan(0);
       expect(s.alert).toContain("None generated");
-      expect(s.contextLines.join(" ")).not.toMatch(/\b(improv|worsen|deteriorat|abnormal|diagnos(is|ed) of)\w*/i);
+      const claims = s.contextLines.map((l) => l.replace(/^Context documented for a (higher|lower) value \(not an improvement, deterioration or diagnosis\): /, ""));
+      expect(claims.join(" ")).not.toMatch(/\b(improv|worsen|deteriorat|abnormal|diagnos)\w*/i);
     }
   });
 
@@ -324,7 +325,7 @@ describe("P40 offline snapshot, integrity and parity", () => {
     const lines = seriesInterpretationText(series.interpretation);
     const txt = researcherInterpretationPlainText(model);
     for (const l of lines) expect(txt).toContain(l);
-    const doc = buildReportDocument({ unified: u, findings: buildScientificFindings(u), interpretations: snap } as Parameters<typeof buildReportDocument>[0]);
+    const doc = buildReportDocument({ unified: u, findings: buildScientificFindings(u), summary: null, history: null, attestations: [], identity: { missionName: null, crewDisplayName: null }, title: "t", interpretations: snap });
     const pdfText = JSON.stringify(doc);
     expect(pdfText).toContain(JSON.stringify(lines.join(" ")).slice(1, -1));
   });
