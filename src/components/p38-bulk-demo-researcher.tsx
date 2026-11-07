@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
 import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-rules";
+import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
 import { getSyntheticDemoLifecycle } from "@/lib/p37-synthetic-demo.functions";
 import type { DemoLifecycleRow, DemoScopeTerm } from "@/lib/p37-synthetic-demo.server";
 import { bulkDemoDecideFn, bulkTriageAcceptFn } from "@/lib/p38-bulk-demo.functions";
@@ -52,7 +53,12 @@ import {
   type SourceDocumentEvidence,
 } from "@/domain/health-intelligence/source-section-classification";
 import { csvCells } from "@/domain/health-intelligence/universal-intake-parser";
-import { bulkSelectionCounts, isDecidable, retrySelection } from "@/domain/health-intelligence/p38-bulk-demo-selection";
+import {
+  bulkResearcherVisibility,
+  bulkSelectionCounts,
+  isDecidable,
+  retrySelection,
+} from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
 import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
 
@@ -95,6 +101,8 @@ type Run = {
 /** Ready for a decision request now (selection eligibility; shared pure rule). */
 const decidable = (r: PreflightRow, scope: Map<string, DemoScopeTerm>) => isDecidable(r, scope);
 
+const LOADING_NOTE = "Reading every submitted term of this mission…";
+
 export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const listSubs = useServerFn(listGlobalReviewSubmissions);
   const listTriage = useServerFn(listGlobalTriage);
@@ -102,7 +110,7 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const triageFn = useServerFn(bulkTriageAcceptFn);
   const decideFn = useServerFn(bulkDemoDecideFn);
   const [data, setData] = useState<Loaded | null>(null);
-  const [note, setNote] = useState("Reading every submitted term of this mission…");
+  const [note, setNote] = useState(LOADING_NOTE);
   const [overrides, setOverrides] = useState<Map<string, PreflightOverride>>(new Map());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
@@ -346,32 +354,36 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const summary = run ? summarizeBulk(run.results) : null;
   const workflow = bulkSelectionCounts(rows, scope);
   const retry = run ? retrySelection(run.results, rows, scope) : { keys: [], notRetryable: 0 };
+  const visibility = bulkResearcherVisibility({
+    authorizedMissions: 1,
+    missionSelected: true,
+    lifecycle: data
+      ? { canDecide: data.canDecide, demoScopeTerms: data.scope.size }
+      : note === LOADING_NOTE
+        ? "loading"
+        : "unavailable",
+  });
   return (
-    <section
-      id="p38-bulk-researcher"
-      aria-labelledby="p38-r-title"
-      className="scroll-mt-24 space-y-3 rounded-lg border-2 border-dashed border-border p-4"
-      data-testid="p38-bulk-researcher"
-    >
-      <div className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 id="p38-r-title" className="font-semibold">
-            Bulk synthetic demo decisions
-          </h3>
-          <Badge variant="outline">SYNTHETIC DEMO</Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {SYNTHETIC_DEMO_LABEL}. Names and domains are proposed only from existing catalog
-          references; specimen, method, reference intervals and source validation are never
-          proposed. Decisions do not activate anything: Ground Medical activates separately.
-        </p>
-      </div>
-      {!data ? (
-        <p role="status" className="text-sm text-muted-foreground">
-          {note}
-        </p>
-      ) : (
-        <>
+    <BulkResearcherSection visibility={visibility}>
+      {visibility === "unavailable" ? (
+        <p className="text-xs text-muted-foreground">{note}</p>
+      ) : null}
+      {!data || visibility !== "visible" ? null : (
+        <div
+          aria-labelledby="p38-r-title"
+          className="space-y-3 rounded-lg border-2 border-dashed border-border p-4"
+          data-testid="p38-bulk-researcher"
+        >
+          <div className="space-y-1">
+            <h4 id="p38-r-title" className="font-semibold">
+              Preflight, selection and bulk decisions
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              {SYNTHETIC_DEMO_LABEL}. Names and domains are proposed only from existing catalog
+              references; specimen, method, reference intervals and source validation are never
+              proposed. Decisions do not activate anything: Ground Medical activates separately.
+            </p>
+          </div>
           <div data-testid="p38-preflight-counts" className="space-y-1">
             <p className="text-sm font-medium">
               Preflight of {counts.total} submitted terms (before any write)
@@ -381,7 +393,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               <Badge variant="secondary" data-testid="p54-awaiting-triage">
                 Eligible · awaiting review acceptance (triage) {workflow.awaitingTriage}
               </Badge>
-              <Badge variant="secondary">Eligible · ready for decision {workflow.readyForDecision}</Badge>
+              <Badge variant="secondary">
+                Eligible · ready for decision {workflow.readyForDecision}
+              </Badge>
               <Badge variant="secondary">
                 Domain proposed from source section · awaiting acceptance {awaiting.length}
               </Badge>
@@ -835,11 +849,25 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                 ))}
               {run.results.length ? (
                 <details data-testid="p54-bulk-item-results">
-                  <summary className="cursor-pointer">Per-item results ({run.results.length})</summary>
+                  <summary className="cursor-pointer">
+                    Per-item results ({run.results.length})
+                  </summary>
                   <ul className="mt-1 max-h-64 space-y-0.5 overflow-auto">
                     {run.results.map((r) => (
-                      <li key={r.ref} className={r.status === "rejected" || r.status === "stale" ? "text-destructive" : ""}>
-                        {r.termId}: {r.status === "recorded" ? "recorded" : r.status === "duplicate" ? "already recorded" : r.status === "stale" ? "changed meanwhile" : r.status}
+                      <li
+                        key={r.ref}
+                        className={
+                          r.status === "rejected" || r.status === "stale" ? "text-destructive" : ""
+                        }
+                      >
+                        {r.termId}:{" "}
+                        {r.status === "recorded"
+                          ? "recorded"
+                          : r.status === "duplicate"
+                            ? "already recorded"
+                            : r.status === "stale"
+                              ? "changed meanwhile"
+                              : r.status}
                         {r.detail ? ` — ${r.detail}` : ""}
                       </li>
                     ))}
@@ -880,8 +908,8 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               ) : null}
             </div>
           ) : null}
-        </>
+        </div>
       )}
-    </section>
+    </BulkResearcherSection>
   );
 }

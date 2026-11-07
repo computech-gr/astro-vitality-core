@@ -21,6 +21,9 @@ import { ScientificApproveWorkspace } from "@/components/p37-scientific-approve"
 import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
 import { P38BulkDemoResearcher } from "@/components/p38-bulk-demo-researcher";
 import { subscribeOpenBulkDemo } from "@/components/p38-bulk-navigation";
+import { BULK_RESEARCHER_ANCHOR } from "@/components/p38-bulk-researcher-anchor";
+import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
+import { bulkResearcherVisibility } from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import {
   activateCatalogEntryFn,
   getCatalogLifecycle,
@@ -384,8 +387,12 @@ export function P37CatalogPanel() {
     () =>
       subscribeOpenBulkDemo((id) => {
         if (!missions.some((m) => m.missionId === id)) {
-          setBulkNote("This mission is not available for catalog decisions with this account. Nothing was changed.");
-          document.getElementById("p37-title")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          setBulkNote(
+            "This mission is not available for catalog decisions with this account. Nothing was changed.",
+          );
+          document
+            .getElementById("p37-title")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
         setBulkNote("");
@@ -397,7 +404,8 @@ export function P37CatalogPanel() {
   useEffect(() => {
     if (!scrollToBulk || state === "loading" || state === "idle") return;
     setScrollToBulk(false);
-    const target = document.getElementById("p38-bulk-researcher") ?? document.getElementById("p37-title");
+    const target =
+      document.getElementById(BULK_RESEARCHER_ANCHOR) ?? document.getElementById("p37-title");
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [scrollToBulk, state]);
 
@@ -455,6 +463,17 @@ export function P37CatalogPanel() {
           {note}
         </p>
       ) : null}
+      {state === "ready" && data && mission ? null : (
+        // Pre-mission states keep the anchor reachable; once a mission is ready the
+        // existing P38BulkDemoResearcher below renders this same section itself.
+        <BulkResearcherSection
+          visibility={bulkResearcherVisibility({
+            authorizedMissions: missions.length,
+            missionSelected: Boolean(mission),
+            lifecycle: state === "error" ? "unavailable" : "loading",
+          })}
+        />
+      )}
       {state === "ready" && data && mission ? (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2 text-xs">
