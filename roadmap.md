@@ -464,5 +464,6 @@
 - [x] Inspected: no existing global reviewer capability; the 12- and 197-term cloud submissions are in MITO_DEMO_2026 (Alex Morgan), while the Researcher account is a member only of FV01 Security Test B.
 - [x] Pending SQL + rollback + single-statement demo authorization prepared; disposable PostgreSQL verifier 105/105 PASS.
 - [x] Scientific Review mission combo box and grouped read-only view; fails closed until the database change is installed.
-- [ ] Apply `supabase/pending/20261107030000_p36_global_scientific_review.sql`, then `20261107030001_p36_global_review_demo.authorize.sql` — blocked: explicit owner approval.
-- [ ] Authenticated Researcher readback of 209 terms in Preview — blocked: the two approvals above, then a signed-in check as the Researcher account.
+- [x] Owner-approved schema installed byte-identically as migration 0021; demo reviewer grant and synthetic-only sharing for MITO_DEMO_2026 applied and audited.
+- [x] Authenticated Researcher readback in Preview: 12 + 197 = 209 pending terms; dashboard, crew picker, search/filters/sort/pagination and per-term detail verified; unshared mission and direct table reads denied.
+- [ ] Triage actions (accept for review / request more evidence / reject) — blocked: needs a new owner-approved review-action database change; global review stays read-only.
