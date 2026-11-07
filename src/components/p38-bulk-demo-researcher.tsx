@@ -389,7 +389,7 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               </Badge>
               <Badge variant="outline">Ambiguous or missing unit {counts.ambiguous_unit}</Badge>
               <Badge variant="outline">Conflicting identity {counts.conflicting_identity}</Badge>
-              <Badge variant="outline">Other blocked {counts.blocked - domainChoice}</Badge>
+              <Badge variant="outline">Other blocked {counts.blocked - domainChoice - awaiting.length}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               In the owner-authorized demo scope: {[...scope.keys()].length} terms ·{" "}
