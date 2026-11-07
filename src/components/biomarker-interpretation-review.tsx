@@ -18,8 +18,11 @@ import {
   citationLines,
   deriveInterpretationTasks,
   interpretationKey,
+  LIFECYCLE_LABELS,
   planApproval,
+  planAttestation,
   planDraft,
+  planRejectDraft,
   planRevocation,
   planTaskOpened,
   requiredAcknowledgement,
@@ -47,6 +50,10 @@ import { getSyntheticDemoCatalogs, subscribeSyntheticDemoCatalogs } from "@/doma
 import { getActiveCatalog, subscribeActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
 import { downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 import { notifyInterpretationChanged } from "@/hooks/use-interpretation-snapshot";
+import { useServerFn } from "@tanstack/react-start";
+import { attestInterpretationDecision } from "@/lib/interpretation-research.functions";
+import { InterpretationBacklogPanel, InterpretationEvidencePanel, ResearchCandidatesPanel } from "@/components/interpretation-research-panels";
+import { candidateIdFor, candidateKey, identityConcept } from "@/domain/health-intelligence/interpretation-research-candidates";
 
 const DOMAIN_LABELS: Record<InterpretationDomain, string> = {
   bone: "Bone",
@@ -62,7 +69,7 @@ const ENV_LABELS: Record<InterpretationIdentity["environment"], string> = {
 };
 const STATUS_LABELS = { approved: "Approved", pending: "Pending scientific review", revoked: "Revoked" } as const;
 const PAGE = 25;
-type StatusFilter = "open" | "approved" | "revoked" | "all";
+type StatusFilter = "open" | "approved" | "revoked" | "awaiting_attestation" | "rejected" | "all";
 
 type ClaimField = "function" | "increaseContext" | "decreaseContext" | "generalContext" | "spaceflightRelevance" | "associatedBiomarkers";
 const CLAIM_FIELDS: { field: ClaimField; label: string; hint: string }[] = [
@@ -201,8 +208,12 @@ export function BiomarkerInterpretationReview() {
       (x) =>
         (domain === "all" || x.identity.domain === domain) &&
         (env === "all" || x.identity.environment === env) &&
-        (status === "all" || (status === "open" ? x.open : x.status === status)) &&
-        (!q || x.identity.displayName.toLowerCase().includes(q) || x.identity.catalogId.toLowerCase().includes(q)),
+        (status === "all" || (status === "open" ? x.open : status === "awaiting_attestation" || status === "rejected" ? x.record?.lifecycle === status : x.status === status)) &&
+        (!q ||
+          x.identity.displayName.toLowerCase().includes(q) ||
+          x.identity.catalogId.toLowerCase().includes(q) ||
+          (x.identity.unit ?? "").toLowerCase() === q ||
+          (x.record?.aliases ?? []).some((a) => a.toLowerCase().includes(q))),
     );
   }, [snapshot, tasks, domain, env, status, query]);
   useEffect(() => setPage(0), [domain, env, status, query]);
@@ -283,11 +294,13 @@ export function BiomarkerInterpretationReview() {
             <option value="open">Open review tasks</option>
             <option value="approved">Approved</option>
             <option value="revoked">Revoked</option>
+            <option value="awaiting_attestation">Awaiting server attestation</option>
+            <option value="rejected">Draft rejected</option>
             <option value="all">All</option>
           </select>
         </label>
         <label className="min-w-48 flex-1 space-y-1">
-          <span className="block text-xs text-muted-foreground">Search name or catalog ID</span>
+          <span className="block text-xs text-muted-foreground">Search name, alias, catalog ID or exact unit</span>
           <input className="w-full rounded border bg-background p-2" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
         <Button type="button" variant="outline" disabled={!events.length} onClick={exportPackage}>
@@ -318,8 +331,8 @@ export function BiomarkerInterpretationReview() {
                 <td className="p-2">{DOMAIN_LABELS[x.identity.domain]}</td>
                 <td className="p-2">{ENV_LABELS[x.identity.environment]}</td>
                 <td className="p-2">
-                  {STATUS_LABELS[x.status]}
-                  {x.record?.latestDraft ? " · draft saved" : ""}
+                  {x.record ? LIFECYCLE_LABELS[x.record.lifecycle] : STATUS_LABELS[x.status]}
+                  {x.record?.latestDraft && x.record.lifecycle !== "draft" ? " · draft saved" : ""}
                   {x.record?.pendingContent ? " · handbook text" : ""}
                   {x.record?.proposedLinks.length ? ` · proposed link ${x.record.proposedLinks.map((p) => p.catalogId).join(", ")}` : ""}
                 </td>
@@ -360,6 +373,9 @@ export function BiomarkerInterpretationReview() {
           onClose={() => setSelectedKey(null)}
         />
       )}
+
+      <InterpretationBacklogPanel snapshot={snapshot} canReview={canReview} userId={identity?.userId ?? null} />
+      <ResearchCandidatesPanel snapshot={snapshot} canReview={canReview} userId={identity?.userId ?? null} onOpenKey={(k) => setSelectedKey(k)} />
     </section>
   );
 }
