@@ -278,7 +278,7 @@ const triageBatches = chunk(decidable.map(triageItem));
 check(triageBatches.length === 4, "185 terms = 4 bounded batches");
 for (const b of triageBatches) check(all(bulkTriage(4, b), "recorded"), "triage batch recorded");
 check(all(bulkTriage(4, triageBatches[0]!), "duplicate"), "triage retry with the same keys is a duplicate");
-check(all(bulkTriage(4, decidable.slice(0, 10).map(triageItem)), "skipped"), "already accepted terms are skipped");
+{ const o = bulkTriage(4, decidable.slice(0, 10).map(triageItem)); if (!all(o, "skipped")) console.log(JSON.stringify(o).slice(0, 1500)); check(all(o, "skipped"), "already accepted terms are skipped"); }
 check(sql("select count(*) from p36_global_triage_events;") === "187", "one triage event per term");
 
 // --- Partial batch failure → whole batch rolled back → retry -----------------------------
