@@ -77,6 +77,27 @@ import {
 } from "@/domain/health-intelligence/intake-review-selection";
 
 import { type ObservationDatePrecision } from "@/domain/health-intelligence/observation-date";
+import {
+  DOCUMENT_TABLE_RULES_VERSION,
+  documentLinesFromText,
+  reconstructDocumentTables,
+  valueKindText,
+  type DocumentReconstruction,
+} from "@/domain/health-intelligence/document-table-reconstruction";
+import {
+  applyDocumentTimestamp,
+  canResolveIdentityConflict,
+  compareDocumentIdentity,
+  diagnoseDocumentIntake,
+  diagnoseExtractionError,
+  extractionBlockingReason,
+  identityHoldReason,
+  isBulkSelectable,
+  rowExtractionEvidence,
+  summarizeDocumentRows,
+  type RowExtractionEvidence,
+} from "@/domain/health-intelligence/document-intake-review";
+import type { GeometryLine } from "@/domain/bone-health/pdf-geometry";
 
 type IntakeRow = {
   key: string;
@@ -102,9 +123,27 @@ type IntakeRow = {
   sourceSection?: CandidateSourceSection | undefined;
   classification: IntakeClassification;
   selected: boolean;
+  /** P42: document-table evidence (row number, raw value, issues, repeats). */
+  extraction?: RowExtractionEvidence | undefined;
+  /** P42: explicitly rejected by the reviewer (kept visible, never saved). */
+  rejected?: boolean | undefined;
+  /** P42: unresolved document identity conflict for the selected scope. */
+  identityHold?: string | null | undefined;
 };
 
-const MAX_ROWS = 200;
+/** P42: one processed document (summary, identity, diagnostics); memory only, never stored. */
+type ProcessedDocument = {
+  sha256: string;
+  fileName: string;
+  pages: number | null;
+  method: string;
+  textLength: number;
+  reconstruction: DocumentReconstruction | null;
+  saved: number;
+};
+
+/** Review table capacity (a complete multi-domain examination can exceed 300 rows). */
+const MAX_ROWS = 1000;
 
 /** Base P36 catalog first; only governed, fully approved catalog extensions can add matches. */
 function classify(row: {
@@ -195,6 +234,59 @@ const BLOCKED_LINE =
   /(?:reference|normal|interval|range|ref\.|\bmin\b|\bmax\b|[<>≤≥]|\d\s*[-–]\s*\d)/i;
 
 function parseIntakeText(
+  text: string,
+  sourceKind: ObservationSourceKind,
+  sourceLabel: string,
+  documentName?: string,
+  documentSha256?: string,
+  linePages?: readonly number[],
+  geometry?: readonly GeometryLine[],
+): { rows: IntakeRow[]; reconstruction: DocumentReconstruction } {
+  // P42 stages A–D: header-role table reconstruction (any column order, multi-page,
+  // repeated headers, numbered rows, OCR token fallback). Legacy parsers still run
+  // for lines that are not part of a reconstructed table.
+  const reconstruction = reconstructDocumentTables(
+    documentLinesFromText(text, linePages, geometry),
+    { ocr: sourceKind === "ocr" },
+  );
+  const tableExcerpts = new Set(reconstruction.observations.map((o) => o.excerpt));
+  const tableRows: IntakeRow[] = reconstruction.observations.map((o) => {
+    const section: CandidateSourceSection = {
+      status: o.section.domain ? "recognized" : o.section.heading ? "unrecognized_heading" : "no_section",
+      heading: o.section.heading,
+      path: o.section.path,
+      domain: o.section.domain,
+      page: o.page,
+      line: o.line,
+      locator: o.page ? "page_line" : "text_line",
+      tableHeader: o.tableHeader,
+      rulesVersion: "mitochondria.source-section-rules.v1",
+    };
+    return newRow({
+      label: o.label,
+      value: o.value || (o.valueKind === "ambiguous_number" ? "" : o.rawValue),
+      unit: o.unit,
+      observedAt: "",
+      excerpt: o.excerpt,
+      sourceKind,
+      sourceLabel,
+      documentName,
+      documentSha256,
+      sourceSection: section,
+      ...(o.specimen ? { specimen: o.specimen } : {}),
+      ...(o.method ? { method: o.method } : {}),
+      extraction: {
+        ...rowExtractionEvidence(o, DOCUMENT_TABLE_RULES_VERSION),
+        proposedValue: o.value || (o.valueKind === "ambiguous_number" ? "" : o.rawValue),
+      },
+    });
+  });
+  const legacy = parseLegacyText(text, sourceKind, sourceLabel, documentName, documentSha256, linePages)
+    .filter((row) => !tableExcerpts.has(row.excerpt.trim()));
+  return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction };
+}
+
+function parseLegacyText(
   text: string,
   sourceKind: ObservationSourceKind,
   sourceLabel: string,
