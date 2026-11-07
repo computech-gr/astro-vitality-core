@@ -57,7 +57,7 @@ const REF: VerifiedReference = {
   verification: { status: "VERIFIED", verifiedBy: "Test Verifier", verifiedAt: "2026-11-07T00:00:00.000Z", verificationRef: "TEST-VERIFY-001" },
 };
 const registry = (...entries: Partial<VerifiedReference>[]): ReferenceRegistry =>
-  validateReferenceRegistry({ schema: "mitochondria.verified-reference-intervals.v1", version: 1, entries: entries.map((e) => ({ ...REF, ...e })) });
+  validateReferenceRegistry({ schema: "mitochondria.verified-reference-intervals.v1", version: 1, entries: (entries.length ? entries : [{}]).map((e) => ({ ...REF, ...e })) });
 
 const day = (d: number) => new Date(Date.UTC(2026, 8, d, 8, 0)).toISOString();
 const hr = (value: string, d: number, over: Partial<UnifiedObservation> = {}) => obs({ metricId: "cv-001", originalUnit: "bpm", value, observedAt: day(d), ...over });
@@ -159,7 +159,8 @@ describe("P54 biomarker assessment report", () => {
     expect(e.classification.severity).toBe("neutral");
     expect(e.statusLabel).toBe("Insufficient evidence to classify");
     expect(e.limitations).toContain(NOT_HARMFUL_BY_CHANGE_TEXT);
-    expect(JSON.stringify(e)).not.toMatch(/\b(harmful|worsen|deteriorat|abnormal|improv)\w*/i);
+    const { limitations: _l, ...rest } = e;
+    expect(JSON.stringify(rest)).not.toMatch(/\b(harmful|worsen|deteriorat|abnormal|improv|concern)\w*/i);
   });
 
   it("lists value, unit, date, domain, previous measurement and percentage change; keeps date-only precision", () => {
