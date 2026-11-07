@@ -325,7 +325,11 @@ export const requiredAcknowledgement = (i: InterpretationIdentity) =>
 
 // ------------------------------------------------------------ device-local event chain
 
-export type InterpretationAction = "TASK_OPENED" | "DRAFT_SAVED" | "APPROVE" | "REVOKE";
+/**
+ * P41 adds ATTEST (server signature over an earlier APPROVE/REVOKE event) and
+ * REJECT_DRAFT (Researcher rejects the current draft; nothing is approved).
+ */
+export type InterpretationAction = "TASK_OPENED" | "DRAFT_SAVED" | "APPROVE" | "REVOKE" | "ATTEST" | "REJECT_DRAFT";
 export interface InterpretationEventBody {
   schema: typeof INTERPRETATION_EVENT_SCHEMA;
   seq: number;
@@ -341,6 +345,8 @@ export interface InterpretationEventBody {
   reason: string | null;
   acknowledgement: string | null;
   taskOrigin: string | null;
+  /** P41: present only on ATTEST events (absent keys keep P40 event hashes unchanged). */
+  attestation?: SignedAttestation;
 }
 export interface InterpretationEvent extends InterpretationEventBody {
   hash: string;
@@ -370,9 +376,32 @@ export async function verifyInterpretationChain(
       if (e.acknowledgement !== requiredAcknowledgement(e.identity)) return { ok: false, reason: `Event ${e.seq} acknowledgement missing` };
     }
     if (e.action === "REVOKE" && !filled(e.reason, 10)) return { ok: false, reason: `Event ${e.seq} revocation has no reason` };
+    if (e.action === "REJECT_DRAFT" && !filled(e.reason, 10)) return { ok: false, reason: `Event ${e.seq} rejection has no reason` };
+    if (e.action === "ATTEST") {
+      const st = e.attestation?.statement;
+      const target = st ? events.slice(0, i).find((x) => x.hash === st.eventHash) : undefined;
+      if (!st || !target || (target.action !== "APPROVE" && target.action !== "REVOKE") || target.key !== e.key || st.key !== e.key || st.action !== target.action || st.contentSha256 !== target.contentSha256 || st.actorUserId !== target.actorUserId)
+        return { ok: false, reason: `Event ${e.seq} attestation does not match an earlier decision` };
+    } else if (e.attestation !== undefined) return { ok: false, reason: `Event ${e.seq} carries an unexpected attestation` };
     prev = hash;
   }
   return { ok: true };
+}
+
+/**
+ * Event hashes of APPROVE/REVOKE decisions carrying a valid trusted server
+ * attestation (signature + statement matching the attested event).
+ */
+export async function attestedDecisionHashes(
+  events: readonly InterpretationEvent[],
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
+): Promise<Set<string>> {
+  const out = new Set<string>();
+  for (const e of events) {
+    if (e.action !== "ATTEST" || !e.attestation) continue;
+    if (await verifyAttestation(e.attestation, trustedKeys)) out.add(e.attestation.statement.eventHash);
+  }
+  return out;
 }
 
 export interface ActorContext {
@@ -443,6 +472,53 @@ export function planRevocation(
   if (!current || current.status !== "approved") return { ok: false, reason: "Only an approved interpretation can be revoked." };
   if (!filled(reason, 10)) return { ok: false, reason: "Give a revocation reason (at least 10 characters)." };
   return { ok: true, body: nextBody(events, ctx, { action: "REVOKE", identity: current.identity, draft: null, contentSha256: current.contentSha256, reason: reason.trim(), acknowledgement: null, taskOrigin: null }) };
+}
+
+/** P41: Researcher rejects the current draft (e.g. an AI-assisted draft); nothing is approved or removed. */
+export function planRejectDraft(events: readonly InterpretationEvent[], identity: InterpretationIdentity, reason: string, ctx: ActorContext): PlanResult {
+  if (!canReviewInterpretations(ctx.roles)) return { ok: false, reason: "Only a Researcher can reject interpretation drafts." };
+  if (!filled(reason, 10)) return { ok: false, reason: "Give a rejection reason (at least 10 characters)." };
+  return { ok: true, body: nextBody(events, ctx, { action: "REJECT_DRAFT", identity, draft: null, contentSha256: null, reason: reason.trim(), acknowledgement: null, taskOrigin: null }) };
+}
+
+/**
+ * P41: record the server's signed attestation of an earlier decision on this
+ * device. The signature is verified before it is stored; an attestation for a
+ * different caller, event or fingerprint is refused.
+ */
+export async function planAttestation(
+  events: readonly InterpretationEvent[],
+  attestation: SignedAttestation,
+  ctx: Pick<ActorContext, "userId" | "now" | "name">,
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
+): Promise<PlanResult> {
+  const st = attestation.statement;
+  const target = events.find((e) => e.hash === st.eventHash);
+  if (!target || (target.action !== "APPROVE" && target.action !== "REVOKE")) return { ok: false, reason: "The attested decision is not in this device's review history." };
+  if (st.actorUserId !== ctx.userId || target.actorUserId !== ctx.userId) return { ok: false, reason: "The attestation belongs to a different account." };
+  if (events.some((e) => e.action === "ATTEST" && e.attestation?.statement.eventHash === st.eventHash)) return { ok: false, reason: "This decision is already attested." };
+  if (!(await verifyAttestation(attestation, trustedKeys))) return { ok: false, reason: "The server attestation failed signature verification; nothing was applied." };
+  const last = events.at(-1);
+  return {
+    ok: true,
+    body: {
+      schema: INTERPRETATION_EVENT_SCHEMA,
+      seq: (last?.seq ?? 0) + 1,
+      prevHash: last?.hash ?? GENESIS_HASH,
+      action: "ATTEST",
+      key: target.key,
+      identity: target.identity,
+      actorUserId: ctx.userId,
+      actorName: ctx.name,
+      recordedAt: ctx.now,
+      draft: null,
+      contentSha256: target.contentSha256,
+      reason: null,
+      acknowledgement: null,
+      taskOrigin: null,
+      attestation,
+    },
+  };
 }
 
 // ------------------------------------------------------------ resolution and snapshot
