@@ -63,7 +63,10 @@ function classifySyntheticDemo(
   catalogs: ReadonlyMap<string, EvaluatedDemoCatalog>,
 ): ExtendedClassification | null {
   if (input.provenance !== "synthetic" || !input.missionId) return null;
-  const matched = (e: { demoId: string; domain: HealthDomainId }, basis: SyntheticDemoCatalogBasis) => ({
+  const matched = (
+    e: { demoId: string; domain: HealthDomainId },
+    basis: SyntheticDemoCatalogBasis,
+  ) => ({
     classification: {
       status: "matched" as const,
       metricId: e.demoId,
@@ -77,7 +80,12 @@ function classifySyntheticDemo(
   });
   if (input.identity === "canonical") {
     const e = canonicalSyntheticDemoEntry(
-      { demoId: input.label.trim(), unit: input.unit, missionId: input.missionId, provenance: input.provenance },
+      {
+        demoId: input.label.trim(),
+        unit: input.unit,
+        missionId: input.missionId,
+        provenance: input.provenance,
+      },
       catalogs,
       input.includeRevoked === true,
     );
