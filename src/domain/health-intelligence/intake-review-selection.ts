@@ -2,6 +2,11 @@ import { type IntakeClassification } from "../health-domains/unified-intake-clas
 
 import { validObservationDate, type ObservationDatePrecision } from "./observation-date";
 import { classifyWithGovernedExtensions } from "./unknown-biomarker-review";
+import {
+  extractionBlockingReason,
+  isBulkSelectable,
+  type RowExtractionEvidence,
+} from "./document-intake-review";
 
 export interface IntakeReviewRow {
   key: string;
@@ -19,6 +24,12 @@ export interface IntakeReviewRow {
   missionId?: string;
   classification: IntakeClassification;
   selected: boolean;
+  /** P42: document-table evidence (row number, raw value, issues, repeats). */
+  extraction?: RowExtractionEvidence | undefined;
+  /** P42: explicitly rejected by the reviewer; never selectable or sent for review. */
+  rejected?: boolean | undefined;
+  /** P42: unresolved document identity conflict for the selected scope. */
+  identityHold?: string | null | undefined;
 }
 
 const SAFE_DECIMAL = /^[-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
@@ -29,6 +40,8 @@ export function isIntakeRowEligible(row: IntakeReviewRow): boolean {
 }
 
 export function intakeRowExclusionReason(row: IntakeReviewRow): string | null {
+  if (row.rejected) return "Rejected by the reviewer; not saved.";
+  if (row.identityHold) return row.identityHold;
   if (row.sourceValidation === "unvalidated")
     return "Source explicitly marks this measurement unvalidated; scientific/source review required.";
   const current = classifyWithGovernedExtensions(row).classification;
@@ -40,6 +53,8 @@ export function intakeRowExclusionReason(row: IntakeReviewRow): string | null {
         : "No approved catalog mapping; scientific review required.";
   if (row.classification.status !== "matched" || row.classification.metricId !== current.metricId)
     return "Catalog classification is not current.";
+  const extractionHold = extractionBlockingReason(row);
+  if (extractionHold) return extractionHold;
   if (!SAFE_DECIMAL.test(row.value.trim()) || !Number.isFinite(Number(row.value.replace(",", "."))))
     return "A finite plain numeric value is required.";
   if (!row.unit.trim()) return "Reported unit is missing.";
@@ -53,7 +68,11 @@ export function intakeRowExclusionReason(row: IntakeReviewRow): string | null {
 export function intakeSelectionCounts(rows: readonly IntakeReviewRow[]) {
   const eligible = rows.filter(isIntakeRowEligible);
   const selected = eligible.filter((row) => row.selected).length;
+  // P42: bulk selection skips in-document repeats and low-confidence rows (individual choice only).
+  const bulk = eligible.filter(isBulkSelectable);
+  const bulkSelected = bulk.filter((row) => row.selected).length;
   return {
+    bulkEligible: bulk.length,
     selected,
     matched: rows.filter((r) => r.classification.status === "matched").length,
     reviewOnly: rows.filter(
@@ -64,8 +83,8 @@ export function intakeSelectionCounts(rows: readonly IntakeReviewRow[]) {
     dateOnly: rows.filter((r) => r.datePrecision === "date").length,
     eligible: eligible.length,
     excluded: rows.length - eligible.length,
-    allSelected: eligible.length > 0 && selected === eligible.length,
-    partiallySelected: selected > 0 && selected < eligible.length,
+    allSelected: bulk.length > 0 && bulkSelected === bulk.length,
+    partiallySelected: selected > 0 && !(bulk.length > 0 && bulkSelected === bulk.length),
   };
 }
 
@@ -76,9 +95,15 @@ function unconfirmed<T>(rows: T[]) {
 export function setIntakeReviewSelection<T extends IntakeReviewRow>(
   rows: readonly T[],
   selected: boolean,
+  /** P42: restrict the bulk action to these rows (e.g. the filtered view); others keep their state. */
+  onlyKeys?: ReadonlySet<string>,
 ) {
   return unconfirmed(
-    rows.map((row) => ({ ...row, selected: selected && isIntakeRowEligible(row) })),
+    rows.map((row) =>
+      onlyKeys && !onlyKeys.has(row.key)
+        ? row
+        : { ...row, selected: selected && isIntakeRowEligible(row) && isBulkSelectable(row) },
+    ),
   );
 }
 
