@@ -51,6 +51,9 @@ import { pdfExportErrorMessage } from "@/domain/health-intelligence/report-pdf";
 import { buildResearcherInterpretation, researcherInterpretationPlainText } from "@/domain/health-intelligence/researcher-interpretation";
 import { ResearcherInterpretationView } from "@/components/researcher-interpretation-view";
 import { useInterpretationSnapshot } from "@/hooks/use-interpretation-snapshot";
+import { buildBiomarkerAssessment, biomarkerAssessmentPlainText } from "@/domain/health-intelligence/biomarker-health-assessment";
+import { BiomarkerHealthAssessmentView } from "@/components/biomarker-health-assessment-view";
+import { PreliminaryMedicalAssessmentPanel } from "@/components/preliminary-medical-assessment-panel";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -281,6 +284,15 @@ export function AstronautHealthReport() {
     () => (unified && findings ? buildScientificHealthSummary(unified, findings, report, attestationSummary, interpretation?.validatedInterpretations ?? 0) : null),
     [unified, findings, report, attestationSummary, interpretation],
   );
+  // P54: one biomarker assessment shared by screen, PDF and TXT (verified references only).
+  const biomarkerAssessment = useMemo(
+    () => (unified && interpretation ? buildBiomarkerAssessment(unified, interpretation, interpretationSnapshot) : null),
+    [unified, interpretation, interpretationSnapshot],
+  );
+  const reviewScope = useMemo(
+    () => (member ? { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance } : null),
+    [member?.missionId, member?.crewMemberId, provenance],
+  );
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
   const currentExport = useRef({ unified, userId: identity?.userId });
@@ -302,7 +314,7 @@ export function AstronautHealthReport() {
         try { document.title = exportName; window.print(); } finally { document.title = previous; }
         setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${biomarkerAssessment ? biomarkerAssessmentPlainText(biomarkerAssessment) : ""}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
         downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
         setExportStatus(`Evidence TXT created locally and download started as ${exportName}.txt. No medical data was uploaded.`);
       } else {
@@ -489,6 +501,8 @@ export function AstronautHealthReport() {
               <p className="text-xs text-muted-foreground">{healthSummary.frontPage.interpretationStatus}</p>
             </section>
           )}
+
+          {biomarkerAssessment && <BiomarkerHealthAssessmentView assessment={biomarkerAssessment} />}
 
           <section aria-label="Domain overview" className="report-avoid-break space-y-2">
             <h3 className="font-semibold">Domain overview</h3>
@@ -828,6 +842,17 @@ export function AstronautHealthReport() {
               </div>
             ))}
           </section>
+
+          {biomarkerAssessment && interpretation && reviewScope && (
+            <PreliminaryMedicalAssessmentPanel
+              assessment={biomarkerAssessment}
+              model={interpretation}
+              snapshot={interpretationSnapshot}
+              scope={reviewScope}
+              canReview={rolesForScope.includes("ground_medical")}
+              userId={identity?.userId}
+            />
+          )}
 
           <div className="print:hidden space-y-2 rounded-lg border border-dashed p-3" aria-label="AI-assisted drafts (unverified)">
             <p className="text-xs font-semibold">
