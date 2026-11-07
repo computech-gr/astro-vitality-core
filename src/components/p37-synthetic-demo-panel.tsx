@@ -490,7 +490,15 @@ export function P37SyntheticDemoPanel({
           {note}
         </p>
       ) : null}
-      {state === "ready" && data ? (
+      {state === "ready" && data && data.terms.length > 5 ? (
+        <p className="text-sm text-muted-foreground">
+          {data.terms.length} terms are in the owner-authorized synthetic demo scope ·{" "}
+          {data.events.filter((e) => e.activationEventId && !e.revocationEventId).length} active ·{" "}
+          {data.events.filter((e) => !e.activationEventId).length} awaiting Ground Medical. Use the
+          bulk synthetic demo panel for decisions and activations.
+        </p>
+      ) : null}
+      {state === "ready" && data && data.terms.length <= 5 ? (
         data.terms.length ? (
           <ul className="space-y-3">
             {data.terms.map((t) => {
