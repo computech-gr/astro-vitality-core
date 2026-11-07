@@ -94,7 +94,32 @@ function classifySyntheticDemo(
   const r = recognizeSyntheticDemo(input, catalogs);
   if (r.status !== "SYNTHETIC_DEMO_RECOGNIZED") return null;
   const e = catalogs.get(r.missionId)?.active.find((x) => x.demoId === r.demoId);
+  // P39: an explicit source section naming another domain is incompatible; the row
+  // stays review-only instead of being attributed to the activated entry's domain.
+  if (e && input.sourceDomain && input.sourceDomain !== e.domain) return null;
   return e ? matched(e, syntheticDemoBasisFor(e, r.demoCatalogVersion)) : null;
+}
+
+/**
+ * P39: the activated SYNTHETIC DEMO entry a row would match by label and exact
+ * unit but whose domain differs from the row's explicit source section, or null.
+ */
+export function syntheticDemoSectionConflict(
+  input: GovernedClassificationInput,
+  catalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
+): { demoId: string; displayName: string; entryDomain: HealthDomainId; sourceDomain: HealthDomainId } | null {
+  if (!input.sourceDomain || input.identity === "canonical") return null;
+  const hit = classifySyntheticDemo({ ...input, sourceDomain: undefined }, catalogs);
+  if (!hit || hit.classification.status !== "matched") return null;
+  const entryDomain = hit.classification.domain;
+  if (entryDomain === input.sourceDomain) return null;
+  const e = catalogs.get(input.missionId ?? "")?.active.find((x) => x.demoId === hit.classification.metricId);
+  return {
+    demoId: hit.classification.metricId,
+    displayName: e?.displayName ?? hit.classification.metricId,
+    entryDomain,
+    sourceDomain: input.sourceDomain,
+  };
 }
 
 export const UNKNOWN_BIOMARKER_REVIEW_SCHEMA = "mitochondria.unknown-biomarker-review.v2";
@@ -573,6 +598,8 @@ export interface GovernedClassificationInput {
   includeRevoked?: boolean | undefined;
   /** Mission of the row; required for mission-scoped SYNTHETIC DEMO entries. */
   missionId?: string | undefined;
+  /** P39: domain of the row's explicit, recognized source section (compatibility check only). */
+  sourceDomain?: HealthDomainId | undefined;
 }
 
 /**
