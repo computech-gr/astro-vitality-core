@@ -41,6 +41,7 @@ import { browserSnapshotStorage } from "@/domain/health-intelligence/active-cata
 import { BUNDLED_TRUSTED_KEYS } from "@/domain/health-intelligence/catalog-snapshot-signing";
 import {
   buildUnknownBiomarkerTerms,
+  classifyWithGovernedExtensions,
   syntheticDemoCoverage,
 } from "@/domain/health-intelligence/unknown-biomarker-review";
 import { classifyIntakeObservation } from "@/domain/health-domains/unified-intake-classification";
