@@ -588,3 +588,40 @@ export function sectionCoverage(doc: SourceDocumentEvidence) {
     return { heading: h.heading, domain: h.domain, page: h.page, declaredCount: h.declaredCount, rows };
   });
 }
+
+const HEX64 = /^[0-9a-f]{64}$/;
+const DOMAIN_IDS = new Set<string>(["bone", "cardiovascular", "immune", "behavioral"]);
+/**
+ * Documents of a committed evidence registry, validated structurally; anything
+ * with another schema, rules version, fingerprint or domain value is dropped
+ * (fails closed: no proposals rather than wrong proposals).
+ */
+export function evidenceRegistryDocuments(json: unknown): SourceDocumentEvidence[] {
+  const docs = (json as { schema?: unknown; documents?: unknown })?.documents;
+  if (
+    (json as { schema?: unknown })?.schema !== "mitochondria.source-section-evidence-registry.v1" ||
+    !Array.isArray(docs)
+  )
+    return [];
+  return docs.filter((d): d is SourceDocumentEvidence => {
+    const x = d as Partial<SourceDocumentEvidence>;
+    return (
+      x?.schema === SOURCE_SECTION_EVIDENCE_SCHEMA &&
+      x.rulesVersion === SOURCE_SECTION_RULES_VERSION &&
+      typeof x.sha256 === "string" &&
+      HEX64.test(x.sha256) &&
+      Array.isArray(x.rows) &&
+      Array.isArray(x.headings) &&
+      x.rows.every(
+        (r) =>
+          typeof r?.label === "string" &&
+          typeof r.unit === "string" &&
+          typeof r.line === "number" &&
+          (r.section === null ||
+            (typeof r.section?.heading === "string" &&
+              Array.isArray(r.section.path) &&
+              (r.section.domain === null || DOMAIN_IDS.has(r.section.domain)))),
+      )
+    );
+  });
+}
