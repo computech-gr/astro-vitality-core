@@ -35,7 +35,8 @@ export const REGISTRY_PATH = resolve(
 
 /** Same geometry reconstruction as extractBoneDocument (browser), run with the pdf.js legacy build. */
 export async function pdfGeometryText(bytes: Uint8Array) {
-  const doc = await pdfjs.getDocument({ data: bytes, isEvalSupported: false, verbosity: 0 }).promise;
+  const task = pdfjs.getDocument({ data: bytes, isEvalSupported: false, verbosity: 0 });
+  const doc = await task.promise;
   const parts: string[] = [];
   const linePages: number[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
@@ -58,7 +59,7 @@ export async function pdfGeometryText(bytes: Uint8Array) {
     linePages.push(...lines.map((l) => l.page));
   }
   const pages = doc.numPages;
-  await doc.destroy();
+  await task.destroy();
   return { text: parts.join("\n"), linePages, pages };
 }
 
