@@ -26,6 +26,26 @@ import {
   type Provenance,
 } from "./catalog-lifecycle";
 import { getActiveCatalog } from "./active-catalog-runtime";
+import { getSyntheticDemoCatalogs } from "./synthetic-demo-catalog-runtime";
+import {
+  recognizeSyntheticDemo,
+  type EvaluatedDemoCatalog,
+  type SyntheticDemoRecognition,
+} from "./synthetic-demo-catalog";
+
+/**
+ * SYNTHETIC DEMO coverage of an examination row: only for rows the base/governed
+ * catalogs do not match. Never changes the row's classification or saveability.
+ */
+export function syntheticDemoCoverage(
+  input: GovernedClassificationInput & { missionId?: string | undefined },
+  catalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
+  classification: IntakeClassification = classifyWithGovernedExtensions(input).classification,
+): SyntheticDemoRecognition | null {
+  if (classification.status === "matched") return null;
+  const r = recognizeSyntheticDemo(input, catalogs);
+  return r.status === "SYNTHETIC_DEMO_RECOGNIZED" ? r : null;
+}
 
 export const UNKNOWN_BIOMARKER_REVIEW_SCHEMA = "mitochondria.unknown-biomarker-review.v2";
 export const CATALOG_EXTENSION_PROPOSAL_SCHEMA = "mitochondria.catalog-extension-proposal.v1";
