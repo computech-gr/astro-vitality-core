@@ -27,7 +27,10 @@ describe("P38 bulk Researcher decisions on /mission/scientific-review", () => {
 
   it("is hidden from accounts without the Researcher (scientific approver) capability", () => {
     expect(
-      bulkResearcherVisibility({ ...eligible, lifecycle: { canDecide: false, demoScopeTerms: 185 } }),
+      bulkResearcherVisibility({
+        ...eligible,
+        lifecycle: { canDecide: false, demoScopeTerms: 185 },
+      }),
     ).toBe("not_researcher");
   });
 
@@ -38,7 +41,9 @@ describe("P38 bulk Researcher decisions on /mission/scientific-review", () => {
   });
 
   it("asks for a mission first, and for sign-in when no synthetic mission is authorized", () => {
-    expect(bulkResearcherVisibility({ ...eligible, missionSelected: false })).toBe("choose_mission");
+    expect(bulkResearcherVisibility({ ...eligible, missionSelected: false })).toBe(
+      "choose_mission",
+    );
     expect(bulkResearcherVisibility({ ...eligible, authorizedMissions: 0 })).toBe("sign_in");
     expect(bulkResearcherVisibility({ ...eligible, lifecycle: "unavailable" })).toBe("unavailable");
   });
@@ -48,7 +53,9 @@ describe("P38 bulk Researcher decisions on /mission/scientific-review", () => {
     const route = src("src/routes/mission.scientific-review.tsx");
     expect(route).toContain("<P36ScientificReviewWorkspace />");
     expect(route).toContain("href={`#${BULK_RESEARCHER_ANCHOR}`}");
-    expect(src("src/components/p36-scientific-review-workspace.tsx")).toContain("<P37CatalogPanel />");
+    expect(src("src/components/p36-scientific-review-workspace.tsx")).toContain(
+      "<P37CatalogPanel />",
+    );
     const panel = src("src/components/p37-catalog-panel.tsx");
     expect(panel).toMatch(
       /<P38BulkDemoResearcher\s+key=\{`bulk-\$\{mission\.missionId\}`\}\s+missionId=\{mission\.missionId\}/,
