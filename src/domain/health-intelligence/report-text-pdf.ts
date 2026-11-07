@@ -202,6 +202,17 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
       ...(researcherModel?.syntheticDemoInterpretations ? [`${researcherModel.syntheticDemoInterpretations} series use SYNTHETIC DEMO interpretations; these are not production scientific validation.`] : []),
     ],
   });
+  if (assessment) {
+    blocks.push({
+      kind: "alert",
+      tone: assessment.counts.red || assessment.counts.amber ? "pending" : "info",
+      title: `BIOMARKER STATUS: ${assessment.counts.red} RED · ${assessment.counts.amber} AMBER · ${assessment.counts.normal} NORMAL · ${assessment.counts.neutral} NEUTRAL`,
+      lines: [
+        severityCountsLine(assessment),
+        "Status comes only from applicable, independently verified references; a numerical increase or decrease is never classified as harmful. Not a diagnosis.",
+      ],
+    });
+  }
   blocks.push(
     {
       kind: "kv",
@@ -247,6 +258,50 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     { kind: "pagebreak" },
   );
   fresh([REPORT_DISCLAIMER]);
+
+  // ---- P54 Biomarker health assessment (verified references only) ----
+  if (assessment) {
+    blocks.push({ kind: "h2", text: "Biomarker health assessment (verified references only)" });
+    blocks.push({ kind: "p", text: `Severity key: ${SEVERITY_ORDER.map((s) => `${SEVERITY_MARKERS[s]} = ${SEVERITY_LABELS[s]}`).join("; ")}. Colour is always paired with the printed marker.`, muted: true });
+    blocks.push({ kind: "bullets", items: [...assessment.policy] });
+    if (assessment.entries.length) {
+      blocks.push({
+        kind: "table",
+        columns: [
+          { title: "Biomarker (domain)", width: 0.24 },
+          { title: "Latest (date)", width: 0.19 },
+          { title: "Previous / change", width: 0.23 },
+          { title: "Status", width: 0.2 },
+          { title: "Evidence", width: 0.14 },
+        ],
+        rows: assessment.entries.map((e) => [
+          `${metricName(e.name, e.metricId)} [${e.unit}] - ${e.domainLabel}${e.nonClinicalLabel ? " (SYNTHETIC DEMO, non-clinical)" : ""}`,
+          `${e.latest.value} ${e.unit} - ${e.latest.observedAt}${e.latest.precision === "date" ? " (date only)" : ""}`,
+          e.previous ? `${e.previous.value} ${e.unit}; ${e.change.status === "compared" && e.change.absolute !== null ? `${e.change.absolute > 0 ? "+" : ""}${e.change.absolute} ${e.unit}${e.change.percent !== null ? ` (${e.change.percent > 0 ? "+" : ""}${e.change.percent}%)` : ""}` : "not compared"}` : "none comparable",
+          `${e.marker} - ${e.statusLabel}`,
+          ref(e.evidenceIds),
+        ]),
+        rowTones: assessment.entries.map((e) => e.classification.severity),
+      });
+      blocks.push({
+        kind: "bullets",
+        items: assessment.entries.map((e) =>
+          [
+            `${e.marker} ${metricName(e.name, e.metricId)} [${e.unit}]:`,
+            ...(e.nonClinicalLabel ? [`${e.nonClinicalLabel}.`] : []),
+            `Basis: ${e.classification.explanation}`,
+            `Reference: ${e.referenceText ?? "none verified"}${e.referenceCitation ? ` (${e.referenceCitation})` : ""}.`,
+            `What it measures: ${e.explanation}`,
+            ...(e.higherValues ? [`Higher values: ${e.higherValues}`] : []),
+            ...(e.lowerValues ? [`Lower values: ${e.lowerValues}`] : []),
+            ...(e.spaceflightContext ? [`Spaceflight context: ${e.spaceflightContext}`] : []),
+            `Citations: ${e.citations.length ? e.citations.join("; ") : "none"}. Evidence quality: ${e.evidenceQuality}.`,
+            `Reviewer status: ${e.reviewerStatus}`,
+          ].join(" "),
+        ),
+      });
+    } else blocks.push({ kind: "p", text: "No included biomarker observations in this scope." });
+  }
 
   // ---- 1. Descriptive findings ----
   blocks.push({ kind: "h2", text: "1. Descriptive findings" });
