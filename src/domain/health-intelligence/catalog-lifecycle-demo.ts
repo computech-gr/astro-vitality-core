@@ -162,7 +162,12 @@ export async function runSyntheticCatalogLifecycleDemo(
     expectedProposalSha256: ap.value.proposalSha256,
     activatorId: "synthetic-approver",
     activatorMemberships: [
-      { userId: "synthetic-approver", missionId: "SYNTHETIC-DEMO", role: "ground_medical", active: true },
+      {
+        userId: "synthetic-approver",
+        missionId: "SYNTHETIC-DEMO",
+        role: "ground_medical",
+        active: true,
+      },
     ],
     eventId: "x",
     at: now(),
@@ -244,13 +249,27 @@ export async function runSyntheticCatalogLifecycleDemo(
     expectedProposalSha256: ap.value.proposalSha256,
     activatorId: "synthetic-operator",
     activatorMemberships: [
-      { userId: "synthetic-operator", missionId: "SYNTHETIC-DEMO", role: "mission_operator", active: true },
-      { userId: "synthetic-operator", missionId: "OTHER-MISSION", role: "ground_medical", active: true },
+      {
+        userId: "synthetic-operator",
+        missionId: "SYNTHETIC-DEMO",
+        role: "mission_operator",
+        active: true,
+      },
+      {
+        userId: "synthetic-operator",
+        missionId: "OTHER-MISSION",
+        role: "ground_medical",
+        active: true,
+      },
     ],
     eventId: "y",
     at: now(),
   });
-  push("Negative: non-Ground Medical / other-mission user", "REFUSED", noGrant.ok ? "ACTIVATED" : "REFUSED");
+  push(
+    "Negative: non-Ground Medical / other-mission user",
+    "REFUSED",
+    noGrant.ok ? "ACTIVATED" : "REFUSED",
+  );
   const conflict = evaluateCatalogSnapshot({
     ...verified.snapshot,
     entries: [

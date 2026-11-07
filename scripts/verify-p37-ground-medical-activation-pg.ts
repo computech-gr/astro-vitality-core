@@ -231,9 +231,9 @@ sql(`insert into p36_dynamic_source_validation values
  ('M1','C1','synthetic','${TERM}','${"d".repeat(64)}','${ID}','${UNIT}','${SPECIMEN}','${METHOD}','SYNTHETIC-DISPOSABLE-PROTOCOL','0','synthetic-disposable-receipt:gm','independent-validator:disposable',now()),
  ('M1','C1','synthetic','${TERM_OTHER}','${"2".repeat(64)}','${ID2}','${UNIT}','${SPECIMEN}','${METHOD}','P','0','synthetic-disposable-receipt:gm-other','${uid(3)}',now());`);
 check(
-  (approve(2, TERM, "synthetic-disposable-receipt:gm", "Synthetic marker GM").detail ?? "").includes(
-    "scientific approval authorization required",
-  ),
+  (
+    approve(2, TERM, "synthetic-disposable-receipt:gm", "Synthetic marker GM").detail ?? ""
+  ).includes("scientific approval authorization required"),
   "Ground Medical cannot scientifically approve",
 );
 const ap = approve(4, TERM, "synthetic-disposable-receipt:gm", "Synthetic marker GM");
@@ -300,10 +300,12 @@ check(
 // --- Concurrent activation by two eligible Ground Medical users -------------------
 const [c2, c3] = await Promise.all([
   runAsync(
-    as(2) + `select public.p37_catalog_activate_v1('${ap.event_id}','${ap.entry_sha256}','${key()}');`,
+    as(2) +
+      `select public.p37_catalog_activate_v1('${ap.event_id}','${ap.entry_sha256}','${key()}');`,
   ),
   runAsync(
-    as(3) + `select public.p37_catalog_activate_v1('${ap.event_id}','${ap.entry_sha256}','${key()}');`,
+    as(3) +
+      `select public.p37_catalog_activate_v1('${ap.event_id}','${ap.entry_sha256}','${key()}');`,
   ),
 ]);
 const outcomes = [res(c2), res(c3)];
@@ -408,7 +410,10 @@ const sign = async (r: LedgerSnapshotRpc) =>
     testKey.trusted.keyId,
     testKey.privateKey,
   );
-check((await installOfferedCatalog(await sign(rpc), device)).installed, "verified snapshot installed");
+check(
+  (await installOfferedCatalog(await sign(rpc), device)).installed,
+  "verified snapshot installed",
+);
 const online = classifyWithGovernedExtensions(exam);
 check(
   online.classification.status === "matched" && online.classification.metricId === ID,
@@ -432,10 +437,7 @@ check(
 globalThis.fetch = realFetch;
 const tampered = await sign(rpc);
 tampered.snapshot.entries[0]!.unit = "nmol/L";
-check(
-  !(await installOfferedCatalog(tampered, device)).installed,
-  "tampered snapshot rejected",
-);
+check(!(await installOfferedCatalog(tampered, device)).installed, "tampered snapshot rejected");
 
 // --- Revocation ------------------------------------------------------------------
 for (const u of [5, 6, 11])
@@ -458,7 +460,10 @@ check(
     rpc2.entries.find((e) => e.canonicalId === ID)?.status === "REVOKED",
   "snapshot reflects revocation with newer version",
 );
-check((await installOfferedCatalog(await sign(rpc2), device)).installed, "revoked snapshot installed");
+check(
+  (await installOfferedCatalog(await sign(rpc2), device)).installed,
+  "revoked snapshot installed",
+);
 check(
   classifyWithGovernedExtensions(exam).classification.status === "unclassified",
   "revoked biomarker no longer recognized after verified sync",

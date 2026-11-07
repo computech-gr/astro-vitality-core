@@ -96,7 +96,8 @@ export function isCatalogActivatorFor(
   missionId: string,
 ): boolean {
   return memberships.some(
-    (m) => m.userId === userId && m.missionId === missionId && m.role === "ground_medical" && m.active,
+    (m) =>
+      m.userId === userId && m.missionId === missionId && m.role === "ground_medical" && m.active,
   );
 }
 

@@ -47,8 +47,8 @@ export function P37GroundMedicalActivationPanel({
       <CardHeader>
         <CardTitle id="p37-gm-title">New biomarker catalog activation</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Biomarkers the Researcher has already scientifically approved for {missionLabel}. As Ground
-          Medical for this mission you can activate them in the catalog; future compatible
+          Biomarkers the Researcher has already scientifically approved for {missionLabel}. As
+          Ground Medical for this mission you can activate them in the catalog; future compatible
           examinations are then recognized automatically, online and offline, after each device's
           next verified catalog sync. No further Researcher decision is needed.
         </p>
@@ -105,7 +105,11 @@ export function P37GroundMedicalActivationPanel({
                     {e.revocationReason ? (
                       <p className="text-xs">Revoked: {e.revocationReason}</p>
                     ) : null}
-                    <EntryActions row={e} canActivate={e.callerMayActivate === true} onDone={load} />
+                    <EntryActions
+                      row={e}
+                      canActivate={e.callerMayActivate === true}
+                      onDone={load}
+                    />
                   </li>
                 ))}
               </ul>

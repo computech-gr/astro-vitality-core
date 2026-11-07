@@ -8,7 +8,11 @@ const row = {
   term_id: "ubt-0000abcd",
   canonical_id: "ext:synthetic-marker-gm",
   provenance: "synthetic",
-  entry: { canonicalId: "ext:synthetic-marker-gm", canonicalName: "Synthetic marker GM", aliases: ["x"] },
+  entry: {
+    canonicalId: "ext:synthetic-marker-gm",
+    canonicalName: "Synthetic marker GM",
+    aliases: ["x"],
+  },
   entry_sha256: "a".repeat(64),
   approved_at: "2026-11-08T10:00:00Z",
   approved_by_caller: false,
@@ -38,7 +42,20 @@ describe("P37 Ground Medical activation queue (server core)", () => {
   });
   test("database-confirmed eligibility is carried per proposal", async () => {
     const r = await activationQueueCore(
-      rpcWith({ data: { can_activate: true, events: [row, { ...row, approval_event_id: "33333333-3333-4333-8333-333333333333", caller_may_activate: false }] }, error: null }),
+      rpcWith({
+        data: {
+          can_activate: true,
+          events: [
+            row,
+            {
+              ...row,
+              approval_event_id: "33333333-3333-4333-8333-333333333333",
+              caller_may_activate: false,
+            },
+          ],
+        },
+        error: null,
+      }),
       "M1",
     );
     expect(r.ok).toBe(true);
@@ -46,7 +63,10 @@ describe("P37 Ground Medical activation queue (server core)", () => {
   });
   test("malformed proposals are rejected rather than shown", async () => {
     const r = await activationQueueCore(
-      rpcWith({ data: { can_activate: true, events: [{ ...row, entry_sha256: "nope" }] }, error: null }),
+      rpcWith({
+        data: { can_activate: true, events: [{ ...row, entry_sha256: "nope" }] },
+        error: null,
+      }),
       "M1",
     );
     expect(r.ok).toBe(false);
