@@ -364,6 +364,7 @@ export function BiomarkerInterpretationReview() {
           record={selected.record ?? null}
           snapshot={snapshot}
           canReview={canReview}
+          userId={identity?.userId ?? null}
           freshActor={freshActor}
           onRecorded={async (text) => {
             await reload();
@@ -385,6 +386,7 @@ function InterpretationEditor(props: {
   record: ResolvedInterpretation | null;
   snapshot: InterpretationSnapshot;
   canReview: boolean;
+  userId: string | null;
   freshActor: () => Promise<ActorContext>;
   onRecorded: (message: string) => Promise<void>;
   onClose: () => void;
@@ -686,6 +688,19 @@ function InterpretationEditor(props: {
         </div>
       )}
       {note && <p className="text-sm" role="alert">{note}</p>}
+
+      <InterpretationEvidencePanel
+        researchKey={interpretationKey(target)}
+        relatedKeys={target.unit ? [candidateKey(candidateIdFor(target.displayName, target.unit)), ...(record?.aliases ?? []).map((a) => candidateKey(candidateIdFor(a, target.unit!)))] : []}
+        concept={identityConcept(target, record?.aliases ?? [])}
+        canReview={props.canReview}
+        userId={props.userId}
+        onUseDraft={(d) => {
+          setDraft(d);
+          setAck(false);
+          setNote("Excerpt-verified claims loaded into the editor (unsaved). Check every statement against its source, set the evidence strength, then save or approve. Unresolved claims were not loaded.");
+        }}
+      />
 
       {(targetRecord?.approvalHistory.length ?? 0) > 0 && (
         <details className="text-xs" open>
