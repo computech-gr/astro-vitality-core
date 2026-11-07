@@ -1359,6 +1359,113 @@ export type Database = {
           },
         ]
       }
+      p36_dynamic_admission: {
+        Row: {
+          authorization_open: boolean
+          change_note: string
+          changed_at: string
+          handoff_open: boolean
+          singleton: boolean
+        }
+        Insert: {
+          authorization_open?: boolean
+          change_note?: string
+          changed_at?: string
+          handoff_open?: boolean
+          singleton?: boolean
+        }
+        Update: {
+          authorization_open?: boolean
+          change_note?: string
+          changed_at?: string
+          handoff_open?: boolean
+          singleton?: boolean
+        }
+        Relationships: []
+      }
+      p36_dynamic_handoff_submissions: {
+        Row: {
+          crew_member_id: string
+          mission_id: string
+          payload_canonical: string
+          payload_sha256: string
+          provenance: string
+          received_at: string
+          received_seq: number
+          request_id: string
+          submission_id: string
+          submitted_by: string
+          submitted_role: string
+        }
+        Insert: {
+          crew_member_id: string
+          mission_id: string
+          payload_canonical: string
+          payload_sha256: string
+          provenance: string
+          received_at?: string
+          received_seq?: never
+          request_id: string
+          submission_id?: string
+          submitted_by: string
+          submitted_role: string
+        }
+        Update: {
+          crew_member_id?: string
+          mission_id?: string
+          payload_canonical?: string
+          payload_sha256?: string
+          provenance?: string
+          received_at?: string
+          received_seq?: never
+          request_id?: string
+          submission_id?: string
+          submitted_by?: string
+          submitted_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_dynamic_handoff_submissions_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_dynamic_handoff_submissions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p36_dynamic_handoff_terms: {
+        Row: {
+          metadata: Json
+          submission_id: string
+          term_id: string
+        }
+        Insert: {
+          metadata: Json
+          submission_id: string
+          term_id: string
+        }
+        Update: {
+          metadata?: Json
+          submission_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_dynamic_handoff_terms_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "p36_dynamic_handoff_submissions"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
       p36_metric_unit_catalog: {
         Row: {
           metric_id: string
@@ -1772,6 +1879,31 @@ export type Database = {
           p_provenance: string
         }
         Returns: Json
+      }
+      p36_dynamic_handoff_append_v1: {
+        Args: {
+          p_crew_member_id: string
+          p_mission_id: string
+          p_payload_canonical: string
+          p_payload_sha256: string
+          p_provenance: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      p36_dynamic_handoff_list_v1: {
+        Args: {
+          p_after_seq: number
+          p_crew_member_id: string
+          p_limit: number
+          p_mission_id: string
+          p_provenance: string
+        }
+        Returns: Json
+      }
+      p36_dynamic_scope: {
+        Args: { p_crew: string; p_mission: string; p_write: boolean }
+        Returns: string
       }
       p36_list_synthetic_review_history: {
         Args: { p_crew_member_id: string; p_mission_id: string }
