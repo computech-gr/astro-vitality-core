@@ -1,0 +1,2117 @@
+{
+"schema": "mitochondria.p42.real-ocr-output.v1",
+"engine": "tesseract.js 6.0.1 (bundled app engine) with the app's local eng.traineddata.gz from public/ocr/v1",
+"input": "Alex_Morgan_Complete_Examination_2026-11-07.pdf rasterized by pdftoppm at 150 dpi, pages 1-9",
+"sourceSha256": "d1bd6d9fa7efe52187e8dd9f861fe0917c016440a61a78074027f60cbdcabdfb",
+"note": "Verbatim OCR output, not edited. Real engine run, not mocked.",
+"lines": [
+{
+"page": 1,
+"text": "ORBITAL MEDICAL DIAGNOSTICS"
+},
+{
+"page": 1,
+"text": "MULTI-SYSTEM LABORATORY & PERFORMANCE REPORT"
+},
+{
+"page": 1,
+"text": "Patient: Alex Morgan | Record: SIM-261107-0042 | Date: 07/11/2026 | Time: 09:30 UTC"
+},
+{
+"page": 1,
+"text": "Mission day: FD-118 | Assessment window: 06-07/11/2026"
+},
+{
+"page": 1,
+"text": "BONE HEALTH"
+},
+{
+"page": 1,
+"text": "1 CTX / B-CTX 1.82 ng/mL."
+},
+{
+"page": 1,
+"text": "2 NTX 11s nmol BCE/mmol creatinine"
+},
+{
+"page": 1,
+"text": "3 Pyridinoline (PYD) 165 nmol/mmol creatinine"
+},
+{
+"page": 1,
+"text": "4 Deoxypyridinoline (DPD) 38 nmol/mmol creatinine"
+},
+{
+"page": 1,
+"text": "5 Helical Peptide 220 ng/mL."
+},
+{
+"page": 1,
+"text": "6 Hydroxyproline 85 mg/24h"
+},
+{
+"page": 1,
+"text": "7 Hydroxylysine 0.9 mg/L"
+},
+{
+"page": 1,
+"text": "8 TRAPSb 8.2 U/L"
+},
+{
+"page": 1,
+"text": "9 PLNP / PINP 12 ng/mL."
+},
+{
+"page": 1,
+"text": "10 PICP 22 ng/mL."
+},
+{
+"page": 1,
+"text": "11 BSAP / BAP 5.8 Hg/L"
+},
+{
+"page": 1,
+"text": "12 Osteocalcin 3.5 ng/mL."
+},
+{
+"page": 1,
+"text": "13 Serum Total Calcium 10.1 mg/dL."
+},
+{
+"page": 1,
+"text": "14 Urinary Calcium 24h 480 mg/24h"
+},
+{
+"page": 1,
+"text": "15 Serum Phosphate 48 mg/dL."
+},
+{
+"page": 1,
+"text": "16 Urinary Phosphorus 16 g/24h"
+},
+{
+"page": 1,
+"text": "7 PTH 145 pg/mL"
+},
+{
+"page": 1,
+"text": "18 25(OH) Vitamin D 12 ng/mL."
+},
+{
+"page": 1,
+"text": "19 1,25(OH)2 Vitamin D 18 pg/mL"
+},
+{
+"page": 1,
+"text": "20 FGF23 140 Ru/mL"
+},
+{
+"page": 1,
+"text": "21 Sclerostin 58 pmol/L"
+},
+{
+"page": 1,
+"text": "22 RANKL 0.8 ng/mL."
+},
+{
+"page": 1,
+"text": "23 OPG 45 pmol/L"
+},
+{
+"page": 1,
+"text": "24 DKK1 75 ng/mL."
+},
+{
+"page": 1,
+"text": "25 Stable Ca isotope ratio -0.8 %o"
+},
+{
+"page": 1,
+"text": "26 Stable Ca tracer kinetics 0.6 fraction/day"
+},
+{
+"page": 1,
+"text": "27 Urinary Citrate 110 mg/24h"
+},
+{
+"page": 1,
+"text": "28 Urinary Oxalate 65 mg/24h"
+},
+{
+"page": 1,
+"text": "29 Urinary Magnesium 55 mg/24h"
+},
+{
+"page": 1,
+"text": "30 Urinary Sodium 220 mmol/24 h"
+},
+{
+"page": 1,
+"text": "31 Urinary Potassium 28 mmol/24 h"
+},
+{
+"page": 1,
+"text": "32 Urinary Sulfate 48 mmol/24 h"
+},
+{
+"page": 1,
+"text": "33 Urinary Uric Acid 910 mg/24h"
+},
+{
+"page": 1,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 1"
+},
+{
+"page": 1,
+"text": ""
+},
+{
+"page": 2,
+"text": "34 Urinary Creatinine 1,400 mg/24h"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "35 Urine pH 5.1 pH"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "36 Calcium Oxalate Supersaturation 12.4 index"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "37 Brushite / Ca Phosphate Supersaturation 3.8 index"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "38 Uric Acid Supersaturation 2.9 index"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "39 Sodium Urate Supersaturation 3.5 index"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "40 Struvite Supersaturation 1.2 index"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "41 Total Hip aBMD 0.61 g/cm?"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "42 Femoral Neck aBMD 0.54 g/cm?"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "43 Total vBMD 95 mg/cm?"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "44 Cortical vVBMD 760 mg/cm?"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "45 Trabecular vBMD. 55 mg/cm?"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "46 Trabecular Number 0.7 1/mm"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "47 Trabecular Separation 2.1 mm"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "48 Bone Failure Load 2,100 N"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "49 Estimated Bone Strength 2,600 N"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "50 Resistance Exercise Adherence 2 sessions/week"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "51 Resistance Exercise Load 40 % prescribed load"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "52 Dietary Calcium Intake 420 mg/day"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "53 Mission Duration 118 days"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "54 Microgravity Exposure 118 days"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "CARDIOVASCULAR HEALTH"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "55 HR 132 beats/min"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "56 Resting HR 132 beats/min"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "57 Exercise HR 156 beats/min"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "58 HR recovery 7 beats/min decrease at 1 min"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "59 SBP 88 mmHg"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "60 DBP 54 mmHg"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "61 MAP 65.3 mmHg"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "62 Pulse pressure 34 mmHg"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "63 Stroke volume 42 mL/beat"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "64 Cardiac output 5.54 Limin"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "65 Cardiac index 2.9 Lmin/m?"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "66 SVR 1,100 dyn-s/cm>"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "67 cvP 3 mmHg"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "68 Plasma volume 2.5 L"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "69 Blood volume 4.2 L"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 2,
+"text": "70 Venous return 4.8 Umin"
+},
+{
+"page": 2,
+"text": "SIMULATED DATA NOT A CLINICAL RECORD Page 2"
+},
+{
+"page": 2,
+"text": ""
+},
+{
+"page": 3,
+"text": "71 LV EDV 86 mi"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "72 LV ESV 44 mi"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "3B LV mass 125 9"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "74 LVEF 49 %"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "75 E/A 0.6 ratio"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "76 Ele’ 19 ratio"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "77 ECG Sinus tachycardia ECG finding"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "78 RR interval 455 ms"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "79 SDNN 18 ms"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "80 RMSSD 12 ms"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "81 HF HRV 55 ms?"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "82 LF HRV 38 ms?"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "83 PR 120 ms"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "84 QRS 88 ms"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "85 QTc 510 ms"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "86 PAC burden 6 %"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "87 PVC burden 9 %"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "88 AF burden 2 %"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "89 SVT/VT episode 1 episode/24 h"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "90 ST changes -1.2 mm"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "91 Orthostatic ASBP -28 mmHg"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "92 Orthostatic AHR 42 beats/min increase"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "93 Tilt tolerance 4 min"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "94 Baroreflex sensitivity 3 ms/mmHg"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "95 Cerebral flow velocity 35 cm/s"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "96 Orthostatic symptoms 7 score/10"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "97 cIMT 0.95 mm"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "98 Pwv 12.4 m/s"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "99 FMD 2.5 %"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "100 Carotid distensibility 1.2 %/10 mmHg"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "101 CAC score 310 Agatston units"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "102 Coronary CTA findings 40 % stenosis"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "103 Arterial plaque burden 35 % plaque volume"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "104 ‘IJV peak velocity 9 cm/s"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "105 IV flow grade 3 grade"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "106 ‘JV. compressibility 25 % compression"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "107 Spontaneous echo contrast Present yes/no"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "108 — Thrombus on ultrasound Present yes/no"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "109 D-dimer 2.8 mg/L FEU"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 3,
+"text": "110 Platelet count 95 x109/UL"
+},
+{
+"page": 3,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 3"
+},
+{
+"page": 3,
+"text": ""
+},
+{
+"page": 4,
+"text": "111 Fibrinogen 520 mg/dL"
+},
+{
+"page": 4,
+"text": "112 PT/INR 16 ratio"
+},
+{
+"page": 4,
+"text": "113. aPTT 42 s"
+},
+{
+"page": 4,
+"text": "114s WWF 195 % activity"
+},
+{
+"page": 4,
+"text": "115 VOapeak 19 mU/kg/min"
+},
+{
+"page": 4,
+"text": "116 Workload 45 w"
+},
+{
+"page": 4,
+"text": "117 SpOz 91 %"
+},
+{
+"page": 4,
+"text": "118 PaQe 65 mmHg"
+},
+{
+"page": 4,
+"text": "119 Respiratory rate 26 breaths/min"
+},
+{
+"page": 4,
+"text": "120. EtCO2 28 mmHg"
+},
+{
+"page": 4,
+"text": "121 Lactate 4.2 mmol/L"
+},
+{
+"page": 4,
+"text": "122. Sodium 128 mmol/L"
+},
+{
+"page": 4,
+"text": "123 Potassium 5.8 mmol/L"
+},
+{
+"page": 4,
+"text": "124 Magnesium 13 mg/dL"
+},
+{
+"page": 4,
+"text": "125 Calcium serum 10.1 mg/dL"
+},
+{
+"page": 4,
+"text": "126 Phosphate 48 mg/dL"
+},
+{
+"page": 4,
+"text": "127. Hemoglobin 10.2 g/d"
+},
+{
+"page": 4,
+"text": "128 Hematocrit 31 %"
+},
+{
+"page": 4,
+"text": "129 Renin 18 ng/mL/h"
+},
+{
+"page": 4,
+"text": "130 Aldosterone 38 ng/dL"
+},
+{
+"page": 4,
+"text": "131 Vasopressin/copeptin 45 pmol/L"
+},
+{
+"page": 4,
+"text": "132 ANP 35 pg/mL"
+},
+{
+"page": 4,
+"text": "133. BNP/NT-proBNP 820 pg/mL NT-proBNP"
+},
+{
+"page": 4,
+"text": "134 Troponin I/T 0.16 ng/mL hs-cTnl"
+},
+{
+"page": 4,
+"text": "135 Glucose 175 mg/dL fasting"
+},
+{
+"page": 4,
+"text": "136 Insulin 24 qlU/mL"
+},
+{
+"page": 4,
+"text": "137 HbAlc 91 %"
+},
+{
+"page": 4,
+"text": "138° LDL-C 188 mg/dL"
+},
+{
+"page": 4,
+"text": "139° HDL-C 28 mg/dL"
+},
+{
+"page": 4,
+"text": "140 ‘Triglycerides 330 mg/dL"
+},
+{
+"page": 4,
+"text": "141 ApoB 160 mg/dL"
+},
+{
+"page": 4,
+"text": "142 Lp(a) 125 nmol/L"
+},
+{
+"page": 4,
+"text": "143 hsCRP 28 mg/L"
+},
+{
+"page": 4,
+"text": "144 IL-6 74 pg/mL"
+},
+{
+"page": 4,
+"text": "145 TNF-a 42 pg/mL"
+},
+{
+"page": 4,
+"text": "146 8-OHdG 35 ng/mL"
+},
+{
+"page": 4,
+"text": "147 F2-isoprostanes 1,800 pg/mL"
+},
+{
+"page": 4,
+"text": "148 Cortisol 31 lig/dL at 08:00"
+},
+{
+"page": 4,
+"text": "IMMUNE MONITORING"
+},
+{
+"page": 4,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 4"
+},
+{
+"page": 4,
+"text": ""
+},
+{
+"page": 5,
+"text": "149° WBC 21 x103/uL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "150 Neutrophils absolute 0.65 x103/uL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "151 Lymphocytes absolute 0.8 x103/uL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "152 Monocytes absolute 0.45 x103/uL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "153 _ Eosinophils 0.12 x103/uL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "154 Basophils 0.08 x103/uL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "155 Neutrophil-to-lymphocyte ratio 0.81 ratio"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "156 CD3+T 420 cells/ul."
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "157. CD4+T 95 cells/ul."
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "158 = CD8+T 310 cells/ul."
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "159 CD4/CD8 0.31 ratio"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "160 CD19+ B 60 cells/ul."
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "161 CD16+/CD56+ NK 45 cells/ul."
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "162 Naive/memory T subsets 8 % naive CD4"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "163 Regulatory T cells 2 % of CD4"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "164 ‘T-cell activation CD69/CD25 6 % CD69+"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "165 ‘T-cell proliferation 18 % divided"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "166 ‘T-cell IFN-y response 12 % IEN-y+"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "167 ‘T-cell IL-2 response 4 % IL-2+"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "168 NK cytotoxicity 7 % target lysis"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "169 NK perforin 18 % perforin+"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "170 NK granzyme B 12 % granzyme B+"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "171 NK CD107a degranulation 5 % CD107a+"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "172 Monocyte cytokine response 14 pg/mL stimulated"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "173 Monocyte HLA-DR 22 % HLA-DR+"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "174 Neutrophil oxidative burst 15 % DHR-positive"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "175 Phagocytosis index 0.35 relative index"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "176 _Virus-specific T-cell frequency 0.03 % of CD8"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "177 Virus-specific T-cell function 4 % cytokine-positive"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "178 Leukocyte bacterial challenge 8 % stimulated response"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "179 Antigen recall response 3 % stimulated response"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "180 IL-1B. 18 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "isl IL-2 2 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "is2 IL-4 12 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "183 ILS 8 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "184 IL-6 74 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "185 —_‘IL-8/CXCL8 115 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "186 IL-10 25 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "187-12 6 pg/mL"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 5,
+"text": "188 IL-17A 28 pg/mL"
+},
+{
+"page": 5,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 5"
+},
+{
+"page": 5,
+"text": ""
+},
+{
+"page": 6,
+"text": "189 IFN-y 35 pg/mL"
+},
+{
+"page": 6,
+"text": "190 TNF-a 42 pg/mL"
+},
+{
+"page": 6,
+"text": "191 IFN- 18 pg/mL"
+},
+{
+"page": 6,
+"text": "192 IFN-B. 15 pg/mL"
+},
+{
+"page": 6,
+"text": "193 MCP-1/CCL2 310 pg/mL"
+},
+{
+"page": 6,
+"text": "194 IP-10/CXCL10 850 pg/mL"
+},
+{
+"page": 6,
+"text": "195 TGF-B 19 ng/mL"
+},
+{
+"page": 6,
+"text": "196 hsCRP 28 mg/L"
+},
+{
+"page": 6,
+"text": "197 Serum amyloid A 95 mg/L"
+},
+{
+"page": 6,
+"text": "198 Viral shedding duration 12 days"
+},
+{
+"page": 6,
+"text": "199 —_EBV-specific T response 0.02 % IFN-y+ T cells"
+},
+{
+"page": 6,
+"text": "200 — CMV-specific T response 0.01 % IFN-y+ T cells"
+},
+{
+"page": 6,
+"text": "201 —-VZV-specific T response 0.01 % IFN-y+ T cells"
+},
+{
+"page": 6,
+"text": "202 Viral symptoms. Present yes/no"
+},
+{
+"page": 6,
+"text": "203 Cortisol serum 31 lug/dL at 08:00"
+},
+{
+"page": 6,
+"text": "204 Cortisol saliva 28 nmol/L at 08:00"
+},
+{
+"page": 6,
+"text": "205 Cortisol urine 180 11g/24 h"
+},
+{
+"page": 6,
+"text": "206 = DHEA 0.7 Hig/dL"
+},
+{
+"page": 6,
+"text": "207 Epinephrine 210 pg/mL"
+},
+{
+"page": 6,
+"text": "208 Norepinephrine 780 pg/mL"
+},
+{
+"page": 6,
+"text": "209 Sleep duration 3.1 hynight"
+},
+{
+"page": 6,
+"text": "210 Sleep efficiency 52 %"
+},
+{
+"page": 6,
+"text": "211 Circadian phase 4.5 h shift"
+},
+{
+"page": 6,
+"text": "212 Perceived stress 31 score/40"
+},
+{
+"page": 6,
+"text": "213 Workload 90 NASA-TLX/100"
+},
+{
+"page": 6,
+"text": "214 IgG 380 mg/dL"
+},
+{
+"page": 6,
+"text": "215 IgA 32 mg/dL"
+},
+{
+"page": 6,
+"text": "216 IgM 25 mg/dL"
+},
+{
+"page": 6,
+"text": "217 Salivary secretory IgA 12 mg/L"
+},
+{
+"page": 6,
+"text": "218 Vaccine antibody titer 0.4 tu/mL"
+},
+{
+"page": 6,
+"text": "219 25(OH) vitamin D 12 ng/mL"
+},
+{
+"page": 6,
+"text": "220 Serum calcium 10.1 mg/dL"
+},
+{
+"page": 6,
+"text": "221. PTH 145 pg/mL"
+},
+{
+"page": 6,
+"text": "222. CTX 1.82 ng/mL"
+},
+{
+"page": 6,
+"text": "223° PINP 12 ng/mL"
+},
+{
+"page": 6,
+"text": "224 Bone mineral density 0.61 g/cm?"
+},
+{
+"page": 6,
+"text": "225 Radiation dose 180 mSv cumulative"
+},
+{
+"page": 6,
+"text": "226 Microbiome diversity 0.8 Shannon index"
+},
+{
+"page": 6,
+"text": "227 Microbial pathogen detection Detected PCR result"
+},
+{
+"page": 6,
+"text": "228 Body temperature 38.8 °C"
+},
+{
+"page": 6,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 6"
+},
+{
+"page": 6,
+"text": ""
+},
+{
+"page": 7,
+"text": "229 Symptom diary Present yes/no"
+},
+{
+"page": 7,
+"text": "BEHAVIORAL HEALTH"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "230 Total sleep time 3.1 hynight"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "231 ‘Time in bed 6.0 h"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "232 Sleep efficiency 52 %"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "233 Sleep onset 02:10 hh:mm"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "234 Wake time 05:16 hh:mm"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "235 Sleep onset latency 92 min"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "236 Wake after sleep onset (WASO) 81 min"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "237 Number of awakenings 8 count/night"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "238 Sleep midpoint 03:43 hh:mm"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "239 Sleep timing variability 145 min SD"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "240 Daily activity counts 2,400 counts/hour"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "241 _Rest-activity regularity 0.35 index 0-1"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "242 Subjective sleep quality 1 score 1-5"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "243 Subjective sleep duration 3.1 h self-report"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "244 Nap duration 0 min"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "245 Sleep debt 7-day 24 h/7 days"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "246 PVT median reaction time 610 ms"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "247 PVT mean reaction time 740 ms"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "248 PVT lapses 19 count/10 min"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "249 PVT false starts 12 count/10 min"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "250 PVT fastest 10% RT 410 ms"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "251 PVT slowest 10% RT 1,280 ms"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "252 PVT reciprocal RT 1.35 st"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "253 PVT RT variability 320 ms SD"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "254 Subjective alertness VAS 12 VAS 0-100"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "255 Subjective fatigue VAS 88 VAS 0-100"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "256 _ Karolinska Sleepiness Scale 9 score 1-9"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "257 Epworth Sleepiness Scale 18 score 0-24"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "258 Motor Praxis speed 695 ms"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "259 Visual Object Learning accuracy 7 % correct"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "260 _Fractal 2-Back accuracy 7 % correct"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "261 Abstract Matching accuracy 8 % correct"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "262 _Line Orientation error 24 degrees error"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "263 Emotion Recognition accuracy 12 % correct"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "264 Matrix Reasoning accuracy 12 % correct"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 7,
+"text": "265 _Digit Symbol Substitution correct 22 correct/min"
+},
+{
+"page": 7,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 7"
+},
+{
+"page": 7,
+"text": ""
+},
+{
+"page": 8,
+"text": "266 —_ Balloon Analog Risk Task choices 38 pumpsytrial"
+},
+{
+"page": 8,
+"text": "267 Psychomotor Vigilance Task performance 19 lapses/10 min"
+},
+{
+"page": 8,
+"text": "268 Cognition task completion time 780 s"
+},
+{
+"page": 8,
+"text": "269 Cognition intraindividual change -42 % from baseline"
+},
+{
+"page": 8,
+"text": "270 Cognition practice-effect flag Present yes/no"
+},
+{
+"page": 8,
+"text": "271 Cognition missing-trial rate ql % missing"
+},
+{
+"page": 8,
+"text": "272 Positive affect 12 score 0-100"
+},
+{
+"page": 8,
+"text": "273 Negative affect 86 score 0-100"
+},
+{
+"page": 8,
+"text": "274 Stress VAS 88 VAS 0-100"
+},
+{
+"page": 8,
+"text": "275 Mental fatigue VAS 91 VAS 0-100"
+},
+{
+"page": 8,
+"text": "276 Physical fatigue VAS 87 VAS 0-100"
+},
+{
+"page": 8,
+"text": "277 Mood end-of-day 12 score 0-100"
+},
+{
+"page": 8,
+"text": "278 Perceived coping 15 score 0-100"
+},
+{
+"page": 8,
+"text": "279 Perceived recovery 12 score 0-100"
+},
+{
+"page": 8,
+"text": "280 Motivation 18 score 0-100"
+},
+{
+"page": 8,
+"text": "281 Loneliness 85 VAS 0-100"
+},
+{
+"page": 8,
+"text": "282 Perceived social support 10 score 0-100"
+},
+{
+"page": 8,
+"text": "283 _Distress screening result 18 score 0-100"
+},
+{
+"page": 8,
+"text": "284 Team cohesion 12 score 0-100"
+},
+{
+"page": 8,
+"text": "285 Team conflict 88 score 0-100"
+},
+{
+"page": 8,
+"text": "286 Team communication quality 18 score 0-100"
+},
+{
+"page": 8,
+"text": "287 Team coordination 12 score 0-100"
+},
+{
+"page": 8,
+"text": "288 Trust within crew 18 score 0-100"
+},
+{
+"page": 8,
+"text": "289 Perceived privacy 12 score 0-100"
+},
+{
+"page": 8,
+"text": "290 _—_Habitability satisfaction 15 score 0-100"
+},
+{
+"page": 8,
+"text": "291 Work-rest balance 12 score 0-100"
+},
+{
+"page": 8,
+"text": "292 __ Interpersonal connectedness 15 score 0-100"
+},
+{
+"page": 8,
+"text": "293 Ground communication satisfaction 18 score 0-100"
+},
+{
+"page": 8,
+"text": "294 Team questionnaire completion 100 % complete"
+},
+{
+"page": 8,
+"text": "295 NASA-TLX mental demand 96 score 0-100"
+},
+{
+"page": 8,
+"text": "296 NASA-TLX physical demand 82 score 0-100"
+},
+{
+"page": 8,
+"text": "297 NASA-TLX temporal demand 94 score 0-100"
+},
+{
+"page": 8,
+"text": "298 NASA-TLX performance 12 score 0-100"
+},
+{
+"page": 8,
+"text": "299 NASA-TLX effort 88 score 0-100"
+},
+{
+"page": 8,
+"text": "300 NASA-TLX frustration 97 score 0-100"
+},
+{
+"page": 8,
+"text": "301 NASA-TLX overall 92 score 0-100"
+},
+{
+"page": 8,
+"text": "302 Task error count 18 errors/day"
+},
+{
+"page": 8,
+"text": "303 Task completion time 185 % of baseline time"
+},
+{
+"page": 8,
+"text": "304 Task success rate 42 % successful"
+},
+{
+"page": 8,
+"text": "305 Operational response latency 683 ms"
+},
+{
+"page": 8,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 8"
+},
+{
+"page": 8,
+"text": ""
+},
+{
+"page": 9,
+"text": "306 Schedule adherence 55 % adherence"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "307 _Light exposure photopic 35 lux"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "308 —Circadian-effective light 15 melanopic EDI lux"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "309 Noise exposure 82 dBA"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "310 Cabin co2 5,200 ppm"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "311 Cabin temperature 29 °C"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "312 Heart rate resting 132 beats/min"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "313. HRV RMSSD 12 ms"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "314 Salivary cortisol 28 nmol/L at 08:00"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "315 Melatonin phase marker 04:30 hh:mm DLMO"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "316 Mission workload hours 14 h/day"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "317 Consecutive wake duration 22 h"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "318 Time since launch 118 days"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "319 Time to landing 42 days"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "320 Medication exposure flag Present yes/no"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "321 _IPIP-NEO neuroticism 92 T-score 0-100"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "322 _IPIP-NEO extraversion 18 T-score 0-100"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "323 _IPIP-NEO openness 20 T-score 0-100"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "324 _IPIP-NEO agreeableness 25 T-score 0-100"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "325 _IPIP-NEO conscientiousness 15 T-score 0-100"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "326 Baseline reliability 0.45 icc"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "327 Within-person trend slope -2.8 z-score/month"
+},
+{
+"page": 9,
+"text": ""
+},
+{
+"page": 9,
+"text": "328 Data completeness 76 % complete"
+},
+{
+"page": 9,
+"text": "SIMULATED DATA — NOT A CLINICAL RECORD Page 9"
+},
+{
+"page": 9,
+"text": ""
+}
+]
+}
