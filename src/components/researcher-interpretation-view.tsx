@@ -9,6 +9,64 @@ import {
   type ResearcherInterpretationModel,
 } from "@/domain/health-intelligence/researcher-interpretation";
 import type { SeriesInterpretation } from "@/domain/health-intelligence/biomarker-interpretation";
+import type { LongitudinalComparison } from "@/domain/health-intelligence/longitudinal-comparison";
+
+/** Neutral sparkline: one colour, no normal/abnormal bands; numeric points only, gaps for non-comparable points. */
+function NeutralSparkline({ value }: { value: LongitudinalComparison }) {
+  const pts = value.points.map((p, i) => ({ i, v: p.value }));
+  const nums = pts.filter((p): p is { i: number; v: number } => p.v !== null);
+  if (nums.length < 2) return null;
+  const min = Math.min(...nums.map((p) => p.v));
+  const max = Math.max(...nums.map((p) => p.v));
+  const w = 120;
+  const h = 28;
+  const x = (i: number) => (value.points.length === 1 ? w / 2 : (i / (value.points.length - 1)) * (w - 8) + 4);
+  const y = (v: number) => (max === min ? h / 2 : h - 4 - ((v - min) / (max - min)) * (h - 8));
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="text-muted-foreground" role="img" aria-label={`Neutral plot of ${nums.length} numeric examination values in ${value.unit}; no colour implies normal, abnormal, better or worse.`}>
+      <polyline fill="none" stroke="currentColor" strokeWidth="1.5" points={nums.map((p) => `${x(p.i)},${y(p.v)}`).join(" ")} />
+      {nums.map((p) => <circle key={p.i} cx={x(p.i)} cy={y(p.v)} r="2.5" fill="currentColor" />)}
+    </svg>
+  );
+}
+
+/** P41 examination-to-examination comparison (same text as PDF/TXT). */
+export function LongitudinalBlock({ value }: { value: LongitudinalComparison }) {
+  if (value.points.length < 2) return null;
+  return (
+    <details className="rounded-md border border-border bg-background p-2 text-xs" open={value.points.length <= 4}>
+      <summary className="cursor-pointer font-medium">Examination comparison ({value.points.length} examinations)</summary>
+      <div className="mt-2 space-y-2">
+        <NeutralSparkline value={value} />
+        <table className="w-full table-fixed border-collapse text-left">
+          <caption className="sr-only">Examinations in {value.unit}</caption>
+          <thead>
+            <tr className="text-muted-foreground">
+              <th scope="col" className="w-2/5 font-normal">Examination</th>
+              <th scope="col" className="font-normal">Value ({value.unit})</th>
+              <th scope="col" className="font-normal">Readings</th>
+            </tr>
+          </thead>
+          <tbody>
+            {value.points.map((p) => (
+              <tr key={p.key} className="border-t border-border align-top">
+                <td className="break-all py-0.5">{p.at}{p.precision === "date" ? " (date only)" : ""}</td>
+                <td className="break-words py-0.5">{p.valueText}</td>
+                <td className="py-0.5">{p.readings.length}{p.repeat === "differing_repeats" ? " — differing, not compared" : p.repeat === "identical_repeats" ? " — identical" : ""}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <ul className="list-disc space-y-0.5 pl-4">
+          {value.consecutive.map((c) => <li key={`${c.from}-${c.to}`} className="break-words">{c.text}</li>)}
+          {value.baselineToLatest && <li className="break-words"><span className="font-medium">Baseline to latest:</span> {value.baselineToLatest.text}</li>}
+        </ul>
+        <p className="text-muted-foreground">{value.compatibility.statement}</p>
+        <p className="text-muted-foreground">{value.tone.reason}</p>
+      </div>
+    </details>
+  );
+}
 
 const STATUS_LABEL: Record<SeriesInterpretation["status"], string> = {
   approved: "Approved interpretation",
