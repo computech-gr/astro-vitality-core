@@ -1,10 +1,10 @@
 # P38 bulk synthetic demo approval and activation (MITO_DEMO_2026, 209 terms)
 
-- [ ] Preflight of all 209 submitted terms from real metadata (categories, proposed names/domains, exact counts).
-- [ ] Pending SQL: bounded transactional bulk triage acceptance / demo decisions / demo activations (+ rollback, hashes); owner scope authorization SQL for eligible terms.
-- [ ] Server functions with deterministic retry keys; Researcher bulk UI on Scientific Review; Ground Medical bulk activation UI.
-- [ ] Isolated-database verification of the full bulk lifecycle; domain tests for preflight, batches and multi-biomarker recognition.
-- [ ] Owner approval to install the change and scope, then live bulk decision/activation in Preview (waits for owner).
+- [x] Preflight of all 209 submitted terms from real metadata: 1 active, 66 eligible, 117 eligible after a domain choice, 2 conflicting identity, 6 existing catalog match, 17 ambiguous unit, 0 duplicate.
+- [x] Pending SQL (bulk triage / decisions / activations, rollback) and generated 185-term owner scope authorization.
+- [x] Server functions with deterministic retry keys; Researcher bulk UI (viewed live, read-only); Ground Medical bulk activation UI.
+- [x] Isolated-database verification (103 assertions) on the actual metadata; 16 domain tests; earlier P36/P37 verifiers still pass.
+- [ ] Owner approval to install the change and scope, then live bulk triage/decision/activation in Preview (waits for owner).
 
 # P37 one-biomarker synthetic demo (ubt-7b25ce69, MITO_DEMO_2026)
 
