@@ -14,6 +14,7 @@ import { dirname, resolve } from "node:path";
 import {
   ambiguousUnitReason,
   buildBulkDemoPreflight,
+  catalogExistingMatch,
   needsDomainChoice,
   preflightCounts,
   type PreflightRow,
@@ -274,7 +275,7 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
   // Test-only domain choices for terms no reference classifies.
   const rows = buildBulkDemoPreflight(fixtureTerms(), {
     ...LIVE_STATE,
-    existingMatch: () => null,
+    existingMatch: catalogExistingMatch(M),
     overrides: new Map(
       livePreflight()
         .filter((r) => needsDomainChoice(r) || r.category === "conflicting_identity")
