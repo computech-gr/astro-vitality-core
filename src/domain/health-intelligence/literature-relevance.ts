@@ -83,7 +83,7 @@ export function definedLongForms(abbreviation: string, text: string): string[] {
   return [...out];
 }
 
-const splitSentences = (text: string) => text.split(/(?<=[.;!?])\s+(?=[\p{Lu}(\["\d])/u).map((s) => s.trim()).filter(Boolean);
+const splitSentences = (text: string) => text.split(/(?<=[.;!?])\s+(?=[\p{Lu}([\"\d])/u).map((s) => s.trim()).filter(Boolean);
 
 // ------------------------------------------------------------ context cues (exported for tests)
 

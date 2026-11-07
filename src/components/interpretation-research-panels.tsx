@@ -68,7 +68,7 @@ function useEvidenceAttempts() {
   return { attempts, reload };
 }
 
-function ReferenceItem({ r, relevance, checked, onToggle, disabled }: { r: EvidenceReference; relevance?: RelevanceAssessment; checked?: boolean; onToggle?: () => void; disabled?: boolean }) {
+function ReferenceItem({ r, relevance, checked, onToggle, disabled }: { r: EvidenceReference; relevance?: RelevanceAssessment | undefined; checked?: boolean; onToggle?: () => void; disabled?: boolean }) {
   const selectable = relevance ? selectableForDraft(relevance, r) : false;
   return (
     <li className="space-y-0.5 rounded border border-border p-2 text-xs">
