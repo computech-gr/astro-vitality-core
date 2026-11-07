@@ -20,6 +20,8 @@ import nikolasBehavioral from "../../../data/scientific/nikolas-behavioral-intak
 import crosswalk from "../../../data/scientific/p36-scientific-review-crosswalk.v1.json";
 import type { HealthDomainId } from "@/domain/health-domains/registry";
 import { normalizeCatalogText } from "./catalog-lifecycle";
+import { classifyWithGovernedExtensions } from "./unknown-biomarker-review";
+import type { EvaluatedDemoCatalog } from "./synthetic-demo-catalog";
 
 export const PREFLIGHT_CATEGORIES = [
   "already_active",
@@ -356,3 +358,20 @@ export function preflightCounts(rows: readonly PreflightRow[]) {
 /** Terms that become eligible only after the Researcher chooses a domain (no reference names one). */
 export const needsDomainChoice = (r: PreflightRow) =>
   r.category === "blocked" && r.reasons.some((x) => x.startsWith("No existing catalog reference"));
+
+/**
+ * Existing-match probe: the handbook, governed extensions and the verified
+ * production catalog only (synthetic demo catalogs deliberately excluded).
+ */
+export function catalogExistingMatch(missionId: string) {
+  const noDemo = new Map<string, EvaluatedDemoCatalog>();
+  return (label: string, unit: string): string | null => {
+    const r = classifyWithGovernedExtensions(
+      { label, unit, provenance: "synthetic", missionId },
+      undefined,
+      undefined,
+      noDemo,
+    );
+    return r.classification.status === "matched" ? r.classification.metricId : null;
+  };
+}
