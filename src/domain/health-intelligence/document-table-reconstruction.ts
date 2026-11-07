@@ -809,6 +809,8 @@ export function reconstructDocumentTables(
     const results = p.cells.get("result") ?? [];
     let rawValue = results[0]?.trim() ?? "";
     let unit = one("unit") ?? "";
+    // A dash / "N/A" placeholder means the source reports no unit.
+    if (/^(?:—|–|-|n\/?a)$/i.test(unit)) unit = "";
     if (results.length > 1)
       issues.push({ code: "multiple_results", message: `${results.length} result columns in one row; choose the result explicitly.`, blocking: true });
     // A result cell that carries its own unit ("12.3 mg/L") when the table has no unit column.

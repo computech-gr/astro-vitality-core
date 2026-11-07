@@ -304,7 +304,7 @@ describe("P42 alternative layouts (clearly labelled SYNTHETIC test text)", () =>
       ["missing_unit"],
       ["ambiguous_number"],
     ]);
-    expect(r.observations[1]!.unit).toBe("—");
+    expect(r.observations[1]!.unit).toBe("");
   });
 
   it("multiple result columns require an explicit choice", () => {
