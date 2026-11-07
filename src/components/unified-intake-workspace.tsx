@@ -18,11 +18,18 @@ import {
  * unit-mismatched rows stay review-only and can never be saved. Research
  * reference only — no clinical thresholds, diagnosis or automatic approval.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
-import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
+import {
+  classifyWithGovernedExtensions,
+  syntheticDemoCoverage,
+} from "@/domain/health-intelligence/unknown-biomarker-review";
+import {
+  getSyntheticDemoCatalogs,
+  subscribeSyntheticDemoCatalogs,
+} from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
 import {
   getActiveCatalog,
   subscribeActiveCatalog,
@@ -237,6 +244,11 @@ export function UnifiedIntakeWorkspace() {
   );
 
   const [rows, setRows] = useState<IntakeRow[]>([]);
+  const demoCatalogs = useSyncExternalStore(
+    subscribeSyntheticDemoCatalogs,
+    getSyntheticDemoCatalogs,
+    getSyntheticDemoCatalogs,
+  );
   const [history, setHistory] = useState<UnifiedObservation[]>([]);
   const [provenance, setProvenance] = useState<"" | "synthetic" | "real">("");
   const [reviewerConfirmed, setReviewerConfirmed] = useState(false);
