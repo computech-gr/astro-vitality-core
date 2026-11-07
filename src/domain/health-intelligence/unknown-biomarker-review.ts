@@ -548,6 +548,8 @@ export interface ExtendedClassification {
   extension: { extensionId: string; version: number } | null;
   /** Set when an activated catalog entry (P37) recognized the row. */
   recognition?: { canonicalId: string; catalogVersion: number } | null;
+  /** Set when an activated mission-scoped SYNTHETIC DEMO entry matched the row (synthetic only). */
+  syntheticDemo?: SyntheticDemoCatalogBasis | null;
 }
 
 export interface GovernedClassificationInput {
@@ -561,13 +563,31 @@ export interface GovernedClassificationInput {
   identity?: "canonical" | undefined;
   /** For canonical re-validation of historical records only: accept since-revoked entries. */
   includeRevoked?: boolean | undefined;
+  /** Mission of the row; required for mission-scoped SYNTHETIC DEMO entries. */
+  missionId?: string | undefined;
 }
 
-/** Base P36 classification first; approved extensions, then the verified active catalog, apply only to non-matched rows. */
+/**
+ * Base P36 classification first; approved extensions, then the verified active
+ * catalog, apply only to non-matched rows; the mission-scoped synthetic demo
+ * catalog is the last stage and only for synthetic rows of that mission.
+ */
 export function classifyWithGovernedExtensions(
   input: GovernedClassificationInput,
   evaluation: RegistryEvaluation = evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS),
   catalog: EvaluatedCatalog = getActiveCatalog(),
+  demoCatalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
+): ExtendedClassification {
+  const result = classifyGovernedCore(input, evaluation, catalog);
+  if (result.classification.status === "matched" || input.sourceValidation === "unvalidated")
+    return result;
+  return classifySyntheticDemo(input, demoCatalogs) ?? result;
+}
+
+function classifyGovernedCore(
+  input: GovernedClassificationInput,
+  evaluation: RegistryEvaluation,
+  catalog: EvaluatedCatalog,
 ): ExtendedClassification {
   const base = classifyIntakeObservation(input);
   if (input.sourceValidation === "unvalidated")
