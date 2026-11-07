@@ -87,7 +87,7 @@ function mockDeps(opts: { ai?: unknown; aiRaw?: string; failAll?: boolean; env?:
     if (url.includes("ntrs.nasa.gov/api/citations/")) return new Response(JSON.stringify(NTRS_JSON.results[0]));
     if (url.includes("api.crossref.org")) return new Response("", { status: 404 });
     if (url.includes("ai.gateway.lovable.dev"))
-      return new Response(JSON.stringify({ model: "gpt-test", output: [{ type: "message", content: [{ type: "output_text", text: opts.aiRaw ?? JSON.stringify(opts.ai) }] }] }));
+      return new Response(JSON.stringify({ model: "openai/gpt-6-astra", output: [{ type: "message", content: [{ type: "output_text", text: opts.aiRaw ?? JSON.stringify(opts.ai) }] }] }));
     return new Response("not found", { status: 404 });
   };
   return {

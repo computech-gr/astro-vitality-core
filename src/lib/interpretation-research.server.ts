@@ -440,10 +440,12 @@ export async function draftInterpretationCore(
       },
     ],
     text: { format: { type: "json_schema", name: "p41_interpretation_draft", strict: true, schema: DRAFT_SCHEMA } },
+    reasoning: { effort: "low" },
+    store: false,
     max_output_tokens: 6000,
   };
   const started = Date.now();
-  const r = await getText(deps, LOVABLE_RESPONSES_URL, "lovable_ai", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` }, body: JSON.stringify(payload) }, AI_TIMEOUT_MS);
+  const r = await getText(deps, LOVABLE_RESPONSES_URL, "lovable_ai", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}`, "X-Lovable-AIG-SDK": "fetch" }, body: JSON.stringify(payload) }, AI_TIMEOUT_MS);
   if (!r.ok) {
     deps.audit?.({ feature: "p41-ai-draft", outcome: "provider_error", status: r.status, userId: deps.userId });
     return fail(r.status === 429 ? "rate_limited" : r.status === 402 ? "unavailable" : "provider_error", r.status === 402 ? "AI credits are exhausted; evidence stays available for manual drafting." : "The AI service did not answer; evidence stays available for manual drafting.");
