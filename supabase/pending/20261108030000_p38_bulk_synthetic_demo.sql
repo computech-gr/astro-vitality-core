@@ -60,6 +60,11 @@ begin
         join public.p36_dynamic_handoff_submissions h on h.submission_id = d.submission_id
         where d.submission_id = v_sub and d.term_id = v_term and h.mission_id = p_mission_id and h.provenance = 'synthetic') then
       v_r := jsonb_build_object('status', 'rejected', 'detail', 'this term is not in the owner-authorized synthetic demo scope of this mission');
+    elsif not exists (select 1 from public.p36_global_triage_events e where e.idempotency_key = (v_item->>'idempotency_key')::uuid)
+      and exists (select 1 from public.p36_global_triage_events e
+        where e.submission_id = v_sub and e.term_id = v_term and e.action = 'ACCEPT_FOR_REVIEW'
+          and not exists (select 1 from public.p36_global_triage_events n where n.previous_event_id = e.id)) then
+      v_r := jsonb_build_object('status', 'skipped', 'detail', 'already accepted for scientific review');
     else
       v_r := public.p36_global_triage_append_v1(p_mission_id, 'synthetic', v_sub, v_term, 'ACCEPT_FOR_REVIEW', null, '{}'::text[],
         nullif(v_item->>'expected_previous_event_id', '')::uuid, (v_item->>'idempotency_key')::uuid);
