@@ -152,7 +152,9 @@ export async function runSyntheticCatalogLifecycleDemo(
     approvalEventId: "synthetic-approval-1",
     expectedProposalSha256: ap.value.proposalSha256,
     activatorId: "synthetic-approver",
-    activatorGrant: { userId: "synthetic-approver", revoked: false },
+    activatorMemberships: [
+      { userId: "synthetic-approver", missionId: "SYNTHETIC-DEMO", role: "ground_medical", active: true },
+    ],
     eventId: "x",
     at: now(),
   });
@@ -161,17 +163,17 @@ export async function runSyntheticCatalogLifecycleDemo(
     approvalEventId: "synthetic-approval-1",
     expectedProposalSha256: ap.value.proposalSha256,
     activatorId: "synthetic-activator",
-    activatorGrant: { userId: "synthetic-activator", revoked: false },
+    activatorMemberships: DEMO_GROUND_MEDICAL,
     eventId: "synthetic-activation-1",
     at: now(),
   });
   if (!act.ok) {
-    push("Separate activator activates", "CATALOG_ACTIVE", `FAILED: ${act.reason}`);
+    push("Ground Medical activates", "CATALOG_ACTIVE", `FAILED: ${act.reason}`);
     return steps;
   }
   events.push(act.value);
   push(
-    "Separate activator activates",
+    "Ground Medical activates",
     "CATALOG_ACTIVE",
     lifecycleState({ termId: term.termId, triage, receipt, events }),
     "CATALOG_ACTIVE",
@@ -231,12 +233,15 @@ export async function runSyntheticCatalogLifecycleDemo(
   const noGrant = activateCatalogEntry(events, {
     approvalEventId: "synthetic-approval-1",
     expectedProposalSha256: ap.value.proposalSha256,
-    activatorId: "no-grant",
-    activatorGrant: null,
+    activatorId: "synthetic-operator",
+    activatorMemberships: [
+      { userId: "synthetic-operator", missionId: "SYNTHETIC-DEMO", role: "mission_operator", active: true },
+      { userId: "synthetic-operator", missionId: "OTHER-MISSION", role: "ground_medical", active: true },
+    ],
     eventId: "y",
     at: now(),
   });
-  push("Negative: user without activation grant", "REFUSED", noGrant.ok ? "ACTIVATED" : "REFUSED");
+  push("Negative: non-Ground Medical / other-mission user", "REFUSED", noGrant.ok ? "ACTIVATED" : "REFUSED");
   const conflict = evaluateCatalogSnapshot({
     ...verified.snapshot,
     entries: [
@@ -254,7 +259,7 @@ export async function runSyntheticCatalogLifecycleDemo(
   const rev = revokeCatalogEntry(events, {
     activationEventId: "synthetic-activation-1",
     activatorId: "synthetic-activator",
-    activatorGrant: { userId: "synthetic-activator", revoked: false },
+    activatorMemberships: DEMO_GROUND_MEDICAL,
     reason: "Synthetic demonstration revocation",
     eventId: "synthetic-revocation-1",
     at: now(),

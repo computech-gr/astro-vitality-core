@@ -10,8 +10,10 @@
  *   receipt; identity, exact unit, specimen and method come from that receipt,
  *   never from free text. The catalog proposal is derived automatically from the
  *   approval (no source-code edit) and carries a SHA-256 over its canonical JSON.
- * - Activation requires an explicit activator grant, a different identity from
- *   the approver, the exact proposal digest and no conflicting definition.
+ * - Activation/revocation require an active Ground Medical membership in the
+ *   approval's originating mission (role-based, never an email-specific grant),
+ *   a different identity from the approver, the exact proposal digest and no
+ *   conflicting definition.
  * - Revocation is a later event; history is append-only and stored observations
  *   are never rewritten.
  * - Recognition never converts units and never infers missing specimen/method.
@@ -80,6 +82,22 @@ export interface TriageSummary {
 export interface Grant {
   userId: string;
   revoked: boolean;
+}
+/** Mission membership used for role-based catalog activation (Ground Medical of the approval mission). */
+export interface MissionRoleMembership {
+  userId: string;
+  missionId: string;
+  role: string;
+  active: boolean;
+}
+export function isCatalogActivatorFor(
+  memberships: readonly MissionRoleMembership[],
+  userId: string,
+  missionId: string,
+): boolean {
+  return memberships.some(
+    (m) => m.userId === userId && m.missionId === missionId && m.role === "ground_medical" && m.active,
+  );
 }
 
 export interface CatalogEntryDefinition {
@@ -268,27 +286,33 @@ export function viewLedger(events: readonly LedgerEvent[]): LedgerView {
   return v;
 }
 
-/** Separate, explicitly authorized catalog activation. Returns the ACTIVATE event to append. */
+const ACTIVATOR_DENIED =
+  "Catalog activation requires active Ground Medical membership in the approval mission.";
+
+/** Role-based catalog activation by Ground Medical of the approval mission. Returns the ACTIVATE event to append. */
 export function activateCatalogEntry(
   events: readonly LedgerEvent[],
   input: {
     approvalEventId: string;
     expectedProposalSha256: string;
     activatorId: string;
-    activatorGrant: Grant | null;
+    activatorMemberships: readonly MissionRoleMembership[];
     eventId: string;
     at: string;
   },
 ): Outcome<Extract<LedgerEvent, { type: "ACTIVATE" }>> {
-  if (
-    !input.activatorGrant ||
-    input.activatorGrant.revoked ||
-    input.activatorGrant.userId !== input.activatorId
-  )
-    return fail("Catalog activation requires an explicit, unrevoked catalog activator grant.");
   const v = viewLedger(events);
   const approval = v.approvals.get(input.approvalEventId);
-  if (!approval) return fail("No scientific approval exists for this proposal.");
+  // Same refusal for unknown approvals and unauthorized callers (no existence oracle).
+  if (
+    !approval ||
+    !isCatalogActivatorFor(
+      input.activatorMemberships,
+      input.activatorId,
+      approval.proposal.source.missionId,
+    )
+  )
+    return fail(ACTIVATOR_DENIED);
   if (approval.proposalSha256 !== input.expectedProposalSha256)
     return fail("Proposal digest does not match the approved proposal.");
   if (approval.actorId === input.activatorId)
@@ -327,21 +351,24 @@ export function revokeCatalogEntry(
   input: {
     activationEventId: string;
     activatorId: string;
-    activatorGrant: Grant | null;
+    activatorMemberships: readonly MissionRoleMembership[];
     reason: string;
     eventId: string;
     at: string;
   },
 ): Outcome<Extract<LedgerEvent, { type: "REVOKE" }>> {
-  if (
-    !input.activatorGrant ||
-    input.activatorGrant.revoked ||
-    input.activatorGrant.userId !== input.activatorId
-  )
-    return fail("Revocation requires an explicit, unrevoked catalog activator grant.");
   const v = viewLedger(events);
-  if (![...v.activations.values()].some((a) => a.eventId === input.activationEventId))
-    return fail("No such activation.");
+  const activation = [...v.activations.values()].find((a) => a.eventId === input.activationEventId);
+  const approval = activation ? v.approvals.get(activation.approvalEventId) : undefined;
+  if (
+    !approval ||
+    !isCatalogActivatorFor(
+      input.activatorMemberships,
+      input.activatorId,
+      approval.proposal.source.missionId,
+    )
+  )
+    return fail("Revocation requires active Ground Medical membership in the approval mission.");
   if (v.revocations.has(input.activationEventId)) return fail("Already revoked.");
   if (input.reason.trim().length < 8)
     return fail("A documented revocation reason (8+ characters) is required.");
