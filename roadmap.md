@@ -1,3 +1,10 @@
+# P36 controlled Metadata Handoff activation
+
+- [x] Recheck installed migration hashes, effective INSERT denials, function ownership/grants, RLS and both closed admissions.
+- [x] Inspect published Scientific Review assets without submission; deployed server revision and actual runtime flag remain unattested.
+- [ ] Activation blocked: server flag changes reach the published app only after publishing; separate deployment authorization and exact-revision release evidence remain required. No flag or admission changed.
+- [ ] Manual 12-term then 197-term Ground Medical → Researcher acceptance waits for activation and user-controlled consent/submission from separate synthetic accounts; no requests uploaded.
+
 # P36 narrow permission remediation
 
 - [x] Read-only live ACL investigation: Step 1 committed; sandbox_exec receives direct SELECT/INSERT from postgres table defaults, not PUBLIC or an inherited parent role.
