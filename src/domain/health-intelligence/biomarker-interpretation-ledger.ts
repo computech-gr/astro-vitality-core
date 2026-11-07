@@ -21,6 +21,7 @@ import {
   type InterpretationEventBody,
   type InterpretationSnapshot,
 } from "./biomarker-interpretation";
+import { BUNDLED_ATTESTATION_KEYS, type AttestationTrustedKey } from "./interpretation-attestation";
 
 /** Fixed catalog-level partition of the review ledger (not mission or crew data). */
 export const INTERPRETATION_LEDGER_SCOPE = {
@@ -52,8 +53,11 @@ export async function listInterpretationEvents(store: ReviewLedgerStore = getRev
 }
 
 /** Last verified local interpretation snapshot: bundled registry + chain-verified device events. */
-export async function loadVerifiedInterpretationSnapshot(store: ReviewLedgerStore = getReviewLedgerStore()): Promise<InterpretationSnapshot> {
-  return buildVerifiedSnapshot(registryJson, await listInterpretationEvents(store));
+export async function loadVerifiedInterpretationSnapshot(
+  store: ReviewLedgerStore = getReviewLedgerStore(),
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
+): Promise<InterpretationSnapshot> {
+  return buildVerifiedSnapshot(registryJson, await listInterpretationEvents(store), trustedKeys);
 }
 
 /**
