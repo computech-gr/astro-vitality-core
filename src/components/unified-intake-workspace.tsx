@@ -481,8 +481,11 @@ export function UnifiedIntakeWorkspace() {
   };
 
   const [batchFiles, setBatchFiles] = useState<
-    Array<{ name: string; state: string; count: number }>
+    Array<{ name: string; state: string; count: number; flags?: string[] }>
   >([]);
+  const [documents, setDocuments] = useState<ProcessedDocument[]>([]);
+  /** Ground Medical identity-conflict resolutions: `${sha256}|${missionId}|${crewMemberId}` (memory only). */
+  const [identityResolutions, setIdentityResolutions] = useState<ReadonlySet<string>>(new Set());
   const MAX_BATCH_FILES = 20;
   const MAX_FILE_BYTES = 15 * 1024 * 1024;
   const processBatch = async (files: File[]) => {
@@ -492,13 +495,18 @@ export function UnifiedIntakeWorkspace() {
       return;
     }
     setBusy(true);
-    const results: Array<{ name: string; state: string; count: number }> = [];
+    const results: Array<{ name: string; state: string; count: number; flags?: string[] }> = [];
     const incoming: IntakeRow[] = [];
+    const processed: ProcessedDocument[] = [];
     const hashes = new Set<string>();
+    // Retry safety: a document already in review is never added twice; saved rows are
+    // additionally caught by the stored-duplicate check before saving.
+    const loaded = new Set(rows.map((row) => row.documentSha256).filter(Boolean));
     try {
       for (const file of files) {
         let state = "complete";
         let count = 0;
+        let flags: string[] = [];
         try {
           if (file.size > MAX_FILE_BYTES || file.size === 0)
             throw new Error("File is empty or exceeds 15 MB.");
@@ -510,6 +518,12 @@ export function UnifiedIntakeWorkspace() {
           const hash = await sha256Hex(file);
           if (hashes.has(hash)) {
             state = "duplicate file skipped";
+            results.push({ name: file.name, state, count });
+            continue;
+          }
+          if (loaded.has(hash)) {
+            state =
+              "already loaded in review — not added again. Remove its rows first to re-process it.";
             results.push({ name: file.name, state, count });
             continue;
           }
@@ -558,28 +572,63 @@ export function UnifiedIntakeWorkspace() {
             if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
           } else {
             const extracted = await extractBoneDocument(file);
-            const kind: ObservationSourceKind = extracted.method.includes("ocr")
-              ? "ocr"
-              : "pdf_text";
-            const space = Math.max(0, MAX_ROWS - incoming.length);
-            const batch = parseIntakeText(
+            const kind: ObservationSourceKind = /ocr/i.test(extracted.method) ? "ocr" : "pdf_text";
+            const space = Math.max(0, MAX_ROWS - rows.length - incoming.length);
+            const parsed = parseIntakeText(
               extracted.text,
               kind,
               `Document: ${file.name}`,
               file.name,
               hash,
               extracted.linePages,
-            ).slice(0, space);
+              extracted.geometry,
+            );
+            const batch = parsed.rows.slice(0, space);
             incoming.push(...batch);
             count = batch.length;
+            const doc: ProcessedDocument = {
+              sha256: hash,
+              fileName: file.name,
+              pages: extracted.pages,
+              method: extracted.method,
+              textLength: extracted.text.trim().length,
+              reconstruction: parsed.reconstruction,
+              saved: 0,
+            };
+            processed.push(doc);
+            const identityCheck = membership
+              ? compareDocumentIdentity(parsed.reconstruction.identity, {
+                  crewLabel: membership.crewLabel,
+                  provenance,
+                })
+              : null;
+            const diagnosis = diagnoseDocumentIntake({
+              textLength: doc.textLength,
+              reconstruction: parsed.reconstruction,
+              rows: batch,
+              identity: identityCheck,
+            });
+            state = diagnosis.message;
+            flags = diagnosis.flags.map((f) => f.message);
+            if (batch.length < parsed.rows.length)
+              flags.push(
+                `${parsed.rows.length - batch.length} row(s) not loaded: the review table holds at most ${MAX_ROWS} rows. Save or clear rows, then re-process.`,
+              );
+            if (extracted.warnings.length) flags.push(...extracted.warnings);
           }
-          if (!count) state = "no matching candidate rows";
+          if (!count && state === "complete")
+            state =
+              "No candidate rows: the file was read but contained no rows with a label, value and unit.";
         } catch (error) {
-          state = error instanceof Error ? `failed: ${error.message}` : "failed: unknown error";
+          state =
+            error instanceof Error
+              ? diagnoseExtractionError(error.message).message
+              : "Extraction failed: unknown error";
         }
-        results.push({ name: file.name, state, count });
+        results.push({ name: file.name, state, count, ...(flags.length ? { flags } : {}) });
         setBatchFiles([...results]);
       }
+      if (processed.length) setDocuments((previous) => [...previous, ...processed]);
       if (incoming.length)
         addRows(
           incoming,
