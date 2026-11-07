@@ -22,6 +22,12 @@
  */
 import { canonicalJson } from "./observation-envelope";
 import { sha256Hex } from "./catalog-lifecycle";
+import {
+  BUNDLED_ATTESTATION_KEYS,
+  verifyAttestation,
+  type AttestationTrustedKey,
+  type SignedAttestation,
+} from "./interpretation-attestation";
 
 export const INTERPRETATION_REGISTRY_SCHEMA = "mitochondria.biomarker-interpretation-registry.v1" as const;
 export const INTERPRETATION_EVENT_SCHEMA = "mitochondria.biomarker-interpretation-event.v1" as const;
@@ -60,7 +66,30 @@ export interface InterpretationIdentity {
 export interface Claim {
   text: string;
   citationIds: string[];
+  /** P41: general biomedical vs spaceflight-specific evidence (optional; absent on P40 claims). */
+  evidenceScope?: "general_biomedical" | "spaceflight_specific";
 }
+/**
+ * P41: documented measurement context an interpretation applies to. Every field
+ * is null unless documented by a cited source; a different specimen, method,
+ * assay or protocol is never treated as equivalent.
+ */
+export interface MeasurementContext {
+  specimen: string | null;
+  method: string | null;
+  assayType: string | null;
+  collectionProtocol: string | null;
+  population: string | null;
+  measurementContext: string | null;
+}
+export const EMPTY_MEASUREMENT_CONTEXT: MeasurementContext = {
+  specimen: null,
+  method: null,
+  assayType: null,
+  collectionProtocol: null,
+  population: null,
+  measurementContext: null,
+};
 export interface InterpretationContent {
   function: Claim | null;
   increaseContext: Claim | null;
@@ -116,6 +145,10 @@ export interface RegistryRecord {
   contentSha256: string | null;
   /** Proposals only (never applied): e.g. a submitted candidate handbook ID with identical unit. */
   proposedLinks: { catalogId: string; basis: string }[];
+  /** P41: recognized source labels for this identity (display/search only; never an equivalence). */
+  aliases?: string[];
+  /** P41: documented measurement context (nulls when undocumented). */
+  measurementContext?: MeasurementContext;
   /** Catalog activation the record was backfilled from (never modified). */
   activation: {
     termId: string;
@@ -171,6 +204,8 @@ export async function interpretationContentSha256(
       content: draft.content,
       citations: draft.citations,
       evidenceStrength: draft.evidenceStrength,
+      // P41: the documented measurement context is bound only when present (P40 fingerprints unchanged).
+      ...(draft.context ? { context: draft.context } : {}),
     }),
   );
 }
@@ -245,6 +280,8 @@ export interface InterpretationDraft {
   content: InterpretationContent;
   citations: Citation[];
   evidenceStrength: EvidenceStrength;
+  /** P41: documented specimen/method/assay/protocol/population (optional). */
+  context?: MeasurementContext;
 }
 
 export const EMPTY_CONTENT: InterpretationContent = {
@@ -258,7 +295,7 @@ export const EMPTY_CONTENT: InterpretationContent = {
   limitations: [],
 };
 
-const THRESHOLD_LANGUAGE = /\breference (?:interval|range)s?\b|\bnormal range\b|\bcut-?offs?\b|\bthresholds?\b|\balert (?:level|limit)s?\b/i;
+export const THRESHOLD_LANGUAGE = /\breference (?:interval|range)s?\b|\bnormal range\b|\bcut-?offs?\b|\bthresholds?\b|\balert (?:level|limit)s?\b/i;
 
 /** Returns null when an approval may be recorded; otherwise the exact reason it is refused. */
 export function approvalProblem(identity: InterpretationIdentity, d: InterpretationDraft): string | null {
