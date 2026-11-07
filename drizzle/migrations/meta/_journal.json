@@ -155,6 +155,13 @@
       "when": 1794041991749,
       "tag": "0021_p36_global_scientific_review",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794043228170,
+      "tag": "0022_p36_global_triage",
+      "breakpoints": true
     }
   ]
 }
