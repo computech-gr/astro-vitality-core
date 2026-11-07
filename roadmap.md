@@ -4,7 +4,8 @@
 - [x] Pending SQL (bulk triage / decisions / activations, rollback) and generated 185-term owner scope authorization.
 - [x] Server functions with deterministic retry keys; Researcher bulk UI (viewed live, read-only); Ground Medical bulk activation UI.
 - [x] Isolated-database verification (103 assertions) on the actual metadata; 16 domain tests; earlier P36/P37 verifiers still pass.
-- [ ] Owner approval to install the change and scope, then live bulk triage/decision/activation in Preview (waits for owner).
+- [x] Owner-approved install: bulk functions (0026, byte-identical) and 185-term scope (exact set) on 2026-11-07.
+- [ ] Live bulk triage/decision/activation in Preview (owner performs manually).
 
 # P37 one-biomarker synthetic demo (ubt-7b25ce69, MITO_DEMO_2026)
 
