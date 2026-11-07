@@ -15,6 +15,8 @@ export interface IntakeReviewRow {
   specimen?: string;
   method?: string;
   provenance?: "synthetic" | "real";
+  /** Selected mission; mission-scoped SYNTHETIC DEMO entries only match rows of that mission. */
+  missionId?: string;
   classification: IntakeClassification;
   selected: boolean;
 }

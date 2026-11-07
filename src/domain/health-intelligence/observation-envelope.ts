@@ -69,7 +69,48 @@ export interface UnifiedObservation {
     reason: string;
     decidedAt: string;
   };
+  /**
+   * Present only when the metric came from an activated mission-scoped
+   * SYNTHETIC DEMO catalog entry (metricId "demo:ubt-…"). Never a scientific
+   * approval, source validation or production catalog entry.
+   */
+  catalogBasis?: {
+    kind: "synthetic_demo";
+    demoId: string;
+    termId: string;
+    displayName: string;
+    demoCatalogVersion: number;
+    classification: typeof SYNTHETIC_DEMO_BASIS_CLASSIFICATION;
+  };
   recordedAt: string;
+}
+
+/** Equal to SYNTHETIC_DEMO_CLASSIFICATION in synthetic-demo-catalog.ts (kept literal to avoid an import cycle). */
+export const SYNTHETIC_DEMO_BASIS_CLASSIFICATION = "SYNTHETIC_DEMO_NOT_SCIENTIFICALLY_VALIDATED" as const;
+const DEMO_METRIC = /^demo:(ubt-[0-9a-f]{8})$/;
+
+/** Demo metric IDs and the demo basis always appear together, on synthetic records only. */
+export function syntheticDemoBasisIssue(observation: UnifiedObservation): string | null {
+  const demo = DEMO_METRIC.exec(observation.metricId);
+  const b = observation.catalogBasis;
+  if (!demo && b === undefined) return null;
+  if (!demo || !b) return "Synthetic demo metrics and the synthetic demo catalog basis must appear together.";
+  if (
+    typeof b !== "object" ||
+    b.kind !== "synthetic_demo" ||
+    b.demoId !== observation.metricId ||
+    b.termId !== demo[1] ||
+    b.classification !== SYNTHETIC_DEMO_BASIS_CLASSIFICATION ||
+    typeof b.displayName !== "string" ||
+    !b.displayName.trim() ||
+    b.displayName.length > 200 ||
+    !Number.isInteger(b.demoCatalogVersion) ||
+    b.demoCatalogVersion < 1 ||
+    Object.keys(b).some((k) => !["kind", "demoId", "termId", "displayName", "demoCatalogVersion", "classification"].includes(k))
+  )
+    return "The synthetic demo catalog basis is inconsistent.";
+  if (observation.provenance !== "synthetic") return "Synthetic demo catalog records must be synthetic.";
+  return null;
 }
 
 const OBSERVATION_ID = /^[a-z0-9][a-z0-9-]{7,127}$/i;
@@ -96,7 +137,7 @@ export function validateUnifiedObservation(observation: UnifiedObservation): str
     return "Accepted observations require explicit reviewer confirmation.";
   if (observation.status && observation.status !== "active" && observation.status !== "erroneous")
     return "Unknown observation status.";
-  return null;
+  return syntheticDemoBasisIssue(observation);
 }
 
 /**

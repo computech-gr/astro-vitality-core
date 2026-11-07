@@ -41,6 +41,7 @@ import { browserSnapshotStorage } from "@/domain/health-intelligence/active-cata
 import { BUNDLED_TRUSTED_KEYS } from "@/domain/health-intelligence/catalog-snapshot-signing";
 import {
   buildUnknownBiomarkerTerms,
+  classifyWithGovernedExtensions,
   syntheticDemoCoverage,
 } from "@/domain/health-intelligence/unknown-biomarker-review";
 import { classifyIntakeObservation } from "@/domain/health-domains/unified-intake-classification";
@@ -336,23 +337,24 @@ async function runRecognitionChecks(
       : "stored snapshot missing or failed verification",
   });
   const base = classifyIntakeObservation({ label, unit: entry.unit });
+  const intake = classifyWithGovernedExtensions(exam).classification;
   const row = {
     label,
     unit: entry.unit,
     value: "",
     observedAt: "",
-    classification: base,
     sourceKind: "manual",
     sourceLabel: "Synthetic check",
   };
-  const withDemo = buildUnknownBiomarkerTerms([
-    { ...row, syntheticDemo: online ? { demoId: online.demoId } : null },
-  ]);
-  const control = buildUnknownBiomarkerTerms([row]);
+  const withDemo =
+    intake.status === "matched"
+      ? []
+      : buildUnknownBiomarkerTerms([{ ...row, classification: intake }]);
+  const control = buildUnknownBiomarkerTerms([{ ...row, classification: base }]);
   checks.push({
     label: "No duplicate unknown-biomarker request",
     pass: withDemo.length === 0 && control.length === 1,
-    detail: `${withDemo.length} request term(s) with demo coverage (control without coverage: ${control.length})`,
+    detail: `${withDemo.length} request term(s) for the recognized row (control without the demo catalog: ${control.length})`,
   });
   const other = syntheticDemoCoverage({
     ...exam,
@@ -370,9 +372,16 @@ async function runRecognitionChecks(
     detail: real ? "unexpectedly recognized" : "not recognized",
   });
   checks.push({
-    label: "Catalog classification unchanged",
-    pass: base.status !== "matched",
-    detail: `still "${base.status}" — review-only, not saved to domain records`,
+    label: "Normal intake classifies it into its parameter domain",
+    pass:
+      intake.status === "matched" &&
+      intake.metricId === entry.demoId &&
+      intake.domain === entry.domain &&
+      base.status !== "matched",
+    detail:
+      intake.status === "matched"
+        ? `${intake.metricId} → ${intake.domain} (handbook alone: "${base.status}"); saved only as a labelled synthetic record after human review`
+        : `not matched ("${intake.status}")`,
   });
   return checks;
 }

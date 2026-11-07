@@ -22,10 +22,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
-import {
-  classifyWithGovernedExtensions,
-  syntheticDemoCoverage,
-} from "@/domain/health-intelligence/unknown-biomarker-review";
+import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
 import {
   getSyntheticDemoCatalogs,
   subscribeSyntheticDemoCatalogs,
@@ -82,6 +79,8 @@ type IntakeRow = {
   specimen?: string;
   method?: string;
   provenance?: "synthetic" | "real";
+  /** Selected mission (mission-scoped SYNTHETIC DEMO entries match only rows of that mission). */
+  missionId?: string;
   excerpt: string;
   sourceKind: ObservationSourceKind;
   sourceLabel: string;
@@ -101,6 +100,7 @@ function classify(row: {
   method?: string | undefined;
   provenance?: "synthetic" | "real" | undefined;
   sourceValidation?: "unvalidated" | undefined;
+  missionId?: string | undefined;
 }): IntakeClassification {
   return classifyWithGovernedExtensions(row).classification;
 }
@@ -109,11 +109,14 @@ function classify(row: {
 function reclassifyRows(
   rows: readonly IntakeRow[],
   provenance: "" | "synthetic" | "real",
+  missionId: string | undefined,
 ): IntakeRow[] {
   return rows.map((row) => {
     const next: IntakeRow = { ...row };
     if (provenance) next.provenance = provenance;
     else delete next.provenance;
+    if (missionId) next.missionId = missionId;
+    else delete next.missionId;
     next.classification = classify(next);
     next.selected = next.selected && isIntakeRowEligible(next);
     return next;
@@ -289,20 +292,29 @@ export function UnifiedIntakeWorkspace() {
     setDuplicateAcknowledged(false);
   };
 
-  // Scope provenance or a newly verified catalog snapshot changes recognition; confirmation resets.
+  // Scope (mission, provenance) or a newly verified catalog / mission demo catalog snapshot
+  // changes recognition; confirmation resets.
+  const scopeMissionId = membership?.missionId;
   useEffect(() => {
     const refresh = () => {
-      setRows((previous) => (previous.length ? reclassifyRows(previous, provenance) : previous));
+      setRows((previous) =>
+        previous.length ? reclassifyRows(previous, provenance, scopeMissionId) : previous,
+      );
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
     };
     refresh();
-    return subscribeActiveCatalog(refresh);
-  }, [provenance]);
+    const stopActive = subscribeActiveCatalog(refresh);
+    const stopDemo = subscribeSyntheticDemoCatalogs(refresh);
+    return () => {
+      stopActive();
+      stopDemo();
+    };
+  }, [provenance, scopeMissionId]);
 
   const addRows = (incoming: IntakeRow[], note: string) => {
     setRows((previous) =>
-      [...previous, ...reclassifyRows(incoming, provenance)].slice(0, MAX_ROWS),
+      [...previous, ...reclassifyRows(incoming, provenance, scopeMissionId)].slice(0, MAX_ROWS),
     );
     resetReview();
     setStatus(note);
@@ -461,29 +473,10 @@ export function UnifiedIntakeWorkspace() {
   const reviewOnlyRows = rows.filter(
     (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
   );
-  // SYNTHETIC DEMO coverage is an annotation only: rows stay review-only and unsaveable,
-  // but an already demo-activated term never generates a duplicate unknown-biomarker request.
-  const demoCoverage = new Map(
-    reviewOnlyRows.flatMap((row) => {
-      const r = syntheticDemoCoverage(
-        {
-          label: row.label,
-          unit: row.unit,
-          provenance: row.provenance,
-          sourceValidation: row.sourceValidation,
-          missionId: membership?.missionId,
-        },
-        demoCatalogs,
-        row.classification,
-      );
-      return r ? [[row.key, r] as const] : [];
-    }),
-  );
-  const unknownRequestRows = reviewOnlyRows.map((row) =>
-    demoCoverage.has(row.key)
-      ? { ...row, syntheticDemo: { demoId: demoCoverage.get(row.key)!.demoId } }
-      : row,
-  );
+  // Rows matched by an activated mission SYNTHETIC DEMO entry are ordinary matched rows
+  // (saveable after human review), so they never reach the unknown-biomarker request.
+  const unknownRequestRows = reviewOnlyRows;
+  const missionDemoCatalog = membership ? (demoCatalogs.get(membership.missionId) ?? null) : null;
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
         findUnifiedDuplicates(history, {
@@ -547,6 +540,18 @@ export function UnifiedIntakeWorkspace() {
         );
       for (const row of saveableRows) {
         if (row.classification.status !== "matched") continue;
+        // Re-derive the demo basis at save time from the verified mission demo catalog.
+        const demoBasis = classifyWithGovernedExtensions({
+          ...row,
+          missionId: membership.missionId,
+          provenance,
+        }).syntheticDemo;
+        if (row.classification.metricId.startsWith("demo:")) {
+          if (provenance !== "synthetic" || demoBasis?.demoId !== row.classification.metricId)
+            throw new Error(
+              "A synthetic demo parameter is no longer active for this mission, or the scope is not synthetic. Nothing further was saved.",
+            );
+        }
         const observation: UnifiedObservation = {
           schema:
             row.datePrecision === "date" ? DATED_OBSERVATION_SCHEMA : UNIFIED_OBSERVATION_SCHEMA,
@@ -574,6 +579,9 @@ export function UnifiedIntakeWorkspace() {
           },
           reviewState: "accepted",
           status: "active",
+          ...(demoBasis && row.classification.metricId === demoBasis.demoId
+            ? { catalogBasis: demoBasis }
+            : {}),
           recordedAt: new Date().toISOString(),
         };
         await saveUnifiedObservation(observation);
@@ -668,6 +676,38 @@ export function UnifiedIntakeWorkspace() {
               Mission identity &amp; sign-in
             </Link>
           </p>
+        ) : null}
+        {missionDemoCatalog &&
+        (missionDemoCatalog.active.length || missionDemoCatalog.revoked.length) ? (
+          <div
+            className="space-y-2 rounded-md border border-dashed border-border p-3"
+            data-testid="mission-demo-parameters"
+          >
+            <p className="text-sm font-medium">
+              Mission synthetic demo parameters (verified demo catalog v
+              {missionDemoCatalog.demoCatalogVersion}, available offline)
+            </p>
+            <ul className="space-y-1 text-xs text-muted-foreground">
+              {missionDemoCatalog.active.map((e) => (
+                <li key={`a-${e.demoId}`}>
+                  <span className="font-medium text-foreground">{e.displayName}</span> ({e.demoId})
+                  · label {e.aliases.map((a) => `“${a}”`).join(", ")} · exact unit {e.unit} →{" "}
+                  {DOMAIN_LABELS[e.domain]} · ACTIVE — recognized automatically in synthetic
+                  examinations of this mission
+                </li>
+              ))}
+              {missionDemoCatalog.revoked.map((e) => (
+                <li key={`r-${e.demoId}-${e.activation.activationEventId}`}>
+                  {e.displayName} ({e.demoId}) · {e.unit} · REVOKED — no longer recognized; earlier
+                  records are kept
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted-foreground">
+              SYNTHETIC DEMO — not a scientific approval, source validation or production catalog
+              entry. Applies to synthetic data of this mission only; units are never converted.
+            </p>
+          </div>
         ) : null}
       </section>
 
@@ -941,22 +981,26 @@ export function UnifiedIntakeWorkspace() {
                             </Badge>
                           );
                         })()
+                      ) : row.classification.status === "matched" &&
+                        row.classification.metricId.startsWith("demo:") ? (
+                        (() => {
+                          const id = row.classification.metricId;
+                          const d = missionDemoCatalog?.active.find((e) => e.demoId === id);
+                          return (
+                            <Badge variant="outline" data-testid="p37-demo-recognized">
+                              SYNTHETIC DEMO RECOGNIZED — mission demo catalog v
+                              {missionDemoCatalog?.demoCatalogVersion ?? "?"}:{" "}
+                              {d?.displayName ?? id} ({id}) · {d?.unit ?? row.unit} →{" "}
+                              {DOMAIN_LABELS[row.classification.domain]} · synthetic only · not a
+                              scientific approval
+                            </Badge>
+                          );
+                        })()
                       ) : row.classification.status === "matched" ? (
                         <Badge variant="secondary">
                           Matched: {row.classification.metricId} →{" "}
                           {DOMAIN_LABELS[row.classification.domain]}
                         </Badge>
-                      ) : demoCoverage.has(row.key) ? (
-                        (() => {
-                          const d = demoCoverage.get(row.key)!;
-                          return (
-                            <Badge variant="outline" data-testid="p37-demo-recognized">
-                              SYNTHETIC DEMO RECOGNIZED — demo catalog v{d.demoCatalogVersion}:{" "}
-                              {d.displayName} ({d.demoId}) · {d.unit} → {DOMAIN_LABELS[d.domain]} ·
-                              not a scientific approval · review-only, not saved
-                            </Badge>
-                          );
-                        })()
                       ) : row.classification.status === "unit_review_required" ? (
                         <Badge variant="outline">Unit review required — review-only</Badge>
                       ) : row.classification.status === "ambiguous" ? (

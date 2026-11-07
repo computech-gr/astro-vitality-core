@@ -218,11 +218,14 @@ describe("intake coverage and no duplicate request", () => {
   const catalogs = new Map([[MISSION, evaluateSyntheticDemoSnapshot(snapshot([entry()]))]]);
   const input = { label: LABEL, unit: UNIT, provenance: "synthetic" as const, missionId: MISSION };
 
-  test("catalog classification is unchanged (still review-only)", () => {
+  test("without the mission demo catalog the handbook outcome is unchanged; with it the row matches", () => {
     expect(classifyWithGovernedExtensions(input).classification.status).toBe(
       "unit_review_required",
     );
     expect(syntheticDemoCoverage(input, catalogs)?.demoId).toBe("demo:ubt-7b25ce69");
+    expect(
+      classifyWithGovernedExtensions(input, undefined, undefined, catalogs).classification,
+    ).toMatchObject({ status: "matched", metricId: "demo:ubt-7b25ce69", domain: "bone" });
   });
 
   test("a demo-covered row generates no unknown-biomarker request; an uncovered row still does", () => {

@@ -28,23 +28,73 @@ import {
 import { getActiveCatalog } from "./active-catalog-runtime";
 import { getSyntheticDemoCatalogs } from "./synthetic-demo-catalog-runtime";
 import {
+  canonicalSyntheticDemoEntry,
   recognizeSyntheticDemo,
+  syntheticDemoBasisFor,
   type EvaluatedDemoCatalog,
+  type SyntheticDemoCatalogBasis,
   type SyntheticDemoRecognition,
 } from "./synthetic-demo-catalog";
 
 /**
- * SYNTHETIC DEMO coverage of an examination row: only for rows the base/governed
- * catalogs do not match. Never changes the row's classification or saveability.
+ * SYNTHETIC DEMO coverage of an examination row: the recognition that made the
+ * row match an activated mission-scoped demo entry, or null (no demo match, or
+ * the handbook / governed / production catalogs already matched it).
  */
 export function syntheticDemoCoverage(
-  input: GovernedClassificationInput & { missionId?: string | undefined },
+  input: GovernedClassificationInput,
   catalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
-  classification: IntakeClassification = classifyWithGovernedExtensions(input).classification,
 ): SyntheticDemoRecognition | null {
-  if (classification.status === "matched") return null;
+  const r = classifyWithGovernedExtensions(input, undefined, undefined, catalogs);
+  if (!r.syntheticDemo || input.identity === "canonical") return null;
+  const hit = recognizeSyntheticDemo(input, catalogs);
+  return hit.status === "SYNTHETIC_DEMO_RECOGNIZED" ? hit : null;
+}
+
+/**
+ * Mission-scoped SYNTHETIC DEMO stage, applied only after the handbook, governed
+ * extensions and production catalog produced no match. It may resolve a
+ * unit-review / ambiguous / unclassified handbook outcome (an explicitly
+ * activated demo entry is never silently suppressed by a near-miss handbook
+ * entry such as bone-019), but never replaces an exact handbook or validated match.
+ */
+function classifySyntheticDemo(
+  input: GovernedClassificationInput,
+  catalogs: ReadonlyMap<string, EvaluatedDemoCatalog>,
+): ExtendedClassification | null {
+  if (input.provenance !== "synthetic" || !input.missionId) return null;
+  const matched = (
+    e: { demoId: string; domain: HealthDomainId },
+    basis: SyntheticDemoCatalogBasis,
+  ) => ({
+    classification: {
+      status: "matched" as const,
+      metricId: e.demoId,
+      domain: e.domain,
+      originalLabel: input.label.trim(),
+      originalUnit: input.unit.trim(),
+      reviewRequired: true as const,
+    },
+    extension: null,
+    syntheticDemo: basis,
+  });
+  if (input.identity === "canonical") {
+    const e = canonicalSyntheticDemoEntry(
+      {
+        demoId: input.label.trim(),
+        unit: input.unit,
+        missionId: input.missionId,
+        provenance: input.provenance,
+      },
+      catalogs,
+      input.includeRevoked === true,
+    );
+    return e ? matched(e, syntheticDemoBasisFor(e, e.activation.demoCatalogVersion)) : null;
+  }
   const r = recognizeSyntheticDemo(input, catalogs);
-  return r.status === "SYNTHETIC_DEMO_RECOGNIZED" ? r : null;
+  if (r.status !== "SYNTHETIC_DEMO_RECOGNIZED") return null;
+  const e = catalogs.get(r.missionId)?.active.find((x) => x.demoId === r.demoId);
+  return e ? matched(e, syntheticDemoBasisFor(e, r.demoCatalogVersion)) : null;
 }
 
 export const UNKNOWN_BIOMARKER_REVIEW_SCHEMA = "mitochondria.unknown-biomarker-review.v2";
@@ -506,6 +556,8 @@ export interface ExtendedClassification {
   extension: { extensionId: string; version: number } | null;
   /** Set when an activated catalog entry (P37) recognized the row. */
   recognition?: { canonicalId: string; catalogVersion: number } | null;
+  /** Set when an activated mission-scoped SYNTHETIC DEMO entry matched the row (synthetic only). */
+  syntheticDemo?: SyntheticDemoCatalogBasis | null;
 }
 
 export interface GovernedClassificationInput {
@@ -519,13 +571,31 @@ export interface GovernedClassificationInput {
   identity?: "canonical" | undefined;
   /** For canonical re-validation of historical records only: accept since-revoked entries. */
   includeRevoked?: boolean | undefined;
+  /** Mission of the row; required for mission-scoped SYNTHETIC DEMO entries. */
+  missionId?: string | undefined;
 }
 
-/** Base P36 classification first; approved extensions, then the verified active catalog, apply only to non-matched rows. */
+/**
+ * Base P36 classification first; approved extensions, then the verified active
+ * catalog, apply only to non-matched rows; the mission-scoped synthetic demo
+ * catalog is the last stage and only for synthetic rows of that mission.
+ */
 export function classifyWithGovernedExtensions(
   input: GovernedClassificationInput,
   evaluation: RegistryEvaluation = evaluateCatalogExtensionRegistry(GOVERNED_CATALOG_EXTENSIONS),
   catalog: EvaluatedCatalog = getActiveCatalog(),
+  demoCatalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
+): ExtendedClassification {
+  const result = classifyGovernedCore(input, evaluation, catalog);
+  if (result.classification.status === "matched" || input.sourceValidation === "unvalidated")
+    return result;
+  return classifySyntheticDemo(input, demoCatalogs) ?? result;
+}
+
+function classifyGovernedCore(
+  input: GovernedClassificationInput,
+  evaluation: RegistryEvaluation,
+  catalog: EvaluatedCatalog,
 ): ExtendedClassification {
   const base = classifyIntakeObservation(input);
   if (input.sourceValidation === "unvalidated")

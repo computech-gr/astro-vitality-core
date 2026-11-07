@@ -22,7 +22,11 @@
  */
 import type { HealthDomainId } from "@/domain/health-domains/registry";
 import { MEASUREMENT_PROFILES, type MeasurementDomainId } from "@/domain/health-measurements/profiles";
-import { isUnifiedObservationSchema } from "./observation-envelope";
+import {
+  isUnifiedObservationSchema,
+  syntheticDemoBasisIssue,
+  type UnifiedObservation,
+} from "./observation-envelope";
 import type { ScientificObservation } from "./live-evidence";
 
 import { validObservationDate, observationDateKey, type ObservationDatePrecision } from "./observation-date";
@@ -98,6 +102,17 @@ function catalogName(domain: MeasurementDomainId, metricId: string): string | un
   return MEASUREMENT_PROFILES[domain].variables.find((v) => v.id === metricId)?.name;
 }
 
+/**
+ * SYNTHETIC DEMO records are self-describing (validated catalog basis, synthetic
+ * provenance only), so they stay charted and labelled after a demo revocation.
+ */
+function syntheticDemoLabel(o: Record<string, unknown>): string | undefined {
+  if (!text(o["metricId"])?.startsWith("demo:")) return undefined;
+  if (syntheticDemoBasisIssue(o as unknown as UnifiedObservation)) return undefined;
+  const basis = obj(o["catalogBasis"]);
+  return `${text(basis?.["displayName"])} — SYNTHETIC DEMO (not scientifically validated)`;
+}
+
 interface Candidate {
   observation: ScientificObservation;
   innerId?: string;
@@ -119,7 +134,7 @@ function projectUnified(row: ProjectableRecord, o: Record<string, unknown>): Out
     return { skip: { ...tag, reason: "Embedded mission/crew identity does not match the record scope" } };
   if (!domain) return { skip: { ...tag, reason: "Observation domain is not one of the four health modules" } };
   if (!metricId) return { skip: { ...tag, reason: "Missing catalog metric ID" } };
-  const label = catalogName(domain, metricId);
+  const label = catalogName(domain, metricId) ?? syntheticDemoLabel(o);
   if (!label) return { skip: { ...tag, reason: "Metric ID is not in the domain catalog" } };
   if (o["status"] === "erroneous") return { skip: { ...tag, reason: "Marked erroneous" } };
   const quality = obj(o["quality"]);
