@@ -225,7 +225,12 @@ export function prohibitedLanguage(text: string): string | null {
  * retrieved. Unsupported claims stay visible as unresolved; prohibited
  * language is rejected outright. Never upgrades anything to approved.
  */
-export function verifyDraftClaims(raw: unknown, references: readonly EvidenceReference[]): Pick<EvidenceDraft, "claims" | "rejected"> {
+export function verifyDraftClaims(
+  raw: unknown,
+  references: readonly EvidenceReference[],
+  /** P41.1: references that passed the relevance gate; any other cited reference leaves the claim unresolved. */
+  allowedRefIds?: ReadonlySet<string>,
+): Pick<EvidenceDraft, "claims" | "rejected"> {
   const claims: VerifiedDraftClaim[] = [];
   const rejected: EvidenceDraft["rejected"] = [];
   const byId = new Map(references.map((r) => [r.refId, r]));
@@ -252,6 +257,7 @@ export function verifyDraftClaims(raw: unknown, references: readonly EvidenceRef
     for (const s of support) {
       const ref = byId.get(s.refId);
       if (!ref) problems.push(`Cites ${s.refId}, which was not retrieved (possible fabricated citation).`);
+      else if (allowedRefIds && !allowedRefIds.has(s.refId)) problems.push(`${s.refId} was excluded by the scientific relevance assessment and cannot support a claim.`);
       else if (ref.existence !== "verified_by_provider") problems.push(`${s.refId} was not confirmed by its provider.`);
       else if (ref.inspected === "metadata_only" || !ref.inspectedText) problems.push(`${s.refId}: only bibliographic metadata was retrieved; no source text was inspected.`);
       else if (s.excerpt.length < 20) problems.push(`${s.refId}: excerpt too short to verify.`);

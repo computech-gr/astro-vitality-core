@@ -480,7 +480,8 @@ export async function draftInterpretationCore(
   }
   if (parsed.schemaVersion !== AI_DRAFT_SCHEMA_VERSION || !Array.isArray(parsed.claims)) return fail("integrity", "The AI response did not match the required structure and was rejected.");
   // Claims may only cite references that passed the relevance gate.
-  const { claims, rejected } = verifyDraftClaims(parsed.claims, usable);
+  const allowed = new Set(usable.map((r) => r.refId));
+  const { claims, rejected } = verifyDraftClaims(parsed.claims, references, allowed);
   const contradictions = verifyContradictions(parsed.contradictions, usable);
   const modelGaps = (Array.isArray(parsed.gaps) ? parsed.gaps : []).filter((g): g is string => typeof g === "string").map((g) => `AI-reported gap: ${g.slice(0, 300)}`).slice(0, 12);
   const status = draftStatus(claims);
@@ -489,9 +490,9 @@ export async function draftInterpretationCore(
     ok: true,
     bundle: {
       ...base,
-      draft: { generatedBy: { kind: "ai_synthesis", provider: "lovable", model, generatedAt: deps.now().toISOString() }, claims, rejected, contradictions, gaps: [...evidenceGaps(claims, references), ...modelGaps], status },
+      draft: { generatedBy: { kind: "ai_synthesis", provider: "lovable", model, generatedAt: deps.now().toISOString() }, claims, rejected, contradictions, gaps: [...evidenceGaps(claims, usable), ...modelGaps], status },
       status: status === "draft_with_verified_excerpts" ? "draft_ready" : "insufficient_evidence",
-      gaps: [...evidenceGaps(claims, references), ...modelGaps],
+      gaps: [...evidenceGaps(claims, usable), ...modelGaps],
     },
   };
 }
