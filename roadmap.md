@@ -1,3 +1,10 @@
+# P36 compact Scientific Review
+
+- [x] Preserve complete dossiers/exports behind compact searchable, filtered, paginated tables; distinguish documentary, local and cloud inventory.
+- [x] Diagnose live missing dynamic migrations and Researcher-excluding table policies; stage narrow roster RPC without applying it.
+- [ ] Complete local automated and desktop/mobile validation.
+- [ ] Genuine two-account acceptance blocked until independently isolated auth/data services and approved staging migrations are available.
+
 # P36 final blocker remediation
 
 - [x] Fix crew roster, stale identity, Researcher local-data leak, cloud-aware summary statuses/batches, scoped duplicates, mission dropdown, registry fail-closed.
