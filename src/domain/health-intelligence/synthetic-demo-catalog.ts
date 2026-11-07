@@ -251,6 +251,57 @@ export type SyntheticDemoRecognition = {
 export type DemoRecognitionResult =
   SyntheticDemoRecognition | { status: "UNKNOWN"; reason: string };
 
+/**
+ * Recorded on every observation saved through a SYNTHETIC DEMO entry, so the
+ * stored record stays self-describing (and labelled) even after revocation.
+ */
+export interface SyntheticDemoCatalogBasis {
+  kind: "synthetic_demo";
+  demoId: string;
+  termId: string;
+  displayName: string;
+  demoCatalogVersion: number;
+  classification: typeof SYNTHETIC_DEMO_CLASSIFICATION;
+}
+
+export const isSyntheticDemoMetricId = (id: string) => DEMO_ID.test(id);
+
+export function syntheticDemoBasisFor(
+  e: SyntheticDemoEntry,
+  demoCatalogVersion: number,
+): SyntheticDemoCatalogBasis {
+  return {
+    kind: "synthetic_demo",
+    demoId: e.demoId,
+    termId: e.termId,
+    displayName: e.displayName,
+    demoCatalogVersion,
+    classification: SYNTHETIC_DEMO_CLASSIFICATION,
+  };
+}
+
+/**
+ * Canonical re-validation of an already-assigned demo ID (stored records, sync,
+ * corrections): same mission, synthetic only, exact unit. Revoked entries count
+ * only when explicitly requested (history), never for new recognition.
+ */
+export function canonicalSyntheticDemoEntry(
+  input: { demoId: string; unit: string; missionId?: string | undefined; provenance?: string },
+  catalogs: ReadonlyMap<string, EvaluatedDemoCatalog>,
+  includeRevoked = false,
+): SyntheticDemoEntry | null {
+  if (input.provenance !== "synthetic" || !input.missionId || !DEMO_ID.test(input.demoId))
+    return null;
+  const catalog = catalogs.get(input.missionId);
+  if (!catalog) return null;
+  const pool = includeRevoked ? [...catalog.active, ...catalog.revoked] : catalog.active;
+  const hits = pool.filter(
+    (e) =>
+      e.demoId === input.demoId && e.missionId === input.missionId && e.unit === input.unit.trim(),
+  );
+  return hits.length === 1 ? hits[0]! : null;
+}
+
 /** Label + exact unit within the same mission, synthetic provenance only, never for source-unvalidated rows. */
 export function recognizeSyntheticDemo(
   input: DemoRecognitionInput,
