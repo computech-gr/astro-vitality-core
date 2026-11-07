@@ -113,6 +113,12 @@ function adverseStatement(accepted: ReadonlyMap<string, { demonstration: boolean
 
 export function buildReportDocument(input: TextReportInput): ReportDocument {
   const { unified: u, findings, summary, history, identity } = input;
+  // One shared interpretation model per document (page-1 status and the Researcher section agree).
+  const researcherModel = findings
+    ? input.interpretations
+      ? buildResearcherInterpretation(u, findings, input.attestations, input.interpretations)
+      : buildResearcherInterpretation(u, findings, input.attestations)
+    : null;
   const refs = evidenceRefs(u.rows);
   const ref = (ids: readonly string[]) => (ids.length ? formatRefList(ids.map((id) => refs.get(id) ?? id)) : "none");
   const synthetic = u.scope.provenance === "synthetic";
@@ -179,8 +185,15 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
   blocks.push({
     kind: "alert",
     tone: "info",
-    title: "SCIENTIFIC INTERPRETATION: PENDING INDEPENDENT REVIEW",
-    lines: ["0 interpretations are scientifically validated (PENDING_NIKOLAS_REVIEW). Handbook statements in Section 3 are hypotheses for qualified review."],
+    title: researcherModel?.validatedInterpretations
+      ? `SCIENTIFIC INTERPRETATION: ${researcherModel.validatedInterpretations} APPROVED SERIES; OTHERS PENDING REVIEW`
+      : "SCIENTIFIC INTERPRETATION: PENDING INDEPENDENT REVIEW",
+    lines: [
+      researcherModel?.validatedInterpretations
+        ? `${researcherModel.validatedInterpretations} series use a Researcher-approved interpretation record (reviewer, citations and status in the Researcher interpretation section); everything else remains PENDING_NIKOLAS_REVIEW. Handbook statements in Section 3 are hypotheses for qualified review.`
+        : "0 interpretations are scientifically validated (PENDING_NIKOLAS_REVIEW). Handbook statements in Section 3 are hypotheses for qualified review.",
+      ...(researcherModel?.syntheticDemoInterpretations ? [`${researcherModel.syntheticDemoInterpretations} series use SYNTHETIC DEMO interpretations; these are not production scientific validation.`] : []),
+    ],
   });
   blocks.push(
     {
@@ -345,10 +358,8 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
   // ---- Researcher module physiological evidence interpretation (v9.5) ----
   // Rendered from the shared deterministic model used by the four module screens and TXT.
   // No inferred clinical thresholds, diagnoses or invented handbook statements.
-  if (findings) {
-    const model = input.interpretations
-      ? buildResearcherInterpretation(u, findings, input.attestations, input.interpretations)
-      : buildResearcherInterpretation(u, findings, input.attestations);
+  if (researcherModel) {
+    const model = researcherModel;
     blocks.push({ kind: "h2", text: "Researcher module physiological evidence interpretation (research only)" });
     blocks.push({ kind: "p", text: "This section separates recorded changes from possible biological context. A measured difference is not an abnormality, clinical trend, diagnosis or fitness-for-duty finding. Ground Medical attestation verifies evidence provenance, not scientific interpretation.", muted: true });
     blocks.push({ kind: "kv", rows: model.approvalLayers.map((l): [string, string] => [l.layer, `${l.count ?? "n/a"} - ${l.meaning}`]) });
