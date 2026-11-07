@@ -117,4 +117,40 @@ check(sql("select count(*) from p36_dynamic_handoff_terms;") == "1", "ACL change
 sql("BEGIN;\n" + (PENDING / "20261107010000_p36_dynamic_authorization.tool.sql").read_text() + "COMMIT;")
 for table in ["p36_dynamic_source_validation", "p36_dynamic_authorization_events"]:
     check(sql(f"select has_table_privilege('sandbox_exec','{table}','INSERT');") == "t", "Future Step 3 default ACL blocker not reproduced")
+auth_fix_bytes = (PENDING / "20261107010001_p36_authorization_executor_insert_remediation.sql").read_bytes()
+check(hashlib.sha256(auth_fix_bytes).hexdigest() == "90d89ad74bf6e5f163a6f2cd1cac14cbc6761d2a235960e325ead539cf2f1d2b", "Exact owner artifact hash changed")
+auth_fix = auth_fix_bytes.decode()
+auth_rollback = (PENDING / "20261107010001_p36_authorization_executor_insert_remediation.rollback.sql").read_text()
+auth_tables = ["p36_dynamic_source_validation", "p36_dynamic_authorization_events"]
+auth_acl = "select jsonb_agg(jsonb_build_array(relname,relacl::text) order by relname) from pg_class where relname in ('p36_dynamic_source_validation','p36_dynamic_authorization_events');"
+# Representative existing scientific/audit records must survive permission-only work.
+sql("create table scientific_dossier_probe(id int, status text); insert into scientific_dossier_probe values(12,'PENDING_NIKOLAS_REVIEW'); create table audit_history_probe(id int, note text); insert into audit_history_probe values(197,'immutable existing evidence');")
+preserved = unchanged.replace("'rows',", "'authorization_sequence',(select relacl::text from pg_class where relname='p36_dynamic_authorization_events_received_seq_seq'),'scientific',(select jsonb_agg(to_jsonb(t)) from scientific_dossier_probe t),'audit',(select jsonb_agg(to_jsonb(t)) from audit_history_probe t),'missions',(select jsonb_agg(to_jsonb(t)) from missions t),'rows',")
+pre_auth = sql(preserved)
+pre_acl = sql(auth_acl)
+sql("BEGIN;\n" + auth_fix + "SELECT 1/0;COMMIT;", True)
+check(sql(auth_acl) == pre_acl, "Failed auth remediation changed ACL")
+sql("BEGIN;\n" + auth_fix + "COMMIT;")
+check(sql(preserved) == pre_auth, "Auth remediation affected existing grants/data/functions/RLS/triggers")
+for table in auth_tables:
+    for role in ["sandbox_exec", "executor_child", "anon", "authenticated", "service_role"]:
+        for privilege in ["INSERT", "UPDATE", "DELETE", "TRUNCATE"]:
+            check(sql(f"select has_table_privilege('{role}','{table}','{privilege}');") == "f", "Auth effective direct write remains")
+        for statement in [f"insert into {table} default values;", f"update {table} set provenance=provenance;", f"delete from {table};"]:
+            check("permission denied" in sql(f"set role {role};" + statement, True), "Auth direct DML permitted")
+    check(sql(f"select has_table_privilege('sandbox_exec','{table}','SELECT');") == "t", "Auth read grant lost")
+    check(sql(f"select count(*) from pg_attribute where attrelid='{table}'::regclass and attacl is not null;") == "0", "Auth column write grant")
+check(sql(auth + "select p36_dynamic_auth_list_v1('M1','C1','synthetic',0,100);").endswith("[]"), "Scoped auth read broken")
+rpc = "select p36_dynamic_auth_append_v1('M1','C1','synthetic','00000000-0000-0000-0000-000000000004','{}',encode(sha256(convert_to('{}','UTF8')),'hex'));"
+check("admission is closed" in sql(auth + rpc, True), "Auth closed admission broken")
+check("permission denied" in sql("set role sandbox_exec;" + rpc, True), "Executor gained auth RPC")
+post_acl = sql(auth_acl)
+sql("BEGIN;\n" + auth_rollback + "SELECT 1/0;COMMIT;", True)
+check(sql(auth_acl) == post_acl, "Auth rollback failure changed grants")
+sql("BEGIN;\n" + auth_rollback + "COMMIT;")
+check(sql(auth_acl) == pre_acl, "Auth rollback not exact ACL restoration")
+sql("BEGIN;\n" + auth_fix + "COMMIT;")
+sql("BEGIN;\n" + auth_fix + "COMMIT;")
+check(sql(preserved) == pre_auth, "Auth replay changed non-target state")
+check(sql("select not handoff_open and not authorization_open from p36_dynamic_admission;") == "t", "Auth validation left admission open")
 print(f"PASS: {checks} disposable ACL/inheritance/DML/definer/transaction/rollback assertions. No live execution or platform compatibility attestation.")
