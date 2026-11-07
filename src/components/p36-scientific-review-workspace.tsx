@@ -33,6 +33,7 @@ import { P36CompactReviewTable } from "@/components/p36-compact-review-table";
 import { scientificDisplayStatus } from "@/domain/health-intelligence/p36-review-table";
 import { P36DynamicReviewWorkspace } from "@/components/p36-dynamic-review-workspace";
 import { P36GlobalReviewPanel } from "@/components/p36-global-review-panel";
+import { P37CatalogPanel } from "@/components/p37-catalog-panel";
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -225,6 +226,7 @@ export function P36ScientificReviewWorkspace() {
 
       <AuthorizationSummary auth={auth} />
       <P36GlobalReviewPanel />
+      <P37CatalogPanel />
       <P36DynamicReviewWorkspace auth={auth} />
 
       {!build.ok ? <p role="alert" className="text-sm text-destructive">Source integrity check failed; every term remains blocked: {build.problems.join("; ")}</p> : null}
