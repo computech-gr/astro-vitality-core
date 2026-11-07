@@ -11,15 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { listGlobalReviewMissions, listGlobalReviewSubmissions } from "@/lib/p36-global-review.functions";
-import { activateCatalogEntryFn, approveNewBiomarkerFn, getCatalogLifecycle, getSignedCatalogSnapshot, revokeCatalogEntryFn } from "@/lib/p37-catalog.functions";
+import { listGlobalReviewMissions, listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
+import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-rules";
+import { ScientificApproveWorkspace } from "@/components/p37-scientific-approve";
+import { activateCatalogEntryFn, getCatalogLifecycle, getCatalogSigningPublicKey, getSignedCatalogSnapshot, revokeCatalogEntryFn } from "@/lib/p37-catalog.functions";
 import type { LifecycleRow, ReceiptRow } from "@/lib/p37-catalog.server";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import { browserSnapshotStorage, getActiveCatalog, getInstalledSnapshot, installOfferedCatalog, subscribeActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
 import { runSyntheticCatalogLifecycleDemo, type DemoStep } from "@/domain/health-intelligence/catalog-lifecycle-demo";
 
 type Msg = { ok: boolean; text: string } | null;
-const DOMAINS = ["immune", "bone", "cardiovascular", "behavioral"] as const;
 
 function useActiveCatalog() {
   return useSyncExternalStore(subscribeActiveCatalog, getActiveCatalog, getActiveCatalog);
@@ -31,6 +32,11 @@ function OfflineCatalogStatus() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<Msg>(null);
   const installed = getInstalledSnapshot();
+  const signingKey = useServerFn(getCatalogSigningPublicKey);
+  const [key, setKey] = useState<{ keyId: string; publicKeySpkiBase64: string; trustedInBundle: boolean } | { missing: string } | null>(null);
+  useEffect(() => {
+    void signingKey().then((r) => setKey(r.ok ? r : { missing: r.message })).catch(() => setKey(null));
+  }, [signingKey]);
   const run = async () => {
     setBusy(true); setMsg(null);
     try {
@@ -54,6 +60,10 @@ function OfflineCatalogStatus() {
         </div>
         <Button size="sm" variant="outline" disabled={busy} onClick={() => void run()}><RefreshCw className="mr-1 h-4 w-4" aria-hidden />{busy ? "Verifying…" : "Sync catalog"}</Button>
       </div>
+      {key ? ("missing" in key ? <p className="text-xs text-muted-foreground">Catalog signing: {key.missing}</p> : (
+        <p className="text-xs text-muted-foreground" data-testid="p37-signing-key" data-public-key={key.publicKeySpkiBase64}>
+          Catalog signing key <span className="font-mono">{key.keyId}</span> · {key.trustedInBundle ? "trusted by this app version" : "provisioned, but this app version does not yet trust it"}
+        </p>)) : null}
       {msg ? <p role={msg.ok ? "status" : "alert"} className={msg.ok ? "text-xs" : "text-xs text-destructive"}>{msg.text}</p> : null}
     </div>
   );
@@ -84,43 +94,6 @@ function SyntheticDemo() {
         </div>
       ) : null}
     </details>
-  );
-}
-
-function ApproveForm({ receipt, submissions, mission, onDone }: { receipt: ReceiptRow; submissions: GlobalReviewSubmission[]; mission: GlobalReviewMission; onDone: () => Promise<void> }) {
-  const approve = useServerFn(approveNewBiomarkerFn);
-  const matches = submissions.filter((s) => s.terms.some((t) => t.termId === receipt.termId));
-  const [submissionId, setSubmissionId] = useState(matches[0]?.submissionId ?? "");
-  const [name, setName] = useState("");
-  const [domain, setDomain] = useState<(typeof DOMAINS)[number]>("immune");
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<Msg>(null);
-  const [key] = useState(() => crypto.randomUUID());
-  if (!matches.length) return <p className="text-xs text-muted-foreground">No submitted term in this mission matches this receipt.</p>;
-  return (
-    <div className="space-y-2">
-      {matches.length > 1 ? (
-        <select aria-label="Submission" value={submissionId} onChange={(e) => setSubmissionId(e.target.value)} className="w-full rounded-md border border-border bg-background p-1 text-xs">
-          {matches.map((s) => <option key={s.submissionId} value={s.submissionId}>{s.requestId}</option>)}
-        </select>
-      ) : null}
-      <div className="flex flex-wrap gap-2">
-        <div className="space-y-1"><Label htmlFor={`name-${receipt.validationReference}`} className="text-xs">Canonical name</Label>
-          <Input id={`name-${receipt.validationReference}`} value={name} maxLength={120} onChange={(e) => setName(e.target.value)} className="h-8 w-56" /></div>
-        <div className="space-y-1"><Label htmlFor={`dom-${receipt.validationReference}`} className="text-xs">Scientific domain</Label>
-          <select id={`dom-${receipt.validationReference}`} value={domain} onChange={(e) => setDomain(e.target.value as (typeof DOMAINS)[number])} className="h-8 rounded-md border border-border bg-background px-1 text-xs">
-            {DOMAINS.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select></div>
-      </div>
-      <Button size="sm" disabled={busy || name.trim().length < 3} onClick={() => {
-        setBusy(true);
-        void approve({ data: { missionId: mission.missionId, provenance: "synthetic", submissionId, termId: receipt.termId, validationReference: receipt.validationReference, canonicalName: name.trim(), domain, idempotencyKey: key } })
-          .then(async (r) => { setMsg(r.ok ? { ok: true, text: "Scientific approval recorded; catalog proposal created. Activation is a separate step." } : { ok: false, text: r.message }); if (r.ok) await onDone(); })
-          .catch(() => setMsg({ ok: false, text: "Nothing was recorded. Try again; the same request will not be duplicated." }))
-          .finally(() => setBusy(false));
-      }}>{busy ? "Recording…" : "Record scientific approval"}</Button>
-      {msg ? <p role={msg.ok ? "status" : "alert"} className={msg.ok ? "text-xs" : "text-xs text-destructive"}>{msg.text}</p> : null}
-    </div>
   );
 }
 
@@ -160,6 +133,8 @@ export function P37CatalogPanel() {
   const listMissions = useServerFn(listGlobalReviewMissions);
   const listSubs = useServerFn(listGlobalReviewSubmissions);
   const lifecycle = useServerFn(getCatalogLifecycle);
+  const listTriage = useServerFn(listGlobalTriage);
+  const [triage, setTriage] = useState<Map<string, TriageEvent>>(new Map());
   const [missions, setMissions] = useState<GlobalReviewMission[]>([]);
   const [missionId, setMissionId] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -176,17 +151,16 @@ export function P37CatalogPanel() {
   const load = useCallback(async () => {
     if (!missionId) return;
     setState("loading");
-    const [l, s] = await Promise.all([lifecycle({ data: { missionId, provenance: "synthetic" } }).catch(() => null), listSubs({ data: { missionId, provenance: "synthetic" } }).catch(() => null)]);
+    const [l, s, t] = await Promise.all([lifecycle({ data: { missionId, provenance: "synthetic" } }).catch(() => null), listSubs({ data: { missionId, provenance: "synthetic" } }).catch(() => null), listTriage({ data: { missionId, provenance: "synthetic" } }).catch(() => null)]);
     if (!l || !l.ok) { setState("error"); setNote(l?.message ?? "Catalog lifecycle unavailable. Nothing was changed."); setData(null); return; }
     setData({ canApprove: l.canApprove, canActivate: l.canActivate, events: l.events, receipts: l.receipts });
     setSubs(s && s.ok ? s.submissions : []);
+    setTriage(t && t.ok ? latestTriageByTerm(t.events) : new Map());
     setState("ready");
-  }, [missionId, lifecycle, listSubs]);
+  }, [missionId, lifecycle, listSubs, listTriage]);
   useEffect(() => { void load(); }, [load]);
 
   const mission = missions.find((m) => m.missionId === missionId) ?? null;
-  const approvedKeys = new Set(data?.events.map((e) => `${e.termId}|${e.entry.canonicalId}`) ?? []);
-  const openReceipts = data?.receipts.filter((r) => !approvedKeys.has(`${r.termId}|${r.canonicalMetricId}`)) ?? [];
 
   return (
     <section aria-labelledby="p37-title" className="space-y-4 rounded-lg border border-border p-4">
@@ -218,23 +192,10 @@ export function P37CatalogPanel() {
             <Badge variant={data.canActivate ? "secondary" : "outline"}>{data.canActivate ? "You may activate / revoke catalog entries" : "No catalog activator grant"}</Badge>
           </div>
 
-          <div className="space-y-2">
-            <h3 className="font-semibold">Source-validated terms awaiting scientific approval</h3>
-            {!openReceipts.length ? <p className="text-sm text-muted-foreground">No independently provisioned source-validation receipt is waiting. Receipts are never created in the app.</p> : (
-              <ul className="space-y-3">
-                {openReceipts.map((r) => (
-                  <li key={`${r.termId}|${r.validationReference}`} className="space-y-2 rounded-md border border-border p-3 text-sm">
-                    <p className="font-mono text-xs">{r.termId} → {r.canonicalMetricId}</p>
-                    <p className="text-xs text-muted-foreground">Unit {r.exactUnit} · specimen {r.specimen} · method {r.method} · protocol {r.protocol} {r.protocolVersion} · receipt {r.validationReference}</p>
-                    {data.canApprove ? <ApproveForm receipt={r} submissions={subs} mission={mission} onDone={load} /> : <p className="text-xs text-muted-foreground"><Lock className="mr-1 inline h-3 w-3" aria-hidden />Approval needs a separate owner-provisioned scientific approver grant.</p>}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <ScientificApproveWorkspace mission={mission} submissions={subs} triage={triage} receipts={data.receipts} events={data.events} canApprove={data.canApprove} onDone={load} />
 
           <div className="space-y-2">
-            <h3 className="font-semibold">Approved catalog proposals</h3>
+            <h3 className="font-semibold">Catalog activation proposals</h3>
             {!data.events.length ? <p className="text-sm text-muted-foreground">No scientific approvals recorded for this mission.</p> : (
               <ul className="space-y-3">
                 {data.events.map((e) => (
@@ -243,7 +204,7 @@ export function P37CatalogPanel() {
                       <span className="font-medium">{e.entry.canonicalName}</span>
                       <span className="font-mono text-xs">{e.canonicalId}</span>
                       <Badge variant={e.revocationEventId ? "outline" : e.activationEventId ? "default" : "secondary"}>
-                        {e.revocationEventId ? "Revoked" : e.activationEventId ? "Catalog active" : "Approved · awaiting activation"}
+                        {e.revocationEventId ? "REVOKED" : e.activationEventId ? "CATALOG_ACTIVE" : "SCIENTIFICALLY APPROVED · activation proposal ready"}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">Aliases {e.entry.aliases.join(", ")} · unit {e.entry.unit} · specimen {e.entry.specimen} · method {e.entry.method} · domain {e.entry.domain}</p>
