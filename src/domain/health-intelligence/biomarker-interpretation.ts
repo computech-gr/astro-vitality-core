@@ -547,7 +547,24 @@ export interface ResolvedInterpretation {
   activation: RegistryRecord["activation"];
   inRegistry: boolean;
   taskOrigin: string | null;
+  /** P41 lifecycle shown to Researchers; reports use `status` only. */
+  lifecycle: InterpretationLifecycle;
+  /** P41: a device-local approval recorded but not (yet) attested by the server; never applied. */
+  awaitingAttestation: { eventHash: string; recordedAt: string } | null;
+  /** P41: latest Researcher draft rejection, if the draft was rejected after the last draft save. */
+  rejection: { reason: string; at: string } | null;
+  aliases: string[];
+  measurementContext: MeasurementContext | null;
 }
+export type InterpretationLifecycle = "pending_review" | "draft" | "awaiting_attestation" | "approved" | "rejected" | "revoked";
+export const LIFECYCLE_LABELS: Record<InterpretationLifecycle, string> = {
+  pending_review: "Pending scientific review",
+  draft: "Draft",
+  awaiting_attestation: "Approval awaiting server attestation (not applied)",
+  approved: "Approved",
+  rejected: "Draft rejected",
+  revoked: "Revoked",
+};
 export interface InterpretationSnapshot {
   schema: typeof INTERPRETATION_SNAPSHOT_SCHEMA;
   registryVersion: number;
@@ -582,15 +599,35 @@ function fromRecord(rec: RegistryRecord): ResolvedInterpretation {
     activation: rec.activation,
     inRegistry: true,
     taskOrigin: rec.activation ? "registry_backfill_from_activation" : "registry",
+    lifecycle: approved ? "approved" : rec.reviewStatus === "REVOKED" ? "revoked" : "pending_review",
+    awaitingAttestation: null,
+    rejection: null,
+    aliases: rec.aliases ?? [],
+    measurementContext: rec.measurementContext ?? null,
   };
 }
 
-/** Registry + verified device-local events → resolved records (sync; events must be verified). */
+function lifecycleOf(r: ResolvedInterpretation): InterpretationLifecycle {
+  if (r.status === "approved") return "approved";
+  if (r.awaitingAttestation) return "awaiting_attestation";
+  if (r.rejection) return "rejected";
+  if (r.latestDraft) return "draft";
+  return r.status === "revoked" ? "revoked" : "pending_review";
+}
+
+/**
+ * Registry + verified device-local events → resolved records (sync; events must be verified).
+ * P41: a device-local APPROVE is applied only when its hash is in `attested`
+ * (valid server attestation, see attestedDecisionHashes); otherwise it is shown
+ * as awaiting attestation and reports keep the pending text. Revocations apply
+ * immediately (they can only remove authority).
+ */
 export function resolveInterpretations(
   registry: InterpretationRegistry,
   events: readonly InterpretationEvent[],
   ledger: InterpretationSnapshot["ledger"] = { events: 0, head: GENESIS_HASH, verified: true, note: null },
   excluded: InterpretationSnapshot["excluded"] = [],
+  attested: ReadonlySet<string> = new Set(),
 ): InterpretationSnapshot {
   const map = new Map<string, ResolvedInterpretation>();
   for (const rec of registry.records) map.set(rec.key, fromRecord(rec));
@@ -618,10 +655,19 @@ export function resolveInterpretations(
         activation: null,
         inRegistry: false,
         taskOrigin: null,
+        lifecycle: "pending_review",
+        awaitingAttestation: null,
+        rejection: null,
+        aliases: [],
+        measurementContext: null,
       };
     const reviewer = { userId: e.actorUserId, name: e.actorName };
     if (e.action === "TASK_OPENED") map.set(e.key, { ...base, taskOrigin: base.taskOrigin ?? e.taskOrigin });
-    else if (e.action === "DRAFT_SAVED") map.set(e.key, { ...base, latestDraft: e.draft });
+    else if (e.action === "DRAFT_SAVED") map.set(e.key, { ...base, latestDraft: e.draft, rejection: null });
+    else if (e.action === "REJECT_DRAFT") map.set(e.key, { ...base, rejection: { reason: e.reason ?? "", at: e.recordedAt }, awaitingAttestation: null });
+    else if (e.action === "ATTEST") continue;
+    else if (e.action === "APPROVE" && e.draft && !attested.has(e.hash))
+      map.set(e.key, { ...base, latestDraft: e.draft, awaitingAttestation: { eventHash: e.hash, recordedAt: e.recordedAt }, rejection: null });
     else if (e.action === "APPROVE" && e.draft)
       map.set(e.key, {
         ...base,
@@ -634,6 +680,9 @@ export function resolveInterpretations(
         decidedAt: e.recordedAt,
         contentSha256: e.contentSha256,
         latestDraft: null,
+        awaitingAttestation: null,
+        rejection: null,
+        measurementContext: e.draft.context ?? base.measurementContext,
         approvalHistory: [...base.approvalHistory, { action: "APPROVE", eventId: e.hash, reviewer, decidedAt: e.recordedAt, contentSha256: e.contentSha256, reason: null, basis: "device_local" }],
       });
     else if (e.action === "REVOKE" && base.status === "approved")
@@ -647,7 +696,7 @@ export function resolveInterpretations(
         approvalHistory: [...base.approvalHistory, { action: "REVOKE", eventId: e.hash, reviewer, decidedAt: e.recordedAt, contentSha256: base.contentSha256, reason: e.reason, basis: "device_local" }],
       });
   }
-  const records = [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+  const records = [...map.values()].map((r) => ({ ...r, lifecycle: lifecycleOf(r) })).sort((a, b) => a.key.localeCompare(b.key));
   return { schema: INTERPRETATION_SNAPSHOT_SCHEMA, registryVersion: registry.version, ledger, records, excluded, digest: null };
 }
 
