@@ -1,0 +1,4366 @@
+{
+ "schema": "mitochondria.p38-live-synthetic-term-metadata.v1",
+ "note": "Read-only copy of the synthetic MITO_DEMO_2026 submitted-term metadata (labels, exact units, catalog candidates, document hashes) used to test the P38 preflight and bulk lifecycle. Synthetic demonstration data only; no observations or identities.",
+ "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+ "crewMemberId": "crew-9806e7e611f44dc38dac5e23f7740f1a",
+ "submissions": [
+  {
+   "submissionId": "79291202-436a-4568-af8a-5458640913eb",
+   "receivedAt": "2026-11-07 08:30:16.185786+00",
+   "terms": [
+    {
+     "termId": "ubt-1d9912f9",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "0ac993f3f47604be3e2768b33c8987b0fdbac447708c4b210d1507634a4fe028",
+       "f446ec4cd0ea71591d7996fa2f6b21ad33d2e17ac3c4d93a2c7519260953f002",
+       "faf1fd91f2cbd1b7aa195ab65d3993ac0e44c1f5513d35f7a668c4c1b7cc7a73"
+      ],
+      "exactUnit": "mg/L",
+      "method": null,
+      "originalLabels": [
+       "IMM-007"
+      ],
+      "sourceDocumentSha256": [
+       "d8a12a346f3b02f7c5152bc7b0964c46df0d269e03b0922bace72317fa5b9efd"
+      ],
+      "specimen": null,
+      "termId": "ubt-1d9912f9"
+     }
+    },
+    {
+     "termId": "ubt-2e684454",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "586e4ea537084496f4ab56297368908b564a3860c4ccce831eb65c443f0b852d",
+       "a73cf24bed1fd268d440ce1e106c20b925cf5e77d19d220c4ef597c8e846848f",
+       "91f244acb4181c9651981b958b494f315ad24358f6b99fe01a33532b7e45ed18"
+      ],
+      "exactUnit": "10^9/L",
+      "method": null,
+      "originalLabels": [
+       "IMM-002"
+      ],
+      "sourceDocumentSha256": [
+       "d8a12a346f3b02f7c5152bc7b0964c46df0d269e03b0922bace72317fa5b9efd"
+      ],
+      "specimen": null,
+      "termId": "ubt-2e684454"
+     }
+    },
+    {
+     "termId": "ubt-676690c9",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "6e9200392beaaa986cb560cfa0d5424257c7d822171cc7dc6dbbd86ae0589804",
+       "fb4b421d8fe4f3786f3b81745dda6604d347eecab84d563cab76baa329d835d4",
+       "a507135117e8f33a21b086634470ff527332ad6603a998b846aa79fb8db6472e"
+      ],
+      "exactUnit": "ms",
+      "method": null,
+      "originalLabels": [
+       "PVT_MEDIAN_RT"
+      ],
+      "sourceDocumentSha256": [
+       "0d8d57ea21df5510285c0d3356624dd8ce0cdf1ccd533856789a4ec901baa331"
+      ],
+      "specimen": null,
+      "termId": "ubt-676690c9"
+     }
+    },
+    {
+     "termId": "ubt-6c8bad01",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "4eb143d3a652bf0ddd20437b1267643f442815d23a83ca3f7db6e26568344b1a",
+       "36135d94a6d0e495e2e877d2d84524a279c889375d732645d4ccec7680d65461",
+       "70bd30822e1841e336a19d968a5aa10a70ab55ee31fbbcdd5f51aa694e2264a7"
+      ],
+      "exactUnit": "ng/mL",
+      "method": null,
+      "originalLabels": [
+       "P1NP"
+      ],
+      "sourceDocumentSha256": [
+       "47b6e8ee876622a96ac2fc90d411890027f96c24daab4fa380ddc41d128cc45c"
+      ],
+      "specimen": null,
+      "termId": "ubt-6c8bad01"
+     }
+    },
+    {
+     "termId": "ubt-7b25ce69",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-019"
+      ],
+      "classification": "unit_review_required",
+      "evidencePointers": [
+       "e4178955be3506055feb44362f354b89c3d0699e1bd570436549538cf5a3b54c",
+       "eca20e2c03e55051dcfb94fc0c6fb3c4684fb2d8ce73c4c57a6f05d2f9454910",
+       "aa25f2f2c13d0534798b729a74a627d771c16f8f2d9bc57c0f51f9423db94215"
+      ],
+      "exactUnit": "ng/mL",
+      "method": null,
+      "originalLabels": [
+       "25(OH) Vitamin D"
+      ],
+      "sourceDocumentSha256": [
+       "47b6e8ee876622a96ac2fc90d411890027f96c24daab4fa380ddc41d128cc45c"
+      ],
+      "specimen": null,
+      "termId": "ubt-7b25ce69"
+     }
+    },
+    {
+     "termId": "ubt-813d9e97",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "a514a0869f951b3c6fcd2bc0e673d2ad92396ae4269e2cdbc952c6674547ccf8",
+       "149be296e817bda417d1c644a436b449bf154a13107b02ad721adc72a4948bf5",
+       "b3fc6e15b4145e78e2089002543511a61361b2ac219f32746b485eebe897949c"
+      ],
+      "exactUnit": "10^9/L",
+      "method": null,
+      "originalLabels": [
+       "IMM-001"
+      ],
+      "sourceDocumentSha256": [
+       "d8a12a346f3b02f7c5152bc7b0964c46df0d269e03b0922bace72317fa5b9efd"
+      ],
+      "specimen": null,
+      "termId": "ubt-813d9e97"
+     }
+    },
+    {
+     "termId": "ubt-83a192f6",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-015"
+      ],
+      "classification": "unit_review_required",
+      "evidencePointers": [
+       "edc56d1cf6418e3cc5552ff02c85ce65c257c002d87c0123bedef27148e9bed5",
+       "2d83d184184366534d4d6cabdafda212457dfb92e4238a1ca2562d6314b6cefc",
+       "52e769ac9e037c48e35f8a627c95652baf26492bab06f1b691ca109b5df09b77"
+      ],
+      "exactUnit": "mg/24h",
+      "method": null,
+      "originalLabels": [
+       "Urinary Calcium 24h"
+      ],
+      "sourceDocumentSha256": [
+       "47b6e8ee876622a96ac2fc90d411890027f96c24daab4fa380ddc41d128cc45c"
+      ],
+      "specimen": null,
+      "termId": "ubt-83a192f6"
+     }
+    },
+    {
+     "termId": "ubt-d900847d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "d6e07039f98824f5638925490186de9798977d086fae8eae656a8bef73c7f03a",
+       "70bdf32e6cac329e2ece14e9e2d08b9ebfb8f5a84a6ce5b637589a3d9f72b9ac",
+       "5689e91b9f52e3d8140df3926d292b98dcbc6777a14a586845aac0cf3bb10cf8"
+      ],
+      "exactUnit": "h",
+      "method": null,
+      "originalLabels": [
+       "BSC-001"
+      ],
+      "sourceDocumentSha256": [
+       "0d8d57ea21df5510285c0d3356624dd8ce0cdf1ccd533856789a4ec901baa331"
+      ],
+      "specimen": null,
+      "termId": "ubt-d900847d"
+     }
+    },
+    {
+     "termId": "ubt-d9870fc7",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "f4e5acac2e18ae7e02a0c94c014f4e478afa9e3aad1c8cec9f1b8cb301cfa228",
+       "a025632449ad5b0f5d434483eb60daf290be0f5d2b0021ff511efb45eb958b2a",
+       "1060f29316003fcd959baf5f04765b26a44588b9bc070a1c65c456bf8e152998"
+      ],
+      "exactUnit": "ng/mL",
+      "method": null,
+      "originalLabels": [
+       "CTX"
+      ],
+      "sourceDocumentSha256": [
+       "47b6e8ee876622a96ac2fc90d411890027f96c24daab4fa380ddc41d128cc45c"
+      ],
+      "specimen": null,
+      "termId": "ubt-d9870fc7"
+     }
+    },
+    {
+     "termId": "ubt-e0a346b9",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "795e2e489d9ed9ca733b54673d99dedcae616ccc9de431066e826adbe6b270e0",
+       "724fff1f041f0e7911a17368f0a6e17a2e06816d1d398612f5454482d5c6eab6",
+       "b0184fc62989f5deb40e58e92dbe60029e2c7166c0f5cb709074b340799e0f03"
+      ],
+      "exactUnit": "10^9/L",
+      "method": null,
+      "originalLabels": [
+       "IMM-003"
+      ],
+      "sourceDocumentSha256": [
+       "d8a12a346f3b02f7c5152bc7b0964c46df0d269e03b0922bace72317fa5b9efd"
+      ],
+      "specimen": null,
+      "termId": "ubt-e0a346b9"
+     }
+    },
+    {
+     "termId": "ubt-ed97000c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "0ec67f115f87f3bc74c02af57544c307267a3303daeafd5c950b0107c43daad0",
+       "3608503b0f5e3b901f6e1fe357795661c12b6647b45d12baad3da79492232b03",
+       "37e8197d5294872e818f8ac16920fea8683ba134176d4bab89385bc9eebc41eb"
+      ],
+      "exactUnit": "score",
+      "method": null,
+      "originalLabels": [
+       "BSC-008"
+      ],
+      "sourceDocumentSha256": [
+       "0d8d57ea21df5510285c0d3356624dd8ce0cdf1ccd533856789a4ec901baa331"
+      ],
+      "specimen": null,
+      "termId": "ubt-ed97000c"
+     }
+    },
+    {
+     "termId": "ubt-efe7e2fb",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "44141cd2a349e14fdd3a6d3971d3e3c396ada61f42bb4a7c7c65d069e8e6b596",
+       "a075e7f69556c4221d531a089b1f3c29b59b552cfcae188cecc72269450826e0",
+       "e4ddac4e7deec8f7939bf427620fd63674bc26865edbc1de5c7970a6664a4630"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "BSC-002"
+      ],
+      "sourceDocumentSha256": [
+       "0d8d57ea21df5510285c0d3356624dd8ce0cdf1ccd533856789a4ec901baa331"
+      ],
+      "specimen": null,
+      "termId": "ubt-efe7e2fb"
+     }
+    }
+   ]
+  },
+  {
+   "submissionId": "4fc8aee1-deb3-4f4c-9173-46c2a3401fa7",
+   "receivedAt": "2026-11-07 08:30:39.545302+00",
+   "terms": [
+    {
+     "termId": "ubt-003f487c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f65f95bfb144e759e8b10039ea0b73e3bff3662a4f9d26f363b4e8c1379fde68"
+      ],
+      "exactUnit": "bpm",
+      "method": null,
+      "originalLabels": [
+       "Orthostatic heart rate change"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-003f487c"
+     }
+    },
+    {
+     "termId": "ubt-0312222c",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-032"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8ee4c35c2b7f550bc5b38deba96a34cde54a92821cf7023b670351ece8bfc7cb"
+      ],
+      "exactUnit": "mmol/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Potassium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-0312222c"
+     }
+    },
+    {
+     "termId": "ubt-032aa50c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d1cd2cc975518545620edb153b394f7bf2b1597e9f3268a44d6a14cd1271fa51"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "G-CSF"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-032aa50c"
+     }
+    },
+    {
+     "termId": "ubt-03c4482d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "440123464bfbd3ca715bb79fec1bedd45d0003a96515bd213fa85e9432a92b3a"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IP-10"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-03c4482d"
+     }
+    },
+    {
+     "termId": "ubt-04f819f8",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-059"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d3c864419eb10dc61a668edcaff7f67d4d695532a8d690e3174a42d9801c5210"
+      ],
+      "exactUnit": "g/day",
+      "method": null,
+      "originalLabels": [
+       "Dietary Protein Intake"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-04f819f8"
+     }
+    },
+    {
+     "termId": "ubt-0597ba0a",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-007"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "6474456037ae0f5e7356a4f1d144b58c279a89b03b7e0b8e83f0b6a35fee4afb"
+      ],
+      "exactUnit": "assay-specific",
+      "method": null,
+      "originalLabels": [
+       "Hydroxylysine"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-0597ba0a"
+     }
+    },
+    {
+     "termId": "ubt-065a2009",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-033"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "e5886bd33516ba1ecef4a04708a4fa495df680529d7db401fd7faeb79ed65bef"
+      ],
+      "exactUnit": "mmol/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Sulfate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-065a2009"
+     }
+    },
+    {
+     "termId": "ubt-068660b8",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "da6c64109a73397becc0a02e7e7eef17fe6c07b3bb8b6b8efa3e5c1ee9088c0e"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Complement C3"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-068660b8"
+     }
+    },
+    {
+     "termId": "ubt-08a9fc70",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "cd803d25006142b25d63496a67047f1bdd4282091548b017a0d8fc661bca47eb"
+      ],
+      "exactUnit": "m/s",
+      "method": null,
+      "originalLabels": [
+       "Arterial stiffness PWV"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-08a9fc70"
+     }
+    },
+    {
+     "termId": "ubt-0918cd59",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "612cc1f9b4438fa85d5024dad428d6f33dc6cca7fd2682e7e3057301636f32e7"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Memory CD8 T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-0918cd59"
+     }
+    },
+    {
+     "termId": "ubt-0a64e6b2",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ab6e6342218070f35c5637e70d8e5a4e272af42e19ef776c7ec3ff9496facb28"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Orthostatic systolic change"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-0a64e6b2"
+     }
+    },
+    {
+     "termId": "ubt-0bb3175d",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-022"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ee22a61808961d408c363077b96d6c867a05bb9cf90996ecbc96a11449dd91aa"
+      ],
+      "exactUnit": "pmol/L ή ng/mL",
+      "method": null,
+      "originalLabels": [
+       "Sclerostin"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-0bb3175d"
+     }
+    },
+    {
+     "termId": "ubt-0bbaf9c4",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-037"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "61f92540eb39982ff48db0b69a6cc243567b19d050ec0730a82987a52e06ee86"
+      ],
+      "exactUnit": "mL/day",
+      "method": null,
+      "originalLabels": [
+       "Total Urine Volume"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-0bbaf9c4"
+     }
+    },
+    {
+     "termId": "ubt-0d004123",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f1138019ae7e5636f4ecc7fc19c11d16fc756e6cdc430d1804a5a7162e589af1"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Eosinophils"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-0d004123"
+     }
+    },
+    {
+     "termId": "ubt-12c22152",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-012"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "20d6d051d43e3f6a0cddf89d8c2628ec0f84a42c098f7fe49867884f6498f7c9"
+      ],
+      "exactUnit": "ng/mL",
+      "method": null,
+      "originalLabels": [
+       "Osteocalcin"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-12c22152"
+     }
+    },
+    {
+     "termId": "ubt-12f6e490",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "abecb89845c68d2f444f81d6fb271890dc9ea1ed822ec9a6d812eef26bc4f4ad"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "SpO2"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-12f6e490"
+     }
+    },
+    {
+     "termId": "ubt-14cbc5f0",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-036"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "55092feaa6b6c23dfe9adc79452d02b783192242ca20fc8f2eef82e9d512d1b4"
+      ],
+      "exactUnit": "pH",
+      "method": null,
+      "originalLabels": [
+       "Urine pH"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-14cbc5f0"
+     }
+    },
+    {
+     "termId": "ubt-1541fd5a",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-041"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b56e3033a1d0fc4bb4432e5788a7d3dab4149d85668036a043a3e0e5c1ddea3c"
+      ],
+      "exactUnit": "dimensionless/index",
+      "method": null,
+      "originalLabels": [
+       "Sodium Urate Supersaturation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-1541fd5a"
+     }
+    },
+    {
+     "termId": "ubt-1730a838",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "4ecd0c0369d9feaa4c2323b9abf68295520fc7c7cfcd13a4915070ace44cf692"
+      ],
+      "exactUnit": "bpm",
+      "method": null,
+      "originalLabels": [
+       "Maximum heart rate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-1730a838"
+     }
+    },
+    {
+     "termId": "ubt-17462e9c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "306da1d6c3d20ad22e5936470c7f20ee05804e5cc7f721968baeb5ce4f47d1a2"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "CD4+ T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-17462e9c"
+     }
+    },
+    {
+     "termId": "ubt-184fddf1",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ebf31dd64302a1c6d0fc3b455d18492021c901c68f9702614e8e6ac35c59e3ef"
+      ],
+      "exactUnit": "minutes",
+      "method": null,
+      "originalLabels": [
+       "Exercise tolerance"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-184fddf1"
+     }
+    },
+    {
+     "termId": "ubt-1b97f4fb",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "1be7df3f32ff66bc17b9ac9e3eefa34f18e138721fcbb11decdfc21a5a639cf5"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "IgG4"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-1b97f4fb"
+     }
+    },
+    {
+     "termId": "ubt-1cc68f93",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "224d7bc8f8bcc12011895f2ed9b7c89f481d02f533575f6dc994c3d479d8bffa"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IL-12"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-1cc68f93"
+     }
+    },
+    {
+     "termId": "ubt-1fc27650",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d0621c0c758035558d489b70948d9c0615418bfeb4257a151e3a0fdc64e2ce17"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IL-2"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-1fc27650"
+     }
+    },
+    {
+     "termId": "ubt-20430c14",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-042"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "027a716201cb0f85ada1297e72f07fdde000d57d77959a38cc518718455a9336"
+      ],
+      "exactUnit": "dimensionless/index",
+      "method": null,
+      "originalLabels": [
+       "Struvite Supersaturation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-20430c14"
+     }
+    },
+    {
+     "termId": "ubt-20c7ea4a",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "fd22ad5a951989037e596ae957733f774dba2d18b9db1d15dad8ade3a2e0a2d4"
+      ],
+      "exactUnit": "g",
+      "method": null,
+      "originalLabels": [
+       "Left ventricular mass"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-20c7ea4a"
+     }
+    },
+    {
+     "termId": "ubt-21eb075c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d468a43906b26aadb02f5a83eb172b1e8360ebe8490de40716f66b9764663ffc"
+      ],
+      "exactUnit": "U/mL",
+      "method": null,
+      "originalLabels": [
+       "CH50"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-21eb075c"
+     }
+    },
+    {
+     "termId": "ubt-24edbf61",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "07ca7b1224f0ddec59ef43939da79d1af52ed7e43a688fc0ab1c4d2d871673a0"
+      ],
+      "exactUnit": "count",
+      "method": null,
+      "originalLabels": [
+       "Cardiac event history"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-24edbf61"
+     }
+    },
+    {
+     "termId": "ubt-26813357",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "2242c08a7f2af67f88292d951fe5b474b3e547f0f1e4c504eceeec1752cde1c6"
+      ],
+      "exactUnit": "index",
+      "method": null,
+      "originalLabels": [
+       "T cell proliferation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-26813357"
+     }
+    },
+    {
+     "termId": "ubt-26a9a98e",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "b4a1bf238f1e9b7b1539f285602c148928f1efa93e60c7e8f82394403940ef0a"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "LDL cholesterol"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-26a9a98e"
+     }
+    },
+    {
+     "termId": "ubt-2841fb44",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b12e63a309c38680e8a3c2212e9e5d347dd4953d60fde4c104db77624aaac94b"
+      ],
+      "exactUnit": "mmol/L",
+      "method": null,
+      "originalLabels": [
+       "Serum sodium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-2841fb44"
+     }
+    },
+    {
+     "termId": "ubt-2b397551",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "14f88ab0e2ef0f7870efd6d1a35590d246d0112942ae7085f2bbe110eb23b1f7"
+      ],
+      "exactUnit": "boolean",
+      "method": null,
+      "originalLabels": [
+       "Cardiovascular medication"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-2b397551"
+     }
+    },
+    {
+     "termId": "ubt-2da60b45",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ebdf2dde4b9cc2552dfa7d93e996100399d6a9ebd9f367720e94a32c2dd418ac"
+      ],
+      "exactUnit": "ratio",
+      "method": null,
+      "originalLabels": [
+       "HRV LF/HF"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-2da60b45"
+     }
+    },
+    {
+     "termId": "ubt-2f5b3bb4",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-051"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "002cf65dd42f843a5bc9963d872657656d888597cd22455f56b18eb54b429580"
+      ],
+      "exactUnit": "mm",
+      "method": null,
+      "originalLabels": [
+       "Trabecular Separation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-2f5b3bb4"
+     }
+    },
+    {
+     "termId": "ubt-300b410b",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ffd6653a7ae4760fd556f550d3a80601b178afdb953a93e671abd04a1e89f8f7"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Neutrophils"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-300b410b"
+     }
+    },
+    {
+     "termId": "ubt-323050f4",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "486a88b4ba2059cf7a09876aac662a5c69d433f203a7f7597553ec078a1998f5"
+      ],
+      "exactUnit": "°C",
+      "method": null,
+      "originalLabels": [
+       "Body temperature"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-323050f4"
+     }
+    },
+    {
+     "termId": "ubt-323bb129",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "490b66e1c24663a102a1ba43ce4c479ba2be132d9940bee56fff7ec27e3d9b40"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Lymphocytes"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-323bb129"
+     }
+    },
+    {
+     "termId": "ubt-33eb23f7",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "80adcd6f93772579a51049e0a50d5e793cfe0abe3532f995c2d9836f5e5dfa7a"
+      ],
+      "exactUnit": "ms",
+      "method": null,
+      "originalLabels": [
+       "ECG QTc interval"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-33eb23f7"
+     }
+    },
+    {
+     "termId": "ubt-34f3b81d",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-026"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "24e9b0f0c875aff6b3589d775e301e48cdc9af6886192d5488c2e8d30f01fd30"
+      ],
+      "exactUnit": "δ44/42Ca ‰",
+      "method": null,
+      "originalLabels": [
+       "Stable Ca isotope ratio"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-34f3b81d"
+     }
+    },
+    {
+     "termId": "ubt-36c2a893",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ca43cfd49ea0ec15a4defc5d95336d3967d4f6351b1f49e12d7efde594e159ed"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Activated CD8 T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-36c2a893"
+     }
+    },
+    {
+     "termId": "ubt-37f541f8",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-009"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d1a4eaa1653a1b6af11047230d14e5eba8e310a2e06cc3a675eaef7d52667bce"
+      ],
+      "exactUnit": "μg/L",
+      "method": null,
+      "originalLabels": [
+       "P1NP / PINP"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-37f541f8"
+     }
+    },
+    {
+     "termId": "ubt-381d2837",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-014"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "6f49d99f0ac22d3dd17090f394133f19a0cb413a87e5242b1873703a359eef36"
+      ],
+      "exactUnit": "L",
+      "method": null,
+      "originalLabels": [
+       "Plasma volume"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-381d2837"
+     }
+    },
+    {
+     "termId": "ubt-3ae71a7f",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8ea4fef48aacea68903f462b5aae945d2b4c7648491154ce4d90fa0b9992e49e"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IL-1 beta"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-3ae71a7f"
+     }
+    },
+    {
+     "termId": "ubt-3e52e7b6",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "4372295024544169ddd4e1ec39ebab7f2ca3c0705cd8205c297698e8f3a7f181"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IL-8"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-3e52e7b6"
+     }
+    },
+    {
+     "termId": "ubt-3f7b3947",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b4aa7be84566f7baa47b6d3441d16db60809a066b5b8c39003ba130f56d54746"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Activated CD4 T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-3f7b3947"
+     }
+    },
+    {
+     "termId": "ubt-4000bbfc",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "fa72a3dd16d4072b65f9ad40bd313b24c6088051e90f5892bfb599ee53a37709"
+      ],
+      "exactUnit": "ratio",
+      "method": null,
+      "originalLabels": [
+       "CD4/CD8 ratio"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-4000bbfc"
+     }
+    },
+    {
+     "termId": "ubt-40eb55be",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-009"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a110ee28148c701223ef28f303c0eb82eb236f79f4476d726e4764b3e70c829d"
+      ],
+      "exactUnit": "mL",
+      "method": null,
+      "originalLabels": [
+       "Stroke volume"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-40eb55be"
+     }
+    },
+    {
+     "termId": "ubt-468cb43c",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-044"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "1b188feae5390a9ada2ec5474266b4ac638fa3c15a5dabb60155389839f6c084"
+      ],
+      "exactUnit": "g/cm²",
+      "method": null,
+      "originalLabels": [
+       "Femoral Neck aBMD"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-468cb43c"
+     }
+    },
+    {
+     "termId": "ubt-47fa5688",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "408ce4edcfe145ae485d0ae5d21908d5c98404e120c42d3f2e9489be939eb9fd"
+      ],
+      "exactUnit": "bpm",
+      "method": null,
+      "originalLabels": [
+       "Heart rate recovery 1 min"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-47fa5688"
+     }
+    },
+    {
+     "termId": "ubt-48a8b716",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-025"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "743307cb9a26e04671003989e61543d9d1f8bd07070050da2f03c499ed9cca62"
+      ],
+      "exactUnit": "assay-specific",
+      "method": null,
+      "originalLabels": [
+       "DKK1"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-48a8b716"
+     }
+    },
+    {
+     "termId": "ubt-4982c524",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "cc4d2c9347c1cc3b9a7c87f4a2a8004a3f9a5ddf4ca68109b4f2467e131b025f"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "BNP"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-4982c524"
+     }
+    },
+    {
+     "termId": "ubt-4afd25a0",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "6da9291bcaa9eee7d59b75b60695835fee12c3b7c7282e0d78fedd7b808806bc"
+      ],
+      "exactUnit": "mmol/L",
+      "method": null,
+      "originalLabels": [
+       "Serum potassium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-4afd25a0"
+     }
+    },
+    {
+     "termId": "ubt-4bae0cb9",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a0a203b51eebc54db233daad1db34c68c38169b2957d53589f13a63f6b8b7b28"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Blood pressure evening"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-4bae0cb9"
+     }
+    },
+    {
+     "termId": "ubt-4c8293c4",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-016"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "9109ab14c58607adafed215499790da74fb95534466be0e2f86bd4e347870ede"
+      ],
+      "exactUnit": "mg/dL ή mmol/L",
+      "method": null,
+      "originalLabels": [
+       "Serum Phosphate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-4c8293c4"
+     }
+    },
+    {
+     "termId": "ubt-4f02d7ad",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "736fd80f2e44ee5d9906fab12067aae6cc48f558877e8f7d564127f0f2c2ae97"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "Absolute eosinophil count"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-4f02d7ad"
+     }
+    },
+    {
+     "termId": "ubt-4f9451c8",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "49184b1c674c9040b78375a65e04c39a024d03e60b8e901c3569cf89574afb2d"
+      ],
+      "exactUnit": "dyn·s/cm5",
+      "method": null,
+      "originalLabels": [
+       "Vascular resistance"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-4f9451c8"
+     }
+    },
+    {
+     "termId": "ubt-5042fe95",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8c0aaafe228fb57e423292a00d88df9bc2ad146bfbcf7a258a89bbba32b1a290"
+      ],
+      "exactUnit": "mm",
+      "method": null,
+      "originalLabels": [
+       "Carotid intima media thickness"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5042fe95"
+     }
+    },
+    {
+     "termId": "ubt-508e453f",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "8308b541c5ed04f54f34ce87bad4109735f6489e4102652784c530ffedfb4430"
+      ],
+      "exactUnit": "ng/L",
+      "method": null,
+      "originalLabels": [
+       "Troponin I"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-508e453f"
+     }
+    },
+    {
+     "termId": "ubt-516090ed",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "eef67ca09303a44f1f45f5897ad2866a4f2ad4a1c08f4f87a9c2dfd76ff57b65"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "TNF-alpha"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-516090ed"
+     }
+    },
+    {
+     "termId": "ubt-534cc95f",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-039"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "aa783052a256faccae8a0ac77ccf339bfab604ca23ba7b8f585629b9e323c970"
+      ],
+      "exactUnit": "dimensionless/index",
+      "method": null,
+      "originalLabels": [
+       "Brushite / Ca Phosphate Supersaturation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-534cc95f"
+     }
+    },
+    {
+     "termId": "ubt-5630390c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a0d306096244213d820f315362e896bf2f55efa19e98d59c0f42d53b9137d982"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Serum creatinine"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5630390c"
+     }
+    },
+    {
+     "termId": "ubt-5ad8b852",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "3ad250219ecb26df3051c1614744f254d9c17920899cfa2d3848ca6a1d66d415"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "HDL cholesterol"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5ad8b852"
+     }
+    },
+    {
+     "termId": "ubt-5c1e9b1d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "1cac009fc62f803632b663a7fd5b71b539b02ca95a33c33b12caa640d3e7e8da"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Ejection fraction"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5c1e9b1d"
+     }
+    },
+    {
+     "termId": "ubt-5c3aeb73",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a9837a569737a9e3379b1ce4fe02fb16d225415236cdfb72b899548bc0f872db"
+      ],
+      "exactUnit": "mL",
+      "method": null,
+      "originalLabels": [
+       "End diastolic volume"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5c3aeb73"
+     }
+    },
+    {
+     "termId": "ubt-5cd8ce06",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b8ad01db2ada0584467a2e8f1de7e552e372ce07a027d486bf6530e393d76c69"
+      ],
+      "exactUnit": "ng/mL",
+      "method": null,
+      "originalLabels": [
+       "TGF-beta"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5cd8ce06"
+     }
+    },
+    {
+     "termId": "ubt-5d16fcaf",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "eff6162dab74c6775e2079b1b7662102e1ca6d395cc728b9918f9e6b1c49a159"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Diastolic blood pressure"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5d16fcaf"
+     }
+    },
+    {
+     "termId": "ubt-5d8a71ab",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a25976c47994111560a0c6d302d7a40aeec4090ad3dfa4cbf0d7c9c1179ab361"
+      ],
+      "exactUnit": "bpm",
+      "method": null,
+      "originalLabels": [
+       "Sleep heart rate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5d8a71ab"
+     }
+    },
+    {
+     "termId": "ubt-5df10aa1",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a67338b6487b5c8e59bf8eca6e328df7325e56465d58e79a3efa72df3fca0e35"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Naive CD8 T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-5df10aa1"
+     }
+    },
+    {
+     "termId": "ubt-608309a7",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-046"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "617e1a846e0af30673617165fce43db1123a0c4040277d9182bc547d12be7e10"
+      ],
+      "exactUnit": "mg HA/cm³",
+      "method": null,
+      "originalLabels": [
+       "Total vBMD"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-608309a7"
+     }
+    },
+    {
+     "termId": "ubt-6138cb33",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-063"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "9f943a8bcc1e0b845f99fc40f84be1f9087f1e2633e6f137a10f07cf1540b1a5"
+      ],
+      "exactUnit": "hours/days",
+      "method": null,
+      "originalLabels": [
+       "Microgravity Exposure"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-6138cb33"
+     }
+    },
+    {
+     "termId": "ubt-61407479",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a9a32bff6f74d3672e18489f2ae01da2b7a3d5a912c562ef0f242d5a1d97745a"
+      ],
+      "exactUnit": "0-3",
+      "method": null,
+      "originalLabels": [
+       "Peripheral edema score"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-61407479"
+     }
+    },
+    {
+     "termId": "ubt-625f8d98",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "8ec4f63593b821ca7c4014c8340456634ae272b9419408e5a4281f8f8e22d3a7"
+      ],
+      "exactUnit": "bpm",
+      "method": null,
+      "originalLabels": [
+       "Resting heart rate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-625f8d98"
+     }
+    },
+    {
+     "termId": "ubt-645f4a78",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "89fd21717631e8104a858f77dfc1a0c0db60594d930c3791f99524d1c9d537bb"
+      ],
+      "exactUnit": "mL/min/1.73m²",
+      "method": null,
+      "originalLabels": [
+       "eGFR"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-645f4a78"
+     }
+    },
+    {
+     "termId": "ubt-6811a69f",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-075"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "3f73160fcd4f3d0b5f59b39af8d75e4f34a82ed411cd935ef7b00de7dcc1ce61"
+      ],
+      "exactUnit": "g/dL",
+      "method": null,
+      "originalLabels": [
+       "Hemoglobin"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-6811a69f"
+     }
+    },
+    {
+     "termId": "ubt-6afae6c9",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "5957dd7b26bd7c879efe9e8467163f9bac7080173e868192350247e18cbf1fc3"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Blood pressure morning"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-6afae6c9"
+     }
+    },
+    {
+     "termId": "ubt-6c941c77",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "04367e7613c520fb5cc6888a43c9c676bef81574b16943fbb597488dc17dda0f"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "Absolute lymphocyte count"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-6c941c77"
+     }
+    },
+    {
+     "termId": "ubt-6cfda692",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b2a0241249b806cc11986eaed1cb9433ac35573910df1864a49e110aba7b1cd3"
+      ],
+      "exactUnit": "count/day",
+      "method": null,
+      "originalLabels": [
+       "Premature ventricular contractions"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-6cfda692"
+     }
+    },
+    {
+     "termId": "ubt-6d70e575",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "6407c8f86e1575f0adc67d8f692fb63599e34ab1ef1e51d0e79344148c5948a8"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Treg cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-6d70e575"
+     }
+    },
+    {
+     "termId": "ubt-6dd88f1d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f7456fa02aed539b7dfdb22ac1c987f77b0fd30ea254b3fceb6531902da31da8"
+      ],
+      "exactUnit": "count",
+      "method": null,
+      "originalLabels": [
+       "Syncope episodes"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-6dd88f1d"
+     }
+    },
+    {
+     "termId": "ubt-70f0038e",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "46048a6917460f44f4c81e6d710f28fac2318234f42fe940f2440a4e66c58f1e"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Orthostatic diastolic change"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-70f0038e"
+     }
+    },
+    {
+     "termId": "ubt-714f7e9a",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "289ea98ed23e45112ede67b06a61d89cfe020d381c833593575307bcbb0630fb"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Mean arterial pressure"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-714f7e9a"
+     }
+    },
+    {
+     "termId": "ubt-75cf0ce6",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-062"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b118f716b11b6442dedff77628bc2b7426205de78e5bc5e520265cf526ec2e53"
+      ],
+      "exactUnit": "days",
+      "method": null,
+      "originalLabels": [
+       "Mission Duration"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-75cf0ce6"
+     }
+    },
+    {
+     "termId": "ubt-75f23568",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-008"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "e9645d8c8595571fe8c285b551d043d476446be2a5ef4c375c2256a88ab19905"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Pulse pressure"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-75f23568"
+     }
+    },
+    {
+     "termId": "ubt-78b19cf0",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-001"
+      ],
+      "classification": "unit_review_required",
+      "evidencePointers": [
+       "e5abfe6ce4d4e402ee241f513209e09af8cf229d1973fad6e49fe509d4c58bc8"
+      ],
+      "exactUnit": "pg/mL ή ng/L",
+      "method": null,
+      "originalLabels": [
+       "CTX / β-CTX"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-78b19cf0"
+     }
+    },
+    {
+     "termId": "ubt-7c10c994",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-019"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f59f42094a37ece711778971125443bc9d95159af8195e500756815e20a1e946"
+      ],
+      "exactUnit": "ng/mL ή nmol/L",
+      "method": null,
+      "originalLabels": [
+       "25(OH) Vitamin D"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-7c10c994"
+     }
+    },
+    {
+     "termId": "ubt-7d17696e",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-030"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "9b2fc1d1833fc067aae5c64a92e351d315f9565ddb98652bb5e4f86e68196521"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Magnesium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-7d17696e"
+     }
+    },
+    {
+     "termId": "ubt-7ef81986",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a59973960b5d36280660ec7a94a26f84174db2cd7a0753de7ae57ba7efa76323"
+      ],
+      "exactUnit": "IU/mL",
+      "method": null,
+      "originalLabels": [
+       "IgE"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-7ef81986"
+     }
+    },
+    {
+     "termId": "ubt-7f47ee7c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ca9d33bbeac05b7f71f85f9492a944b91bba7e4fbb209ad41b3b0372771137d1"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Fasting glucose"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-7f47ee7c"
+     }
+    },
+    {
+     "termId": "ubt-81841015",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "0e5719a2a8a53a8358f3c626a34b4482639e9bcda9072141a1af55f17479fab8"
+      ],
+      "exactUnit": "μg/dL",
+      "method": null,
+      "originalLabels": [
+       "DHEA-S"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-81841015"
+     }
+    },
+    {
+     "termId": "ubt-8296e127",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "1c4d90629019e7666cf67b204e6848d4bf07d8d905452fbc9effe64f530c3460"
+      ],
+      "exactUnit": "ms",
+      "method": null,
+      "originalLabels": [
+       "ECG PR interval"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-8296e127"
+     }
+    },
+    {
+     "termId": "ubt-83a45516",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-038"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "18c51ca6eff4b387bf6bb74a938b7c86b69d52011fb3240ef8a6a1c5633bc698"
+      ],
+      "exactUnit": "dimensionless/index",
+      "method": null,
+      "originalLabels": [
+       "Calcium Oxalate Supersaturation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-83a45516"
+     }
+    },
+    {
+     "termId": "ubt-885ffda0",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "9dd95abccb92af9494a0e90e1fc984ef67287ddac37f6138e2841c7791589460"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IL-17"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-885ffda0"
+     }
+    },
+    {
+     "termId": "ubt-88a83390",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "9583bb030fbc7cbf49131bba3b3449e9e73a5e2289cb350b0510322ca2c88e2e"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "CD8+ T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-88a83390"
+     }
+    },
+    {
+     "termId": "ubt-893cc839",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-045"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8afe8d9fd957d7dc6d2b80554dee78bd5276feaf6cea35cc8ef05fdafa9f5741"
+      ],
+      "exactUnit": "g/cm²",
+      "method": null,
+      "originalLabels": [
+       "Lumbar Spine aBMD"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-893cc839"
+     }
+    },
+    {
+     "termId": "ubt-8a2490b0",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-031"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "13103b669036211fcaa9637f1d0508481cc1eda313a325f8353c356aac749009"
+      ],
+      "exactUnit": "mmol/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Sodium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-8a2490b0"
+     }
+    },
+    {
+     "termId": "ubt-8a9ca297",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-024"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "35999a743402b7de7b441d2d46a96e0af307b28b7f7868366859ddc9af6c81bd"
+      ],
+      "exactUnit": "assay-specific",
+      "method": null,
+      "originalLabels": [
+       "OPG"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-8a9ca297"
+     }
+    },
+    {
+     "termId": "ubt-8ade1c2e",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ac8b33720a9f459982de884cd7a5e76bde1adcce77ba2fe7dcdec91854acfba5"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "IgG3"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-8ade1c2e"
+     }
+    },
+    {
+     "termId": "ubt-8b2bb539",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b354466229fe9772e5ee42b580a5d0bb74006a30f9f6d1d7fcd36dce94af0dc4"
+      ],
+      "exactUnit": "ratio",
+      "method": null,
+      "originalLabels": [
+       "HOMA-IR"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-8b2bb539"
+     }
+    },
+    {
+     "termId": "ubt-8b90c2ca",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "283713dc0e7716cd5f09d9be17635b3388659c9b77fcd14403356d50a4866aff"
+      ],
+      "exactUnit": "ng/L",
+      "method": null,
+      "originalLabels": [
+       "Troponin T"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-8b90c2ca"
+     }
+    },
+    {
+     "termId": "ubt-8d2f835f",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "406d08c4c390bc5675b8c9764fdcafdce78af1a8cd4ba347f58ccc2508773422"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "CD16+ CD56+ NK cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-8d2f835f"
+     }
+    },
+    {
+     "termId": "ubt-919c3b20",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "c1dd7afb902bf4f4a7c481fa55339d74a6bb6811649210882f4df8052b604d44"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Cardiac MRI fibrosis"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-919c3b20"
+     }
+    },
+    {
+     "termId": "ubt-91ab6b12",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "5d0711fc26149abeba2db8867fe8e49eb24dcab0163bcd506e4d32c425252e02"
+      ],
+      "exactUnit": "nmol/L",
+      "method": null,
+      "originalLabels": [
+       "Neopterin"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-91ab6b12"
+     }
+    },
+    {
+     "termId": "ubt-92711b5c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "dca02944e82821e1dba04ff7ed2f5621eff1e08b38d93a611b4cf94f48ce0d24"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "IgG1"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-92711b5c"
+     }
+    },
+    {
+     "termId": "ubt-9416d34e",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-058"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "9ff4de68991541edd4fb79f41ac9a96567c55c74ea0168a3687177152bd61d10"
+      ],
+      "exactUnit": "IU/day",
+      "method": null,
+      "originalLabels": [
+       "Dietary Vitamin D Intake"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-9416d34e"
+     }
+    },
+    {
+     "termId": "ubt-97b6c305",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "973f1ea6894b8323a14e8a615c5c920b898ceb184c0a0d051f2fd4536e5eb72d"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "IgM"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-97b6c305"
+     }
+    },
+    {
+     "termId": "ubt-9908b9b9",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-003"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "79d9bfbcbfb5e57f5b76d17fdb7b03cd53f01ce06453f0753aa822b69eb2ecc0"
+      ],
+      "exactUnit": "nmol/mmol creatinine",
+      "method": null,
+      "originalLabels": [
+       "Pyridinoline (PYD)"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-9908b9b9"
+     }
+    },
+    {
+     "termId": "ubt-995ead5b",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d3cf2ec5c52b42dd5eb6adafecfb7e6cb4c447ee0a10f3330b56d132dbd702fc"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "Absolute monocyte count"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-995ead5b"
+     }
+    },
+    {
+     "termId": "ubt-99b8e3da",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ca865e9f4d98bde302b74f989f266802cbbe850101f88d813bccafacb7426c61"
+      ],
+      "exactUnit": "category",
+      "method": null,
+      "originalLabels": [
+       "ECG rhythm"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-99b8e3da"
+     }
+    },
+    {
+     "termId": "ubt-99e4c24e",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-048"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ac7dc08a0a3d5abfe54c10bee0ffe51da0b4f9278f730f8bed8ca2b1d083d7ec"
+      ],
+      "exactUnit": "mg HA/cm³",
+      "method": null,
+      "originalLabels": [
+       "Trabecular vBMD"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-99e4c24e"
+     }
+    },
+    {
+     "termId": "ubt-a1554be7",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ad3c3e44b23bda5b1276fafc3610165fd3875b2c9fea9eb6c74d3826a147cadd"
+      ],
+      "exactUnit": "ms",
+      "method": null,
+      "originalLabels": [
+       "Exercise heart rate variability"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a1554be7"
+     }
+    },
+    {
+     "termId": "ubt-a290ea35",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "4330d355f953e33974c30cb6a0e1c60cc25a83eb1efe5cb36a6696663036ed8c"
+      ],
+      "exactUnit": "index",
+      "method": null,
+      "originalLabels": [
+       "B cell proliferation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a290ea35"
+     }
+    },
+    {
+     "termId": "ubt-a3684aaf",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "69be002e54b84a863a59a8138cfb39133d179fad3c3fd4ac700cfc4b73ce7b2e"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "GM-CSF"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a3684aaf"
+     }
+    },
+    {
+     "termId": "ubt-a3dd9d05",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "07105af0363e9e92905293c1c77b4e2a5d07ae3f287dcc32a151407bf63eb0ff"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Memory CD4 T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a3dd9d05"
+     }
+    },
+    {
+     "termId": "ubt-a42df5a7",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-061"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "11e6be89eb23aca1e9676335dbc56251a19d0bb0fea5706de09f57f4abb7c077"
+      ],
+      "exactUnit": "mL/day",
+      "method": null,
+      "originalLabels": [
+       "Fluid Intake"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a42df5a7"
+     }
+    },
+    {
+     "termId": "ubt-a65dfc7c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "a37c3429bed58e07bb03935ae6bc01fd46a333022c8ccf7014562d2fc191b098"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "NT-proBNP"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a65dfc7c"
+     }
+    },
+    {
+     "termId": "ubt-a6c35d86",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-043"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "6e5514ab5997b778e7b91c2e543d89bd56454b35a3d650327d2b856bb67c3610"
+      ],
+      "exactUnit": "g/cm²",
+      "method": null,
+      "originalLabels": [
+       "Total Hip aBMD"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a6c35d86"
+     }
+    },
+    {
+     "termId": "ubt-a8fb862a",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-040"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8c81f593811723bd7d3e6f4e6c613b8d52f5cd50bd75610b0c7744feefb4ccb7"
+      ],
+      "exactUnit": "dimensionless/index",
+      "method": null,
+      "originalLabels": [
+       "Uric Acid Supersaturation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-a8fb862a"
+     }
+    },
+    {
+     "termId": "ubt-aaaf9c39",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "adcc57f1b33fe4fcdc139c68b2be8115f5257803decb1faf6591df7cabe014ec"
+      ],
+      "exactUnit": "W",
+      "method": null,
+      "originalLabels": [
+       "Exercise workload"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-aaaf9c39"
+     }
+    },
+    {
+     "termId": "ubt-abaa99f0",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "5e0a09ff5993bd9263c8c0576f0159b540b766fce010c9003994c87326044244"
+      ],
+      "exactUnit": "count/day",
+      "method": null,
+      "originalLabels": [
+       "Arrhythmia episodes"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-abaa99f0"
+     }
+    },
+    {
+     "termId": "ubt-abb8d451",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-085"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "22a8034b27392ebe76ac814efc3ca08f3da9709eda8fe5703bd6dc7fca3292c6"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "HbA1c"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-abb8d451"
+     }
+    },
+    {
+     "termId": "ubt-abe0007c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8a4db3323d7fcfe8ef2f2b3df6c6b1508b350abece0010614f9855c3fd4cb35b"
+      ],
+      "exactUnit": "copies/mL",
+      "method": null,
+      "originalLabels": [
+       "EBV DNA viral load"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-abe0007c"
+     }
+    },
+    {
+     "termId": "ubt-ad58333a",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f9a627d58eb11e5f38aa6e828c1e5b63aa750417d8dd575367e057a7e7d52ed7"
+      ],
+      "exactUnit": "0-10",
+      "method": null,
+      "originalLabels": [
+       "Dizziness score"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ad58333a"
+     }
+    },
+    {
+     "termId": "ubt-adb9f883",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "0c4c05b3e4533608d176f91368229a8582be789045ed1c9268b0e7c8a4dd7974"
+      ],
+      "exactUnit": "0-10",
+      "method": null,
+      "originalLabels": [
+       "Palpitations score"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-adb9f883"
+     }
+    },
+    {
+     "termId": "ubt-ae6a394d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "7da516477d40e718288c856d78d36767b4fb374451c2fd3e64afd59b5fbd0dae"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "Absolute neutrophil count"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ae6a394d"
+     }
+    },
+    {
+     "termId": "ubt-ae6dc3be",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "e310dc9716630f451849428070bd6b623792491b910330086022a78a2407f611"
+      ],
+      "exactUnit": "bpm",
+      "method": null,
+      "originalLabels": [
+       "Active heart rate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ae6dc3be"
+     }
+    },
+    {
+     "termId": "ubt-aeccd711",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "4cb2742d3db7c09a1fff4da9fb37403736e56c75fa680075d1ea70e9f7ba9aa0"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Complement C4"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-aeccd711"
+     }
+    },
+    {
+     "termId": "ubt-b06fd072",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "6ba3c8f0716990ee6d8619d2dba4fc7bbef0d265f6c4543ab0c7f89f33e13e72"
+      ],
+      "exactUnit": "ms",
+      "method": null,
+      "originalLabels": [
+       "ECG QRS duration"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b06fd072"
+     }
+    },
+    {
+     "termId": "ubt-b0d0a01f",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-011"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "21c7e382889b583ce879a198af1b09b9bc86e8c20b38a96b97d2d164ed49e290"
+      ],
+      "exactUnit": "μg/L ή U/L",
+      "method": null,
+      "originalLabels": [
+       "BSAP / BAP"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b0d0a01f"
+     }
+    },
+    {
+     "termId": "ubt-b278c97e",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "db6ba5a1582e8a224056db2560b111e9dc43b24581fe2eba5e6857b308048faa"
+      ],
+      "exactUnit": "mm",
+      "method": null,
+      "originalLabels": [
+       "ST segment deviation"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b278c97e"
+     }
+    },
+    {
+     "termId": "ubt-b4f34c19",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "286f4a7f75c5a881fa193070e18899b5b6669dff011e102d3beb95f42ab5d3f0"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Monocytes"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b4f34c19"
+     }
+    },
+    {
+     "termId": "ubt-b6e9b94f",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "bec9fd57600d70ef9274449ae392e0a31642304e58ece753f7abacec37c1d811"
+      ],
+      "exactUnit": "Agatston",
+      "method": null,
+      "originalLabels": [
+       "Coronary calcium score"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b6e9b94f"
+     }
+    },
+    {
+     "termId": "ubt-b72973e9",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "332929b95de5745577dece9337e2b91ce1de18f6b43ad5cd88d3a7a309c20e56"
+      ],
+      "exactUnit": "boolean",
+      "method": null,
+      "originalLabels": [
+       "Cardiac symptoms present"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b72973e9"
+     }
+    },
+    {
+     "termId": "ubt-b9079b6f",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-050"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "62783470b57cfcf7f996c68a8b81dc8d166d6d771b5a23ff90ed09b6c488ad26"
+      ],
+      "exactUnit": "1/mm",
+      "method": null,
+      "originalLabels": [
+       "Trabecular Number"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b9079b6f"
+     }
+    },
+    {
+     "termId": "ubt-b9c97649",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "72682c4aa1d7f6d7a18a58b140e7c0c426dba311f498e0f6c82e114b003606e5"
+      ],
+      "exactUnit": "mL/kg/min",
+      "method": null,
+      "originalLabels": [
+       "VO2 max"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b9c97649"
+     }
+    },
+    {
+     "termId": "ubt-b9d509ce",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "3b6ff0f283ef7936c0db1f17c59ed1d7dcfb26e36d85cebcd13c4de3bde48a9a"
+      ],
+      "exactUnit": "mm/h",
+      "method": null,
+      "originalLabels": [
+       "ESR"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-b9d509ce"
+     }
+    },
+    {
+     "termId": "ubt-ba9160b9",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "65172daf2cda6472aed2018a4dab570bac86eb5ff9e15078b1ba1c43ba765101"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Apolipoprotein B"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ba9160b9"
+     }
+    },
+    {
+     "termId": "ubt-bc4aef7f",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "684e11a883ad58ce695b51395457c3b71b318fd4de3e32450a0263aa9052d887"
+      ],
+      "exactUnit": "L",
+      "method": null,
+      "originalLabels": [
+       "Blood volume"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-bc4aef7f"
+     }
+    },
+    {
+     "termId": "ubt-bcf3c4ac",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a0fa36f7974ee71a4795fc3c3bbdbf8539958b3331166a4569a5f972c01ff53e"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "NK cytotoxic activity"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-bcf3c4ac"
+     }
+    },
+    {
+     "termId": "ubt-be20d8ea",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d8951122b56c5aa46492c00b49192416c713d18ec0653bd545b4a3f1044c35e8"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IL-4"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-be20d8ea"
+     }
+    },
+    {
+     "termId": "ubt-c30c0952",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "48c0204fc3f4b3eaaab189781f989541d2e30f29f2b2d8dd4976266cc4cd6309"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Serum magnesium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-c30c0952"
+     }
+    },
+    {
+     "termId": "ubt-c461dc8b",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ecfb5569cb5bacbbba25b15a95f9c57f2e6c0d1cb3e0a0fa6269eb4d43b119f8"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Basophils"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-c461dc8b"
+     }
+    },
+    {
+     "termId": "ubt-c4b4d258",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-058"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8ec7c43882b352eb9e20e132f70df466da3f4198ecd04052f6704848c80bed3f"
+      ],
+      "exactUnit": "10^3/μL",
+      "method": null,
+      "originalLabels": [
+       "Platelet count"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-c4b4d258"
+     }
+    },
+    {
+     "termId": "ubt-c6a305ef",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-059"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "1d3eed4447addd2eb8ba375cb36d648f8113cc2f17ee4da94f9033451ae82fe3"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Fibrinogen"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-c6a305ef"
+     }
+    },
+    {
+     "termId": "ubt-c86436e7",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "bbf787f6442c8cc94a92efbed9cca1489dbde3b5083ac25a5a290aee7fb75ae2"
+      ],
+      "exactUnit": "mg/L",
+      "method": null,
+      "originalLabels": [
+       "CRP"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-c86436e7"
+     }
+    },
+    {
+     "termId": "ubt-c87840cb",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "2f4d60110ee0f8187b381fd5b6e4538fd2d88b705ef3d8c7543e7586ab2d0c23"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "IgG"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-c87840cb"
+     }
+    },
+    {
+     "termId": "ubt-ca232512",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ef293e1425ba510df2d1fb0a630cf5029d86457f140bcbd5c85d8886a304dd73"
+      ],
+      "exactUnit": "mSv",
+      "method": null,
+      "originalLabels": [
+       "Radiation exposure cardiovascular"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ca232512"
+     }
+    },
+    {
+     "termId": "ubt-cb1c6a2f",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-055"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a3e75a7d3da95a58215eeed41733e478bc92e3e092a64c0cace7ee3ea60d7394"
+      ],
+      "exactUnit": "% sessions",
+      "method": null,
+      "originalLabels": [
+       "Resistance Exercise Adherence"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cb1c6a2f"
+     }
+    },
+    {
+     "termId": "ubt-cb7d9af1",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-027"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "51f54d8316839bd67f540da9992fb579ad458af703d8068a7f7883b8986763fa"
+      ],
+      "exactUnit": "fractional absorption / model",
+      "method": null,
+      "originalLabels": [
+       "Stable Ca tracer kinetics"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cb7d9af1"
+     }
+    },
+    {
+     "termId": "ubt-cbb5666e",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "a7a94916105d16ab20796014928d0e549c89191965364dacacfe97f403d179e4"
+      ],
+      "exactUnit": "10^3/μL",
+      "method": null,
+      "originalLabels": [
+       "WBC"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cbb5666e"
+     }
+    },
+    {
+     "termId": "ubt-cc047dd7",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-060"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ec590b29e418e9abc6331c4ae92bdf03a20e4754cd35a181f4fc35e6dc71a577"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Dietary Sodium Intake"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cc047dd7"
+     }
+    },
+    {
+     "termId": "ubt-cc2bd315",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "36ea28bd30a3bad9ca1e67abed4800e525d7f3b4483fd13671bee8b8b98d82c6"
+      ],
+      "exactUnit": "nmol/L",
+      "method": null,
+      "originalLabels": [
+       "Lipoprotein(a)"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cc2bd315"
+     }
+    },
+    {
+     "termId": "ubt-cca016a0",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "13a7559fdb6d4322e53ed1c7b378f3aa73b576685607b434cc379c765a48f36a"
+      ],
+      "exactUnit": "L",
+      "method": null,
+      "originalLabels": [
+       "Red cell mass"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cca016a0"
+     }
+    },
+    {
+     "termId": "ubt-cdd416ed",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "263d238246e37636ee14391fb84fdf5776bca01f06111f18f786bc0988beb86a"
+      ],
+      "exactUnit": "ratio",
+      "method": null,
+      "originalLabels": [
+       "Cortisol/DHEA ratio"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cdd416ed"
+     }
+    },
+    {
+     "termId": "ubt-cdfff59b",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-008"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "01ccec996a4c2c447cfe62d7731e5113412062ecb9682b98859e8ad72546592f"
+      ],
+      "exactUnit": "U/L ή assay-specific",
+      "method": null,
+      "originalLabels": [
+       "TRAP5b"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cdfff59b"
+     }
+    },
+    {
+     "termId": "ubt-ce07af24",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "7e7d35cd02013bd41de4a102f59be8c6ac0a6342a9a2d8e2c45164c481f2d7de"
+      ],
+      "exactUnit": "ng/mL",
+      "method": null,
+      "originalLabels": [
+       "CK-MB"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ce07af24"
+     }
+    },
+    {
+     "termId": "ubt-cf31f290",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-057"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "1e44b2307eec8a59d77b17f6a178371e0044c7032b649e330e3b88a7797c62b7"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Dietary Calcium Intake"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-cf31f290"
+     }
+    },
+    {
+     "termId": "ubt-d032c52f",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-004"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "93ccabddce0499721e03e1f4cbfb2cdba7f3bc5befcf6f88055118106c050329"
+      ],
+      "exactUnit": "nmol/mmol creatinine",
+      "method": null,
+      "originalLabels": [
+       "Deoxypyridinoline (DPD)"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d032c52f"
+     }
+    },
+    {
+     "termId": "ubt-d09698ea",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "7f234e3241e5b49e5b71c946b69092a6733fc3cab88521a046cb022b85e33e5b"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "MCP-1"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d09698ea"
+     }
+    },
+    {
+     "termId": "ubt-d1f6a210",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-029"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "7c2d5b70b3ebc6d6124e455116cbfcc383c7ce65ccaa90aadf8907f0fc1ebadc"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Oxalate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d1f6a210"
+     }
+    },
+    {
+     "termId": "ubt-d2e67c8d",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-017"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "15e97cd9e5ad7285593ff4bb55c87ddf510291cb253251eb29dd112cb5f70d7e"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Phosphorus"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d2e67c8d"
+     }
+    },
+    {
+     "termId": "ubt-d3132c01",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-021"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b7f2fa10642990c75e2d21764d5a2daf19bec073f87650d40b5d3400ed517ede"
+      ],
+      "exactUnit": "pg/mL ή RU/mL",
+      "method": null,
+      "originalLabels": [
+       "FGF23"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d3132c01"
+     }
+    },
+    {
+     "termId": "ubt-d4aacb73",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "15343f092d46ea6908fba77b01cb2fe8ca23f55aee20cc455143422aede52533"
+      ],
+      "exactUnit": "steps/day",
+      "method": null,
+      "originalLabels": [
+       "Daily steps"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d4aacb73"
+     }
+    },
+    {
+     "termId": "ubt-d6ee4f3d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "c0ee14832dad6fd73ad7b11344cdc66835ee23a55f3e9bed97038660afaa485d"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Naive CD4 T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d6ee4f3d"
+     }
+    },
+    {
+     "termId": "ubt-d71e8b4d",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-014"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "844d5f7ba5a1fbee742d51a992b0973f8be5c466a6200757f52be3cd66c3e0dc"
+      ],
+      "exactUnit": "mmol/L",
+      "method": null,
+      "originalLabels": [
+       "Ionized Calcium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d71e8b4d"
+     }
+    },
+    {
+     "termId": "ubt-d7caa66d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "648a4a237e8c2b1d1e615dcb96f9c3f9637e661b5d14b21d45279d26b420e4fe"
+      ],
+      "exactUnit": "0-10",
+      "method": null,
+      "originalLabels": [
+       "Dyspnea score"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d7caa66d"
+     }
+    },
+    {
+     "termId": "ubt-d86be1ae",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-049"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "1cd43ae8699572d0435fa1a984dda150c63314ce644158ac9c831e21bb1dc42a"
+      ],
+      "exactUnit": "mm",
+      "method": null,
+      "originalLabels": [
+       "Trabecular Thickness"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-d86be1ae"
+     }
+    },
+    {
+     "termId": "ubt-da887734",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-028"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "bbf366c7ee97fc80c97983f69592d68ac9bdb414e24ad1619b55959104c3453e"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Citrate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-da887734"
+     }
+    },
+    {
+     "termId": "ubt-dab74dfa",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "79fbb30906f8c1eb64f502efa966a0eb24f129f080bc12cb52fabc484df08e97"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Augmentation index"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-dab74dfa"
+     }
+    },
+    {
+     "termId": "ubt-db1ff862",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "0e4669d2f882e01c2afe0415eca224a2a1058b9831a351b200ca611bd6755bb1"
+      ],
+      "exactUnit": "L/day",
+      "method": null,
+      "originalLabels": [
+       "Hydration intake"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-db1ff862"
+     }
+    },
+    {
+     "termId": "ubt-db2da093",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "cdc14a048672d5137bbbc54522ee1b0166bef24853a660e5b15add9d648d4acf"
+      ],
+      "exactUnit": "ng/mL",
+      "method": null,
+      "originalLabels": [
+       "Procalcitonin"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-db2da093"
+     }
+    },
+    {
+     "termId": "ubt-dba7f918",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-041"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "899c0ee3d9af0802f46da7bd4004fff64343cc16907e8fc3cccc9608db6e9e80"
+      ],
+      "exactUnit": "ms/mmHg",
+      "method": null,
+      "originalLabels": [
+       "Baroreflex sensitivity"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-dba7f918"
+     }
+    },
+    {
+     "termId": "ubt-deedc9c4",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "84f3cb47d24845683a1ce6d4059ad6bba5eb79b533761f53715b21574e1a1156"
+      ],
+      "exactUnit": "mg/L",
+      "method": null,
+      "originalLabels": [
+       "High sensitivity CRP"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-deedc9c4"
+     }
+    },
+    {
+     "termId": "ubt-df82304e",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-034"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "8f83a63e368d6e9453b204de3a4a507fe2032ff946a17b12b828dbe1da40959c"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Uric Acid"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-df82304e"
+     }
+    },
+    {
+     "termId": "ubt-dfd7c929",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f4aca19345bfd92062972a95818c4f003c80156091113c5867e857b505039bd2"
+      ],
+      "exactUnit": "hours/day",
+      "method": null,
+      "originalLabels": [
+       "Sedentary time"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-dfd7c929"
+     }
+    },
+    {
+     "termId": "ubt-e0dd046f",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "5a33e08ed20bef3835e89c3dc06f1e635bb77f4a64986fcb816bb8069b886ed4"
+      ],
+      "exactUnit": "category",
+      "method": null,
+      "originalLabels": [
+       "Lower limb venous ultrasound"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e0dd046f"
+     }
+    },
+    {
+     "termId": "ubt-e1140df3",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "unclassified",
+      "evidencePointers": [
+       "6717f579603e7594219cf6e78a6e47b07048afac26c50b0f43c05c95c6912bae"
+      ],
+      "exactUnit": "mmHg",
+      "method": null,
+      "originalLabels": [
+       "Systolic blood pressure"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e1140df3"
+     }
+    },
+    {
+     "termId": "ubt-e151a9b1",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "7266e7d2f6231d2544e4a676fd4858470d7836c2a96a738b925f6770cf9d5979"
+      ],
+      "exactUnit": "pg/mL",
+      "method": null,
+      "originalLabels": [
+       "IL-10"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e151a9b1"
+     }
+    },
+    {
+     "termId": "ubt-e177517d",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a4e2f2b134584e9854fd194ec897aef35404285e793156b9976b2cce2f6da444"
+      ],
+      "exactUnit": "cells/μL",
+      "method": null,
+      "originalLabels": [
+       "CD3+ T cells"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e177517d"
+     }
+    },
+    {
+     "termId": "ubt-e34876dc",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f9a1d28f6edcd103a218239f32d9316216921b759df8becb7d881c81d0f306f3"
+      ],
+      "exactUnit": "ms",
+      "method": null,
+      "originalLabels": [
+       "ECG QT interval"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e34876dc"
+     }
+    },
+    {
+     "termId": "ubt-e3bd07f2",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ee62ec548e5bad3100e4e769f232343f71d563bfafa6553e13d6b909daf76fbd"
+      ],
+      "exactUnit": "ordinal",
+      "method": null,
+      "originalLabels": [
+       "Fluid shift assessment"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e3bd07f2"
+     }
+    },
+    {
+     "termId": "ubt-e5098036",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-013"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b98139d539553562be58a552717a87ba07964f4c548f91046e18199fc3b67517"
+      ],
+      "exactUnit": "mg/dL ή mmol/L",
+      "method": null,
+      "originalLabels": [
+       "Serum Total Calcium"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e5098036"
+     }
+    },
+    {
+     "termId": "ubt-e86f4051",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-006"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "d69512120f7d1b2b839e7673567ab756285ef3433df009bb747af3243027ae36"
+      ],
+      "exactUnit": "mg/day ή ratio",
+      "method": null,
+      "originalLabels": [
+       "Hydroxyproline"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e86f4051"
+     }
+    },
+    {
+     "termId": "ubt-e9557d40",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-010"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f614106503bb027fd564eda82fb5d939bbc7cd0b9177dafffc57b0e32d2e5db6"
+      ],
+      "exactUnit": "L/min",
+      "method": null,
+      "originalLabels": [
+       "Cardiac output"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-e9557d40"
+     }
+    },
+    {
+     "termId": "ubt-ea5d2d7c",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "f279e9d3e4df847a342881ab336bd7b071f8ce94d8d9778463bee28bb20885e4"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Endothelial function FMD"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ea5d2d7c"
+     }
+    },
+    {
+     "termId": "ubt-ead50a31",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "df49890ff61e879d7b8131d5f873a3010805b7a457dfa1d7f470aca2afb5c44e"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "IgA"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ead50a31"
+     }
+    },
+    {
+     "termId": "ubt-eb65bb82",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-054"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "b550b8dba4592f4e4e7d6129b96ee6afa6035eb69902c0f4bd002f3a0ebb577f"
+      ],
+      "exactUnit": "N ή model-specific",
+      "method": null,
+      "originalLabels": [
+       "Estimated Bone Strength"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-eb65bb82"
+     }
+    },
+    {
+     "termId": "ubt-ebd7558e",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-076"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "ca9053c67da0e7cc91a89347a4d15e950688419a6d5235f61fee76fad3e96249"
+      ],
+      "exactUnit": "%",
+      "method": null,
+      "originalLabels": [
+       "Hematocrit"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ebd7558e"
+     }
+    },
+    {
+     "termId": "ubt-ebf6e090",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-047"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "638fcf102bbbb4a57c69e477beb895fedcaa420ebdc4d71f03f27a0aa4429fc8"
+      ],
+      "exactUnit": "mg HA/cm³",
+      "method": null,
+      "originalLabels": [
+       "Cortical vBMD"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ebf6e090"
+     }
+    },
+    {
+     "termId": "ubt-ec404949",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-010"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "732abf2b9c96df18c959a647faebf94eae3577d3c06daf9ae49532cbfd8bb9b7"
+      ],
+      "exactUnit": "μg/L",
+      "method": null,
+      "originalLabels": [
+       "PICP"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ec404949"
+     }
+    },
+    {
+     "termId": "ubt-eed68002",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-057"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "720d124ddfd55c7623eaf4297a19d2f719258ac511085c10d232b92dbbf9cc7a"
+      ],
+      "exactUnit": "mg/L FEU",
+      "method": null,
+      "originalLabels": [
+       "D-dimer"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-eed68002"
+     }
+    },
+    {
+     "termId": "ubt-ef441ee8",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-005"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "e44cd075bc5566ece23026ed2cbd3bc29133a0ca8d295914527048f1da27d9f0"
+      ],
+      "exactUnit": "assay-specific",
+      "method": null,
+      "originalLabels": [
+       "Helical Peptide"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-ef441ee8"
+     }
+    },
+    {
+     "termId": "ubt-efb899fc",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "817960cea0ac5f34bd3e06b791263490a1450cfc1d23d36050894e70563640a0"
+      ],
+      "exactUnit": "mg/dL",
+      "method": null,
+      "originalLabels": [
+       "Total cholesterol"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-efb899fc"
+     }
+    },
+    {
+     "termId": "ubt-efc03936",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-015"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "3b0c1006bb613ff3e79eeb85d7e617e792f34f5802b62b87429b0e4a9c6fd69a"
+      ],
+      "exactUnit": "mg/day",
+      "method": null,
+      "originalLabels": [
+       "Urinary Calcium 24h"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-efc03936"
+     }
+    },
+    {
+     "termId": "ubt-f17497d1",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-053"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "23920ce5a60bf12f830964335d80dcdbf6645b8d71253d5a53b1dde108abc48f"
+      ],
+      "exactUnit": "N",
+      "method": null,
+      "originalLabels": [
+       "Bone Failure Load"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-f17497d1"
+     }
+    },
+    {
+     "termId": "ubt-f42e3c0d",
+     "metadata": {
+      "candidateMetricIds": [
+       "bone-023"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "95f146122f0b5c0b4cdbf7775f5866f5ca0511a1641b9c82d0d3d66e32bf28ed"
+      ],
+      "exactUnit": "assay-specific",
+      "method": null,
+      "originalLabels": [
+       "RANKL"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-f42e3c0d"
+     }
+    },
+    {
+     "termId": "ubt-f4b8be7b",
+     "metadata": {
+      "candidateMetricIds": [
+       "cv-067"
+      ],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "92d53ae82f90c7c1db936124e535b2c19f4aea57500a8a5c5ac04d00bb73f7ba"
+      ],
+      "exactUnit": "breaths/min",
+      "method": null,
+      "originalLabels": [
+       "Respiratory rate"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-f4b8be7b"
+     }
+    },
+    {
+     "termId": "ubt-f75b1fa8",
+     "metadata": {
+      "candidateMetricIds": [],
+      "classification": "source_unvalidated",
+      "evidencePointers": [
+       "a5dfcbed8993191c9bf421f9f42a0443dcc4edd6438b45a406987e6b09340264"
+      ],
+      "exactUnit": "L/day",
+      "method": null,
+      "originalLabels": [
+       "Urine output"
+      ],
+      "sourceDocumentSha256": [
+       "59805b82bce32087e6100236138917257cb5911229409b4eb2845baead67c6ce"
+      ],
+      "specimen": null,
+      "termId": "ubt-f75b1fa8"
+     }
+    }
+   ]
+  }
+ ]
+}
