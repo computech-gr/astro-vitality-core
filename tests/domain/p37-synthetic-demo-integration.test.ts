@@ -169,7 +169,14 @@ describe("matching rules", () => {
 describe("NEW synthetic examination through the normal intake path", () => {
   const csv = `label,value,unit,collection_date\n${LABEL},31.4,${UNIT},2026-11-07\n${LABEL},78,nmol/L,2026-11-07`;
 
-  test("recognized automatically, eligible for saving, no unknown-biomarker request", () => {
+  test("recognized automatically, eligible for saving, no unknown-biomarker request", async () => {
+    // The device catalog (what the intake screen's eligibility check reads) holds the verified snapshot.
+    const k = await demoKey();
+    await installOfferedDemoCatalog(
+      await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey),
+      MISSION,
+      { storage: memoryStorage(), trustedKeys: [k.trusted] },
+    );
     const parsed = extractCsvCandidates(csv).rows;
     expect(parsed).toHaveLength(2);
     const [vitD, otherUnit] = parsed.map((c) => intakeRecord(c, ACTIVE));
