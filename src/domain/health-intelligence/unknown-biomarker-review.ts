@@ -109,14 +109,14 @@ export function syntheticDemoSectionConflict(
   catalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
 ): { demoId: string; displayName: string; entryDomain: HealthDomainId; sourceDomain: HealthDomainId } | null {
   if (!input.sourceDomain || input.identity === "canonical") return null;
-  const hit = classifySyntheticDemo({ ...input, sourceDomain: undefined }, catalogs);
-  if (!hit || hit.classification.status !== "matched") return null;
-  const entryDomain = hit.classification.domain;
+  const c = classifySyntheticDemo({ ...input, sourceDomain: undefined }, catalogs)?.classification;
+  if (!c || c.status !== "matched") return null;
+  const entryDomain = c.domain;
   if (entryDomain === input.sourceDomain) return null;
-  const e = catalogs.get(input.missionId ?? "")?.active.find((x) => x.demoId === hit.classification.metricId);
+  const e = catalogs.get(input.missionId ?? "")?.active.find((x) => x.demoId === c.metricId);
   return {
-    demoId: hit.classification.metricId,
-    displayName: e?.displayName ?? hit.classification.metricId,
+    demoId: c.metricId,
+    displayName: e?.displayName ?? c.metricId,
     entryDomain,
     sourceDomain: input.sourceDomain,
   };
