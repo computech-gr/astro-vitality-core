@@ -555,6 +555,8 @@ export interface ResolvedInterpretation {
   rejection: { reason: string; at: string } | null;
   aliases: string[];
   measurementContext: MeasurementContext | null;
+  /** Specimen text as documented by the source registry record (display only). */
+  specimenText: string | null;
 }
 export type InterpretationLifecycle = "pending_review" | "draft" | "awaiting_attestation" | "approved" | "rejected" | "revoked";
 export const LIFECYCLE_LABELS: Record<InterpretationLifecycle, string> = {
@@ -604,6 +606,7 @@ function fromRecord(rec: RegistryRecord): ResolvedInterpretation {
     rejection: null,
     aliases: rec.aliases ?? [],
     measurementContext: rec.measurementContext ?? null,
+    specimenText: rec.specimenText,
   };
 }
 
@@ -660,6 +663,7 @@ export function resolveInterpretations(
         rejection: null,
         aliases: [],
         measurementContext: null,
+        specimenText: null,
       };
     const reviewer = { userId: e.actorUserId, name: e.actorName };
     if (e.action === "TASK_OPENED") map.set(e.key, { ...base, taskOrigin: base.taskOrigin ?? e.taskOrigin });
