@@ -833,6 +833,21 @@ export function UnifiedIntakeWorkspace() {
   const saveAccepted = async () => {
     if (!canSave || !membership || !provenance) return;
     setBusy(true);
+    // P42 recovery: rows already appended leave review immediately, so an interrupted
+    // batch can be retried without re-saving them (storage itself is append-only).
+    const savedNow: IntakeRow[] = [];
+    const settleSaved = () => {
+      if (!savedNow.length) return;
+      const savedKeys = new Set(savedNow.map((row) => row.key));
+      const savedByDocument = new Map<string, number>();
+      for (const row of savedNow)
+        if (row.documentSha256)
+          savedByDocument.set(row.documentSha256, (savedByDocument.get(row.documentSha256) ?? 0) + 1);
+      setDocuments((previous) =>
+        previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
+      );
+      setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
+    };
     try {
       const fresh = await loadMissionIdentity();
       if (
@@ -897,16 +912,10 @@ export function UnifiedIntakeWorkspace() {
           recordedAt: new Date().toISOString(),
         };
         await saveUnifiedObservation(observation);
+        savedNow.push(row);
       }
-      const savedKeys = new Set(saveableRows.map((row) => row.key));
-      const savedByDocument = new Map<string, number>();
-      for (const row of saveableRows)
-        if (row.documentSha256)
-          savedByDocument.set(row.documentSha256, (savedByDocument.get(row.documentSha256) ?? 0) + 1);
-      setDocuments((previous) =>
-        previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
-      );
-      setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
+      settleSaved();
+      savedNow.length = 0;
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
       setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
@@ -918,7 +927,16 @@ export function UnifiedIntakeWorkspace() {
         `${saveableRows.length} observation(s) saved encrypted on this device. Research reference only — not a scientific approval; no cloud records written.`,
       );
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Saving failed.");
+      const partial = savedNow.length;
+      settleSaved();
+      setReviewerConfirmed(false);
+      setStatus(
+        `${error instanceof Error ? error.message : "Saving failed."}${partial ? ` ${partial} observation(s) were saved before the interruption and were removed from review; the rest stay unsaved and can be retried.` : ""}`,
+      );
+      if (partial)
+        void listUnifiedObservations(membership.missionId, membership.crewMemberId)
+          .then(setHistory)
+          .catch(() => undefined);
     } finally {
       setBusy(false);
     }
