@@ -4,14 +4,15 @@
 - [x] Prepare three-table INSERT-only revocation and separately approved restoration; 177 new disposable assertions plus 149 equivalence and 38 SQL regression checks pass.
 - [x] Live INSERT revocation completed; effective API/executor direct writes denied and unaffected catalog fingerprint preserved.
 - [x] Owner acknowledged the remediation trailing-LF discrepancy; Step 2 initialized exactly one closed singleton.
-- [ ] Step 3 committed; stop: executor INSERT on two new tables and submitted SQL omitted one of two final LFs. Step 4 blocked; narrow remediation staged for separate approval, no replay/history rewrite.
+- [x] Step 3 remediation installed as 0019 with exact approved hash; effective table/column writes denied, preservation fingerprint matches and both admissions remain false.
+- [x] Step 4 roster installed as 0020 with exact approved hash; postgres ownership, authenticated-only effective EXECUTE, active mission/crew filtering and unchanged table RLS verified. No activation or live submissions; fresh disposable/real-account runtime acceptance remains blocked by unavailable isolated services.
 - [x] Independent Step 3 byte comparison confirms only one omitted trailing LF; exact two-table remediation passes 261 disposable assertions and 38 hardened RPC regression checks. Both live switches false; execution remains separately gated.
 
 # P36 tool-compatible installation preparation
 
 - [x] Preserve original SQL/rollback bytes; prepare three wrapper-free DDL copies and exact single-statement closed-admission initialization.
 - [x] Validate catalog/security equivalence and failure safety (149 disposable assertions), existing replacement SQL suite (38 checks), and 1,199 regression tests.
-- [ ] Step 1 installed with exact approved bytes; stop at security checkpoint because sandbox_exec retains direct INSERT. Initialization and Steps 3–4 not executed; flags and existing records/memberships unchanged.
+- [x] Owner-authorized installation sequence completed through Step 4, including separately acknowledged historical newline discrepancies and exact-byte permission remediations; both admissions remain closed. See docs/P36_FINAL_INSTALLATION_CHECKPOINT_2026-11-07.md.
 
 # P36 compact Scientific Review
 
