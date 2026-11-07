@@ -184,7 +184,7 @@ function handbookContext(domain: ResearcherDomain, metricId: string, comparison:
   return { kind: "quoted_pending_hypothesis", source: entry.handbook, reviewStatus: entry.reviewStatus, about: entry.what ?? null, statement, note };
 }
 
-function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows: ReportRow[], all: ReportRow[], events: readonly AttestationEvent[], snapshot: InterpretationSnapshot, missionId: string): InterpretationSeries {
+function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows: ReportRow[], all: ReportRow[], events: readonly AttestationEvent[], snapshot: InterpretationSnapshot, missionId: string, provenance: string): InterpretationSeries {
   const sorted = [...rows].sort(compareObservationDates);
   const first = sorted[0]!;
   const last = sorted[sorted.length - 1]!;
@@ -258,7 +258,7 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
     attestation: att,
     otherUnits,
     handbook,
-    interpretation: seriesInterpretation(matchInterpretation(snapshot, { metricId: m.metricId, unit: u, domain, missionId }), comparison, direction, handbookLine(handbook)),
+    interpretation: seriesInterpretation(matchInterpretation(snapshot, { metricId: m.metricId, unit: u, domain, missionId, provenance }), comparison, direction, handbookLine(handbook)),
     limitations,
   };
 }
@@ -331,7 +331,7 @@ export function buildResearcherInterpretation(
     const series = findings.metrics.flatMap((m) => {
       const ids = new Set(m.evidenceIds);
       const rows = domainRows.filter((r) => ids.has(r.recordId) && r.metricId === m.metricId && r.unit === m.unit);
-      return rows.length ? [buildSeries(domain, m, rows, report.rows, attestations, snapshot, report.scope.missionId)] : [];
+      return rows.length ? [buildSeries(domain, m, rows, report.rows, attestations, snapshot, report.scope.missionId, report.scope.provenance)] : [];
     }).sort((a, b) => a.metricId.localeCompare(b.metricId) || a.unit.localeCompare(b.unit));
     const times = [...domainRows].sort(compareObservationDates).map((r) => r.observedAt);
     const source = GOVERNED[domain];
