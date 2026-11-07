@@ -20,7 +20,7 @@ const TONE: Record<Severity, string> = {
 const ICON: Record<Severity, typeof AlertOctagon> = { red: AlertOctagon, amber: AlertTriangle, normal: CheckCircle2, neutral: CircleHelp };
 
 /** Severity marker: icon + explicit text + colour (never colour alone). */
-export function SeverityBadge({ severity, status }: { severity: Severity; status: Classification["status"] }) {
+export function SeverityBadge({ severity, status }: { severity: Severity; status?: Classification["status"] }) {
   const Icon = ICON[severity];
   return (
     <span
@@ -30,7 +30,7 @@ export function SeverityBadge({ severity, status }: { severity: Severity; status
     >
       <Icon className="h-3.5 w-3.5" aria-hidden />
       <span>{SEVERITY_MARKERS[severity]}</span>
-      <span className="font-normal">· {MEASUREMENT_STATUS_LABELS[status]}</span>
+      <span className="font-normal">· {status ? MEASUREMENT_STATUS_LABELS[status] : SEVERITY_LABELS[severity].replace(/^[A-Z]+ - /, "")}</span>
     </span>
   );
 }
@@ -90,7 +90,7 @@ export function BiomarkerHealthAssessmentView({ assessment }: { assessment: Biom
         <ul className="flex flex-wrap gap-2" aria-label="Severity key">
           {SEVERITY_ORDER.map((s) => (
             <li key={s} className="flex items-center gap-1 text-xs">
-              <SeverityBadge severity={s} status={s === "red" ? "clinically_concerning" : s === "amber" ? "above_verified_reference" : s === "normal" ? "within_verified_reference" : "insufficient_evidence"} />
+              <SeverityBadge severity={s} />
             </li>
           ))}
         </ul>
