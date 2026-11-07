@@ -1394,6 +1394,72 @@ export function UnifiedIntakeWorkspace() {
             {selection.reviewOnly} · Missing date: {selection.missingDate} · Invalid date:{" "}
             {selection.invalidDate} · Date-only: {selection.dateOnly}
           </p>
+          <div className="grid gap-3 sm:grid-cols-3" data-testid="p42-review-filters">
+            <div className="space-y-1">
+              <Label htmlFor="intake-filter-domain">Domain</Label>
+              <select
+                id="intake-filter-domain"
+                className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                value={filterDomain}
+                onChange={(event) => setFilterDomain(event.target.value)}
+              >
+                <option value="">All domains</option>
+                {Object.entries(DOMAIN_LABELS).map(([id, label]) => (
+                  <option key={id} value={id}>
+                    {label}
+                  </option>
+                ))}
+                <option value="none">No domain</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="intake-filter-page">Source page</Label>
+              <select
+                id="intake-filter-page"
+                className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                value={filterPage}
+                onChange={(event) => setFilterPage(event.target.value)}
+              >
+                <option value="">All pages</option>
+                {pageOptions.map((page) => (
+                  <option key={page} value={String(page)}>
+                    Page {page}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="intake-filter-status">Status</Label>
+              <select
+                id="intake-filter-status"
+                className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                value={filterStatus}
+                onChange={(event) => setFilterStatus(event.target.value)}
+              >
+                <option value="">All statuses</option>
+                <option value="matched">Safely matched</option>
+                <option value="repeat">Matched — repeated in document</option>
+                <option value="ambiguity">Any ambiguity / low confidence</option>
+                <option value="unit_review_required">Unit review required</option>
+                <option value="ambiguous">Ambiguous name</option>
+                <option value="unclassified">Unknown biomarker</option>
+                <option value="unsupported">Unsupported result type</option>
+                <option value="extraction_review">Extraction needs review</option>
+                <option value="identity_hold">Identity hold</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+          {filtered ? (
+            <p className="text-xs text-muted-foreground">
+              Showing {visibleRows.length} of {rows.length} row(s). Select All applies to the shown
+              rows only.
+            </p>
+          ) : null}
+          <p className="text-xs text-muted-foreground">
+            Select All picks only safely matched rows: repeated measurements within a document and
+            low-confidence (OCR / single-spaced) rows must be ticked one by one.
+          </p>
           <div
             className="max-w-full overflow-x-auto"
             role="region"
@@ -1408,23 +1474,29 @@ export function UnifiedIntakeWorkspace() {
                     <label className="flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap normal-case">
                       <Checkbox
                         aria-label={
-                          selection.allSelected
+                          visibleSelection.allSelected
                             ? "Deselect All eligible observations"
                             : "Select All eligible observations"
                         }
                         checked={
-                          selection.allSelected
+                          visibleSelection.allSelected
                             ? true
-                            : selection.partiallySelected
+                            : visibleSelection.partiallySelected
                               ? "indeterminate"
                               : false
                         }
-                        disabled={selection.eligible === 0 || busy}
-                        onCheckedChange={() => setAllSelected(!selection.allSelected)}
+                        disabled={visibleSelection.eligible === 0 || busy}
+                        onCheckedChange={() =>
+                          setAllSelected(
+                            !visibleSelection.allSelected,
+                            filtered ? visibleKeys : undefined,
+                          )
+                        }
                       />
-                      {selection.allSelected ? "Deselect All" : "Select All"}
+                      {visibleSelection.allSelected ? "Deselect All" : "Select All"}
                     </label>
                   </th>
+                  <th className="py-2 pr-3">Source row</th>
                   <th className="py-2 pr-3">Label</th>
                   <th className="py-2 pr-3">Value</th>
                   <th className="py-2 pr-3">Unit</th>
@@ -1434,8 +1506,11 @@ export function UnifiedIntakeWorkspace() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.key} className="border-b border-border/60 align-top">
+                {visibleRows.map((row) => (
+                  <tr
+                    key={row.key}
+                    className={`border-b border-border/60 align-top ${row.rejected ? "opacity-60" : ""}`}
+                  >
                     <td className="py-2 pr-3">
                       <label className="flex min-h-11 min-w-11 cursor-pointer items-center">
                         <Checkbox
@@ -1447,6 +1522,20 @@ export function UnifiedIntakeWorkspace() {
                           }}
                         />
                       </label>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 text-xs"
+                        disabled={busy}
+                        aria-label={`${row.rejected ? "Undo reject" : "Reject"} ${row.label}`}
+                        onClick={() => rejectRow(row.key, !row.rejected)}
+                      >
+                        {row.rejected ? "Undo reject" : "Reject"}
+                      </Button>
+                    </td>
+                    <td className="py-2 pr-3 text-xs">
+                      <ExtractionNote row={row} />
                     </td>
                     <td className="py-2 pr-3 font-medium">{row.label}</td>
                     <td className="py-2 pr-3">
@@ -1661,6 +1750,57 @@ const LOCATOR_WORD: Record<NonNullable<CandidateSourceSection["locator"]>, strin
   csv_row: "row",
   xlsx_row: "row",
 };
+/** P42 source-row evidence: row number, page/line, raw value, confidence, issues and repeats. */
+function ExtractionNote({ row }: { row: IntakeRow }) {
+  const e = row.extraction;
+  if (!e) return <span className="text-muted-foreground">—</span>;
+  const blocking = extractionBlockingReason(row);
+  return (
+    <span className="block min-w-36 space-y-1" data-testid="p42-extraction-note">
+      <span className="block font-medium">
+        {e.sourceRowNumber ? `No. ${e.sourceRowNumber}` : "Unnumbered"}
+        {e.page ? ` · p. ${e.page}` : ""} · line {e.line}
+      </span>
+      <span className="block text-muted-foreground">
+        Source: “{e.rawValue || "—"}” {e.sourceUnit}
+        {e.valueKind !== "numeric" ? ` (${valueKindText(e.valueKind)})` : ""}
+      </span>
+      {e.valueNotes.length && e.valueKind === "numeric" ? (
+        <span className="block text-muted-foreground">{e.valueNotes.join(" ")}</span>
+      ) : null}
+      {e.referenceInterval ? (
+        <span className="block text-muted-foreground">
+          Reference (as printed, not interpreted): {e.referenceInterval}
+        </span>
+      ) : null}
+      <Badge variant={e.confidence === "high" ? "secondary" : "outline"}>
+        Extraction confidence: {e.confidence} ({e.layout})
+      </Badge>
+      {e.repeat ? (
+        <span className="block text-destructive">
+          Repeated in this document (first at No. {e.repeat.firstRowNumber ?? "?"}, line{" "}
+          {e.repeat.firstLine}; {e.repeat.sameValue ? "same value" : "different value"}). Not
+          merged; tick individually only if it is a separate measurement.
+        </span>
+      ) : null}
+      {e.sameLabelOtherUnits.length ? (
+        <span className="block text-muted-foreground">
+          Same label elsewhere with unit {e.sameLabelOtherUnits.join(", ")} — never combined.
+        </span>
+      ) : null}
+      {blocking ? <span className="block text-destructive">{blocking}</span> : null}
+      {e.issues
+        .filter((i) => !i.blocking)
+        .map((i) => (
+          <span key={i.code} className="block text-muted-foreground">
+            {i.message}
+          </span>
+        ))}
+      {row.rejected ? <span className="block font-medium">Rejected by reviewer</span> : null}
+    </span>
+  );
+}
+
 /** P39 section provenance of one intake row; evidence only, never an approval. */
 function SourceSectionNote({ row }: { row: IntakeRow }) {
   const s = row.sourceSection;
