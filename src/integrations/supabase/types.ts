@@ -1805,6 +1805,140 @@ export type Database = {
           },
         ]
       }
+      p37_catalog_activators: {
+        Row: {
+          authorization_ref: string
+          granted_at: string
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          authorization_ref: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          authorization_ref?: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      p37_catalog_events: {
+        Row: {
+          activation_event_id: string | null
+          actor_user_id: string
+          approval_event_id: string | null
+          canonical_id: string
+          entry: Json | null
+          entry_sha256: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          mission_id: string | null
+          provenance: string | null
+          reason: string | null
+          recorded_at: string
+          request_sha256: string
+          seq: number
+          submission_id: string | null
+          term_id: string | null
+          validation_reference: string | null
+        }
+        Insert: {
+          activation_event_id?: string | null
+          actor_user_id: string
+          approval_event_id?: string | null
+          canonical_id: string
+          entry?: Json | null
+          entry_sha256?: string | null
+          event_type: string
+          id?: string
+          idempotency_key: string
+          mission_id?: string | null
+          provenance?: string | null
+          reason?: string | null
+          recorded_at?: string
+          request_sha256: string
+          seq?: never
+          submission_id?: string | null
+          term_id?: string | null
+          validation_reference?: string | null
+        }
+        Update: {
+          activation_event_id?: string | null
+          actor_user_id?: string
+          approval_event_id?: string | null
+          canonical_id?: string
+          entry?: Json | null
+          entry_sha256?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string
+          mission_id?: string | null
+          provenance?: string | null
+          reason?: string | null
+          recorded_at?: string
+          request_sha256?: string
+          seq?: never
+          submission_id?: string | null
+          term_id?: string | null
+          validation_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p37_catalog_events_activation_event_id_fkey"
+            columns: ["activation_event_id"]
+            isOneToOne: false
+            referencedRelation: "p37_catalog_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p37_catalog_events_approval_event_id_fkey"
+            columns: ["approval_event_id"]
+            isOneToOne: false
+            referencedRelation: "p37_catalog_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p37_catalog_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p37_catalog_events_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "p36_dynamic_handoff_submissions"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
+      p37_scientific_approvers: {
+        Row: {
+          authorization_ref: string
+          granted_at: string
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          authorization_ref: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          authorization_ref?: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       review_sync_attestation_events: {
         Row: {
           action: string
@@ -2367,6 +2501,41 @@ export type Database = {
           submitted_at: string
         }[]
       }
+      p37_catalog_activate_v1: {
+        Args: {
+          p_approval_event_id: string
+          p_expected_entry_sha256: string
+          p_idempotency_key: string
+        }
+        Returns: Json
+      }
+      p37_catalog_approve_v1: {
+        Args: {
+          p_canonical_name: string
+          p_domain: string
+          p_idempotency_key: string
+          p_mission_id: string
+          p_provenance: string
+          p_submission_id: string
+          p_term_id: string
+          p_validation_reference: string
+        }
+        Returns: Json
+      }
+      p37_catalog_keys: { Args: { p_entry: Json }; Returns: string[] }
+      p37_catalog_lifecycle_v1: {
+        Args: { p_mission_id: string; p_provenance: string }
+        Returns: Json
+      }
+      p37_catalog_revoke_v1: {
+        Args: {
+          p_activation_event_id: string
+          p_idempotency_key: string
+          p_reason: string
+        }
+        Returns: Json
+      }
+      p37_catalog_snapshot_v1: { Args: never; Returns: Json }
       review_sync_append_v1: {
         Args: {
           p_attestations: Json

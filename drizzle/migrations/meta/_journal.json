@@ -162,6 +162,13 @@
       "when": 1794043228170,
       "tag": "0022_p36_global_triage",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794046329350,
+      "tag": "0023_p37_catalog_activation",
+      "breakpoints": true
     }
   ]
 }
