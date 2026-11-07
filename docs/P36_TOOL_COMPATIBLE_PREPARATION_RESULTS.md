@@ -27,7 +27,7 @@ Read back schema, effective ACLs/RLS, function owner/search paths, immutable tri
 - Missing singleton denies handoff and authorization; authorization checked with synthetic and real provenance. Failed initialization leaves zero rows; caller-role initialization denied; successful initialization produces the exact closed singleton; replay leaves one row.
 - Empty reverse rollbacks pass; wrong-order and nonempty receipt rollback refuse without data/schema loss. Original rollback bytes are unchanged.
 - `P36_TOOL_COMPATIBLE=1` existing SQL verifier: **38 checks PASS**, including 197-term synthetic fixtures, caller scope, independent decision rules, source-receipt checks, retry/conflict, revocation, roster and retaining disable. These test-only receipts/decisions exist solely in the disposable database.
-- Full regression suite: **1,199 PASS, 0 FAIL**, 12,550 assertions. Lint/security/format results are recorded after final checks.
+- Full regression suite: **1,199 PASS, 0 FAIL**, 12,550 assertions. Lint: **0 errors, 12 existing warnings**. Security boundary audit and formatting check: **PASS**. Managed preview compilation: **build OK**. Disposable PostgreSQL was stopped after testing.
 
 Local SQL tests use an explicit socket-only disposable database and simulated JWT claims. They are not real account acceptance, hosted migration-tool execution, production base-schema equivalence or current-replacement exact-commit CI. Full successful catalog equality does not erase intermediate missing-row state; that state was separately tested as denied.
 
