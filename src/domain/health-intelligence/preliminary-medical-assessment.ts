@@ -242,14 +242,14 @@ export function validateAiAssessment(raw: unknown, p: AssessmentPacket, model: s
   const corpus = new Set(numbersIn(JSON.stringify(p)));
   const s = emptySections();
   const rejected: PreliminaryAssessment["rejected"] = [];
-  const problemOf = (section: string, text: string): string | null => {
+  const problemOf = (text: string): string | null => {
     if (text.length > MAX_TEXT) return "statement too long";
     if (CONFIRMED_DIAGNOSIS.test(text)) return "asserts a confirmed diagnosis";
     if (INVENTED_CLINICAL.test(text)) return "refers to history, symptoms, medication or examinations that are not recorded";
     if (TREATMENT.test(text)) return "contains treatment or dosing language";
     const extra = numbersIn(text).filter((n) => !corpus.has(n));
     if (extra.length) return `introduces number(s) not present in the recorded evidence (${extra.slice(0, 3).join(", ")})`;
-    return section ? null : null;
+    return null;
   };
   for (const section of ASSESSMENT_SECTIONS) {
     const list = Array.isArray(r[section]) ? (r[section] as unknown[]) : [];
@@ -262,7 +262,7 @@ export function validateAiAssessment(raw: unknown, p: AssessmentPacket, model: s
       if (!text) { reject("empty statement"); continue; }
       if (!obs.length || obs.some((o) => !refs.has(o))) { reject("does not cite recorded observations of this packet"); continue; }
       if (cit.some((c) => !cites.has(c))) { reject("cites a source that is not an approved, cited interpretation"); continue; }
-      const problem = problemOf(section, text);
+      const problem = problemOf(text);
       if (problem) { reject(problem); continue; }
       if (section === "abnormalFindings" && obs.some((o) => !flagged(refs.get(o)!))) { reject("labels a result abnormal without a verified reference classification"); continue; }
       if ((section === "physiologicalExplanations" || section === "differentialConsiderations" || section === "monitoringRecommendations") && !cit.length) {
@@ -279,7 +279,7 @@ export function validateAiAssessment(raw: unknown, p: AssessmentPacket, model: s
       .filter((x): x is string => typeof x === "string" && x.trim().length > 0)
       .slice(0, 20)
       .flatMap((x) => {
-        const problem = problemOf(key, x.trim());
+        const problem = problemOf(x.trim());
         if (problem) { rejected.push({ section: key, text: x.trim().slice(0, MAX_TEXT), reason: problem }); return []; }
         return [x.trim()];
       });
