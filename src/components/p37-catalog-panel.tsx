@@ -191,7 +191,7 @@ function SyntheticDemo() {
   );
 }
 
-function EntryActions({
+export function EntryActions({
   row,
   canActivate,
   onDone,
@@ -226,7 +226,8 @@ function EntryActions({
     return (
       <p className="text-xs text-muted-foreground">
         <Lock className="mr-1 inline h-3 w-3" aria-hidden />
-        Activation needs a separate owner-provisioned catalog activator grant.
+        Activation is performed by an active Ground Medical member of this mission (Ground Medical
+        console), not by the scientific approver.
       </p>
     );
   if (row.revocationEventId) return null;
@@ -254,7 +255,7 @@ function EntryActions({
         </Button>
         {row.approvedByCaller ? (
           <p className="text-xs text-muted-foreground">
-            You approved this entry; a different authorized activator must activate it.
+            You approved this entry; a Ground Medical member of this mission must activate it.
           </p>
         ) : null}
         {msg ? (
@@ -380,9 +381,9 @@ export function P37CatalogPanel() {
         </h2>
         <p className="text-sm text-muted-foreground">
           Triage acceptance → independently provisioned source validation → scientific approval
-          (creates the catalog proposal) → separate catalog activation → automatic recognition in
-          later compatible examinations, online or offline. Approver and activator must be different
-          authorized accounts; nothing here changes stored observations.
+          (final; creates the catalog proposal) → Ground Medical catalog activation → automatic
+          recognition in later compatible examinations, online or offline. The approver cannot
+          activate their own approval; nothing here changes stored observations.
         </p>
       </div>
       <OfflineCatalogStatus />
@@ -431,8 +432,8 @@ export function P37CatalogPanel() {
             </Badge>
             <Badge variant={data.canActivate ? "secondary" : "outline"}>
               {data.canActivate
-                ? "You may activate / revoke catalog entries"
-                : "No catalog activator grant"}
+                ? "You are Ground Medical here and may activate / revoke"
+                : "Activation: Ground Medical of this mission"}
             </Badge>
           </div>
 

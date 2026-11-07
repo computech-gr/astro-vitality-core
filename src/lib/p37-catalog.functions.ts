@@ -43,7 +43,18 @@ export const approveNewBiomarkerFn = createServerFn({ method: "POST" })
     return approveCore(rpc, data);
   });
 
-/** Separate catalog activation (activator grant, different identity, exact proposal digest). */
+/** Ground Medical activation queue: approved proposals of one mission (role checked by the database). */
+export const getCatalogActivationQueue = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => z.object({ missionId: z.string().min(1).max(100) }).parse(v))
+  .handler(async ({ data, context }) => {
+    const rpc: Rpc = (fn, args) =>
+      (context.supabase.rpc as unknown as Rpc).call(context.supabase, fn, args);
+    const { activationQueueCore } = await import("./p37-catalog.server");
+    return activationQueueCore(rpc, data.missionId);
+  });
+
+/** Catalog activation by Ground Medical of the approval mission (different identity, exact proposal digest). */
 export const activateCatalogEntryFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) =>
