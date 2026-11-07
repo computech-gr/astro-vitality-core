@@ -345,11 +345,14 @@ export function planObservationCorrection(
   if (datePrecision === "date" && draft.observedAt > ctx.decidedAt.slice(0, 10))
     return { ok: false, reason: "Observation date cannot be in the future." };
   // Exact catalog metric + unit pairing; no unit conversion, no inference.
-  const classification = classifyWithGovernedExtensions({
+  const recognized = classifyWithGovernedExtensions({
     label: metricId,
     unit,
     identity: "canonical",
-  }).classification;
+    missionId: original.missionId,
+    provenance: original.provenance,
+  });
+  const classification = recognized.classification;
   if (classification.status !== "matched" || classification.metricId !== metricId)
     return {
       ok: false,
@@ -372,10 +375,13 @@ export function planObservationCorrection(
     };
   const decidedAt = new Date(ctx.decidedAt).toISOString();
   const intentId = correctionIntentId(original, { metricId, value, unit, observedAt, reason });
-  const { statusReason: _drop, ...base } = original;
+  const { statusReason: _drop, catalogBasis: _basis, ...base } = original;
   void _drop;
+  void _basis;
   const corrected: UnifiedObservation = {
     ...base,
+    // A corrected SYNTHETIC DEMO record carries the basis of its (still active) demo entry.
+    ...(recognized.syntheticDemo ? { catalogBasis: recognized.syntheticDemo } : {}),
     ...(datePrecision === "date" || original.schema === DATED_OBSERVATION_SCHEMA
       ? { schema: DATED_OBSERVATION_SCHEMA, datePrecision }
       : {}),
