@@ -15,7 +15,8 @@ const sub = (seq: number, requestId: string, n: number, extra: Record<string, un
   terms: Array.from({ length: n }, (_, i) => term(seq * 1000 + i)), ...extra,
 });
 const rpcReturning = (data: unknown, error: { code?: string } | null = null): Rpc => async () => ({ data, error });
-const mission = (id: string, basis: string, pending = 1) => ({ mission_id: id, mission_code: id, mission_name: id, access_basis: basis, submission_count: 1, term_count: pending, pending_term_count: pending });
+const mission = (id: string, basis: "mission_researcher" | "global_scientific_review", pending = 1) =>
+  ({ missionId: id, missionCode: id, missionName: id, accessBasis: basis, submissionCount: 1, termCount: pending, pendingTermCount: pending });
 
 describe("P36 global scientific review", () => {
   test("missing migration fails closed without broadening access", async () => {
