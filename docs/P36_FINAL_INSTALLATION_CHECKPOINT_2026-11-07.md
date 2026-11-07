@@ -12,13 +12,13 @@ Owner authorization was supplied in `MITOCHONDRIA_P36_-_APPROVE_STEP_3_REMEDIATI
 
 Hashes were checked immediately before submission, after installation against generated migration files, and against the live Drizzle migration journal. Both new submissions preserved every byte, including the remediation's absent final LF and the roster's present final LF.
 
-| Journal ID | Installed file | Recorded SHA-256 | Status |
-|---|---|---|---|
-| 17 | `0016_p36_dynamic_handoff_tool.sql` | `79286f4cd359e793cb9c773301fd212963726690913eff815f819c77841f7e78` | Existing; not replayed |
-| 18 | `0017_p36_handoff_executor_insert_remediation.sql` | `c10352f4679b2dd4b692f3bb6f75cfe1c8dbb1c18346865f2463dcef28ab82b2` | Existing; prior owner-acknowledged LF discrepancy |
-| 19 | `0018_p36_dynamic_authorization_tool.sql` | `796ded9d0d7341a417555d1e1852edf0528203842bec555d9e1e20242b582434` | Existing; independently verified prior LF discrepancy |
-| 20 | `0019_p36_authorization_executor_insert_remediation.sql` | `90d89ad74bf6e5f163a6f2cd1cac14cbc6761d2a235960e325ead539cf2f1d2b` | New; exact approved bytes |
-| 21 | `0020_p36_authorized_crew_roster.sql` | `d4d410a42933af335b3dfa48f077793cd6f763b77338fad4369a6009408faca3` | New; exact approved bytes |
+| Journal ID | Installed file                                           | Recorded SHA-256                                                   | Status                                                |
+| ---------- | -------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
+| 17         | `0016_p36_dynamic_handoff_tool.sql`                      | `79286f4cd359e793cb9c773301fd212963726690913eff815f819c77841f7e78` | Existing; not replayed                                |
+| 18         | `0017_p36_handoff_executor_insert_remediation.sql`       | `c10352f4679b2dd4b692f3bb6f75cfe1c8dbb1c18346865f2463dcef28ab82b2` | Existing; prior owner-acknowledged LF discrepancy     |
+| 19         | `0018_p36_dynamic_authorization_tool.sql`                | `796ded9d0d7341a417555d1e1852edf0528203842bec555d9e1e20242b582434` | Existing; independently verified prior LF discrepancy |
+| 20         | `0019_p36_authorization_executor_insert_remediation.sql` | `90d89ad74bf6e5f163a6f2cd1cac14cbc6761d2a235960e325ead539cf2f1d2b` | New; exact approved bytes                             |
+| 21         | `0020_p36_authorized_crew_roster.sql`                    | `d4d410a42933af335b3dfa48f077793cd6f763b77338fad4369a6009408faca3` | New; exact approved bytes                             |
 
 The closed-admission initialization was a previously authorized data operation, not a new migration. Its final readback remains exactly one singleton row, `handoff_open=false`, `authorization_open=false`.
 
