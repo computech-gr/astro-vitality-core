@@ -144,9 +144,17 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const domainChoice = rows.filter(needsDomainChoice).length;
 
   const filtered = rows.filter((r) => {
-    if (category === "needs_domain" ? !needsDomainChoice(r) : category !== "all" && r.category !== category)
+    if (
+      category === "needs_domain"
+        ? !needsDomainChoice(r)
+        : category !== "all" && r.category !== category
+    )
       return false;
-    if (domainFilter === "none" ? r.domain !== null : domainFilter !== "all" && r.domain !== domainFilter)
+    if (
+      domainFilter === "none"
+        ? r.domain !== null
+        : domainFilter !== "all" && r.domain !== domainFilter
+    )
       return false;
     const q = query.trim().toLowerCase();
     return (
@@ -270,16 +278,22 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               <Badge variant="default">Eligible {counts.eligible}</Badge>
               <Badge variant="secondary">Eligible after a domain choice {domainChoice}</Badge>
               <Badge variant="secondary">Already active {counts.already_active}</Badge>
-              <Badge variant="secondary">Decided · awaiting Ground Medical {counts.already_decided}</Badge>
+              <Badge variant="secondary">
+                Decided · awaiting Ground Medical {counts.already_decided}
+              </Badge>
               <Badge variant="outline">Duplicate {counts.duplicate}</Badge>
-              <Badge variant="outline">Existing catalog match {counts.existing_catalog_match}</Badge>
+              <Badge variant="outline">
+                Existing catalog match {counts.existing_catalog_match}
+              </Badge>
               <Badge variant="outline">Ambiguous or missing unit {counts.ambiguous_unit}</Badge>
               <Badge variant="outline">Conflicting identity {counts.conflicting_identity}</Badge>
               <Badge variant="outline">Other blocked {counts.blocked - domainChoice}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               In the owner-authorized demo scope: {[...scope.keys()].length} terms ·{" "}
-              {data.canDecide ? "you may record synthetic demo decisions" : "no scientific approver grant"}{" "}
+              {data.canDecide
+                ? "you may record synthetic demo decisions"
+                : "no scientific approver grant"}{" "}
               · {data.canTriage ? "you may accept terms for review" : "no triage grant"}.
             </p>
           </div>
@@ -289,7 +303,12 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               <Label htmlFor="p38-search" className="text-xs">
                 Search label, display name, unit or term ID
               </Label>
-              <Input id="p38-search" value={query} onChange={(e) => setQuery(e.target.value)} className="h-8" />
+              <Input
+                id="p38-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="h-8"
+              />
             </div>
             <div className="space-y-1">
               <Label htmlFor="p38-cat" className="text-xs">
@@ -332,7 +351,11 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
           </div>
 
           <div className="flex flex-wrap items-end gap-2">
-            <Button size="sm" variant="secondary" onClick={() => setSelected(new Set(allEligible.map((r) => r.key)))}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setSelected(new Set(allEligible.map((r) => r.key)))}
+            >
               <ListChecks className="mr-1 h-4 w-4" aria-hidden />
               Select All Eligible ({allEligible.length})
             </Button>
@@ -340,7 +363,13 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               size="sm"
               variant="outline"
               onClick={() =>
-                setSelected((s) => new Set([...s, ...pageRows.filter((r) => decidable(r, scope)).map((r) => r.key)]))
+                setSelected(
+                  (s) =>
+                    new Set([
+                      ...s,
+                      ...pageRows.filter((r) => decidable(r, scope)).map((r) => r.key),
+                    ]),
+                )
               }
             >
               Select Page
@@ -372,11 +401,17 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                 onClick={() => {
                   const targets = selected.size
                     ? rows.filter((r) => selected.has(r.key))
-                    : filtered.filter((r) => needsDomainChoice(r) || r.category === "conflicting_identity");
+                    : filtered.filter(
+                        (r) => needsDomainChoice(r) || r.category === "conflicting_identity",
+                      );
                   setOverrides((m) => {
                     const n = new Map(m);
                     for (const r of targets)
-                      if (r.category === "eligible" || needsDomainChoice(r) || r.category === "conflicting_identity")
+                      if (
+                        r.category === "eligible" ||
+                        needsDomainChoice(r) ||
+                        r.category === "conflicting_identity"
+                      )
                         n.set(r.key, { ...n.get(r.key), domain: bulkDomain });
                     return n;
                   });
@@ -402,7 +437,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               <tbody>
                 {pageRows.map((r) => {
                   const editable =
-                    r.category === "eligible" || needsDomainChoice(r) || r.category === "conflicting_identity";
+                    r.category === "eligible" ||
+                    needsDomainChoice(r) ||
+                    r.category === "conflicting_identity";
                   return (
                     <tr key={r.key} className="border-t border-border align-top">
                       <td className="p-1">
@@ -420,10 +457,14 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                       </td>
                       <td className="p-1">
                         <Badge variant={r.category === "eligible" ? "default" : "outline"}>
-                          {needsDomainChoice(r) ? "Needs a domain choice" : PREFLIGHT_CATEGORY_LABEL[r.category]}
+                          {needsDomainChoice(r)
+                            ? "Needs a domain choice"
+                            : PREFLIGHT_CATEGORY_LABEL[r.category]}
                         </Badge>
                         <div className="text-muted-foreground">
-                          {r.triageAction === "ACCEPT_FOR_REVIEW" ? "Accepted for review" : "Not yet accepted for review"}
+                          {r.triageAction === "ACCEPT_FOR_REVIEW"
+                            ? "Accepted for review"
+                            : "Not yet accepted for review"}
                           {r.inScope ? "" : " · outside owner demo scope"}
                         </div>
                       </td>
@@ -445,7 +486,9 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                           <select
                             aria-label={`Demo domain for ${r.labels[0] ?? r.termId}`}
                             value={r.domain ?? ""}
-                            onChange={(e) => setOverride(r.key, { domain: e.target.value as HealthDomainId })}
+                            onChange={(e) =>
+                              setOverride(r.key, { domain: e.target.value as HealthDomainId })
+                            }
                             className="h-7 rounded-md border border-border bg-background px-1 text-xs"
                           >
                             <option value="" disabled>
@@ -476,22 +519,36 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
             </table>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 0}
+              onClick={() => setPage((p) => p - 1)}
+            >
               Previous
             </Button>
             <span>
               Page {page + 1} of {pages} · {filtered.length} shown of {rows.length}
             </span>
-            <Button size="sm" variant="outline" disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page + 1 >= pages}
+              onClick={() => setPage((p) => p + 1)}
+            >
               Next
             </Button>
           </div>
 
-          <div className="space-y-2 rounded-md border border-border p-3" data-testid="p38-bulk-preview">
+          <div
+            className="space-y-2 rounded-md border border-border p-3"
+            data-testid="p38-bulk-preview"
+          >
             <p className="text-sm font-medium">Bulk preview</p>
             <p className="text-xs">
               Selected {selectedRows.length}: {needTriage.length} need review acceptance first,{" "}
-              {toDecide.length} ready for a synthetic demo decision, {excludedSelected.length} excluded.
+              {toDecide.length} ready for a synthetic demo decision, {excludedSelected.length}{" "}
+              excluded.
             </p>
             {excludedSelected.length ? (
               <ul className="list-disc pl-5 text-xs text-muted-foreground">
@@ -502,7 +559,7 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                       ? "outside the owner-authorized demo scope"
                       : scope.get(r.key)?.submittedByCaller
                         ? "you submitted this term"
-                        : r.reasons[0] ?? PREFLIGHT_CATEGORY_LABEL[r.category]}
+                        : (r.reasons[0] ?? PREFLIGHT_CATEGORY_LABEL[r.category])}
                   </li>
                 ))}
               </ul>
@@ -516,11 +573,17 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               Accept {needTriage.length} selected for scientific review
             </Button>
             <label className="flex items-start gap-2 text-xs">
-              <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5" />
+              <input
+                type="checkbox"
+                checked={ack}
+                onChange={(e) => setAck(e.target.checked)}
+                className="mt-0.5"
+              />
               <span>
-                I understand these are SYNTHETIC DEMO decisions, labelled NOT SCIENTIFICALLY VALIDATED. They
-                are not scientific approvals, cite no source validation, assay method, specimen or protocol,
-                activate nothing and never enter the production catalog.
+                I understand these are SYNTHETIC DEMO decisions, labelled NOT SCIENTIFICALLY
+                VALIDATED. They are not scientific approvals, cite no source validation, assay
+                method, specimen or protocol, activate nothing and never enter the production
+                catalog.
               </span>
             </label>
             <Button
@@ -534,16 +597,21 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
           </div>
 
           {run ? (
-            <div role="status" className="space-y-1 rounded-md border border-border p-3 text-xs" data-testid="p38-bulk-run">
+            <div
+              role="status"
+              className="space-y-1 rounded-md border border-border p-3 text-xs"
+              data-testid="p38-bulk-run"
+            >
               <p className="font-medium">
                 {run.kind === "triage" ? "Review acceptance" : "Synthetic demo decisions"}: batch{" "}
-                {run.progress.batchesDone} of {run.progress.batchesTotal} · {run.progress.itemsDone} of{" "}
-                {run.progress.itemsTotal} terms processed
+                {run.progress.batchesDone} of {run.progress.batchesTotal} · {run.progress.itemsDone}{" "}
+                of {run.progress.itemsTotal} terms processed
               </p>
               {summary ? (
                 <p>
-                  Recorded {summary.recorded} · already recorded (retry) {summary.duplicate} · skipped{" "}
-                  {summary.skipped} · rejected {summary.rejected} · changed meanwhile {summary.stale}
+                  Recorded {summary.recorded} · already recorded (retry) {summary.duplicate} ·
+                  skipped {summary.skipped} · rejected {summary.rejected} · changed meanwhile{" "}
+                  {summary.stale}
                 </p>
               ) : null}
               {run.results
@@ -560,7 +628,12 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                 </p>
               ) : null}
               {run.retry ? (
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => void run.retry?.()}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => void run.retry?.()}
+                >
                   <RotateCcw className="mr-1 h-4 w-4" aria-hidden />
                   Retry remaining batches
                 </Button>

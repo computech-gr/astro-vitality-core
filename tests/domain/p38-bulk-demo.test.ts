@@ -150,7 +150,11 @@ describe("preflight of the actual 209 submitted terms", () => {
 
   test("duplicates by term or by label + exact unit are never merged", () => {
     const base = fixtureTerms();
-    const copy = { ...base.find((t) => t.termId === "ubt-0312222c")!, submissionId: "00000000-0000-4000-8000-000000000999", receivedSeq: 3 };
+    const copy = {
+      ...base.find((t) => t.termId === "ubt-0312222c")!,
+      submissionId: "00000000-0000-4000-8000-000000000999",
+      receivedSeq: 3,
+    };
     const sameLabel = { ...copy, termId: "ubt-00000001", originalLabels: ["urinary  potassium"] };
     const out = buildBulkDemoPreflight([...base, copy, sameLabel], {
       ...LIVE_STATE,
@@ -182,7 +186,8 @@ describe("owner scope authorization SQL", () => {
   test("authorizes exactly the 185 decidable terms and nothing blocked", () => {
     const rows = livePreflight();
     expect((file.match(/::uuid, 'ubt-/g) ?? []).length).toBe(185);
-    for (const r of rows.filter((x) => !authorizable(x))) expect(file).not.toContain(`'${r.termId}'`);
+    for (const r of rows.filter((x) => !authorizable(x)))
+      expect(file).not.toContain(`'${r.termId}'`);
     expect(file).toContain("where (select count(*) from public.p37_demo_scope) = 1");
   });
 });
@@ -224,10 +229,16 @@ describe("bounded batches", () => {
 
   test("retry keys are deterministic per caller and exact request", async () => {
     const a = await deterministicUuid("p38-demo-decide", "u1", M, "s", "ubt-1", "Name", "bone");
-    expect(a).toBe(await deterministicUuid("p38-demo-decide", "u1", M, "s", "ubt-1", "Name", "bone"));
+    expect(a).toBe(
+      await deterministicUuid("p38-demo-decide", "u1", M, "s", "ubt-1", "Name", "bone"),
+    );
     expect(a).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-    expect(a).not.toBe(await deterministicUuid("p38-demo-decide", "u2", M, "s", "ubt-1", "Name", "bone"));
-    expect(a).not.toBe(await deterministicUuid("p38-demo-decide", "u1", M, "s", "ubt-1", "Name", "immune"));
+    expect(a).not.toBe(
+      await deterministicUuid("p38-demo-decide", "u2", M, "s", "ubt-1", "Name", "bone"),
+    );
+    expect(a).not.toBe(
+      await deterministicUuid("p38-demo-decide", "u1", M, "s", "ubt-1", "Name", "immune"),
+    );
   });
 });
 
@@ -251,8 +262,12 @@ describe("Ground Medical activation preview", () => {
         p("2", { activationEventId: "a", revocationEventId: "r" }),
         p("3", { decidedByCaller: true }),
         p("4"),
-        p("5", { entry: { displayName: "Marker 1", aliases: ["x"], unit: "mg/L", domain: "immune" } }),
-        p("6", { entry: { displayName: "Marker 4", aliases: ["y"], unit: "mg/L", domain: "bone" } }),
+        p("5", {
+          entry: { displayName: "Marker 1", aliases: ["x"], unit: "mg/L", domain: "immune" },
+        }),
+        p("6", {
+          entry: { displayName: "Marker 4", aliases: ["y"], unit: "mg/L", domain: "bone" },
+        }),
         p("7", { entry: { displayName: "Marker 4", aliases: ["y"], unit: "g/L", domain: "bone" } }),
         p("8"),
       ],
@@ -295,10 +310,23 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
     classification: SYNTHETIC_DEMO_CLASSIFICATION,
     sourceDocumentSha256: ["5".repeat(64)],
     status: revoked ? "REVOKED" : "ACTIVE",
-    decision: { decisionEventId: `d${i}`, decidedAt: "2026-11-08T10:00:00Z", entrySha256: "b".repeat(64) },
-    activation: { activationEventId: `a${i}`, activatedAt: "2026-11-08T11:00:00Z", demoCatalogVersion: 3 + i },
+    decision: {
+      decisionEventId: `d${i}`,
+      decidedAt: "2026-11-08T10:00:00Z",
+      entrySha256: "b".repeat(64),
+    },
+    activation: {
+      activationEventId: `a${i}`,
+      activatedAt: "2026-11-08T11:00:00Z",
+      demoCatalogVersion: 3 + i,
+    },
     revocation: revoked
-      ? { revocationEventId: `r${i}`, revokedAt: "2026-11-08T12:00:00Z", reason: "synthetic test", demoCatalogVersion: 500 }
+      ? {
+          revocationEventId: `r${i}`,
+          revokedAt: "2026-11-08T12:00:00Z",
+          reason: "synthetic test",
+          demoCatalogVersion: 500,
+        }
       : null,
   });
   const snap = (revokeTerm?: string): SyntheticDemoSnapshot => ({
@@ -337,10 +365,20 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
     const parsed = extractCsvCandidates(csv).rows;
     const classified = parsed.map((c) => ({
       c,
-      r: classifyWithGovernedExtensions({ label: c.label, unit: c.unit, provenance: "synthetic", missionId: M }, undefined, undefined, catalogs),
+      r: classifyWithGovernedExtensions(
+        { label: c.label, unit: c.unit, provenance: "synthetic", missionId: M },
+        undefined,
+        undefined,
+        catalogs,
+      ),
     }));
     const demo = classified.filter((x) => x.r.syntheticDemo);
-    expect(demo.map((x) => [x.c.label, x.r.classification.status === "matched" && x.r.classification.domain])).toEqual([
+    expect(
+      demo.map((x) => [
+        x.c.label,
+        x.r.classification.status === "matched" && x.r.classification.domain,
+      ]),
+    ).toEqual([
       ["IMM-001", "immune"],
       ["Urinary Potassium", "bone"],
       ["BSC-001", "behavioral"],
@@ -351,13 +389,27 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
     expect(hb.syntheticDemo ?? null).toBeNull();
     for (const x of demo)
       expect(
-        intakeRowExclusionReason({ ...x.c, key: x.c.label, provenance: "synthetic", missionId: M, classification: x.r.classification, selected: true }),
+        intakeRowExclusionReason({
+          ...x.c,
+          key: x.c.label,
+          provenance: "synthetic",
+          missionId: M,
+          classification: x.r.classification,
+          selected: true,
+        }),
       ).toBeNull();
     const reviewOnly = classified.filter((x) => x.r.classification.status !== "matched");
     const requests = buildUnknownBiomarkerTerms(
-      reviewOnly.map((x) => ({ ...x.c, sourceKind: "csv", sourceLabel: "CSV import", classification: x.r.classification })),
+      reviewOnly.map((x) => ({
+        ...x.c,
+        sourceKind: "csv",
+        sourceLabel: "CSV import",
+        classification: x.r.classification,
+      })),
     );
-    expect(requests.map((t) => `${t.originalLabels[0]}|${t.originalUnit}`)).toEqual(["Urinary Potassium|mmol/L"]);
+    expect(requests.map((t) => `${t.originalLabels[0]}|${t.originalUnit}`)).toEqual([
+      "Urinary Potassium|mmol/L",
+    ]);
 
     const store = new InMemoryOfflineMissionStore();
     const saved: UnifiedObservation[] = demo.map((x, i) => {
@@ -374,7 +426,13 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
         originalUnit: x.c.unit,
         observedAt: "2026-11-08",
         datePrecision: "date",
-        source: { kind: "csv", label: "CSV import", documentName: "synthetic-multi.csv", documentSha256: "c".repeat(64), excerpt: `${x.c.label},${x.c.value},${x.c.unit}` },
+        source: {
+          kind: "csv",
+          label: "CSV import",
+          documentName: "synthetic-multi.csv",
+          documentSha256: "c".repeat(64),
+          excerpt: `${x.c.label},${x.c.value},${x.c.unit}`,
+        },
         provenance: "synthetic",
         quality: { reviewerConfirmed: true },
         reviewState: "accepted",
@@ -385,20 +443,44 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
     });
     for (const o of saved) {
       expect(validateUnifiedObservation(o)).toBeNull();
-      expect(await importUnifiedObservationEvent({ eventId: `${o.id}:entry`, eventKind: "entry", observation: o }, store)).toBe("inserted");
+      expect(
+        await importUnifiedObservationEvent(
+          { eventId: `${o.id}:entry`, eventKind: "entry", observation: o },
+          store,
+        ),
+      ).toBe("inserted");
     }
     const history = await listUnifiedObservations(M, CREW, store);
     expect(history).toHaveLength(4);
     const scope = { missionId: M, crewMemberId: CREW, provenance: "synthetic" as const };
     const projected = projectCanonicalObservations(
-      history.map((o) => ({ id: o.id, missionId: M, crewMemberId: CREW, kind: "observation", eventTimestamp: o.recordedAt, sourceId: "unified-intake", classification: "medical_sensitive", location: "local", payload: { observation: o } })),
+      history.map((o) => ({
+        id: o.id,
+        missionId: M,
+        crewMemberId: CREW,
+        kind: "observation",
+        eventTimestamp: o.recordedAt,
+        sourceId: "unified-intake",
+        classification: "medical_sensitive",
+        location: "local",
+        payload: { observation: o },
+      })),
       scope,
     );
     expect(projected.nonChartable).toHaveLength(0);
-    expect(projected.observations.map((o) => o.healthDomain).sort()).toEqual(["behavioral", "bone", "cardiovascular", "immune"]);
-    const report = buildUnifiedHealthReport({ domainEntries: {}, unifiedObservations: history, deviceRecords: [] }, scope);
+    expect(projected.observations.map((o) => o.healthDomain).sort()).toEqual([
+      "behavioral",
+      "bone",
+      "cardiovascular",
+      "immune",
+    ]);
+    const report = buildUnifiedHealthReport(
+      { domainEntries: {}, unifiedObservations: history, deviceRecords: [] },
+      scope,
+    );
     expect(report.rows).toHaveLength(4);
-    for (const r of report.rows) expect(r.metricLabel).toContain("SYNTHETIC DEMO (not scientifically validated)");
+    for (const r of report.rows)
+      expect(r.metricLabel).toContain("SYNTHETIC DEMO (not scientifically validated)");
 
     // Offline: a fresh load uses only the stored signed snapshot.
     resetSyntheticDemoCatalogsForTests();
@@ -408,7 +490,12 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
     }) as unknown as typeof fetch;
     try {
       expect((await loadInstalledDemoCatalogs(device)).loaded).toBe(1);
-      const r = classifyWithGovernedExtensions({ label: "IMM-001", unit: "10^9/L", provenance: "synthetic", missionId: M });
+      const r = classifyWithGovernedExtensions({
+        label: "IMM-001",
+        unit: "10^9/L",
+        provenance: "synthetic",
+        missionId: M,
+      });
       expect(r.classification).toMatchObject({ status: "matched", metricId: "demo:ubt-813d9e97" });
     } finally {
       globalThis.fetch = realFetch;
@@ -418,23 +505,51 @@ describe("NEW multi-biomarker synthetic examination after bulk activation", () =
   test("never recognized for real data or another mission; revocation keeps history", () => {
     const catalogs = new Map([[M, evaluateSyntheticDemoSnapshot(snap())]]);
     const st = (over: object) =>
-      classifyWithGovernedExtensions({ label: "Urinary Potassium", unit: "mmol/day", provenance: "synthetic", missionId: M, ...over }, undefined, undefined, catalogs).classification.status;
+      classifyWithGovernedExtensions(
+        {
+          label: "Urinary Potassium",
+          unit: "mmol/day",
+          provenance: "synthetic",
+          missionId: M,
+          ...over,
+        },
+        undefined,
+        undefined,
+        catalogs,
+      ).classification.status;
     expect(st({})).toBe("matched");
     expect(st({ provenance: "real" })).not.toBe("matched");
     expect(st({ missionId: "MISSION_TEST" })).not.toBe("matched");
     const revoked = new Map([[M, evaluateSyntheticDemoSnapshot(snap("ubt-0312222c"))]]);
     expect(
-      classifyWithGovernedExtensions({ label: "Urinary Potassium", unit: "mmol/day", provenance: "synthetic", missionId: M }, undefined, undefined, revoked).classification.status,
+      classifyWithGovernedExtensions(
+        { label: "Urinary Potassium", unit: "mmol/day", provenance: "synthetic", missionId: M },
+        undefined,
+        undefined,
+        revoked,
+      ).classification.status,
     ).not.toBe("matched");
     const hist = classifyWithGovernedExtensions(
-      { label: "demo:ubt-0312222c", unit: "mmol/day", provenance: "synthetic", missionId: M, identity: "canonical", includeRevoked: true },
+      {
+        label: "demo:ubt-0312222c",
+        unit: "mmol/day",
+        provenance: "synthetic",
+        missionId: M,
+        identity: "canonical",
+        includeRevoked: true,
+      },
       undefined,
       undefined,
       revoked,
     );
     expect(hist.classification).toMatchObject({ status: "matched", domain: "bone" });
     expect(
-      classifyWithGovernedExtensions({ label: "IMM-001", unit: "10^9/L", provenance: "synthetic", missionId: M }, undefined, undefined, revoked).classification.status,
+      classifyWithGovernedExtensions(
+        { label: "IMM-001", unit: "10^9/L", provenance: "synthetic", missionId: M },
+        undefined,
+        undefined,
+        revoked,
+      ).classification.status,
     ).toBe("matched");
   });
 });

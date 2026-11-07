@@ -143,10 +143,16 @@ export function P38BulkDemoGround({ missionId }: { missionId: string }) {
     const res = await runBulkBatches(items, send, (progress) =>
       setRun({ progress, results: [], failure: null, remaining: [] }),
     );
-    setRun({ progress: res.progress, results: res.results, failure: res.failure, remaining: res.remaining });
+    setRun({
+      progress: res.progress,
+      results: res.results,
+      failure: res.failure,
+      remaining: res.remaining,
+    });
     setSelected(new Set());
     await load();
-    if (res.results.some((r) => r.status === "recorded" || r.status === "duplicate")) await installDevice();
+    if (res.results.some((r) => r.status === "recorded" || r.status === "duplicate"))
+      await installDevice();
     setBusy(false);
   };
   const summary = run ? summarizeBulk(run.results) : null;
@@ -193,7 +199,12 @@ export function P38BulkDemoGround({ missionId }: { missionId: string }) {
               <Label htmlFor="p38-g-search" className="text-xs">
                 Search name, label, domain or term ID
               </Label>
-              <Input id="p38-g-search" value={query} onChange={(e) => setQuery(e.target.value)} className="h-8" />
+              <Input
+                id="p38-g-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="h-8"
+              />
             </div>
             <div className="space-y-1">
               <Label htmlFor="p38-g-filter" className="text-xs">
@@ -231,7 +242,9 @@ export function P38BulkDemoGround({ missionId }: { missionId: string }) {
                   (s) =>
                     new Set([
                       ...s,
-                      ...pageRows.filter((r) => r.category === "eligible").map((r) => r.proposal.decisionEventId),
+                      ...pageRows
+                        .filter((r) => r.category === "eligible")
+                        .map((r) => r.proposal.decisionEventId),
                     ]),
                 )
               }
@@ -277,12 +290,16 @@ export function P38BulkDemoGround({ missionId }: { missionId: string }) {
                       <div className="font-mono text-muted-foreground">{r.proposal.demoId}</div>
                     </td>
                     <td className="p-1">
-                      {[...new Set([r.proposal.entry.displayName, ...r.proposal.entry.aliases])].join(", ")} ·{" "}
-                      {r.proposal.entry.unit}
+                      {[
+                        ...new Set([r.proposal.entry.displayName, ...r.proposal.entry.aliases]),
+                      ].join(", ")}{" "}
+                      · {r.proposal.entry.unit}
                     </td>
                     <td className="p-1">{r.proposal.entry.domain}</td>
                     <td className="p-1">
-                      <Badge variant={r.category === "eligible" ? "default" : "outline"}>{LABEL[r.category]}</Badge>
+                      <Badge variant={r.category === "eligible" ? "default" : "outline"}>
+                        {LABEL[r.category]}
+                      </Badge>
                       <div className="text-muted-foreground">{r.reason}</div>
                     </td>
                   </tr>
@@ -291,37 +308,58 @@ export function P38BulkDemoGround({ missionId }: { missionId: string }) {
             </table>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 0}
+              onClick={() => setPage((p) => p - 1)}
+            >
               Previous
             </Button>
             <span>
               Page {page + 1} of {pages} · {filtered.length} shown of {rows.length}
             </span>
-            <Button size="sm" variant="outline" disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page + 1 >= pages}
+              onClick={() => setPage((p) => p + 1)}
+            >
               Next
             </Button>
           </div>
-          <div className="space-y-2 rounded-md border border-border p-3" data-testid="p38-activation-preview">
+          <div
+            className="space-y-2 rounded-md border border-border p-3"
+            data-testid="p38-activation-preview"
+          >
             <p className="text-sm font-medium">Bulk activation preview</p>
             <p className="text-xs">
               {chosen.length} selected for activation in the mission SYNTHETIC DEMO catalog ·{" "}
               {excludedSelected.length} selected entries excluded.
             </p>
-            <Button size="sm" disabled={busy || !data.canActivate || !chosen.length} onClick={() => void start(chosen)}>
+            <Button
+              size="sm"
+              disabled={busy || !data.canActivate || !chosen.length}
+              onClick={() => void start(chosen)}
+            >
               <Zap className="mr-1 h-4 w-4" aria-hidden />
               Activate Selected in SYNTHETIC DEMO Catalog ({chosen.length})
             </Button>
           </div>
           {run ? (
-            <div role="status" className="space-y-1 rounded-md border border-border p-3 text-xs" data-testid="p38-activation-run">
+            <div
+              role="status"
+              className="space-y-1 rounded-md border border-border p-3 text-xs"
+              data-testid="p38-activation-run"
+            >
               <p className="font-medium">
-                Batch {run.progress.batchesDone} of {run.progress.batchesTotal} · {run.progress.itemsDone} of{" "}
-                {run.progress.itemsTotal} proposals processed
+                Batch {run.progress.batchesDone} of {run.progress.batchesTotal} ·{" "}
+                {run.progress.itemsDone} of {run.progress.itemsTotal} proposals processed
               </p>
               {summary ? (
                 <p>
-                  Activated {summary.recorded} · already activated (retry) {summary.duplicate} · skipped{" "}
-                  {summary.skipped} · rejected {summary.rejected}
+                  Activated {summary.recorded} · already activated (retry) {summary.duplicate} ·
+                  skipped {summary.skipped} · rejected {summary.rejected}
                 </p>
               ) : null}
               {run.results
@@ -338,7 +376,12 @@ export function P38BulkDemoGround({ missionId }: { missionId: string }) {
                 </p>
               ) : null}
               {run.remaining.length ? (
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => void start(run.remaining)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => void start(run.remaining)}
+                >
                   <RotateCcw className="mr-1 h-4 w-4" aria-hidden />
                   Retry remaining batches
                 </Button>

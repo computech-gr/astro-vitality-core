@@ -20,8 +20,7 @@ export interface BulkItemResult {
   eventId: string | null;
 }
 export type BatchResponse =
-  | { ok: true; results: BulkItemResult[] }
-  | { ok: false; code?: string; message: string };
+  { ok: true; results: BulkItemResult[] } | { ok: false; code?: string; message: string };
 
 export function chunk<T>(items: readonly T[], size = BULK_BATCH_SIZE): T[][] {
   if (!Number.isInteger(size) || size < 1 || size > BULK_BATCH_SIZE)
@@ -109,12 +108,7 @@ export interface PendingDemoProposal {
   revocationEventId: string | null;
 }
 export type ActivationCategory =
-  | "eligible"
-  | "already_active"
-  | "revoked"
-  | "decided_by_caller"
-  | "not_authorized"
-  | "conflict";
+  "eligible" | "already_active" | "revoked" | "decided_by_caller" | "not_authorized" | "conflict";
 export interface ActivationRow {
   proposal: PendingDemoProposal;
   category: ActivationCategory;

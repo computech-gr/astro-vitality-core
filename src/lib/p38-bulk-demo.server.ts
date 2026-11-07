@@ -22,7 +22,13 @@ import type {
 const MIGRATION_MESSAGE =
   "Bulk synthetic demo processing is not installed yet: the owner-approved database change has not been applied. Nothing was recorded.";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const STATUSES: readonly BulkItemStatus[] = ["recorded", "duplicate", "skipped", "rejected", "stale"];
+const STATUSES: readonly BulkItemStatus[] = [
+  "recorded",
+  "duplicate",
+  "skipped",
+  "rejected",
+  "stale",
+];
 const str = (v: unknown) => (typeof v === "string" ? v : null);
 
 function fail(code: string | undefined): BatchResponse {

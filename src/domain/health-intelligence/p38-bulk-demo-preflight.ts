@@ -140,7 +140,12 @@ for (const e of p355Catalog.entries as { id: string; name: string; domain: strin
 for (const e of nikolasImmune.entries as { source_id: string; name: string }[])
   addRef({ source: "Nikolas immune intake", id: e.source_id, name: e.name, domain: "immune" });
 for (const e of nikolasBehavioral.entries as { source_id: string; name: string }[])
-  addRef({ source: "Nikolas behavioral intake", id: e.source_id, name: e.name, domain: "behavioral" });
+  addRef({
+    source: "Nikolas behavioral intake",
+    id: e.source_id,
+    name: e.name,
+    domain: "behavioral",
+  });
 const crosswalkByTerm = new Map(
   (
     crosswalk.terms as {
@@ -191,15 +196,19 @@ export function proposedDisplayName(t: PreflightTermInput, refs: readonly Catalo
 export function ambiguousUnitReason(unit: string): string | null {
   const u = unit.trim();
   if (!u) return "No exact unit was submitted.";
-  if (/\s(ή|or)\s/i.test(u)) return `Alternative units "${u}"; units are never chosen or converted.`;
+  if (/\s(ή|or)\s/i.test(u))
+    return `Alternative units "${u}"; units are never chosen or converted.`;
   if (/[,;|]/.test(u) || /\s\/\s/.test(u)) return `Alternative units "${u}".`;
   if (/(assay|model)-specific/i.test(u)) return `The unit "${u}" is not specified.`;
   if (/^[a-z]+s\/[a-z]+s$/i.test(u)) return `Alternative units "${u}".`;
   return null;
 }
 
-const demoKeys = (displayName: string, aliases: readonly string[], unit: string) =>
-  [...new Set([displayName, ...aliases].filter((a) => a.trim()).map((a) => `${n(a)}|${unit.trim()}`))];
+const demoKeys = (displayName: string, aliases: readonly string[], unit: string) => [
+  ...new Set(
+    [displayName, ...aliases].filter((a) => a.trim()).map((a) => `${n(a)}|${unit.trim()}`),
+  ),
+];
 
 const DOMAINS: readonly HealthDomainId[] = ["bone", "immune", "cardiovascular", "behavioral"];
 
@@ -265,7 +274,8 @@ export function buildBulkDemoPreflight(
         block("blocked", "This demo entry was revoked; a revoked term needs a new submission.");
       else if (ev.activationEventId)
         block("already_active", `Active as ${ev.demoId}; it is skipped and never processed again.`);
-      else block("already_decided", "A synthetic demo decision exists; Ground Medical activates it.");
+      else
+        block("already_decided", "A synthetic demo decision exists; Ground Medical activates it.");
       continue;
     }
     if (!labels.length) {
@@ -286,7 +296,10 @@ export function buildBulkDemoPreflight(
       continue;
     }
     if (triageAction && triageAction !== "ACCEPT_FOR_REVIEW") {
-      block("blocked", `Triage recorded ${triageAction}; only accepted terms may receive a decision.`);
+      block(
+        "blocked",
+        `Triage recorded ${triageAction}; only accepted terms may receive a decision.`,
+      );
       continue;
     }
     if (refDomains.length > 1 && !ov?.domain) {
