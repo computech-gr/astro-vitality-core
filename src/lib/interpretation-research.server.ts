@@ -498,6 +498,7 @@ export async function attestDecisionCore(event: unknown, deps: Pick<ResearchDeps
     if ((await interpretationContentSha256(body.identity, body.draft)) !== body.contentSha256) return fail("integrity", "The approval fingerprint does not match its content.");
     if (body.acknowledgement !== requiredAcknowledgement(body.identity)) return fail("invalid", "The approval acknowledgement is missing.");
   } else if (!body.reason || body.reason.trim().length < 10) return fail("invalid", "A revocation needs a reason.");
+  const action: "APPROVE" | "REVOKE" = body.action === "APPROVE" ? "APPROVE" : "REVOKE";
   const { privateKey } = await deriveInterpretationAttestationKey(secret);
   return {
     ok: true,
@@ -507,7 +508,7 @@ export async function attestDecisionCore(event: unknown, deps: Pick<ResearchDeps
         keyId: INTERPRETATION_ATTESTATION_KEY_ID,
         eventHash: hash,
         key: body.key,
-        action: body.action,
+        action,
         contentSha256: body.contentSha256,
         actorUserId: deps.userId,
         attestedAt: deps.now().toISOString(),
