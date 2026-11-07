@@ -32,6 +32,7 @@ import {
   type LiteratureConcept,
   type ProviderOutcome,
 } from "@/domain/health-intelligence/interpretation-evidence";
+import { INSUFFICIENT_RELEVANT_EVIDENCE, relevanceGate, type DraftSelectionMode } from "@/domain/health-intelligence/literature-relevance";
 import {
   INTERPRETATION_EVENT_SCHEMA,
   approvalProblem,
@@ -407,7 +408,7 @@ Rules:
  * itself, so excerpts are verified against provider text, never client text.
  */
 export async function draftInterpretationCore(
-  input: { key: string; concept: LiteratureConcept; refIds: string[] },
+  input: { key: string; concept: LiteratureConcept; refIds: string[]; selection: DraftSelectionMode },
   deps: ResearchDeps,
 ): Promise<{ ok: true; bundle: EvidenceBundle } | Fail> {
   if (deps.env("P41_INTERPRETATION_AI_DISABLED") === "true") return fail("unavailable", "AI drafting is switched off for this deployment; evidence stays available for manual drafting.");
@@ -422,10 +423,26 @@ export async function draftInterpretationCore(
   const pm = await pubmedFetch(deps, pmids, retrievedAt);
   const nt = (await Promise.all(ntrsIds.map((id) => ntrsById(deps, id, retrievedAt)))).filter((x): x is EvidenceReference => !!x);
   const references = [...pm.refs, ...nt];
-  const usable = references.filter((r) => r.inspectedText);
+  // P41.1 relevance gate, recomputed on the server from provider text: irrelevant and
+  // insufficient-information references never reach the AI; potentially relevant ones
+  // only on an explicit Researcher selection; batch processing uses relevant ones only.
+  const selection: DraftSelectionMode = input.selection === "researcher_explicit" ? "researcher_explicit" : "automatic_batch";
+  const relevant = relevanceGate(references, input.concept, selection);
+  const usable = relevant.used;
   const outcomes: ProviderOutcome[] = [pm.outcome, { provider: "nasa_ntrs", status: "ok", count: nt.length, detail: null }];
-  const base: EvidenceBundle = { schema: EVIDENCE_BUNDLE_SCHEMA, key: input.key, concept: input.concept, queries: [], retrievedAt, references, providerOutcomes: outcomes, draft: null, status: "insufficient_evidence", gaps: evidenceGaps([], references) };
-  if (!usable.length) return { ok: true, bundle: { ...base, status: references.length ? "insufficient_evidence" : "no_evidence_found" } };
+  const relevance = { mode: selection, usedRefIds: usable.map((r) => r.refId), excluded: relevant.excluded };
+  const base: EvidenceBundle = { schema: EVIDENCE_BUNDLE_SCHEMA, key: input.key, concept: input.concept, queries: [], retrievedAt, references, providerOutcomes: outcomes, draft: null, status: "insufficient_evidence", gaps: evidenceGaps([], references), relevanceGate: relevance };
+  if (!usable.length) {
+    deps.audit?.({ feature: "p41-ai-draft", outcome: "insufficient_relevant_evidence", userId: deps.userId, references: references.length, excluded: relevant.excluded.length });
+    return {
+      ok: true,
+      bundle: {
+        ...base,
+        status: references.length ? "insufficient_evidence" : "no_evidence_found",
+        gaps: [`${INSUFFICIENT_RELEVANT_EVIDENCE}: no retrieved reference was assessed as relevant${selection === "researcher_explicit" ? " or potentially relevant" : ""}; no AI draft was generated.`, ...base.gaps],
+      },
+    };
+  }
 
   const payload = {
     model: AI_MODEL,
@@ -462,8 +479,10 @@ export async function draftInterpretationCore(
     return fail("integrity", "The AI response was malformed and was rejected; nothing was drafted.");
   }
   if (parsed.schemaVersion !== AI_DRAFT_SCHEMA_VERSION || !Array.isArray(parsed.claims)) return fail("integrity", "The AI response did not match the required structure and was rejected.");
-  const { claims, rejected } = verifyDraftClaims(parsed.claims, references);
-  const contradictions = verifyContradictions(parsed.contradictions, references);
+  // Claims may only cite references that passed the relevance gate.
+  const allowed = new Set(usable.map((r) => r.refId));
+  const { claims, rejected } = verifyDraftClaims(parsed.claims, references, allowed);
+  const contradictions = verifyContradictions(parsed.contradictions, usable);
   const modelGaps = (Array.isArray(parsed.gaps) ? parsed.gaps : []).filter((g): g is string => typeof g === "string").map((g) => `AI-reported gap: ${g.slice(0, 300)}`).slice(0, 12);
   const status = draftStatus(claims);
   deps.audit?.({ feature: "p41-ai-draft", outcome: "ok", userId: deps.userId, model, references: references.length, claims: claims.length, verified: claims.filter((c) => c.verification !== "unresolved").length, rejected: rejected.length, durationMs: Date.now() - started });
@@ -471,9 +490,9 @@ export async function draftInterpretationCore(
     ok: true,
     bundle: {
       ...base,
-      draft: { generatedBy: { kind: "ai_synthesis", provider: "lovable", model, generatedAt: deps.now().toISOString() }, claims, rejected, contradictions, gaps: [...evidenceGaps(claims, references), ...modelGaps], status },
+      draft: { generatedBy: { kind: "ai_synthesis", provider: "lovable", model, generatedAt: deps.now().toISOString() }, claims, rejected, contradictions, gaps: [...evidenceGaps(claims, usable), ...modelGaps], status },
       status: status === "draft_with_verified_excerpts" ? "draft_ready" : "insufficient_evidence",
-      gaps: [...evidenceGaps(claims, references), ...modelGaps],
+      gaps: [...evidenceGaps(claims, usable), ...modelGaps],
     },
   };
 }

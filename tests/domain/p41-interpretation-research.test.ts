@@ -54,6 +54,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const REGISTRY = JSON.parse(readFileSync(join(ROOT, "data/scientific/biomarker-interpretation-registry.v1.json"), "utf8"));
 const MISSION = "mission-9d8ce8f3e5554509a0885461f9ad2e1c";
 const VITD_ID: InterpretationIdentity = { environment: "synthetic_demo", catalogId: "demo:ubt-7b25ce69", domain: "bone", unit: "ng/mL", missionId: MISSION, displayName: "25-Hydroxyvitamin D" };
+// The concept a device sends for this identity: display label plus the reported alias (identityConcept).
+const VITD_CONCEPT = { label: "25(OH) Vitamin D", aliases: ["25-hydroxyvitamin D"], domain: "bone" as const };
 const RESEARCHER: ActorContext = { userId: "researcher-1", name: "Researcher One", roles: ["researcher"], now: "2026-11-08T10:00:00.000Z" };
 
 const SERVER_SECRET = "test-only-p41-server-secret-never-deployed-0123456789abcdef";
@@ -182,11 +184,11 @@ describe("P41 server retrieval, AI drafting and attestation (mocked network)", (
   it("respects the deployment kill switches", async () => {
     const { deps } = mockDeps({ env: { P41_LITERATURE_DISABLED: "true", P41_INTERPRETATION_AI_DISABLED: "true" } });
     expect((await searchLiteratureCore("k", { label: "Osteocalcin", aliases: [], domain: null }, fresh(deps))).ok).toBe(false);
-    expect((await draftInterpretationCore({ key: "k", concept: { label: "Osteocalcin", aliases: [], domain: null }, refIds: ["pmid:90000001"] }, fresh(deps))).ok).toBe(false);
+    expect((await draftInterpretationCore({ key: "k", concept: { label: "Osteocalcin", aliases: [], domain: null }, refIds: ["pmid:90000001"], selection: "automatic_batch" }, fresh(deps))).ok).toBe(false);
   });
   it("keeps verified claims, marks fabricated citations unresolved and rejects thresholds and value judgements", async () => {
     const { deps } = mockDeps({ ai: AI_GOOD });
-    const r = await draftInterpretationCore({ key: "k3", concept: { label: "25(OH) Vitamin D", aliases: [], domain: "bone" }, refIds: ["pmid:90000001", "pmid:90000002"] }, fresh(deps));
+    const r = await draftInterpretationCore({ key: "k3", concept: VITD_CONCEPT, refIds: ["pmid:90000001", "pmid:90000002"], selection: "researcher_explicit" }, fresh(deps));
     if (!r.ok) throw new Error(r.message);
     const d = r.bundle.draft!;
     expect(d.claims.filter((c) => c.verification === "excerpt_found_in_inspected_text").map((c) => c.field)).toEqual(["function", "increaseContext", "decreaseContext"]);
@@ -199,7 +201,7 @@ describe("P41 server retrieval, AI drafting and attestation (mocked network)", (
   });
   it("rejects malformed AI output without drafting anything", async () => {
     const { deps } = mockDeps({ aiRaw: "not json" });
-    const r = await draftInterpretationCore({ key: "k4", concept: { label: "25(OH) Vitamin D", aliases: [], domain: "bone" }, refIds: ["pmid:90000001"] }, fresh(deps));
+    const r = await draftInterpretationCore({ key: "k4", concept: VITD_CONCEPT, refIds: ["pmid:90000001"], selection: "researcher_explicit" }, fresh(deps));
     expect(r.ok).toBe(false);
   });
   it("verifies identifiers and reports unknown DOIs as not found", async () => {
@@ -337,7 +339,7 @@ describe("P41 preflight inventory and resumable backlog", () => {
 describe("P41 server attestation of Researcher decisions", () => {
   const evidenceDraft = async () => {
     const { deps } = mockDeps({ ai: AI_GOOD });
-    const r = await draftInterpretationCore({ key: interpretationKey(VITD_ID), concept: { label: "25(OH) Vitamin D", aliases: [], domain: "bone" }, refIds: ["pmid:90000001", "pmid:90000002"] }, fresh(deps));
+    const r = await draftInterpretationCore({ key: interpretationKey(VITD_ID), concept: VITD_CONCEPT, refIds: ["pmid:90000001", "pmid:90000002"], selection: "researcher_explicit" }, fresh(deps));
     if (!r.ok) throw new Error(r.message);
     return r.bundle;
   };
@@ -401,7 +403,7 @@ describe("P41 synthetic end-to-end: unknown → evidence → draft → review �
     const d1 = fresh(deps);
     const s = await searchLiteratureCore(cand!.key, { label: "25(OH) Vitamin D", aliases: [], domain: "bone" }, d1);
     if (!s.ok) throw new Error(s.message);
-    const dr = await draftInterpretationCore({ key: cand!.key, concept: { label: "25(OH) Vitamin D", aliases: [], domain: "bone" }, refIds: s.bundle.references.map((r) => r.refId).filter((r) => r.startsWith("pmid:")) }, d1);
+    const dr = await draftInterpretationCore({ key: cand!.key, concept: VITD_CONCEPT, refIds: s.bundle.references.map((r) => r.refId).filter((r) => r.startsWith("pmid:")), selection: "researcher_explicit" }, d1);
     if (!dr.ok) throw new Error(dr.message);
     await appendEvidenceAttempt(planAttempt(cand!.key, [], dr.bundle.status, dr.bundle, null, RESEARCHER.userId, "2026-11-08T10:00:00.000Z"), store);
     // 3. Activation already exists for this term (Ground Medical, unchanged) → the candidate maps to the activated identity.

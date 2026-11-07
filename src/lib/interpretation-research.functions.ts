@@ -72,7 +72,15 @@ export const verifyInterpretationCitation = createServerFn({ method: "POST" })
 export const draftInterpretationFromEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) =>
-    z.object({ key, concept, refIds: z.array(z.string().regex(/^(pmid:\d{1,9}|ntrs:\d{11})$/)).min(1).max(10) }).parse(v),
+    z
+      .object({
+        key,
+        concept,
+        refIds: z.array(z.string().regex(/^(pmid:\d{1,9}|ntrs:\d{11})$/)).min(1).max(10),
+        // P41.1: potentially relevant references are used only on an explicit Researcher selection.
+        selection: z.enum(["researcher_explicit", "automatic_batch"]),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const gate = await requireResearcher(context as unknown as Ctx);

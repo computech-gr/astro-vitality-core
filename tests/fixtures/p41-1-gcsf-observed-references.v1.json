@@ -1,0 +1,254 @@
+{
+ "description": "Actual G-CSF literature search results observed on 2026-11-07 from PubMed E-utilities and the NASA Technical Reports Server public API (P41.1 regression fixture). Public titles/abstracts recorded verbatim as retrieved; not curated, not scientific approval.",
+ "concept": {
+  "label": "G-CSF",
+  "aliases": [],
+  "domain": "immune"
+ },
+ "queries": [
+  "(\"G-CSF\"[tiab]) AND (spaceflight[tiab] OR \"space flight\"[tiab] OR microgravity[tiab] OR astronaut*[tiab] OR \"bed rest\"[tiab] OR \"head-down tilt\"[tiab])",
+  "(\"G-CSF\"[tiab]) AND review[pt]",
+  "G-CSF"
+ ],
+ "retrievedAt": "2026-11-07T17:04:10.237Z",
+ "references": [
+  {
+   "refId": "pmid:35325124",
+   "provider": "pubmed",
+   "identifiers": {
+    "pmid": "35325124",
+    "pmcid": "PMC9631462",
+    "doi": "10.1093/humupd/dmac009",
+    "ntrsId": null,
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35325124/"
+   },
+   "title": "Interventions to optimize embryo transfer in women undergoing assisted conception: a comprehensive systematic review and meta-analyses.",
+   "source": "Hum Reprod Update",
+   "year": "2022",
+   "publicationTypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review",
+    "Research Support, N.I.H., Extramural"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "PubMed revised 2022-12-13",
+   "inspected": "abstract",
+   "inspectedText": "BACKGROUND: Several interventions and techniques are suggested to improve the outcome of embryo transfer (ET) in assisted conception. However, there remains no consensus on the optimal practice, with high variations among fertility specialists. OBJECTIVE AND RATIONALE: We conducted a comprehensive systematic review and meta-analyses of randomized controlled trials (RCTs) aiming to identify effective interventions that could be introduced around the time of ET to improve reproductive outcomes. SEARCH METHODS: We searched the electronic databases (MEDLINE, EMBASE and Cochrane CENTRAL) from inception until March 2021 using a multi-stage search strategy of MeSH terms and keywords, and included all RCTs that evaluated an intervention in the 24-h period before/after ET in women undergoing IVF/ICSI. Our primary outcome was clinical pregnancy rate post-ET confirmed as viable pregnancy on ultrasound scan. We assessed the risk of bias in included trials and extracted data in duplicate. We pooled data using a random-effect meta-analysis and reported using risk ratio (RR) with 95% CI. We explored publication bias and effect modifiers using subgroup analyses. OUTCOMES: Our search yielded 3685 citations of which we included 188 RCTs (38 interventions, 59 530 participants) with a median sample size of 200 (range 26-1761). The quality of included RCTs was moderate with most showing a low risk of bias for randomization (118/188, 62.8%) and attrition (105/188, 55.8%) but there was a significant risk of publication bias (Egger's test P = 0.001). Performing ET with ultrasound guidance versus clinical touch (n = 24, RR 1.265, 95% CI 1.151-1.391, I2 = 38.53%), hyaluronic acid versus routine care (n = 9, RR 1.457, 95% CI 1.197-1.261, I2 = 46.48%) and the use of a soft versus hard catheter (n = 27, RR 1.122, 95% CI 1.028-1.224, I2 = 57.66%) led to higher clinical pregnancy rates. Other pharmacological add-ons also showed a beneficial effect including granulocyte colony-stimulating factor (G-CSF: n = 4, RR 1.774, 95% CI 1.252-2.512, I2 = 0), Atosiban (n = 7, RR 1.493, 95% CI 1.184-1.882, I2 = 68.27%) and hCG (n = 17, RR 1.232, 95% CI 1.099-1.382, I2 = 57.76%). Bed rest following ET was associated with a reduction in clinical pregnancy (n = 6, RR 0.857, 95% CI 0.741-0.991, I2 = 0.01%). Other commonly used interventions, such as non-steroidal anti-inflammatory drugs, prophylactic antibiotics, acupuncture and cervical mucus removal, did not show a significant benefit on reproductive outcomes. Our effect estimates for other important outcomes, including miscarriage and live birth, were limited by the varied reporting across included RCTs. WIDER IMPLICATIONS: Using ultrasound guidance, soft catheters and hyaluronic acid at the time of ET appears to increase clinical pregnancy rates. The use of Atosiban, G-CSF and hCG showed a trend towards increased clinical pregnancy rate, but larger trials are required before adopting these interventions in clinical practice. Bed rest post-ET was associated with a reduction in clinical pregnancy and should not be recommended.",
+   "existence": "verified_by_provider",
+   "population": "spaceflight_or_analog"
+  },
+  {
+   "refId": "pmid:36481580",
+   "provider": "pubmed",
+   "identifiers": {
+    "pmid": "36481580",
+    "pmcid": null,
+    "doi": "10.1016/j.tice.2022.101987",
+    "ntrsId": null,
+    "url": "https://pubmed.ncbi.nlm.nih.gov/36481580/"
+   },
+   "title": "Simulated microgravity affects stroma-dependent ex vivo myelopoiesis.",
+   "source": "Tissue Cell",
+   "year": "2023",
+   "publicationTypes": [
+    "Journal Article"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "PubMed revised 2023-01-17",
+   "inspected": "abstract",
+   "inspectedText": "Microgravity is known negatively affect physiology of living beings, including hematopoiesis. Dysregulation of hematopoietic cells and supporting stroma relationships in bone marrow niche may be in charge. We compared the efficacy of ex vivo expansion of hematopoietic stem and progenitor cells (HSPCs) in presence of native or osteocommitted MSCs under simulated microgravity (Smg) using Random Positioning Machine (RPM). In comparison with 1 g, a decrease of MSC-associated HSPCs and an increase of floating HSPCs was observed after 7 days of Smg exposure. Among floating HSPCs, primitive progenitors were presented by late CD34+/133-. Total CFUs as well as erythroid (BFU-E) and granulocytic (CFU-G) numbers were lower. MSC-associated primitive HSPCs demonstrated increased proportion of late CD34+/133- in expense of early CD34-/133+. Osteo-MSCs preferentially supported late primitive CD34+ and more committed HSPCs as followed from increase of CFUs, and CD235a+ erythroid progenitors. Under Smg, an increased VEGF, eotaxin, and GRO-a levels, and a decrease in RANTES were found in the osteo-MSC-HSPC co-cultures. IL-6,-8, -13, G-CSF, GRO-a, MCP-3, MIP-1b, VEGF increased in co-culture with osteo-MSCs vs intact MSCs. Based on the findings, the misbalance between primitive/committed HSPCs and a decrease in hematopoiesis-supportive activity of osteocommitted cells are supposed to underline hematopoietic disorders during space flights.",
+   "existence": "verified_by_provider",
+   "population": "spaceflight_or_analog"
+  },
+  {
+   "refId": "pmid:12637979",
+   "provider": "pubmed",
+   "identifiers": {
+    "pmid": "12637979",
+    "pmcid": null,
+    "doi": "10.1007/s00125-002-0998-z",
+    "ntrsId": null,
+    "url": "https://pubmed.ncbi.nlm.nih.gov/12637979/"
+   },
+   "title": "Evaluation of granulocyte-colony stimulating factor (Filgrastim) in infected diabetic foot ulcers.",
+   "source": "Diabetologia",
+   "year": "2003",
+   "publicationTypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "PubMed revised 2019-12-10",
+   "inspected": "abstract",
+   "inspectedText": "AIMS/HYPOTHESIS: To re-evaluate the use of Granulocyte-Colony Stimulating Factor (G-CSF) in the treatment of infected diabetic foot ulcers. METHODS: Thirty-seven diabetic subjects were randomised to Granulocyte-Colony Stimulating Factor (G-CSF) (n=20) or placebo (n=17). The primary endpoint was resolution of cellulitis, which was evaluated clinically and with an infection summary score. Patients were hospitalised for 10 days and received subcutaneously either 5 microg/kg G-CSF or placebo daily. Ulcers were treated with a standard wound protocol and the patients were instructed to stay in bed. All subjects received antibiotics (clindamycin and ciprofloxacin) intravenously until the inflammation had subsided. RESULTS: Patients who received G-CSF did not have an earlier resolution of clinically defined cellulitis (p=0.57). The infection summary score declined, but comparably, in both groups (G-CSF: 29.5+/-18.4 to 6.7+/-6.3 p<0.001, placebo: 24.2+/-16.9 to 8.9+/-7.2 p<0.001). The ulcer volume, which was not greater among placebo patients, was reduced by 59% in G-CSF and by 35% in placebo patients. CONCLUSION/INTERPRETATION: We conclude that antibiotic and non weight-bearing therapy (bed rest) accelerated the resolution of cellulitis in infected foot ulcers. Additional treatment with G-CSF had no further beneficial effect.",
+   "existence": "verified_by_provider",
+   "population": "spaceflight_or_analog"
+  },
+  {
+   "refId": "pmid:38245340",
+   "provider": "pubmed",
+   "identifiers": {
+    "pmid": "38245340",
+    "pmcid": null,
+    "doi": "10.1016/j.lssr.2023.08.001",
+    "ntrsId": null,
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38245340/"
+   },
+   "title": "Palmer Station, Antarctica: A ground-based spaceflight analog suitable for validation of biomedical countermeasures for deep space missions.",
+   "source": "Life Sci Space Res (Amst)",
+   "year": "2024",
+   "publicationTypes": [
+    "Journal Article"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "PubMed revised 2024-02-02",
+   "inspected": "abstract",
+   "inspectedText": "Astronauts are known to exhibit a variety of immunological alterations during spaceflight including changes in leukocyte distribution and plasma cytokine concentrations, a reduction in T-cell function, and subclinical reactivation of latent herpesviruses. These alterations are most likely due to mission-associated stressors including circadian misalignment, microgravity, isolation, altered nutrition, and increased exposure to cosmic radiation. Some of these stressors may also occur in terrestrial situations. This study sought to determine if crewmembers performing winterover deployment at Palmer Station, Antarctica, displayed similar immune alterations. The larger goal was to validate a ground analog suitable for the evaluation of countermeasures designed to protect astronauts during future deep space missions. For this pilot study, plasma, saliva, hair, and health surveys were collected from Palmer Station, Antarctica, winterover participants at baseline, and at five winterover timepoints. Twenty-six subjects consented to participate over the course of two seasons. Initial sample processing was performed at Palmer, and eventually stabilized samples were returned to the Johnson Space Center for analysis. A white blood cell differential was performed (real time) using a fingerstick blood sample to determine alterations in basic leukocyte subsets throughout the winterover. Plasma and saliva samples were analyzed for 30 and 13 cytokines, respectively. Saliva was analyzed for cortisol concentration and three latent herpesviruses (DNA by qPCR), EBV, HSV1, and VZV. Voluntary surveys related to general health and adverse clinical events were distributed to participants. It is noteworthy that due to logistical constraints caused by COVID-19, the baseline samples for each season were collected in Punta Arenas, Chile, after long international travel and during isolation. Therefore, the Palmer pre-mission samples may not reflect a true normal 'baseline'. Minimal alterations were observed in leukocyte distribution during winterover. The mean percentage of monocyte concentration elevated at one timepoint. Plasma G-CSF, IL1RA, MCP-1, MIP-1β, TNFα, and VEGF were decreased during at least one winterover timepoint, whereas RANTES was significantly increased. No statistically significant changes were observed in mean saliva cytokine concentrations. Salivary cortisol was substantially elevated throughout the entire winterover compared to baseline. Compared to shedding levels observed in healthy controls (23%), the percentage of participants who shed EBV was higher throughout all winterover timepoints (52-60%). Five subjects shed HSV1 during at least one timepoint throughout the season compared to no subjects shedding during pre-deployment. Finally, VZV reactivation, common in astronauts but exceptionally rare in ground-based stress analogs, was observed in one subject during pre-deployment and a different subject at WO2 and WO3. These pilot data, somewhat influenced by the COVID-19 pandemic, do suggest that participants at Palmer Station undergo immunological alterations similar to, but likely in reduced magnitude, as those observed in astronauts. We suggest that winterover at Palmer Station may be a suitable test analog for spaceflight biomedical countermeasures designed to mitigate clinical risks for deep space missions.",
+   "existence": "verified_by_provider",
+   "population": "spaceflight_or_analog"
+  },
+  {
+   "refId": "pmid:8966113",
+   "provider": "pubmed",
+   "identifiers": {
+    "pmid": "8966113",
+    "pmcid": null,
+    "doi": null,
+    "ntrsId": null,
+    "url": "https://pubmed.ncbi.nlm.nih.gov/8966113/"
+   },
+   "title": "[Chronic neutropenia].",
+   "source": "Nord Med",
+   "year": "1996",
+   "publicationTypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "PubMed revised 2014-11-20",
+   "inspected": "abstract",
+   "inspectedText": "Chronic severe neutropenia can now be successfully treated with G-CSF (granulocyte colony stimulating factor). The granulocyte count is often normalised and the frequency of infections dramatically reduced. However, the congenital form of the disease has been observed to be associated with a substantial risk of acute leukaemia and osteoporosis, although it is not known whether this risk is intrinsic to the disease or related to the treatment. To improve the knowledge of the natural history of the disease and the benefits and risk of treatment, an international registry has been established. The authors of the article, who are Nordic liaison physicians for the registry, urge all those caring for patients with chronic neutropenia to contact them for discussions as to the inclusion of their patients into the register.",
+   "existence": "verified_by_provider",
+   "population": "terrestrial_or_unspecified"
+  },
+  {
+   "refId": "pmid:1338575",
+   "provider": "pubmed",
+   "identifiers": {
+    "pmid": "1338575",
+    "pmcid": null,
+    "doi": "10.1016/0955-2235(92)90029-h",
+    "ntrsId": null,
+    "url": "https://pubmed.ncbi.nlm.nih.gov/1338575/"
+   },
+   "title": "Oncostatin M.",
+   "source": "Prog Growth Factor Res",
+   "year": "1992",
+   "publicationTypes": [
+    "Journal Article",
+    "Review"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "PubMed revised 2019-10-28",
+   "inspected": "abstract",
+   "inspectedText": "Oncostatin M (OSM) was initially identified as a polypeptide cytokine which inhibited the in vitro growth of cells from melanoma and other solid tumors. OSM shows significant similarities in primary amino acid sequence and predicted secondary structure to leukemia inhibitory factor (LIF), ciliary neurotrophic factor (CNTF), granulocyte colony-stimulating factor (G-CSF), interleukin 6 (IL-6), and interleukin 11 (IL-11). Analysis of the genes encoding these proteins reveals a shared exon organization suggesting evolutionary descent from a common ancestral gene. Recent data indicates that OSM also shares a number of in vitro activities with other members of this cytokine family. The overlapping biological effects appear to be explained by the sharing of receptor subunits.",
+   "existence": "verified_by_provider",
+   "population": "terrestrial_or_unspecified"
+  },
+  {
+   "refId": "ntrs:20000095574",
+   "provider": "nasa_ntrs",
+   "identifiers": {
+    "pmid": null,
+    "pmcid": null,
+    "doi": null,
+    "ntrsId": "20000095574",
+    "url": "https://ntrs.nasa.gov/citations/20000095574"
+   },
+   "title": "Estimates of Ground Temperature and Atmospheric Moisture from CERES Observations",
+   "source": "NASA Technical Reports Server",
+   "year": "2000",
+   "publicationTypes": [
+    "ABSTRACT"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "NTRS modified 2025-08-31",
+   "inspected": "abstract",
+   "inspectedText": "A method is developed to retrieve surface ground temperature (T(sub g)) and atmospheric moisture using clear sky fluxes (CSF) from CERES-TRMM observations. In general, the clear sky outgoing longwave radiation (CLR) is sensitive to upper level moisture (q(sub l)) over wet regions and (T(sub g)) over dry regions The clear sky window flux from 800 to 1200/cm (RadWn) is sensitive to low level moisture (q(sub t)) and T(sub g). Combining these two measurements (CLR and RadWn), Tg and q(sub h) can be estimated over land, while q(sub h) and q(sub l) can be estimated over the oceans. The approach capitalizes on the availability of satellite estimates of CLR and RadWn and other auxiliary satellite data. The basic methodology employs off-line forward radiative transfer calculations to generate synthetic CSF data from two different global 4-dimensional data assimilation products. Simple linear regression is used to relate discrepancies in CSF to discrepancies in T(sub g), q(sub h) and q(sub l). The slopes of the regression lines define sensitivity parameters that can be exploited to help interpret mismatches between satellite observations and model-based estimates of CSF. For illustration, we analyze the discrepancies in the CSF between an early implementation of the Goddard Earth Observing System Data Assimilation System (GEOS-DAS) and a recent operational version of the European Center for Medium-Range Weather Prediction data assimilation system. In particular, our analysis of synthetic total and window region SCF differences (computed from two different assimilated data sets) shows that simple linear regression employing Delta(T(sub g)) and broad layer Delta(q(sub l) from .500 hPa to surface and Delta(q(sub h)) from 200 to .300 hPa provides a good approximation to the full radiative transfer calculations. typically explaining more than 90% of the 6-hourly variance in the flux differences. These simple regression relations can be inverted to \"retrieve\" the errors in the geophysical parameters. Uncertainties (normalized by standard deviation) in the monthly mean retrieved parameters range from 7% for Delta(T(sub g)) to about 20% for Delta(q(sub l)). Our initial application of the methodology employed an early CERES-TRMM data set (CLR and Radwn) to assess the quality of the GEOS2 data. The results showed that over the tropical and subtropical oceans GEOS2 is, in general, too wet in the upper troposphere (mean bias of 0.99 mm) and too dry in the lower troposphere (mean bias of -4.7 min). We note that these errors, as well as a cold bias in the T(sub g). have largely been corrected in the current version of GEOS-2 with the introduction of a land surface model, a moist turbulence scheme and the assimilation of SSM/I total precipitable water.",
+   "existence": "verified_by_provider",
+   "population": "terrestrial_or_unspecified"
+  },
+  {
+   "refId": "ntrs:20040087522",
+   "provider": "nasa_ntrs",
+   "identifiers": {
+    "pmid": null,
+    "pmcid": null,
+    "doi": null,
+    "ntrsId": "20040087522",
+    "url": "https://ntrs.nasa.gov/citations/20040087522"
+   },
+   "title": "Host resistance of CD18 knockout mice against systemic infection with Listeria monocytogenes",
+   "source": "Infection and immunity",
+   "year": "2003",
+   "publicationTypes": [
+    "REPRINT"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "NTRS modified 2025-08-31",
+   "inspected": "abstract",
+   "inspectedText": "Mice with targeted mutations of CD18, the common beta2 subunit of CD11/CD18 integrins, have leukocytosis, impaired transendothelial neutrophil emigration, and reduced host defense to Streptococcus pneumoniae, a gram-positive extracellular bacterium. Previous studies using blocking monoclonal antibodies suggested roles for CD18 and CD11b in hepatic neutrophil recruitment and host innate response to Listeria monocytogenes, a gram-positive intracellular bacterium. We induced systemic listeriosis in CD18 knockout (CD18-ko) and wild-type (WT) mice by tail vein injection with Listeria. By 14 days postinjection (dpi), 8 of 10 WT mice died, compared with 2 of 10 CD18-ko mice (P < 0.01). Quantitative organ culture showed that numbers of Listeria organisms in livers and spleens were similar in both groups at 20 min postinfection. By 3, 5, and 7 dpi, however, numbers of Listeria organisms were significantly lower in livers and spleens of CD18-ko mice than in WT mice. Histopathology showed that following Listeria infection, CD18-ko mice had milder inflammatory and necrotizing lesions in both spleens and livers than did WT mice. Cytokine assays indicated that baseline interleukin-1beta and granulocyte colony-stimulating factor (G-CSF) levels were higher in CD18-ko mice than in WT mice and that CD18-ko splenocytes produced higher levels of interleukin-1beta and G-CSF than WT splenocytes under the same amount of Listeria stimulation. These findings show that CD18 is not an absolute requirement for antilisterial innate immunity or hepatic neutrophil recruitment. We propose that the absence of CD18 in the mice results in the priming of innate immunity, as evidenced by elevated cytokine expression, and neutrophilic leukocytosis, which augments antilisterial defense.",
+   "existence": "verified_by_provider",
+   "population": "terrestrial_or_unspecified"
+  },
+  {
+   "refId": "ntrs:20080009499",
+   "provider": "nasa_ntrs",
+   "identifiers": {
+    "pmid": null,
+    "pmcid": null,
+    "doi": null,
+    "ntrsId": "20080009499",
+    "url": "https://ntrs.nasa.gov/citations/20080009499"
+   },
+   "title": "Whole-body mathematical model for simulating intracranial pressure dynamics",
+   "source": "NASA Technical Reports Server",
+   "year": "2007",
+   "publicationTypes": [
+    "OTHER"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "NTRS modified 2025-08-31",
+   "inspected": "abstract",
+   "inspectedText": "A whole-body mathematical model (10) for simulating intracranial pressure dynamics. In one embodiment, model (10) includes 17 interacting compartments, of which nine lie entirely outside of intracranial vault (14). Compartments (F) and (T) are defined to distinguish ventricular from extraventricular CSF. The vasculature of the intracranial system within cranial vault (14) is also subdivided into five compartments (A, C, P, V, and S, respectively) representing the intracranial arteries, capillaries, choroid plexus, veins, and venous sinus. The body's extracranial systemic vasculature is divided into six compartments (I, J, O, Z, D, and X, respectively) representing the arteries, capillaries, and veins of the central body and the lower body. Compartments (G) and (B) include tissue and the associated interstitial fluid in the intracranial and lower regions. Compartment (Y) is a composite involving the tissues, organs, and pulmonary circulation of the central body and compartment (M) represents the external environment.",
+   "existence": "verified_by_provider",
+   "population": "terrestrial_or_unspecified"
+  },
+  {
+   "refId": "ntrs:20110022513",
+   "provider": "nasa_ntrs",
+   "identifiers": {
+    "pmid": null,
+    "pmcid": null,
+    "doi": null,
+    "ntrsId": "20110022513",
+    "url": "https://ntrs.nasa.gov/citations/20110022513"
+   },
+   "title": "Fermi LAT Observations of Cosmic-Ray Electrons",
+   "source": "NASA Technical Reports Server",
+   "year": "2011",
+   "publicationTypes": [
+    "CONFERENCE_PAPER"
+   ],
+   "retrievedAt": "2026-11-07T17:04:10.237Z",
+   "sourceVersion": "NTRS modified 2025-08-31",
+   "inspected": "abstract",
+   "inspectedText": "Designed as a gamma-ray instrument, the LAT is a capable detector of high energy cosmic ray electrons. The LAT is composed of a 4x4 array of identical towers. Each tower has a Tracker and a Calorimeter module. Entire LAT is covered by segmented Anti-Coincidence Detector (ACD). The electron data analysis is based on that developed for photons. The main challenge is to identify and separate electrons from all other charged species, mainly CR protons (for gamma-ray analysis this is provided by the Anti-Coincidence Detector)",
+   "existence": "verified_by_provider",
+   "population": "terrestrial_or_unspecified"
+  }
+ ]
+}
