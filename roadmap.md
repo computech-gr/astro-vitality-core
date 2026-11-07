@@ -519,3 +519,11 @@
 - [x] 28 P41 tests incl. synthetic end-to-end and offline rebuild.
 - [ ] Researcher's first real review and approval — blocked: Nikolas's own review in Preview.
 - [ ] Publish so the published app gets attestation and literature functions — blocked: owner decision.
+
+## P41.1 Literature relevance and evidence safety
+
+- [x] Reproduced the G-CSF failure live (10 references incl. atmospheric moisture, cosmic-ray electrons, intracranial CSF model, embryo transfer); stored verbatim as a test fixture.
+- [x] No automatic reference selection; per-reference relevance (Relevant / Potentially relevant — manual review / Irrelevant / Insufficient information) with source-quoting reasons, shown apart from bibliographic existence and claim support.
+- [x] Same gate in single drafts, 5/25 batch and the server; irrelevant sources never reach the AI; no usable source → "Insufficient relevant scientific evidence" and no AI call.
+- [x] 15 P41.1 regression tests; approval still needs Researcher appraisal and server attestation.
+- [ ] Nikolas's signed-in check of the updated panel — blocked: his Researcher session.
