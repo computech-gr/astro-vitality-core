@@ -95,3 +95,11 @@ offline devices only receive changes with an app bundle; there is no revocation 
    which requires opening `authorization_open` under its own approval and a genuine
    source-validation receipt. Each step is separate from activation.
 6. Per-entry activation approval, then publication approval for distribution.
+
+## P37 installation record (2026-11-07 UTC)
+
+- Owner-approved `supabase/pending/20261108000000_p37_catalog_activation.sql` installed as `drizzle/migrations/0023_p37_catalog_activation.sql`; both files are byte-identical (SHA-256 `be60490d9248256a635e5cbd5b60a410fb0886ceaa9eea41b35e7dafd600eb8e`). Rollback (`f20f815a…e82a`) not executed.
+- The migration needs only one scientific approver per term (the Researcher's SCIENTIFIC APPROVE is final) plus an independently provisioned source-verification receipt; activation is a separate activator grant held by a different account.
+- Signing secret `P37_CATALOG_SIGNING_KEY` generated in the encrypted secrets store (never displayed); key ID `p37-prod-2026-11-08`; matching public key registered in `data/scientific/catalog-signing-keys.v1.json`. A live signed snapshot (version 0, no entries) was verified and installed in the Preview.
+- Pending, not executed: `supabase/pending/20261108000001_p37_scientific_approver_demo.authorize.sql` (SHA-256 `c4801c1444538c77ab535a0885d804b8c715988a23a7af2a26a493c8301b5757`) granting the scientific approver capability to nikolasilvestros@gmail.com.
+- After installation: 209 submitted terms, 1 triage acceptance, 0 source-validation receipts, 0 P37 events, 0 approver/activator grants, base catalog fingerprint unchanged.
