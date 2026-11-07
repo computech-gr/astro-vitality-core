@@ -263,23 +263,27 @@ export function extractTextSourceEvidence(
     const line = raw.trim();
     if (!line || line.length > 500) return;
     const page = linePages?.[i] ?? null;
-    if (PAGE_MARK.test(line) || (linePages && (pagesByKey.get(furnitureKey(line))?.size ?? 0) >= 2))
-      return;
     const cells = splitCells(line);
     if (isTableHeader(cells)) {
       tableHeader = cells.join(" | ");
       return;
     }
-    const h = headingKind(line, cells);
-    if (h) {
-      enterHeading(t, h);
-      if (h.level === 1 || headingDomain(h.text))
-        headings.push({ heading: h.text, domain: t.top?.domain ?? null, page, line: i + 1 });
-      if (h.level === 1) tableHeader = null;
+    const shape = rowShape(cells);
+    if (!shape) {
+      if (PAGE_MARK.test(line)) return;
+      const h = headingKind(line, cells);
+      const furniture =
+        !!linePages &&
+        !headingDomain(h?.text ?? line) &&
+        (pagesByKey.get(furnitureKey(line))?.size ?? 0) >= 2;
+      if (h && !furniture) {
+        enterHeading(t, h);
+        if (h.level === 1 || headingDomain(h.text))
+          headings.push({ heading: h.text, domain: t.top?.domain ?? null, page, line: i + 1 });
+        if (h.level === 1) tableHeader = null;
+      }
       return;
     }
-    const shape = rowShape(cells);
-    if (!shape) return;
     rows.push({
       ...shape,
       page,
