@@ -17,6 +17,7 @@ import {
 } from "../../src/domain/health-intelligence/active-catalog-runtime";
 import { buildUnknownBiomarkerTerms, classifyWithGovernedExtensions, termIdFor } from "../../src/domain/health-intelligence/unknown-biomarker-review";
 import { checkObservationSyncEvent } from "../../src/domain/health-intelligence/observation-sync";
+import { DATED_OBSERVATION_SCHEMA } from "../../src/domain/health-intelligence/observation-envelope";
 
 const LABEL = "Synthetic Mitochondrial Marker Q";
 const UNIT = "pmol/L";
@@ -145,10 +146,12 @@ describe("P37 synthetic lifecycle: approval -> activation -> automatic recogniti
 
   test("stored records and sync re-validate by exact canonical identity", () => {
     expect(classifyWithGovernedExtensions({ label: ID, unit: UNIT, identity: "canonical" }).classification.status).toBe("matched");
-    const o = { schema: "mitochondria.unified-observation.v2", id: "11111111-1111-4111-8111-111111111111", missionId: "M-TEST", crewMemberId: "C-TEST", metricId: ID, domain: "immune", value: "4.2",
-      originalUnit: UNIT, observedAt: "2026-11-07", datePrecision: "date", source: { kind: "manual", label: "Synthetic test" }, provenance: "synthetic", quality: { reviewerAccepted: true }, recordedAt: "2026-11-07T12:05:00Z", status: "active" };
-    const issue = checkObservationSyncEvent({ eventId: `${o.id}:entry`, eventKind: "entry", observation: o } as never, { missionId: "M-TEST", crewMemberId: "C-TEST", provenance: "synthetic" });
-    expect(issue ?? "").not.toContain("is not an exact catalog metric/unit pair");
+    const o = { schema: DATED_OBSERVATION_SCHEMA, id: "11111111-1111-4111-8111-111111111111", missionId: "M-TEST", crewMemberId: "C-TEST", metricId: ID, domain: "immune", value: "4.2",
+      originalUnit: UNIT, observedAt: "2026-11-07", datePrecision: "date", source: { kind: "manual", label: "Synthetic test" }, provenance: "synthetic",
+      quality: { reviewerConfirmed: true, duplicateWarningAcknowledged: false }, reviewState: "accepted", recordedAt: "2026-11-07T12:05:00Z", status: "active" };
+    const scope = { missionId: "M-TEST", crewMemberId: "C-TEST", provenance: "synthetic" } as const;
+    expect(checkObservationSyncEvent({ eventId: `${o.id}:entry`, eventKind: "entry", observation: o } as never, scope)).toBeNull();
+    expect(checkObservationSyncEvent({ eventId: `${o.id}:entry`, eventKind: "entry", observation: { ...o, originalUnit: "nmol/L" } } as never, scope)).toContain("not an exact catalog metric/unit pair");
   });
 
   test("tampered, older, untrusted-key and test-environment snapshots are refused; the last verified catalog stays", async () => {
