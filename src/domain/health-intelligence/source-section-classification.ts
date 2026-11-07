@@ -94,13 +94,24 @@ export interface SourceDocumentEvidence {
   kind: "pdf" | "text" | "csv" | "xlsx";
   pages: number | null;
   /** Domain-level headings in document order with their recognized domain. */
-  headings: { heading: string; domain: HealthDomainId | null; page: number | null; line: number }[];
+  headings: {
+    heading: string;
+    domain: HealthDomainId | null;
+    page: number | null;
+    line: number;
+    /** Count printed with the heading ("| 63 observations"), when present. */
+    declaredCount: number | null;
+  }[];
   rows: SourceRowEvidence[];
 }
 
 // --- Heading rules ---------------------------------------------------------------
 const COUNT_SUFFIX =
   /\s*(?:[|:–—-]\s*)?\(?\s*\d+\s+(?:observations?|results?|tests?|items?|measurements?|parameters?)\s*\)?\s*$/i;
+const declaredCount = (line: string): number | null => {
+  const m = /(\d+)\s+(?:observations?|results?|tests?|items?|measurements?|parameters?)\s*\)?\s*$/i.exec(line);
+  return m ? Number(m[1]) : null;
+};
 const NUMBERING = /^(?:#{1,6}\s*|(?:section|part)\s+[\dIVX]+\s*[.:–—-]?\s*|[\dIVX]+(?:\.\d+)*[.)]\s+)/i;
 
 /** Normalized heading text for exact alias comparison (never a keyword search). */
@@ -280,7 +291,13 @@ export function extractTextSourceEvidence(
       if (h && !furniture) {
         enterHeading(t, h);
         if (h.level === 1 || headingDomain(h.text))
-          headings.push({ heading: h.text, domain: t.top?.domain ?? null, page, line: i + 1 });
+          headings.push({
+            heading: h.text,
+            domain: t.top?.domain ?? null,
+            page,
+            line: i + 1,
+            declaredCount: declaredCount(line),
+          });
         if (h.level === 1) tableHeader = null;
       }
       return;
@@ -332,7 +349,13 @@ export function extractGridSourceEvidence(
     if (filled.length === 1 && !NUMERIC.test(filled[0]!)) {
       const h = headingKind(filled[0]!, [filled[0]!]) ?? { level: 1 as const, text: filled[0]! };
       enterHeading(t, h);
-      headings.push({ heading: h.text, domain: t.top?.domain ?? null, page: null, line });
+      headings.push({
+        heading: h.text,
+        domain: t.top?.domain ?? null,
+        page: null,
+        line,
+        declaredCount: declaredCount(filled[0]!),
+      });
       return;
     }
     const label = header ? (cells[li] ?? "") : (cells[0] ?? "");
@@ -553,4 +576,15 @@ export function compactEvidence(doc: SourceDocumentEvidence): SourceDocumentEvid
     ...doc,
     rows: doc.rows.map((r) => ({ ...r, excerpt: "" })),
   };
+}
+
+/** Rows extracted per domain-level heading vs the count the heading declares (provenance coverage). */
+export function sectionCoverage(doc: SourceDocumentEvidence) {
+  return doc.headings.map((h, i) => {
+    const next = doc.headings[i + 1];
+    const rows = doc.rows.filter(
+      (r) => r.line > h.line && (!next || r.line < next.line) && r.section?.path[0] === h.heading,
+    ).length;
+    return { heading: h.heading, domain: h.domain, page: h.page, declaredCount: h.declaredCount, rows };
+  });
 }
