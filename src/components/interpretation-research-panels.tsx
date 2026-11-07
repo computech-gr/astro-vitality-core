@@ -31,6 +31,14 @@ import {
 } from "@/domain/health-intelligence/interpretation-backlog";
 import { appendEvidenceAttempt, listEvidenceAttempts } from "@/domain/health-intelligence/interpretation-evidence-store";
 import {
+  INSUFFICIENT_RELEVANT_EVIDENCE,
+  RELEVANCE_LABELS,
+  assessRelevance,
+  automaticDraftRefIds,
+  selectableForDraft,
+  type RelevanceAssessment,
+} from "@/domain/health-intelligence/literature-relevance";
+import {
   IDENTIFICATION_LABELS,
   activatedIdentityFor,
   candidateConcept,
@@ -60,11 +68,12 @@ function useEvidenceAttempts() {
   return { attempts, reload };
 }
 
-function ReferenceItem({ r, checked, onToggle, disabled }: { r: EvidenceReference; checked?: boolean; onToggle?: () => void; disabled?: boolean }) {
+function ReferenceItem({ r, relevance, checked, onToggle, disabled }: { r: EvidenceReference; relevance?: RelevanceAssessment; checked?: boolean; onToggle?: () => void; disabled?: boolean }) {
+  const selectable = relevance ? selectableForDraft(relevance, r) : false;
   return (
     <li className="space-y-0.5 rounded border border-border p-2 text-xs">
       <label className="flex items-start gap-2">
-        {onToggle && <input type="checkbox" checked={!!checked} disabled={disabled || !r.inspectedText} onChange={onToggle} aria-label={`Use ${r.refId} for the draft`} />}
+        {onToggle && <input type="checkbox" checked={!!checked} disabled={disabled || !selectable} onChange={onToggle} aria-label={`Use ${r.refId} for the draft`} />}
         <span className="min-w-0 break-words">
           <a className="font-medium underline" href={r.identifiers.url} target="_blank" rel="noreferrer">{r.title}</a>
           {r.source ? ` — ${r.source}` : ""}{r.year ? ` (${r.year})` : ""}
@@ -74,8 +83,14 @@ function ReferenceItem({ r, checked, onToggle, disabled }: { r: EvidenceReferenc
         {[r.identifiers.pmid && `PMID ${r.identifiers.pmid}`, r.identifiers.pmcid, r.identifiers.doi && `DOI ${r.identifiers.doi}`, r.identifiers.ntrsId && `NTRS ${r.identifiers.ntrsId}`].filter(Boolean).join(" · ")}
       </p>
       <p className="text-muted-foreground">
-        {INSPECTION_LABELS[r.inspected]} · {r.population === "spaceflight_or_analog" ? "Spaceflight / analog study (keyword-tagged)" : "Terrestrial or unspecified population"} · existence {r.existence === "verified_by_provider" ? "confirmed by provider" : "not found"} · retrieved {r.retrievedAt.slice(0, 16)}Z{r.sourceVersion ? ` · ${r.sourceVersion}` : ""}
+        Bibliographic existence: {r.existence === "verified_by_provider" ? "confirmed by provider" : "not found"} · {INSPECTION_LABELS[r.inspected]} · {r.population === "spaceflight_or_analog" ? "spaceflight / analog keyword present (not a relevance assessment)" : "no spaceflight keyword"} · retrieved {r.retrievedAt.slice(0, 16)}Z{r.sourceVersion ? ` · ${r.sourceVersion}` : ""}
       </p>
+      {relevance && (
+        <p>
+          <span className="font-medium">Scientific relevance: {RELEVANCE_LABELS[relevance.classification]}</span> — {relevance.reason}
+        </p>
+      )}
+      {relevance && <p className="text-muted-foreground">Claim-level support is assessed separately for each draft claim; existence and relevance do not support any claim by themselves.</p>}
     </li>
   );
 }
@@ -142,9 +157,13 @@ export function InterpretationEvidencePanel(props: {
   const entry = keys.map((k) => state.get(k)).find((s) => s?.bundle) ?? state.get(props.researchKey);
   const bundle = entry?.bundle ?? null;
   const privacy = conceptPrivacyProblem(props.concept);
+  // P41.1: relevance is re-assessed deterministically (also for bundles stored before P41.1).
+  const relevance = useMemo(() => new Map((bundle?.references ?? []).map((r) => [r.refId, assessRelevance(r, bundle!.concept)])), [bundle]);
+  const selectableCount = (bundle?.references ?? []).filter((r) => selectableForDraft(relevance.get(r.refId)!, r)).length;
 
+  // P41.1: no reference is pre-selected; the Researcher ticks each one explicitly.
   useEffect(() => {
-    if (bundle) setSelected(new Set(bundle.references.filter((r) => r.inspectedText).slice(0, 6).map((r) => r.refId)));
+    setSelected(new Set());
   }, [bundle]);
 
   const record = async (status: AttemptStatus, b: EvidenceBundle | null, error: string | null) => {
@@ -176,14 +195,20 @@ export function InterpretationEvidencePanel(props: {
     setBusy(true);
     setNote("");
     try {
-      const r = await draftFn({ data: { key: props.researchKey, concept: props.concept, refIds: [...selected].filter((x) => /^(pmid|ntrs):/.test(x)).slice(0, 10) } });
+      const r = await draftFn({ data: { key: props.researchKey, concept: props.concept, refIds: [...selected].filter((x) => /^(pmid|ntrs):/.test(x) && !!bundle.references.find((r) => r.refId === x && selectableForDraft(relevance.get(x)!, r))).slice(0, 10), selection: "researcher_explicit" } });
       if (!r.ok) {
         await record("failed", bundle, failText(r));
         setNote(failText(r));
         return;
       }
       await record(r.bundle.status, { ...r.bundle, queries: bundle.queries }, null);
-      setNote(r.bundle.status === "draft_ready" ? "AI-assisted draft prepared. Review each claim against its source; nothing was approved." : "Insufficient verified evidence for a draft; gaps are listed.");
+      setNote(
+        r.bundle.status === "draft_ready"
+          ? "AI-assisted draft prepared. Review each claim against its source; nothing was approved."
+          : !r.bundle.draft
+            ? `${INSUFFICIENT_RELEVANT_EVIDENCE} — no AI draft was generated.`
+            : "Insufficient verified evidence for a draft; gaps are listed.",
+      );
     } catch {
       setNote("Drafting failed; nothing was changed.");
     } finally {
@@ -231,12 +256,27 @@ export function InterpretationEvidencePanel(props: {
           <p className="text-xs text-muted-foreground">
             Providers: {bundle.providerOutcomes.map((o) => `${o.provider} ${o.status}${o.detail ? ` (${o.detail})` : ""}: ${o.count}`).join(" · ")}
           </p>
+          <p className="text-xs text-muted-foreground">
+            No source is selected automatically. Tick only sources you have judged relevant; “Potentially relevant” sources need your manual review, and “Irrelevant” or “Insufficient information” sources cannot be used.
+          </p>
+          {bundle.references.length > 0 && selectableCount === 0 && (
+            <p className="text-sm font-medium" role="status">{INSUFFICIENT_RELEVANT_EVIDENCE} — none of the retrieved sources can be used for an AI draft.</p>
+          )}
           <ul className="space-y-1">
             {bundle.references.map((r) => (
-              <ReferenceItem key={r.refId} r={r} disabled={disabled} checked={selected.has(r.refId)} onToggle={() => setSelected((s) => { const n = new Set(s); if (n.has(r.refId)) n.delete(r.refId); else n.add(r.refId); return n; })} />
+              <ReferenceItem key={r.refId} r={r} relevance={relevance.get(r.refId)} disabled={disabled} checked={selected.has(r.refId)} onToggle={() => setSelected((s) => { const n = new Set(s); if (n.has(r.refId)) n.delete(r.refId); else n.add(r.refId); return n; })} />
             ))}
           </ul>
           {!bundle.references.length && <p className="text-xs">No literature found for this concept.</p>}
+          {bundle.relevanceGate && bundle.relevanceGate.excluded.length > 0 && (
+            <details className="text-xs">
+              <summary className="cursor-pointer">{bundle.relevanceGate.excluded.length} source(s) excluded from the last AI request</summary>
+              <ul className="list-disc pl-4">{bundle.relevanceGate.excluded.map((x) => <li key={x.refId} className="break-words">{x.refId}: {RELEVANCE_LABELS[x.classification]} — {x.reason}</li>)}</ul>
+            </details>
+          )}
+          {!bundle.draft && bundle.status === "insufficient_evidence" && bundle.relevanceGate && (
+            <p className="text-sm font-medium" role="status">{INSUFFICIENT_RELEVANT_EVIDENCE} — no AI draft was generated.</p>
+          )}
           <DraftView bundle={bundle} />
         </>
       )}
@@ -289,10 +329,20 @@ export function InterpretationBacklogPanel(props: { snapshot: InterpretationSnap
           const s = await search({ data: { key, concept } });
           if (!s.ok) attempt = planAttempt(key, local, "failed", null, failText(s), props.userId, at());
           else {
-            const usable = s.bundle.references.filter((x) => x.inspectedText).slice(0, 6).map((x) => x.refId);
-            if (!usable.length) attempt = planAttempt(key, local, s.bundle.status === "evidence_retrieved" ? "insufficient_evidence" : s.bundle.status, s.bundle, null, props.userId, at());
+            // P41.1: batch drafting uses only references assessed as relevant (never potentially relevant or irrelevant ones).
+            const usable = automaticDraftRefIds(s.bundle.references, concept).filter((x) => /^(pmid|ntrs):/.test(x)).slice(0, 10);
+            if (!usable.length)
+              attempt = planAttempt(
+                key,
+                local,
+                s.bundle.status === "evidence_retrieved" ? "insufficient_evidence" : s.bundle.status,
+                s.bundle.status === "evidence_retrieved" ? { ...s.bundle, gaps: [`${INSUFFICIENT_RELEVANT_EVIDENCE}: no retrieved reference was assessed as relevant; no AI draft was generated.`, ...s.bundle.gaps] } : s.bundle,
+                null,
+                props.userId,
+                at(),
+              );
             else {
-              const d = await draftFn({ data: { key, concept, refIds: usable } });
+              const d = await draftFn({ data: { key, concept, refIds: usable, selection: "automatic_batch" } });
               attempt = d.ok ? planAttempt(key, local, d.bundle.status, { ...d.bundle, queries: s.bundle.queries }, null, props.userId, at()) : planAttempt(key, local, "evidence_retrieved", s.bundle, failText(d), props.userId, at());
             }
           }
@@ -342,7 +392,7 @@ export function InterpretationBacklogPanel(props: { snapshot: InterpretationSnap
         <Button type="button" size="sm" variant="ghost" disabled={!running} onClick={() => (stop.current = true)}>Stop after current entry</Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        Resumable and idempotent: completed entries are skipped, failures are retried up to three times, and every attempt is stored on this device. Batch work prepares drafts only — approval stays one entry at a time.
+        Resumable and idempotent: completed entries are skipped, failures are retried up to three times, and every attempt is stored on this device. Batch drafts use only sources assessed as relevant; entries without one are marked “{INSUFFICIENT_RELEVANT_EVIDENCE}”. Batch work prepares drafts only — approval stays one entry at a time.
       </p>
       {note && <p className="text-xs" role="status">{note}</p>}
     </section>
