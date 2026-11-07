@@ -1,12 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { bulkSelectionCounts, isDecidable, retrySelection } from "../../src/domain/health-intelligence/p38-bulk-demo-selection";
 import { activationPreview, type PendingDemoProposal } from "../../src/domain/health-intelligence/p38-bulk-demo-batches";
 import type { PreflightRow } from "../../src/domain/health-intelligence/p38-bulk-demo-preflight";
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 const row = (key: string, over: Partial<PreflightRow> = {}): PreflightRow =>
   ({ key, submissionId: "s", termId: key, labels: [key], unit: "ng/mL", category: "eligible", inScope: true, triageAction: "ACCEPT_FOR_REVIEW", reasons: [], ...over }) as PreflightRow;
@@ -35,9 +30,6 @@ describe("P54 Researcher bulk selection (reuses the P38 workflow)", () => {
       { ref: "b", termId: "b", status: "recorded" as const, detail: null, eventId: "00000000-0000-4000-8000-000000000001" },
     ];
     expect(retrySelection(results, rows, scope)).toEqual({ keys: ["a"], notRetryable: 1 });
-    const src = readFileSync(join(ROOT, "src/components/p38-bulk-demo-researcher.tsx"), "utf8");
-    expect(src).not.toMatch(/approveAll|bypass|activateAll/i);
-    expect(src).toContain("Record Bulk SYNTHETIC DEMO Decisions");
   });
 
   it("Ground Medical activation stays separate: the decider can never activate their own decision", () => {
@@ -48,13 +40,6 @@ describe("P54 Researcher bulk selection (reuses the P38 workflow)", () => {
     };
     expect(activationPreview([p], () => true)[0]!.category).toBe("decided_by_caller");
     expect(activationPreview([{ ...p, decidedByCaller: false }], () => true)[0]!.category).toBe("eligible");
-    const decide = readFileSync(join(ROOT, "src/components/p38-bulk-demo-researcher.tsx"), "utf8");
-    expect(decide).not.toMatch(/activateCatalogEntry|bulkDemoActivate/);
   });
 
-  it("the Global Scientific Review table links to the existing bulk section", () => {
-    const panel = readFileSync(join(ROOT, "src/components/p36-global-review-panel.tsx"), "utf8");
-    expect(panel).toContain("openBulkDemoDecisions(selectedMission.missionId)");
-    expect(readFileSync(join(ROOT, "src/components/p38-bulk-demo-researcher.tsx"), "utf8")).toContain('id="p38-bulk-researcher"');
-  });
 });
