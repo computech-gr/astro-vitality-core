@@ -22,7 +22,10 @@ import {
   resetSyntheticDemoCatalogsForTests,
 } from "../../src/domain/health-intelligence/synthetic-demo-catalog-runtime";
 import { refreshSyntheticDemoCatalogs } from "../../src/domain/health-intelligence/synthetic-demo-catalog-sync";
-import { generateTestSigningKey, type TrustedKey } from "../../src/domain/health-intelligence/catalog-snapshot-signing";
+import {
+  generateTestSigningKey,
+  type TrustedKey,
+} from "../../src/domain/health-intelligence/catalog-snapshot-signing";
 import type { SnapshotStorage } from "../../src/domain/health-intelligence/active-catalog-runtime";
 import {
   buildUnknownBiomarkerTerms,
@@ -69,8 +72,16 @@ function entry(over: Partial<SyntheticDemoEntry> = {}): SyntheticDemoEntry {
     classification: SYNTHETIC_DEMO_CLASSIFICATION,
     sourceDocumentSha256: ["a".repeat(64)],
     status: "ACTIVE",
-    decision: { decisionEventId: "d1", decidedAt: "2026-11-07T12:16:19Z", entrySha256: "b".repeat(64) },
-    activation: { activationEventId: "a1", activatedAt: "2026-11-07T12:19:13Z", demoCatalogVersion: 2 },
+    decision: {
+      decisionEventId: "d1",
+      decidedAt: "2026-11-07T12:16:19Z",
+      entrySha256: "b".repeat(64),
+    },
+    activation: {
+      activationEventId: "a1",
+      activatedAt: "2026-11-07T12:19:13Z",
+      demoCatalogVersion: 2,
+    },
     revocation: null,
     ...over,
   };
@@ -78,9 +89,18 @@ function entry(over: Partial<SyntheticDemoEntry> = {}): SyntheticDemoEntry {
 const revokedEntry = () =>
   entry({
     status: "REVOKED",
-    revocation: { revocationEventId: "r1", revokedAt: "2026-11-07T14:00:00Z", reason: "synthetic test end", demoCatalogVersion: 3 },
+    revocation: {
+      revocationEventId: "r1",
+      revokedAt: "2026-11-07T14:00:00Z",
+      reason: "synthetic test end",
+      demoCatalogVersion: 3,
+    },
   });
-const snapshot = (entries: SyntheticDemoEntry[], v = 2, missionId = MISSION): SyntheticDemoSnapshot => ({
+const snapshot = (
+  entries: SyntheticDemoEntry[],
+  v = 2,
+  missionId = MISSION,
+): SyntheticDemoSnapshot => ({
   schema: "mitochondria.synthetic-demo-catalog-snapshot.v1",
   environment: "synthetic_demo",
   missionId,
@@ -88,7 +108,8 @@ const snapshot = (entries: SyntheticDemoEntry[], v = 2, missionId = MISSION): Sy
   issuedAt: "2026-11-07T12:20:00Z",
   entries,
 });
-const catalogsOf = (s: SyntheticDemoSnapshot) => new Map([[s.missionId, evaluateSyntheticDemoSnapshot(s)]]);
+const catalogsOf = (s: SyntheticDemoSnapshot) =>
+  new Map([[s.missionId, evaluateSyntheticDemoSnapshot(s)]]);
 const ACTIVE = catalogsOf(snapshot([entry()]));
 const REVOKED = catalogsOf(snapshot([revokedEntry()], 3));
 
@@ -104,17 +125,33 @@ function memoryStorage(): SnapshotStorage & { map: Map<string, string> } {
 
 /** The same steps the intake screen runs for one parsed row (classify → eligibility → envelope). */
 function intakeRecord(
-  candidate: { label: string; value: string; unit: string; observedAt: string; datePrecision?: "date" | "instant" },
+  candidate: {
+    label: string;
+    value: string;
+    unit: string;
+    observedAt: string;
+    datePrecision?: "date" | "instant";
+  },
   catalogs: ReadonlyMap<string, ReturnType<typeof evaluateSyntheticDemoSnapshot>>,
   provenance: "synthetic" | "real" = "synthetic",
   missionId = MISSION,
 ) {
   const input = { label: candidate.label, unit: candidate.unit, provenance, missionId };
   const r = classifyWithGovernedExtensions(input, undefined, undefined, catalogs);
-  const row = { ...candidate, ...input, key: "k", classification: r.classification, selected: true };
+  const row = {
+    ...candidate,
+    ...input,
+    key: "k",
+    classification: r.classification,
+    selected: true,
+  };
   return { r, row };
 }
-function envelope(c: { value: string; observedAt: string }, basis: NonNullable<ReturnType<typeof classifyWithGovernedExtensions>["syntheticDemo"]>, id = "obs-demo-000001"): UnifiedObservation {
+function envelope(
+  c: { value: string; observedAt: string },
+  basis: NonNullable<ReturnType<typeof classifyWithGovernedExtensions>["syntheticDemo"]>,
+  id = "obs-demo-000001",
+): UnifiedObservation {
   return {
     schema: DATED_OBSERVATION_SCHEMA,
     id,
@@ -126,7 +163,13 @@ function envelope(c: { value: string; observedAt: string }, basis: NonNullable<R
     originalUnit: UNIT,
     observedAt: c.observedAt,
     datePrecision: "date",
-    source: { kind: "csv", label: "CSV import", documentName: "synthetic-exam-2.csv", documentSha256: "c".repeat(64), excerpt: `${LABEL},${c.value},${UNIT}` },
+    source: {
+      kind: "csv",
+      label: "CSV import",
+      documentName: "synthetic-exam-2.csv",
+      documentSha256: "c".repeat(64),
+      excerpt: `${LABEL},${c.value},${UNIT}`,
+    },
     provenance: "synthetic",
     quality: { reviewerConfirmed: true },
     reviewState: "accepted",
@@ -141,15 +184,33 @@ afterAll(() => resetSyntheticDemoCatalogsForTests());
 
 describe("matching rules", () => {
   test("handbook bone-019 near-miss does not suppress the activated mission demo entry", () => {
-    expect(classifyIntakeObservation({ label: LABEL, unit: UNIT }).status).toBe("unit_review_required");
-    const r = classifyWithGovernedExtensions({ label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION }, undefined, undefined, ACTIVE);
-    expect(r.classification).toMatchObject({ status: "matched", metricId: DEMO_ID, domain: "bone" });
-    expect(r.syntheticDemo).toMatchObject({ kind: "synthetic_demo", termId: "ubt-7b25ce69", demoCatalogVersion: 2, classification: SYNTHETIC_DEMO_CLASSIFICATION });
+    expect(classifyIntakeObservation({ label: LABEL, unit: UNIT }).status).toBe(
+      "unit_review_required",
+    );
+    const r = classifyWithGovernedExtensions(
+      { label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION },
+      undefined,
+      undefined,
+      ACTIVE,
+    );
+    expect(r.classification).toMatchObject({
+      status: "matched",
+      metricId: DEMO_ID,
+      domain: "bone",
+    });
+    expect(r.syntheticDemo).toMatchObject({
+      kind: "synthetic_demo",
+      termId: "ubt-7b25ce69",
+      demoCatalogVersion: 2,
+      classification: SYNTHETIC_DEMO_CLASSIFICATION,
+    });
   });
 
   test("never for real data, another mission, another unit or a source-unvalidated row", () => {
     const base = { label: LABEL, unit: UNIT, provenance: "synthetic" as const, missionId: MISSION };
-    const status = (over: object) => classifyWithGovernedExtensions({ ...base, ...over }, undefined, undefined, ACTIVE).classification.status;
+    const status = (over: object) =>
+      classifyWithGovernedExtensions({ ...base, ...over }, undefined, undefined, ACTIVE)
+        .classification.status;
     expect(status({ provenance: "real" })).toBe("unit_review_required");
     expect(status({ provenance: undefined })).toBe("unit_review_required");
     expect(status({ missionId: "MISSION_TEST" })).toBe("unit_review_required");
@@ -160,7 +221,12 @@ describe("matching rules", () => {
 
   test("an exact handbook match is never replaced by a demo entry", () => {
     const clash = catalogsOf(snapshot([entry({ aliases: ["cv-001"], unit: "bpm" })]));
-    const r = classifyWithGovernedExtensions({ label: "cv-001", unit: "bpm", provenance: "synthetic", missionId: MISSION }, undefined, undefined, clash);
+    const r = classifyWithGovernedExtensions(
+      { label: "cv-001", unit: "bpm", provenance: "synthetic", missionId: MISSION },
+      undefined,
+      undefined,
+      clash,
+    );
     expect(r.classification).toMatchObject({ status: "matched", metricId: "cv-001" });
     expect(r.syntheticDemo ?? null).toBeNull();
   });
@@ -180,11 +246,24 @@ describe("NEW synthetic examination through the normal intake path", () => {
     const parsed = extractCsvCandidates(csv).rows;
     expect(parsed).toHaveLength(2);
     const [vitD, otherUnit] = parsed.map((c) => intakeRecord(c, ACTIVE));
-    expect(vitD!.r.classification).toMatchObject({ status: "matched", metricId: DEMO_ID, domain: "bone" });
-    expect(intakeRowExclusionReason({ ...vitD!.row, classification: vitD!.r.classification })).toBeNull();
+    expect(vitD!.r.classification).toMatchObject({
+      status: "matched",
+      metricId: DEMO_ID,
+      domain: "bone",
+    });
+    expect(
+      intakeRowExclusionReason({ ...vitD!.row, classification: vitD!.r.classification }),
+    ).toBeNull();
     expect(otherUnit!.r.classification.status).not.toBe("matched");
     const reviewOnly = [vitD!, otherUnit!].filter((x) => x.r.classification.status !== "matched");
-    const terms = buildUnknownBiomarkerTerms(reviewOnly.map((x) => ({ ...x.row, sourceKind: "csv", sourceLabel: "CSV import", classification: x.r.classification })));
+    const terms = buildUnknownBiomarkerTerms(
+      reviewOnly.map((x) => ({
+        ...x.row,
+        sourceKind: "csv",
+        sourceLabel: "CSV import",
+        classification: x.r.classification,
+      })),
+    );
     expect(terms).toHaveLength(1);
     expect(terms[0]!.originalUnit).toBe("nmol/L");
   });
@@ -195,7 +274,12 @@ describe("NEW synthetic examination through the normal intake path", () => {
     const o = envelope(c!, r.syntheticDemo!);
     expect(validateUnifiedObservation(o)).toBeNull();
     const store = new InMemoryOfflineMissionStore();
-    expect(await importUnifiedObservationEvent({ eventId: `${o.id}:entry`, eventKind: "entry", observation: o }, store)).toBe("inserted");
+    expect(
+      await importUnifiedObservationEvent(
+        { eventId: `${o.id}:entry`, eventKind: "entry", observation: o },
+        store,
+      ),
+    ).toBe("inserted");
     const history = await listUnifiedObservations(MISSION, CREW, store);
     expect(history).toHaveLength(1);
     expect(history[0]!.catalogBasis?.classification).toBe(SYNTHETIC_DEMO_BASIS_CLASSIFICATION);
@@ -203,16 +287,41 @@ describe("NEW synthetic examination through the normal intake path", () => {
     expect(await listUnifiedObservations("MISSION_TEST", CREW, store)).toHaveLength(0);
 
     const projected = projectCanonicalObservations(
-      [{ id: o.id, missionId: MISSION, crewMemberId: CREW, kind: "observation", eventTimestamp: o.recordedAt, sourceId: "unified-intake", classification: "medical_sensitive", location: "local", payload: { observation: o } }],
+      [
+        {
+          id: o.id,
+          missionId: MISSION,
+          crewMemberId: CREW,
+          kind: "observation",
+          eventTimestamp: o.recordedAt,
+          sourceId: "unified-intake",
+          classification: "medical_sensitive",
+          location: "local",
+          payload: { observation: o },
+        },
+      ],
       SCOPE,
     );
     expect(projected.nonChartable).toHaveLength(0);
-    expect(projected.observations[0]).toMatchObject({ healthDomain: "bone", metricCode: DEMO_ID, value: 31.4, unit: UNIT, provenance: "synthetic" });
+    expect(projected.observations[0]).toMatchObject({
+      healthDomain: "bone",
+      metricCode: DEMO_ID,
+      value: 31.4,
+      unit: UNIT,
+      provenance: "synthetic",
+    });
     expect(projected.observations[0]!.metricLabel).toContain("SYNTHETIC DEMO");
 
-    const report = buildUnifiedHealthReport({ domainEntries: {}, unifiedObservations: history, deviceRecords: [] }, SCOPE);
+    const report = buildUnifiedHealthReport(
+      { domainEntries: {}, unifiedObservations: history, deviceRecords: [] },
+      SCOPE,
+    );
     expect(report.rows).toHaveLength(1);
-    expect(report.rows[0]).toMatchObject({ metricId: DEMO_ID, unit: UNIT, provenance: "synthetic" });
+    expect(report.rows[0]).toMatchObject({
+      metricId: DEMO_ID,
+      unit: UNIT,
+      provenance: "synthetic",
+    });
     expect(report.rows[0]!.metricLabel).toContain("SYNTHETIC DEMO (not scientifically validated)");
   });
 
@@ -224,15 +333,32 @@ describe("NEW synthetic examination through the normal intake path", () => {
     const { catalogBasis: _b, ...unlabelled } = o;
     void _b;
     expect(validateUnifiedObservation(unlabelled as UnifiedObservation)).not.toBeNull();
-    expect(validateUnifiedObservation({ ...o, catalogBasis: { ...basis, termId: "ubt-00000000" } })).not.toBeNull();
-    expect(validateUnifiedObservation({ ...o, catalogBasis: { ...basis, classification: "VALIDATED" as typeof SYNTHETIC_DEMO_BASIS_CLASSIFICATION } })).not.toBeNull();
-    expect(validateUnifiedObservation({ ...o, metricId: "bone-019", catalogBasis: basis })).not.toBeNull();
+    expect(
+      validateUnifiedObservation({ ...o, catalogBasis: { ...basis, termId: "ubt-00000000" } }),
+    ).not.toBeNull();
+    expect(
+      validateUnifiedObservation({
+        ...o,
+        catalogBasis: {
+          ...basis,
+          classification: "VALIDATED" as typeof SYNTHETIC_DEMO_BASIS_CLASSIFICATION,
+        },
+      }),
+    ).not.toBeNull();
+    expect(
+      validateUnifiedObservation({ ...o, metricId: "bone-019", catalogBasis: basis }),
+    ).not.toBeNull();
   });
 });
 
 describe("sync, corrections and revocation", () => {
   const c = { value: "31.4", observedAt: "2026-11-07" };
-  const basis = classifyWithGovernedExtensions({ label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION }, undefined, undefined, ACTIVE).syntheticDemo!;
+  const basis = classifyWithGovernedExtensions(
+    { label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION },
+    undefined,
+    undefined,
+    ACTIVE,
+  ).syntheticDemo!;
   const o = envelope(c, basis);
   const event = { eventId: `${o.id}:entry`, eventKind: "entry" as const, observation: o };
 
@@ -240,14 +366,23 @@ describe("sync, corrections and revocation", () => {
     expect(checkObservationSyncEvent(event, SCOPE, ACTIVE)).toBeNull();
     expect(checkObservationSyncEvent(event, SCOPE, REVOKED)).toBeNull();
     expect(checkObservationSyncEvent(event, SCOPE, new Map())).not.toBeNull();
-    expect(checkObservationSyncEvent(event, SCOPE, catalogsOf(snapshot([entry({ missionId: "OTHER" })], 2, "OTHER")))).not.toBeNull();
+    expect(
+      checkObservationSyncEvent(
+        event,
+        SCOPE,
+        catalogsOf(snapshot([entry({ missionId: "OTHER" })], 2, "OTHER")),
+      ),
+    ).not.toBeNull();
   });
 
   test("server reads the caller-scoped demo catalog; real scopes and failures fail closed", async () => {
     const calls: string[] = [];
     const rpc = async (fn: string) => {
       calls.push(fn);
-      return { data: { mission_id: MISSION, demo_catalog_version: 2, entries: [entry()] }, error: null };
+      return {
+        data: { mission_id: MISSION, demo_catalog_version: 2, entries: [entry()] },
+        error: null,
+      };
     };
     const server = await serverDemoCatalogs({ rpc }, SCOPE);
     expect(checkObservationSyncEvent(event, SCOPE, server)).toBeNull();
@@ -256,34 +391,76 @@ describe("sync, corrections and revocation", () => {
     expect(calls).toHaveLength(1);
     const failing = async () => ({ data: null, error: { code: "42501" } });
     expect((await serverDemoCatalogs({ rpc: failing }, SCOPE)).size).toBe(0);
-    const wrongMission = async () => ({ data: { mission_id: "OTHER", demo_catalog_version: 2, entries: [entry()] }, error: null });
+    const wrongMission = async () => ({
+      data: { mission_id: "OTHER", demo_catalog_version: 2, entries: [entry()] },
+      error: null,
+    });
     expect((await serverDemoCatalogs({ rpc: wrongMission }, SCOPE)).size).toBe(0);
   });
 
   test("revocation stops new recognition but history stays valid and charted", () => {
-    const r = classifyWithGovernedExtensions({ label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION }, undefined, undefined, REVOKED);
+    const r = classifyWithGovernedExtensions(
+      { label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION },
+      undefined,
+      undefined,
+      REVOKED,
+    );
     expect(r.classification.status).toBe("unit_review_required");
     expect(r.syntheticDemo ?? null).toBeNull();
     expect(validateUnifiedObservation(o)).toBeNull();
     const projected = projectCanonicalObservations(
-      [{ id: o.id, missionId: MISSION, crewMemberId: CREW, kind: "observation", eventTimestamp: o.recordedAt, sourceId: "unified-intake", classification: "medical_sensitive", location: "local", payload: { observation: o } }],
+      [
+        {
+          id: o.id,
+          missionId: MISSION,
+          crewMemberId: CREW,
+          kind: "observation",
+          eventTimestamp: o.recordedAt,
+          sourceId: "unified-intake",
+          classification: "medical_sensitive",
+          location: "local",
+          payload: { observation: o },
+        },
+      ],
       SCOPE,
     );
     expect(projected.observations).toHaveLength(1);
   });
 
   test("Ground Medical correction keeps the demo basis while active and is refused after revocation", async () => {
-    const ctx = { actorUserId: "00000000-0000-4000-8000-0000000000a2", rolesForScope: ["ground_medical"], scope: SCOPE, decidedAt: "2026-11-07T16:00:00.000Z" };
-    const draft = { metricId: DEMO_ID, value: "32.0", unit: UNIT, observedAt: "2026-11-07", datePrecision: "date" as const, reason: "Synthetic transcription correction", confirmed: true };
-    const store = await import("../../src/domain/health-intelligence/synthetic-demo-catalog-runtime");
+    const ctx = {
+      actorUserId: "00000000-0000-4000-8000-0000000000a2",
+      rolesForScope: ["ground_medical"],
+      scope: SCOPE,
+      decidedAt: "2026-11-07T16:00:00.000Z",
+    };
+    const draft = {
+      metricId: DEMO_ID,
+      value: "32.0",
+      unit: UNIT,
+      observedAt: "2026-11-07",
+      datePrecision: "date" as const,
+      reason: "Synthetic transcription correction",
+      confirmed: true,
+    };
+    const store =
+      await import("../../src/domain/health-intelligence/synthetic-demo-catalog-runtime");
     const k = await demoKey();
     const storage = memoryStorage();
     const opts = { storage, trustedKeys: [k.trusted] };
-    await store.installOfferedDemoCatalog(await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey), MISSION, opts);
+    await store.installOfferedDemoCatalog(
+      await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey),
+      MISSION,
+      opts,
+    );
     const plan = planObservationCorrection(o, [o], draft, ctx);
     expect(plan.ok).toBe(true);
     if (plan.ok) expect(plan.corrected.catalogBasis?.demoId).toBe(DEMO_ID);
-    await store.installOfferedDemoCatalog(await signSyntheticDemoSnapshot(snapshot([revokedEntry()], 3), k.trusted.keyId, k.privateKey), MISSION, opts);
+    await store.installOfferedDemoCatalog(
+      await signSyntheticDemoSnapshot(snapshot([revokedEntry()], 3), k.trusted.keyId, k.privateKey),
+      MISSION,
+      opts,
+    );
     expect(planObservationCorrection(o, [o], draft, ctx).ok).toBe(false);
   });
 });
@@ -293,7 +470,11 @@ describe("offline use and automatic refresh", () => {
     const k = await demoKey();
     const storage = memoryStorage();
     const opts = { storage, trustedKeys: [k.trusted] };
-    await installOfferedDemoCatalog(await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey), MISSION, opts);
+    await installOfferedDemoCatalog(
+      await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey),
+      MISSION,
+      opts,
+    );
     resetSyntheticDemoCatalogsForTests();
     const realFetch = globalThis.fetch;
     globalThis.fetch = (() => {
@@ -302,7 +483,14 @@ describe("offline use and automatic refresh", () => {
     try {
       expect((await loadInstalledDemoCatalogs(opts)).loaded).toBe(1);
       // Default (device) catalogs: exactly what the intake screen uses.
-      expect(classifyWithGovernedExtensions({ label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION }).classification).toMatchObject({ status: "matched", metricId: DEMO_ID });
+      expect(
+        classifyWithGovernedExtensions({
+          label: LABEL,
+          unit: UNIT,
+          provenance: "synthetic",
+          missionId: MISSION,
+        }).classification,
+      ).toMatchObject({ status: "matched", metricId: DEMO_ID });
     } finally {
       globalThis.fetch = realFetch;
     }
@@ -312,31 +500,69 @@ describe("offline use and automatic refresh", () => {
     const k = await demoKey();
     const storage = memoryStorage();
     const opts = { storage, trustedKeys: [k.trusted] };
-    const signed = (s: SyntheticDemoSnapshot) => signSyntheticDemoSnapshot(s, k.trusted.keyId, k.privateKey);
+    const signed = (s: SyntheticDemoSnapshot) =>
+      signSyntheticDemoSnapshot(s, k.trusted.keyId, k.privateKey);
     let fetched = 0;
-    const offline = await refreshSyntheticDemoCatalogs([MISSION], async () => (fetched++, null), { ...opts, isOnline: () => false });
+    const offline = await refreshSyntheticDemoCatalogs([MISSION], async () => (fetched++, null), {
+      ...opts,
+      isOnline: () => false,
+    });
     expect(offline[0]!.outcome).toBe("offline");
     expect(fetched).toBe(0);
 
-    const empty = await refreshSyntheticDemoCatalogs(["MISSION_TEST"], async () => ({ ok: true, signed: await signed(snapshot([], 0, "MISSION_TEST")) }), opts);
+    const empty = await refreshSyntheticDemoCatalogs(
+      ["MISSION_TEST"],
+      async () => ({ ok: true, signed: await signed(snapshot([], 0, "MISSION_TEST")) }),
+      opts,
+    );
     expect(empty[0]!.outcome).toBe("current");
     expect(storage.map.has(SYNTHETIC_DEMO_STORAGE_KEY)).toBe(false);
 
-    const first = await refreshSyntheticDemoCatalogs([MISSION], async () => ({ ok: true, signed: await signed(snapshot([entry()])) }), opts);
+    const first = await refreshSyntheticDemoCatalogs(
+      [MISSION],
+      async () => ({ ok: true, signed: await signed(snapshot([entry()])) }),
+      opts,
+    );
     expect(first[0]!.outcome).toBe("installed");
     expect(getSyntheticDemoCatalogs().get(MISSION)?.active).toHaveLength(1);
 
-    const again = await refreshSyntheticDemoCatalogs([MISSION], async () => ({ ok: true, signed: await signed(snapshot([entry()])) }), opts);
+    const again = await refreshSyntheticDemoCatalogs(
+      [MISSION],
+      async () => ({ ok: true, signed: await signed(snapshot([entry()])) }),
+      opts,
+    );
     expect(again[0]!.outcome).toBe("current");
 
-    const forged = await refreshSyntheticDemoCatalogs([MISSION], async () => ({ ok: true, signed: { ...(await signed(snapshot([revokedEntry()], 3))), signature: "AAAA" } }), opts);
+    const forged = await refreshSyntheticDemoCatalogs(
+      [MISSION],
+      async () => ({
+        ok: true,
+        signed: { ...(await signed(snapshot([revokedEntry()], 3))), signature: "AAAA" },
+      }),
+      opts,
+    );
     expect(forged[0]!.outcome).toBe("refused");
-    const failed = await refreshSyntheticDemoCatalogs([MISSION], async () => ({ ok: false, message: "unavailable" }), opts);
+    const failed = await refreshSyntheticDemoCatalogs(
+      [MISSION],
+      async () => ({ ok: false, message: "unavailable" }),
+      opts,
+    );
     expect(failed[0]!.outcome).toBe("unavailable");
     expect(getSyntheticDemoCatalogs().get(MISSION)?.active).toHaveLength(1);
 
-    const revoked = await refreshSyntheticDemoCatalogs([MISSION], async () => ({ ok: true, signed: await signed(snapshot([revokedEntry()], 3)) }), opts);
+    const revoked = await refreshSyntheticDemoCatalogs(
+      [MISSION],
+      async () => ({ ok: true, signed: await signed(snapshot([revokedEntry()], 3)) }),
+      opts,
+    );
     expect(revoked[0]!.outcome).toBe("installed");
-    expect(classifyWithGovernedExtensions({ label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION }).classification.status).toBe("unit_review_required");
+    expect(
+      classifyWithGovernedExtensions({
+        label: LABEL,
+        unit: UNIT,
+        provenance: "synthetic",
+        missionId: MISSION,
+      }).classification.status,
+    ).toBe("unit_review_required");
   });
 });

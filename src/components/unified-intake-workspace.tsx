@@ -22,9 +22,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
-import {
-  classifyWithGovernedExtensions,
-} from "@/domain/health-intelligence/unknown-biomarker-review";
+import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
 import {
   getSyntheticDemoCatalogs,
   subscribeSyntheticDemoCatalogs,

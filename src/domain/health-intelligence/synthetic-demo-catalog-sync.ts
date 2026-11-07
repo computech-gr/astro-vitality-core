@@ -6,7 +6,11 @@
  * are installed. Offline or on any failure the device keeps its last verified
  * snapshot, so a revocation reaches a device the next time it is online.
  */
-import { getInstalledDemoSnapshot, installOfferedDemoCatalog, type DemoRuntimeOptions } from "./synthetic-demo-catalog-runtime";
+import {
+  getInstalledDemoSnapshot,
+  installOfferedDemoCatalog,
+  type DemoRuntimeOptions,
+} from "./synthetic-demo-catalog-runtime";
 
 export type DemoSnapshotFetch = (
   missionId: string,
@@ -26,7 +30,11 @@ export async function refreshSyntheticDemoCatalogs(
   const out: DemoRefreshOutcome[] = [];
   for (const missionId of [...new Set(missionIds)].sort()) {
     if (o.isOnline && !o.isOnline()) {
-      out.push({ missionId, outcome: "offline", reason: "Offline: using the last verified synthetic demo catalog." });
+      out.push({
+        missionId,
+        outcome: "offline",
+        reason: "Offline: using the last verified synthetic demo catalog.",
+      });
       continue;
     }
     let r: Awaited<ReturnType<DemoSnapshotFetch>> = null;
@@ -43,11 +51,15 @@ export async function refreshSyntheticDemoCatalogs(
       });
       continue;
     }
-    const offeredVersion = (r.signed as { snapshot?: { demoCatalogVersion?: unknown } } | null)?.snapshot
-      ?.demoCatalogVersion;
+    const offeredVersion = (r.signed as { snapshot?: { demoCatalogVersion?: unknown } } | null)
+      ?.snapshot?.demoCatalogVersion;
     // Missions that never had a demo activation are not stored on the device.
     if (offeredVersion === 0 && !getInstalledDemoSnapshot(missionId)) {
-      out.push({ missionId, outcome: "current", reason: "No synthetic demo entries for this mission." });
+      out.push({
+        missionId,
+        outcome: "current",
+        reason: "No synthetic demo entries for this mission.",
+      });
       continue;
     }
     const res = await installOfferedDemoCatalog(r.signed, missionId, o);

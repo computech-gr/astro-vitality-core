@@ -346,7 +346,10 @@ async function runRecognitionChecks(
     sourceKind: "manual",
     sourceLabel: "Synthetic check",
   };
-  const withDemo = intake.status === "matched" ? [] : buildUnknownBiomarkerTerms([{ ...row, classification: intake }]);
+  const withDemo =
+    intake.status === "matched"
+      ? []
+      : buildUnknownBiomarkerTerms([{ ...row, classification: intake }]);
   const control = buildUnknownBiomarkerTerms([{ ...row, classification: base }]);
   checks.push({
     label: "No duplicate unknown-biomarker request",
