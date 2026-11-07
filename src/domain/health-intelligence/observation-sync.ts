@@ -13,6 +13,7 @@
  *   bound to the record fingerprint (evidence-attestation.ts).
  */
 import { classifyWithGovernedExtensions } from "./unknown-biomarker-review";
+import type { EvaluatedDemoCatalog } from "./synthetic-demo-catalog";
 import {
   canonicalJson,
   isUnifiedObservationSchema,
@@ -76,6 +77,7 @@ const ALLOWED_TOP = new Set([
   "statusReason",
   "supersedesId",
   "correction",
+  "catalogBasis",
   "recordedAt",
 ]);
 const ALLOWED_SOURCE = new Set(["kind", "label", "documentName", "documentSha256", "excerpt"]);
@@ -110,6 +112,8 @@ const unknownKey = (obj: unknown, allowed: Set<string>) =>
 export function checkObservationSyncEvent(
   event: ObservationSyncEvent,
   scope: SyncScope,
+  /** Server callers pass the caller-scoped mission demo catalog read from the database. */
+  demoCatalogs?: ReadonlyMap<string, EvaluatedDemoCatalog>,
 ): string | null {
   const o = event?.observation as UnifiedObservation | undefined;
   if (!o || typeof o !== "object") return "Missing observation payload.";
@@ -149,12 +153,22 @@ export function checkObservationSyncEvent(
   )
     return "Correction metadata is inconsistent.";
   // Exact catalog metric + unit pair; units are never converted.
-  const c = classifyWithGovernedExtensions({
-    label: o.metricId,
-    unit: o.originalUnit,
-    identity: "canonical",
-    includeRevoked: true,
-  }).classification;
+  const r = classifyWithGovernedExtensions(
+    {
+      label: o.metricId,
+      unit: o.originalUnit,
+      identity: "canonical",
+      includeRevoked: true,
+      missionId: o.missionId,
+      provenance: o.provenance,
+    },
+    undefined,
+    undefined,
+    demoCatalogs,
+  );
+  const c = r.classification;
+  if (o.catalogBasis && r.syntheticDemo?.termId !== o.catalogBasis.termId)
+    return "The synthetic demo catalog basis does not match this mission's demo catalog.";
   if (c.status !== "matched" || c.metricId !== o.metricId || c.domain !== o.domain)
     return `"${o.metricId}" with unit "${o.originalUnit}" is not an exact catalog metric/unit pair. Units are never converted.`;
   return null;
