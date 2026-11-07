@@ -19,6 +19,7 @@ import {
 import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-rules";
 import { ScientificApproveWorkspace } from "@/components/p37-scientific-approve";
 import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
+import { P38BulkDemoResearcher } from "@/components/p38-bulk-demo-researcher";
 import {
   activateCatalogEntryFn,
   getCatalogLifecycle,
@@ -443,6 +444,8 @@ export function P37CatalogPanel() {
             missionId={mission.missionId}
             missionLabel={`${mission.missionName} (${mission.missionCode})`}
           />
+
+          <P38BulkDemoResearcher key={`bulk-${mission.missionId}`} missionId={mission.missionId} />
 
           <ScientificApproveWorkspace
             mission={mission}
