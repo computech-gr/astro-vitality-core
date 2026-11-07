@@ -369,6 +369,7 @@ function nextBody(
 
 export function planTaskOpened(events: readonly InterpretationEvent[], identity: InterpretationIdentity, origin: string, ctx: ActorContext): PlanResult {
   if (!filled(ctx.userId)) return { ok: false, reason: "Sign in first." };
+  if (!canReviewInterpretations(ctx.roles)) return { ok: false, reason: "Only a Researcher records interpretation review tasks." };
   const key = interpretationKey(identity);
   if (events.some((e) => e.key === key)) return { ok: false, reason: "A review record already exists." };
   return { ok: true, body: nextBody(events, ctx, { action: "TASK_OPENED", identity, draft: null, contentSha256: null, reason: null, acknowledgement: null, taskOrigin: origin }) };
