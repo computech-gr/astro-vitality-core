@@ -251,7 +251,7 @@ export function planObservationCorrection(
   if (datePrecision === "instant" && Date.parse(draft.observedAt) > Date.parse(ctx.decidedAt) + 5 * 60_000) return { ok: false, reason: "Observation time cannot be in the future." };
   if (datePrecision === "date" && draft.observedAt > ctx.decidedAt.slice(0, 10)) return { ok: false, reason: "Observation date cannot be in the future." };
   // Exact catalog metric + unit pairing; no unit conversion, no inference.
-  const classification = classifyWithGovernedExtensions({ label: metricId, unit }).classification;
+  const classification = classifyWithGovernedExtensions({ label: metricId, unit, identity: "canonical" }).classification;
   if (classification.status !== "matched" || classification.metricId !== metricId)
     return { ok: false, reason: `"${metricId}" with unit "${unit}" is not an exact catalog metric/unit pair. Units are never converted.` };
   if (!original.source?.label?.trim()) return { ok: false, reason: "The original source is missing; correction refused." };
