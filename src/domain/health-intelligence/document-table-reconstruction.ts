@@ -427,7 +427,7 @@ function dateCandidates(text: string): { dates: { iso: string; how: string }[]; 
   const t = text.trim();
   const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
   if (iso) return isCalendarDate(t) ? { dates: [{ iso: t, how: "ISO date" }], note: null } : { dates: [], note: "Invalid date." };
-  const m = /^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/.exec(t);
+  const m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(t);
   if (!m) return { dates: [], note: `Date "${t}" is not in a recognized numeric format.` };
   const a = Number(m[1]);
   const b = Number(m[2]);
