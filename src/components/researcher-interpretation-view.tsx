@@ -10,6 +10,8 @@ import {
 } from "@/domain/health-intelligence/researcher-interpretation";
 import type { SeriesInterpretation } from "@/domain/health-intelligence/biomarker-interpretation";
 import type { LongitudinalComparison } from "@/domain/health-intelligence/longitudinal-comparison";
+import { seriesClassification } from "@/domain/health-intelligence/biomarker-health-assessment";
+import { SeverityBadge } from "@/components/biomarker-health-assessment-view";
 
 /** Neutral sparkline: one colour, no normal/abnormal bands; numeric points only, gaps for non-comparable points. */
 function NeutralSparkline({ value }: { value: LongitudinalComparison }) {
@@ -99,7 +101,7 @@ export function SeriesInterpretationBlock({ value }: { value: SeriesInterpretati
 }
 
 /** Renders one domain of the shared v9.5 interpretation model (same text as PDF/TXT). */
-export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain: DomainInterpretation; headingLevel?: 3 | 4 }) {
+export function DomainInterpretationCard({ domain, headingLevel = 3, scope }: { domain: DomainInterpretation; headingLevel?: 3 | 4; scope?: ResearcherInterpretationModel["scope"] }) {
   const H = headingLevel === 3 ? "h3" : "h4";
   return (
     <article aria-label={`${domain.label} interpretation`} className="report-avoid-break space-y-2 rounded-md border border-border p-3">
@@ -122,6 +124,16 @@ export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain:
                 {s.label !== s.metricId ? `${s.label} (${s.metricId})` : s.metricId}{" "}
                 <span className="font-normal text-muted-foreground">· {s.unit}</span>
               </p>
+              {scope ? (() => {
+                // P54: same verified-reference rule as the Medical Report, PDF and TXT.
+                const c = seriesClassification(s, domain.domain, scope);
+                return (
+                  <p className="flex flex-wrap items-center gap-1.5 text-xs">
+                    <SeverityBadge severity={c.severity} status={c.status} />
+                    <span className="break-words text-muted-foreground">{c.explanation}</span>
+                  </p>
+                );
+              })() : null}
               <p className="break-words">{s.observation}</p>
               <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5 text-xs">
                 <dt className="text-muted-foreground">Sampling</dt>
@@ -197,7 +209,7 @@ export function ResearcherInterpretationView({ model }: { model: ResearcherInter
       <InterpretationPolicy model={model} />
       <ApprovalLayers layers={model.approvalLayers} />
       <div className="space-y-3">
-        {model.domains.map((d) => <DomainInterpretationCard key={d.domain} domain={d} headingLevel={4} />)}
+        {model.domains.map((d) => <DomainInterpretationCard key={d.domain} domain={d} headingLevel={4} scope={model.scope} />)}
       </div>
       <CrossDomainList items={model.crossDomain} />
       <ul className="list-disc pl-5 text-xs text-muted-foreground">
@@ -224,7 +236,7 @@ export function ModuleInterpretationView({ model, domain }: { model: ResearcherI
     <div className="space-y-3">
       <ApprovalLayers layers={approvalLayersFor(d.series)} />
       <InterpretationPolicy model={model} />
-      <DomainInterpretationCard domain={d} />
+      <DomainInterpretationCard domain={d} scope={model.scope} />
       <CrossDomainList items={crossDomainFor(model, domain)} />
       <ul className="list-disc pl-5 text-xs text-muted-foreground">
         {model.boundaries.map((b) => <li key={b}>{b}</li>)}
