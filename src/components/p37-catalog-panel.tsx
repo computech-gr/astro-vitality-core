@@ -389,8 +389,12 @@ export function P37CatalogPanel() {
     () =>
       subscribeOpenBulkDemo((id) => {
         if (!missions.some((m) => m.missionId === id)) {
-          setBulkNote("This mission is not available for catalog decisions with this account. Nothing was changed.");
-          document.getElementById("p37-title")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          setBulkNote(
+            "This mission is not available for catalog decisions with this account. Nothing was changed.",
+          );
+          document
+            .getElementById("p37-title")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
         setBulkNote("");
