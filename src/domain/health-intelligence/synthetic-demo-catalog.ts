@@ -294,12 +294,15 @@ export function canonicalSyntheticDemoEntry(
     return null;
   const catalog = catalogs.get(input.missionId);
   if (!catalog) return null;
-  const pool = includeRevoked ? [...catalog.active, ...catalog.revoked] : catalog.active;
-  const hits = pool.filter(
-    (e) =>
-      e.demoId === input.demoId && e.missionId === input.missionId && e.unit === input.unit.trim(),
-  );
-  return hits.length === 1 ? hits[0]! : null;
+  const same = (e: SyntheticDemoEntry) =>
+    e.demoId === input.demoId && e.missionId === input.missionId && e.unit === input.unit.trim();
+  const active = catalog.active.filter(same);
+  if (active.length === 1) return active[0]!;
+  if (active.length > 1 || !includeRevoked) return null;
+  // A demo ID may have been activated, revoked and re-activated; history only needs one consistent definition.
+  const revoked = catalog.revoked.filter(same);
+  const domains = new Set(revoked.map((e) => e.domain));
+  return revoked.length && domains.size === 1 ? revoked[revoked.length - 1]! : null;
 }
 
 /** Label + exact unit within the same mission, synthetic provenance only, never for source-unvalidated rows. */
