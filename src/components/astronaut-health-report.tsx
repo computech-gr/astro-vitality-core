@@ -291,7 +291,7 @@ export function AstronautHealthReport() {
   );
   const reviewScope = useMemo(
     () => (member ? { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance } : null),
-    [member?.missionId, member?.crewMemberId, provenance],
+    [member, provenance],
   );
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
