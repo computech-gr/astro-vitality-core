@@ -1383,6 +1383,84 @@ export type Database = {
         }
         Relationships: []
       }
+      p36_dynamic_authorization_events: {
+        Row: {
+          action: string
+          actor_role: string
+          actor_user_id: string
+          authority_mission_id: string
+          crew_member_id: string
+          event_hash: string
+          event_id: string
+          kind: string
+          payload_canonical: string
+          payload_sha256: string
+          prev_event_hash: string
+          provenance: string
+          received_at: string
+          received_seq: number
+          references_recommendation_id: string | null
+          submission_id: string
+          supersedes_event_id: string | null
+          term_id: string
+        }
+        Insert: {
+          action: string
+          actor_role: string
+          actor_user_id: string
+          authority_mission_id: string
+          crew_member_id: string
+          event_hash: string
+          event_id: string
+          kind: string
+          payload_canonical: string
+          payload_sha256: string
+          prev_event_hash: string
+          provenance: string
+          received_at?: string
+          received_seq?: never
+          references_recommendation_id?: string | null
+          submission_id: string
+          supersedes_event_id?: string | null
+          term_id: string
+        }
+        Update: {
+          action?: string
+          actor_role?: string
+          actor_user_id?: string
+          authority_mission_id?: string
+          crew_member_id?: string
+          event_hash?: string
+          event_id?: string
+          kind?: string
+          payload_canonical?: string
+          payload_sha256?: string
+          prev_event_hash?: string
+          provenance?: string
+          received_at?: string
+          received_seq?: never
+          references_recommendation_id?: string | null
+          submission_id?: string
+          supersedes_event_id?: string | null
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_dynamic_authorization_events_authority_mission_id_fkey"
+            columns: ["authority_mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_dynamic_authorization_events_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       p36_dynamic_handoff_submissions: {
         Row: {
           crew_member_id: string
@@ -1463,6 +1541,72 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "p36_dynamic_handoff_submissions"
             referencedColumns: ["submission_id"]
+          },
+        ]
+      }
+      p36_dynamic_source_validation: {
+        Row: {
+          canonical_metric_id: string
+          crew_member_id: string
+          exact_unit: string
+          method: string
+          mission_id: string
+          protocol: string
+          protocol_version: string
+          provenance: string
+          source_sha256: string
+          specimen: string
+          term_id: string
+          validation_reference: string
+          verified_at: string
+          verified_by: string
+        }
+        Insert: {
+          canonical_metric_id: string
+          crew_member_id: string
+          exact_unit: string
+          method: string
+          mission_id: string
+          protocol: string
+          protocol_version: string
+          provenance: string
+          source_sha256: string
+          specimen: string
+          term_id: string
+          validation_reference: string
+          verified_at: string
+          verified_by: string
+        }
+        Update: {
+          canonical_metric_id?: string
+          crew_member_id?: string
+          exact_unit?: string
+          method?: string
+          mission_id?: string
+          protocol?: string
+          protocol_version?: string
+          provenance?: string
+          source_sha256?: string
+          specimen?: string
+          term_id?: string
+          validation_reference?: string
+          verified_at?: string
+          verified_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_dynamic_source_validation_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p36_dynamic_source_validation_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1871,6 +2015,42 @@ export type Database = {
         Returns: boolean
       }
       observation_sync_list_v1: {
+        Args: {
+          p_after_seq: number
+          p_crew_member_id: string
+          p_limit: number
+          p_mission_id: string
+          p_provenance: string
+        }
+        Returns: Json
+      }
+      p36_dynamic_auth_append_v1: {
+        Args: {
+          p_crew_member_id: string
+          p_mission_id: string
+          p_payload_canonical: string
+          p_payload_sha256: string
+          p_provenance: string
+          p_submission_id: string
+        }
+        Returns: Json
+      }
+      p36_dynamic_auth_event_hash: {
+        Args: {
+          p_actor: string
+          p_mission: string
+          p_prev: string
+          p_role: string
+          p_sha: string
+          p_term: string
+        }
+        Returns: string
+      }
+      p36_dynamic_auth_has_role: {
+        Args: { p_mission_id: string; p_roles: string[] }
+        Returns: boolean
+      }
+      p36_dynamic_auth_list_v1: {
         Args: {
           p_after_seq: number
           p_crew_member_id: string
