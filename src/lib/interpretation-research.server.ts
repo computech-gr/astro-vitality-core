@@ -427,13 +427,13 @@ export async function draftInterpretationCore(
   // insufficient-information references never reach the AI; potentially relevant ones
   // only on an explicit Researcher selection; batch processing uses relevant ones only.
   const selection: DraftSelectionMode = input.selection === "researcher_explicit" ? "researcher_explicit" : "automatic_batch";
-  const gate = relevanceGate(references, input.concept, selection);
-  const usable = gate.used;
+  const relevant = relevanceGate(references, input.concept, selection);
+  const usable = relevant.used;
   const outcomes: ProviderOutcome[] = [pm.outcome, { provider: "nasa_ntrs", status: "ok", count: nt.length, detail: null }];
-  const relevance = { mode: selection, usedRefIds: usable.map((r) => r.refId), excluded: gate.excluded };
+  const relevance = { mode: selection, usedRefIds: usable.map((r) => r.refId), excluded: relevant.excluded };
   const base: EvidenceBundle = { schema: EVIDENCE_BUNDLE_SCHEMA, key: input.key, concept: input.concept, queries: [], retrievedAt, references, providerOutcomes: outcomes, draft: null, status: "insufficient_evidence", gaps: evidenceGaps([], references), relevanceGate: relevance };
   if (!usable.length) {
-    deps.audit?.({ feature: "p41-ai-draft", outcome: "insufficient_relevant_evidence", userId: deps.userId, references: references.length, excluded: gate.excluded.length });
+    deps.audit?.({ feature: "p41-ai-draft", outcome: "insufficient_relevant_evidence", userId: deps.userId, references: references.length, excluded: relevant.excluded.length });
     return {
       ok: true,
       bundle: {
