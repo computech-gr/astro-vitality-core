@@ -106,6 +106,7 @@ const NUMBERING = /^(?:#{1,6}\s*|(?:section|part)\s+[\dIVX]+\s*[.:–—-]?\s*|[
 /** Normalized heading text for exact alias comparison (never a keyword search). */
 export function normalizeHeading(text: string): string {
   return text
+    .replace(/\s*\((?:continued|cont\.?)\)\s*$/i, "")
     .replace(COUNT_SUFFIX, "")
     .trim()
     .replace(NUMBERING, "")
