@@ -6,6 +6,11 @@
       "keyId": "p37-prod-2026-11-08",
       "environment": "production",
       "publicKeySpkiBase64": "MCowBQYDK2VwAyEAGp5AC3ihh4rwn9QgS8tYCf9+viC6lxVgeDOw9oe64gQ="
+    },
+    {
+      "keyId": "p37-synthetic-demo-2026-11-07",
+      "environment": "synthetic_demo",
+      "publicKeySpkiBase64": "MCowBQYDK2VwAyEADTXTPrPfwvukD6Kup3+m36GtxO0jKq7Iy87tberawds="
     }
   ]
 }
