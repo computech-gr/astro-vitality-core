@@ -283,7 +283,9 @@ describe("P41 unknown biomarker research candidates", () => {
   it("matches existing interpretations exactly and creates one shared candidate per label + exact unit", async () => {
     const snap = await buildVerifiedSnapshot(REGISTRY, []);
     expect(identifyTerm(["25-Hydroxyvitamin D"], "ng/mL", [], snap).identification).toBe("matched_registry_record");
-    expect(identifyTerm(["25-Hydroxyvitamin D"], "nmol/L", [], snap).identification).toBe("unit_conflict");
+    expect(identifyTerm(["25-Hydroxyvitamin D"], "nmol/L", [], snap).identification).toBe("domain_conflict");
+    expect(identifyTerm(["Orthostatic heart rate change"], "bpm", [], snap).identification).toBe("matched_registry_record");
+    expect(identifyTerm(["Orthostatic heart rate change"], "beats/min", [], snap).identification).toBe("unit_conflict");
     const cands = deriveResearchCandidates(
       [term({}), term({ termId: "ubt-bbbbbbbb", originalLabels: ["synthetic marker  z"], origin: { kind: "p36_submitted_term", missionId: "m2", provenance: "synthetic", submissionId: "s2" } }), term({ termId: "ubt-cccccccc", exactUnit: "ng/L" }), term({ termId: "ubt-dddddddd", originalLabels: ["25-Hydroxyvitamin D"], exactUnit: "ng/mL" })],
       snap,
