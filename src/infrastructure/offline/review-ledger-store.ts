@@ -28,7 +28,9 @@ export type ReviewLedgerKind =
   /** v9.4: append-only log of explicit "Sync observations & reviews" runs (counts and outcomes only). */
   | "sync-run"
   /** P36: documentary, hash-chained scientific review worksheet entries (catalog-level, never synced). */
-  | "catalog-scientific-review";
+  | "catalog-scientific-review"
+  /** P40: hash-chained biomarker interpretation review events (catalog-level, never synced). */
+  | "biomarker-interpretation";
 
 export interface ReviewLedgerEntry {
   id: string;
