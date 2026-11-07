@@ -46,6 +46,8 @@ export interface LifecycleRow {
   entrySha256: string;
   approvedAt: string;
   approvedByCaller: boolean;
+  /** Ground Medical queue only: the database confirmed this caller may activate this proposal. */
+  callerMayActivate?: boolean;
   activationEventId: string | null;
   activatedAt: string | null;
   activatedByCaller: boolean | null;
@@ -65,6 +67,71 @@ export interface ReceiptRow {
   verifiedAt: string;
 }
 const str = (v: unknown) => (typeof v === "string" ? v : null);
+
+function parseLifecycleRows(rows: Record<string, unknown>[]): LifecycleRow[] | null {
+  const events: LifecycleRow[] = [];
+  for (const r of rows) {
+    const id = str(r["approval_event_id"]),
+      sha = str(r["entry_sha256"]);
+    if (
+      !id ||
+      !UUID.test(id) ||
+      !sha ||
+      !/^[0-9a-f]{64}$/.test(sha) ||
+      !r["entry"] ||
+      typeof r["entry"] !== "object"
+    )
+      return null;
+    events.push({
+      approvalEventId: id,
+      submissionId: str(r["submission_id"]) ?? "",
+      termId: str(r["term_id"]) ?? "",
+      canonicalId: str(r["canonical_id"]) ?? "",
+      entry: r["entry"] as CatalogEntryDefinition,
+      entrySha256: sha,
+      approvedAt: str(r["approved_at"]) ?? "",
+      approvedByCaller: r["approved_by_caller"] === true,
+      ...(typeof r["caller_may_activate"] === "boolean"
+        ? { callerMayActivate: r["caller_may_activate"] as boolean }
+        : {}),
+      activationEventId: str(r["activation_event_id"]),
+      activatedAt: str(r["activated_at"]),
+      activatedByCaller:
+        typeof r["activated_by_caller"] === "boolean"
+          ? (r["activated_by_caller"] as boolean)
+          : null,
+      revocationEventId: str(r["revocation_event_id"]),
+      revokedAt: str(r["revoked_at"]),
+      revocationReason: str(r["revocation_reason"]),
+    });
+  }
+  return events;
+}
+
+/**
+ * Ground Medical activation queue for one mission (role-based: active Ground
+ * Medical membership in that mission, checked by the database). Requires the
+ * pending role-based activation SQL; fails closed until it is applied.
+ */
+export async function activationQueueCore(rpc: Rpc, missionId: string) {
+  const { data, error } = await rpc("p37_catalog_activation_queue_v1", {
+    p_mission_id: missionId,
+  });
+  if (error) {
+    if (error.code === "PGRST202" || error.code === "42883")
+      return failure(
+        "migration_required",
+        "Ground Medical catalog activation is not installed yet: the owner-approved database change has not been applied. Nothing was recorded.",
+      );
+    return fail(error.code);
+  }
+  const o = data as Record<string, unknown> | null;
+  if (!o || o["can_activate"] !== true || !Array.isArray(o["events"]))
+    return failure("integrity", "The activation queue failed validation. Nothing was shown.");
+  const events = parseLifecycleRows(o["events"] as Record<string, unknown>[]);
+  if (!events) return failure("integrity", "An activation proposal failed validation.");
+  return { ok: true as const, events };
+}
 
 export async function catalogLifecycleCore(
   rpc: Rpc,
@@ -88,39 +155,9 @@ export async function catalogLifecycleCore(
       "integrity",
       "The catalog lifecycle response failed validation. Nothing was shown.",
     );
-  const events: LifecycleRow[] = [];
-  for (const r of o["events"] as Record<string, unknown>[]) {
-    const id = str(r["approval_event_id"]),
-      sha = str(r["entry_sha256"]);
-    if (
-      !id ||
-      !UUID.test(id) ||
-      !sha ||
-      !/^[0-9a-f]{64}$/.test(sha) ||
-      !r["entry"] ||
-      typeof r["entry"] !== "object"
-    )
-      return failure("integrity", "A catalog lifecycle row failed validation. Nothing was shown.");
-    events.push({
-      approvalEventId: id,
-      submissionId: str(r["submission_id"]) ?? "",
-      termId: str(r["term_id"]) ?? "",
-      canonicalId: str(r["canonical_id"]) ?? "",
-      entry: r["entry"] as CatalogEntryDefinition,
-      entrySha256: sha,
-      approvedAt: str(r["approved_at"]) ?? "",
-      approvedByCaller: r["approved_by_caller"] === true,
-      activationEventId: str(r["activation_event_id"]),
-      activatedAt: str(r["activated_at"]),
-      activatedByCaller:
-        typeof r["activated_by_caller"] === "boolean"
-          ? (r["activated_by_caller"] as boolean)
-          : null,
-      revocationEventId: str(r["revocation_event_id"]),
-      revokedAt: str(r["revoked_at"]),
-      revocationReason: str(r["revocation_reason"]),
-    });
-  }
+  const events = parseLifecycleRows(o["events"] as Record<string, unknown>[]);
+  if (!events)
+    return failure("integrity", "A catalog lifecycle row failed validation. Nothing was shown.");
   const receipts: ReceiptRow[] = (o["receipts"] as Record<string, unknown>[]).map((r) => ({
     termId: str(r["term_id"]) ?? "",
     validationReference: str(r["validation_reference"]) ?? "",
