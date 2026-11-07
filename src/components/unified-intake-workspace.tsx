@@ -24,7 +24,6 @@ import { StoredObservationsReview } from "@/components/stored-observations-revie
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import {
   classifyWithGovernedExtensions,
-  syntheticDemoCoverage,
 } from "@/domain/health-intelligence/unknown-biomarker-review";
 import {
   getSyntheticDemoCatalogs,
@@ -952,22 +951,26 @@ export function UnifiedIntakeWorkspace() {
                             </Badge>
                           );
                         })()
+                      ) : row.classification.status === "matched" &&
+                        row.classification.metricId.startsWith("demo:") ? (
+                        (() => {
+                          const id = row.classification.metricId;
+                          const d = missionDemoCatalog?.active.find((e) => e.demoId === id);
+                          return (
+                            <Badge variant="outline" data-testid="p37-demo-recognized">
+                              SYNTHETIC DEMO RECOGNIZED — mission demo catalog v
+                              {missionDemoCatalog?.demoCatalogVersion ?? "?"}:{" "}
+                              {d?.displayName ?? id} ({id}) · {d?.unit ?? row.unit} →{" "}
+                              {DOMAIN_LABELS[row.classification.domain]} · synthetic only · not a
+                              scientific approval
+                            </Badge>
+                          );
+                        })()
                       ) : row.classification.status === "matched" ? (
                         <Badge variant="secondary">
                           Matched: {row.classification.metricId} →{" "}
                           {DOMAIN_LABELS[row.classification.domain]}
                         </Badge>
-                      ) : demoCoverage.has(row.key) ? (
-                        (() => {
-                          const d = demoCoverage.get(row.key)!;
-                          return (
-                            <Badge variant="outline" data-testid="p37-demo-recognized">
-                              SYNTHETIC DEMO RECOGNIZED — demo catalog v{d.demoCatalogVersion}:{" "}
-                              {d.displayName} ({d.demoId}) · {d.unit} → {DOMAIN_LABELS[d.domain]} ·
-                              not a scientific approval · review-only, not saved
-                            </Badge>
-                          );
-                        })()
                       ) : row.classification.status === "unit_review_required" ? (
                         <Badge variant="outline">Unit review required — review-only</Badge>
                       ) : row.classification.status === "ambiguous" ? (
