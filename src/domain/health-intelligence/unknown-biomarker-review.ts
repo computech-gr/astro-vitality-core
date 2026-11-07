@@ -47,6 +47,8 @@ export interface ReviewSourceRow {
   documentName?: string | undefined;
   documentSha256?: string | undefined;
   excerpt?: string | undefined;
+  /** Set when an activated SYNTHETIC DEMO entry already covers this row (no new request is generated). */
+  syntheticDemo?: { demoId: string } | null | undefined;
 }
 
 export interface ReviewEvidence {
@@ -163,6 +165,8 @@ export function buildUnknownBiomarkerTerms(
   const terms = new Map<string, UnknownBiomarkerTerm>();
   for (const row of rows) {
     if (row.classification.status === "matched" && row.sourceValidation !== "unvalidated") continue;
+    // Already covered by an activated synthetic demo entry: never re-request the same term.
+    if (row.syntheticDemo?.demoId && row.sourceValidation !== "unvalidated") continue;
     const status: ReviewOnlyStatus =
       row.sourceValidation === "unvalidated"
         ? "source_unvalidated"
