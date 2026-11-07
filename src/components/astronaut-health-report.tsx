@@ -50,6 +50,7 @@ import { appendAttestationEvents, listAttestationEvents } from "@/domain/health-
 import { pdfExportErrorMessage } from "@/domain/health-intelligence/report-pdf";
 import { buildResearcherInterpretation, researcherInterpretationPlainText } from "@/domain/health-intelligence/researcher-interpretation";
 import { ResearcherInterpretationView } from "@/components/researcher-interpretation-view";
+import { useInterpretationSnapshot } from "@/hooks/use-interpretation-snapshot";
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -271,13 +272,14 @@ export function AstronautHealthReport() {
   };
 
   const findings = useMemo(() => unified ? buildScientificFindings(unified) : null, [unified]);
-  const healthSummary = useMemo(
-    () => (unified && findings ? buildScientificHealthSummary(unified, findings, report, attestationSummary) : null),
-    [unified, findings, report, attestationSummary],
-  );
+  const { snapshot: interpretationSnapshot } = useInterpretationSnapshot();
   const interpretation = useMemo(
-    () => (unified && findings ? buildResearcherInterpretation(unified, findings, scopedAttestations) : null),
-    [unified, findings, scopedAttestations],
+    () => (unified && findings ? buildResearcherInterpretation(unified, findings, scopedAttestations, interpretationSnapshot) : null),
+    [unified, findings, scopedAttestations, interpretationSnapshot],
+  );
+  const healthSummary = useMemo(
+    () => (unified && findings ? buildScientificHealthSummary(unified, findings, report, attestationSummary, interpretation?.validatedInterpretations ?? 0) : null),
+    [unified, findings, report, attestationSummary, interpretation],
   );
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
@@ -314,6 +316,7 @@ export function AstronautHealthReport() {
             summary: healthSummary,
             history: report,
             attestations: scopedAttestations,
+            interpretations: interpretationSnapshot,
             identity: { missionName: member.missionName, crewDisplayName: member.crewDisplayName },
             title: exportName,
           });

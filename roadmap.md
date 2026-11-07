@@ -499,3 +499,12 @@
 - [x] 30 regression tests; 67 active entries preserved; no decisions, activations or production changes.
 - [ ] Record the 115 demo decisions, then Ground Medical activation — blocked: the Researcher's and Ground Medical member's own actions in Preview.
 - [ ] P1NP / CTX identity conflicts and the 17 ambiguous-unit terms — blocked: scientific choice and the 12-term submission's source documents.
+
+## P40 Traceable biomarker interpretation lifecycle
+
+- [x] Versioned interpretation registry (416 records) generated reproducibly from hash-pinned Bone/Cardiovascular handbooks, the Immune/Behavioral domain catalog and the 186 activated synthetic demo entries; 0 approvals.
+- [x] Researcher review screen on Scientific Review: per-entry edit, cite, draft, approve, revoke; automatic review tasks for new activations; approval package download; no bulk approval.
+- [x] One verified snapshot drives module pages, Medical Report screen, PDF and TXT (status, citations, uncertainty, alerts); synthetic demo approvals never counted as validation.
+- [x] 20 P40 tests; full suite 1,348 pass; lint 0 errors.
+- [ ] Researcher writes the first interpretations — blocked: Nikolas's own review with real citations.
+- [ ] Merge the first approval package into the shared registry — blocked: owner review of the downloaded package.

@@ -2,12 +2,43 @@ import {
   approvalLayersFor,
   attestationLine,
   crossDomainFor,
-  handbookLine,
   INTERPRETATION_APPROVAL_STATUS,
+  interpretationSourceLine,
   type DomainInterpretation,
   type ResearcherDomain,
   type ResearcherInterpretationModel,
 } from "@/domain/health-intelligence/researcher-interpretation";
+import type { SeriesInterpretation } from "@/domain/health-intelligence/biomarker-interpretation";
+
+const STATUS_LABEL: Record<SeriesInterpretation["status"], string> = {
+  approved: "Approved interpretation",
+  pending: "Pending scientific review",
+  revoked: "Interpretation revoked",
+};
+
+/** Interpretation record shown beside each series: status, context, citations, uncertainty, alerts (same text as PDF/TXT). */
+export function SeriesInterpretationBlock({ value }: { value: SeriesInterpretation }) {
+  return (
+    <div className="space-y-1 rounded-md border border-border bg-background p-2 text-xs" data-testid="series-interpretation" data-status={value.status}>
+      <p className="flex flex-wrap items-center gap-1.5">
+        <span className={`rounded border px-1.5 py-0.5 font-semibold ${value.status === "approved" ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
+          {STATUS_LABEL[value.status]}
+        </span>
+        {value.syntheticDemo && <span className="rounded border border-border px-1.5 py-0.5 font-semibold text-muted-foreground">SYNTHETIC DEMO</span>}
+      </p>
+      <p className="break-words"><span className="font-medium">Interpretation status: </span>{value.statusLine}</p>
+      {value.contextLines.map((l) => <p key={l} className="break-words">{l}</p>)}
+      <div>
+        <p className="font-medium">Citations</p>
+        {value.citations.length ? (
+          <ul className="list-none space-y-0.5">{value.citations.map((c) => <li key={c} className="break-words">{c}</li>)}</ul>
+        ) : <p className="text-muted-foreground">None</p>}
+      </div>
+      <ul className="list-disc pl-4 text-muted-foreground">{value.uncertainty.map((u) => <li key={u}>Uncertainty: {u}</li>)}</ul>
+      <p><span className="font-medium">Alerts: </span>{value.alert}</p>
+    </div>
+  );
+}
 
 /** Renders one domain of the shared v9.5 interpretation model (same text as PDF/TXT). */
 export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain: DomainInterpretation; headingLevel?: 3 | 4 }) {
@@ -48,10 +79,7 @@ export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain:
                 <dt className="text-muted-foreground">Evidence</dt>
                 <dd className="break-all font-mono">{s.evidenceIds.join(", ")}</dd>
               </dl>
-              <p className="break-words text-xs">
-                <span className="font-medium">Biological context: </span>
-                {handbookLine(s.handbook)}
-              </p>
+              <SeriesInterpretationBlock value={s.interpretation} />
               {s.handbook.kind === "quoted_pending_hypothesis" && s.handbook.about && (
                 <details className="text-xs text-muted-foreground print:hidden">
                   <summary className="cursor-pointer">About this measure (handbook, pending review)</summary>
@@ -104,8 +132,10 @@ export function ResearcherInterpretationView({ model }: { model: ResearcherInter
     <section aria-label="Researcher module physiological evidence interpretation" className="space-y-3 rounded-lg border p-4">
       <h3 className="text-lg font-semibold">Researcher module physiological evidence interpretation (research only)</h3>
       <p className="text-sm text-muted-foreground">
-        Recorded changes are kept separate from possible biological context. Validated interpretations: {model.validatedInterpretations} ({INTERPRETATION_APPROVAL_STATUS}).
+        Recorded changes are kept separate from possible biological context. Validated interpretations: {model.validatedInterpretations}{model.validatedInterpretations ? "" : ` (${INTERPRETATION_APPROVAL_STATUS})`}.
+        {model.syntheticDemoInterpretations ? ` SYNTHETIC DEMO interpretations (not production validation): ${model.syntheticDemoInterpretations}.` : ""}
       </p>
+      <InterpretationPolicy model={model} />
       <ApprovalLayers layers={model.approvalLayers} />
       <div className="space-y-3">
         {model.domains.map((d) => <DomainInterpretationCard key={d.domain} domain={d} headingLevel={4} />)}
@@ -118,6 +148,15 @@ export function ResearcherInterpretationView({ model }: { model: ResearcherInter
   );
 }
 
+export function InterpretationPolicy({ model }: { model: ResearcherInterpretationModel }) {
+  return (
+    <div className="space-y-1 text-xs text-muted-foreground">
+      <p className="break-all">{interpretationSourceLine(model)}</p>
+      <ul className="list-disc pl-5">{model.changePolicy.map((p) => <li key={p}>{p}</li>)}</ul>
+    </div>
+  );
+}
+
 /** Single-domain view used inside each Researcher module page. */
 export function ModuleInterpretationView({ model, domain }: { model: ResearcherInterpretationModel; domain: ResearcherDomain }) {
   const d = model.domains.find((x) => x.domain === domain);
@@ -125,6 +164,7 @@ export function ModuleInterpretationView({ model, domain }: { model: ResearcherI
   return (
     <div className="space-y-3">
       <ApprovalLayers layers={approvalLayersFor(d.series)} />
+      <InterpretationPolicy model={model} />
       <DomainInterpretationCard domain={d} />
       <CrossDomainList items={crossDomainFor(model, domain)} />
       <ul className="list-disc pl-5 text-xs text-muted-foreground">

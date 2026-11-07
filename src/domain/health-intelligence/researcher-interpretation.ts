@@ -17,6 +17,16 @@ import { evidenceTierOf, governedHandbookEntry } from "./scientific-health-summa
 import { attestationStateFor, type AttestationEvent } from "./evidence-attestation";
 
 import { compareObservationDates, observationDay, observationDateKey } from "./observation-date";
+import {
+  DESCRIPTIVE_CHANGE_NOTE,
+  NO_VALIDATED_ALERT_TEXT,
+  matchInterpretation,
+  seriesInterpretation,
+  seriesInterpretationText,
+  type InterpretationSnapshot,
+  type SeriesInterpretation,
+} from "./biomarker-interpretation";
+import { registryInterpretationSnapshot } from "./biomarker-interpretation-ledger";
 
 export const RESEARCHER_DOMAINS = ["bone", "cardiovascular", "immune", "behavioral"] as const;
 export type ResearcherDomain = (typeof RESEARCHER_DOMAINS)[number];
@@ -70,6 +80,8 @@ export interface InterpretationSeries {
   /** Other units recorded for the same metric ID in this domain (never compared or converted). */
   otherUnits: string[];
   handbook: HandbookContext;
+  /** P40: interpretation record status, context, citations, uncertainty and alert status (shared by screen, PDF, TXT). */
+  interpretation: SeriesInterpretation;
   limitations: string[];
 }
 
@@ -108,7 +120,14 @@ export interface ResearcherInterpretationModel {
   crossDomain: CrossDomainAssessment[];
   /** Ground Medical attestation, intake acceptance and scientific approval are separate layers. */
   approvalLayers: { layer: string; count: number | null; meaning: string }[];
-  validatedInterpretations: 0;
+  /** Production (non-demo) approved interpretations applied to series in this report. */
+  validatedInterpretations: number;
+  /** SYNTHETIC DEMO approved interpretations applied (never production validation). */
+  syntheticDemoInterpretations: number;
+  /** Interpretation snapshot provenance shown in screen, PDF and TXT. */
+  interpretationSource: { registryVersion: number; digest: string | null; deviceEvents: number; verified: boolean; note: string | null };
+  /** Descriptive-change and alert policy statements (domain-independent). */
+  changePolicy: string[];
   boundaries: string[];
 }
 
@@ -165,7 +184,7 @@ function handbookContext(domain: ResearcherDomain, metricId: string, comparison:
   return { kind: "quoted_pending_hypothesis", source: entry.handbook, reviewStatus: entry.reviewStatus, about: entry.what ?? null, statement, note };
 }
 
-function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows: ReportRow[], all: ReportRow[], events: readonly AttestationEvent[]): InterpretationSeries {
+function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows: ReportRow[], all: ReportRow[], events: readonly AttestationEvent[], snapshot: InterpretationSnapshot, missionId: string, provenance: string): InterpretationSeries {
   const sorted = [...rows].sort(compareObservationDates);
   const first = sorted[0]!;
   const last = sorted[sorted.length - 1]!;
@@ -208,6 +227,7 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
     else att.notAttested++;
   }
   const otherUnits = [...new Set(all.filter((r) => r.badge === domain && r.metricId === m.metricId && r.unit !== u).map((r) => r.unit))].sort();
+  const handbook = handbookContext(domain, m.metricId, comparison, direction);
   const limitations = [
     ...(sorted.some((r) => r.datePrecision === "date") ? ["Date-only readings have no observation time or timezone; date coverage is not UTC alignment. Mixed precision or repeated same-date readings are not ordered for comparison."] : []),
     ...(otherUnits.length ? [`Also recorded in ${otherUnits.join(", ")}; series in different units are listed separately and never compared or converted.`] : []),
@@ -237,7 +257,8 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
     evidenceTiers: tiers,
     attestation: att,
     otherUnits,
-    handbook: handbookContext(domain, m.metricId, comparison, direction),
+    handbook,
+    interpretation: seriesInterpretation(matchInterpretation(snapshot, { metricId: m.metricId, unit: u, domain, missionId, provenance }), comparison, direction, handbookLine(handbook)),
     limitations,
   };
 }
@@ -303,13 +324,14 @@ export function buildResearcherInterpretation(
   report: UnifiedHealthReport,
   findings: ScientificFindings,
   attestations: readonly AttestationEvent[] = [],
+  snapshot: InterpretationSnapshot = registryInterpretationSnapshot(),
 ): ResearcherInterpretationModel {
   const domains: DomainInterpretation[] = RESEARCHER_DOMAINS.map((domain) => {
     const domainRows = report.rows.filter((r) => r.badge === domain);
     const series = findings.metrics.flatMap((m) => {
       const ids = new Set(m.evidenceIds);
       const rows = domainRows.filter((r) => ids.has(r.recordId) && r.metricId === m.metricId && r.unit === m.unit);
-      return rows.length ? [buildSeries(domain, m, rows, report.rows, attestations)] : [];
+      return rows.length ? [buildSeries(domain, m, rows, report.rows, attestations, snapshot, report.scope.missionId, report.scope.provenance)] : [];
     }).sort((a, b) => a.metricId.localeCompare(b.metricId) || a.unit.localeCompare(b.unit));
     const times = [...domainRows].sort(compareObservationDates).map((r) => r.observedAt);
     const source = GOVERNED[domain];
@@ -338,13 +360,23 @@ export function buildResearcherInterpretation(
         : [],
     };
   });
+  const all = domains.flatMap((d) => d.series);
   return {
     scope: report.scope,
     generatedAt: report.generatedAt,
     domains,
     crossDomain: buildCrossDomainAssessments(report),
-    approvalLayers: approvalLayersFor(domains.flatMap((d) => d.series)),
-    validatedInterpretations: 0,
+    approvalLayers: approvalLayersFor(all),
+    validatedInterpretations: all.filter((s) => s.interpretation.status === "approved" && !s.interpretation.syntheticDemo).length,
+    syntheticDemoInterpretations: all.filter((s) => s.interpretation.status === "approved" && s.interpretation.syntheticDemo).length,
+    interpretationSource: {
+      registryVersion: snapshot.registryVersion,
+      digest: snapshot.digest,
+      deviceEvents: snapshot.ledger.events,
+      verified: snapshot.ledger.verified,
+      note: snapshot.ledger.note,
+    },
+    changePolicy: [DESCRIPTIVE_CHANGE_NOTE, NO_VALIDATED_ALERT_TEXT],
     boundaries: [...INTERPRETATION_BOUNDARIES],
   };
 }
@@ -352,10 +384,18 @@ export function buildResearcherInterpretation(
 /** Three separate layers; counts come only from the given series. */
 export function approvalLayersFor(series: readonly InterpretationSeries[]): ResearcherInterpretationModel["approvalLayers"] {
   const sum = (f: (s: InterpretationSeries) => number) => series.reduce((n, s) => n + f(s), 0);
+  const approved = series.filter((s) => s.interpretation.status === "approved" && !s.interpretation.syntheticDemo).length;
+  const demo = series.filter((s) => s.interpretation.status === "approved" && s.interpretation.syntheticDemo).length;
   return [
     { layer: "Intake acceptance", count: sum((s) => s.evidenceTiers.intakeAccepted), meaning: "Rows accepted one by one in Unified Intake; confirms data entry, not scientific validity." },
     { layer: "Ground Medical attestation", count: sum((s) => s.attestation.attested), meaning: "Verifies evidence provenance for the exact record version; not a scientific interpretation or clinical opinion." },
-    { layer: "Scientific interpretation approval", count: 0, meaning: `None approved. All handbook context and catalog mappings remain ${INTERPRETATION_APPROVAL_STATUS}.` },
+    {
+      layer: "Scientific interpretation approval",
+      count: approved,
+      meaning: approved
+        ? `${approved} series use a Researcher-approved interpretation (exact catalog ID, unit and domain, with citations); all other handbook context and catalog mappings remain ${INTERPRETATION_APPROVAL_STATUS}.${demo ? ` ${demo} further series use SYNTHETIC DEMO interpretations, which are not production scientific validation.` : ""}`
+        : `None approved. All handbook context and catalog mappings remain ${INTERPRETATION_APPROVAL_STATUS}.${demo ? ` ${demo} series use SYNTHETIC DEMO interpretations, which are not production scientific validation.` : ""}`,
+    },
   ];
 }
 
@@ -376,6 +416,7 @@ export function handbookLine(h: HandbookContext): string {
 
 export function researcherInterpretationPlainText(model: ResearcherInterpretationModel): string {
   const out: string[] = ["RESEARCHER MODULE PHYSIOLOGICAL EVIDENCE INTERPRETATION — RESEARCH ONLY"];
+  out.push(interpretationSourceLine(model), ...model.changePolicy);
   out.push("Approval layers (separate):", ...model.approvalLayers.map((l) => `- ${l.layer}: ${l.count ?? "n/a"}. ${l.meaning}`));
   for (const d of model.domains) {
     out.push("", `${d.label.toUpperCase()}`, d.summary, `Governance: ${d.governance.source ? `${d.governance.source}. ` : ""}${d.governance.status}`);
@@ -386,13 +427,19 @@ export function researcherInterpretationPlainText(model: ResearcherInterpretatio
         `  Readings ${s.readings}; time points ${s.distinctTimePoints}; ${s.dateOnly ? "calendar days (timezone not supplied)" : "UTC days"} ${s.distinctUtcDays}. Evidence: ${s.evidenceIds.join(", ")}.`,
         `  Provenance: ${s.provenance}. Quality: ${s.quality}`,
         `  Evidence tiers: ${s.evidenceTiers.storedModule} module, ${s.evidenceTiers.intakeAccepted} intake-accepted, ${s.evidenceTiers.device} device. Ground Medical: ${attestationLine(s.attestation)}.`,
-        `  Biological context: ${handbookLine(s.handbook)}`,
+        ...seriesInterpretationText(s.interpretation).map((l) => `  ${l}`),
         ...s.limitations.map((l) => `  Limitation: ${l}`),
       );
     }
     out.push(...d.limitations);
   }
   out.push("", "CROSS-DOMAIN COMPARABILITY", ...model.crossDomain.map((c) => `- ${c.statement} Evidence: ${c.evidenceIds.join(", ") || "none"}.`));
-  out.push(`Validated interpretations: ${model.validatedInterpretations}.`, ...model.boundaries);
+  out.push(`Validated interpretations: ${model.validatedInterpretations}.${model.syntheticDemoInterpretations ? ` SYNTHETIC DEMO interpretations (not production validation): ${model.syntheticDemoInterpretations}.` : ""}`, ...model.boundaries);
   return out.join("\n");
+}
+
+/** Interpretation registry/snapshot provenance line shared by screen, PDF and TXT. */
+export function interpretationSourceLine(model: ResearcherInterpretationModel): string {
+  const s = model.interpretationSource;
+  return `Interpretation source: Scientific Biomarker Interpretation Registry v${s.registryVersion}${s.deviceEvents ? ` plus ${s.deviceEvents} device-local review event(s)` : ""}${s.digest ? `; snapshot SHA-256 ${s.digest}` : ""}.${s.note ? ` ${s.note}` : ""}`;
 }

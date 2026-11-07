@@ -10,6 +10,7 @@ import { listAttestationEvents } from "@/domain/health-intelligence/review-ledge
 import { scopedAttestationEvents, type AttestationEvent } from "@/domain/health-intelligence/evidence-attestation";
 import { subscribeReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { ModuleInterpretationView } from "@/components/researcher-interpretation-view";
+import { useInterpretationSnapshot } from "@/hooks/use-interpretation-snapshot";
 
 /**
  * v9.5 module-level view of the shared deterministic interpretation model.
@@ -125,12 +126,13 @@ export function ResearcherInterpretationPanel({ domainId }: { domainId: Research
     return () => { active = false; };
   }, [missionId, crewMemberId, provenance, version]);
 
+  const { snapshot: interpretationSnapshot } = useInterpretationSnapshot();
   const model = useMemo(() => {
     if (!inputs || !missionId || !crewMemberId) return null;
     const scope = { missionId, crewMemberId, provenance };
     const unified = buildUnifiedHealthReport(inputs, scope, {});
-    return buildResearcherInterpretation(unified, buildScientificFindings(unified), scopedAttestationEvents(attestations, scope));
-  }, [inputs, missionId, crewMemberId, provenance, attestations]);
+    return buildResearcherInterpretation(unified, buildScientificFindings(unified), scopedAttestationEvents(attestations, scope), interpretationSnapshot);
+  }, [inputs, missionId, crewMemberId, provenance, attestations, interpretationSnapshot]);
 
   const label = RESEARCHER_DOMAIN_LABELS[domainId];
   return (
