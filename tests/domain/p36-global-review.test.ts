@@ -70,3 +70,33 @@ describe("P36 global scientific review", () => {
     expect(g?.pendingTermCount).toBe(14);
   });
 });
+
+import { ALL_CREWS, dashboardCounts, filterTerms, flattenTerms, paginate, sortTerms } from "../../src/lib/p36-global-review-view";
+import type { GlobalReviewSubmission } from "../../src/lib/p36-global-review.server";
+
+describe("P36 global review dashboard", () => {
+  const subs = [sub(1, "ubr-19aa5a1e", 12), sub(2, "ubr-8b1514d8", 197)]
+    .map((r) => cleanSubmission(r, "M1", "synthetic") as GlobalReviewSubmission);
+  const rows = flattenTerms(subs);
+  const all = { query: "", crew: ALL_CREWS, state: "all" as const, classification: "all" };
+
+  test("209 pending terms count as awaiting triage and activation-blocked, never approved", () => {
+    const c = dashboardCounts(rows);
+    expect(c).toEqual({ submittedTerms: 209, pending: 209, awaitingTriage: 209, moreEvidence: 0, rejected: 0, approved: 0, activationBlocked: 209 });
+  });
+
+  test("search by request ID returns only that receipt's 12 terms", () => {
+    expect(filterTerms(rows, { ...all, query: "ubr-19aa5a1e" }).length).toBe(12);
+  });
+
+  test("an unknown crew pseudonym matches nothing", () => {
+    expect(filterTerms(rows, { ...all, crew: "crew-p-ffffffffffffffff" })).toEqual([]);
+  });
+
+  test("pagination of 209 terms at 25 per page gives 9 pages and clamps past the end", () => {
+    const p = paginate(sortTerms(rows, "term"), 99, 25);
+    expect(p.pages).toBe(9);
+    expect(p.page).toBe(9);
+    expect(p.items.length).toBe(9);
+  });
+});
