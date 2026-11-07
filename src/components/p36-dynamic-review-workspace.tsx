@@ -221,10 +221,18 @@ export function P36DynamicReviewWorkspace({ auth }: { auth: ReturnType<typeof us
       const t = terms.find((term) => term.termId === id);
       if (!t) return null;
       const cloudTerm = cloud.find((c) => c.termId === t.termId);
+      const dossier = cloudTerm ? cloudTermDossier(cloudTerm) : null;
       return <div className="space-y-2 text-sm">
         <div className="flex flex-wrap items-start gap-2"><input aria-label={`Select proposal ${t.originalLabels[0]}`} type="checkbox" disabled={!safeIds.has(t.termId)} checked={selected.includes(t.termId)} onChange={(e) => setSelected((s) => e.target.checked ? [...s, t.termId] : s.filter((id) => id !== t.termId))} /><strong className="break-words">{t.originalLabels.join(" / ")}</strong><span>{t.exactUnit || "unit missing"}</span><Badge variant="outline">{cloudTerm ? "SUBMITTED" : "LOCAL_ONLY — not shared"}</Badge></div>
         <p className="break-words text-xs">{t.termId} · {t.classification} · candidate IDs {t.candidateMetricIds.join(", ") || "none"} · method/specimen unrecorded · scientific review pending</p>
         <details><summary className="cursor-pointer">Evidence fingerprints</summary><ul>{t.sourceDocumentSha256.map((h) => <li className="break-all" key={h}>{h} (not source validation)</li>)}</ul><p>{t.evidencePointers.length} opaque evidence pointer(s); no clinical values sent.</p></details>
+        {dossier ? <div className="space-y-3">
+          <h3 className="font-medium">Units (exact text comparison)</h3>
+          <ul>{dossier.unitComparisons.map((u) => <li key={u.reference} className="break-words">{u.reference}: {u.referenceUnits.join(" / ") || "Not recorded"} · {u.status}</li>)}</ul>
+          <h3 className="font-medium">Specimen, assay and protocol</h3><p>{dossier.assayProtocolNotes.join(" ")}</p>
+          <h3 className="font-medium">Unresolved scientific questions</h3><ul className="list-disc pl-4">{dossier.unresolvedQuestions.map((q) => <li key={q}>{q}</li>)}</ul>
+          <details><summary className="cursor-pointer">Source evidence ({dossier.evidence.length})</summary><ul>{dossier.evidence.map((e) => <li key={e.ref} className="break-all border-b border-border py-1">{e.ref} · {e.title} · {e.details.join(" · ")}</li>)}</ul></details>
+        </div> : <ul className="list-disc pl-4">{t.blockers.map((b) => <li key={b}>{b}</li>)}</ul>}
         {cloudTerm && scope ? <TermAuthorizationPanel dossier={cloudTermDossier(cloudTerm)} state={view?.terms.find((s) => s.termId === t.termId)} auth={dynamicAuth} scope={scope} /> : <p>Local-only evidence cannot authorize a cloud scientific decision.</p>}
         <Button variant="outline" disabled={view?.terms.find((s) => s.termId === t.termId)?.scientificStatus !== "SCIENTIFICALLY_APPROVED" || !isVerifiedSelection} onClick={() => void exportPromotion(t.termId)}>Prepare governed promotion artifact</Button>
       </div>;
