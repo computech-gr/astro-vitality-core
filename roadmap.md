@@ -2,7 +2,7 @@
 
 - [x] Recheck installed migration hashes, effective INSERT denials, function ownership/grants, RLS and both closed admissions.
 - [x] Inspect published Scientific Review assets without submission; deployed server revision and actual runtime flag remain unattested.
-- [ ] Activation blocked: server flag changes reach the published app only after publishing; separate deployment authorization and exact-revision release evidence remain required. No flag or admission changed.
+- [ ] Controlled publication/activation authorized but stopped in Phase A: exact-commit Quality run 42353231090 failed Format check; Production build skipped. Successful replacement exact-commit CI and published runtime verification required. No publication, flag or admission changed.
 - [ ] Manual 12-term then 197-term Ground Medical → Researcher acceptance waits for activation and user-controlled consent/submission from separate synthetic accounts; no requests uploaded.
 
 # P36 narrow permission remediation
