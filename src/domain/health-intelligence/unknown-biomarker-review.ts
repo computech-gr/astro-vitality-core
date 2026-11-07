@@ -109,8 +109,13 @@ export function syntheticDemoSectionConflict(
   catalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
 ): { demoId: string; displayName: string; entryDomain: HealthDomainId; sourceDomain: HealthDomainId } | null {
   if (!input.sourceDomain || input.identity === "canonical") return null;
-  const c = classifySyntheticDemo({ ...input, sourceDomain: undefined }, catalogs)?.classification;
-  if (!c || c.status !== "matched") return null;
+  const c = classifyWithGovernedExtensions(
+    { ...input, sourceDomain: undefined },
+    undefined,
+    undefined,
+    catalogs,
+  ).classification;
+  if (c.status !== "matched" || !c.metricId.startsWith("demo:")) return null;
   const entryDomain = c.domain;
   if (entryDomain === input.sourceDomain) return null;
   const e = catalogs.get(input.missionId ?? "")?.active.find((x) => x.demoId === c.metricId);
