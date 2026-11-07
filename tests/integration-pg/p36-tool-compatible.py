@@ -118,6 +118,13 @@ for i, name in enumerate(NAMES):
 check(sql(candidate, "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname like 'p36_dynamic%' and pg_get_userbyid(p.proowner)<>'lovable';") == "0", "Unexpected function owner")
 check(sql(candidate, "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'p36_dynamic%' and c.relkind='r' and not c.relrowsecurity;") == "0", "RLS disabled")
 check(sql(candidate, "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'p36_dynamic%' and c.relkind='r' and (has_table_privilege('authenticated',c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') or has_table_privilege('anon',c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE'));") == "0", "Direct table privileges exposed")
+# Authorization also denies both provenances when the singleton has not been initialized.
+sql(original, "BEGIN; DROP TABLE p36_dynamic_admission; CREATE TABLE p36_dynamic_admission(singleton boolean primary key, handoff_open boolean default false, authorization_open boolean default false); COMMIT;")
+for provenance in ["synthetic", "real"]:
+    payload = '{"kind":"recommendation","action":"RECOMMEND"}'
+    denied = "set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-000000000002'; select p36_dynamic_auth_append_v1('M1','C1','" + provenance + "','00000000-0000-0000-0000-000000000004','" + payload + "',encode(sha256(convert_to('" + payload + "','UTF8')),'hex'));"
+    check("admission is closed" in sql(original, denied, True), "Absent singleton admitted authorization")
+sql(original, INIT)
 # Nonempty receipt blocks the original authorization rollback without losing its data.
 sql(candidate, "insert into p36_dynamic_source_validation values('M1','C1','synthetic','test','" + "a" * 64 + "','cv-001','bpm','synthetic','synthetic','synthetic','v1','test-only','disposable',now());")
 before = sql(candidate, SNAPSHOT)
