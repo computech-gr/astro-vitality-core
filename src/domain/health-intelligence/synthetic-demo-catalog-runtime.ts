@@ -59,7 +59,8 @@ export async function loadInstalledDemoCatalogs(
   let rejected = 0;
   for (const [mission, signed] of Object.entries(parsed ?? {})) {
     const v = await verifySyntheticDemoSnapshot(signed, o.trustedKeys ?? BUNDLED_TRUSTED_KEYS);
-    if (v.ok && v.snapshot.missionId === mission) next.set(mission, signed as SignedSyntheticDemoSnapshot);
+    if (v.ok && v.snapshot.missionId === mission)
+      next.set(mission, signed as SignedSyntheticDemoSnapshot);
     else rejected++;
   }
   apply(next);
@@ -75,15 +76,24 @@ export async function installOfferedDemoCatalog(
   const v = await verifySyntheticDemoSnapshot(offered, o.trustedKeys ?? BUNDLED_TRUSTED_KEYS);
   if (!v.ok) return { installed: false, reason: v.reason };
   if (v.snapshot.missionId !== missionId)
-    return { installed: false, reason: "Synthetic demo catalog belongs to another mission; refused." };
+    return {
+      installed: false,
+      reason: "Synthetic demo catalog belongs to another mission; refused.",
+    };
   const current = installed.get(missionId);
   if (current) {
     if (v.snapshot.demoCatalogVersion < current.snapshot.demoCatalogVersion)
-      return { installed: false, reason: "Offered synthetic demo catalog is older; kept the installed one." };
+      return {
+        installed: false,
+        reason: "Offered synthetic demo catalog is older; kept the installed one.",
+      };
     if (v.snapshot.demoCatalogVersion === current.snapshot.demoCatalogVersion)
       return canonicalJson(v.snapshot.entries) === canonicalJson(current.snapshot.entries)
         ? { installed: false, reason: "Synthetic demo catalog is already up to date." }
-        : { installed: false, reason: "Same synthetic demo version with different content; refused." };
+        : {
+            installed: false,
+            reason: "Same synthetic demo version with different content; refused.",
+          };
   }
   const next = new Map(installed);
   next.set(missionId, offered as SignedSyntheticDemoSnapshot);

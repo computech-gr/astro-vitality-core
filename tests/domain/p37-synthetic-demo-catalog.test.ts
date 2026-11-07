@@ -58,13 +58,25 @@ function entry(over: Partial<SyntheticDemoEntry> = {}): SyntheticDemoEntry {
     classification: SYNTHETIC_DEMO_CLASSIFICATION,
     sourceDocumentSha256: ["a".repeat(64)],
     status: "ACTIVE",
-    decision: { decisionEventId: "d1", decidedAt: "2026-11-07T12:00:00Z", entrySha256: "b".repeat(64) },
-    activation: { activationEventId: "a1", activatedAt: "2026-11-07T12:05:00Z", demoCatalogVersion: 2 },
+    decision: {
+      decisionEventId: "d1",
+      decidedAt: "2026-11-07T12:00:00Z",
+      entrySha256: "b".repeat(64),
+    },
+    activation: {
+      activationEventId: "a1",
+      activatedAt: "2026-11-07T12:05:00Z",
+      demoCatalogVersion: 2,
+    },
     revocation: null,
     ...over,
   };
 }
-const snapshot = (entries: SyntheticDemoEntry[], v = 2, missionId = MISSION): SyntheticDemoSnapshot => ({
+const snapshot = (
+  entries: SyntheticDemoEntry[],
+  v = 2,
+  missionId = MISSION,
+): SyntheticDemoSnapshot => ({
   schema: "mitochondria.synthetic-demo-catalog-snapshot.v1",
   environment: "synthetic_demo",
   missionId,
@@ -109,23 +121,42 @@ describe("isolation from the production catalog", () => {
 
   test("production loader refuses a signed demo snapshot", async () => {
     const k = await demoKey();
-    const signed = await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey);
+    const signed = await signSyntheticDemoSnapshot(
+      snapshot([entry()]),
+      k.trusted.keyId,
+      k.privateKey,
+    );
     expect((await verifySignedCatalogSnapshot(signed, [k.trusted], ["production"])).ok).toBe(false);
-    const r = await installOfferedCatalog(signed, { storage: memoryStorage(), trustedKeys: [k.trusted] });
+    const r = await installOfferedCatalog(signed, {
+      storage: memoryStorage(),
+      trustedKeys: [k.trusted],
+    });
     expect(r.installed).toBe(false);
   });
 
   test("demo verifier refuses a key registered for production or test", async () => {
     const k = await demoKey();
-    const signed = await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey);
-    expect((await verifySyntheticDemoSnapshot(signed, [{ ...k.trusted, environment: "production" }])).ok).toBe(false);
-    expect((await verifySyntheticDemoSnapshot(signed, [{ ...k.trusted, environment: "test" }])).ok).toBe(false);
+    const signed = await signSyntheticDemoSnapshot(
+      snapshot([entry()]),
+      k.trusted.keyId,
+      k.privateKey,
+    );
+    expect(
+      (await verifySyntheticDemoSnapshot(signed, [{ ...k.trusted, environment: "production" }])).ok,
+    ).toBe(false);
+    expect(
+      (await verifySyntheticDemoSnapshot(signed, [{ ...k.trusted, environment: "test" }])).ok,
+    ).toBe(false);
     expect((await verifySyntheticDemoSnapshot(signed, [k.trusted])).ok).toBe(true);
   });
 
   test("tampered demo snapshot fails verification", async () => {
     const k = await demoKey();
-    const signed = await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey);
+    const signed = await signSyntheticDemoSnapshot(
+      snapshot([entry()]),
+      k.trusted.keyId,
+      k.privateKey,
+    );
     signed.snapshot.entries[0]!.unit = "nmol/L";
     expect((await verifySyntheticDemoSnapshot(signed, [k.trusted])).ok).toBe(false);
   });
@@ -141,21 +172,27 @@ describe("recognition rules", () => {
     if (r.status === "SYNTHETIC_DEMO_RECOGNIZED") expect(r.demoId).toBe("demo:ubt-7b25ce69");
   });
   test("case and spacing of the label are normalized", () => {
-    expect(recognizeSyntheticDemo({ ...exam, label: "  25(oh)   vitamin d " }, catalogs).status).toBe(
-      "SYNTHETIC_DEMO_RECOGNIZED",
-    );
+    expect(
+      recognizeSyntheticDemo({ ...exam, label: "  25(oh)   vitamin d " }, catalogs).status,
+    ).toBe("SYNTHETIC_DEMO_RECOGNIZED");
   });
   test("nmol/L is not recognized (no unit conversion)", () => {
     expect(recognizeSyntheticDemo({ ...exam, unit: "nmol/L" }, catalogs).status).toBe("UNKNOWN");
   });
   test("real provenance never uses the demo catalog", () => {
-    expect(recognizeSyntheticDemo({ ...exam, provenance: "real" }, catalogs).status).toBe("UNKNOWN");
+    expect(recognizeSyntheticDemo({ ...exam, provenance: "real" }, catalogs).status).toBe(
+      "UNKNOWN",
+    );
   });
   test("another mission is not recognized", () => {
-    expect(recognizeSyntheticDemo({ ...exam, missionId: "mission-other" }, catalogs).status).toBe("UNKNOWN");
+    expect(recognizeSyntheticDemo({ ...exam, missionId: "mission-other" }, catalogs).status).toBe(
+      "UNKNOWN",
+    );
   });
   test("source-unvalidated rows are not recognized", () => {
-    expect(recognizeSyntheticDemo({ ...exam, sourceValidation: "unvalidated" }, catalogs).status).toBe("UNKNOWN");
+    expect(
+      recognizeSyntheticDemo({ ...exam, sourceValidation: "unvalidated" }, catalogs).status,
+    ).toBe("UNKNOWN");
   });
   test("revoked, real-provenance, other-mission and unlabelled entries never match", () => {
     for (const bad of [
@@ -182,22 +219,45 @@ describe("intake coverage and no duplicate request", () => {
   const input = { label: LABEL, unit: UNIT, provenance: "synthetic" as const, missionId: MISSION };
 
   test("catalog classification is unchanged (still review-only)", () => {
-    expect(classifyWithGovernedExtensions(input).classification.status).toBe("unit_review_required");
+    expect(classifyWithGovernedExtensions(input).classification.status).toBe(
+      "unit_review_required",
+    );
     expect(syntheticDemoCoverage(input, catalogs)?.demoId).toBe("demo:ubt-7b25ce69");
   });
 
   test("a demo-covered row generates no unknown-biomarker request; an uncovered row still does", () => {
     const classification = classifyWithGovernedExtensions(input).classification;
-    const row = { label: LABEL, unit: UNIT, value: "31", observedAt: "2026-11-07", classification, sourceKind: "manual", sourceLabel: "Synthetic" };
-    expect(buildUnknownBiomarkerTerms([{ ...row, syntheticDemo: { demoId: "demo:ubt-7b25ce69" } }])).toHaveLength(0);
+    const row = {
+      label: LABEL,
+      unit: UNIT,
+      value: "31",
+      observedAt: "2026-11-07",
+      classification,
+      sourceKind: "manual",
+      sourceLabel: "Synthetic",
+    };
+    expect(
+      buildUnknownBiomarkerTerms([{ ...row, syntheticDemo: { demoId: "demo:ubt-7b25ce69" } }]),
+    ).toHaveLength(0);
     expect(buildUnknownBiomarkerTerms([row])).toHaveLength(1);
     expect(buildUnknownBiomarkerTerms([{ ...row, unit: "nmol/L" }])).toHaveLength(1);
   });
 
   test("source-unvalidated rows are still requested even with a demo marker", () => {
     const classification = classifyWithGovernedExtensions(input).classification;
-    const row = { label: LABEL, unit: UNIT, value: "31", observedAt: "", classification, sourceKind: "pdf", sourceLabel: "Synthetic", sourceValidation: "unvalidated" as const };
-    expect(buildUnknownBiomarkerTerms([{ ...row, syntheticDemo: { demoId: "demo:ubt-7b25ce69" } }])).toHaveLength(1);
+    const row = {
+      label: LABEL,
+      unit: UNIT,
+      value: "31",
+      observedAt: "",
+      classification,
+      sourceKind: "pdf",
+      sourceLabel: "Synthetic",
+      sourceValidation: "unvalidated" as const,
+    };
+    expect(
+      buildUnknownBiomarkerTerms([{ ...row, syntheticDemo: { demoId: "demo:ubt-7b25ce69" } }]),
+    ).toHaveLength(1);
   });
 });
 
@@ -205,8 +265,15 @@ describe("device runtime", () => {
   test("installs a verified snapshot, then recognizes offline after reload from storage", async () => {
     const k = await demoKey();
     const storage = memoryStorage();
-    const signed = await signSyntheticDemoSnapshot(snapshot([entry()]), k.trusted.keyId, k.privateKey);
-    expect((await installOfferedDemoCatalog(signed, MISSION, { storage, trustedKeys: [k.trusted] })).installed).toBe(true);
+    const signed = await signSyntheticDemoSnapshot(
+      snapshot([entry()]),
+      k.trusted.keyId,
+      k.privateKey,
+    );
+    expect(
+      (await installOfferedDemoCatalog(signed, MISSION, { storage, trustedKeys: [k.trusted] }))
+        .installed,
+    ).toBe(true);
     expect(storage.map.has(SYNTHETIC_DEMO_STORAGE_KEY)).toBe(true);
     resetSyntheticDemoCatalogsForTests();
     expect(getSyntheticDemoCatalogs().size).toBe(0);
@@ -215,9 +282,16 @@ describe("device runtime", () => {
       throw new Error("network disabled");
     }) as unknown as typeof fetch;
     try {
-      expect((await loadInstalledDemoCatalogs({ storage, trustedKeys: [k.trusted] })).loaded).toBe(1);
+      expect((await loadInstalledDemoCatalogs({ storage, trustedKeys: [k.trusted] })).loaded).toBe(
+        1,
+      );
       expect(
-        syntheticDemoCoverage({ label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION })?.demoId,
+        syntheticDemoCoverage({
+          label: LABEL,
+          unit: UNIT,
+          provenance: "synthetic",
+          missionId: MISSION,
+        })?.demoId,
       ).toBe("demo:ubt-7b25ce69");
     } finally {
       globalThis.fetch = realFetch;
@@ -228,20 +302,55 @@ describe("device runtime", () => {
     const k = await demoKey();
     const storage = memoryStorage();
     const o = { storage, trustedKeys: [k.trusted] };
-    const sign = (s: SyntheticDemoSnapshot) => signSyntheticDemoSnapshot(s, k.trusted.keyId, k.privateKey);
-    expect((await installOfferedDemoCatalog(await sign(snapshot([entry()], 2, "mission-other")), MISSION, o)).installed).toBe(false);
-    expect((await installOfferedDemoCatalog(await sign(snapshot([entry()], 3)), MISSION, o)).installed).toBe(true);
-    expect((await installOfferedDemoCatalog(await sign(snapshot([], 2)), MISSION, o)).installed).toBe(false);
-    expect((await installOfferedDemoCatalog(await sign(snapshot([], 3)), MISSION, o)).installed).toBe(false);
-    const revoked = entry({ status: "REVOKED", revocation: { revocationEventId: "r1", revokedAt: "2026-11-07T13:00:00Z", reason: "synthetic test end", demoCatalogVersion: 4 } });
-    expect((await installOfferedDemoCatalog(await sign(snapshot([revoked], 4)), MISSION, o)).installed).toBe(true);
-    expect(syntheticDemoCoverage({ label: LABEL, unit: UNIT, provenance: "synthetic", missionId: MISSION })).toBeNull();
+    const sign = (s: SyntheticDemoSnapshot) =>
+      signSyntheticDemoSnapshot(s, k.trusted.keyId, k.privateKey);
+    expect(
+      (
+        await installOfferedDemoCatalog(
+          await sign(snapshot([entry()], 2, "mission-other")),
+          MISSION,
+          o,
+        )
+      ).installed,
+    ).toBe(false);
+    expect(
+      (await installOfferedDemoCatalog(await sign(snapshot([entry()], 3)), MISSION, o)).installed,
+    ).toBe(true);
+    expect(
+      (await installOfferedDemoCatalog(await sign(snapshot([], 2)), MISSION, o)).installed,
+    ).toBe(false);
+    expect(
+      (await installOfferedDemoCatalog(await sign(snapshot([], 3)), MISSION, o)).installed,
+    ).toBe(false);
+    const revoked = entry({
+      status: "REVOKED",
+      revocation: {
+        revocationEventId: "r1",
+        revokedAt: "2026-11-07T13:00:00Z",
+        reason: "synthetic test end",
+        demoCatalogVersion: 4,
+      },
+    });
+    expect(
+      (await installOfferedDemoCatalog(await sign(snapshot([revoked], 4)), MISSION, o)).installed,
+    ).toBe(true);
+    expect(
+      syntheticDemoCoverage({
+        label: LABEL,
+        unit: UNIT,
+        provenance: "synthetic",
+        missionId: MISSION,
+      }),
+    ).toBeNull();
   });
 
   test("stored data that fails verification is ignored", async () => {
     const k = await demoKey();
     const storage = memoryStorage();
     storage.set(SYNTHETIC_DEMO_STORAGE_KEY, JSON.stringify({ [MISSION]: { schema: "x" } }));
-    expect(await loadInstalledDemoCatalogs({ storage, trustedKeys: [k.trusted] })).toEqual({ loaded: 0, rejected: 1 });
+    expect(await loadInstalledDemoCatalogs({ storage, trustedKeys: [k.trusted] })).toEqual({
+      loaded: 0,
+      rejected: 1,
+    });
   });
 });

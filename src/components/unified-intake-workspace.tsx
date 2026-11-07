@@ -480,7 +480,9 @@ export function UnifiedIntakeWorkspace() {
     }),
   );
   const unknownRequestRows = reviewOnlyRows.map((row) =>
-    demoCoverage.has(row.key) ? { ...row, syntheticDemo: { demoId: demoCoverage.get(row.key)!.demoId } } : row,
+    demoCoverage.has(row.key)
+      ? { ...row, syntheticDemo: { demoId: demoCoverage.get(row.key)!.demoId } }
+      : row,
   );
   const duplicates = membership
     ? saveableRows.flatMap((row) =>

@@ -161,9 +161,10 @@ const fingerprint =
   "select md5(string_agg(submission_id::text || payload_sha256, ',' order by received_seq)) || ':' || (select md5(string_agg(submission_id::text || term_id || metadata::text, ',' order by submission_id, term_id)) from p36_dynamic_handoff_terms) from p36_dynamic_handoff_submissions;";
 const before = sql(fingerprint);
 
-
 sql(`BEGIN;\n${pending("20261108010000_p37_ground_medical_activation.sql")}\nCOMMIT;`);
-sql(`insert into p37_scientific_approvers(user_id, authorization_ref) values ('${uid(4)}','owner-authorization:p37-disposable');`);
+sql(
+  `insert into p37_scientific_approvers(user_id, authorization_ref) values ('${uid(4)}','owner-authorization:p37-disposable');`,
+);
 sql(
   as(4) +
     `select public.p36_global_triage_append_v1('M1','synthetic','${SUB}','${TERM}','ACCEPT_FOR_REVIEW',null,'{}'::text[],null,'${key()}');`,
@@ -171,7 +172,10 @@ sql(
 const counts =
   "select (select count(*) from p37_catalog_events) || ':' || (select count(*) from p36_dynamic_source_validation) || ':' || (select count(*) from p36_global_triage_events) || ':' || (select count(*) from p36_dynamic_authorization_events) || ':' || (select count(*) from p36_metric_unit_catalog) || ':' || (select count(*) from p37_scientific_approvers);";
 const countsBefore = sql(counts);
-check(countsBefore === "0:0:1:0:1:1", "baseline: no production approvals, no receipts, one triage acceptance");
+check(
+  countsBefore === "0:0:1:0:1:1",
+  "baseline: no production approvals, no receipts, one triage acceptance",
+);
 
 // --- Apply the pending synthetic demo change ---------------------------------------
 sql(`BEGIN;\n${pending("20261108020000_p37_synthetic_demo_catalog.sql")}\nCOMMIT;`);
@@ -183,7 +187,10 @@ ROLLBACK;`)
     .includes("true"),
   "rollback removes every demo object while no demo event exists",
 );
-check(sql("select count(*) from pg_proc where proname like 'p37_demo_%';") === "6", "rollback test left the change intact");
+check(
+  sql("select count(*) from pg_proc where proname like 'p37_demo_%';") === "6",
+  "rollback test left the change intact",
+);
 
 const FNS = [
   "p37_demo_decide_v1(text,uuid,text,text,text,text,uuid)",
@@ -193,135 +200,372 @@ const FNS = [
   "p37_demo_catalog_snapshot_v1(text)",
 ];
 for (const f of FNS) {
-  for (const [role, want] of [["authenticated", "true"], ["anon", "false"], ["service_role", "false"], ["sandbox_exec", "false"]] as const)
-    check(sql(`select has_function_privilege('${role}','${f}','EXECUTE')::text;`) === want, `${role} execute ${f} = ${want}`);
+  for (const [role, want] of [
+    ["authenticated", "true"],
+    ["anon", "false"],
+    ["service_role", "false"],
+    ["sandbox_exec", "false"],
+  ] as const)
+    check(
+      sql(`select has_function_privilege('${role}','${f}','EXECUTE')::text;`) === want,
+      `${role} execute ${f} = ${want}`,
+    );
   const name = f.slice(0, f.indexOf("("));
   check(
-    sql(`select (prosecdef and proconfig::text like '%search_path=public, pg_temp%' and pg_get_userbyid(proowner) = current_user)::text from pg_proc where proname='${name}';`) === "true",
+    sql(
+      `select (prosecdef and proconfig::text like '%search_path=public, pg_temp%' and pg_get_userbyid(proowner) = current_user)::text from pg_proc where proname='${name}';`,
+    ) === "true",
     `${name} definer, pinned search_path, trusted owner`,
   );
 }
-check(sql("select has_function_privilege('authenticated','p37_demo_keys(jsonb)','EXECUTE')::text;") === "false", "helper not callable");
+check(
+  sql("select has_function_privilege('authenticated','p37_demo_keys(jsonb)','EXECUTE')::text;") ===
+    "false",
+  "helper not callable",
+);
 for (const t of ["p37_demo_scope", "p37_demo_catalog_events"]) {
   for (const role of ["anon", "authenticated", "sandbox_exec"])
     for (const priv of ["INSERT", "UPDATE", "DELETE", "TRUNCATE"])
-      check(sql(`select has_table_privilege('${role}','public.${t}','${priv}')::text;`) === "false", `${role} has no ${priv} on ${t}`);
+      check(
+        sql(`select has_table_privilege('${role}','public.${t}','${priv}')::text;`) === "false",
+        `${role} has no ${priv} on ${t}`,
+      );
   for (const role of ["anon", "authenticated"])
-    check(sql(`select has_table_privilege('${role}','public.${t}','SELECT')::text;`) === "false", `${role} cannot read ${t}`);
-  check(sql(`select relrowsecurity::text from pg_class where oid='public.${t}'::regclass;`) === "true", `${t} RLS enabled`);
+    check(
+      sql(`select has_table_privilege('${role}','public.${t}','SELECT')::text;`) === "false",
+      `${role} cannot read ${t}`,
+    );
+  check(
+    sql(`select relrowsecurity::text from pg_class where oid='public.${t}'::regclass;`) === "true",
+    `${t} RLS enabled`,
+  );
 }
-check(sqlErr(as(1) + "select * from p37_demo_catalog_events;").includes("permission denied"), "direct API read denied");
-check(sqlErr(as(4) + `insert into p37_demo_scope(submission_id, term_id, authorization_ref) values ('${SUB}','${TERM}','self-granted scope');`).includes("permission denied"), "approver cannot self-grant demo scope");
+check(
+  sqlErr(as(1) + "select * from p37_demo_catalog_events;").includes("permission denied"),
+  "direct API read denied",
+);
+check(
+  sqlErr(
+    as(4) +
+      `insert into p37_demo_scope(submission_id, term_id, authorization_ref) values ('${SUB}','${TERM}','self-granted scope');`,
+  ).includes("permission denied"),
+  "approver cannot self-grant demo scope",
+);
 
 type R = { status: string; detail?: string; event_id?: string; entry_sha256?: string };
 const res = (r: { status: number | null; stdout: string; stderr: string }): R =>
   r.status === 0 ? json<R>(r.stdout) : { status: "error", detail: r.stderr };
 const ACK = SYNTHETIC_DEMO_ACKNOWLEDGEMENT;
-const decide = (user: number, term: string, ack: string = ACK, k2 = key(), mission = "M1", sub = SUB) =>
-  res(run(as(user) + `select public.p37_demo_decide_v1('${mission}','${sub}',${literal(term)},'Synthetic marker demo','bone',${literal(ack)},'${k2}');`));
+const decide = (
+  user: number,
+  term: string,
+  ack: string = ACK,
+  k2 = key(),
+  mission = "M1",
+  sub = SUB,
+) =>
+  res(
+    run(
+      as(user) +
+        `select public.p37_demo_decide_v1('${mission}','${sub}',${literal(term)},'Synthetic marker demo','bone',${literal(ack)},'${k2}');`,
+    ),
+  );
 const activate = (user: number, dec: string, sha: string, k2 = key()) =>
   res(run(as(user) + `select public.p37_demo_activate_v1('${dec}',${literal(sha)},'${k2}');`));
 const revoke = (user: number, act: string, reason: string, k2 = key()) =>
   res(run(as(user) + `select public.p37_demo_revoke_v1('${act}',${literal(reason)},'${k2}');`));
-const DENY = "synthetic demo activation requires active Ground Medical membership in the decision mission";
+const DENY =
+  "synthetic demo activation requires active Ground Medical membership in the decision mission";
 
 // --- Owner scope ----------------------------------------------------------------------
-check(sql(pending("20261108020001_p37_synthetic_demo_scope.authorize.sql") + "select count(*) from p37_demo_scope;") === "INSERT 0 0\n0", "live-ID scope statement inserts nothing in a database without those exact IDs");
-check((decide(4, TERM).detail ?? "").includes("not in the owner-authorized synthetic demo scope"), "no decision without owner scope");
-sql(`insert into p37_demo_scope(submission_id, term_id, authorization_ref) values ('${SUB}','${TERM}','owner-authorization:disposable-demo');`);
+check(
+  sql(
+    pending("20261108020001_p37_synthetic_demo_scope.authorize.sql") +
+      "select count(*) from p37_demo_scope;",
+  ) === "INSERT 0 0\n0",
+  "live-ID scope statement inserts nothing in a database without those exact IDs",
+);
+check(
+  (decide(4, TERM).detail ?? "").includes("not in the owner-authorized synthetic demo scope"),
+  "no decision without owner scope",
+);
+sql(
+  `insert into p37_demo_scope(submission_id, term_id, authorization_ref) values ('${SUB}','${TERM}','owner-authorization:disposable-demo');`,
+);
 check(sqlErr(`delete from p37_demo_scope;`).length > 0, "scope rows cannot be deleted");
-check(sqlErr(`update p37_demo_scope set term_id='${TERM_OTHER}';`).length > 0, "scope rows cannot be changed");
+check(
+  sqlErr(`update p37_demo_scope set term_id='${TERM_OTHER}';`).length > 0,
+  "scope rows cannot be changed",
+);
 
 // --- Researcher demo decision --------------------------------------------------------
-check((decide(2, TERM).detail ?? "").includes("scientific approval authorization required"), "Ground Medical cannot record a demo decision");
-check((decide(12, TERM).detail ?? "").includes("scientific approval authorization required"), "global reviewer without approver grant cannot decide");
-check(decide(4, TERM, "I approve").detail === "the synthetic demo acknowledgement is required", "explicit acknowledgement required");
-check((decide(4, TERM_OTHER).detail ?? "").includes("not in the owner-authorized synthetic demo scope"), "other term of the same submission refused");
-check((decide(4, TERM, ACK, key(), "M2").detail ?? "").includes("scope denied"), "mission without sharing refused");
+check(
+  (decide(2, TERM).detail ?? "").includes("scientific approval authorization required"),
+  "Ground Medical cannot record a demo decision",
+);
+check(
+  (decide(12, TERM).detail ?? "").includes("scientific approval authorization required"),
+  "global reviewer without approver grant cannot decide",
+);
+check(
+  decide(4, TERM, "I approve").detail === "the synthetic demo acknowledgement is required",
+  "explicit acknowledgement required",
+);
+check(
+  (decide(4, TERM_OTHER).detail ?? "").includes("not in the owner-authorized synthetic demo scope"),
+  "other term of the same submission refused",
+);
+check(
+  (decide(4, TERM, ACK, key(), "M2").detail ?? "").includes("scope denied"),
+  "mission without sharing refused",
+);
 const dk = key();
 const dec = decide(4, TERM, ACK, dk);
-check(dec.status === "recorded", "Researcher records the SYNTHETIC DEMO decision without any source receipt");
+check(
+  dec.status === "recorded",
+  "Researcher records the SYNTHETIC DEMO decision without any source receipt",
+);
 check(decide(4, TERM, ACK, dk).status === "duplicate", "idempotent decision retry");
-check((decide(4, TERM).detail ?? "").includes("already has a synthetic demo decision"), "one decision per term");
-const entry = json<Record<string, unknown>>(sql(`select entry::text from p37_demo_catalog_events where id='${dec.event_id}';`));
-check(entry["classification"] === "SYNTHETIC_DEMO_NOT_SCIENTIFICALLY_VALIDATED" && entry["provenance"] === "synthetic" && entry["demoId"] === `demo:${TERM}`, "demo entry is labelled synthetic and not validated");
-check(!("specimen" in entry) && !("method" in entry) && !("protocol" in entry), "no specimen, method or protocol is invented");
-check(entry["unit"] === UNIT && JSON.stringify(entry["aliases"]) === JSON.stringify([LABEL]), "exact submitted unit and label carried");
-check(sql(counts) === countsBefore, "decision wrote nothing to the production P37 ledger, receipts, triage or catalogs");
+check(
+  (decide(4, TERM).detail ?? "").includes("already has a synthetic demo decision"),
+  "one decision per term",
+);
+const entry = json<Record<string, unknown>>(
+  sql(`select entry::text from p37_demo_catalog_events where id='${dec.event_id}';`),
+);
+check(
+  entry["classification"] === "SYNTHETIC_DEMO_NOT_SCIENTIFICALLY_VALIDATED" &&
+    entry["provenance"] === "synthetic" &&
+    entry["demoId"] === `demo:${TERM}`,
+  "demo entry is labelled synthetic and not validated",
+);
+check(
+  !("specimen" in entry) && !("method" in entry) && !("protocol" in entry),
+  "no specimen, method or protocol is invented",
+);
+check(
+  entry["unit"] === UNIT && JSON.stringify(entry["aliases"]) === JSON.stringify([LABEL]),
+  "exact submitted unit and label carried",
+);
+check(
+  sql(counts) === countsBefore,
+  "decision wrote nothing to the production P37 ledger, receipts, triage or catalogs",
+);
 
 // --- Ground Medical demo activation ----------------------------------------------------
-for (const [u, label] of [[6, "mission operator"], [5, "Ground Medical of another mission"], [7, "Ground Medical scoped to another crew member"], [8, "inactive Ground Medical"], [1, "crew self"], [12, "global reviewer"]] as const)
-  check((activate(u, dec.event_id!, dec.entry_sha256!).detail ?? "").includes(DENY), `deny ${label}`);
-check((activate(2, "40000000-0000-4000-8000-000000000001", dec.entry_sha256!).detail ?? "").includes(DENY), "unknown decision gives the same denial");
-check(activate(4, dec.event_id!, dec.entry_sha256!).detail === "the decider cannot activate their own synthetic demo decision", "decider cannot activate even with Ground Medical role");
-check(activate(2, dec.event_id!, "0".repeat(64)).detail === "proposal digest does not match the synthetic demo decision", "digest must match");
-type Life = { can_decide: boolean; can_activate: boolean; terms: { caller_may_activate: boolean; triage_action: string }[]; events: unknown[] };
+for (const [u, label] of [
+  [6, "mission operator"],
+  [5, "Ground Medical of another mission"],
+  [7, "Ground Medical scoped to another crew member"],
+  [8, "inactive Ground Medical"],
+  [1, "crew self"],
+  [12, "global reviewer"],
+] as const)
+  check(
+    (activate(u, dec.event_id!, dec.entry_sha256!).detail ?? "").includes(DENY),
+    `deny ${label}`,
+  );
+check(
+  (activate(2, "40000000-0000-4000-8000-000000000001", dec.entry_sha256!).detail ?? "").includes(
+    DENY,
+  ),
+  "unknown decision gives the same denial",
+);
+check(
+  activate(4, dec.event_id!, dec.entry_sha256!).detail ===
+    "the decider cannot activate their own synthetic demo decision",
+  "decider cannot activate even with Ground Medical role",
+);
+check(
+  activate(2, dec.event_id!, "0".repeat(64)).detail ===
+    "proposal digest does not match the synthetic demo decision",
+  "digest must match",
+);
+type Life = {
+  can_decide: boolean;
+  can_activate: boolean;
+  terms: { caller_may_activate: boolean; triage_action: string }[];
+  events: unknown[];
+};
 const l3 = json<Life>(sql(as(3) + "select p37_demo_lifecycle_v1('M1');"));
-check(l3.can_activate && !l3.can_decide && l3.terms.length === 1 && l3.terms[0]!.caller_may_activate && l3.events.length === 1, "Ground Medical sees the demo proposal");
+check(
+  l3.can_activate &&
+    !l3.can_decide &&
+    l3.terms.length === 1 &&
+    l3.terms[0]!.caller_may_activate &&
+    l3.events.length === 1,
+  "Ground Medical sees the demo proposal",
+);
 check(!JSON.stringify(l3).includes(uid(4)), "lifecycle exposes no identities");
 const l4 = json<Life>(sql(as(4) + "select p37_demo_lifecycle_v1('M1');"));
-check(l4.can_decide && l4.terms[0]!.triage_action === "ACCEPT_FOR_REVIEW", "Researcher sees scope and triage state");
-for (const u of [5, 6, 1]) check(sqlErr(as(u) + "select p37_demo_lifecycle_v1('M1');").includes("scope denied"), `lifecycle denied for user ${u}`);
+check(
+  l4.can_decide && l4.terms[0]!.triage_action === "ACCEPT_FOR_REVIEW",
+  "Researcher sees scope and triage state",
+);
+for (const u of [5, 6, 1])
+  check(
+    sqlErr(as(u) + "select p37_demo_lifecycle_v1('M1');").includes("scope denied"),
+    `lifecycle denied for user ${u}`,
+  );
 const [c2, c3] = await Promise.all([
-  runAsync(as(2) + `select public.p37_demo_activate_v1('${dec.event_id}','${dec.entry_sha256}','${key()}');`),
-  runAsync(as(3) + `select public.p37_demo_activate_v1('${dec.event_id}','${dec.entry_sha256}','${key()}');`),
+  runAsync(
+    as(2) +
+      `select public.p37_demo_activate_v1('${dec.event_id}','${dec.entry_sha256}','${key()}');`,
+  ),
+  runAsync(
+    as(3) +
+      `select public.p37_demo_activate_v1('${dec.event_id}','${dec.entry_sha256}','${key()}');`,
+  ),
 ]);
 const outcomes = [res(c2), res(c3)];
-check(outcomes.filter((o) => o.status === "recorded").length === 1 && outcomes.filter((o) => (o.detail ?? "").includes("already activated")).length === 1, "concurrent demo activation: exactly one recorded");
+check(
+  outcomes.filter((o) => o.status === "recorded").length === 1 &&
+    outcomes.filter((o) => (o.detail ?? "").includes("already activated")).length === 1,
+  "concurrent demo activation: exactly one recorded",
+);
 const act = outcomes.find((o) => o.status === "recorded")!;
-check(sql(counts) === countsBefore, "activation wrote nothing to the production P37 ledger, receipts, triage or catalogs");
+check(
+  sql(counts) === countsBefore,
+  "activation wrote nothing to the production P37 ledger, receipts, triage or catalogs",
+);
 
 // --- Snapshot -> signed -> online and offline recognition -------------------------
-check(sqlErr(as(5) + "select p37_demo_catalog_snapshot_v1('M1');").includes("scope denied"), "other-mission member cannot read the demo snapshot");
+check(
+  sqlErr(as(5) + "select p37_demo_catalog_snapshot_v1('M1');").includes("scope denied"),
+  "other-mission member cannot read the demo snapshot",
+);
 const snap = json<DemoSnapshotRpc>(sql(as(1) + "select p37_demo_catalog_snapshot_v1('M1');"));
-check(snap.mission_id === "M1" && snap.entries.length === 1 && snap.entries[0]!.status === "ACTIVE", "mission member reads the active demo entry");
-check(![uid(2), uid(3), uid(4)].some((u) => JSON.stringify(snap).includes(u)), "snapshot carries no identities");
-check(json<DemoSnapshotRpc>(sql(as(5) + "select p37_demo_catalog_snapshot_v1('M2');")).entries.length === 0, "other mission snapshot is empty");
-check(json<{ entries: unknown[] }>(sql(as(1) + "select p37_catalog_snapshot_v1();")).entries.length === 0, "production catalog snapshot stays empty");
+check(
+  snap.mission_id === "M1" && snap.entries.length === 1 && snap.entries[0]!.status === "ACTIVE",
+  "mission member reads the active demo entry",
+);
+check(
+  ![uid(2), uid(3), uid(4)].some((u) => JSON.stringify(snap).includes(u)),
+  "snapshot carries no identities",
+);
+check(
+  json<DemoSnapshotRpc>(sql(as(5) + "select p37_demo_catalog_snapshot_v1('M2');")).entries
+    .length === 0,
+  "other mission snapshot is empty",
+);
+check(
+  json<{ entries: unknown[] }>(sql(as(1) + "select p37_catalog_snapshot_v1();")).entries.length ===
+    0,
+  "production catalog snapshot stays empty",
+);
 const k0 = await generateTestSigningKey("disposable-demo-key");
 const demoTrusted = { ...k0.trusted, environment: "synthetic_demo" as const };
 const store = new Map<string, string>();
-const storage: SnapshotStorage = { get: (x) => store.get(x) ?? null, set: (x, v) => void store.set(x, v) };
+const storage: SnapshotStorage = {
+  get: (x) => store.get(x) ?? null,
+  set: (x, v) => void store.set(x, v),
+};
 const device = { storage, trustedKeys: [demoTrusted] };
-const sign = (r: DemoSnapshotRpc) => signSyntheticDemoSnapshot(demoSnapshotFromRpc(r, new Date().toISOString()), demoTrusted.keyId, k0.privateKey);
+const sign = (r: DemoSnapshotRpc) =>
+  signSyntheticDemoSnapshot(
+    demoSnapshotFromRpc(r, new Date().toISOString()),
+    demoTrusted.keyId,
+    k0.privateKey,
+  );
 resetSyntheticDemoCatalogsForTests();
 const exam = { label: LABEL, unit: UNIT, provenance: "synthetic" as const, missionId: "M1" };
 check(syntheticDemoCoverage(exam) === null, "before device sync: not recognized");
-check((await installOfferedDemoCatalog(await sign(snap), "M1", device)).installed, "verified demo snapshot installed");
+check(
+  (await installOfferedDemoCatalog(await sign(snap), "M1", device)).installed,
+  "verified demo snapshot installed",
+);
 const online = syntheticDemoCoverage(exam);
 check(online?.demoId === `demo:${TERM}`, "later synthetic examination recognized automatically");
-check(classifyWithGovernedExtensions(exam).classification.status === "unclassified", "catalog classification unchanged (review-only)");
-const row = { label: LABEL, unit: UNIT, value: "1", observedAt: "", classification: classifyWithGovernedExtensions(exam).classification, sourceKind: "manual", sourceLabel: "Synthetic" };
-check(buildUnknownBiomarkerTerms([{ ...row, syntheticDemo: { demoId: online!.demoId } }]).length === 0 && buildUnknownBiomarkerTerms([row]).length === 1, "no duplicate unknown-biomarker request");
-check(syntheticDemoCoverage({ ...exam, unit: "nmol/L" }) === null && syntheticDemoCoverage({ ...exam, provenance: "real" }) === null && syntheticDemoCoverage({ ...exam, missionId: "M2" }) === null, "unit, provenance and mission boundaries hold");
+check(
+  classifyWithGovernedExtensions(exam).classification.status === "unclassified",
+  "catalog classification unchanged (review-only)",
+);
+const row = {
+  label: LABEL,
+  unit: UNIT,
+  value: "1",
+  observedAt: "",
+  classification: classifyWithGovernedExtensions(exam).classification,
+  sourceKind: "manual",
+  sourceLabel: "Synthetic",
+};
+check(
+  buildUnknownBiomarkerTerms([{ ...row, syntheticDemo: { demoId: online!.demoId } }]).length ===
+    0 && buildUnknownBiomarkerTerms([row]).length === 1,
+  "no duplicate unknown-biomarker request",
+);
+check(
+  syntheticDemoCoverage({ ...exam, unit: "nmol/L" }) === null &&
+    syntheticDemoCoverage({ ...exam, provenance: "real" }) === null &&
+    syntheticDemoCoverage({ ...exam, missionId: "M2" }) === null,
+  "unit, provenance and mission boundaries hold",
+);
 resetSyntheticDemoCatalogsForTests();
 const realFetch = globalThis.fetch;
-globalThis.fetch = (() => { throw new Error("network disabled"); }) as unknown as typeof fetch;
-check((await loadInstalledDemoCatalogs(device)).loaded === 1 && syntheticDemoCoverage(exam)?.demoId === `demo:${TERM}`, "offline reload recognizes from the stored signed demo snapshot");
+globalThis.fetch = (() => {
+  throw new Error("network disabled");
+}) as unknown as typeof fetch;
+check(
+  (await loadInstalledDemoCatalogs(device)).loaded === 1 &&
+    syntheticDemoCoverage(exam)?.demoId === `demo:${TERM}`,
+  "offline reload recognizes from the stored signed demo snapshot",
+);
 globalThis.fetch = realFetch;
 const tampered = await sign(snap);
 tampered.snapshot.entries[0]!.unit = "nmol/L";
 tampered.snapshot.demoCatalogVersion += 5;
-check(!(await installOfferedDemoCatalog(tampered, "M1", device)).installed, "tampered demo snapshot rejected");
+check(
+  !(await installOfferedDemoCatalog(tampered, "M1", device)).installed,
+  "tampered demo snapshot rejected",
+);
 
 // --- Revocation -------------------------------------------------------------------
 for (const u of [5, 6, 7, 8, 1, 12])
-  check((revoke(u, act.event_id!, "Synthetic demo test complete").detail ?? "").length > 0 && revoke(u, act.event_id!, "Synthetic demo test complete").status !== "recorded", `revocation denied for user ${u}`);
+  check(
+    (revoke(u, act.event_id!, "Synthetic demo test complete").detail ?? "").length > 0 &&
+      revoke(u, act.event_id!, "Synthetic demo test complete").status !== "recorded",
+    `revocation denied for user ${u}`,
+  );
 check(revoke(3, act.event_id!, "short").status === "rejected", "revocation needs a reason");
 const rv = revoke(3, act.event_id!, "Synthetic demo test complete");
 check(rv.status === "recorded", "Ground Medical revokes the demo entry");
-check(revoke(2, act.event_id!, "Synthetic demo revoke again").detail === "already revoked", "no double revocation");
+check(
+  revoke(2, act.event_id!, "Synthetic demo revoke again").detail === "already revoked",
+  "no double revocation",
+);
 const snap2 = json<DemoSnapshotRpc>(sql(as(3) + "select p37_demo_catalog_snapshot_v1('M1');"));
-check(snap2.demo_catalog_version > snap.demo_catalog_version && snap2.entries[0]!.status === "REVOKED", "snapshot reflects revocation with newer version");
-check((await installOfferedDemoCatalog(await sign(snap2), "M1", device)).installed && syntheticDemoCoverage(exam) === null, "revoked demo entry no longer recognized");
+check(
+  snap2.demo_catalog_version > snap.demo_catalog_version && snap2.entries[0]!.status === "REVOKED",
+  "snapshot reflects revocation with newer version",
+);
+check(
+  (await installOfferedDemoCatalog(await sign(snap2), "M1", device)).installed &&
+    syntheticDemoCoverage(exam) === null,
+  "revoked demo entry no longer recognized",
+);
 resetSyntheticDemoCatalogsForTests();
 
 // --- Immutability, preservation, rollback guard -------------------------------------
-check(sqlErr(`update p37_demo_catalog_events set reason='tampered reason' where id='${rv.event_id}';`).length > 0, "demo events immutable");
-check(sqlErr(`delete from p37_demo_catalog_events where id='${act.event_id}';`).length > 0, "demo events undeletable");
+check(
+  sqlErr(`update p37_demo_catalog_events set reason='tampered reason' where id='${rv.event_id}';`)
+    .length > 0,
+  "demo events immutable",
+);
+check(
+  sqlErr(`delete from p37_demo_catalog_events where id='${act.event_id}';`).length > 0,
+  "demo events undeletable",
+);
 check(sqlErr(`truncate p37_demo_catalog_events;`).length > 0, "demo events cannot be truncated");
 check(sql(fingerprint) === before, "submissions and terms unchanged");
-check(sql(counts) === countsBefore, "production P37 ledger, receipts, triage, authorization ledger, unit catalog and approver grants unchanged");
-check(sqlErr(`BEGIN;\n${pending("20261108020000_p37_synthetic_demo_catalog.rollback.sql")}\nROLLBACK;`).includes("rollback refused"), "rollback refuses once demo history exists");
+check(
+  sql(counts) === countsBefore,
+  "production P37 ledger, receipts, triage, authorization ledger, unit catalog and approver grants unchanged",
+);
+check(
+  sqlErr(
+    `BEGIN;\n${pending("20261108020000_p37_synthetic_demo_catalog.rollback.sql")}\nROLLBACK;`,
+  ).includes("rollback refused"),
+  "rollback refuses once demo history exists",
+);
 sql(`drop database if exists ${DB} with (force);`, "postgres");
 console.log(`P37 synthetic demo disposable verification: ${count} assertions passed`);

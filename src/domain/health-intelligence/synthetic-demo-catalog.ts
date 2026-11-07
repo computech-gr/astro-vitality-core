@@ -25,8 +25,10 @@ import {
   type TrustedKey,
 } from "./catalog-snapshot-signing";
 
-export const SYNTHETIC_DEMO_SNAPSHOT_SCHEMA = "mitochondria.synthetic-demo-catalog-snapshot.v1" as const;
-export const SIGNED_SYNTHETIC_DEMO_SCHEMA = "mitochondria.signed-synthetic-demo-catalog.v1" as const;
+export const SYNTHETIC_DEMO_SNAPSHOT_SCHEMA =
+  "mitochondria.synthetic-demo-catalog-snapshot.v1" as const;
+export const SIGNED_SYNTHETIC_DEMO_SCHEMA =
+  "mitochondria.signed-synthetic-demo-catalog.v1" as const;
 export const SYNTHETIC_DEMO_CLASSIFICATION = "SYNTHETIC_DEMO_NOT_SCIENTIFICALLY_VALIDATED" as const;
 export const SYNTHETIC_DEMO_ACKNOWLEDGEMENT = "SYNTHETIC DEMO - NOT A SCIENTIFIC APPROVAL" as const;
 export const SYNTHETIC_DEMO_LABEL =
@@ -115,7 +117,8 @@ export function demoSnapshotFromRpc(rpc: DemoSnapshotRpc, issuedAt: string): Syn
 }
 
 /** SHA-256 of the canonical demo definition, for display and integrity checks. */
-export const demoDefinitionSha256 = (d: SyntheticDemoEntryDefinition) => sha256Hex(canonicalJson(d));
+export const demoDefinitionSha256 = (d: SyntheticDemoEntryDefinition) =>
+  sha256Hex(canonicalJson(d));
 
 export async function deriveSyntheticDemoSigningKey(secret: string) {
   if (typeof secret !== "string" || secret.length < 32) throw new Error("signing secret too short");
@@ -136,8 +139,7 @@ export async function signSyntheticDemoSnapshot(
 }
 
 export type DemoVerifyResult =
-  | { ok: true; snapshot: SyntheticDemoSnapshot }
-  | { ok: false; reason: string };
+  { ok: true; snapshot: SyntheticDemoSnapshot } | { ok: false; reason: string };
 
 /** Only a synthetic_demo key may sign a demo snapshot, and only a demo snapshot verifies here. */
 export async function verifySyntheticDemoSnapshot(
@@ -145,7 +147,12 @@ export async function verifySyntheticDemoSnapshot(
   trustedKeys: readonly TrustedKey[],
 ): Promise<DemoVerifyResult> {
   const s = signed as SignedSyntheticDemoSnapshot | null;
-  if (!s || s.schema !== SIGNED_SYNTHETIC_DEMO_SCHEMA || typeof s.signature !== "string" || !s.snapshot)
+  if (
+    !s ||
+    s.schema !== SIGNED_SYNTHETIC_DEMO_SCHEMA ||
+    typeof s.signature !== "string" ||
+    !s.snapshot
+  )
     return { ok: false, reason: "Not a signed synthetic demo catalog." };
   const snap = s.snapshot;
   if (
@@ -211,10 +218,17 @@ export function evaluateSyntheticDemoSnapshot(s: SyntheticDemoSnapshot): Evaluat
     const clash = ok.some(
       (o) => o !== c && (o.demoId === c.demoId || demoKeys(o).some((k) => keys.has(k))),
     );
-    if (clash) excluded.push({ demoId: c.demoId, reason: "Conflicts with another active demo entry" });
+    if (clash)
+      excluded.push({ demoId: c.demoId, reason: "Conflicts with another active demo entry" });
     return !clash;
   });
-  return { missionId: s.missionId, demoCatalogVersion: s.demoCatalogVersion, active, revoked, excluded };
+  return {
+    missionId: s.missionId,
+    demoCatalogVersion: s.demoCatalogVersion,
+    active,
+    revoked,
+    excluded,
+  };
 }
 
 export interface DemoRecognitionInput {
@@ -235,8 +249,7 @@ export type SyntheticDemoRecognition = {
   termId: string;
 };
 export type DemoRecognitionResult =
-  | SyntheticDemoRecognition
-  | { status: "UNKNOWN"; reason: string };
+  SyntheticDemoRecognition | { status: "UNKNOWN"; reason: string };
 
 /** Label + exact unit within the same mission, synthetic provenance only, never for source-unvalidated rows. */
 export function recognizeSyntheticDemo(
@@ -244,20 +257,28 @@ export function recognizeSyntheticDemo(
   catalogs: ReadonlyMap<string, EvaluatedDemoCatalog>,
 ): DemoRecognitionResult {
   if (input.provenance !== "synthetic")
-    return { status: "UNKNOWN", reason: "Synthetic demo recognition applies to synthetic data only." };
+    return {
+      status: "UNKNOWN",
+      reason: "Synthetic demo recognition applies to synthetic data only.",
+    };
   if (input.sourceValidation === "unvalidated")
     return { status: "UNKNOWN", reason: "The source marks this row unvalidated." };
   const catalog = input.missionId ? catalogs.get(input.missionId) : undefined;
-  if (!catalog) return { status: "UNKNOWN", reason: "No verified synthetic demo catalog for this mission." };
+  if (!catalog)
+    return { status: "UNKNOWN", reason: "No verified synthetic demo catalog for this mission." };
   const label = normalizeCatalogText(input.label);
   const unit = input.unit.trim();
   const named = catalog.active.filter((e) =>
     [e.displayName, ...e.aliases].some((a) => normalizeCatalogText(a) === label),
   );
-  if (!named.length) return { status: "UNKNOWN", reason: "No active synthetic demo entry for this label." };
+  if (!named.length)
+    return { status: "UNKNOWN", reason: "No active synthetic demo entry for this label." };
   const exact = named.filter((e) => e.unit.trim() === unit);
   if (!exact.length)
-    return { status: "UNKNOWN", reason: "Unit differs from the demo entry; units are never converted." };
+    return {
+      status: "UNKNOWN",
+      reason: "Unit differs from the demo entry; units are never converted.",
+    };
   if (exact.length > 1) return { status: "UNKNOWN", reason: "Ambiguous synthetic demo match." };
   const e = exact[0]!;
   return {
