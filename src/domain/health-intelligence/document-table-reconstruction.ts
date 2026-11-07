@@ -471,9 +471,14 @@ function extractIdentity(lines: readonly DocumentLineInput[]): DocumentIdentity 
     const text = l.text.trim();
     if (!text || text.length > 400) return;
     if (SIMULATED.test(text)) declaresSimulated = true;
-    const parts = (l.cells?.length ? l.cells.map((c) => c.text) : [text]).flatMap((p) => p.split(/\s*\|\s*/));
+    const parts = (l.cells?.length ? l.cells.map((c) => c.text) : [text])
+      .flatMap((p) => p.split(/\s*\|\s*/))
+      .filter(Boolean);
+    // Metadata lines consist only of "Key: value" pairs whose keys are words (never table rows).
+    const pair = /^(\p{L}[\p{L} ./'-]{0,39}):\s*(.+)$/u;
+    if (!parts.length || !parts.every((p) => pair.test(p.trim()))) return;
     for (const part of parts) {
-      const kv = /^([^:|]{1,40}):\s*(.+)$/.exec(part.trim());
+      const kv = pair.exec(part.trim());
       if (!kv) continue;
       const key = normalizeHeaderText(kv[1] ?? "");
       const value = (kv[2] ?? "").trim();
