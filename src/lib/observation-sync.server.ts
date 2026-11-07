@@ -28,6 +28,12 @@ import {
   type ObservationSyncEvent,
   type SyncScope,
 } from "@/domain/health-intelligence/observation-sync";
+import {
+  demoSnapshotFromRpc,
+  evaluateSyntheticDemoSnapshot,
+  type DemoSnapshotRpc,
+  type EvaluatedDemoCatalog,
+} from "@/domain/health-intelligence/synthetic-demo-catalog";
 
 export const CIPHER_ALG = "A256GCM-HKDF-SHA256-v1";
 const SALT = new TextEncoder().encode("mitochondria.observation-sync.v1");
@@ -138,6 +144,28 @@ export interface SyncDeps {
 
 export type SyncFailure = { ok: false; code: ObservationSyncErrorCode; message: string };
 
+/**
+ * Server-side SYNTHETIC DEMO catalog for one synthetic scope, read as the caller
+ * through the caller-scoped p37_demo_catalog_snapshot_v1 RPC (never the device's
+ * copy). Real scopes and any read failure yield an empty catalog, so demo records
+ * fail closed while every other record is validated exactly as before.
+ */
+export async function serverDemoCatalogs(
+  deps: Pick<SyncDeps, "rpc">,
+  scope: SyncScope,
+): Promise<ReadonlyMap<string, EvaluatedDemoCatalog>> {
+  if (scope.provenance !== "synthetic") return new Map();
+  try {
+    const { data, error } = await deps.rpc("p37_demo_catalog_snapshot_v1", { p_mission_id: scope.missionId });
+    const o = data as DemoSnapshotRpc | null;
+    if (error || !o || o.mission_id !== scope.missionId || !Array.isArray(o.entries)) return new Map();
+    const snap = demoSnapshotFromRpc(o, new Date(0).toISOString());
+    return new Map([[scope.missionId, evaluateSyntheticDemoSnapshot(snap)]]);
+  } catch {
+    return new Map();
+  }
+}
+
 export const OBSERVATION_SYNC_MESSAGES: Record<ObservationSyncErrorCode, string> = {
   migration_required: "Cloud observation sync unavailable: migration required",
   forbidden: "The server refused: an active Crew Self membership for this crew member, or a scoped Ground Medical membership, is required.",
@@ -188,11 +216,12 @@ export async function pushObservationEventsCore(
   if (!(await callerMayAccess(deps, scope))) return fail("forbidden");
   const version = Math.max(...gate.keys.keys());
   const keys = await deriveScopeKeys(gate.keys.get(version)!, version, scope);
+  const demoCatalogs = await serverDemoCatalogs(deps, scope);
   const local: PushItem[] = [];
   const sealed: SealedEvent[] = [];
   const seen = new Set<string>();
   for (const e of input.events) {
-    const reason = seen.has(e.eventId) ? "Duplicate event in batch." : checkObservationSyncEvent(e, scope);
+    const reason = seen.has(e.eventId) ? "Duplicate event in batch." : checkObservationSyncEvent(e, scope, demoCatalogs);
     seen.add(e.eventId);
     if (reason) local.push({ id: e.eventId, status: "rejected", fingerprint: null, receivedAt: null, detail: reason });
     else sealed.push(await sealEvent(keys, scope, e));
@@ -265,6 +294,7 @@ export async function pullObservationEventsCore(
     return fail(classifyObservationSyncError(error.code));
   }
   if (!Array.isArray(data)) return fail("unavailable");
+  const demoCatalogs = await serverDemoCatalogs(deps, scope);
   const keyCache = new Map<number, ScopeKeys>();
   const events: PulledEvent[] = [];
   const problems: PullProblem[] = [];
@@ -292,7 +322,7 @@ export async function pullObservationEventsCore(
       problems.push({ eventId, receivedSeq: seq, problem: "undecryptable_or_tampered" });
       continue;
     }
-    if (checkObservationSyncEvent(opened, scope)) {
+    if (checkObservationSyncEvent(opened, scope, demoCatalogs)) {
       problems.push({ eventId, receivedSeq: seq, problem: "invalid_payload" });
       continue;
     }
