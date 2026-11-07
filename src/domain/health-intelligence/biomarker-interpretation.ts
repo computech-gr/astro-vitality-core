@@ -561,6 +561,8 @@ export interface SeriesKey {
   unit: string;
   domain: InterpretationDomain;
   missionId: string;
+  /** Report provenance; SYNTHETIC DEMO interpretations never apply to real data. */
+  provenance?: string;
 }
 export interface InterpretationMatch {
   /** Exact-unit record (approved, revoked or pending), if any. */
@@ -576,7 +578,7 @@ export function matchInterpretation(snapshot: InterpretationSnapshot, k: SeriesK
     (r) =>
       r.identity.catalogId === k.metricId &&
       r.identity.domain === k.domain &&
-      (r.identity.environment !== "synthetic_demo" || r.identity.missionId === k.missionId),
+      (r.identity.environment !== "synthetic_demo" || (r.identity.missionId === k.missionId && (k.provenance === undefined || k.provenance === "synthetic"))),
   );
   const exact = same.find((r) => r.identity.unit === k.unit) ?? null;
   const general = same.find((r) => r.identity.unit === null) ?? null;
