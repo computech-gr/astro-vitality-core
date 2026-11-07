@@ -148,6 +148,13 @@
       "when": 1794037842453,
       "tag": "0020_p36_authorized_crew_roster",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794041991749,
+      "tag": "0021_p36_global_scientific_review",
+      "breakpoints": true
     }
   ]
 }
