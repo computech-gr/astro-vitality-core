@@ -7,7 +7,7 @@
  */
 import { classifyAuthorizationError, failure, type Rpc } from "./p36-scientific-authorization.server";
 import { snapshotFromLedgerRpc, type CatalogEntryDefinition, type LedgerSnapshotRpc } from "@/domain/health-intelligence/catalog-lifecycle";
-import { importPrivateSigningKey, signCatalogSnapshot, type SignedCatalogSnapshot } from "@/domain/health-intelligence/catalog-snapshot-signing";
+import { BUNDLED_TRUSTED_KEYS, deriveSigningKeyFromSecret, signCatalogSnapshot, type SignedCatalogSnapshot } from "@/domain/health-intelligence/catalog-snapshot-signing";
 
 const MIGRATION_MESSAGE = "Catalog approval and activation are not installed yet: the owner-approved database change has not been applied. Nothing was recorded.";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -95,6 +95,17 @@ export async function signedSnapshotCore(rpc: Rpc, keyPkcs8Base64: string | unde
   const o = data as LedgerSnapshotRpc | null;
   if (!o || !Array.isArray(o.entries) || typeof o.catalog_version !== "number") return failure("integrity", "The catalog snapshot failed validation.");
   let key: CryptoKey;
-  try { key = await importPrivateSigningKey(keyPkcs8Base64); } catch { return failure("unavailable", "The catalog signing key is invalid. Devices keep their last verified catalog."); }
+  try { key = (await deriveSigningKeyFromSecret(keyPkcs8Base64)).privateKey; } catch { return failure("unavailable", "The catalog signing key is invalid. Devices keep their last verified catalog."); }
   return { ok: true, signed: await signCatalogSnapshot(snapshotFromLedgerRpc(o, "production", now()), keyId, key) };
+}
+
+/** Public verification key derived from the server secret (never the secret itself), for registration in the trusted-key list. */
+export async function signingPublicKeyCore(secret: string | undefined, keyId: string | undefined):
+  Promise<{ ok: true; keyId: string; publicKeySpkiBase64: string; trustedInBundle: boolean } | { ok: false; code: string; message: string }> {
+  if (!secret || !keyId) return failure("unavailable", "The catalog signing key is not provisioned.");
+  try {
+    const { publicKeySpkiBase64 } = await deriveSigningKeyFromSecret(secret);
+    const trustedInBundle = BUNDLED_TRUSTED_KEYS.some((k) => k.keyId === keyId && k.publicKeySpkiBase64 === publicKeySpkiBase64 && k.environment === "production");
+    return { ok: true, keyId, publicKeySpkiBase64, trustedInBundle };
+  } catch { return failure("unavailable", "The catalog signing key is invalid."); }
 }

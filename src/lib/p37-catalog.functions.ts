@@ -49,6 +49,14 @@ export const revokeCatalogEntryFn = createServerFn({ method: "POST" })
     return revokeCore(rpc, data);
   });
 
+/** Public verification key of the provisioned signing secret (the secret itself never leaves the server). */
+export const getCatalogSigningPublicKey = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { signingPublicKeyCore } = await import("./p37-catalog.server");
+    return signingPublicKeyCore(process.env["P37_CATALOG_SIGNING_KEY"], process.env["P37_CATALOG_SIGNING_KEY_ID"]);
+  });
+
 /** Server-signed snapshot of activated catalog entries for offline devices. */
 export const getSignedCatalogSnapshot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
