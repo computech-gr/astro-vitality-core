@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
 import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-rules";
+import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
 import { getSyntheticDemoLifecycle } from "@/lib/p37-synthetic-demo.functions";
 import type { DemoLifecycleRow, DemoScopeTerm } from "@/lib/p37-synthetic-demo.server";
 import { bulkDemoDecideFn, bulkTriageAcceptFn } from "@/lib/p38-bulk-demo.functions";
@@ -95,6 +96,8 @@ type Run = {
 /** Ready for a decision request now (selection eligibility; shared pure rule). */
 const decidable = (r: PreflightRow, scope: Map<string, DemoScopeTerm>) => isDecidable(r, scope);
 
+const LOADING_NOTE = "Reading every submitted term of this mission…";
+
 export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const listSubs = useServerFn(listGlobalReviewSubmissions);
   const listTriage = useServerFn(listGlobalTriage);
@@ -102,7 +105,7 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const triageFn = useServerFn(bulkTriageAcceptFn);
   const decideFn = useServerFn(bulkDemoDecideFn);
   const [data, setData] = useState<Loaded | null>(null);
-  const [note, setNote] = useState("Reading every submitted term of this mission…");
+  const [note, setNote] = useState(LOADING_NOTE);
   const [overrides, setOverrides] = useState<Map<string, PreflightOverride>>(new Map());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
@@ -346,31 +349,36 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const summary = run ? summarizeBulk(run.results) : null;
   const workflow = bulkSelectionCounts(rows, scope);
   const retry = run ? retrySelection(run.results, rows, scope) : { keys: [], notRetryable: 0 };
+  const visibility = bulkResearcherVisibility({
+    authorizedMissions: 1,
+    missionSelected: true,
+    lifecycle: data
+      ? { canDecide: data.canDecide, demoScopeTerms: data.scope.size }
+      : note === LOADING_NOTE
+        ? "loading"
+        : "unavailable",
+  });
   return (
-    <section
-      id="p38-bulk-researcher"
-      aria-labelledby="p38-r-title"
-      className="scroll-mt-24 space-y-3 rounded-lg border-2 border-dashed border-border p-4"
-      data-testid="p38-bulk-researcher"
-    >
+    <BulkResearcherSection visibility={visibility}>
+      {visibility === "unavailable" ? (
+        <p className="text-xs text-muted-foreground">{note}</p>
+      ) : null}
+      {!data || visibility !== "visible" ? null : (
+      <div
+        aria-labelledby="p38-r-title"
+        className="space-y-3 rounded-lg border-2 border-dashed border-border p-4"
+        data-testid="p38-bulk-researcher"
+      >
       <div className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 id="p38-r-title" className="font-semibold">
-            Bulk synthetic demo decisions
-          </h3>
-          <Badge variant="outline">SYNTHETIC DEMO</Badge>
-        </div>
+        <h4 id="p38-r-title" className="font-semibold">
+          Preflight, selection and bulk decisions
+        </h4>
         <p className="text-sm text-muted-foreground">
           {SYNTHETIC_DEMO_LABEL}. Names and domains are proposed only from existing catalog
           references; specimen, method, reference intervals and source validation are never
           proposed. Decisions do not activate anything: Ground Medical activates separately.
         </p>
       </div>
-      {!data ? (
-        <p role="status" className="text-sm text-muted-foreground">
-          {note}
-        </p>
-      ) : (
         <>
           <div data-testid="p38-preflight-counts" className="space-y-1">
             <p className="text-sm font-medium">
@@ -880,8 +888,8 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
               ) : null}
             </div>
           ) : null}
-        </>
+      </div>
       )}
-    </section>
+    </BulkResearcherSection>
   );
 }
