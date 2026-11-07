@@ -40,11 +40,11 @@ The actual encrypted 197-term device request was not read, submitted or uploaded
 
 Existing handoff and authorization SQL and rollback bytes were preserved. The definitive dynamic sequence is:
 
-| Order | Pending SQL | SHA-256 |
-| --- | --- | --- |
-| 1 | `20261107000000_p36_dynamic_handoff.sql` | `c36ed38b8836f5c8cb0a906735e1ec6a8748145df393ab7029312434275ff83d` |
-| 2 | `20261107010000_p36_dynamic_authorization.sql` | `47c3498fad113acec0c9776636ae1378adbcdcf5b719cfc7c4e4d98124d33b06` |
-| 3 | `20261107020000_p36_authorized_crew_roster.sql` | `79cbac14e37717c98977f199974df0575449050cee38ec0612703567e01b66f0` |
+| Order | Pending SQL                                     | SHA-256                                                            |
+| ----- | ----------------------------------------------- | ------------------------------------------------------------------ |
+| 1     | `20261107000000_p36_dynamic_handoff.sql`        | `c36ed38b8836f5c8cb0a906735e1ec6a8748145df393ab7029312434275ff83d` |
+| 2     | `20261107010000_p36_dynamic_authorization.sql`  | `47c3498fad113acec0c9776636ae1378adbcdcf5b719cfc7c4e4d98124d33b06` |
+| 3     | `20261107020000_p36_authorized_crew_roster.sql` | `79cbac14e37717c98977f199974df0575449050cee38ec0612703567e01b66f0` |
 
 The roster follows the existing handoff authorization model and requires the existing missions, memberships, crew names, assignments and `auth.uid()`. It grants only RPC execution to authenticated callers, no anonymous execution or broader table access. No new table is created. Both write admissions remain closed by default; neither app flag alone admits writes.
 
@@ -54,20 +54,20 @@ Roster rollback: `20261107020000_p36_authorized_crew_roster.rollback.sql`, SHA-2
 
 ## Validation evidence
 
-| Check | Observed result |
-| --- | --- |
-| Full automated suite | **1,199 pass, 0 fail**, 191 files; 12,550 expectations |
-| Disposable PostgreSQL | **38 checks pass**, including 197-term synthetic insertion, Ground Medical recommendation, independent Researcher decision, source-receipt absence/mismatch, replay/conflict, scope/provenance separation, direct ACL denial, retaining disable, concurrent revocation and roster mission/crew/anonymous/inactive-assignment checks |
-| Main project gate scripts | **56 pass, 0 fail**; excludes typecheck/build/test/lint/format commands which are reported separately |
-| Extended offline verifiers | **107 pass, 3 blocked/fail**: `verify-p3663-activation.mjs` needs private restore evidence, `verify-p3664-owner-risk.mjs` needs independent backup/owner-risk evidence, `verify-submission-gate.mjs` needs official submission/rules evidence; safeguards were not weakened |
-| Lint | **0 errors, 12 existing warnings** |
-| Security boundary audit | **PASS** (`scripts/security-audit.mjs`) |
-| Dependency audit | **FAIL: 2 moderate advisories**, transitive esbuild and minimatch; no dependency changes were included in this UX patch |
-| Formatting | **PASS** before final documentation; final report and checklist formatting rechecked at delivery |
-| Managed compilation | Latest `/tmp/observability/build-errors.log`: **build OK** after source edits; the earlier nullable-ID compiler error was corrected |
-| Standalone typecheck/production build | **Not manually run** under platform execution rules; no exact-candidate production-build or hosted CI acceptance is claimed |
-| Desktop 1280×1800 / mobile 390×844 | Real browser checks pass: 10+2 original dossier pagination, search, domain filter, full dossier drawer, disabled scientific actions, no page horizontal overflow, no runtime errors |
-| Genuine two-account browser and cross-device workflow | **BLOCKED**: no independently isolated real-auth/application/data services were attested; disposable SQL role claims are not browser authentication acceptance |
+| Check                                                 | Observed result                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full automated suite                                  | **1,199 pass, 0 fail**, 191 files; 12,550 expectations                                                                                                                                                                                                                                                                              |
+| Disposable PostgreSQL                                 | **38 checks pass**, including 197-term synthetic insertion, Ground Medical recommendation, independent Researcher decision, source-receipt absence/mismatch, replay/conflict, scope/provenance separation, direct ACL denial, retaining disable, concurrent revocation and roster mission/crew/anonymous/inactive-assignment checks |
+| Main project gate scripts                             | **56 pass, 0 fail**; excludes typecheck/build/test/lint/format commands which are reported separately                                                                                                                                                                                                                               |
+| Extended offline verifiers                            | **107 pass, 3 blocked/fail**: `verify-p3663-activation.mjs` needs private restore evidence, `verify-p3664-owner-risk.mjs` needs independent backup/owner-risk evidence, `verify-submission-gate.mjs` needs official submission/rules evidence; safeguards were not weakened                                                         |
+| Lint                                                  | **0 errors, 12 existing warnings**                                                                                                                                                                                                                                                                                                  |
+| Security boundary audit                               | **PASS** (`scripts/security-audit.mjs`)                                                                                                                                                                                                                                                                                             |
+| Dependency audit                                      | **FAIL: 2 moderate advisories**, transitive esbuild and minimatch; no dependency changes were included in this UX patch                                                                                                                                                                                                             |
+| Formatting                                            | **PASS** before final documentation; final report and checklist formatting rechecked at delivery                                                                                                                                                                                                                                    |
+| Managed compilation                                   | Latest `/tmp/observability/build-errors.log`: **build OK** after source edits; the earlier nullable-ID compiler error was corrected                                                                                                                                                                                                 |
+| Standalone typecheck/production build                 | **Not manually run** under platform execution rules; no exact-candidate production-build or hosted CI acceptance is claimed                                                                                                                                                                                                         |
+| Desktop 1280×1800 / mobile 390×844                    | Real browser checks pass: 10+2 original dossier pagination, search, domain filter, full dossier drawer, disabled scientific actions, no page horizontal overflow, no runtime errors                                                                                                                                                 |
+| Genuine two-account browser and cross-device workflow | **BLOCKED**: no independently isolated real-auth/application/data services were attested; disposable SQL role claims are not browser authentication acceptance                                                                                                                                                                      |
 
 Screenshots of both fully opened drawers were visually inspected. Browser checks were signed out and did not submit requests or decisions. No simulation is represented as authenticated acceptance. Existing PDF/JSON regression tests passed with the full suite; source export pipelines remain unchanged.
 
