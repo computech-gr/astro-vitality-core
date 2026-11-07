@@ -17,6 +17,7 @@ import {
 } from "@/infrastructure/offline";
 import { initializeGroundSyncRuntime } from "@/infrastructure/ground-research";
 import { SiteHeader } from "@/components/app-shell";
+import { SyntheticDemoCatalogAutoRefresh } from "@/components/synthetic-demo-catalog-auto-refresh";
 import { Button } from "@/components/ui/button";
 import { supabaseBrowserConfigScript } from "@/integrations/supabase/config";
 
