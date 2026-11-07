@@ -226,7 +226,7 @@ const revoke = (user: number, act: string, reason: string, k2 = key()) =>
 const DENY = "synthetic demo activation requires active Ground Medical membership in the decision mission";
 
 // --- Owner scope ----------------------------------------------------------------------
-check(sql(pending("20261108020001_p37_synthetic_demo_scope.authorize.sql").replace(/;\s*$/, "") + " returning 1;") === "", "live-ID scope statement inserts nothing in a database without those exact IDs");
+check(sql(pending("20261108020001_p37_synthetic_demo_scope.authorize.sql") + "select count(*) from p37_demo_scope;") === "INSERT 0 0\n0", "live-ID scope statement inserts nothing in a database without those exact IDs");
 check((decide(4, TERM).detail ?? "").includes("not in the owner-authorized synthetic demo scope"), "no decision without owner scope");
 sql(`insert into p37_demo_scope(submission_id, term_id, authorization_ref) values ('${SUB}','${TERM}','owner-authorization:disposable-demo');`);
 check(sqlErr(`delete from p37_demo_scope;`).length > 0, "scope rows cannot be deleted");
