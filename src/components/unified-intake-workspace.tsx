@@ -1,4 +1,5 @@
 import {
+  csvCells,
   extractCsvCandidates,
   extractTextTableCandidates,
   extractFiveColumnLabCandidates,
@@ -7,9 +8,17 @@ import {
   detectIntakeFormat,
   extractJsonCandidates,
   extractXlsxCandidates,
+  xlsxCells,
   SUPPORTED_INTAKE_EXTENSIONS,
   batchDuplicateKeys,
 } from "@/domain/health-intelligence/universal-intake-adapters";
+import {
+  extractGridSourceEvidence,
+  extractTextSourceEvidence,
+  sectionForExcerpt,
+  type CandidateSourceSection,
+  type SourceDocumentEvidence,
+} from "@/domain/health-intelligence/source-section-classification";
 /**
  * Unified Medical Data Intake workspace. Every observation is classified
  * individually against the P36 source catalog (exact name + exact unit), is
@@ -22,7 +31,10 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
-import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
+import {
+  classifyWithGovernedExtensions,
+  syntheticDemoSectionConflict,
+} from "@/domain/health-intelligence/unknown-biomarker-review";
 import {
   getSyntheticDemoCatalogs,
   subscribeSyntheticDemoCatalogs,
@@ -86,6 +98,8 @@ type IntakeRow = {
   sourceLabel: string;
   documentName?: string | undefined;
   documentSha256?: string | undefined;
+  /** P39: heading / table / page-line provenance of the source row (review evidence). */
+  sourceSection?: CandidateSourceSection | undefined;
   classification: IntakeClassification;
   selected: boolean;
 };
@@ -101,8 +115,23 @@ function classify(row: {
   provenance?: "synthetic" | "real" | undefined;
   sourceValidation?: "unvalidated" | undefined;
   missionId?: string | undefined;
+  sourceSection?: CandidateSourceSection | undefined;
 }): IntakeClassification {
-  return classifyWithGovernedExtensions(row).classification;
+  return classifyWithGovernedExtensions({ ...row, sourceDomain: sectionDomain(row) })
+    .classification;
+}
+/** Domain of an explicit, recognized source section only (never from keywords). */
+function sectionDomain(row: { sourceSection?: CandidateSourceSection | undefined }) {
+  const s = row.sourceSection;
+  return s?.status === "recognized" && s.domain ? s.domain : undefined;
+}
+/** Attach P39 section provenance to parser candidates by their verbatim excerpt. */
+function withSections<T extends { excerpt: string }>(
+  items: readonly T[],
+  evidence: SourceDocumentEvidence | null,
+): (T & { sourceSection?: CandidateSourceSection })[] {
+  if (!evidence) return [...items];
+  return items.map((item) => ({ ...item, sourceSection: sectionForExcerpt(evidence, item.excerpt) }));
 }
 
 /** Re-stamp scope provenance and re-run classification (e.g. after a verified catalog update). */
@@ -138,10 +167,16 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
 }
 
 /** Schema-aware CSV; candidates still require catalog and human review. */
-function parseIntakeCsv(text: string): { rows: IntakeRow[]; skipped: number } {
+function parseIntakeCsv(text: string, fileName = "", sha256 = ""): { rows: IntakeRow[]; skipped: number } {
   const parsed = extractCsvCandidates(text, MAX_ROWS);
+  let evidence: SourceDocumentEvidence | null = null;
+  try {
+    evidence = extractGridSourceEvidence(csvCells(text), { sha256, fileName, kind: "csv" });
+  } catch {
+    evidence = null;
+  }
   return {
-    rows: parsed.rows.map((item) =>
+    rows: withSections(parsed.rows, evidence).map((item) =>
       newRow({ ...item, sourceKind: "csv", sourceLabel: "CSV import" }),
     ),
     skipped: parsed.skipped,
@@ -158,13 +193,24 @@ function parseIntakeText(
   sourceLabel: string,
   documentName?: string,
   documentSha256?: string,
+  linePages?: readonly number[],
 ): IntakeRow[] {
-  const rows: IntakeRow[] = [
-    ...extractTextTableCandidates(text, MAX_ROWS),
-    ...extractFiveColumnLabCandidates(text, MAX_ROWS),
-  ]
-    .slice(0, MAX_ROWS)
-    .map((item) => newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }));
+  const evidence = extractTextSourceEvidence(
+    text,
+    {
+      sha256: documentSha256 ?? "",
+      fileName: documentName ?? "",
+      kind: sourceKind === "pdf_text" ? "pdf" : "text",
+    },
+    linePages,
+  );
+  const rows: IntakeRow[] = withSections(
+    [
+      ...extractTextTableCandidates(text, MAX_ROWS),
+      ...extractFiveColumnLabCandidates(text, MAX_ROWS),
+    ].slice(0, MAX_ROWS),
+    evidence,
+  ).map((item) => newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }));
   for (const line of text.split(/\r?\n/).slice(0, 1000)) {
     if (line.length > 350 || BLOCKED_LINE.test(line)) continue;
     const match = /^\s*(.+?)\s*[:=]\s*([-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;,|]+)\s*$/.exec(
@@ -369,17 +415,24 @@ export function UnifiedIntakeWorkspace() {
           }
           hashes.add(hash);
           if (format === "xlsx" || format === "json") {
-            const parsed =
-              format === "xlsx"
-                ? extractXlsxCandidates(new Uint8Array(await file.arrayBuffer()), MAX_ROWS)
-                : extractJsonCandidates(await file.text(), MAX_ROWS);
+            const bytes = format === "xlsx" ? new Uint8Array(await file.arrayBuffer()) : null;
+            const parsed = bytes
+              ? extractXlsxCandidates(bytes, MAX_ROWS)
+              : extractJsonCandidates(await file.text(), MAX_ROWS);
+            const evidence = bytes
+              ? extractGridSourceEvidence(xlsxCells(bytes), {
+                  sha256: hash,
+                  fileName: file.name,
+                  kind: "xlsx",
+                })
+              : null;
             const isFhir =
               format === "json" && parsed.rows.some((row) => row.excerpt.startsWith("FHIR "));
             const kind: ObservationSourceKind =
               format === "xlsx" ? "xlsx" : isFhir ? "fhir" : "json";
             const label = format === "xlsx" ? "XLSX" : isFhir ? "FHIR" : "JSON";
             const space = Math.max(0, MAX_ROWS - incoming.length);
-            const batch = parsed.rows.slice(0, space).map((item) =>
+            const batch = withSections(parsed.rows.slice(0, space), evidence).map((item) =>
               newRow({
                 ...item,
                 sourceKind: kind,
@@ -392,7 +445,7 @@ export function UnifiedIntakeWorkspace() {
             count = batch.length;
             if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
           } else if (format === "csv") {
-            const parsed = parseIntakeCsv(await file.text());
+            const parsed = parseIntakeCsv(await file.text(), file.name, hash);
             const space = Math.max(0, MAX_ROWS - incoming.length);
             const batch = parsed.rows.slice(0, space).map((row) => ({
               ...row,
@@ -415,6 +468,7 @@ export function UnifiedIntakeWorkspace() {
               `Document: ${file.name}`,
               file.name,
               hash,
+              extracted.linePages,
             ).slice(0, space);
             incoming.push(...batch);
             count = batch.length;
@@ -1009,7 +1063,10 @@ export function UnifiedIntakeWorkspace() {
                         <Badge variant="outline">Unclassified — review-only</Badge>
                       )}
                     </td>
-                    <td className="py-2 text-xs text-muted-foreground">{row.sourceLabel}</td>
+                    <td className="py-2 text-xs text-muted-foreground">
+                      {row.sourceLabel}
+                      <SourceSectionNote row={row} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1095,5 +1152,45 @@ export function UnifiedIntakeWorkspace() {
         {status}
       </p>
     </main>
+  );
+}
+
+const LOCATOR_WORD: Record<NonNullable<CandidateSourceSection["locator"]>, string> = {
+  page_line: "line",
+  text_line: "line",
+  csv_row: "row",
+  xlsx_row: "row",
+};
+/** P39 section provenance of one intake row; evidence only, never an approval. */
+function SourceSectionNote({ row }: { row: IntakeRow }) {
+  const s = row.sourceSection;
+  if (!s) return null;
+  const at = [
+    s.page ? `page ${s.page}` : null,
+    s.line && s.locator ? `${LOCATOR_WORD[s.locator]} ${s.line}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const conflict =
+    s.status === "recognized"
+      ? syntheticDemoSectionConflict({ ...row, sourceDomain: sectionDomain(row) })
+      : null;
+  return (
+    <span className="mt-1 block" data-testid="p39-source-section">
+      {s.status === "recognized" && s.domain
+        ? `Section: ${s.path.join(" › ")} → ${DOMAIN_LABELS[s.domain]}`
+        : s.status === "unrecognized_heading"
+          ? `Section: ${s.path.join(" › ")} (heading not mapped to a domain)`
+          : s.status === "ambiguous"
+            ? "Section: identical row under different headings (ambiguous)"
+            : "Section: none detected"}
+      {at ? ` · ${at}` : ""}
+      {conflict ? (
+        <span className="block text-destructive">
+          Source section {DOMAIN_LABELS[conflict.sourceDomain]} differs from the activated demo
+          entry {conflict.displayName} ({DOMAIN_LABELS[conflict.entryDomain]}): held review-only.
+        </span>
+      ) : null}
+    </span>
   );
 }
