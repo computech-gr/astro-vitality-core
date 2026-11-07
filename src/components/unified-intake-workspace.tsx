@@ -262,6 +262,17 @@ export function UnifiedIntakeWorkspace() {
     setDuplicateAcknowledged(false);
   };
 
+  // Scope provenance or a newly verified catalog snapshot changes recognition; confirmation resets.
+  useEffect(() => {
+    const refresh = () => {
+      setRows((previous) => (previous.length ? reclassifyRows(previous, provenance) : previous));
+      setReviewerConfirmed(false);
+      setDuplicateAcknowledged(false);
+    };
+    refresh();
+    return subscribeActiveCatalog(refresh);
+  }, [provenance]);
+
   const addRows = (incoming: IntakeRow[], note: string) => {
     setRows((previous) => [...previous, ...reclassifyRows(incoming, provenance)].slice(0, MAX_ROWS));
     resetReview();

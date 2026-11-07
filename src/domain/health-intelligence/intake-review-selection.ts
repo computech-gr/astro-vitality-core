@@ -14,6 +14,9 @@ export interface IntakeReviewRow {
   datePrecision?: ObservationDatePrecision;
   collectionDate?: string;
   sourceValidation?: "unvalidated";
+  specimen?: string;
+  method?: string;
+  provenance?: "synthetic" | "real";
   classification: IntakeClassification;
   selected: boolean;
 }
