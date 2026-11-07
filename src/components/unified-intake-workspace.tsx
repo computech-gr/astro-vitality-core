@@ -93,7 +93,6 @@ import {
   diagnoseExtractionError,
   extractionBlockingReason,
   identityHoldReason,
-  isBulkSelectable,
   rowExtractionEvidence,
   summarizeDocumentRows,
   type RowExtractionEvidence,
