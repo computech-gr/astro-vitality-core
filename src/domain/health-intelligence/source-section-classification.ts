@@ -225,6 +225,22 @@ function headingKind(line: string, cells: string[]): HeadingKind {
   return null;
 }
 
+/**
+ * P42: the unchanged P39 heading rule applied to one extracted line, for the
+ * document table reconstruction (same rules version, no new aliases).
+ */
+export function documentLineHeading(
+  line: string,
+): { level: 1 | 2; text: string; domain: HealthDomainId | null; rule: string | null } | null {
+  const h = headingKind(line.trim(), splitCells(line.trim()));
+  if (!h) return null;
+  const hit = headingDomain(h.text);
+  return { ...h, domain: hit?.domain ?? null, rule: hit?.rule ?? null };
+}
+/** P42: page numbers / running header-footer keys under the same P39 furniture rule. */
+export const isPageMarkLine = (line: string) => PAGE_MARK.test(line.trim());
+export const pageFurnitureKey = (line: string) => furnitureKey(line.trim());
+
 /** Lenient row shape for evidence only (label + unit); values are never kept. */
 function rowShape(cells: string[]): { label: string; unit: string } | null {
   if (cells.length < 2) return null;
