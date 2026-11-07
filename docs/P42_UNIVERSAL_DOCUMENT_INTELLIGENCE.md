@@ -8,14 +8,14 @@ Status: implemented in Preview. Not published. No database, catalog, approval or
 
 ## Architecture (stages)
 
-| Stage | Where | What |
-| --- | --- | --- |
-| A Identification | `document-extraction.ts` (unchanged path + geometry cells), `document-table-reconstruction.ts` | pages, text layer vs OCR, patient / record / stated date-time, "simulated data" marker |
-| B Layout | `document-table-reconstruction.ts` | header cells mapped to column roles via an explicit English/Greek vocabulary (any order), x-alignment from PDF geometry, delimited text, low-confidence token fallback for OCR, headerless numbered rows |
-| C Reconstruction | same | one observation per source row: row number, verbatim label/result/unit, reference/specimen/method columns only when present, P39 section heading, page, line, excerpt; repeats and row-number gaps reported |
-| D Normalization | same (`parseResultValue`) | Unicode minus, thousands separators only when the document's own decimal convention proves them, exact scientific notation; categorical, yes/no, clock-time, censored and range results kept verbatim and marked unsupported |
-| E Catalog matching | existing `classifyWithGovernedExtensions` | unchanged exact label + exact unit rules |
-| F Human review | `document-intake-review.ts`, `intake-review-selection.ts`, `unified-intake-workspace.tsx` | processing summary, identity check, reviewer-applied examination time, filters, accept/reject, bulk selection limited to safely matched rows |
+| Stage              | Where                                                                                          | What                                                                                                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A Identification   | `document-extraction.ts` (unchanged path + geometry cells), `document-table-reconstruction.ts` | pages, text layer vs OCR, patient / record / stated date-time, "simulated data" marker                                                                                                                                       |
+| B Layout           | `document-table-reconstruction.ts`                                                             | header cells mapped to column roles via an explicit English/Greek vocabulary (any order), x-alignment from PDF geometry, delimited text, low-confidence token fallback for OCR, headerless numbered rows                     |
+| C Reconstruction   | same                                                                                           | one observation per source row: row number, verbatim label/result/unit, reference/specimen/method columns only when present, P39 section heading, page, line, excerpt; repeats and row-number gaps reported                  |
+| D Normalization    | same (`parseResultValue`)                                                                      | Unicode minus, thousands separators only when the document's own decimal convention proves them, exact scientific notation; categorical, yes/no, clock-time, censored and range results kept verbatim and marked unsupported |
+| E Catalog matching | existing `classifyWithGovernedExtensions`                                                      | unchanged exact label + exact unit rules                                                                                                                                                                                     |
+| F Human review     | `document-intake-review.ts`, `intake-review-selection.ts`, `unified-intake-workspace.tsx`      | processing summary, identity check, reviewer-applied examination time, filters, accept/reject, bulk selection limited to safely matched rows                                                                                 |
 
 ## Alex Morgan results (actual PDF)
 
