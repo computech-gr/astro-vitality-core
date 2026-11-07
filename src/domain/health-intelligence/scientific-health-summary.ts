@@ -111,13 +111,17 @@ export function buildScientificHealthSummary(
   findings: ScientificFindings,
   intake: HealthHistoryReport | null,
   attestation?: AttestationSummary | null,
+  /** P40: production approved interpretations applied by the shared interpretation model (synthetic demo excluded). */
+  validatedInterpretations = 0,
 ): ScientificHealthSummary {
   const tierCount = (tier: EvidenceTier) => report.rows.filter((r) => evidenceTierOf(r) === tier).length;
   const evidenceTiers: ScientificHealthSummary["evidenceTiers"] = [
     { tier: "stored_observation", count: tierCount("stored_observation"), note: "Recorded in a Health module; a data-entry record, not a scientific approval." },
     { tier: "reviewer_accepted_intake", count: tierCount("reviewer_accepted_intake"), note: "Accepted row by row in Unified Intake; reviewer confirmation is not scientific validation." },
     { tier: "device_observation", count: tierCount("device_observation"), note: "Scalar device rows with declared provenance; device quality is shown as recorded." },
-    { tier: "validated_interpretation", count: 0, note: "None. All handbook interpretations and catalog mappings remain pending independent scientific review (PENDING_NIKOLAS_REVIEW)." },
+    validatedInterpretations > 0
+      ? { tier: "validated_interpretation", count: validatedInterpretations, note: "Series using a Researcher-approved interpretation record (exact catalog ID, unit and domain, cited); every other handbook interpretation and catalog mapping remains pending independent scientific review (PENDING_NIKOLAS_REVIEW). SYNTHETIC DEMO interpretations are not counted." }
+      : { tier: "validated_interpretation", count: 0, note: "None. All handbook interpretations and catalog mappings remain pending independent scientific review (PENDING_NIKOLAS_REVIEW)." },
   ];
 
   const measured = report.summaries
@@ -232,7 +236,7 @@ export function buildScientificHealthSummary(
       `${report.coverage.included} included observation(s) for ${report.scope.provenance.toUpperCase()} provenance across ${presentDomains.length ? presentDomains.join(", ") : "no domain"}.`,
       `${changed.length} metric(s) show a descriptive first-to-last recorded difference; ${insufficient.length} metric(s) have fewer than two comparable time points.`,
       missingDomains.length ? `No included data for ${missingDomains.join(", ")} — missing data is not a negative finding.` : "Every selected source has included data.",
-      `${implications.length} handbook-quoted statement(s) apply to observed changes; 0 interpretations are scientifically validated (${"PENDING_NIKOLAS_REVIEW"}).`,
+      `${implications.length} handbook-quoted statement(s) apply to observed changes; ${validatedInterpretations} interpretation(s) are scientifically approved${validatedInterpretations ? " (see the Researcher interpretation section for reviewer, citations and status)" : ` (${"PENDING_NIKOLAS_REVIEW"})`}.`,
       ...(attestation ? [`Ground Medical attestation: ${attestation.attested} attested, ${attestation.notAttested} accepted without attestation, ${attestation.revoked} revoked.`] : []),
     ],
     evidenceIds,
