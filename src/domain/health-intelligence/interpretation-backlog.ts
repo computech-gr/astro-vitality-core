@@ -137,7 +137,7 @@ export function interpretationPreflight(snapshot: InterpretationSnapshot, bundle
       nameWithMultipleUnits,
       ambiguousSourceUnitText,
       notUnitBound,
-      specimenNotDocumented: rs.filter((r) => !r.measurementContext?.specimen).length,
+      specimenNotDocumented: rs.filter((r) => !r.specimenText && !r.measurementContext?.specimen).length,
       methodNotDocumented: rs.filter((r) => !r.measurementContext?.method).length,
       protocolNotDocumented: rs.filter((r) => !r.measurementContext?.collectionProtocol).length,
     },
