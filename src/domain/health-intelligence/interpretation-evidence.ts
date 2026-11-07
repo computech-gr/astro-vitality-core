@@ -126,7 +126,8 @@ const UNSAFE: [RegExp, string][] = [
   [/[\w.+-]+@[\w-]+\.[\w.]+/, "contains an email address"],
   [/https?:\/\//i, "contains a URL"],
   [/\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[/.]\d{1,2}[/.]\d{2,4}\b/, "contains a date"],
-  [/\d+[.,]\d+/, "contains a decimal value"],
+  // Measured values (e.g. "32.5", "18,2"), but not chemical locants such as "1,25(OH)2" or "1,25-dihydroxy".
+  [/(?<![\w,.-])\d+[.,]\d+(?![\w(,.-])/, "contains a decimal value"],
   [/\d{5,}/, "contains a long number (possible identifier)"],
   [/\b(?:patient|astronaut|crew)\s*(?:id|name|#)/i, "contains a person identifier field"],
 ];

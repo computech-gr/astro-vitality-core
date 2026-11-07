@@ -118,6 +118,8 @@ describe("P41 literature queries carry biomarker concepts only", () => {
   it("refuses values, dates, emails and identifiers", () => {
     expect(conceptPrivacyProblem({ label: "25(OH) Vitamin D", aliases: ["Calcidiol"], domain: "bone" })).toBeNull();
     expect(conceptPrivacyProblem({ label: "Vitamin D 32.5", aliases: [], domain: null })).toContain("decimal");
+    expect(conceptPrivacyProblem({ label: "Vitamin D 18,2", aliases: [], domain: null })).toContain("decimal");
+    expect(conceptPrivacyProblem({ label: "1,25(OH)₂ Vitamin D", aliases: ["1,25-dihydroxyvitamin D"], domain: null })).toBeNull();
     expect(conceptPrivacyProblem({ label: "Vitamin D", aliases: ["2026-10-01"], domain: null })).toContain("date");
     expect(conceptPrivacyProblem({ label: "Vitamin D", aliases: ["crew@example.org"], domain: null })).toContain("email");
     expect(conceptPrivacyProblem({ label: "Patient ID 4471", aliases: [], domain: null })).not.toBeNull();
