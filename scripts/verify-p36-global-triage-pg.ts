@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname } from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { canonicalJson } from "../src/domain/health-intelligence/observation-envelope";
 import { termIdFor } from "../src/domain/health-intelligence/unknown-biomarker-review";
 
@@ -167,9 +167,17 @@ check(j1.status === "recorded", "reject recorded");
 check(ok(call(4, { sub: S12, term: T12, action: "ACCEPT_FOR_REVIEW", prev: j1.event_id ?? null })).detail === "review request already rejected; a new submission is required", "reject is terminal");
 
 // Two concurrent first decisions on the same term: exactly one wins.
-const conc = [0, 1].map(() => spawnSync("psql", [...base, "-d", DB], { input: as(4) + `select public.p36_global_triage_append_v1('M1','synthetic','${S197}','${T197}','ACCEPT_FOR_REVIEW',null,'{}'::text[],null,'${key()}')->>'status';`, encoding: "utf8" }));
+// Both sessions start together; the first sleeps inside its transaction after
+// the advisory lock so the second must wait for it and then see a stale chain.
+const concSql = (sleep: boolean) => as(4) + `begin; select public.p36_global_triage_append_v1('M1','synthetic','${S197}','${T197}','ACCEPT_FOR_REVIEW',null,'{}'::text[],null,'${key()}')->>'status';${sleep ? " select pg_sleep(1.5);" : ""} commit;`;
+const runAsync = (input: string, delayMs: number) => new Promise<{ status: number | null; stdout: string }>((done) => setTimeout(() => {
+  const c = spawn("psql", [...base, "-d", DB]); let out = "";
+  c.stdout.on("data", (d: Buffer) => { out += d.toString(); }); c.on("close", (status) => done({ status, stdout: out })); c.stdin.end(input);
+}, delayMs));
+const conc = await Promise.all([runAsync(concSql(true), 0), runAsync(concSql(false), 400)]);
+const statusOf = (o: string) => o.split("\n").map((l) => l.trim()).filter((l) => ["recorded", "stale"].includes(l)).join("");
 check(sql(`select count(*) from p36_global_triage_events where submission_id='${S197}' and term_id='${T197}';`) === "1", "concurrent first writes produce one event");
-check(conc.every((c) => c.status === 0) && conc.map((c) => last(c.stdout.trim())).sort().join(",") === "recorded,stale", "loser sees stale");
+check(conc.every((c) => c.status === 0) && conc.map((c) => statusOf(c.stdout)).join(",") === "recorded,stale", "loser sees stale");
 
 // --- Identity, timestamps, history and immutability ----------------------------
 const hist = json<ListOut>(sql(as(4) + "select p36_global_triage_list_v1('M1','synthetic');"));
