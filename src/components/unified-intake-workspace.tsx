@@ -1216,7 +1216,8 @@ export function UnifiedIntakeWorkspace() {
                       ["Pages inspected", doc.pages ?? "—"],
                       ["Table headers", recon?.headers.length ?? 0],
                       ["Source rows detected", summary.sourceRows],
-                      ["Observations extracted", summary.extracted],
+                      ["Observations extracted", recon?.observations.length ?? summary.extracted],
+                      ["Unsaved rows in review", summary.extracted],
                       ["Safely matched", summary.safelyMatched],
                       ["Ambiguous matches", summary.ambiguous],
                       ["Unit review", summary.unitReview],
@@ -1234,6 +1235,9 @@ export function UnifiedIntakeWorkspace() {
                     </div>
                   ))}
                 </dl>
+                <p className="text-xs text-muted-foreground">
+                  Match and review counts refer to the unsaved rows still in review.
+                </p>
                 {recon?.sections.length ? (
                   <p className="text-xs text-muted-foreground">
                     Sections:{" "}
