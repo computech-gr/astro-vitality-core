@@ -550,7 +550,8 @@ export async function buildVerifiedSnapshot(
   for (const rec of validated.registry.records) {
     if (rec.reviewStatus !== "PENDING_SCIENTIFIC_REVIEW" && rec.content) {
       const sha = await interpretationContentSha256(rec.identity, { content: rec.content, citations: rec.citations, evidenceStrength: rec.evidenceStrength });
-      if (sha !== rec.contentSha256 || rec.approvalHistory.some((h) => h.action === "APPROVE" && h.contentSha256 !== null && h.contentSha256 !== rec.contentSha256 && h === rec.approvalHistory.at(-1))) {
+      const lastApproval = [...rec.approvalHistory].reverse().find((h) => h.action === "APPROVE");
+      if (sha !== rec.contentSha256 || lastApproval?.contentSha256 !== sha) {
         excluded.push({ key: rec.key, reason: "Approved content fingerprint mismatch" });
         records.push({ ...rec, reviewStatus: "PENDING_SCIENTIFIC_REVIEW", reviewer: null, approvalHistory: [], contentSha256: null, content: null, contentOrigin: "none" });
         continue;
