@@ -319,3 +319,29 @@ export const LIFECYCLE_LABEL: Record<LifecycleState, string> = {
   SCIENTIFICALLY_APPROVED: "Scientifically approved", CATALOG_PROPOSED: "Approved · catalog proposal ready",
   CATALOG_ACTIVE: "Catalog active", CATALOG_REVOKED: "Catalog entry revoked", RECOGNIZED: "Recognized in later examination",
 };
+
+// ------------------------------------------------- server snapshot mapping
+
+/** Shape returned by the p37_catalog_snapshot_v1 RPC (identities never included). */
+export interface LedgerSnapshotRpc {
+  catalog_version: number;
+  entries: (CatalogEntryDefinition & {
+    status: "ACTIVE" | "REVOKED";
+    approval: { approvalEventId: string; approvedAt: string; proposalSha256: string };
+    activation: { activationEventId: string; activatedAt: string; catalogVersion: number };
+    revocation: { revocationEventId: string; revokedAt: string; reason: string; catalogVersion: number } | null;
+  })[];
+}
+
+/** Map the server ledger read into the snapshot that the server signs for devices. */
+export function snapshotFromLedgerRpc(rpc: LedgerSnapshotRpc, environment: CatalogEnvironment, issuedAt: string): ActiveCatalogSnapshot {
+  const entries: CatalogEntry[] = (rpc.entries ?? []).map((e) => ({
+    canonicalId: e.canonicalId, canonicalName: e.canonicalName, aliases: [...e.aliases], unit: e.unit, specimen: e.specimen, method: e.method,
+    protocol: e.protocol, protocolVersion: e.protocolVersion, domain: e.domain, provenance: e.provenance, evidenceRefs: [...e.evidenceRefs],
+    status: e.status,
+    approval: { approvalEventId: e.approval.approvalEventId, approverId: "authorized-scientific-approver", approvedAt: e.approval.approvedAt, proposalSha256: e.approval.proposalSha256 },
+    activation: { activationEventId: e.activation.activationEventId, activatorId: "authorized-catalog-activator", activatedAt: e.activation.activatedAt, catalogVersion: Number(e.activation.catalogVersion) },
+    revocation: e.revocation ? { ...e.revocation, catalogVersion: Number(e.revocation.catalogVersion) } : null,
+  }));
+  return { schema: ACTIVE_CATALOG_SNAPSHOT_SCHEMA, environment, baseCatalogVersion: BASE_CATALOG_VERSION, catalogVersion: Number(rpc.catalog_version) || 0, issuedAt, entries };
+}
