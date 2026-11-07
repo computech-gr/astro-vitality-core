@@ -52,6 +52,7 @@ import {
   type SourceDocumentEvidence,
 } from "@/domain/health-intelligence/source-section-classification";
 import { csvCells } from "@/domain/health-intelligence/universal-intake-parser";
+import { bulkSelectionCounts, isDecidable, retrySelection } from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
 import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
 
@@ -91,9 +92,8 @@ type Run = {
   retry: (() => Promise<void>) | null;
 };
 
-/** Ready for a decision request now (selection eligibility). */
-const decidable = (r: PreflightRow, scope: Map<string, DemoScopeTerm>) =>
-  r.category === "eligible" && r.inScope && !scope.get(r.key)?.submittedByCaller;
+/** Ready for a decision request now (selection eligibility; shared pure rule). */
+const decidable = (r: PreflightRow, scope: Map<string, DemoScopeTerm>) => isDecidable(r, scope);
 
 export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const listSubs = useServerFn(listGlobalReviewSubmissions);
@@ -344,10 +344,13 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   };
 
   const summary = run ? summarizeBulk(run.results) : null;
+  const workflow = bulkSelectionCounts(rows, scope);
+  const retry = run ? retrySelection(run.results, rows, scope) : { keys: [], notRetryable: 0 };
   return (
     <section
+      id="p38-bulk-researcher"
       aria-labelledby="p38-r-title"
-      className="space-y-3 rounded-lg border-2 border-dashed border-border p-4"
+      className="scroll-mt-24 space-y-3 rounded-lg border-2 border-dashed border-border p-4"
       data-testid="p38-bulk-researcher"
     >
       <div className="space-y-1">
@@ -375,6 +378,10 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
             </p>
             <div className="flex flex-wrap gap-2 text-xs">
               <Badge variant="default">Eligible {counts.eligible}</Badge>
+              <Badge variant="secondary" data-testid="p54-awaiting-triage">
+                Eligible · awaiting review acceptance (triage) {workflow.awaitingTriage}
+              </Badge>
+              <Badge variant="secondary">Eligible · ready for decision {workflow.readyForDecision}</Badge>
               <Badge variant="secondary">
                 Domain proposed from source section · awaiting acceptance {awaiting.length}
               </Badge>
@@ -826,6 +833,35 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                     {r.termId}: {r.detail ?? r.status}
                   </p>
                 ))}
+              {run.results.length ? (
+                <details data-testid="p54-bulk-item-results">
+                  <summary className="cursor-pointer">Per-item results ({run.results.length})</summary>
+                  <ul className="mt-1 max-h-64 space-y-0.5 overflow-auto">
+                    {run.results.map((r) => (
+                      <li key={r.ref} className={r.status === "rejected" || r.status === "stale" ? "text-destructive" : ""}>
+                        {r.termId}: {r.status === "recorded" ? "recorded" : r.status === "duplicate" ? "already recorded" : r.status === "stale" ? "changed meanwhile" : r.status}
+                        {r.detail ? ` — ${r.detail}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+              {retry.keys.length ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => setSelected(new Set(retry.keys))}
+                >
+                  <RotateCcw className="mr-1 h-4 w-4" aria-hidden />
+                  Select {retry.keys.length} failed item(s) again for retry
+                </Button>
+              ) : null}
+              {retry.notRetryable ? (
+                <p className="text-muted-foreground">
+                  {retry.notRetryable} failed item(s) are no longer eligible and cannot be retried.
+                </p>
+              ) : null}
               {run.failure ? (
                 <p role="alert" className="text-destructive">
                   {run.failure}
