@@ -150,6 +150,9 @@ export type SyncFailure = { ok: false; code: ObservationSyncErrorCode; message: 
  * copy). Real scopes and any read failure yield an empty catalog, so demo records
  * fail closed while every other record is validated exactly as before.
  */
+const isDemoEvent = (e: ObservationSyncEvent) =>
+  typeof e?.observation?.metricId === "string" && e.observation.metricId.startsWith("demo:");
+
 export async function serverDemoCatalogs(
   deps: Pick<SyncDeps, "rpc">,
   scope: SyncScope,
@@ -216,7 +219,9 @@ export async function pushObservationEventsCore(
   if (!(await callerMayAccess(deps, scope))) return fail("forbidden");
   const version = Math.max(...gate.keys.keys());
   const keys = await deriveScopeKeys(gate.keys.get(version)!, version, scope);
-  const demoCatalogs = await serverDemoCatalogs(deps, scope);
+  const demoCatalogs = input.events.some((e) => isDemoEvent(e))
+    ? await serverDemoCatalogs(deps, scope)
+    : new Map<string, EvaluatedDemoCatalog>();
   const local: PushItem[] = [];
   const sealed: SealedEvent[] = [];
   const seen = new Set<string>();
@@ -294,7 +299,7 @@ export async function pullObservationEventsCore(
     return fail(classifyObservationSyncError(error.code));
   }
   if (!Array.isArray(data)) return fail("unavailable");
-  const demoCatalogs = await serverDemoCatalogs(deps, scope);
+  let demoCatalogs: ReadonlyMap<string, EvaluatedDemoCatalog> | null = null;
   const keyCache = new Map<number, ScopeKeys>();
   const events: PulledEvent[] = [];
   const problems: PullProblem[] = [];
@@ -322,7 +327,8 @@ export async function pullObservationEventsCore(
       problems.push({ eventId, receivedSeq: seq, problem: "undecryptable_or_tampered" });
       continue;
     }
-    if (checkObservationSyncEvent(opened, scope, demoCatalogs)) {
+    if (isDemoEvent(opened) && !demoCatalogs) demoCatalogs = await serverDemoCatalogs(deps, scope);
+    if (checkObservationSyncEvent(opened, scope, demoCatalogs ?? new Map())) {
       problems.push({ eventId, receivedSeq: seq, problem: "invalid_payload" });
       continue;
     }
