@@ -22,7 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { appendGlobalTriage, listGlobalReviewMissions, listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
-import { EVIDENCE_REQUIREMENTS, latestTriageByTerm, triageInputProblem, type EvidenceRequirement, type TriageAction, type TriageEvent } from "@/lib/p36-global-triage.server";
+import { EVIDENCE_REQUIREMENTS, latestTriageByTerm, triageInputProblem, type EvidenceRequirement, type TriageAction, type TriageEvent } from "@/lib/p36-global-triage-rules";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import {
   ALL_CREWS, ALL_MISSIONS, REVIEW_STATE_LABEL, SCIENTIFIC_STATE_LABEL, canChooseAllMissions, crewOptions, dashboardCounts, filterTerms,

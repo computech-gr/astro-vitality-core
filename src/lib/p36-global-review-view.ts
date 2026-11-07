@@ -1,6 +1,6 @@
 /** Pure, browser-safe grouping for the read-only Global Scientific Review panel. */
 import type { GlobalReviewMission, GlobalReviewSubmission, GlobalReviewTerm } from "./p36-global-review.server";
-import type { TriageEvent } from "./p36-global-triage.server";
+import type { TriageEvent } from "./p36-global-triage-rules";
 
 export const ALL_MISSIONS = "__all_authorized_missions__";
 

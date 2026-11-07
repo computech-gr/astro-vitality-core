@@ -7,23 +7,9 @@
  */
 import { classifyAuthorizationError, failure, type Rpc } from "./p36-scientific-authorization.server";
 import type { GlobalReviewProvenance } from "./p36-global-review.server";
+import { EVIDENCE_REQUIREMENTS, TRIAGE_ACTIONS, triageInputProblem, type EvidenceRequirement, type TriageAction, type TriageEvent } from "./p36-global-triage-rules";
 
-export const TRIAGE_ACTIONS = ["ACCEPT_FOR_REVIEW", "REQUEST_MORE_EVIDENCE", "REJECT_REVIEW_REQUEST"] as const;
-export type TriageAction = (typeof TRIAGE_ACTIONS)[number];
-export const EVIDENCE_REQUIREMENTS = ["identity", "unit", "method", "specimen", "protocol", "source_validation", "other"] as const;
-export type EvidenceRequirement = (typeof EVIDENCE_REQUIREMENTS)[number];
-
-export interface TriageEvent {
-  eventId: string;
-  submissionId: string;
-  termId: string;
-  action: TriageAction;
-  reason: string | null;
-  evidenceRequirements: EvidenceRequirement[];
-  previousEventId: string | null;
-  recordedAt: string;
-  recordedByCaller: boolean;
-}
+export * from "./p36-global-triage-rules";
 
 export interface TriageAppendInput {
   missionId: string;
@@ -82,16 +68,6 @@ export async function listTriageCore(rpc: Rpc, missionId: string, provenance: Gl
   return { ok: true as const, canTriage: o["can_triage"], events };
 }
 
-/** Client-side mirror of the database rules, so obviously invalid requests never leave the browser. */
-export function triageInputProblem(i: Pick<TriageAppendInput, "action" | "reason" | "evidenceRequirements">): string | null {
-  const reason = i.reason?.trim() ?? "";
-  if (i.action !== "ACCEPT_FOR_REVIEW" && !reason) return "A documented reason is required.";
-  if (reason && (reason.length < 8 || reason.length > 2000)) return "The reason must be 8 to 2000 characters.";
-  if (i.action === "REQUEST_MORE_EVIDENCE" && !i.evidenceRequirements.length) return "Name at least one missing evidence requirement.";
-  if (i.action !== "REQUEST_MORE_EVIDENCE" && i.evidenceRequirements.length) return "Evidence requirements apply only to evidence requests.";
-  return null;
-}
-
 export async function appendTriageCore(rpc: Rpc, i: TriageAppendInput) {
   const problem = triageInputProblem(i);
   if (problem) return failure("invalid", problem);
@@ -112,10 +88,3 @@ export async function appendTriageCore(rpc: Rpc, i: TriageAppendInput) {
   return failure("integrity", "The triage receipt failed verification.");
 }
 
-/** Latest event per submitted term, following the append-only chain. */
-export function latestTriageByTerm(events: TriageEvent[]): Map<string, TriageEvent> {
-  const superseded = new Set(events.map((e) => e.previousEventId).filter((v): v is string => !!v));
-  const out = new Map<string, TriageEvent>();
-  for (const e of events) if (!superseded.has(e.eventId)) out.set(`${e.submissionId}:${e.termId}`, e);
-  return out;
-}
