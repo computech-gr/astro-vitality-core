@@ -2,11 +2,12 @@ import { BONE_MEASUREMENT_PROFILE, catalogIdPattern, type MeasurementProfile } f
 import { parseBoneImport, type BoneImportCandidate } from "./import";
 
 import { getLocalOcrAssets } from "./ocr-readiness";
-import { reconstructGeometryLines, geometryLinesToText, type PdfTextItem } from "./pdf-geometry";
+import { reconstructGeometryLines, geometryLinesToText, type GeometryLine, type PdfTextItem } from "./pdf-geometry";
 import { extractUniversalDocumentRows, type HeldRow } from "./universal-document-rows";
 import { recognizeClinicalLabRows } from "./clinical-lab-rows";
 
-export type ExtractedDocument = { text: string; pages: number; method: string; warnings: string[]; linePages: number[] };
+/** `geometry` (P42) has one entry per text line when every page used the PDF text layer; absent with OCR. */
+export type ExtractedDocument = { text: string; pages: number; method: string; warnings: string[]; linePages: number[]; geometry?: GeometryLine[] };
 type Detector = { detect(image: ImageBitmap | HTMLCanvasElement): Promise<Array<{rawValue?: string}>> };
 type DetectorConstructor = new () => Detector;
 
@@ -69,6 +70,7 @@ export async function extractBoneDocument(file: File, signal?: AbortSignal): Pro
       if (document.numPages > 12) throw new Error("PDF exceeds 12-page limit.");
       const sections: string[] = [];
       const linePages: number[] = [];
+      const geometry: GeometryLine[] = [];
       for (let index=1; index<=document.numPages; index++) {
         signal?.throwIfAborted();
         const page = await document.getPage(index);
@@ -92,6 +94,7 @@ export async function extractBoneDocument(file: File, signal?: AbortSignal): Pro
           const geometryLines = reconstructGeometryLines(items);
           text = geometryLinesToText(geometryLines);
           linePages.push(...geometryLines.map(line => line.page));
+          geometry.push(...geometryLines);
         }
         if (!text.trim()) {
           const viewport = page.getViewport({scale: 1.7});
@@ -106,7 +109,7 @@ export async function extractBoneDocument(file: File, signal?: AbortSignal): Pro
         }
         sections.push(text);
       }
-      return {text:sections.join("\n"),pages:document.numPages,method:warnings.length?"PDF text (geometry) + on-device OCR":"PDF selectable text (geometry)",warnings,linePages};
+      return {text:sections.join("\n"),pages:document.numPages,method:warnings.length?"PDF text (geometry) + on-device OCR":"PDF selectable text (geometry)",warnings,linePages,...(warnings.length?{}:{geometry})};
     } finally { signal?.removeEventListener("abort", abort); await loadingTask.destroy(); }
   }
   if (/\.(png|jpe?g|webp)$/i.test(file.name)) {

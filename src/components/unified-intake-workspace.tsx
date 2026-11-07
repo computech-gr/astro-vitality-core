@@ -16,6 +16,7 @@ import {
   extractGridSourceEvidence,
   extractTextSourceEvidence,
   sectionForExcerpt,
+  SOURCE_SECTION_RULES_VERSION,
   type CandidateSourceSection,
   type SourceDocumentEvidence,
 } from "@/domain/health-intelligence/source-section-classification";
@@ -77,6 +78,26 @@ import {
 } from "@/domain/health-intelligence/intake-review-selection";
 
 import { type ObservationDatePrecision } from "@/domain/health-intelligence/observation-date";
+import {
+  DOCUMENT_TABLE_RULES_VERSION,
+  documentLinesFromText,
+  reconstructDocumentTables,
+  valueKindText,
+  type DocumentReconstruction,
+} from "@/domain/health-intelligence/document-table-reconstruction";
+import {
+  applyDocumentTimestamp,
+  canResolveIdentityConflict,
+  compareDocumentIdentity,
+  diagnoseDocumentIntake,
+  diagnoseExtractionError,
+  extractionBlockingReason,
+  identityHoldReason,
+  rowExtractionEvidence,
+  summarizeDocumentRows,
+  type RowExtractionEvidence,
+} from "@/domain/health-intelligence/document-intake-review";
+import type { GeometryLine } from "@/domain/bone-health/pdf-geometry";
 
 type IntakeRow = {
   key: string;
@@ -102,9 +123,27 @@ type IntakeRow = {
   sourceSection?: CandidateSourceSection | undefined;
   classification: IntakeClassification;
   selected: boolean;
+  /** P42: document-table evidence (row number, raw value, issues, repeats). */
+  extraction?: RowExtractionEvidence | undefined;
+  /** P42: explicitly rejected by the reviewer (kept visible, never saved). */
+  rejected?: boolean | undefined;
+  /** P42: unresolved document identity conflict for the selected scope. */
+  identityHold?: string | null | undefined;
 };
 
-const MAX_ROWS = 200;
+/** P42: one processed document (summary, identity, diagnostics); memory only, never stored. */
+type ProcessedDocument = {
+  sha256: string;
+  fileName: string;
+  pages: number | null;
+  method: string;
+  textLength: number;
+  reconstruction: DocumentReconstruction | null;
+  saved: number;
+};
+
+/** Review table capacity (a complete multi-domain examination can exceed 300 rows). */
+const MAX_ROWS = 1000;
 
 /** Base P36 catalog first; only governed, fully approved catalog extensions can add matches. */
 function classify(row: {
@@ -195,6 +234,69 @@ const BLOCKED_LINE =
   /(?:reference|normal|interval|range|ref\.|\bmin\b|\bmax\b|[<>≤≥]|\d\s*[-–]\s*\d)/i;
 
 function parseIntakeText(
+  text: string,
+  sourceKind: ObservationSourceKind,
+  sourceLabel: string,
+  documentName?: string,
+  documentSha256?: string,
+  linePages?: readonly number[],
+  geometry?: readonly GeometryLine[],
+): { rows: IntakeRow[]; reconstruction: DocumentReconstruction } {
+  // P42 stages A–D: header-role table reconstruction (any column order, multi-page,
+  // repeated headers, numbered rows, OCR token fallback). Legacy parsers still run
+  // for lines that are not part of a reconstructed table.
+  const reconstruction = reconstructDocumentTables(
+    documentLinesFromText(text, linePages, geometry),
+    { ocr: sourceKind === "ocr" },
+  );
+  const tableExcerpts = new Set(reconstruction.observations.map((o) => o.excerpt.trim()));
+  const tableRows: IntakeRow[] = reconstruction.observations.map((o) => {
+    const section: CandidateSourceSection = {
+      status: o.section.domain
+        ? "recognized"
+        : o.section.heading
+          ? "unrecognized_heading"
+          : "no_section",
+      heading: o.section.heading,
+      path: o.section.path,
+      domain: o.section.domain,
+      page: o.page,
+      line: o.line,
+      locator: o.page ? "page_line" : "text_line",
+      tableHeader: o.tableHeader,
+      rulesVersion: SOURCE_SECTION_RULES_VERSION,
+    };
+    return newRow({
+      label: o.label,
+      value: o.value || (o.valueKind === "ambiguous_number" ? "" : o.rawValue),
+      unit: o.unit,
+      observedAt: "",
+      excerpt: o.excerpt,
+      sourceKind,
+      sourceLabel,
+      documentName,
+      documentSha256,
+      sourceSection: section,
+      ...(o.specimen ? { specimen: o.specimen } : {}),
+      ...(o.method ? { method: o.method } : {}),
+      extraction: {
+        ...rowExtractionEvidence(o, DOCUMENT_TABLE_RULES_VERSION),
+        proposedValue: o.value || (o.valueKind === "ambiguous_number" ? "" : o.rawValue),
+      },
+    });
+  });
+  const legacy = parseLegacyText(
+    text,
+    sourceKind,
+    sourceLabel,
+    documentName,
+    documentSha256,
+    linePages,
+  ).filter((row) => !tableExcerpts.has(row.excerpt.trim()));
+  return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction };
+}
+
+function parseLegacyText(
   text: string,
   sourceKind: ObservationSourceKind,
   sourceLabel: string,
@@ -300,6 +402,9 @@ export function UnifiedIntakeWorkspace() {
   );
 
   const [rows, setRows] = useState<IntakeRow[]>([]);
+  const [documents, setDocuments] = useState<ProcessedDocument[]>([]);
+  /** Ground Medical identity-conflict resolutions: `${sha256}|${missionId}|${crewMemberId}` (memory only). */
+  const [identityResolutions, setIdentityResolutions] = useState<ReadonlySet<string>>(new Set());
   const demoCatalogs = useSyncExternalStore(
     subscribeSyntheticDemoCatalogs,
     getSyntheticDemoCatalogs,
@@ -380,15 +485,131 @@ export function UnifiedIntakeWorkspace() {
     setDuplicateAcknowledged(next.duplicateAcknowledged);
   };
 
-  const setAllSelected = (selected: boolean) => {
-    const next = setIntakeReviewSelection(rows, selected);
+  const setAllSelected = (selected: boolean, onlyKeys?: ReadonlySet<string>) => {
+    const next = setIntakeReviewSelection(rows, selected, onlyKeys);
     setRows(next.rows);
     setReviewerConfirmed(next.reviewerConfirmed);
     setDuplicateAcknowledged(next.duplicateAcknowledged);
   };
 
+  // P42: identity of each processed document vs the selected crew scope.
+  const identityChecks = useMemo(
+    () =>
+      new Map(
+        documents.map((d) => [
+          d.sha256,
+          d.reconstruction && membership
+            ? compareDocumentIdentity(d.reconstruction.identity, {
+                crewLabel: membership.crewLabel,
+                provenance,
+              })
+            : null,
+        ]),
+      ),
+    [documents, membership, provenance],
+  );
+  const resolutionKey = (sha256: string) =>
+    membership ? `${sha256}|${membership.missionId}|${membership.crewMemberId}` : "";
+  useEffect(() => {
+    setRows((previous) => {
+      let changed = false;
+      const next = previous.map((row) => {
+        const check = row.documentSha256 ? (identityChecks.get(row.documentSha256) ?? null) : null;
+        const resolved =
+          Boolean(membership && row.documentSha256) &&
+          identityResolutions.has(
+            `${row.documentSha256}|${membership?.missionId}|${membership?.crewMemberId}`,
+          );
+        const hold = check ? identityHoldReason(check, resolved) : null;
+        if ((row.identityHold ?? null) === hold) return row;
+        changed = true;
+        return { ...row, identityHold: hold, selected: hold ? false : row.selected };
+      });
+      return changed ? next : previous;
+    });
+  }, [identityChecks, identityResolutions, membership]);
+
+  const rejectRow = (key: string, rejected: boolean) => {
+    const next = editIntakeReviewRow(rows, key, { rejected, selected: false });
+    setRows(next.rows);
+    setReviewerConfirmed(false);
+    setDuplicateAcknowledged(false);
+  };
+
+  const applyTimestamp = (
+    sha256: string,
+    value: string,
+    precision: "date" | "instant",
+    interpretation: string,
+  ) => {
+    const result = applyDocumentTimestamp(rows, sha256, { value, precision, interpretation });
+    setRows(
+      result.rows.map((row) =>
+        row.documentSha256 === sha256 ? { ...row, classification: classify(row) } : row,
+      ),
+    );
+    resetReview();
+    setStatus(
+      `Applied ${value} (${interpretation}) to ${result.applied} unsaved row(s) of this document that had no observation time. Rows stay unchecked; verify each before saving.`,
+    );
+  };
+
+  const removeDocumentRows = (sha256: string) => {
+    setRows((previous) => previous.filter((row) => row.documentSha256 !== sha256));
+    setDocuments((previous) => previous.filter((d) => d.sha256 !== sha256));
+    resetReview();
+    setStatus(
+      "Unsaved rows of that document were removed from review. It can be processed again; saved observations are unchanged.",
+    );
+  };
+
+  // P42: review filters (display only; eligibility and saving are unchanged).
+  const [filterDomain, setFilterDomain] = useState("");
+  const [filterPage, setFilterPage] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const statusOf = (row: IntakeRow): string =>
+    row.rejected
+      ? "rejected"
+      : row.identityHold
+        ? "identity_hold"
+        : extractionBlockingReason(row)
+          ? row.extraction?.issues.some((i) => i.code === "unsupported_result_type")
+            ? "unsupported"
+            : "extraction_review"
+          : row.classification.status === "matched"
+            ? row.extraction?.repeat
+              ? "repeat"
+              : "matched"
+            : row.classification.status;
+  const domainOf = (row: IntakeRow): string =>
+    row.classification.status === "matched"
+      ? row.classification.domain
+      : (row.sourceSection?.domain ?? "none");
+  const visibleRows = rows.filter(
+    (row) =>
+      (!filterDomain || domainOf(row) === filterDomain) &&
+      (!filterPage ||
+        String(row.extraction?.page ?? row.sourceSection?.page ?? "") === filterPage) &&
+      (!filterStatus ||
+        (filterStatus === "ambiguity"
+          ? row.classification.status === "ambiguous" ||
+            row.classification.status === "unit_review_required" ||
+            Boolean(row.extraction && extractionBlockingReason(row)) ||
+            row.extraction?.confidence === "low"
+          : statusOf(row) === filterStatus)),
+  );
+  const visibleKeys = new Set(visibleRows.map((row) => row.key));
+  const filtered = visibleRows.length !== rows.length;
+  const pageOptions = [
+    ...new Set(
+      rows
+        .map((row) => row.extraction?.page ?? row.sourceSection?.page)
+        .filter((p): p is number => typeof p === "number"),
+    ),
+  ].sort((a, b) => a - b);
+
   const [batchFiles, setBatchFiles] = useState<
-    Array<{ name: string; state: string; count: number }>
+    Array<{ name: string; state: string; count: number; flags?: string[] }>
   >([]);
   const MAX_BATCH_FILES = 20;
   const MAX_FILE_BYTES = 15 * 1024 * 1024;
@@ -399,13 +620,18 @@ export function UnifiedIntakeWorkspace() {
       return;
     }
     setBusy(true);
-    const results: Array<{ name: string; state: string; count: number }> = [];
+    const results: Array<{ name: string; state: string; count: number; flags?: string[] }> = [];
     const incoming: IntakeRow[] = [];
+    const processed: ProcessedDocument[] = [];
     const hashes = new Set<string>();
+    // Retry safety: a document already in review is never added twice; saved rows are
+    // additionally caught by the stored-duplicate check before saving.
+    const loaded = new Set(rows.map((row) => row.documentSha256).filter(Boolean));
     try {
       for (const file of files) {
         let state = "complete";
         let count = 0;
+        let flags: string[] = [];
         try {
           if (file.size > MAX_FILE_BYTES || file.size === 0)
             throw new Error("File is empty or exceeds 15 MB.");
@@ -417,6 +643,12 @@ export function UnifiedIntakeWorkspace() {
           const hash = await sha256Hex(file);
           if (hashes.has(hash)) {
             state = "duplicate file skipped";
+            results.push({ name: file.name, state, count });
+            continue;
+          }
+          if (loaded.has(hash)) {
+            state =
+              "already loaded in review — not added again. Remove its rows first to re-process it.";
             results.push({ name: file.name, state, count });
             continue;
           }
@@ -465,28 +697,65 @@ export function UnifiedIntakeWorkspace() {
             if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
           } else {
             const extracted = await extractBoneDocument(file);
-            const kind: ObservationSourceKind = extracted.method.includes("ocr")
-              ? "ocr"
-              : "pdf_text";
-            const space = Math.max(0, MAX_ROWS - incoming.length);
-            const batch = parseIntakeText(
+            const kind: ObservationSourceKind = /ocr/i.test(extracted.method) ? "ocr" : "pdf_text";
+            const space = Math.max(0, MAX_ROWS - rows.length - incoming.length);
+            const parsed = parseIntakeText(
               extracted.text,
               kind,
               `Document: ${file.name}`,
               file.name,
               hash,
               extracted.linePages,
-            ).slice(0, space);
+              extracted.geometry,
+            );
+            const batch = parsed.rows.slice(0, space);
             incoming.push(...batch);
             count = batch.length;
+            const doc: ProcessedDocument = {
+              sha256: hash,
+              fileName: file.name,
+              pages: extracted.pages,
+              method: extracted.method,
+              textLength: extracted.text.trim().length,
+              reconstruction: parsed.reconstruction,
+              saved: 0,
+            };
+            processed.push(doc);
+            const identityCheck = membership
+              ? compareDocumentIdentity(parsed.reconstruction.identity, {
+                  crewLabel: membership.crewLabel,
+                  provenance,
+                })
+              : null;
+            // Diagnose with the same scope-aware classification the review table uses
+            // (mission synthetic demo catalog, provenance).
+            const diagnosis = diagnoseDocumentIntake({
+              textLength: doc.textLength,
+              reconstruction: parsed.reconstruction,
+              rows: reclassifyRows(batch, provenance, scopeMissionId),
+              identity: identityCheck,
+            });
+            state = diagnosis.message;
+            flags = diagnosis.flags.map((f) => f.message);
+            if (batch.length < parsed.rows.length)
+              flags.push(
+                `${parsed.rows.length - batch.length} row(s) not loaded: the review table holds at most ${MAX_ROWS} rows. Save or clear rows, then re-process.`,
+              );
+            if (extracted.warnings.length) flags.push(...extracted.warnings);
           }
-          if (!count) state = "no matching candidate rows";
+          if (!count && state === "complete")
+            state =
+              "No candidate rows: the file was read but contained no rows with a label, value and unit.";
         } catch (error) {
-          state = error instanceof Error ? `failed: ${error.message}` : "failed: unknown error";
+          state =
+            error instanceof Error
+              ? diagnoseExtractionError(error.message).message
+              : "Extraction failed: unknown error";
         }
-        results.push({ name: file.name, state, count });
+        results.push({ name: file.name, state, count, ...(flags.length ? { flags } : {}) });
         setBatchFiles([...results]);
       }
+      if (processed.length) setDocuments((previous) => [...previous, ...processed]);
       if (incoming.length)
         addRows(
           incoming,
@@ -530,13 +799,23 @@ export function UnifiedIntakeWorkspace() {
   };
 
   const selection = intakeSelectionCounts(rows);
+  const visibleSelection = intakeSelectionCounts(visibleRows);
   const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
   const reviewOnlyRows = rows.filter(
     (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
   );
   // Rows matched by an activated mission SYNTHETIC DEMO entry are ordinary matched rows
   // (saveable after human review), so they never reach the unknown-biomarker request.
-  const unknownRequestRows = reviewOnlyRows;
+  // P42: rejected rows, identity-held rows and rows whose label could not be separated
+  // safely never become unknown-biomarker requests (identity not safely established).
+  const unknownRequestRows = reviewOnlyRows.filter(
+    (row) =>
+      !row.rejected &&
+      !row.identityHold &&
+      !row.extraction?.issues.some(
+        (i) => i.code === "token_split_failed" || i.code === "column_mismatch",
+      ),
+  );
   const missionDemoCatalog = membership ? (demoCatalogs.get(membership.missionId) ?? null) : null;
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
@@ -583,6 +862,24 @@ export function UnifiedIntakeWorkspace() {
   const saveAccepted = async () => {
     if (!canSave || !membership || !provenance) return;
     setBusy(true);
+    // P42 recovery: rows already appended leave review immediately, so an interrupted
+    // batch can be retried without re-saving them (storage itself is append-only).
+    const savedNow: IntakeRow[] = [];
+    const settleSaved = () => {
+      if (!savedNow.length) return;
+      const savedKeys = new Set(savedNow.map((row) => row.key));
+      const savedByDocument = new Map<string, number>();
+      for (const row of savedNow)
+        if (row.documentSha256)
+          savedByDocument.set(
+            row.documentSha256,
+            (savedByDocument.get(row.documentSha256) ?? 0) + 1,
+          );
+      setDocuments((previous) =>
+        previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
+      );
+      setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
+    };
     try {
       const fresh = await loadMissionIdentity();
       if (
@@ -647,9 +944,10 @@ export function UnifiedIntakeWorkspace() {
           recordedAt: new Date().toISOString(),
         };
         await saveUnifiedObservation(observation);
+        savedNow.push(row);
       }
-      const savedKeys = new Set(saveableRows.map((row) => row.key));
-      setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
+      settleSaved();
+      savedNow.length = 0;
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
       setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
@@ -661,7 +959,16 @@ export function UnifiedIntakeWorkspace() {
         `${saveableRows.length} observation(s) saved encrypted on this device. Research reference only — not a scientific approval; no cloud records written.`,
       );
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Saving failed.");
+      const partial = savedNow.length;
+      settleSaved();
+      setReviewerConfirmed(false);
+      setStatus(
+        `${error instanceof Error ? error.message : "Saving failed."}${partial ? ` ${partial} observation(s) were saved before the interruption and were removed from review; the rest stay unsaved and can be retried.` : ""}`,
+      );
+      if (partial)
+        void listUnifiedObservations(membership.missionId, membership.crewMemberId)
+          .then(setHistory)
+          .catch(() => undefined);
     } finally {
       setBusy(false);
     }
@@ -860,9 +1167,19 @@ export function UnifiedIntakeWorkspace() {
           <div role="status" aria-live="polite" className="space-y-1 text-xs">
             <strong>Batch processing results</strong>
             {batchFiles.map((file, i) => (
-              <p key={`${file.name}-${i}`} className="break-all">
-                {file.name}: {file.state} ({file.count} candidate row(s))
-              </p>
+              <div key={`${file.name}-${i}`} className="break-words">
+                <p>
+                  <span className="font-medium">{file.name}</span>: {file.state} ({file.count}{" "}
+                  candidate row(s))
+                </p>
+                {file.flags?.length ? (
+                  <ul className="ml-4 list-disc text-muted-foreground">
+                    {file.flags.map((flag) => (
+                      <li key={flag}>{flag}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
             ))}
           </div>
         )}
@@ -871,12 +1188,231 @@ export function UnifiedIntakeWorkspace() {
           are isolated and extracted rows remain unchecked.
         </p>
         <p className="text-xs text-muted-foreground">
+          Document reading runs on this device: PDF text-layer tables are rebuilt from column
+          positions (any column order, multi-page, repeated headers). Pages without a text layer use
+          on-device OCR, which can misread digits and decimal points, so OCR rows are always
+          low-confidence and never bulk-selected. No on-device AI extraction model is available;
+          unresolved rows stay in manual review.
+        </p>
+        <p className="text-xs text-muted-foreground">
           Documents are processed on this device only. Original files are never uploaded
           automatically; the document name and SHA-256 fingerprint are kept with each row for
           traceability. Device observations and self-assessments use the same envelope through their
           own workflows.
         </p>
       </section>
+
+      {documents.length ? (
+        <section
+          className="space-y-4 rounded-lg border border-border bg-card p-5"
+          aria-labelledby="intake-document-summary"
+        >
+          <h2 id="intake-document-summary" className="text-lg font-semibold">
+            Document processing summary
+          </h2>
+          {documents.map((doc) => {
+            const recon = doc.reconstruction;
+            const docRows = rows.filter((row) => row.documentSha256 === doc.sha256);
+            const summary = summarizeDocumentRows(
+              docRows,
+              recon?.observations.length ?? docRows.length,
+            );
+            const check = identityChecks.get(doc.sha256) ?? null;
+            const key = resolutionKey(doc.sha256);
+            const resolved = Boolean(key) && identityResolutions.has(key);
+            const missingTime = docRows.filter((row) => !row.observedAt).length;
+            return (
+              <article
+                key={doc.sha256}
+                className="space-y-3 rounded-md border border-border p-4"
+                data-testid="p42-document-summary"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="break-all font-medium">{doc.fileName}</p>
+                    <p className="break-all text-xs text-muted-foreground">
+                      SHA-256 {doc.sha256} · {doc.method} · rules {recon?.rulesVersion ?? "—"}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => removeDocumentRows(doc.sha256)}
+                  >
+                    Remove unsaved rows of this document
+                  </Button>
+                </div>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+                  {(
+                    [
+                      ["Pages inspected", doc.pages ?? "—"],
+                      ["Table headers", recon?.headers.length ?? 0],
+                      ["Source rows detected", summary.sourceRows],
+                      ["Observations extracted", recon?.observations.length ?? summary.extracted],
+                      ["Unsaved rows in review", summary.extracted],
+                      ["Safely matched", summary.safelyMatched],
+                      ["Ambiguous matches", summary.ambiguous],
+                      ["Unit review", summary.unitReview],
+                      ["Unknown biomarkers", summary.unknown],
+                      ["Unsupported result types", summary.unsupportedResultTypes],
+                      ["Potential duplicates (in document)", summary.potentialDuplicates],
+                      ["Rows requiring manual review", summary.manualReview],
+                      ["Rejected", summary.rejected],
+                      ["Rows saved", doc.saved],
+                    ] as const
+                  ).map(([term, value]) => (
+                    <div
+                      key={term}
+                      className="flex justify-between gap-2 border-b border-border/50 py-1"
+                    >
+                      <dt className="text-muted-foreground">{term}</dt>
+                      <dd className="font-medium tabular-nums">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="text-xs text-muted-foreground">
+                  Match and review counts refer to the unsaved rows still in review.
+                </p>
+                {recon?.sections.length ? (
+                  <p className="text-xs text-muted-foreground">
+                    Sections:{" "}
+                    {recon.sections
+                      .map(
+                        (sec) =>
+                          `${sec.heading} (${sec.rows} row(s)${sec.domain ? ` → ${DOMAIN_LABELS[sec.domain]}` : ", heading not mapped to a domain"})`,
+                      )
+                      .join(" · ")}
+                  </p>
+                ) : null}
+                {recon &&
+                (recon.rowNumbers.missing.length || recon.rowNumbers.duplicated.length) ? (
+                  <p className="text-xs text-destructive">
+                    {recon.rowNumbers.missing.length
+                      ? `Source row number(s) not found: ${recon.rowNumbers.missing.join(", ")}. `
+                      : ""}
+                    {recon.rowNumbers.duplicated.length
+                      ? `Row number(s) appearing twice: ${recon.rowNumbers.duplicated.join(", ")}.`
+                      : ""}{" "}
+                    Check the original pages; nothing was filled in.
+                  </p>
+                ) : null}
+                {recon && recon.issues.length ? (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer">
+                      {recon.issues.length} row(s) that could not be reconstructed safely — exact
+                      row, reason and action
+                    </summary>
+                    <ul className="mt-2 space-y-1">
+                      {recon.issues.slice(0, 200).map((issue, i) => (
+                        <li key={i}>
+                          {issue.rowNumber ? `Row ${issue.rowNumber}` : "Row"}
+                          {issue.page ? `, page ${issue.page}` : ""}
+                          {issue.line ? `, line ${issue.line}` : ""}: {issue.message} —{" "}
+                          {issue.action}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                ) : null}
+                {recon ? (
+                  <div className="space-y-2 rounded-md bg-muted/40 p-3 text-sm">
+                    <p className="font-medium">Document identity (compared on this device only)</p>
+                    <p className="text-xs">
+                      Patient: {recon.identity.patientName ?? "not stated"} · Record:{" "}
+                      {recon.identity.recordId ?? "not stated"} · Stated date:{" "}
+                      {recon.identity.examDateText ?? "not stated"} · Stated time:{" "}
+                      {recon.identity.examTimeText ?? "not stated"}
+                      {recon.identity.declaresSimulated
+                        ? " · The document declares simulated data / not a clinical record"
+                        : ""}
+                    </p>
+                    {!membership ? (
+                      <p className="text-xs text-muted-foreground">
+                        Select the authorized mission and crew to compare identity.
+                      </p>
+                    ) : check?.status === "match" ? (
+                      <p className="text-xs">{check.detail}</p>
+                    ) : check?.status === "not_stated" ? (
+                      <p className="text-xs">{check.detail}</p>
+                    ) : check?.status === "conflict" ? (
+                      <div className="space-y-1 text-xs" data-testid="p42-identity-conflict">
+                        <p className="font-medium text-destructive">
+                          Identity conflict: {check.detail}
+                        </p>
+                        {check.resolvable ? (
+                          canResolveIdentityConflict(rolesForScope) ? (
+                            <label className="flex items-start gap-2">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5"
+                                checked={resolved}
+                                onChange={(event) =>
+                                  setIdentityResolutions((previous) => {
+                                    const next = new Set(previous);
+                                    if (event.target.checked) next.add(key);
+                                    else next.delete(key);
+                                    return next;
+                                  })
+                                }
+                              />
+                              As Ground Medical for this crew member, I confirm this document
+                              belongs to {membership.crewLabel} (resolution kept for this session
+                              only).
+                            </label>
+                          ) : (
+                            <p>
+                              Only a Ground Medical member of this mission can resolve it. All rows
+                              of this document stay held.
+                            </p>
+                          )
+                        ) : null}
+                      </div>
+                    ) : null}
+                    {recon.identity.timestampCandidates.length ? (
+                      <div className="space-y-1">
+                        <p className="text-xs">
+                          Examination time stated in the document — apply it explicitly to the{" "}
+                          {missingTime} row(s) without an observation time
+                          {recon.identity.timestampNote ? `. ${recon.identity.timestampNote}` : ""}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {recon.identity.timestampCandidates.map((candidate) => (
+                            <Button
+                              key={`${candidate.value}-${candidate.interpretation}`}
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-auto whitespace-normal py-1 text-left"
+                              disabled={busy || missingTime === 0}
+                              onClick={() =>
+                                applyTimestamp(
+                                  doc.sha256,
+                                  candidate.value,
+                                  candidate.precision,
+                                  candidate.interpretation,
+                                )
+                              }
+                            >
+                              Apply {candidate.value} — {candidate.interpretation}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {recon.identity.timestampNote ??
+                          "No examination date is stated in the document; enter observation dates per row."}
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
+        </section>
+      ) : null}
 
       {rows.length ? (
         <section className="space-y-4 rounded-lg border border-border bg-card p-5">
@@ -902,6 +1438,72 @@ export function UnifiedIntakeWorkspace() {
             {selection.reviewOnly} · Missing date: {selection.missingDate} · Invalid date:{" "}
             {selection.invalidDate} · Date-only: {selection.dateOnly}
           </p>
+          <div className="grid gap-3 sm:grid-cols-3" data-testid="p42-review-filters">
+            <div className="space-y-1">
+              <Label htmlFor="intake-filter-domain">Domain</Label>
+              <select
+                id="intake-filter-domain"
+                className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                value={filterDomain}
+                onChange={(event) => setFilterDomain(event.target.value)}
+              >
+                <option value="">All domains</option>
+                {Object.entries(DOMAIN_LABELS).map(([id, label]) => (
+                  <option key={id} value={id}>
+                    {label}
+                  </option>
+                ))}
+                <option value="none">No domain</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="intake-filter-page">Source page</Label>
+              <select
+                id="intake-filter-page"
+                className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                value={filterPage}
+                onChange={(event) => setFilterPage(event.target.value)}
+              >
+                <option value="">All pages</option>
+                {pageOptions.map((page) => (
+                  <option key={page} value={String(page)}>
+                    Page {page}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="intake-filter-status">Status</Label>
+              <select
+                id="intake-filter-status"
+                className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                value={filterStatus}
+                onChange={(event) => setFilterStatus(event.target.value)}
+              >
+                <option value="">All statuses</option>
+                <option value="matched">Safely matched</option>
+                <option value="repeat">Matched — repeated in document</option>
+                <option value="ambiguity">Any ambiguity / low confidence</option>
+                <option value="unit_review_required">Unit review required</option>
+                <option value="ambiguous">Ambiguous name</option>
+                <option value="unclassified">Unknown biomarker</option>
+                <option value="unsupported">Unsupported result type</option>
+                <option value="extraction_review">Extraction needs review</option>
+                <option value="identity_hold">Identity hold</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+          {filtered ? (
+            <p className="text-xs text-muted-foreground">
+              Showing {visibleRows.length} of {rows.length} row(s). Select All applies to the shown
+              rows only.
+            </p>
+          ) : null}
+          <p className="text-xs text-muted-foreground">
+            Select All picks only safely matched rows: repeated measurements within a document and
+            low-confidence (OCR / single-spaced) rows must be ticked one by one.
+          </p>
           <div
             className="max-w-full overflow-x-auto"
             role="region"
@@ -916,23 +1518,29 @@ export function UnifiedIntakeWorkspace() {
                     <label className="flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap normal-case">
                       <Checkbox
                         aria-label={
-                          selection.allSelected
+                          visibleSelection.allSelected
                             ? "Deselect All eligible observations"
                             : "Select All eligible observations"
                         }
                         checked={
-                          selection.allSelected
+                          visibleSelection.allSelected
                             ? true
-                            : selection.partiallySelected
+                            : visibleSelection.partiallySelected
                               ? "indeterminate"
                               : false
                         }
-                        disabled={selection.eligible === 0 || busy}
-                        onCheckedChange={() => setAllSelected(!selection.allSelected)}
+                        disabled={visibleSelection.eligible === 0 || busy}
+                        onCheckedChange={() =>
+                          setAllSelected(
+                            !visibleSelection.allSelected,
+                            filtered ? visibleKeys : undefined,
+                          )
+                        }
                       />
-                      {selection.allSelected ? "Deselect All" : "Select All"}
+                      {visibleSelection.allSelected ? "Deselect All" : "Select All"}
                     </label>
                   </th>
+                  <th className="py-2 pr-3">Source row</th>
                   <th className="py-2 pr-3">Label</th>
                   <th className="py-2 pr-3">Value</th>
                   <th className="py-2 pr-3">Unit</th>
@@ -942,8 +1550,11 @@ export function UnifiedIntakeWorkspace() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.key} className="border-b border-border/60 align-top">
+                {visibleRows.map((row) => (
+                  <tr
+                    key={row.key}
+                    className={`border-b border-border/60 align-top ${row.rejected ? "opacity-60" : ""}`}
+                  >
                     <td className="py-2 pr-3">
                       <label className="flex min-h-11 min-w-11 cursor-pointer items-center">
                         <Checkbox
@@ -955,6 +1566,20 @@ export function UnifiedIntakeWorkspace() {
                           }}
                         />
                       </label>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 text-xs"
+                        disabled={busy}
+                        aria-label={`${row.rejected ? "Undo reject" : "Reject"} ${row.label}`}
+                        onClick={() => rejectRow(row.key, !row.rejected)}
+                      >
+                        {row.rejected ? "Undo reject" : "Reject"}
+                      </Button>
+                    </td>
+                    <td className="py-2 pr-3 text-xs">
+                      <ExtractionNote row={row} />
                     </td>
                     <td className="py-2 pr-3 font-medium">{row.label}</td>
                     <td className="py-2 pr-3">
@@ -1169,6 +1794,57 @@ const LOCATOR_WORD: Record<NonNullable<CandidateSourceSection["locator"]>, strin
   csv_row: "row",
   xlsx_row: "row",
 };
+/** P42 source-row evidence: row number, page/line, raw value, confidence, issues and repeats. */
+function ExtractionNote({ row }: { row: IntakeRow }) {
+  const e = row.extraction;
+  if (!e) return <span className="text-muted-foreground">—</span>;
+  const blocking = extractionBlockingReason(row);
+  return (
+    <span className="block min-w-36 space-y-1" data-testid="p42-extraction-note">
+      <span className="block font-medium">
+        {e.sourceRowNumber ? `No. ${e.sourceRowNumber}` : "Unnumbered"}
+        {e.page ? ` · p. ${e.page}` : ""} · line {e.line}
+      </span>
+      <span className="block text-muted-foreground">
+        Source: “{e.rawValue || "—"}” {e.sourceUnit}
+        {e.valueKind !== "numeric" ? ` (${valueKindText(e.valueKind)})` : ""}
+      </span>
+      {e.valueNotes.length && e.valueKind === "numeric" ? (
+        <span className="block text-muted-foreground">{e.valueNotes.join(" ")}</span>
+      ) : null}
+      {e.referenceInterval ? (
+        <span className="block text-muted-foreground">
+          Reference (as printed, not interpreted): {e.referenceInterval}
+        </span>
+      ) : null}
+      <Badge variant={e.confidence === "high" ? "secondary" : "outline"}>
+        Extraction confidence: {e.confidence} ({e.layout})
+      </Badge>
+      {e.repeat ? (
+        <span className="block text-destructive">
+          Repeated in this document (first at No. {e.repeat.firstRowNumber ?? "?"}, line{" "}
+          {e.repeat.firstLine}; {e.repeat.sameValue ? "same value" : "different value"}). Not
+          merged; tick individually only if it is a separate measurement.
+        </span>
+      ) : null}
+      {e.sameLabelOtherUnits.length ? (
+        <span className="block text-muted-foreground">
+          Same label elsewhere with unit {e.sameLabelOtherUnits.join(", ")} — never combined.
+        </span>
+      ) : null}
+      {blocking ? <span className="block text-destructive">{blocking}</span> : null}
+      {e.issues
+        .filter((i) => !i.blocking)
+        .map((i) => (
+          <span key={i.code} className="block text-muted-foreground">
+            {i.message}
+          </span>
+        ))}
+      {row.rejected ? <span className="block font-medium">Rejected by reviewer</span> : null}
+    </span>
+  );
+}
+
 /** P39 section provenance of one intake row; evidence only, never an approval. */
 function SourceSectionNote({ row }: { row: IntakeRow }) {
   const s = row.sourceSection;

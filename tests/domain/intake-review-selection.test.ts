@@ -40,6 +40,8 @@ describe("unified intake review selection", () => {
     const result = setIntakeReviewSelection(rows, true);
     expect(result.rows.map((r) => r.selected)).toEqual([true, true, false, false, false]);
     expect(intakeSelectionCounts(result.rows)).toEqual({
+      // P42: rows without document-extraction evidence are all bulk-selectable.
+      bulkEligible: 2,
       selected: 2,
       matched: 2, reviewOnly: 3, missingDate: 0, invalidDate: 0, dateOnly: 0,
       eligible: 2,
