@@ -1007,17 +1007,25 @@ export function buildApprovalPackage(events: readonly InterpretationEvent[], exp
 export async function mergeApprovalPackage(
   registry: InterpretationRegistry,
   pkg: unknown,
-): Promise<{ ok: true; registry: InterpretationRegistry; changed: string[] } | { ok: false; reason: string }> {
+  trustedKeys: readonly AttestationTrustedKey[] = BUNDLED_ATTESTATION_KEYS,
+): Promise<{ ok: true; registry: InterpretationRegistry; changed: string[]; skippedUnattested: string[] } | { ok: false; reason: string }> {
   const p = pkg as Partial<ApprovalPackage> | null;
   if (!p || p.schema !== INTERPRETATION_PACKAGE_SCHEMA || !Array.isArray(p.events)) return { ok: false, reason: "Not an interpretation approval package" };
   const events = [...p.events].sort((a, b) => a.seq - b.seq);
   const check = await verifyInterpretationChain(events);
   if (!check.ok) return { ok: false, reason: check.reason };
   if ((events.at(-1)?.hash ?? GENESIS_HASH) !== p.ledgerHead) return { ok: false, reason: "Package head does not match its events" };
+  // P41: only decisions the server attested (verified Researcher membership) may enter the shared registry.
+  const attested = await attestedDecisionHashes(events, trustedKeys);
   const records = new Map(registry.records.map((r) => [r.key, r]));
   const changed: string[] = [];
+  const skippedUnattested: string[] = [];
   for (const e of events) {
     if (e.action !== "APPROVE" && e.action !== "REVOKE") continue;
+    if (!attested.has(e.hash)) {
+      skippedUnattested.push(e.hash);
+      continue;
+    }
     const cur = records.get(e.key);
     const reviewer = { userId: e.actorUserId, name: e.actorName };
     const history = cur?.approvalHistory ?? [];
@@ -1047,10 +1055,36 @@ export async function mergeApprovalPackage(
       changed.push(e.key);
     }
   }
-  if (!changed.length) return { ok: false, reason: "The package contains no new approvals or revocations" };
+  if (!changed.length)
+    return { ok: false, reason: skippedUnattested.length ? "The package contains no server-attested approvals or revocations" : "The package contains no new approvals or revocations" };
   return {
     ok: true,
     registry: { ...registry, version: registry.version + 1, records: [...records.values()].sort((a, b) => a.key.localeCompare(b.key)) },
     changed: [...new Set(changed)],
+    skippedUnattested,
+  };
+}
+
+/**
+ * P41: approved, cited direction-specific context for one examination pair
+ * (previous → current). Pending, revoked or missing records yield the pending
+ * text; nothing is generated.
+ */
+export function directionContext(
+  r: ResolvedInterpretation | null,
+  direction: SeriesDirection,
+): { status: "approved" | "pending" | "unavailable" | "revoked"; line: string; citations: string[] } {
+  if (!r) return { status: "unavailable", line: `${PENDING_INTERPRETATION_TEXT}.`, citations: [] };
+  if (r.status !== "approved" || !r.content) return { status: r.status === "revoked" ? "revoked" : "pending", line: `${PENDING_INTERPRETATION_TEXT}.`, citations: [] };
+  const order = r.citations.map((c) => c.id);
+  const c = r.content;
+  const claim = direction === "higher" ? c.increaseContext : direction === "lower" ? c.decreaseContext : null;
+  const label = r.synthetic ? `${SYNTHETIC_DEMO_INTERPRETATION_LABEL}. ` : "";
+  if (direction === "no_recorded_difference") return { status: "approved", line: `${label}No recorded difference; direction-specific context is not applied.`, citations: citationLines(r.citations) };
+  if (!claim) return { status: "approved", line: `${label}The approved interpretation documents no context for a ${direction ?? "recorded"} value.`, citations: citationLines(r.citations) };
+  return {
+    status: "approved",
+    line: `${label}General context documented for a ${direction} value (describes the measure in general, not a conclusion about this crew member; not an improvement, deterioration or diagnosis): ${claim.text}${cite(claim.citationIds, order)}`,
+    citations: citationLines(r.citations),
   };
 }
