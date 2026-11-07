@@ -10,12 +10,12 @@ The supported migration tool requires no outer BEGIN/COMMIT and accepts DDL, not
 
 All paths are under `supabase/pending/`:
 
-| Step | File | SHA-256 | Transport |
-|---|---|---|---|
-| 1 | `20261107000000_p36_dynamic_handoff.tool.sql` | `79286f4cd359e793cb9c773301fd212963726690913eff815f819c77841f7e78` | Migration tool transaction |
-| 2 | `20261107000001_p36_closed_admission.initialize.sql` | `46c4d8ac23c65d9d5d5ded5d4c609da734441e9e5bcbe11ed58addbd9fc05002` | Atomic single-statement data tool |
-| 3 | `20261107010000_p36_dynamic_authorization.tool.sql` | `8c038a0a797441a0245092dbaa5a14567ef39ba88884d8b0a2ce4be4d01b0a4d` | Migration tool transaction |
-| 4 | `20261107020000_p36_authorized_crew_roster.tool.sql` | `d4d410a42933af335b3dfa48f077793cd6f763b77338fad4369a6009408faca3` | Migration tool transaction |
+| Step | File                                                 | SHA-256                                                            | Transport                         |
+| ---- | ---------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------- |
+| 1    | `20261107000000_p36_dynamic_handoff.tool.sql`        | `79286f4cd359e793cb9c773301fd212963726690913eff815f819c77841f7e78` | Migration tool transaction        |
+| 2    | `20261107000001_p36_closed_admission.initialize.sql` | `46c4d8ac23c65d9d5d5ded5d4c609da734441e9e5bcbe11ed58addbd9fc05002` | Atomic single-statement data tool |
+| 3    | `20261107010000_p36_dynamic_authorization.tool.sql`  | `8c038a0a797441a0245092dbaa5a14567ef39ba88884d8b0a2ce4be4d01b0a4d` | Migration tool transaction        |
+| 4    | `20261107020000_p36_authorized_crew_roster.tool.sql` | `d4d410a42933af335b3dfa48f077793cd6f763b77338fad4369a6009408faca3` | Migration tool transaction        |
 
 Step 2 inserts the identical singleton using unchanged defaults (handoff false, authorization false, initial closed note). Before step 2, missing-row admission checks fail closed; after step 2, false-switch checks fail closed. No interval admits writes. If initialization fails, stop before step 3. Duplicate initialization fails rather than overwrites a row. If any later step fails, earlier committed steps remain: stop, inspect and retain closed admission. This is equivalent **write-denial failure safety**, not whole-sequence atomic rollback or byte-equivalence to the original first transaction.
 
