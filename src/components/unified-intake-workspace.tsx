@@ -818,10 +818,16 @@ export function UnifiedIntakeWorkspace() {
                     </td>
                     <td className="py-2 pr-3">
                       {row.classification.status === "matched" && row.classification.metricId.startsWith("ext:") ? (
-                        <Badge variant="secondary">
-                          Recognized (activated catalog v{getActiveCatalog().catalogVersion}): {row.classification.metricId} →{" "}
-                          {DOMAIN_LABELS[row.classification.domain]}
-                        </Badge>
+                        (() => {
+                          const id = row.classification.metricId;
+                          const entry = getActiveCatalog().active.find((e) => e.canonicalId === id);
+                          return (
+                            <Badge variant="secondary" data-testid="p37-recognized">
+                              RECOGNIZED — ACTIVE CATALOG v{getActiveCatalog().catalogVersion}: {entry?.canonicalName ?? id} ({id}) · {entry?.unit ?? row.unit} →{" "}
+                              {DOMAIN_LABELS[row.classification.domain]} · matched by label, exact unit, specimen and method
+                            </Badge>
+                          );
+                        })()
                       ) : row.classification.status === "matched" ? (
                         <Badge variant="secondary">
                           Matched: {row.classification.metricId} →{" "}
