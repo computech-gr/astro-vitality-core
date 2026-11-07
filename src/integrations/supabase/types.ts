@@ -1610,6 +1610,63 @@ export type Database = {
           },
         ]
       }
+      p36_global_review_audit: {
+        Row: {
+          access_basis: string | null
+          action: string
+          actor_id: string | null
+          at: string
+          details: Json
+          id: string
+          mission_id: string | null
+          provenance: string | null
+          row_count: number
+        }
+        Insert: {
+          access_basis?: string | null
+          action: string
+          actor_id?: string | null
+          at?: string
+          details?: Json
+          id?: string
+          mission_id?: string | null
+          provenance?: string | null
+          row_count?: number
+        }
+        Update: {
+          access_basis?: string | null
+          action?: string
+          actor_id?: string | null
+          at?: string
+          details?: Json
+          id?: string
+          mission_id?: string | null
+          provenance?: string | null
+          row_count?: number
+        }
+        Relationships: []
+      }
+      p36_global_scientific_reviewers: {
+        Row: {
+          authorization_ref: string
+          granted_at: string
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          authorization_ref: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          authorization_ref?: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       p36_metric_unit_catalog: {
         Row: {
           metric_id: string
@@ -1624,6 +1681,35 @@ export type Database = {
           unit?: string
         }
         Relationships: []
+      }
+      p36_mission_scientific_sharing: {
+        Row: {
+          changed_at: string
+          mission_id: string
+          permitted_provenance: string[]
+          policy_ref: string
+        }
+        Insert: {
+          changed_at?: string
+          mission_id: string
+          permitted_provenance: string[]
+          policy_ref: string
+        }
+        Update: {
+          changed_at?: string
+          mission_id?: string
+          permitted_provenance?: string[]
+          policy_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p36_mission_scientific_sharing_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: true
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       review_sync_attestation_events: {
         Row: {
@@ -2092,6 +2178,23 @@ export type Database = {
       p36_dynamic_scope: {
         Args: { p_crew: string; p_mission: string; p_write: boolean }
         Returns: string
+      }
+      p36_global_review_basis: {
+        Args: { p_mission: string; p_provenance: string }
+        Returns: string
+      }
+      p36_global_review_list_v1: {
+        Args: {
+          p_after_seq: number
+          p_limit: number
+          p_mission_id: string
+          p_provenance: string
+        }
+        Returns: Json
+      }
+      p36_global_review_missions_v1: {
+        Args: { p_provenance: string }
+        Returns: Json
       }
       p36_list_synthetic_review_history: {
         Args: { p_crew_member_id: string; p_mission_id: string }
