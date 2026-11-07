@@ -53,7 +53,12 @@ import {
   type SourceDocumentEvidence,
 } from "@/domain/health-intelligence/source-section-classification";
 import { csvCells } from "@/domain/health-intelligence/universal-intake-parser";
-import { bulkSelectionCounts, isDecidable, retrySelection } from "@/domain/health-intelligence/p38-bulk-demo-selection";
+import {
+  bulkResearcherVisibility,
+  bulkSelectionCounts,
+  isDecidable,
+  retrySelection,
+} from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
 import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
 
