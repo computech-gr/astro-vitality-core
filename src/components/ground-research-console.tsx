@@ -1,5 +1,6 @@
 import { GroundMedicalReviewPanel } from "@/components/p368b-ground-medical-review";
 import { P37GroundMedicalActivationPanel } from "@/components/p37-ground-medical-activation";
+import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
 import { useEffect, useState } from "react";
 import { Download, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,7 @@ export function GroundResearchConsolePage() {
     </div>}
     <GroundMedicalReviewPanel />
     {selected?.role === "ground_medical" && <P37GroundMedicalActivationPanel key={selected.missionId} missionId={selected.missionId} missionLabel={selected.missionName ?? selected.missionCode ?? selected.missionId} />}
+    {selected?.role === "ground_medical" && <P37SyntheticDemoPanel key={`demo-${selected.missionId}`} missionId={selected.missionId} missionLabel={selected.missionName ?? selected.missionCode ?? selected.missionId} />}
     <div className="mt-8 flex gap-3 text-sm text-muted-foreground"><ShieldCheck className="size-5 shrink-0 text-primary"/><p>Server-side mission-role authorization, minimum three distinct contributing crew, minimum ten events, count bucketing, and audit events. This is a privacy-contained exploratory export, not a claim of formal anonymization or approved human-subjects research.</p></div>
   </div></main>;
 }

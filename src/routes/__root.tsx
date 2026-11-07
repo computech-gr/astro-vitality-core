@@ -151,6 +151,16 @@ function RootComponent() {
         if (storage) await m.loadInstalledCatalog({ storage });
       })
       .catch((error) => console.warn("Active catalog load failed", error));
+    // Synthetic demo catalogs are separate, mission-scoped and verified with their own key.
+    void Promise.all([
+      import("@/domain/health-intelligence/synthetic-demo-catalog-runtime"),
+      import("@/domain/health-intelligence/active-catalog-runtime"),
+    ])
+      .then(async ([demo, m]) => {
+        const storage = m.browserSnapshotStorage();
+        if (storage) await demo.loadInstalledDemoCatalogs({ storage });
+      })
+      .catch((error) => console.warn("Synthetic demo catalog load failed", error));
     return stopGroundSync;
   }, []);
 

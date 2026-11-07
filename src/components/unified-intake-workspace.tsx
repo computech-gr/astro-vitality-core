@@ -18,11 +18,18 @@ import {
  * unit-mismatched rows stay review-only and can never be saved. Research
  * reference only — no clinical thresholds, diagnosis or automatic approval.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
-import { classifyWithGovernedExtensions } from "@/domain/health-intelligence/unknown-biomarker-review";
+import {
+  classifyWithGovernedExtensions,
+  syntheticDemoCoverage,
+} from "@/domain/health-intelligence/unknown-biomarker-review";
+import {
+  getSyntheticDemoCatalogs,
+  subscribeSyntheticDemoCatalogs,
+} from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
 import {
   getActiveCatalog,
   subscribeActiveCatalog,
@@ -237,6 +244,11 @@ export function UnifiedIntakeWorkspace() {
   );
 
   const [rows, setRows] = useState<IntakeRow[]>([]);
+  const demoCatalogs = useSyncExternalStore(
+    subscribeSyntheticDemoCatalogs,
+    getSyntheticDemoCatalogs,
+    getSyntheticDemoCatalogs,
+  );
   const [history, setHistory] = useState<UnifiedObservation[]>([]);
   const [provenance, setProvenance] = useState<"" | "synthetic" | "real">("");
   const [reviewerConfirmed, setReviewerConfirmed] = useState(false);
@@ -448,6 +460,29 @@ export function UnifiedIntakeWorkspace() {
   const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
   const reviewOnlyRows = rows.filter(
     (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
+  );
+  // SYNTHETIC DEMO coverage is an annotation only: rows stay review-only and unsaveable,
+  // but an already demo-activated term never generates a duplicate unknown-biomarker request.
+  const demoCoverage = new Map(
+    reviewOnlyRows.flatMap((row) => {
+      const r = syntheticDemoCoverage(
+        {
+          label: row.label,
+          unit: row.unit,
+          provenance: row.provenance,
+          sourceValidation: row.sourceValidation,
+          missionId: membership?.missionId,
+        },
+        demoCatalogs,
+        row.classification,
+      );
+      return r ? [[row.key, r] as const] : [];
+    }),
+  );
+  const unknownRequestRows = reviewOnlyRows.map((row) =>
+    demoCoverage.has(row.key)
+      ? { ...row, syntheticDemo: { demoId: demoCoverage.get(row.key)!.demoId } }
+      : row,
   );
   const duplicates = membership
     ? saveableRows.flatMap((row) =>
@@ -911,6 +946,17 @@ export function UnifiedIntakeWorkspace() {
                           Matched: {row.classification.metricId} →{" "}
                           {DOMAIN_LABELS[row.classification.domain]}
                         </Badge>
+                      ) : demoCoverage.has(row.key) ? (
+                        (() => {
+                          const d = demoCoverage.get(row.key)!;
+                          return (
+                            <Badge variant="outline" data-testid="p37-demo-recognized">
+                              SYNTHETIC DEMO RECOGNIZED — demo catalog v{d.demoCatalogVersion}:{" "}
+                              {d.displayName} ({d.demoId}) · {d.unit} → {DOMAIN_LABELS[d.domain]} ·
+                              not a scientific approval · review-only, not saved
+                            </Badge>
+                          );
+                        })()
                       ) : row.classification.status === "unit_review_required" ? (
                         <Badge variant="outline">Unit review required — review-only</Badge>
                       ) : row.classification.status === "ambiguous" ? (
@@ -977,7 +1023,7 @@ export function UnifiedIntakeWorkspace() {
 
       <UnknownBiomarkerReviewPanel
         key={`${membership?.missionId ?? ""}|${membership?.crewMemberId ?? ""}|${provenance}|${identity?.userId ?? ""}`}
-        rows={reviewOnlyRows}
+        rows={unknownRequestRows}
         scope={
           membership && provenance
             ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance }

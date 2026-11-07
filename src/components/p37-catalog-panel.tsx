@@ -18,6 +18,7 @@ import {
 } from "@/lib/p36-global-review.functions";
 import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-rules";
 import { ScientificApproveWorkspace } from "@/components/p37-scientific-approve";
+import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
 import {
   activateCatalogEntryFn,
   getCatalogLifecycle,
@@ -436,6 +437,12 @@ export function P37CatalogPanel() {
                 : "Activation: Ground Medical of this mission"}
             </Badge>
           </div>
+
+          <P37SyntheticDemoPanel
+            key={mission.missionId}
+            missionId={mission.missionId}
+            missionLabel={`${mission.missionName} (${mission.missionCode})`}
+          />
 
           <ScientificApproveWorkspace
             mission={mission}
