@@ -151,22 +151,15 @@ function RootComponent() {
         if (storage) await m.loadInstalledCatalog({ storage });
       })
       .catch((error) => console.warn("Active catalog load failed", error));
-    // Synthetic demo catalogs are separate, mission-scoped and verified with their own key.
-    void Promise.all([
-      import("@/domain/health-intelligence/synthetic-demo-catalog-runtime"),
-      import("@/domain/health-intelligence/active-catalog-runtime"),
-    ])
-      .then(async ([demo, m]) => {
-        const storage = m.browserSnapshotStorage();
-        if (storage) await demo.loadInstalledDemoCatalogs({ storage });
-      })
-      .catch((error) => console.warn("Synthetic demo catalog load failed", error));
+    // Synthetic demo catalogs (separate, mission-scoped, own key) load and refresh in
+    // <SyntheticDemoCatalogAutoRefresh />.
     return stopGroundSync;
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <SiteHeader />
+      <SyntheticDemoCatalogAutoRefresh />
       <div className="pt-[var(--header-offset,76px)]">
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />

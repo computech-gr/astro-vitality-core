@@ -9,6 +9,7 @@ import { getSignedSyntheticDemoSnapshot } from "@/lib/p37-synthetic-demo.functio
 import { loadMissionIdentity, subscribeMissionIdentity } from "@/infrastructure/mission-identity";
 import { browserSnapshotStorage } from "@/domain/health-intelligence/active-catalog-runtime";
 import { refreshSyntheticDemoCatalogs } from "@/domain/health-intelligence/synthetic-demo-catalog-sync";
+import { loadInstalledDemoCatalogs } from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
 
 const INTERVAL_MS = 5 * 60_000;
 
@@ -17,11 +18,18 @@ export function SyntheticDemoCatalogAutoRefresh() {
   useEffect(() => {
     let active = true;
     let running = false;
+    // Stored verified snapshots load first (works offline) so a refresh never races the load.
+    const storage = browserSnapshotStorage();
+    const loaded = storage
+      ? loadInstalledDemoCatalogs({ storage }).catch((error) => {
+          console.warn("Synthetic demo catalog load failed", error);
+        })
+      : Promise.resolve();
     const run = async () => {
       if (running || !active) return;
       running = true;
       try {
-        const storage = browserSnapshotStorage();
+        await loaded;
         if (!storage || !navigator.onLine) return;
         const identity = await loadMissionIdentity().catch(() => null);
         if (!active || !identity?.signedIn || identity.error) return;
