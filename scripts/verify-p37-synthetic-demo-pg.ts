@@ -305,7 +305,7 @@ tampered.snapshot.demoCatalogVersion += 5;
 check(!(await installOfferedDemoCatalog(tampered, "M1", device)).installed, "tampered demo snapshot rejected");
 
 // --- Revocation -------------------------------------------------------------------
-for (const u of [5, 6, 4, 1])
+for (const u of [5, 6, 7, 8, 1, 12])
   check((revoke(u, act.event_id!, "Synthetic demo test complete").detail ?? "").length > 0 && revoke(u, act.event_id!, "Synthetic demo test complete").status !== "recorded", `revocation denied for user ${u}`);
 check(revoke(3, act.event_id!, "short").status === "rejected", "revocation needs a reason");
 const rv = revoke(3, act.event_id!, "Synthetic demo test complete");
