@@ -27,6 +27,7 @@ import {
   type SeriesInterpretation,
 } from "./biomarker-interpretation";
 import { registryInterpretationSnapshot } from "./biomarker-interpretation-ledger";
+import { buildLongitudinalComparison, longitudinalLines, type LongitudinalComparison } from "./longitudinal-comparison";
 
 export const RESEARCHER_DOMAINS = ["bone", "cardiovascular", "immune", "behavioral"] as const;
 export type ResearcherDomain = (typeof RESEARCHER_DOMAINS)[number];
@@ -82,6 +83,8 @@ export interface InterpretationSeries {
   handbook: HandbookContext;
   /** P40: interpretation record status, context, citations, uncertainty and alert status (shared by screen, PDF, TXT). */
   interpretation: SeriesInterpretation;
+  /** P41: examination-to-examination comparison (descriptive; shared by screen, PDF, TXT). */
+  longitudinal: LongitudinalComparison;
   limitations: string[];
 }
 
@@ -259,6 +262,7 @@ function buildSeries(domain: ResearcherDomain, m: ScientificMetricFinding, rows:
     otherUnits,
     handbook,
     interpretation: seriesInterpretation(matchInterpretation(snapshot, { metricId: m.metricId, unit: u, domain, missionId, provenance }), comparison, direction, handbookLine(handbook)),
+    longitudinal: buildLongitudinalComparison(sorted, u),
     limitations,
   };
 }
@@ -428,6 +432,7 @@ export function researcherInterpretationPlainText(model: ResearcherInterpretatio
         `  Provenance: ${s.provenance}. Quality: ${s.quality}`,
         `  Evidence tiers: ${s.evidenceTiers.storedModule} module, ${s.evidenceTiers.intakeAccepted} intake-accepted, ${s.evidenceTiers.device} device. Ground Medical: ${attestationLine(s.attestation)}.`,
         ...seriesInterpretationText(s.interpretation).map((l) => `  ${l}`),
+        ...longitudinalLines(s.longitudinal).map((l) => `  ${l}`),
         ...s.limitations.map((l) => `  Limitation: ${l}`),
       );
     }

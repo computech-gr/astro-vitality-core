@@ -80,6 +80,7 @@ export function DomainInterpretationCard({ domain, headingLevel = 3 }: { domain:
                 <dd className="break-all font-mono">{s.evidenceIds.join(", ")}</dd>
               </dl>
               <SeriesInterpretationBlock value={s.interpretation} />
+              <LongitudinalBlock value={s.longitudinal} />
               {s.handbook.kind === "quoted_pending_hypothesis" && s.handbook.about && (
                 <details className="text-xs text-muted-foreground print:hidden">
                   <summary className="cursor-pointer">About this measure (handbook, pending review)</summary>
