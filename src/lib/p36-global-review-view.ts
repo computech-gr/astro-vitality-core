@@ -1,5 +1,5 @@
 /** Pure, browser-safe grouping for the read-only Global Scientific Review panel. */
-import type { GlobalReviewMission, GlobalReviewSubmission } from "./p36-global-review.server";
+import type { GlobalReviewMission, GlobalReviewSubmission, GlobalReviewTerm } from "./p36-global-review.server";
 
 export const ALL_MISSIONS = "__all_authorized_missions__";
 
@@ -39,7 +39,6 @@ export function groupByMissionAndCrew(submissions: GlobalReviewSubmission[]): Mi
 }
 
 /* ---------- Term-level dashboard, filtering and pagination ---------- */
-import type { GlobalReviewTerm } from "./p36-global-review.server";
 
 export const ALL_CREWS = "__all_crews__";
 export type ReviewState = "awaiting_triage" | "more_evidence" | "rejected" | "approved";

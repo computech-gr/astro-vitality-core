@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { listGlobalReviewMissionsCore, listGlobalReviewSubmissionsCore, cleanSubmission } from "../../src/lib/p36-global-review.server";
-import { ALL_MISSIONS, groupByMissionAndCrew, missionsForSelection } from "../../src/lib/p36-global-review-view";
+import { ALL_CREWS, ALL_MISSIONS, dashboardCounts, filterTerms, flattenTerms, groupByMissionAndCrew, missionsForSelection, paginate, sortTerms } from "../../src/lib/p36-global-review-view";
+import type { GlobalReviewSubmission } from "../../src/lib/p36-global-review.server";
 import type { Rpc } from "../../src/lib/p36-scientific-authorization.server";
 
 const hex = (c: string) => c.repeat(64);
@@ -70,9 +71,6 @@ describe("P36 global scientific review", () => {
     expect(g?.pendingTermCount).toBe(14);
   });
 });
-
-import { ALL_CREWS, dashboardCounts, filterTerms, flattenTerms, paginate, sortTerms } from "../../src/lib/p36-global-review-view";
-import type { GlobalReviewSubmission } from "../../src/lib/p36-global-review.server";
 
 describe("P36 global review dashboard", () => {
   const subs = [sub(1, "ubr-19aa5a1e", 12), sub(2, "ubr-8b1514d8", 197)]
