@@ -27,7 +27,10 @@ import {
 } from "../src/domain/health-intelligence/source-section-classification";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-export const SOURCE_PDF = resolve(root, "tests/fixtures/p39/NASA_Astronaut_Simulated_Medical_Report.pdf");
+export const SOURCE_PDF = resolve(
+  root,
+  "tests/fixtures/p39/NASA_Astronaut_Simulated_Medical_Report.pdf",
+);
 export const REGISTRY_PATH = resolve(
   root,
   "data/source-evidence/mito-demo-2026-source-sections.v1.json",

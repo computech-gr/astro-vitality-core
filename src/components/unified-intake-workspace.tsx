@@ -131,7 +131,10 @@ function withSections<T extends { excerpt: string }>(
   evidence: SourceDocumentEvidence | null,
 ): (T & { sourceSection?: CandidateSourceSection })[] {
   if (!evidence) return [...items];
-  return items.map((item) => ({ ...item, sourceSection: sectionForExcerpt(evidence, item.excerpt) }));
+  return items.map((item) => ({
+    ...item,
+    sourceSection: sectionForExcerpt(evidence, item.excerpt),
+  }));
 }
 
 /** Re-stamp scope provenance and re-run classification (e.g. after a verified catalog update). */
@@ -167,7 +170,11 @@ function newRow(partial: Partial<IntakeRow> & { label: string; unit: string }): 
 }
 
 /** Schema-aware CSV; candidates still require catalog and human review. */
-function parseIntakeCsv(text: string, fileName = "", sha256 = ""): { rows: IntakeRow[]; skipped: number } {
+function parseIntakeCsv(
+  text: string,
+  fileName = "",
+  sha256 = "",
+): { rows: IntakeRow[]; skipped: number } {
   const parsed = extractCsvCandidates(text, MAX_ROWS);
   let evidence: SourceDocumentEvidence | null = null;
   try {

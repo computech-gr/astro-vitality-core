@@ -109,10 +109,14 @@ export interface SourceDocumentEvidence {
 const COUNT_SUFFIX =
   /\s*(?:[|:–—-]\s*)?\(?\s*\d+\s+(?:observations?|results?|tests?|items?|measurements?|parameters?)\s*\)?\s*$/i;
 const declaredCount = (line: string): number | null => {
-  const m = /(\d+)\s+(?:observations?|results?|tests?|items?|measurements?|parameters?)\s*\)?\s*$/i.exec(line);
+  const m =
+    /(\d+)\s+(?:observations?|results?|tests?|items?|measurements?|parameters?)\s*\)?\s*$/i.exec(
+      line,
+    );
   return m ? Number(m[1]) : null;
 };
-const NUMBERING = /^(?:#{1,6}\s*|(?:section|part)\s+[\dIVX]+\s*[.:–—-]?\s*|[\dIVX]+(?:\.\d+)*[.)]\s+)/i;
+const NUMBERING =
+  /^(?:#{1,6}\s*|(?:section|part)\s+[\dIVX]+\s*[.:–—-]?\s*|[\dIVX]+(?:\.\d+)*[.)]\s+)/i;
 
 /** Normalized heading text for exact alias comparison (never a keyword search). */
 export function normalizeHeading(text: string): string {
@@ -169,12 +173,21 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-
 
 function isTableHeader(cells: string[]): boolean {
   if (cells.length < 2 || cells.some((c) => /\d/.test(c))) return false;
-  const words = cells.flatMap((c) => c.toLowerCase().split(/[^a-z]+/).filter(Boolean));
+  const words = cells.flatMap((c) =>
+    c
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .filter(Boolean),
+  );
   return words.filter((w) => HEADER_WORDS.has(w)).length >= 2;
 }
 /** Page furniture: running headers/footers and page numbers never change the section. */
 const PAGE_MARK = /\bpage\s+\d+(?:\s*(?:of|\/)\s*\d+)?\s*$/i;
-const furnitureKey = (line: string) => line.replace(PAGE_MARK, "").replace(/\d+\s*$/, "").trim();
+const furnitureKey = (line: string) =>
+  line
+    .replace(PAGE_MARK, "")
+    .replace(/\d+\s*$/, "")
+    .trim();
 
 type HeadingKind = { level: 1 | 2; text: string } | null;
 function headingKind(line: string, cells: string[]): HeadingKind {
@@ -193,7 +206,11 @@ function headingKind(line: string, cells: string[]): HeadingKind {
   if (words.length > 6) return null;
   if (ALIAS_TO_DOMAIN.has(core)) return { level: 1, text };
   const letters = text.replace(/[^\p{L}]/gu, "");
-  if (letters.length >= 3 && letters === letters.toLocaleUpperCase("en-US") && /^[\p{L}\d#]/u.test(text))
+  if (
+    letters.length >= 3 &&
+    letters === letters.toLocaleUpperCase("en-US") &&
+    /^[\p{L}\d#]/u.test(text)
+  )
     return { level: 1, text };
   // Title Case subsection ("Bone Turnover Markers"): every significant word capitalized.
   const titleWords = text.split(/\s+/);
@@ -324,9 +341,29 @@ export function extractTextSourceEvidence(
   };
 }
 
-const LABEL_COLS = ["label", "variable", "metric", "metric_id", "name", "test", "test / observation", "observation", "analyte", "biomarker", "parameter"];
+const LABEL_COLS = [
+  "label",
+  "variable",
+  "metric",
+  "metric_id",
+  "name",
+  "test",
+  "test / observation",
+  "observation",
+  "analyte",
+  "biomarker",
+  "parameter",
+];
 const UNIT_COLS = ["unit", "units", "unit / scale"];
-const SECTION_COLS = ["section", "domain", "department", "panel", "category", "system", "health domain"];
+const SECTION_COLS = [
+  "section",
+  "domain",
+  "department",
+  "panel",
+  "category",
+  "system",
+  "health domain",
+];
 
 /** Section-aware evidence for CSV / first-sheet XLSX grids (header row or section rows). */
 export function extractGridSourceEvidence(
@@ -364,7 +401,12 @@ export function extractGridSourceEvidence(
     let section = sectionOf(t);
     if (si >= 0 && cells[si]) {
       const hit = headingDomain(cells[si]!);
-      section = { heading: cells[si]!, path: [cells[si]!], domain: hit?.domain ?? null, rule: hit?.rule ?? null };
+      section = {
+        heading: cells[si]!,
+        path: [cells[si]!],
+        domain: hit?.domain ?? null,
+        rule: hit?.rule ?? null,
+      };
     }
     rows.push({
       label,
@@ -407,14 +449,36 @@ export function sectionForExcerpt(
   excerpt: string,
 ): CandidateSourceSection {
   const key = excerpt.trim();
-  const hits = evidence.rows.filter((r) => r.excerpt === key || (key.length >= 350 && r.excerpt.startsWith(key)));
+  const hits = evidence.rows.filter(
+    (r) => r.excerpt === key || (key.length >= 350 && r.excerpt.startsWith(key)),
+  );
   const base = { rulesVersion: SOURCE_SECTION_RULES_VERSION } as const;
   if (!hits.length)
-    return { ...base, status: "no_section", heading: null, path: [], domain: null, page: null, line: null, locator: null, tableHeader: null };
+    return {
+      ...base,
+      status: "no_section",
+      heading: null,
+      path: [],
+      domain: null,
+      page: null,
+      line: null,
+      locator: null,
+      tableHeader: null,
+    };
   const domains = new Set(hits.map((h) => h.section?.domain ?? null));
   const first = hits[0]!;
   if (domains.size > 1)
-    return { ...base, status: "ambiguous", heading: null, path: [], domain: null, page: first.page, line: first.line, locator: first.locator, tableHeader: first.tableHeader };
+    return {
+      ...base,
+      status: "ambiguous",
+      heading: null,
+      path: [],
+      domain: null,
+      page: first.page,
+      line: first.line,
+      locator: first.locator,
+      tableHeader: first.tableHeader,
+    };
   const s = first.section;
   return {
     ...base,
@@ -432,11 +496,7 @@ export function sectionForExcerpt(
 // --- Domain proposal for a submitted term --------------------------------------
 export type DomainConfidence = "high" | "medium" | "low" | "none";
 export type DomainBasis =
-  | "authorized_mapping"
-  | "source_section"
-  | "catalog_reference"
-  | "candidate_rule"
-  | "human_review";
+  "authorized_mapping" | "source_section" | "catalog_reference" | "candidate_rule" | "human_review";
 export interface DomainEvidenceRef {
   documentSha256: string;
   fileName: string;
@@ -486,7 +546,12 @@ export function proposeDomainFromSources(
   documents: readonly SourceDocumentEvidence[],
   referenceDomains: readonly HealthDomainId[] = [],
 ): TermDomainProposal {
-  const none = (reason: string, evidence: DomainEvidenceRef[] = [], confidence: DomainConfidence = "none", conflict = false): TermDomainProposal => ({
+  const none = (
+    reason: string,
+    evidence: DomainEvidenceRef[] = [],
+    confidence: DomainConfidence = "none",
+    conflict = false,
+  ): TermDomainProposal => ({
     domain: null,
     basis: "human_review",
     confidence,
@@ -585,7 +650,13 @@ export function sectionCoverage(doc: SourceDocumentEvidence) {
     const rows = doc.rows.filter(
       (r) => r.line > h.line && (!next || r.line < next.line) && r.section?.path[0] === h.heading,
     ).length;
-    return { heading: h.heading, domain: h.domain, page: h.page, declaredCount: h.declaredCount, rows };
+    return {
+      heading: h.heading,
+      domain: h.domain,
+      page: h.page,
+      declaredCount: h.declaredCount,
+      rows,
+    };
   });
 }
 

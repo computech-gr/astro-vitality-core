@@ -107,7 +107,12 @@ function classifySyntheticDemo(
 export function syntheticDemoSectionConflict(
   input: GovernedClassificationInput,
   catalogs: ReadonlyMap<string, EvaluatedDemoCatalog> = getSyntheticDemoCatalogs(),
-): { demoId: string; displayName: string; entryDomain: HealthDomainId; sourceDomain: HealthDomainId } | null {
+): {
+  demoId: string;
+  displayName: string;
+  entryDomain: HealthDomainId;
+  sourceDomain: HealthDomainId;
+} | null {
   if (!input.sourceDomain || input.identity === "canonical") return null;
   const c = classifyWithGovernedExtensions(
     { ...input, sourceDomain: undefined },

@@ -56,8 +56,16 @@ import {
   extractCsvCandidates,
   extractFiveColumnLabCandidates,
 } from "../../src/domain/health-intelligence/universal-intake-parser";
-import { extractXlsxCandidates, xlsxCells } from "../../src/domain/health-intelligence/universal-intake-adapters";
-import { buildRegistry, pdfGeometryText, pdfSourceEvidence, SOURCE_PDF } from "../../scripts/p39-source-section-evidence";
+import {
+  extractXlsxCandidates,
+  xlsxCells,
+} from "../../src/domain/health-intelligence/universal-intake-adapters";
+import {
+  buildRegistry,
+  pdfGeometryText,
+  pdfSourceEvidence,
+  SOURCE_PDF,
+} from "../../scripts/p39-source-section-evidence";
 import type { HealthDomainId } from "../../src/domain/health-domains/registry";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -80,7 +88,13 @@ const termsFixture = json("tests/fixtures/p38-mito-demo-terms.v1.json") as {
   }[];
 };
 const live = json("tests/fixtures/p39-mito-demo-live-state.v1.json") as {
-  active: { submissionId: string; termId: string; name: string; unit: string; domain: HealthDomainId }[];
+  active: {
+    submissionId: string;
+    termId: string;
+    name: string;
+    unit: string;
+    domain: HealthDomainId;
+  }[];
   triageAccepted: string[];
 };
 const registryJson = json("data/source-evidence/mito-demo-2026-source-sections.v1.json");
@@ -135,13 +149,15 @@ describe("source PDF: headings, sections and provenance", () => {
       ["BEHAVIORAL & PSYCHOLOGICAL HEALTH", "behavioral", 8, 100, 100],
     ]);
     expect(pdf.rows).toHaveLength(364);
-    expect(pdf.rows.every((r) => r.page && r.line && r.section?.domain && r.tableHeader)).toBe(true);
+    expect(pdf.rows.every((r) => r.page && r.line && r.section?.domain && r.tableHeader)).toBe(
+      true,
+    );
     // Page footers and repeated table headers never become rows or sections.
     expect(pdf.rows.some((r) => /ORBITAL MEDICAL/.test(r.label))).toBe(false);
     // Sections continue across pages (bone rows on pages 1–3).
-    expect(new Set(pdf.rows.filter((r) => r.section?.domain === "bone").map((r) => r.page))).toEqual(
-      new Set([1, 2, 3]),
-    );
+    expect(
+      new Set(pdf.rows.filter((r) => r.section?.domain === "bone").map((r) => r.page)),
+    ).toEqual(new Set([1, 2, 3]));
   });
 
   test("the committed registry equals a fresh deterministic extraction and carries no values", async () => {
@@ -164,13 +180,18 @@ describe("source PDF: headings, sections and provenance", () => {
 
 describe("the 117-term backlog", () => {
   const rows = () =>
-    buildBulkDemoPreflight(terms, { ...baseOptions, sourceDocuments: evidenceRegistryDocuments(registryJson) });
+    buildBulkDemoPreflight(terms, {
+      ...baseOptions,
+      sourceDocuments: evidenceRegistryDocuments(registryJson),
+    });
 
   test("before: the P38 baseline without source evidence", () => {
     const r = buildBulkDemoPreflight(terms, baseOptions);
     const c = preflightCounts(r);
     expect([c.total, c.already_active, r.filter(needsDomainChoice).length]).toEqual([209, 67, 117]);
-    expect([c.conflicting_identity, c.ambiguous_unit, c.existing_catalog_match]).toEqual([2, 17, 6]);
+    expect([c.conflicting_identity, c.ambiguous_unit, c.existing_catalog_match]).toEqual([
+      2, 17, 6,
+    ]);
   });
 
   test("after: 115 high-confidence proposals (70 cardiovascular, 45 immune); 2 remain for manual review", () => {
@@ -179,7 +200,9 @@ describe("the 117-term backlog", () => {
     expect(awaiting).toHaveLength(115);
     expect(awaiting.every((x) => x.sectionProposal?.confidence === "high")).toBe(true);
     const by = (d: string) => awaiting.filter((x) => x.domain === d).length;
-    expect([by("cardiovascular"), by("immune"), by("bone"), by("behavioral")]).toEqual([70, 45, 0, 0]);
+    expect([by("cardiovascular"), by("immune"), by("bone"), by("behavioral")]).toEqual([
+      70, 45, 0, 0,
+    ]);
     const manual = r.filter(needsDomainChoice);
     expect(manual.map((x) => x.labels[0]).sort()).toEqual(["Hydration intake", "Sedentary time"]);
     for (const m of manual) {
@@ -189,7 +212,11 @@ describe("the 117-term backlog", () => {
     // Every proposal cites its page, line and heading in the cited document.
     for (const x of awaiting) {
       const e = x.sectionProposal!.evidence[0]!;
-      expect([e.documentSha256, typeof e.page, typeof e.line]).toEqual([PDF_SHA, "number", "number"]);
+      expect([e.documentSha256, typeof e.page, typeof e.line]).toEqual([
+        PDF_SHA,
+        "number",
+        "number",
+      ]);
       expect(e.heading).toMatch(/HEALTH|SYSTEM/);
     }
   });
@@ -203,7 +230,10 @@ describe("the 117-term backlog", () => {
       3,
     ]);
     const c3 = find("Complement C3");
-    expect([c3.domain, c3.sectionProposal?.evidence[0]?.heading]).toEqual(["immune", "IMMUNE SYSTEM"]);
+    expect([c3.domain, c3.sectionProposal?.evidence[0]?.heading]).toEqual([
+      "immune",
+      "IMMUNE SYSTEM",
+    ]);
     expect(find("CD4+ T cells").unit).toBe("cells/μL");
     expect(find("CD4+ T cells").domain).toBe("immune");
   });
@@ -235,9 +265,9 @@ describe("the 117-term backlog", () => {
       acceptedSectionProposals: activeKeys,
       overrides: new Map([...activeKeys].map((k) => [k, { domain: "behavioral" as const }])),
     });
-    expect(forced.filter((x) => activeKeys.has(x.key)).every((x) => x.category === "already_active")).toBe(
-      true,
-    );
+    expect(
+      forced.filter((x) => activeKeys.has(x.key)).every((x) => x.category === "already_active"),
+    ).toBe(true);
   });
 
   test("P1NP and CTX identity conflicts stay separately reviewable", () => {
@@ -271,8 +301,17 @@ describe("the 117-term backlog", () => {
 
 describe("classification rules and different layouts", () => {
   const meta = { sha256: "a".repeat(64), fileName: "x", kind: "text" as const };
-  const propose = (doc: SourceDocumentEvidence, label: string, unit: string, refs: HealthDomainId[] = []) =>
-    proposeDomainFromSources({ originalLabels: [label], exactUnit: unit, sourceDocumentSha256: [doc.sha256] }, [doc], refs);
+  const propose = (
+    doc: SourceDocumentEvidence,
+    label: string,
+    unit: string,
+    refs: HealthDomainId[] = [],
+  ) =>
+    proposeDomainFromSources(
+      { originalLabels: [label], exactUnit: unit, sourceDocumentSha256: [doc.sha256] },
+      [doc],
+      refs,
+    );
 
   test("whole-heading aliases only; keywords inside a heading never assign a domain", () => {
     expect(headingDomain("BONE HEALTH | 63 observations")?.domain).toBe("bone");
@@ -281,18 +320,31 @@ describe("classification rules and different layouts", () => {
     expect(headingDomain("## Behavioural Health")?.domain).toBe("behavioral");
     expect(headingDomain("Immune markers in bone")).toBeNull();
     expect(headingDomain("Cardiovascular risk of immune therapy")).toBeNull();
-    expect(Object.keys(SECTION_HEADING_ALIASES).sort()).toEqual(["behavioral", "bone", "cardiovascular", "immune"]);
+    expect(Object.keys(SECTION_HEADING_ALIASES).sort()).toEqual([
+      "behavioral",
+      "bone",
+      "cardiovascular",
+      "immune",
+    ]);
   });
 
   test("missing headings: no section, no proposal", () => {
-    const doc = extractTextSourceEvidence("Troponin I | 4 | ng/L | 2026-11-06 | Review input", meta);
+    const doc = extractTextSourceEvidence(
+      "Troponin I | 4 | ng/L | 2026-11-06 | Review input",
+      meta,
+    );
     expect(doc.rows[0]!.section).toBeNull();
     expect(propose(doc, "Troponin I", "ng/L").prepopulate).toBe(false);
   });
 
   test("an unrecognized heading ends the previous section (no carry-over)", () => {
     const doc = extractTextSourceEvidence(
-      ["CARDIOVASCULAR HEALTH", "Troponin I | 4 | ng/L | 2026-11-06", "ENDOCRINE PANEL", "TSH | 2.1 | mIU/L | 2026-11-06"].join("\n"),
+      [
+        "CARDIOVASCULAR HEALTH",
+        "Troponin I | 4 | ng/L | 2026-11-06",
+        "ENDOCRINE PANEL",
+        "TSH | 2.1 | mIU/L | 2026-11-06",
+      ].join("\n"),
       meta,
     );
     expect(doc.rows.map((r) => r.section?.domain ?? null)).toEqual(["cardiovascular", null]);
@@ -313,7 +365,12 @@ describe("classification rules and different layouts", () => {
       meta,
     );
     expect(doc.rows.map((r) => [r.label, r.unit, r.section?.domain, r.section?.path])).toEqual([
-      ["NT-proBNP", "pg/mL", "cardiovascular", ["Section 1 – Cardiovascular", "Cardiac Biomarkers"]],
+      [
+        "NT-proBNP",
+        "pg/mL",
+        "cardiovascular",
+        ["Section 1 – Cardiovascular", "Cardiac Biomarkers"],
+      ],
       ["IL-6", "pg/mL", "immune", ["3. Immunology:"]],
     ]);
     expect(propose(doc, "NT-proBNP", "pg/mL").domain).toBe("cardiovascular");
@@ -321,7 +378,12 @@ describe("classification rules and different layouts", () => {
 
   test("same label + unit in two sections is a conflict; different unit never proposes", () => {
     const doc = extractTextSourceEvidence(
-      ["CARDIOVASCULAR HEALTH", "Body temperature | 36.6 | °C | 2026-11-06", "IMMUNE SYSTEM", "Body temperature | 36.9 | °C | 2026-11-06"].join("\n"),
+      [
+        "CARDIOVASCULAR HEALTH",
+        "Body temperature | 36.6 | °C | 2026-11-06",
+        "IMMUNE SYSTEM",
+        "Body temperature | 36.9 | °C | 2026-11-06",
+      ].join("\n"),
       meta,
     );
     const p = propose(doc, "Body temperature", "°C");
@@ -331,7 +393,10 @@ describe("classification rules and different layouts", () => {
   });
 
   test("a catalog reference naming another domain is a conflict, never resolved silently", () => {
-    const doc = extractTextSourceEvidence(["BONE HEALTH", "Vitamin D | 30 | ng/mL | 2026-11-06"].join("\n"), meta);
+    const doc = extractTextSourceEvidence(
+      ["BONE HEALTH", "Vitamin D | 30 | ng/mL | 2026-11-06"].join("\n"),
+      meta,
+    );
     const p = propose(doc, "Vitamin D", "ng/mL", ["immune"]);
     expect([p.conflict, p.prepopulate]).toEqual([true, false]);
     expect(propose(doc, "Vitamin D", "ng/mL", ["bone"]).prepopulate).toBe(true);
@@ -341,7 +406,11 @@ describe("classification rules and different layouts", () => {
     const { text, linePages } = await pdfGeometryText(new Uint8Array(readFileSync(SOURCE_PDF)));
     const flattened = text.replaceAll(" | ", "    ");
     const doc = extractTextSourceEvidence(flattened, { ...meta, kind: "pdf" }, linePages);
-    expect(sectionCoverage(doc).filter((c) => c.domain).map((c) => c.rows)).toEqual([63, 93, 108, 100]);
+    expect(
+      sectionCoverage(doc)
+        .filter((c) => c.domain)
+        .map((c) => c.rows),
+    ).toEqual([63, 93, 108, 100]);
   });
 
   test("repeated imports are deterministic", async () => {
@@ -358,7 +427,11 @@ describe("CSV and Excel examinations", () => {
   ].join("\n");
 
   test("CSV section column: per-row section joined to intake candidates", () => {
-    const evidence = extractGridSourceEvidence(csvCells(csv), { sha256: "b".repeat(64), fileName: "e.csv", kind: "csv" });
+    const evidence = extractGridSourceEvidence(csvCells(csv), {
+      sha256: "b".repeat(64),
+      fileName: "e.csv",
+      kind: "csv",
+    });
     const candidates = extractCsvCandidates(csv).rows;
     const sections = candidates.map((c) => sectionForExcerpt(evidence, c.excerpt));
     expect(sections.map((s) => [s.status, s.domain, s.line, s.locator])).toEqual([
@@ -369,8 +442,20 @@ describe("CSV and Excel examinations", () => {
   });
 
   test("CSV section rows (single-cell headings) apply to the rows below", () => {
-    const grid = csvCells(["label,value,unit,date", "BONE HEALTH,,,", "Osteocalcin,17.17,ng/mL,2026-11-06", "BEHAVIORAL HEALTH,,,", "Mission morale,2,0-10,2026-11-05"].join("\n"));
-    const ev = extractGridSourceEvidence(grid, { sha256: "c".repeat(64), fileName: "s.csv", kind: "csv" });
+    const grid = csvCells(
+      [
+        "label,value,unit,date",
+        "BONE HEALTH,,,",
+        "Osteocalcin,17.17,ng/mL,2026-11-06",
+        "BEHAVIORAL HEALTH,,,",
+        "Mission morale,2,0-10,2026-11-05",
+      ].join("\n"),
+    );
+    const ev = extractGridSourceEvidence(grid, {
+      sha256: "c".repeat(64),
+      fileName: "s.csv",
+      kind: "csv",
+    });
     expect(ev.rows.map((r) => [r.label, r.section?.domain])).toEqual([
       ["Osteocalcin", "bone"],
       ["Mission morale", "behavioral"],
@@ -381,22 +466,51 @@ describe("CSV and Excel examinations", () => {
     const cell = (ref: string, v: string) => `<c r="${ref}" t="inlineStr"><is><t>${v}</t></is></c>`;
     const rowsXml = csv
       .split("\n")
-      .map((line, i) => `<row r="${i + 1}">${line.split(",").map((v, j) => cell(`${"ABCDE"[j]}${i + 1}`, v)).join("")}</row>`)
+      .map(
+        (line, i) =>
+          `<row r="${i + 1}">${line
+            .split(",")
+            .map((v, j) => cell(`${"ABCDE"[j]}${i + 1}`, v))
+            .join("")}</row>`,
+      )
       .join("");
     const bytes = zipSync({
-      "xl/worksheets/sheet1.xml": strToU8(`<?xml version="1.0"?><worksheet><sheetData>${rowsXml}</sheetData></worksheet>`),
+      "xl/worksheets/sheet1.xml": strToU8(
+        `<?xml version="1.0"?><worksheet><sheetData>${rowsXml}</sheetData></worksheet>`,
+      ),
     });
-    const ev = extractGridSourceEvidence(xlsxCells(bytes), { sha256: "d".repeat(64), fileName: "e.xlsx", kind: "xlsx" });
+    const ev = extractGridSourceEvidence(xlsxCells(bytes), {
+      sha256: "d".repeat(64),
+      fileName: "e.xlsx",
+      kind: "xlsx",
+    });
     const candidates = extractXlsxCandidates(bytes).rows;
     expect(candidates).toHaveLength(3);
-    expect(candidates.map((c) => sectionForExcerpt(ev, c.excerpt).domain)).toEqual(["cardiovascular", "immune", null]);
+    expect(candidates.map((c) => sectionForExcerpt(ev, c.excerpt).domain)).toEqual([
+      "cardiovascular",
+      "immune",
+      null,
+    ]);
   });
 
   test("PDF five-column candidates join their section by excerpt", () => {
-    const sample = ["IMMUNE SYSTEM", "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG", "IL-6 | 5.8 | pg/mL | 2026-11-05 | Review input"].join("\n");
-    const ev = extractTextSourceEvidence(sample, { sha256: "e".repeat(64), fileName: "p.pdf", kind: "pdf" }, [1, 1, 1]);
+    const sample = [
+      "IMMUNE SYSTEM",
+      "TEST / OBSERVATION | RESULT | UNIT / SCALE | COLLECTED | DATA FLAG",
+      "IL-6 | 5.8 | pg/mL | 2026-11-05 | Review input",
+    ].join("\n");
+    const ev = extractTextSourceEvidence(
+      sample,
+      { sha256: "e".repeat(64), fileName: "p.pdf", kind: "pdf" },
+      [1, 1, 1],
+    );
     const [c] = extractFiveColumnLabCandidates(sample);
-    expect(sectionForExcerpt(ev, c!.excerpt)).toMatchObject({ status: "recognized", domain: "immune", page: 1, line: 3 });
+    expect(sectionForExcerpt(ev, c!.excerpt)).toMatchObject({
+      status: "recognized",
+      domain: "immune",
+      page: 1,
+      line: 3,
+    });
   });
 });
 
@@ -415,8 +529,16 @@ describe("automatic recognition in later examinations", () => {
     classification: SYNTHETIC_DEMO_CLASSIFICATION,
     sourceDocumentSha256: [PDF_SHA],
     status: "ACTIVE",
-    decision: { decisionEventId: "d1", decidedAt: "2026-11-07T13:00:00Z", entrySha256: "b".repeat(64) },
-    activation: { activationEventId: "a1", activatedAt: "2026-11-07T13:05:00Z", demoCatalogVersion: 68 },
+    decision: {
+      decisionEventId: "d1",
+      decidedAt: "2026-11-07T13:00:00Z",
+      entrySha256: "b".repeat(64),
+    },
+    activation: {
+      activationEventId: "a1",
+      activatedAt: "2026-11-07T13:05:00Z",
+      demoCatalogVersion: 68,
+    },
     revocation: null,
     ...over,
   });
@@ -442,18 +564,24 @@ describe("automatic recognition in later examinations", () => {
   afterAll(() => resetSyntheticDemoCatalogsForTests());
 
   test("compatible or absent section: recognized without any further approval", () => {
-    expect(cls()).toMatchObject({ status: "matched", metricId: "demo:ubt-323050f4", domain: "immune" });
+    expect(cls()).toMatchObject({
+      status: "matched",
+      metricId: "demo:ubt-323050f4",
+      domain: "immune",
+    });
     expect(cls({ sourceDomain: "immune" })).toMatchObject({ status: "matched", domain: "immune" });
   });
 
   test("an explicit conflicting section keeps the row review-only and explains why", () => {
     expect(cls({ sourceDomain: "cardiovascular" }).status).not.toBe("matched");
-    expect(syntheticDemoSectionConflict(row({ sourceDomain: "cardiovascular" }), catalogs)).toEqual({
-      demoId: "demo:ubt-323050f4",
-      displayName: "Body temperature",
-      entryDomain: "immune",
-      sourceDomain: "cardiovascular",
-    });
+    expect(syntheticDemoSectionConflict(row({ sourceDomain: "cardiovascular" }), catalogs)).toEqual(
+      {
+        demoId: "demo:ubt-323050f4",
+        displayName: "Body temperature",
+        entryDomain: "immune",
+        sourceDomain: "cardiovascular",
+      },
+    );
     expect(syntheticDemoSectionConflict(row({ sourceDomain: "immune" }), catalogs)).toBeNull();
   });
 
@@ -487,9 +615,16 @@ describe("automatic recognition in later examinations", () => {
     const k = await generateTestSigningKey("test-p39-offline");
     const trusted = { ...k.trusted, environment: "synthetic_demo" as const };
     const map = new Map<string, string>();
-    const storage: SnapshotStorage = { get: (x) => map.get(x) ?? null, set: (x, v) => void map.set(x, v) };
+    const storage: SnapshotStorage = {
+      get: (x) => map.get(x) ?? null,
+      set: (x, v) => void map.set(x, v),
+    };
     const opts = { storage, trustedKeys: [trusted] };
-    await installOfferedDemoCatalog(await signSyntheticDemoSnapshot(snap(), trusted.keyId, k.privateKey), MISSION, opts);
+    await installOfferedDemoCatalog(
+      await signSyntheticDemoSnapshot(snap(), trusted.keyId, k.privateKey),
+      MISSION,
+      opts,
+    );
     resetSyntheticDemoCatalogsForTests();
     const realFetch = globalThis.fetch;
     globalThis.fetch = (() => {
@@ -497,13 +632,16 @@ describe("automatic recognition in later examinations", () => {
     }) as unknown as typeof fetch;
     try {
       expect((await loadInstalledDemoCatalogs(opts)).loaded).toBe(1);
-      expect(classifyWithGovernedExtensions(row({ sourceDomain: "immune" })).classification).toMatchObject({
+      expect(
+        classifyWithGovernedExtensions(row({ sourceDomain: "immune" })).classification,
+      ).toMatchObject({
         status: "matched",
         metricId: "demo:ubt-323050f4",
       });
-      expect(classifyWithGovernedExtensions(row({ sourceDomain: "cardiovascular" })).classification.status).not.toBe(
-        "matched",
-      );
+      expect(
+        classifyWithGovernedExtensions(row({ sourceDomain: "cardiovascular" })).classification
+          .status,
+      ).not.toBe("matched");
     } finally {
       globalThis.fetch = realFetch;
       resetSyntheticDemoCatalogsForTests();
@@ -513,9 +651,15 @@ describe("automatic recognition in later examinations", () => {
 
 describe("governance boundaries", () => {
   test("classification code never calls a server, records a decision or touches production catalogs", () => {
-    const src = readFileSync(resolve(root, "src/domain/health-intelligence/source-section-classification.ts"), "utf8");
+    const src = readFileSync(
+      resolve(root, "src/domain/health-intelligence/source-section-classification.ts"),
+      "utf8",
+    );
     expect(src).not.toMatch(/fetch\(|createServerFn|supabase|rpc\(/);
-    const preflight = readFileSync(resolve(root, "src/domain/health-intelligence/p38-bulk-demo-preflight.ts"), "utf8");
+    const preflight = readFileSync(
+      resolve(root, "src/domain/health-intelligence/p38-bulk-demo-preflight.ts"),
+      "utf8",
+    );
     expect(preflight).not.toMatch(/fetch\(|createServerFn|supabase|rpc\(/);
   });
   test("the registry is labelled as classification evidence, not scientific validation", () => {
