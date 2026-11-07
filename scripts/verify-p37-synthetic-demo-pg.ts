@@ -476,22 +476,25 @@ check(
 );
 const online = syntheticDemoCoverage(exam);
 check(online?.demoId === `demo:${TERM}`, "later synthetic examination recognized automatically");
+const auto = classifyWithGovernedExtensions(exam);
 check(
-  classifyWithGovernedExtensions(exam).classification.status === "unclassified",
-  "catalog classification unchanged (review-only)",
+  auto.classification.status === "matched" &&
+    auto.classification.metricId === `demo:${TERM}` &&
+    auto.syntheticDemo?.classification === "SYNTHETIC_DEMO_NOT_SCIENTIFICALLY_VALIDATED",
+  "normal intake classification uses the activated demo entry (labelled synthetic demo)",
 );
 const row = {
   label: LABEL,
   unit: UNIT,
   value: "1",
   observedAt: "",
-  classification: classifyWithGovernedExtensions(exam).classification,
+  classification: auto.classification,
   sourceKind: "manual",
   sourceLabel: "Synthetic",
 };
 check(
   buildUnknownBiomarkerTerms([{ ...row, syntheticDemo: { demoId: online!.demoId } }]).length ===
-    0 && buildUnknownBiomarkerTerms([row]).length === 1,
+    0 && buildUnknownBiomarkerTerms([row]).length === 0,
   "no duplicate unknown-biomarker request",
 );
 check(
