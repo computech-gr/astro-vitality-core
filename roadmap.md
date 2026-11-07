@@ -3,7 +3,8 @@
 - [x] Read-only live ACL investigation: Step 1 committed; sandbox_exec receives direct SELECT/INSERT from postgres table defaults, not PUBLIC or an inherited parent role.
 - [x] Prepare three-table INSERT-only revocation and separately approved restoration; 177 new disposable assertions plus 149 equivalence and 38 SQL regression checks pass.
 - [x] Live INSERT revocation completed; effective API/executor direct writes denied and unaffected catalog fingerprint preserved.
-- [ ] Steps 2–4 paused: submitted remediation had one added final newline; recorded hash differs from approved source. Owner acknowledgment/resume authorization required; no replay or history rewrite.
+- [x] Owner acknowledged the remediation trailing-LF discrepancy; Step 2 initialized exactly one closed singleton.
+- [ ] Step 3 committed; stop: executor INSERT on two new tables and submitted SQL omitted one of two final LFs. Step 4 blocked; narrow remediation staged for separate approval, no replay/history rewrite.
 
 # P36 tool-compatible installation preparation
 
