@@ -22,13 +22,14 @@ Forward (once, in this order, each file atomically, bytes must match the hashes)
 
 1. `supabase/pending/20261107000000_p36_dynamic_handoff.sql` — SHA-256 `c36ed38b8836f5c8cb0a906735e1ec6a8748145df393ab7029312434275ff83d`
 2. `supabase/pending/20261107010000_p36_dynamic_authorization.sql` — SHA-256 `47c3498fad113acec0c9776636ae1378adbcdcf5b719cfc7c4e4d98124d33b06`
+3. `supabase/pending/20261107020000_p36_authorized_crew_roster.sql` — SHA-256 `79cbac14e37717c98977f199974df0575449050cee38ec0612703567e01b66f0`; narrow authenticated active-assignment/name read for mission-wide reviewers. Depends on the handoff scope model; does not change table RLS or write admission.
 
 After both files are applied, admission stays **closed**: no writes are accepted even with application
 flags on. Opening admission is a separate trusted-SQL step
 (`update public.p36_dynamic_admission set handoff_open = true, change_note = '…'`, later
 `authorization_open = true`) and needs its own authorization.
 
-Rollback (only when the feature tables are verified empty, in reverse order):
+Rollback: first remove the read-only roster RPC with `20261107020000_p36_authorized_crew_roster.rollback.sql` (SHA-256 `8de32cf5b790e6782c0fff0375598dfc7cd845b9cec4b1f744a072d3256dfc11`; no evidence is removed). Then, only when the feature tables are verified empty, in reverse order:
 
 1. `20261107010000_p36_dynamic_authorization.rollback.sql` — `4af6a908698a20ec792c56214fa09cf6001b1ea7b556650b35104f5ca98c5704`
 2. `20261107000000_p36_dynamic_handoff.rollback.sql` — `985188b27aa0d7747848cdb2907a37961a52e44d59b3b5ff89385340bd2bdd4a`

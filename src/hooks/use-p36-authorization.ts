@@ -53,7 +53,7 @@ export function useP36Authorization() {
       setUserId(id.userId);
       setMissions(list);
       setMissionId((prev) =>
-        !accountChanged && prev && list.some((m) => m.missionId === prev) ? prev : list.length === 1 ? list[0]!.missionId : null,
+        !accountChanged && prev && list.some((m) => m.missionId === prev) ? prev : list.length === 1 ? list[0]?.missionId ?? null : null,
       );
       setLoad(list.length ? "ready" : "no_role");
       });

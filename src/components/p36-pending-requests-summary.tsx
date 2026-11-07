@@ -43,8 +43,9 @@ interface ScopeLabel {
   crewLabel: string;
 }
 
-async function submitterScopes(memberships: readonly MissionMembershipContext[]): Promise<ScopeLabel[]> {
+async function submitterScopes(memberships: readonly MissionMembershipContext[]): Promise<{ scopes: ScopeLabel[]; problems: string[] }> {
   const out: ScopeLabel[] = [];
+  const problems: string[] = [];
   const seen = new Set<string>();
   const push = (missionId: string, missionLabel: string, crewMemberId: string, crewLabel: string) => {
     for (const provenance of ["synthetic", "real"] as const) {
@@ -62,9 +63,10 @@ async function submitterScopes(memberships: readonly MissionMembershipContext[])
     else if (m.role === "ground_medical") {
       const roster = await loadMissionCrewRoster(m.missionId);
       if (roster.ok) for (const c of roster.crew) push(m.missionId, missionLabel, c.crewMemberId, c.displayName);
+      else problems.push(`${missionLabel}: ${roster.message}`);
     }
   }
-  return out;
+  return { scopes: out, problems };
 }
 
 function TermList({ terms }: { terms: ScopeTermInventory[] }) {
@@ -114,7 +116,8 @@ export function P36PendingRequestsSummary({
       try {
         const identity = await loadMissionIdentity();
         if (!identity.signedIn || identity.error || identity.userId !== userId) throw new Error("Sign-in could not be confirmed.");
-        const scoped = await submitterScopes(identity.memberships);
+        const inventory = await submitterScopes(identity.memberships);
+        const scoped = inventory.scopes;
         if (current !== epoch.current) return;
         const local = await Promise.all(
           scoped.map(async ({ scope }) => {
@@ -124,9 +127,7 @@ export function P36PendingRequestsSummary({
         );
         if (current !== epoch.current) return;
         // Cloud inventory: scopes with local requests/receipts, plus the selected scope.
-        const wanted = local
-          .filter((x) => x.requests.length || x.receipts.length || scopeKey(x.scope) === focusKey)
-          .slice(0, MAX_CLOUD_SCOPES);
+        const wanted = [...local].sort((a, b) => Number(scopeKey(b.scope) === focusKey) - Number(scopeKey(a.scope) === focusKey)).slice(0, MAX_CLOUD_SCOPES);
         const cloud = new Map<string, CloudInventory>();
         await Promise.all(
           wanted.map(async ({ scope }) => {
@@ -141,6 +142,7 @@ export function P36PendingRequestsSummary({
         if (current !== epoch.current) return;
         const inputs: ScopeInput[] = local.map((x) => ({ ...x, cloud: cloud.get(scopeKey(x.scope)) }));
         setLabels(new Map(scoped.map((s) => [scopeKey(s.scope), { mission: s.missionLabel, crew: s.crewLabel }])));
+        setMessage([...inventory.problems, ...[...cloud.values()].filter((c) => !c.ok).map((c) => !c.ok ? c.message : ""), ...(local.length > MAX_CLOUD_SCOPES ? ["Some authorized scopes were not read because the inventory limit was reached."] : [])].filter(Boolean).join(" "));
         setSummary(buildPendingRequestsSummary(inputs));
       } catch (e) {
         if (current === epoch.current) setMessage(e instanceof Error ? e.message : "The summary could not be read.");
@@ -182,7 +184,7 @@ export function P36PendingRequestsSummary({
             ))}
           </div>
           {summary.totalRequests === 0 ? (
-            <p className="text-xs text-muted-foreground">No pending review requests were found on this device or in the authorized cloud inventory for your scopes.</p>
+            <p className="text-xs text-muted-foreground">No requests were found in the scopes successfully read. Unavailable or unread scopes do not establish that cloud requests are absent.</p>
           ) : null}
           {summary.duplicates.length ? (
             <details className="text-xs">

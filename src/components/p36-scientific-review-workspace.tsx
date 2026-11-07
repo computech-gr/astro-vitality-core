@@ -17,6 +17,7 @@ import {
   SCIENTIFIC_REVIEW_DECISION_LABELS,
   buildActivationManifest,
   buildScientificReviewDossiers,
+  catalogEntryFor,
   buildScientificReviewEntry,
   latestEntryByTerm,
   type ActivationManifest,
@@ -28,6 +29,8 @@ import { appendScientificReviewEntry, listScientificReviewEntries } from "@/doma
 import { buildDecisionDossier, verifyDecisionDossier, type DecisionDossier } from "@/domain/health-intelligence/p36-decision-dossier";
 import { AuthorizationSummary, TermAuthorizationPanel } from "@/components/p36-final-authorization";
 import { useP36Authorization } from "@/hooks/use-p36-authorization";
+import { P36CompactReviewTable } from "@/components/p36-compact-review-table";
+import { scientificDisplayStatus } from "@/domain/health-intelligence/p36-review-table";
 import { P36DynamicReviewWorkspace } from "@/components/p36-dynamic-review-workspace";
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -136,7 +139,7 @@ export function P36ScientificReviewWorkspace() {
       await appendScientificReviewEntry(result.entry);
       await reload();
       setDrafts((prev) => ({ ...prev, [dossier.termId]: emptyDraft() }));
-      setMessage(`Worksheet entry #${result.entry.sequence} recorded on this device (encrypted, append-only). ${dossier.sourceLabel} stays ${REQUIRED_SCIENTIFIC_GATE}; nothing was activated or uploaded.`);
+      setMessage(`Worksheet entry #${result.entry.sequence} recorded on this device (encrypted, append-only). ${dossier.sourceLabel} stays ${scientificDisplayStatus(REQUIRED_SCIENTIFIC_GATE)}; nothing was activated or uploaded.`);
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "The entry could not be recorded.");
     } finally {
@@ -155,7 +158,7 @@ export function P36ScientificReviewWorkspace() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 30_000);
-    setMessage(`Activation manifest ${m.manifestVersion} downloaded to this device. It applies nothing; every term remains ${REQUIRED_SCIENTIFIC_GATE}.`);
+    setMessage(`Activation manifest ${m.manifestVersion} downloaded to this device. It applies nothing; every term remains ${scientificDisplayStatus(REQUIRED_SCIENTIFIC_GATE)}.`);
   };
 
   const exportDossierJson = async () => {
@@ -171,7 +174,7 @@ export function P36ScientificReviewWorkspace() {
       const { createDecisionDossierPdf } = await import("@/domain/health-intelligence/p36-decision-dossier-pdf");
       const { blob, pages } = await createDecisionDossierPdf(d);
       downloadBlob(blob, `MITOCHONDRIA_p36_scientific_decision_dossier_${d.integrity.contentDigest.slice(0, 12)}.pdf`);
-      setDossierMessage(`Decision dossier PDF downloaded (${pages} pages, digest ${d.integrity.contentDigest.slice(0, 16)}…). Every term remains ${REQUIRED_SCIENTIFIC_GATE}.`);
+      setDossierMessage(`Decision dossier PDF downloaded (${pages} pages, digest ${d.integrity.contentDigest.slice(0, 16)}…). Every term remains ${scientificDisplayStatus(REQUIRED_SCIENTIFIC_GATE)}.`);
     } catch (e) {
       setDossierMessage(`The PDF could not be created: ${e instanceof Error ? e.message : "unknown error"}. The JSON export is unaffected.`);
     } finally {
@@ -233,8 +236,16 @@ export function P36ScientificReviewWorkspace() {
         <p className="text-sm text-muted-foreground">View only. Recording worksheet entries requires signing in with a Ground Medical or Researcher membership; the named independent scientific reviewer is recorded with each entry.</p>
       ) : null}
 
-      <ul className="space-y-4" aria-label="Scientific review dossiers">
-        {build.dossiers.map((d) => {
+      <P36CompactReviewTable label="Original documentary dossiers" rows={build.dossiers.map((d) => ({
+        id: d.termId, name: d.sourceLabel, unit: d.sourceUnit,
+        domain: [...new Set(d.candidateCatalogIds.map((id) => catalogEntryFor(id)?.domain).filter(Boolean))].join(" / ") || "Unresolved",
+        candidates: d.candidateCatalogIds,
+        evidence: d.noValidatedCatalogUnit ? "Unit validation missing" : "Scientific evidence incomplete",
+        decision: scientificDisplayStatus(auth.view?.terms.find((t) => t.termId === d.termId)?.scientificStatus ?? d.status),
+        activation: "Activation blocked", origin: "Documentary · not a cloud submission",
+      }))} renderDetail={(id) => {
+          const d = build.dossiers.find((row) => row.termId === id);
+          if (!d) return null;
           const draft = draftFor(d.termId);
           const set = (patch: Partial<Draft>) => setDrafts((prev) => ({ ...prev, [d.termId]: { ...draft, ...patch } }));
           const last = latest.get(d.termId);
@@ -242,11 +253,11 @@ export function P36ScientificReviewWorkspace() {
           const history = entries.filter((e) => e.termId === d.termId);
           const targeted = draft.decision === "ACCEPT_ALIAS_WITH_EVIDENCE" || draft.decision === "ACCEPT_RELATED_DISTINCT_MEASURE";
           return (
-            <li key={d.termId} id={d.termId} className="space-y-3 rounded-lg border border-border bg-card p-4 text-sm">
+            <div id={d.termId} className="space-y-3 text-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-semibold break-words">{d.sourceLabel}</h2>
                 <span className="text-muted-foreground">{d.sourceUnit}</span>
-                <Badge variant="secondary">{d.status}</Badge>
+                <Badge variant="secondary">{scientificDisplayStatus(d.status)}</Badge>
                 <Badge variant="outline">{d.handoff.candidateCatalogStatus}</Badge>
                 {last ? <Badge variant="outline">Latest entry: {SCIENTIFIC_REVIEW_DECISION_LABELS[last.decision]}</Badge> : null}
               </div>
@@ -307,7 +318,7 @@ export function P36ScientificReviewWorkspace() {
                       <li key={e.hash} className="break-words border-b border-border py-1">
                         #{e.sequence} · {e.recordedAt} · {SCIENTIFIC_REVIEW_DECISION_LABELS[e.decision]}{e.targetCatalogId ? ` → ${e.targetCatalogId}` : ""}
                         {e.confirmedUnit ? ` · unit ${e.confirmedUnit}` : ""} · reviewer {e.reviewerName} ({e.reviewerQualification}) · recorded by {e.recordedByRole} ·
-                        evidence {e.evidenceRefs.join(", ")} · {e.rationale} · hash {e.hash.slice(0, 12)}… · {e.scientificStatus}
+                        evidence {e.evidenceRefs.join(", ")} · {e.rationale} · hash {e.hash.slice(0, 12)}… · {scientificDisplayStatus(e.scientificStatus)}
                       </li>
                     ))}
                   </ol>
@@ -343,14 +354,13 @@ export function P36ScientificReviewWorkspace() {
                       <input type="checkbox" checked={draft.independenceConfirmed} onChange={(e) => set({ independenceConfirmed: e.target.checked })} />
                       The named reviewer did not author this candidate mapping and has no conflict of interest.
                     </label>
-                    <Button type="button" variant="outline" className="sm:col-span-2" disabled={busy} onClick={() => void record(d)}>Record entry (stays {REQUIRED_SCIENTIFIC_GATE})</Button>
+                    <Button type="button" variant="outline" className="sm:col-span-2" disabled={busy} onClick={() => void record(d)}>Record entry (stays {scientificDisplayStatus(REQUIRED_SCIENTIFIC_GATE)})</Button>
                   </div>
                 </details>
               ) : null}
-            </li>
+            </div>
           );
-        })}
-      </ul>
+        }} />
 
       <section aria-label="Activation manifest" className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
         <h2 className="text-lg font-semibold">Versioned activation manifest (prepared, not applied)</h2>

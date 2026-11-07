@@ -15,10 +15,10 @@ function sql(q: string, db = "p36_dynamic_it", fail = false) { const r = spawnSy
 sql("drop database if exists p36_dynamic_it with (force);", "postgres");
 sql("create database p36_dynamic_it;", "postgres");
 sql(`do $r$ begin create role authenticated; exception when duplicate_object then null; end $r$; do $r$ begin create role anon; exception when duplicate_object then null; end $r$; do $r$ begin create role service_role; exception when duplicate_object then null; end $r$; create schema auth; create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
-create table missions(id text primary key); create table crew_members(id text primary key); create table mission_crew_assignments(mission_id text,crew_member_id text,status text); create table mission_memberships(mission_id text,user_id uuid,crew_member_id text,role text,active boolean);
-insert into missions values('M1'),('M2'); insert into crew_members values('C1'),('C2'); insert into mission_crew_assignments values('M1','C1','active'),('M1','C2','active'),('M2','C2','active');
+create table missions(id text primary key); create table crew_members(id text primary key,display_name text); create table mission_crew_assignments(mission_id text,crew_member_id text,status text); create table mission_memberships(mission_id text,user_id uuid,crew_member_id text,role text,active boolean);
+insert into missions values('M1'),('M2'); insert into crew_members values('C1','Synthetic Crew One'),('C2','Synthetic Crew Two'); insert into mission_crew_assignments values('M1','C1','active'),('M1','C2','active'),('M2','C2','active');
 insert into mission_memberships values('M1','00000000-0000-0000-0000-000000000001','C1','crew_self',true),('M1','00000000-0000-0000-0000-000000000002',null,'ground_medical',true),('M1','00000000-0000-0000-0000-000000000003',null,'researcher',true);`);
-for (const f of ["20261107000000_p36_dynamic_handoff.sql", "20261107010000_p36_dynamic_authorization.sql"]) sql(readFileSync(resolve(root, "supabase/pending", f), "utf8"));
+for (const f of ["20261107000000_p36_dynamic_handoff.sql", "20261107010000_p36_dynamic_authorization.sql", "20261107020000_p36_authorized_crew_roster.sql"]) sql(readFileSync(resolve(root, "supabase/pending", f), "utf8"));
 const payload = { schema: "mitochondria.p36-cloud-handoff.v1", scope: { missionId: "M1", crewMemberId: "C1", provenance: "synthetic" }, requestId: "ubr-12345678", scientificStatus: "PENDING_NIKOLAS_REVIEW", catalogChangeApplied: false, terms: Array.from({ length: 197 }, (_, i) => ({ termId: termIdFor(`Test term ${i}`, "bpm"), originalLabels: [`Test term ${i}`], exactUnit: "bpm", classification: "unclassified", candidateMetricIds: ["cv-001"], sourceDocumentSha256: ["a".repeat(64)], evidencePointers: [], method: null, specimen: null })) };
 const canonical = canonicalJson(payload);
 const literal = (s: string) => "'" + s.replaceAll("'", "''") + "'";
@@ -27,6 +27,13 @@ const append = (c = canonical) => `select public.p36_dynamic_handoff_append_v1('
 let count = 0;
 const check = (yes: boolean) => { if (!yes) throw Error("assertion failed"); count++; };
 const sqlErr = (q: string) => { const r = spawnSync("psql", [...base, "-d", "p36_dynamic_it"], { input: q, encoding: "utf8", cwd: root }); if (r.status === 0) throw Error("expected SQL failure"); return r.stderr; };
+check(sql(auth(3)+"select count(*) from p36_dynamic_crew_roster_v1('M1');").endsWith("2"));
+check(sql(auth(1)+"select string_agg(crew_member_id,',') from p36_dynamic_crew_roster_v1('M1');").endsWith("C1"));
+check(sqlErr(auth(3)+"select * from p36_dynamic_crew_roster_v1('M2');").includes("scope denied"));
+check(sqlErr("set role anon; select * from p36_dynamic_crew_roster_v1('M1');").includes("permission denied"));
+sql("update mission_crew_assignments set status='inactive' where mission_id='M1' and crew_member_id='C2';");
+check(sql(auth(3)+"select count(*) from p36_dynamic_crew_roster_v1('M1');").endsWith("1"));
+sql("update mission_crew_assignments set status='active' where mission_id='M1' and crew_member_id='C2';");
 // Database admission is closed by default: EXECUTE grants alone never admit writes.
 check(sqlErr(auth(1)+append()).includes("admission is closed"));
 check(sql("select count(*) from p36_dynamic_handoff_submissions;") === "0");
