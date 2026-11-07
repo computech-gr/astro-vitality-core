@@ -60,7 +60,7 @@ function termRegex(term: string): RegExp {
   const t = term.trim();
   const upper = (t.match(/[A-Z]/g) ?? []).length;
   const abbreviation = t.length <= 10 && upper >= 2 && !/\s/.test(t);
-  const body = abbreviation ? escapeRe(t) : escapeRe(t).replace(/(?:\\-|\s)+/g, "[\\s\\u2010-\\u2015-]+");
+  const body = abbreviation ? escapeRe(t) : escapeRe(t).replace(/[\s-]+/g, "[\\s\\u2010-\\u2015-]+");
   return new RegExp(`(?<![\\p{L}\\p{N}-])${body}(?![\\p{L}\\p{N}])`, abbreviation ? "gu" : "giu");
 }
 
@@ -149,7 +149,7 @@ export function assessRelevance(ref: EvidenceReference, concept: LiteratureConce
       : out("insufficient_information", `Only bibliographic metadata was retrieved and the title does not name ${name}; relevance cannot be assessed.`);
   }
   if (!identityTerms.length) {
-    const partials = [...new Set(baseTerms.flatMap((t) => t.split(/[-\s/]+/)).filter((p) => p.length >= 2 && !baseTerms.includes(p)))].filter((p) => termRegex(p).test(whole));
+    const partials = [...new Set(baseTerms.flatMap((t) => t.split(/[-\s/]+/)).filter((p) => p.length >= 3 && /\p{L}/u.test(p) && !baseTerms.includes(p)))].filter((p) => termRegex(p).test(whole));
     const biomedical = BIOMEDICAL.test(whole);
     if (partials.length) {
       const p = partials[0]!;
