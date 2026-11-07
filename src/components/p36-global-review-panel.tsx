@@ -2,9 +2,11 @@
  * Global Scientific Review workspace. Lists only missions the server
  * authorizes for this account (own Researcher missions, or missions whose
  * sharing policy permits an explicitly granted global reviewer). Shows
- * submitted metadata only, with crew pseudonyms. Global review is read-only:
- * triage, scientific approval and catalog activation are shown with their
- * blockers and nothing here writes, approves or activates anything.
+ * submitted metadata only, with crew pseudonyms. Triage (accept for review,
+ * request more evidence, reject review request) is recorded only through the
+ * caller-scoped triage RPC when the account holds a separate triage grant;
+ * scientific approval and catalog activation are shown with their blockers and
+ * nothing here approves or activates anything.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -12,21 +14,97 @@ import { Check, ChevronsUpDown, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { listGlobalReviewMissions, listGlobalReviewSubmissions } from "@/lib/p36-global-review.functions";
+import { appendGlobalTriage, listGlobalReviewMissions, listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
+import { EVIDENCE_REQUIREMENTS, latestTriageByTerm, triageInputProblem, type EvidenceRequirement, type TriageAction, type TriageEvent } from "@/lib/p36-global-triage.server";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import {
-  ALL_CREWS, ALL_MISSIONS, REVIEW_STATE_LABEL, canChooseAllMissions, crewOptions, dashboardCounts, filterTerms,
+  ALL_CREWS, ALL_MISSIONS, REVIEW_STATE_LABEL, SCIENTIFIC_STATE_LABEL, canChooseAllMissions, crewOptions, dashboardCounts, filterTerms,
   flattenTerms, missionsForSelection, paginate, sortTerms, type ReviewState, type TermRow, type TermSort,
 } from "@/lib/p36-global-review-view";
 
 const BASIS_LABEL = { mission_researcher: "Mission Researcher", global_scientific_review: "Global scientific review" } as const;
 const PAGE_SIZE = 25;
-const READ_ONLY_REASON =
-  "Not available: global scientific review is read-only. Recording triage decisions needs a separately approved review action, and scientific authorization is closed.";
+const NO_GRANT_REASON = "This account can read but not record triage: triage needs a separate owner-provisioned grant.";
+const ACTION_LABEL: Record<TriageAction, string> = {
+  ACCEPT_FOR_REVIEW: "Accept for scientific review",
+  REQUEST_MORE_EVIDENCE: "Request more evidence",
+  REJECT_REVIEW_REQUEST: "Reject review request",
+};
+const REQUIREMENT_LABEL: Record<EvidenceRequirement, string> = {
+  identity: "Biomarker identity", unit: "Unit", method: "Measurement method", specimen: "Specimen",
+  protocol: "Protocol", source_validation: "Source validation", other: "Other",
+};
+
+function TriageForm({ row, onRecorded }: { row: TermRow; onRecorded: () => Promise<void> }) {
+  const append = useServerFn(appendGlobalTriage);
+  const [action, setAction] = useState<TriageAction | null>(null);
+  const [reason, setReason] = useState("");
+  const [reqs, setReqs] = useState<EvidenceRequirement[]>([]);
+  const [key, setKey] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const latest = row.triage;
+  const allowed = (a: TriageAction) => latest?.action !== "REJECT_REVIEW_REQUEST" && !(a === "ACCEPT_FOR_REVIEW" && latest?.action === "ACCEPT_FOR_REVIEW");
+  const open = (a: TriageAction) => { setAction(a); setReason(""); setReqs([]); setKey(crypto.randomUUID()); setMessage(null); };
+  const problem = action ? triageInputProblem({ action, reason, evidenceRequirements: action === "REQUEST_MORE_EVIDENCE" ? reqs : [] }) : null;
+  const submit = async () => {
+    if (!action || problem) return;
+    setBusy(true);
+    const r = await append({ data: {
+      missionId: row.submission.missionId, provenance: row.submission.provenance, submissionId: row.submission.submissionId, termId: row.term.termId,
+      action, reason: reason.trim() || null, evidenceRequirements: action === "REQUEST_MORE_EVIDENCE" ? reqs : [],
+      expectedPreviousEventId: latest?.eventId ?? null, idempotencyKey: key,
+    } }).catch(() => null);
+    setBusy(false);
+    if (!r || !r.ok) { setMessage({ ok: false, text: r?.message ?? "Nothing was recorded. Try again; the same request will not be duplicated." }); return; }
+    setMessage({ ok: true, text: `${ACTION_LABEL[action]} recorded. This is triage, not scientific approval.` });
+    setAction(null);
+    await onRecorded();
+  };
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        {(Object.keys(ACTION_LABEL) as TriageAction[]).map((a) => (
+          <Button key={a} variant={a === "ACCEPT_FOR_REVIEW" ? "default" : "outline"} disabled={busy || !allowed(a)} aria-pressed={action === a} onClick={() => open(a)}>{ACTION_LABEL[a]}</Button>
+        ))}
+      </div>
+      {latest?.action === "REJECT_REVIEW_REQUEST" ? <p className="text-xs text-muted-foreground">This review request was rejected; a new submission is required for further triage.</p> : null}
+      {action ? (
+        <div className="space-y-3 rounded-md border border-border p-3">
+          <p className="font-medium">{ACTION_LABEL[action]}</p>
+          {action === "REQUEST_MORE_EVIDENCE" ? (
+            <fieldset className="grid grid-cols-2 gap-2">
+              <legend className="mb-1 text-xs text-muted-foreground">Missing evidence (at least one)</legend>
+              {EVIDENCE_REQUIREMENTS.map((q) => (
+                <div key={q} className="flex items-center gap-2">
+                  <Checkbox id={`req-${q}`} checked={reqs.includes(q)} onCheckedChange={(c) => setReqs((cur) => (c ? [...cur, q] : cur.filter((x) => x !== q)))} />
+                  <Label htmlFor={`req-${q}`} className="text-xs font-normal">{REQUIREMENT_LABEL[q]}</Label>
+                </div>
+              ))}
+            </fieldset>
+          ) : null}
+          <div className="space-y-1">
+            <Label htmlFor="triage-reason">{action === "ACCEPT_FOR_REVIEW" ? "Note (optional)" : "Reason (required)"}</Label>
+            <Textarea id="triage-reason" value={reason} maxLength={2000} onChange={(e) => setReason(e.target.value)} rows={3} />
+          </div>
+          {problem ? <p className="text-xs text-muted-foreground">{problem}</p> : null}
+          <div className="flex gap-2">
+            <Button disabled={busy || !!problem} onClick={() => void submit()}>{busy ? "Recording…" : "Confirm and record"}</Button>
+            <Button variant="ghost" disabled={busy} onClick={() => setAction(null)}>Cancel</Button>
+          </div>
+        </div>
+      ) : null}
+      {message ? <p role={message.ok ? "status" : "alert"} className={message.ok ? "text-xs" : "text-xs text-destructive"}>{message.text}</p> : null}
+    </div>
+  );
+}
 
 interface ComboOption { value: string; search: string; title: string; subtitle?: string; badge?: string }
 
@@ -81,7 +159,9 @@ function HashList({ values }: { values: string[] }) {
   return <ul className="space-y-1">{values.map((v) => <li key={v} className="break-all font-mono text-xs">{v}</li>)}</ul>;
 }
 
-function TermDetail({ row, onClose }: { row: TermRow | null; onClose: () => void }) {
+function TermDetail({ row, onClose, canTriage, triageNote, history, onRecorded }: {
+  row: TermRow | null; onClose: () => void; canTriage: boolean; triageNote: string; history: TriageEvent[]; onRecorded: () => Promise<void>;
+}) {
   const t = row?.term; const s = row?.submission;
   return (
     <Sheet open={!!row} onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -102,20 +182,36 @@ function TermDetail({ row, onClose }: { row: TermRow | null; onClose: () => void
               <dt className="text-muted-foreground">Mission</dt><dd>{s.missionName} ({s.missionCode})</dd>
               <dt className="text-muted-foreground">Crew</dt><dd className="font-mono text-xs">{s.crewPseudonym}</dd>
               <dt className="text-muted-foreground">Submission receipt</dt><dd>{s.requestId} · received {s.receivedAt.slice(0, 16).replace("T", " ")} UTC by {s.submittedRole.replace("_", " ")}</dd>
-              <dt className="text-muted-foreground">Current review state</dt><dd><Badge variant="secondary">{REVIEW_STATE_LABEL[row.state]}</Badge></dd>
-              <dt className="text-muted-foreground">Review history</dt><dd>{t.decision ? `Latest governed decision: ${t.decision}` : "No governed decision recorded"}</dd>
+              <dt className="text-muted-foreground">Triage state</dt><dd><Badge variant="secondary">{REVIEW_STATE_LABEL[row.state]}</Badge></dd>
+              <dt className="text-muted-foreground">Scientific decision</dt><dd>{SCIENTIFIC_STATE_LABEL[row.scientific]}</dd>
+              <dt className="text-muted-foreground">Triage history</dt>
+              <dd>
+                {history.length ? (
+                  <ol className="space-y-2">
+                    {history.map((e) => (
+                      <li key={e.eventId} className="rounded border border-border p-2 text-xs">
+                        <span className="font-medium">{ACTION_LABEL[e.action]}</span> · {e.recordedAt.slice(0, 16).replace("T", " ")} UTC · {e.recordedByCaller ? "you" : "authorized reviewer"}
+                        {e.evidenceRequirements.length ? <span className="block">Missing: {e.evidenceRequirements.map((q) => REQUIREMENT_LABEL[q]).join(", ")}</span> : null}
+                        {e.reason ? <span className="block text-muted-foreground">{e.reason}</span> : null}
+                      </li>
+                    ))}
+                  </ol>
+                ) : "No triage recorded"}
+              </dd>
               <dt className="text-muted-foreground">Document hashes</dt><dd><HashList values={t.sourceDocumentSha256} /></dd>
               <dt className="text-muted-foreground">Evidence references</dt><dd><HashList values={t.evidencePointers} /></dd>
             </dl>
 
             <section aria-labelledby="gsr-actions" className="mt-6 space-y-3">
               <h3 id="gsr-actions" className="font-semibold">Review actions</h3>
-              <div className="flex flex-wrap gap-2">
-                <Button disabled aria-describedby="gsr-actions-reason">Accept for scientific review</Button>
-                <Button variant="outline" disabled aria-describedby="gsr-actions-reason">Request more evidence</Button>
-                <Button variant="outline" disabled aria-describedby="gsr-actions-reason">Reject review request</Button>
-              </div>
-              <p id="gsr-actions-reason" className="text-xs text-muted-foreground">{READ_ONLY_REASON}</p>
+              {canTriage ? <TriageForm key={row.key} row={row} onRecorded={onRecorded} /> : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    {(Object.keys(ACTION_LABEL) as TriageAction[]).map((a) => <Button key={a} variant="outline" disabled aria-describedby="gsr-actions-reason">{ACTION_LABEL[a]}</Button>)}
+                  </div>
+                  <p id="gsr-actions-reason" className="text-xs text-muted-foreground">{triageNote || NO_GRANT_REASON}</p>
+                </>
+              )}
               <div className="space-y-2 rounded-md border border-border p-3">
                 <p className="flex items-center gap-2 font-medium"><Lock className="h-4 w-4" aria-hidden /> Scientific approval: blocked</p>
                 <p className="text-xs text-muted-foreground">Requires independent scientific authorization, verified source validation and reviewer qualification. Triage acceptance is not scientific approval.</p>
@@ -157,7 +253,11 @@ export function P36GlobalReviewPanel() {
   const [classification, setClassification] = useState("all");
   const [sort, setSort] = useState<TermSort>("label");
   const [page, setPage] = useState(1);
-  const [detail, setDetail] = useState<TermRow | null>(null);
+  const [detailKey, setDetailKey] = useState<string | null>(null);
+  const [triageEvents, setTriageEvents] = useState<TriageEvent[]>([]);
+  const [canTriage, setCanTriage] = useState(false);
+  const [triageNote, setTriageNote] = useState("");
+  const listTriage = useServerFn(listGlobalTriage);
   const epoch = useRef(0);
 
   useEffect(() => {
@@ -174,9 +274,20 @@ export function P36GlobalReviewPanel() {
     return () => { live = false; };
   }, [listMissions]);
 
+  const loadTriage = useCallback(async (targets: GlobalReviewMission[], mine: number) => {
+    const events: TriageEvent[] = []; let can = targets.length > 0; let note = "";
+    for (const m of targets) {
+      const r = await listTriage({ data: { missionId: m.missionId, provenance: "synthetic" } }).catch(() => null);
+      if (mine !== epoch.current) return;
+      if (!r || !r.ok) { can = false; note = r?.message ?? "Triage history could not be read. Nothing was recorded."; continue; }
+      events.push(...r.events); can = can && r.canTriage;
+    }
+    setTriageEvents(events); setCanTriage(can); setTriageNote(note);
+  }, [listTriage]);
+
   const load = useCallback(async (value: string) => {
     const mine = ++epoch.current;
-    setSubmissions([]); setCrew(ALL_CREWS); setPage(1); setDetail(null);
+    setSubmissions([]); setCrew(ALL_CREWS); setPage(1); setDetailKey(null); setTriageEvents([]); setCanTriage(false); setTriageNote("");
     const targets = missionsForSelection(missions, value);
     if (!targets.length) { setSubState("idle"); return; }
     setSubState("loading");
@@ -187,14 +298,19 @@ export function P36GlobalReviewPanel() {
       if (!r || !r.ok) { setSubState("error"); setSubMessage(r?.message ?? "Submitted metadata could not be read. Nothing is shown."); return; }
       all.push(...r.submissions);
     }
+    await loadTriage(targets, mine);
+    if (mine !== epoch.current) return;
     setSubmissions(all);
     setSubState("ready");
-  }, [missions, listSubmissions]);
+  }, [missions, listSubmissions, loadTriage]);
+  const refreshTriage = useCallback(async () => { await loadTriage(missionsForSelection(missions, selection), epoch.current); }, [loadTriage, missions, selection]);
 
   useEffect(() => { if (selection) void load(selection); }, [selection, load]);
   useEffect(() => { setPage(1); }, [crew, query, state, classification, sort]);
 
-  const rows = useMemo(() => flattenTerms(submissions), [submissions]);
+  const rows = useMemo(() => flattenTerms(submissions, latestTriageByTerm(triageEvents)), [submissions, triageEvents]);
+  const detail = useMemo(() => rows.find((r) => r.key === detailKey) ?? null, [rows, detailKey]);
+  const detailHistory = useMemo(() => (detail ? triageEvents.filter((e) => `${e.submissionId}:${e.termId}` === detail.key) : []), [detail, triageEvents]);
   const crews = useMemo(() => crewOptions(submissions), [submissions]);
   const classifications = useMemo(() => [...new Set(rows.map((r) => r.term.classification))].sort(), [rows]);
   const scoped = useMemo(() => filterTerms(rows, { query: "", crew, state: "all", classification: "all" }), [rows, crew]);
@@ -245,11 +361,12 @@ export function P36GlobalReviewPanel() {
       {subState === "error" ? <p role="alert" className="text-destructive">{subMessage}</p> : null}
       {subState === "ready" ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4" aria-label="Cloud-submitted metadata summary">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5" aria-label="Cloud-submitted metadata summary">
             <Stat label="Submission receipts" value={receipts} />
             <Stat label="Submitted metadata terms" value={counts.submittedTerms} />
-            <Stat label="Pending unknown biomarkers" value={counts.pending} />
+            <Stat label="Pending scientific decision" value={counts.pending} />
             <Stat label="Awaiting triage" value={counts.awaitingTriage} />
+            <Stat label="Accepted for review" value={counts.accepted} note="Triage only — not approval" />
             <Stat label="More evidence requested" value={counts.moreEvidence} />
             <Stat label="Review requests rejected" value={counts.rejected} />
             <Stat label="Scientifically approved" value={counts.approved} note="Only through independent authorization" />
@@ -291,7 +408,7 @@ export function P36GlobalReviewPanel() {
                 <thead className="bg-muted/50 text-muted-foreground">
                   <tr>
                     <th className="p-2">Biomarker label</th><th className="p-2">Exact unit</th><th className="p-2">Classification</th>
-                    <th className="p-2">Mission · crew</th><th className="p-2">Receipt</th><th className="p-2">Review state</th><th className="p-2"><span className="sr-only">Open</span></th>
+                    <th className="p-2">Mission · crew</th><th className="p-2">Receipt</th><th className="p-2">Triage</th><th className="p-2"><span className="sr-only">Open</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -303,7 +420,7 @@ export function P36GlobalReviewPanel() {
                       <td className="p-2">{r.submission.missionCode}<span className="block font-mono text-muted-foreground">{r.submission.crewPseudonym}</span></td>
                       <td className="p-2 font-mono">{r.submission.requestId}</td>
                       <td className="p-2"><Badge variant="secondary">{REVIEW_STATE_LABEL[r.state]}</Badge></td>
-                      <td className="p-2"><Button size="sm" variant="ghost" onClick={() => setDetail(r)}>Review</Button></td>
+                      <td className="p-2"><Button size="sm" variant="ghost" onClick={() => setDetailKey(r.key)}>Review</Button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -319,7 +436,7 @@ export function P36GlobalReviewPanel() {
           ) : null}
         </div>
       ) : null}
-      <TermDetail row={detail} onClose={() => setDetail(null)} />
+      <TermDetail row={detail} onClose={() => setDetailKey(null)} canTriage={canTriage} triageNote={triageNote} history={detailHistory} onRecorded={refreshTriage} />
     </section>
   );
 }
