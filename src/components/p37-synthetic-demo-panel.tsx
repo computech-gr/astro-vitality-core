@@ -66,7 +66,10 @@ function Note({ msg }: { msg: Msg }) {
 function DecisionForm({ missionId, term, onDone }: { missionId: string; term: DemoScopeTerm; onDone: () => Promise<void> }) {
   const decide = useServerFn(recordSyntheticDemoDecisionFn);
   const [name, setName] = useState(term.originalLabels[0] ?? "");
-  const [domain, setDomain] = useState<Domain>(term.candidateMetricIds.some((c) => c.startsWith("bone-")) ? "bone" : "bone");
+  const [domain, setDomain] = useState<Domain>(() => {
+    const c = term.candidateMetricIds[0] ?? "";
+    return /^imm/i.test(c) ? "immune" : /^cv/i.test(c) ? "cardiovascular" : /^(beh|cog)/i.test(c) ? "behavioral" : "bone";
+  });
   const [ack, setAck] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<Msg>(null);
