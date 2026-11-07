@@ -2696,6 +2696,22 @@ export type Database = {
         }
         Returns: Json
       }
+      p38_demo_bulk_activate_v1: {
+        Args: { p_items: Json; p_mission_id: string }
+        Returns: Json
+      }
+      p38_demo_bulk_check_items: {
+        Args: { p_identity: string; p_items: Json }
+        Returns: number
+      }
+      p38_demo_bulk_decide_v1: {
+        Args: { p_acknowledgement: string; p_items: Json; p_mission_id: string }
+        Returns: Json
+      }
+      p38_demo_bulk_triage_accept_v1: {
+        Args: { p_items: Json; p_mission_id: string }
+        Returns: Json
+      }
       review_sync_append_v1: {
         Args: {
           p_attestations: Json
