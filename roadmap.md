@@ -1,3 +1,9 @@
+# P37 one-biomarker synthetic demo (ubt-7b25ce69, MITO_DEMO_2026)
+
+- [x] Read-only inspection: production P37 cannot run the test (no source receipt; and the label "25(OH) Vitamin D" already resolves in the base catalog as unit-review-required bone-019, so a production entry would be excluded on devices).
+- [x] Prepared isolated synthetic demo lifecycle (pending SQL, rollback, scope authorization), demo signing key, device runtime, intake annotation, no-duplicate request rule, Researcher/Ground Medical panels; 19 domain tests, 126 disposable SQL assertions, existing P37 verifiers (84, 73) and 1,270 tests pass.
+- [ ] Live Preview test — blocked on owner approval of the demo migration and the one-row scope write; then Researcher decision, Ground Medical activation, device sync and recognition checks.
+
 # P36 controlled Metadata Handoff activation
 
 - [x] Recheck installed migration hashes, effective INSERT denials, function ownership/grants, RLS and both closed admissions.
