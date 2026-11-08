@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -119,7 +120,7 @@ export function ClinicalAssessmentView({
             <div>
               <p className="font-medium">
                 Evidence gaps — a Researcher can retrieve literature for these on{" "}
-                <a href="/mission/scientific-review" className="text-primary underline underline-offset-2">Scientific Review</a>
+                <Link to="/mission/scientific-review" className="text-primary underline underline-offset-2">Scientific Review</Link>
               </p>
               <ul className="list-disc pl-4">{c.evidenceGaps.map((g) => <li key={g.id} className="break-words">{g.label} — {g.reason}</li>)}</ul>
             </div>
