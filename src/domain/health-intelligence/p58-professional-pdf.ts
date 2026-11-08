@@ -230,12 +230,12 @@ function drawLineChart(L: Layout, c: ReportChart, x: number, y: number, w: numbe
   ty += lh(6.6) + 1;
   if (c.flagged !== "none") L.chip(c.flagged === "priority_review" ? "Review flag" : "Data check", x + w - 22, y + 2, 19, C.review, true);
   const capLines = L.wrap(c.caption, 6.6, w - 6).slice(0, 4);
-  const limLines = c.limitation ? L.wrap(c.limitation, 6.2, w - 6).slice(0, 2) : [];
+  const limLines = c.limitation ? L.wrap(c.limitation, 6.2, w - 6).slice(0, 4) : [];
   const capH = capLines.length * lh(6.6) + limLines.length * lh(6.2) + 2;
   const px = x + 13;
   const pw = w - 18;
   const py = ty + 2;
-  const ph = h - (py - y) - capH - 7;
+  const ph = h - (py - y) - capH - 9;
   const values = [...c.points.map((p) => p.value), ...c.referenceLines.map((r) => r.value)];
   const ticks = niceTicks(Math.min(...values), Math.max(...values));
   const lo = ticks[0]!;
@@ -281,12 +281,12 @@ function drawLineChart(L: Layout, c: ReportChart, x: number, y: number, w: numbe
     }
     L.font(5.8, false, C.muted);
     const show = c.points.length <= 8 || i === 0 || i === c.points.length - 1 || i % Math.ceil(c.points.length / 6) === 0;
-    if (show) pdf.text(L.t(p.label), X(i), py + ph + 3.2, { align: "center" });
+    if (show) pdf.text(L.t(p.label), X(i), py + ph + 4.4, { align: "center" });
   });
   L.font(6.2, true, SEV[c.points.at(-1)!.severity]);
   const last = c.points.at(-1)!;
   pdf.text(L.t(last.valueText), Math.min(X(c.points.length - 1) + 1.8, x + w - 2), Y(last.value) - 1.2, { align: c.points.length > 1 ? "left" : "center" });
-  let cy = py + ph + 5;
+  let cy = py + ph + 6.6;
   cy += L.lines(capLines, x + 3, cy, 6.6, false, C.ink);
   if (limLines.length) L.lines(limLines, x + 3, cy, 6.2, false, C.muted);
 }
@@ -415,7 +415,7 @@ export function renderProfessionalReport(r: ProfessionalReport, pdf: Writer, opt
   const line = r.charts.charts.filter((c) => c.kind === "line");
   const single = r.charts.charts.filter((c) => c.kind === "single");
   const gw = (CW - 4) / 2;
-  const ch = 66;
+  const ch = 70;
   for (let i = 0; i < line.length; i += 2) {
     L.ensure(ch);
     drawLineChart(L, line[i]!, M, L.y, gw, ch);
