@@ -227,7 +227,7 @@ function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureO
   const inner = w - 7;
   const title = L.capped(a.title, 10, inner, 2, true);
   const ev = L.capped(a.evidence, 8.1, inner, a.priority ? 4 : 5);
-  const why = a.priority && a.rationale ? L.capped(`Why this priority: ${a.rationale}`, 7.3, inner, 4) : [];
+  const why = a.priority && a.rationale && a.findingIds.length === 1 ? L.capped(`Why this priority: ${a.rationale}`, 7.3, inner, 4) : [];
   const next = L.capped(`Next: ${a.nextStep}`, 7.9, inner, 4);
   const clinicalRow = Boolean(a.priority) && a.findingIds.length === 1;
   const badgeRows = a.priority ? 5 + (clinicalRow ? 5 : 0) : a.badges.length ? 5 : 0;

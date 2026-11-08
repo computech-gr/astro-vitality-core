@@ -90,7 +90,7 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
     rationale: uniq(why).join(" "),
     dataCheck,
   });
-  const checkNote = dataCheck ? [`Verify first: ${uniq(input.series.filter((s) => s.dataCheck).map((s) => s.seriesName ?? s.name)).join(", ") || "measurement consistency"} (data check).`] : [];
+  const checkNote = dataCheck ? [`Verify first: ${uniq(input.series.filter((s) => s.dataCheck).map((s) => s.seriesName ?? s.name)).join(", ") || "measurement consistency"}.`] : [];
 
   const complete = (s: PriorityEvidence) => s.basis === "approved" || !(s.unrecordedConditions?.length);
   const red = usable.filter((s) => s.displayClass === "RED" && s.basis !== "none" && complete(s));
@@ -114,7 +114,7 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
       ...checkNote,
     ]);
 
-  if (dataCheck) return decide("DATA_CHECK", ["WP-4"], [...checkNote, "No other result supports a medical-review priority until the measurement is verified."]);
+  if (dataCheck) return decide("DATA_CHECK", ["WP-4"], [...checkNote, "No other result supports a medical-review priority yet."]);
 
   const classified = usable.filter((s) => s.basis !== "none");
   if (classified.length && classified.every((s) => s.displayClass === "NORMAL") && !usable.some((s) => s.highReview))
