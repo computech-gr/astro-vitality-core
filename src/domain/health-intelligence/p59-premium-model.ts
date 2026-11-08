@@ -235,7 +235,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     let basis: ClassBasis = displayClass === "NEUTRAL" ? "none" : "approved";
     let bandLabel = axes.clinical.bandLabel;
     let provisional: ProvisionalResult | null = null;
-    if (provisionalActive && basis === "none") {
+    if (provisionalActive && basis === "none" && r.provenance !== "real") {
       provisional = provisionalInterpretation({ metricId: r.metricId, unit: r.unit, value: r.value, provenance: "synthetic", mode, missionId: input.missionId, holds, demonstrationMappings: demonstrationMappingsActive }, input.provisionalRegistry);
       if (provisional.status === "PROVISIONAL" && provisional.severity !== "neutral") {
         displayClass = sevToClass(provisional.severity);
