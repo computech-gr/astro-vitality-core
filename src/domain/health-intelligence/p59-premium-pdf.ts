@@ -861,8 +861,15 @@ function frame(L: P, r: PremiumReport) {
     if (p > 1) {
       L.font(6.8, false, COLOR.muted);
       L.pdf.text(L.t(r.demonstrationLabel ? "MITOCHONDRIA" : "MITOCHONDRIA · Astronaut Health Intelligence"), MX, 9.5);
-      if (r.demonstrationLabel) { L.font(6.6, true, COLOR.amberDeep); L.pdf.text(L.t(r.demonstrationLabel), W / 2, 9.5, { align: "center" }); L.font(6.8, false, COLOR.muted); }
-      L.pdf.text(L.t(`${r.header.astronaut} · ${r.header.mission}`), W - MX, 9.5, { align: "right" });
+      let sideW = CW * 0.45;
+      if (r.demonstrationLabel) {
+        L.font(6.6, true, COLOR.amberDeep);
+        L.pdf.text(L.t(r.demonstrationLabel), W / 2, 9.5, { align: "center" });
+        sideW = (CW - L.pdf.getTextWidth(L.t(r.demonstrationLabel))) / 2 - 3;
+        L.font(6.8, false, COLOR.muted);
+      }
+      // Long astronaut/mission names are shortened so they never overlap the centred label.
+      L.pdf.text(L.capped(`${r.header.astronaut} · ${r.header.mission}`, 6.8, sideW, 1)[0] ?? "", W - MX, 9.5, { align: "right" });
       L.draw(COLOR.rule);
       L.pdf.setLineWidth(0.2);
       L.pdf.line(MX, 11.3, W - MX, 11.3);
@@ -872,7 +879,8 @@ function frame(L: P, r: PremiumReport) {
     L.pdf.line(MX, H - 11.5, W - MX, H - 11.5);
     const synth = r.header.provenance === "synthetic" ? " · SYNTHETIC DEMONSTRATION DATA" : "";
     L.font(6.6, false, COLOR.muted);
-    L.pdf.text(L.t(`MITOCHONDRIA · Health Intelligence Report · ${r.header.astronaut}${synth} · Preliminary automated assessment — not a diagnosis`), MX, H - 8);
+    // Shortened to stay clear of the page number.
+    L.pdf.text(L.capped(`MITOCHONDRIA · Health Intelligence Report · ${r.header.astronaut}${synth} · Preliminary automated assessment — not a diagnosis`, 6.6, CW - 24, 1)[0] ?? "", MX, H - 8);
     L.font(7, true, COLOR.navy);
     L.pdf.text(L.t(`Page ${p} of ${pages}`), W - MX, H - 8, { align: "right" });
   }
