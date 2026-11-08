@@ -43,8 +43,8 @@ function ReviewControls({ concern, onDecide }: { concern: ClinicalConcern | null
         {concern ? (
           <>
             <Button type="button" size="sm" onClick={() => act("accept")}>Accept</Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => act("amend")}>Amend</Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => act("reject")}>Reject</Button>
+            <Button type="button" size="sm" variant="outline" className="text-foreground" onClick={() => act("amend")}>Amend</Button>
+            <Button type="button" size="sm" variant="outline" className="text-foreground" onClick={() => act("reject")}>Reject</Button>
           </>
         ) : (
           <Button type="button" size="sm" onClick={() => act("add")}>Add assessment</Button>
