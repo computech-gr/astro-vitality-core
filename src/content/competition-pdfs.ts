@@ -2,6 +2,19 @@
 // P53: the committed docs/competition PDFs ship as same-origin static files under
 // /competition/assets/pdf/ (staged at build time); nothing is fetched from GitHub.
 
+type CompetitionPdfEntry = {
+  title: string;
+  file: string;
+  /** Optional line shown under the title. */
+  subtitle?: string;
+  /** Optional prominent disclaimer shown above the document. */
+  disclaimer?: string;
+  /** Optional plain-language note on where the document's data came from. */
+  provenance?: string;
+  /** Show an explicit "Download PDF" button. */
+  offerDownload?: boolean;
+};
+
 export const competitionPdfs = {
   presentation: {
     title: "NASA Competition Presentation",
@@ -15,15 +28,24 @@ export const competitionPdfs = {
     title: "Master Operations & Technical Manual",
     file: "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
   },
+  // P60 (owner-approved 2026-11-08): the owner-supplied 16-page P60 report is served
+  // byte-identical as a static sample. It is never regenerated here and does not
+  // replace reports the app generates from actual mission observations.
   sample: {
-    title: "Synthetic Astronaut Health Report — Sample",
-    file: "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
+    title: "MITOCHONDRIA — Premium Health Intelligence Report",
+    file: "MITOCHONDRIA_P60_Alex_Morgan_Premium_Health_Intelligence_Report_SYNTHETIC.pdf",
+    subtitle: "Alex Morgan | Synthetic Astronaut | P60 Demonstration",
+    disclaimer:
+      "Synthetic demonstration data. Preliminary automated assessment for Ground Medical review. Not a clinical diagnosis.",
+    provenance:
+      "This sample was generated from reconstructed synthetic demonstration data. It is not based on verified local November records or on any real astronaut. Reports created inside the app are built from the selected crew member's own observations.",
+    offerDownload: true,
   },
-} as const;
+} as const satisfies Record<string, CompetitionPdfEntry>;
 
 export type CompetitionPdfId = keyof typeof competitionPdfs;
 
-export function findCompetitionPdf(id: string) {
+export function findCompetitionPdf(id: string): CompetitionPdfEntry | undefined {
   return Object.prototype.hasOwnProperty.call(competitionPdfs, id)
     ? competitionPdfs[id as CompetitionPdfId]
     : undefined;

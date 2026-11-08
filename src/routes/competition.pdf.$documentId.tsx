@@ -16,16 +16,32 @@ import {
 
 type PdfPage = {
   getViewport: (o: { scale: number }) => { width: number; height: number };
-  render: (o: { canvasContext: CanvasRenderingContext2D; viewport: unknown; canvas: HTMLCanvasElement }) => { promise: Promise<void>; cancel: () => void };
+  render: (o: {
+    canvasContext: CanvasRenderingContext2D;
+    viewport: unknown;
+    canvas: HTMLCanvasElement;
+  }) => { promise: Promise<void>; cancel: () => void };
 };
-type PdfDoc = { numPages: number; getPage: (n: number) => Promise<PdfPage>; destroy: () => Promise<void> };
+type PdfDoc = {
+  numPages: number;
+  getPage: (n: number) => Promise<PdfPage>;
+  destroy: () => Promise<void>;
+};
 
 type ViewerState =
   | { kind: "loading"; received: number; total: number }
   | { kind: "ready"; doc: PdfDoc; sizes: { width: number; height: number }[] }
   | { kind: "error"; message: string };
 
-function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: number; size: { width: number; height: number } }) {
+function PdfPageCanvas({
+  doc,
+  pageNumber,
+  size,
+}: {
+  doc: PdfDoc;
+  pageNumber: number;
+  size: { width: number; height: number };
+}) {
   const wrapper = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [rendered, setRendered] = useState(false);
@@ -111,9 +127,16 @@ function PdfPageCanvas({ doc, pageNumber, size }: { doc: PdfDoc; pageNumber: num
       data-pdf-page={pageNumber}
       data-rendered={rendered ? "true" : "false"}
     >
-      <canvas ref={canvas} className="block h-full w-full" aria-label={`Page ${pageNumber}`} role="img" />
+      <canvas
+        ref={canvas}
+        className="block h-full w-full"
+        aria-label={`Page ${pageNumber}`}
+        role="img"
+      />
       {!rendered ? (
-        <span className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">{failed ? `Page ${pageNumber} could not be drawn` : `Loading page ${pageNumber}…`}</span>
+        <span className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
+          {failed ? `Page ${pageNumber} could not be drawn` : `Loading page ${pageNumber}…`}
+        </span>
       ) : null}
     </div>
   );
@@ -131,8 +154,11 @@ function CompetitionPdfViewer() {
     const controller = new AbortController();
     setState({ kind: "loading", received: 0, total: 0 });
     (async () => {
-      const response = await fetch(competitionPdfFilePath(documentId as CompetitionPdfId), { signal: controller.signal });
-      if (!response.ok || !response.body) throw new Error(`Document unavailable (HTTP ${response.status})`);
+      const response = await fetch(competitionPdfFilePath(documentId as CompetitionPdfId), {
+        signal: controller.signal,
+      });
+      if (!response.ok || !response.body)
+        throw new Error(`Document unavailable (HTTP ${response.status})`);
       const total = Number(response.headers.get("content-length") ?? 0);
       const reader = response.body.getReader();
       const chunks: Uint8Array[] = [];
@@ -152,9 +178,13 @@ function CompetitionPdfViewer() {
       }
       const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
       if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-        pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")).default;
+        pdfjs.GlobalWorkerOptions.workerSrc = (
+          await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")
+        ).default;
       }
-      const doc = (await pdfjs.getDocument({ data: bytes, isEvalSupported: false } as Parameters<typeof pdfjs.getDocument>[0]).promise) as unknown as PdfDoc;
+      const doc = (await pdfjs.getDocument({ data: bytes, isEvalSupported: false } as Parameters<
+        typeof pdfjs.getDocument
+      >[0]).promise) as unknown as PdfDoc;
       loaded = doc;
       const sizes: { width: number; height: number }[] = [];
       for (let n = 1; n <= doc.numPages; n += 1) {
@@ -164,7 +194,10 @@ function CompetitionPdfViewer() {
       if (!cancelled) setState({ kind: "ready", doc, sizes });
     })().catch((error: unknown) => {
       if (cancelled) return;
-      setState({ kind: "error", message: error instanceof Error ? error.message : "The document could not be displayed." });
+      setState({
+        kind: "error",
+        message: error instanceof Error ? error.message : "The document could not be displayed.",
+      });
     });
     return () => {
       cancelled = true;
@@ -187,27 +220,70 @@ function CompetitionPdfViewer() {
     <main className="mx-auto w-full max-w-5xl px-3 py-8 sm:px-6">
       <p className="section-kicker mb-2">NASA Space Apps Challenge 2026</p>
       <h1 className="mb-2 font-display text-2xl font-semibold sm:text-3xl">{document.title}</h1>
-      <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground" aria-live="polite">
+      {document.subtitle ? (
+        <p className="mb-3 text-base text-muted-foreground sm:text-lg">{document.subtitle}</p>
+      ) : null}
+      {document.disclaimer ? (
+        <p
+          role="note"
+          className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm font-semibold text-foreground"
+        >
+          {document.disclaimer}
+        </p>
+      ) : null}
+      {document.provenance ? (
+        <p className="mb-4 text-sm text-muted-foreground">{document.provenance}</p>
+      ) : null}
+      <div
+        className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground"
+        aria-live="polite"
+      >
         {state.kind === "loading" ? (
           <span>
             Loading document
-            {state.total > 0 ? ` — ${Math.round((state.received / state.total) * 100)}%` : state.received > 0 ? ` — ${(state.received / 1048576).toFixed(1)} MB` : "…"}
+            {state.total > 0
+              ? ` — ${Math.round((state.received / state.total) * 100)}%`
+              : state.received > 0
+                ? ` — ${(state.received / 1048576).toFixed(1)} MB`
+                : "…"}
           </span>
         ) : null}
         {state.kind === "ready" ? <span>{state.doc.numPages} pages</span> : null}
-        <a className="underline underline-offset-4 hover:text-foreground" href={fileHref} target="_blank" rel="noopener noreferrer">
+        <a
+          className="underline underline-offset-4 hover:text-foreground"
+          href={fileHref}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Open in the browser's PDF viewer
         </a>
+        {document.offerDownload ? (
+          <a
+            className="inline-flex items-center rounded-md border border-border bg-card px-3 py-1.5 font-medium text-foreground hover:bg-muted"
+            href={fileHref}
+            download={document.file}
+          >
+            Download PDF
+          </a>
+        ) : null}
       </div>
       {state.kind === "error" ? (
-        <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm">
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm"
+        >
           {state.message} Try again later or use the link above.
         </p>
       ) : null}
       {state.kind === "ready" ? (
         <div className="flex flex-col gap-4" aria-label={`${document.title} pages`}>
           {state.sizes.map((size, index) => (
-            <PdfPageCanvas key={`${documentId}-${index + 1}`} doc={state.doc} pageNumber={index + 1} size={size} />
+            <PdfPageCanvas
+              key={`${documentId}-${index + 1}`}
+              doc={state.doc}
+              pageNumber={index + 1}
+              size={size}
+            />
           ))}
         </div>
       ) : null}
@@ -218,11 +294,19 @@ function CompetitionPdfViewer() {
 export const Route = createFileRoute("/competition/pdf/$documentId")({
   head: ({ params }) => {
     const document = findCompetitionPdf(params.documentId);
-    if (!document) return { meta: [{ title: "Document not found | The Mitochondria" }, { name: "robots", content: "noindex, nofollow" }] };
+    if (!document)
+      return {
+        meta: [
+          { title: "Document not found | The Mitochondria" },
+          { name: "robots", content: "noindex, nofollow" },
+        ],
+      };
     return indexableRouteHead({
       path: competitionPdfViewerPath(params.documentId as CompetitionPdfId),
       title: `${document.title} | NASA Space Apps 2026 | The Mitochondria`,
-      description: `Read The Mitochondria ${document.title} for NASA Space Apps Challenge 2026 directly in your browser.`,
+      description: document.subtitle
+        ? `${document.title}: ${document.subtitle}. ${document.disclaimer ?? ""}`.trim()
+        : `Read The Mitochondria ${document.title} for NASA Space Apps Challenge 2026 directly in your browser.`,
       ogType: "article",
     });
   },
