@@ -146,3 +146,23 @@ export function largeSynthetic(extraSeries = 20, days = 8): UnifiedObservation[]
     }
   return out;
 }
+
+/**
+ * P60.1 — SYNTHETIC dataset with missing context and ambiguous identities (testing only): unresolved identities,
+ * a known metric recorded in a unit its catalog entry does not use, a non-numeric value, single-date series, and
+ * glucose / triglycerides without recorded fasting status. Nothing may be inferred, converted or classified from it
+ * beyond what the existing rules allow.
+ */
+export function missingContextAmbiguous(): UnifiedObservation[] {
+  return [
+    o("fixture:unresolved-gcsf", "pg/mL", "12.5", "2026-11-07"),
+    o("fixture:unresolved-marker-x", "U/L", "41", "2026-11-07"),
+    o("fixture:unresolved-marker-x", "U/L", "88", "2026-11-08"),
+    o("cv-070", "mEq/L", "139", "2026-11-07"), // sodium in a unit the catalog entry does not use: never converted
+    o("cv-071", "mmol/L", "4.1", "2026-11-07"),
+    o("cv-083", "mg/dL", "131", "2026-11-07"), // glucose; fasting status not recorded
+    o("cv-088", "mg/dL", "210", "2026-11-06"), o("cv-088", "mg/dL", "420", "2026-11-08"), // triglycerides; fasting not recorded
+    o("cv-085", "%", "trace", "2026-11-07"), // non-numeric
+    o("demo:ubt-7b25ce69", "ng/mL", "18", "2026-11-07", "bone"),
+  ];
+}
