@@ -507,7 +507,7 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
     );
     overview.push(
       compared.length
-        ? `${plural(compared.length, "measurement")} could be compared between examinations (${inc} increased, ${dec} decreased, ${stable} unchanged first to last); ${all.length - compared.length} were measured only once in this period.`
+        ? `${plural(compared.length, "measurement")} could be compared between examinations (${inc} increased, ${dec} decreased, ${stable} unchanged first to last); ${all.length - compared.length} ${all.length - compared.length === 1 ? "was" : "were"} measured only once in this period.`
         : "Every measurement comes from a single examination in this period, so no change over time can be established; these results serve as a baseline.",
     );
     const attention: string[] = [];
@@ -768,7 +768,7 @@ function buildFinding(
     if (reviewPriority !== "none" && guidance) parts.push(guidance.combined);
     else if (changed.length >= 2) parts.push(`Several related markers changed (${list(changed.map((c) => c.name), 4)}); because they describe the same biological system, the combined change is reviewed together.`);
     else parts.push(`One marker changed (${changed[0]!.name}); the related markers give no comparable change to place it in context yet.`);
-    for (const q of quality) parts.push(`${q.name}: the difference is mathematically correct, but ${q.review.plausibilityText?.replace(/^./, (x) => x.toLowerCase()) ?? "it is not biologically expected over this interval."}`);
+    for (const q of quality) parts.push(`${q.name}: the calculated difference is mathematically correct, but it is not biologically expected over this interval. ${q.review.plausibilityText ?? ""}`.trim());
     interpretation = parts.join(" ");
     headline = `${flagText}${p.title}: ${list(changed.map(changeLabel), 3)}.`;
   } else if (state === "stable") {
