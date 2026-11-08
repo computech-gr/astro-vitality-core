@@ -80,6 +80,8 @@ export interface ResultRow {
   criterionKind: string | null;
   /** Identity route when a demonstration mapping or alias bound the criterion (traceability). */
   identityRoute: IdentityRoute | null;
+  /** Per-observation criterion conditions that are not recorded (empty for approved classes, which require them). */
+  unrecordedConditions: string[];
 }
 export interface PremiumChart {
   base: ReportChart;
@@ -204,12 +206,12 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const provisionalActive = input.options.provisionalLiterature && synthetic;
   const mode = provisionalActive ? ("synthetic-demonstration" as const) : ("off" as const);
   const demonstrationMappingsActive = provisionalActive && Boolean(input.options.demonstrationMappings);
-  const kindOf = (() => {
-    const m = new Map<string, string>();
-    for (const c of bundledCriteriaRegistry().criteria) m.set(c.id, c.kind);
-    for (const c of provisionalRegistry(input.provisionalRegistry ?? undefined).reg.criteria) m.set(c.id, c.kind);
-    return (ids: readonly string[]) => ids.map((id) => m.get(id)).find((k): k is string => Boolean(k)) ?? null;
-  })();
+  const criterionMeta = new Map<string, { kind: string; perObservation: string[] }>();
+  for (const c of bundledCriteriaRegistry().criteria) criterionMeta.set(c.id, { kind: c.kind, perObservation: c.applicability.perObservation.map((x) => x.text) });
+  for (const c of provisionalRegistry(input.provisionalRegistry ?? undefined).reg.criteria) criterionMeta.set(c.id, { kind: c.kind, perObservation: c.applicability.perObservation.map((x) => x.text) });
+  const kindOf = (ids: readonly string[]) => ids.map((id) => criterionMeta.get(id)?.kind).find((k): k is string => Boolean(k)) ?? null;
+  /** Per-observation conditions of the criteria that are not recorded (observation conditions are never captured, so all are unrecorded). */
+  const unrecordedPerObservation = (ids: readonly string[]) => [...new Set(ids.flatMap((id) => criterionMeta.get(id)?.perObservation ?? []))];
   const contributors: Contributor[] = report.assessment.findings.flatMap((f) => f.contributors);
   const contribOf = (metricId: string, unit: string) => contributors.find((c) => c.metricId === metricId && c.unit === unit) ?? null;
   const entryOf = (metricId: string, unit: string): BiomarkerAssessment | null => biomarkers.entries.find((e) => e.metricId === metricId && e.unit === unit) ?? null;
@@ -250,7 +252,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       : provisional && provisional.status !== "DISABLED" && provisional.status !== "NO_CRITERION" ? provisional.label
       : shortOutcome(approvedCls);
     const limitation = holds.length ? "Held for measurement verification before interpretation." : !NUMERIC.test(r.value.trim()) ? "Non-numeric value; shown as recorded." : r.metricId.startsWith("demo:") ? "Synthetic demonstration catalog identity (not scientifically validated)." : null;
-    return { recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null };
+    return { recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: basis === "provisional" ? unrecordedPerObservation(provisional?.criterionIds ?? []) : [] };
   });
 
   rows.sort((a, b) => GROUPS.findIndex((g) => g.id === a.group) - GROUPS.findIndex((g) => g.id === b.group) || a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit) || a.date.localeCompare(b.date) || a.recordId.localeCompare(b.recordId));
@@ -301,6 +303,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
         basis: r.basis,
         criterionKind: r.criterionKind,
         bandLabel: r.bandLabel,
+        unrecordedConditions: r.unrecordedConditions,
         highReview: r.axes.review.value === "HIGH",
         dataCheck: r.axes.dataQuality.value === "DATA_QUALITY_WARNING" || r.provisional?.status === "HELD" || Boolean(r.limitation?.startsWith("Held")),
       })),

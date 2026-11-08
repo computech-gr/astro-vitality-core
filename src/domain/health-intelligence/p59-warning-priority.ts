@@ -43,8 +43,8 @@ export const WARNING_PRIORITY_MEANING: Record<WarningPriority, string> = {
 };
 
 export const WARNING_PRIORITY_RULES = [
-  { id: "WP-1", priority: "HIGH_PRIORITY_MEDICAL_REVIEW", text: "A contributing result lies in a RED band of an approved criterion or of a documented literature criterion (provisional, synthetic demonstration)." },
-  { id: "WP-2", priority: "HIGH_PRIORITY_MEDICAL_REVIEW", text: "A contributing series meets the high review-priority change rules AND a contributing result lies in a band of a diagnostic or action threshold (approved or provisional literature)." },
+  { id: "WP-1", priority: "HIGH_PRIORITY_MEDICAL_REVIEW", text: "A contributing result lies in a RED band of an approved criterion, or of a documented literature criterion (provisional, synthetic demonstration) whose per-measurement conditions are all recorded or that has none." },
+  { id: "WP-2", priority: "HIGH_PRIORITY_MEDICAL_REVIEW", text: "A contributing series meets the high review-priority change rules AND a contributing result lies in a band of a diagnostic or action threshold (approved, or provisional literature with no unrecorded per-measurement condition)." },
   { id: "WP-3", priority: "MONITORING", text: "High review-priority change without WP-1/WP-2, or a contributing result in an AMBER band of a risk category, reference interval or threshold." },
   { id: "WP-4", priority: "DATA_CHECK", text: "Measurement-consistency check required. Shown as the panel colour only when no WP-1 to WP-3 evidence exists from other (non-held) results; otherwise added as a separate DATA CHECK badge." },
   { id: "WP-5", priority: "WITHIN_CRITERIA", text: "Every contributing classified result lies within a normal band and no review or data-quality flag applies." },
@@ -60,6 +60,8 @@ export interface PriorityEvidence {
   /** Kind of the criterion that produced the class (null when NEUTRAL). */
   criterionKind: string | null;
   bandLabel: string | null;
+  /** Per-observation criterion conditions not recorded; a band with any of them never raises a panel to RED. */
+  unrecordedConditions?: readonly string[];
   highReview: boolean;
   dataCheck: boolean;
 }
@@ -90,11 +92,12 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
   });
   const checkNote = dataCheck ? [`Verify first: ${uniq(input.series.filter((s) => s.dataCheck).map((s) => s.seriesName ?? s.name)).join(", ") || "measurement consistency"} (data check).`] : [];
 
-  const red = usable.filter((s) => s.displayClass === "RED" && s.basis !== "none");
+  const complete = (s: PriorityEvidence) => s.basis === "approved" || !(s.unrecordedConditions?.length);
+  const red = usable.filter((s) => s.displayClass === "RED" && s.basis !== "none" && complete(s));
   if (red.length) return decide("HIGH_PRIORITY_MEDICAL_REVIEW", ["WP-1"], [`${red.map((s) => `${s.name}: ${s.bandLabel ?? "RED band"} (${basisWord(s.basis)})`).join("; ")}.`, ...checkNote]);
 
   const high = usable.filter((s) => s.highReview);
-  const threshold = usable.filter((s) => s.basis !== "none" && (s.displayClass === "AMBER" || s.displayClass === "RED") && s.criterionKind !== null && THRESHOLD_KINDS.has(s.criterionKind));
+  const threshold = usable.filter((s) => s.basis !== "none" && complete(s) && (s.displayClass === "AMBER" || s.displayClass === "RED") && s.criterionKind !== null && THRESHOLD_KINDS.has(s.criterionKind));
   if (high.length && threshold.length)
     return decide("HIGH_PRIORITY_MEDICAL_REVIEW", ["WP-2"], [
       `Rapid change meeting the review-priority rules: ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}.`,
@@ -102,11 +105,13 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
       ...checkNote,
     ]);
 
-  const amber = usable.filter((s) => s.displayClass === "AMBER" && s.basis !== "none");
+  const amber = usable.filter((s) => (s.displayClass === "AMBER" || (s.displayClass === "RED" && !complete(s))) && s.basis !== "none");
+  const incomplete = usable.filter((s) => s.basis !== "none" && s.displayClass !== "NORMAL" && !complete(s));
   if (high.length || amber.length)
     return decide("MONITORING", ["WP-3"], [
       ...(high.length ? [`Review-priority change: ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}; no RED band or diagnostic/action threshold supports high priority.`] : []),
-      ...(amber.length ? [`AMBER band: ${uniq(amber.map((s) => `${s.name} — ${s.bandLabel ?? "AMBER"} (${basisWord(s.basis)})`)).join("; ")}.`] : []),
+      ...(amber.length ? [`Band met: ${uniq(amber.map((s) => `${s.name} — ${s.bandLabel ?? "AMBER"} (${basisWord(s.basis)})`)).join("; ")}.`] : []),
+      ...(incomplete.length ? [`Not used for high priority because conditions are not recorded: ${uniq(incomplete.flatMap((s) => s.unrecordedConditions ?? [])).join("; ")}.`] : []),
       ...checkNote,
     ]);
 
