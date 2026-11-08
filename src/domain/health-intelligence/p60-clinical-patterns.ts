@@ -50,6 +50,11 @@ export interface ClinicalPattern {
   rules: string[];
   /** A measurement check applies (shown as a separate badge; never lowers the priority). */
   dataCheck: boolean;
+  /**
+   * P60.1: the results the pattern-level DATA CHECK refers to (empty when no check applies). A pattern-level
+   * check is never an observation-level data-quality flag; it only marks which series must be verified.
+   */
+  dataCheckRecordIds?: string[];
   /** One-paragraph card evidence: the key values with dates. */
   headline: string;
   /** Why this priority (rule + the converging items). */
@@ -174,7 +179,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
   const label = (k: string) => lib.concepts.find((c) => c.key === k)?.label ?? k;
 
   const patterns: ClinicalPattern[] = [];
-  const make = (p: Omit<ClinicalPattern, "priorityLabel">): ClinicalPattern => ({ ...p, priorityLabel: WARNING_PRIORITY_LABEL[p.priority], recordIds: uniq(p.recordIds), sources: uniq(p.sources), missing: uniq(p.missing), confirm: uniq(p.confirm) });
+  const make = (p: Omit<ClinicalPattern, "priorityLabel">): ClinicalPattern => ({ ...p, priorityLabel: WARNING_PRIORITY_LABEL[p.priority], recordIds: uniq(p.recordIds), sources: uniq(p.sources), missing: uniq(p.missing), confirm: uniq(p.confirm), dataCheckRecordIds: p.dataCheck ? uniq(p.dataCheckRecordIds ?? p.recordIds) : [] });
   const notRecorded = (k: string, text: string) => (present(k) ? [] : [`${text} — not recorded in this period.`]);
 
   // ---------------------------------------------------------------- 1. acute physiology + inflammation
@@ -303,6 +308,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
       patterns.push(make({
         id: "p60-electrolytes", title, domains: ["electrolytes", "cardiovascular"], priority, rules,
         dataCheck: naJumps.length > 0 || kSwing,
+        dataCheckRecordIds: [...naJumps.flatMap((j) => [j.a.row.recordId, j.b.row.recordId]), ...(kSwing ? k.map((o) => o.row.recordId) : [])],
         headline: [na.length ? `Sodium ${series(na)}` : "", k.length ? `potassium ${series(k)}` : "", ...qtc.map((o) => `QTc ${val(o)}`)].filter(Boolean).join("; ").replace(/^./, (c) => c.toUpperCase()) + ` (${uniq([...na, ...k, ...qtc].map((o) => o.row.date)).sort().map(dayText).join(", ")}).`,
         rationale: [
           pp3 ? `PP-3: sodium change above ${maxRise} mmol/L within one day with provisional abnormal values at both ends; a DATA CHECK also applies.` : "",
@@ -494,6 +500,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
       const ref = obs("p1np_ctx");
       patterns.push(make({
         id: "p60-bone", title: "Bone-turnover change and low vitamin D", domains: ["bone"], priority: "MONITORING", rules: ["PP-4"], dataCheck: ocChange && days <= 2 && (ratio >= 2 || ratio <= 0.5),
+        dataCheckRecordIds: oc.map((o) => o.row.recordId),
         headline: [ocChange ? `Osteocalcin ${oc.map((o) => o.row.valueText).join(" → ")} ng/mL within ${days} ${days === 1 ? "day" : "days"}` : "", ...[...new Set(vdLow.map((o) => val(o)))].map((v) => `vitamin D ${v} (${vdLow.filter((o) => val(o) === v).map((o) => dayText(o.row.date)).join(", ")})`)].filter(Boolean).join("; ").replace(/^./, (c) => c.toUpperCase()) + ".",
         rationale: "PP-4: a review-priority change and/or a provisional AMBER vitamin D value; no threshold supports high priority.",
         observed: [
