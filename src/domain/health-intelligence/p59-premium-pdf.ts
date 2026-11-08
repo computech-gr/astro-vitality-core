@@ -15,6 +15,19 @@ import { GROUPS } from "./p59-premium-model";
 import type { AlertCard } from "./p59-executive-alerts";
 import { WARNING_PRIORITY_LABEL, WARNING_PRIORITY_MEANING, WARNING_PRIORITY_RULES, WARNING_PRIORITY_TONE, type WarningPriority } from "./p59-warning-priority";
 import { demonstrationMappings } from "./p59-provisional-interpretation";
+import { shortSource, sourceCitation, type ClinicalPattern } from "./p60-clinical-patterns";
+
+/**
+ * P60: sub/superscript digits are transliterated before text reaches the PDF writer. The embedded
+ * pdf.js standard Liberation Sans used by the app lacks U+2080–U+2089 and most of U+2070–U+2079,
+ * which rendered "SpO₂" as "SpO" and "cm⁵" as "cm" in the P59 export. ASCII forms are unambiguous.
+ */
+const SUB = "₀₁₂₃₄₅₆₇₈₉", SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+export function transliterateScripts(text: string): string {
+  return text
+    .replace(/[₀-₉]/g, (c) => String(SUB.indexOf(c)))
+    .replace(/⁻?[⁰⁴-⁹]+|⁻[¹²³]+/g, (m) => `^${m.replace("⁻", "-").replace(/[⁰-⁹¹²³]/g, (c) => String(SUP.indexOf(c) >= 0 ? SUP.indexOf(c) : c === "¹" ? 1 : c === "²" ? 2 : 3))}`);
+}
 
 export type PremiumWriter = PdfWriter & {
   roundedRect?(x: number, y: number, w: number, h: number, rx: number, ry: number, style?: string): unknown;
@@ -42,7 +55,7 @@ class P {
   pageHasBody = false;
   constructor(readonly pdf: PremiumWriter, readonly family: string, readonly unicode: boolean) {}
   t(s: string): string {
-    const r = redactProhibitedNames(s);
+    const r = transliterateScripts(redactProhibitedNames(s));
     return this.unicode ? r : toWinAnsi(r);
   }
   font(size: number, bold = false, color: RGB = COLOR.ink) {
@@ -117,7 +130,7 @@ class P {
     this.y += 1.5;
     this.y += this.lines(this.wrap(text, 11, CW, true), MX, this.y, 11, true, COLOR.navy) + 1;
   }
-  para(text: string, size = 9.2, color: RGB = COLOR.ink, x = MX, w = CW) {
+  para(text: string, size = 9.2, color: RGB = COLOR.ink, x: number = MX, w: number = CW) {
     const ls = this.wrap(text, size, w);
     for (let i = 0; i < ls.length; ) {
       if (this.room() < lh(size) * 2 && this.pageHasBody) this.newPage();
@@ -231,7 +244,7 @@ function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureO
   const soft: RGB = tone === "red" ? COLOR.redSoft : tone === "amber" ? COLOR.amberSoft : tone === "check" ? COLOR.violetSoft : tone === "green" ? COLOR.greenSoft : COLOR.panel;
   const inner = w - 7;
   const title = L.capped(a.title, 10, inner, 2, true);
-  const ev = L.capped(a.evidence, 8.1, inner, a.priority ? 4 : 5);
+  const ev = a.findingIds.length > 1 ? a.evidence.split("\n").flatMap((x) => L.capped(x, 8.1, inner, 2)) : L.capped(a.evidence, 8.1, inner, a.priority ? 4 : 5);
   const why = a.priority && a.rationale && a.findingIds.length === 1 ? L.capped(`Why this priority: ${a.rationale}`, 7.3, inner, 4) : [];
   const next = L.capped(`Next: ${a.nextStep}`, 7.9, inner, 4);
   const clinicalRow = Boolean(a.priority) && a.findingIds.length === 1;
@@ -291,7 +304,7 @@ function pageOne(L: P, r: PremiumReport) {
   hero(L, r);
   demonstrationBanner(L, r);
   L.h2("Most important findings", 40);
-  const cards = r.alerts;
+  const cards = r.patternAlerts ?? r.alerts;
   if (cards.length === 1) {
     const h = alertCard(L, cards[0]!, MX, L.y, CW, true);
     alertCard(L, cards[0]!, MX, L.y, CW, false);
@@ -363,7 +376,8 @@ function pageOne(L: P, r: PremiumReport) {
 // ------------------------------------------------------------------ overview
 
 function overview(L: P, r: PremiumReport) {
-  if (L.page === 1) L.newPage();
+  // P60: start on page 1 when at least 45 % of it is free (short reports no longer leave page 1 mostly empty).
+  if (L.page === 1 && L.room() < (BOTTOM - TOP) * 0.45) L.newPage();
   else L.y += 4;
   L.h2("Executive health overview");
   L.para(r.lead, 9);
@@ -386,7 +400,7 @@ function overview(L: P, r: PremiumReport) {
   const tiles = r.systems;
   for (let i = 0; i < tiles.length; i += 3) {
     const row = tiles.slice(i, i + 3);
-    const bodies = row.map((t) => L.capped(t.lines.join("; "), 7.8, COL3 - 6, 5));
+    const bodies = row.map((t) => L.capped(t.lines.join("; "), 7.6, COL3 - 6, r.patterns?.patterns.length ? 3 : 5));
     const h = Math.max(...row.map((t, j) => bodies[j]!.length * lh(7.8) + flowBadges(L, tileBadges(t), 0, 0, COL3 - 6, true) * 4.6)) + 9;
     L.ensure(h);
     row.forEach((t, j) => systemTile(L, t, bodies[j]!, MX + j * (COL3 + GUT), L.y, COL3, h));
@@ -431,56 +445,25 @@ function diagram(L: P, r: PremiumReport) {
     L.para("Fewer than two related body systems were measured, so no relationship diagram is drawn.", 8.4, COLOR.muted);
     return;
   }
-  const slots: Record<string, [number, number]> = { inflammation: [1, 0], clotting: [0, 1], recovery: [1, 1], lipids: [2, 1], electrolytes: [0, 2], red_cells: [1, 2], glycaemia: [2, 2], bone: [2, 0] };
-  const bw = 46, bh = 13, h = 66;
-  L.ensure(h + 4);
-  const top = L.y;
-  L.box(MX, top, CW, h, COLOR.white, COLOR.rule);
-  const pos = new Map<string, { x: number; y: number }>();
-  for (const n of g.nodes) {
-    const [cx, cy] = slots[n.id] ?? [1, 1];
-    pos.set(n.id, { x: MX + 6 + cx * ((CW - 12 - bw) / 2), y: top + 4 + cy * 21 });
-  }
-  const rowsOf = (id: string) => r.rows.filter((x) => n2group(id) === x.group);
-  for (const e of g.edges) {
-    const a = pos.get(e.from)!, b = pos.get(e.to)!;
-    const ax = a.x + bw / 2, ay = a.y + bh / 2, bxm = b.x + bw / 2, bym = b.y + bh / 2;
-    const dx = bxm - ax, dy = bym - ay, len = Math.hypot(dx, dy) || 1;
-    const sx = ax + (dx / len) * (Math.abs(dy) > Math.abs(dx) * (bh / bw) ? (bh / 2) * (len / Math.abs(dy)) : (bw / 2) * (len / Math.abs(dx)));
-    const sy = ay + (dy / len) * (Math.abs(dy) > Math.abs(dx) * (bh / bw) ? (bh / 2) * (len / Math.abs(dy)) : (bw / 2) * (len / Math.abs(dx)));
-    const ex = bxm - (sx - ax), ey = bym - (sy - ay);
-    const solid = e.cls === "ESTABLISHED_MECHANISM";
-    L.draw(solid ? COLOR.teal : COLOR.neutral);
-    L.pdf.setLineWidth(solid ? 0.45 : 0.35);
-    L.dash(!solid, [1.4, 1]);
-    L.pdf.line(sx, sy, ex, ey);
-    L.dash(false);
-    if (solid && L.pdf.triangle) {
-      const ux = (ex - sx) / Math.hypot(ex - sx, ey - sy), uy = (ey - sy) / Math.hypot(ex - sx, ey - sy);
-      L.fill(COLOR.teal);
-      L.pdf.triangle(ex, ey, ex - ux * 2.4 - uy * 1.1, ey - uy * 2.4 + ux * 1.1, ex - ux * 2.4 + uy * 1.1, ey - uy * 2.4 - ux * 1.1, "F");
-    }
-    const label = `${e.label}${e.referencePending ? " (reference pending)" : ""}`;
-    const ls = L.capped(label, 6.6, 46, 2);
-    L.lines(ls, (sx + ex) / 2 - 22, (sy + ey) / 2 - 3.2, 6.6, false, COLOR.muted, 1.2);
-  }
-  for (const n of g.nodes) {
-    const p = pos.get(n.id)!;
-    const rs = rowsOf(n.id);
+  // P60: the P59 body-system graph uses the same non-overlapping numbered map. Node contents come from the
+  // node's own marker identities (P59 grouped lipids and glycaemia together, which mixed their values).
+  const markerRows = (n: (typeof g.nodes)[number]) => r.rows.filter((x) => ((n as { markers?: string[] }).markers ?? []).includes(x.metricId));
+  const toneOf = (rs: ResultRow[]): WarningPriority => {
     const worst = rs.reduce<DisplayClass>((m, x) => (rankOf(x.displayClass) > rankOf(m) ? x.displayClass : m), "NEUTRAL");
-    const stroke = worst === "RED" ? COLOR.red : worst === "AMBER" ? COLOR.amber : rs.some((x) => x.axes.dataQuality.value === "DATA_QUALITY_WARNING") ? COLOR.violet : COLOR.neutral;
-    const fill = worst === "RED" ? COLOR.redSoft : worst === "AMBER" ? COLOR.amberSoft : stroke === COLOR.violet ? COLOR.violetSoft : COLOR.panel;
-    L.box(p.x, p.y, bw, bh, fill, stroke, 2, 0.35);
-    L.lines([L.t(n.label)], p.x + 2.5, p.y + 1.6, 8.6, true, COLOR.navy, 1.2);
-    const summary = summarize(rs);
-    L.lines(L.capped(summary, 6.6, bw - 5, 2), p.x + 2.5, p.y + 6, 6.6, false, [71, 85, 105], 1.2);
-  }
-  L.y = top + h + 4;
+    return worst === "RED" ? "HIGH_PRIORITY_MEDICAL_REVIEW" : worst === "AMBER" ? "MONITORING" : rs.some((x) => x.axes.dataQuality.value === "DATA_QUALITY_WARNING") ? "DATA_CHECK" : worst === "NORMAL" ? "WITHIN_CRITERIA" : "INSUFFICIENT_EVIDENCE";
+  };
+  const kickerOf = (rs: ResultRow[]) => {
+    const worst = rs.reduce<DisplayClass>((m, x) => (rankOf(x.displayClass) > rankOf(m) ? x.displayClass : m), "NEUTRAL");
+    const basis = rs.find((x) => x.displayClass === worst)?.basis ?? "none";
+    return `${worst === "NEUTRAL" ? "NEUTRAL" : badgeLabel(worst, basis)}${rs.some((x) => x.axes.review.value === "HIGH") ? " · REVIEW" : ""}${rs.some((x) => x.axes.dataQuality.value === "DATA_QUALITY_WARNING") ? " · DATA CHECK" : ""}`;
+  };
+  const kindOf = (cls: string): "established" | "co-occurrence" | "hypothesis" => (cls === "ESTABLISHED_MECHANISM" ? "established" : cls === "HYPOTHESIS" ? "hypothesis" : "co-occurrence");
+  patternMap(L, {
+    nodes: g.nodes.map((n) => { const rs = markerRows(n); return { id: n.id, title: n.label, priority: toneOf(rs), dataCheck: false, headline: summarize(rs), kicker: kickerOf(rs) }; }),
+    edges: g.edges.map((e, i) => ({ from: e.from, to: e.to, kind: kindOf(e.cls), label: `${e.label}${e.referencePending ? " (reference pending)" : ""}`, sourceId: null, n: i + 1 })),
+  });
 }
 const rankOf = (c: DisplayClass) => ({ RED: 3, AMBER: 2, NORMAL: 1, NEUTRAL: 0 })[c];
-function n2group(nodeId: string) {
-  return ({ inflammation: "inflammation", clotting: "blood", lipids: "metabolic", glycaemia: "metabolic", electrolytes: "electrolytes", red_cells: "blood", bone: "bone", recovery: "recovery" } as Record<string, string>)[nodeId] ?? "other";
-}
 function summarize(rs: ResultRow[]) {
   const by = new Map<string, ResultRow[]>();
   for (const r of rs) by.set(`${r.name}|${r.unit}`, [...(by.get(`${r.name}|${r.unit}`) ?? []), r]);
@@ -488,7 +471,8 @@ function summarize(rs: ResultRow[]) {
 }
 
 function integrated(L: P, r: PremiumReport) {
-  L.sectionBreak(0.6);
+  if (r.patterns?.patterns.length) return integratedPatterns(L, r);
+  L.sectionBreak(0.35);
   L.h2("Integrated health assessment", 70);
   L.para("Findings are read as connected patterns. Solid arrows: established biological links (with source). Dashed lines: co-occurrence in this period or a labelled hypothesis — neither shows cause.", 8.6, COLOR.ink);
   diagram(L, r);
@@ -496,6 +480,239 @@ function integrated(L: P, r: PremiumReport) {
     L.h3(s.heading);
     for (const p of s.paragraphs) L.para(p, 8.9);
   }
+}
+
+// ------------------------------------------------------------------ P60: integrated patterns + relationship map
+
+const TONE_OF: Record<WarningPriority, { stroke: RGB; soft: RGB; text: RGB }> = {
+  HIGH_PRIORITY_MEDICAL_REVIEW: { stroke: COLOR.redDeep, soft: COLOR.redSoft, text: COLOR.redDeep },
+  MONITORING: { stroke: COLOR.amberDeep, soft: COLOR.amberSoft, text: COLOR.amberDeep },
+  DATA_CHECK: { stroke: COLOR.violet, soft: COLOR.violetSoft, text: COLOR.violet },
+  WITHIN_CRITERIA: { stroke: COLOR.green, soft: COLOR.greenSoft, text: COLOR.green },
+  INSUFFICIENT_EVIDENCE: { stroke: COLOR.neutral, soft: COLOR.panel, text: NEUTRAL_TEXT },
+};
+const SHORT_PRIORITY: Record<WarningPriority, string> = {
+  HIGH_PRIORITY_MEDICAL_REVIEW: "HIGH PRIORITY REVIEW", MONITORING: "MONITORING", DATA_CHECK: "DATA CHECK", WITHIN_CRITERIA: "WITHIN CRITERIA", INSUFFICIENT_EVIDENCE: "NEUTRAL",
+};
+
+/**
+ * Relationship map: patterns sit in a fixed grid around the most-connected pattern; lines run
+ * between box edges and carry only a numbered marker in the gap between boxes. All wording is in
+ * the numbered legend below, so labels can never overlap boxes, lines or each other.
+ */
+export function mapLayout(nodes: readonly { id: string }[], edges: readonly { from: string; to: string }[]): { id: string; col: number; row: number }[] {
+  if (!nodes.length) return [];
+  const deg = (id: string) => edges.filter((e) => e.from === id || e.to === id).length;
+  const lead = [...nodes].sort((a, b) => deg(b.id) - deg(a.id))[0]!;
+  const linked = nodes.filter((n) => n.id !== lead.id && edges.some((e) => (e.from === lead.id && e.to === n.id) || (e.to === lead.id && e.from === n.id)));
+  const others = nodes.filter((n) => n.id !== lead.id && !linked.includes(n));
+  const ring: [number, number][] = [[0, 1], [1, 0], [1, 2], [2, 1], [0, 0], [0, 2], [2, 0], [2, 2]];
+  const out = [{ id: lead.id, col: 1, row: 1 }];
+  const queue = [...linked, ...others];
+  queue.forEach((n, i) => {
+    if (i < ring.length) out.push({ id: n.id, col: ring[i]![1], row: ring[i]![0] });
+    else out.push({ id: n.id, col: (i - ring.length) % 3, row: 3 + Math.floor((i - ring.length) / 3) });
+  });
+  // Deterministic improvement: swap cells (including empty ones) while it lowers the cost —
+  // lines through a box that is not their endpoint, edge markers hidden under a box, edge crossings, length.
+  const cells: [number, number][] = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]];
+  const W3 = 3, H3 = 2.2, GX = 0.25, GY = 1; // box size and gaps in abstract units (box ≈ 3:1 like the drawing)
+  const centre = (p: { col: number; row: number }) => [p.col * (W3 + GX) + W3 / 2, p.row * (H3 + GY) + H3 / 2] as const;
+  const inBox = (x: number, y: number, p: { col: number; row: number }) => { const [cx, cy] = centre(p); return Math.abs(x - cx) < W3 / 2 + 0.05 && Math.abs(y - cy) < H3 / 2 + 0.05; };
+  const cost = (lay: { id: string; col: number; row: number }[]) => {
+    const at = new Map(lay.map((p) => [p.id, p]));
+    let c = 0;
+    const segs: [number, number, number, number][] = [];
+    for (const e of edges) {
+      const a = at.get(e.from), b = at.get(e.to);
+      if (!a || !b) continue;
+      const [ax, ay] = centre(a), [bx, by] = centre(b);
+      segs.push([ax, ay, bx, by]);
+      c += Math.hypot(bx - ax, by - ay);
+      for (const q of lay) {
+        if (q === a || q === b) continue;
+        for (let t = 0.08; t < 0.93; t += 0.04) if (inBox(ax + (bx - ax) * t, ay + (by - ay) * t, q)) { c += 1000; break; }
+      }
+      if (lay.some((q) => inBox((ax + bx) / 2, (ay + by) / 2, q))) c += 1000;
+    }
+    for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+      const [a, b, c2, d] = segs[i]!, [e2, f, g, h] = segs[j]!;
+      const den = (a - c2) * (f - h) - (b - d) * (e2 - g);
+      if (Math.abs(den) < 1e-9) continue;
+      const t = ((a - e2) * (f - h) - (b - f) * (e2 - g)) / den, u = -((a - c2) * (b - f) - (b - d) * (a - e2)) / den;
+      if (t > 0.02 && t < 0.98 && u > 0.02 && u < 0.98) c += 100;
+    }
+    return c;
+  };
+  if (nodes.length <= 9) {
+    let best = out.map((p) => ({ ...p })), bestCost = cost(best);
+    for (let improved = true, guard = 0; improved && guard < 200; guard++) {
+      improved = false;
+      for (let i = 0; i < best.length; i++)
+        for (const [row, col] of cells) {
+          const trial = best.map((p) => ({ ...p }));
+          const other = trial.find((p) => p.row === row && p.col === col);
+          if (other) { other.row = trial[i]!.row; other.col = trial[i]!.col; }
+          trial[i]!.row = row; trial[i]!.col = col;
+          const tc = cost(trial);
+          if (tc < bestCost - 1e-9) { best = trial; bestCost = tc; improved = true; }
+        }
+    }
+    out.splice(0, out.length, ...best);
+  }
+  // Drop empty top rows (compact maps for few patterns).
+  const minRow = Math.min(...out.map((p) => p.row));
+  return out.map((p) => ({ ...p, row: p.row - minRow }));
+}
+
+function clipToBox(cx: number, cy: number, tx: number, ty: number, w: number, h: number): [number, number] {
+  const dx = tx - cx, dy = ty - cy;
+  if (!dx && !dy) return [cx, cy];
+  const sx = dx ? (w / 2 + 0.8) / Math.abs(dx) : Infinity, sy = dy ? (h / 2 + 0.8) / Math.abs(dy) : Infinity;
+  const k = Math.min(sx, sy);
+  return [cx + dx * k, cy + dy * k];
+}
+
+type MapGraph = { nodes: { id: string; title: string; priority: WarningPriority; dataCheck: boolean; headline: string; kicker?: string }[]; edges: { from: string; to: string; kind: "established" | "co-occurrence" | "hypothesis"; label: string; sourceId: string | null; n: number }[] };
+function patternMap(L: P, g: MapGraph) {
+  const lay = mapLayout(g.nodes, g.edges);
+  const rows = Math.max(...lay.map((p) => p.row)) + 1;
+  const bw = COL3, bh = 22, gy = 10, pad = 4;
+  const h = rows * bh + (rows - 1) * gy + 2 * pad;
+  const legend = g.edges.map((e) => {
+    const a = g.nodes.find((n) => n.id === e.from)!, b = g.nodes.find((n) => n.id === e.to)!;
+    const kind = e.kind === "established" ? "Established" : e.kind === "hypothesis" ? "Hypothesis" : "Co-occurrence";
+    return { n: e.n, text: L.wrap(`${a.title} — ${b.title}. ${kind}: ${e.label}${e.sourceId ? ` (${shortSource(e.sourceId)})` : ""}.`, 7.4, CW - 9) };
+  });
+  const legendH = legend.reduce((s, x) => s + x.text.length * lh(7.4) + 0.8, 0) + (legend.length ? 3 : 0);
+  L.ensure(h + legendH + 6);
+  const top = L.y;
+  L.box(MX, top, CW, h, COLOR.white, COLOR.rule);
+  const pos = new Map(lay.map((p) => [p.id, { x: MX + p.col * (COL3 + GUT), y: top + pad + p.row * (bh + gy) }]));
+  // edges first (under boxes)
+  for (const e of g.edges) {
+    const a = pos.get(e.from), b = pos.get(e.to);
+    if (!a || !b) continue;
+    const acx = a.x + bw / 2, acy = a.y + bh / 2, bcx = b.x + bw / 2, bcy = b.y + bh / 2;
+    const [sx, sy] = clipToBox(acx, acy, bcx, bcy, bw, bh);
+    const [ex, ey] = clipToBox(bcx, bcy, acx, acy, bw, bh);
+    const solid = e.kind === "established";
+    L.draw(solid ? COLOR.teal : e.kind === "hypothesis" ? COLOR.violet : COLOR.neutral);
+    L.pdf.setLineWidth(solid ? 0.5 : 0.4);
+    L.dash(!solid, e.kind === "hypothesis" ? [0.5, 0.9] : [1.4, 1]);
+    L.pdf.line(sx, sy, ex, ey);
+    L.dash(false);
+    if (solid && L.pdf.triangle) {
+      const len = Math.hypot(ex - sx, ey - sy) || 1, ux = (ex - sx) / len, uy = (ey - sy) / len;
+      L.fill(COLOR.teal);
+      L.pdf.triangle(ex, ey, ex - ux * 2.4 - uy * 1.1, ey - uy * 2.4 + ux * 1.1, ex - ux * 2.4 + uy * 1.1, ey - uy * 2.4 - ux * 1.1, "F");
+    }
+    const mx = (sx + ex) / 2, my = (sy + ey) / 2;
+    L.fill(COLOR.white);
+    L.draw(solid ? COLOR.teal : COLOR.neutral);
+    L.pdf.setLineWidth(0.3);
+    if (L.pdf.circle) L.pdf.circle(mx, my, 2.1, "FD");
+    else L.pdf.rect(mx - 2, my - 2, 4, 4, "FD");
+    L.font(6.8, true, COLOR.navy);
+    L.pdf.text(L.t(String(e.n)), mx, my + 0.9, { align: "center" });
+  }
+  for (const n of g.nodes) {
+    const p = pos.get(n.id)!;
+    const tone = TONE_OF[n.priority];
+    L.box(p.x, p.y, bw, bh, tone.soft, tone.stroke, 2, 0.45);
+    L.lines([L.t(n.kicker ?? SHORT_PRIORITY[n.priority] + (n.dataCheck && n.priority !== "DATA_CHECK" ? " · DATA CHECK" : ""))], p.x + 2.4, p.y + 1.2, 6, true, tone.text, 1.15);
+    const title = L.capped(n.title, 8.2, bw - 4.8, 2, true);
+    L.lines(title, p.x + 2.4, p.y + 4.4, 8.2, true, COLOR.navy, 1.15);
+    L.lines(L.capped(n.headline, 6.4, bw - 4.8, title.length > 1 ? 2 : 3), p.x + 2.4, p.y + 4.4 + title.length * lh(8.2, 1.15) + 0.3, 6.4, false, [51, 65, 85], 1.15);
+  }
+  L.y = top + h + 3;
+  for (const x of legend) {
+    L.fill(COLOR.white);
+    L.draw(COLOR.navy);
+    L.pdf.setLineWidth(0.3);
+    if (L.pdf.circle) L.pdf.circle(MX + 2.2, L.y + 1.7, 2, "FD");
+    L.font(6.6, true, COLOR.navy);
+    L.pdf.text(L.t(String(x.n)), MX + 2.2, L.y + 2.6, { align: "center" });
+    L.y += L.lines(x.text, MX + 6, L.y, 7.4, false, COLOR.ink) + 0.8;
+  }
+  L.y += 2;
+}
+
+function integratedPatterns(L: P, r: PremiumReport) {
+  L.sectionBreak(0.6);
+  L.h2("Integrated health assessment", 90);
+  L.para("Findings are read as connected patterns. Box colour = warning priority. Solid teal arrows: established biological links with a source. Dashed grey: co-occurrence in this period (not cause). Dotted violet: hypothesis. Numbers refer to the legend below the map.", 8.2, [51, 65, 85]);
+  if (r.patternGraph.nodes.length >= 2) patternMap(L, r.patternGraph);
+  L.h3("Overall picture", 20);
+  for (const s of r.synthesis) L.para(s, 8.9);
+}
+
+// ------------------------------------------------------------------ P60: structured pattern assessment
+
+function labelledRows(L: P, rows: [string, string][], header: (cont: boolean) => void) {
+  const labelW = 27, bodyW = CW - labelW - 4, size = 7.9;
+  for (const [label, text] of rows) {
+    if (!text.trim()) continue;
+    const body = text.split("\n").flatMap((p) => L.wrap(p, size, bodyW));
+    let i = 0;
+    while (i < body.length) {
+      const fit = Math.max(1, Math.floor((BOTTOM - L.y - 1.6) / lh(size)));
+      if (fit < Math.min(3, body.length - i)) { L.newPage(); header(true); continue; }
+      const chunk = body.slice(i, i + fit);
+      const h = Math.max(chunk.length * lh(size), L.wrap(i ? `${label} (cont.)` : label.toUpperCase(), 6.9, labelW - 2, true).length * lh(6.9)) + 1.4;
+      L.lines(L.wrap(i ? `${label} (cont.)` : label.toUpperCase(), 6.9, labelW - 2, true), MX + 2, L.y + 0.4, 6.9, true, COLOR.teal);
+      L.lines(chunk, MX + labelW + 2, L.y + 0.2, size);
+      L.y += h;
+      i += chunk.length;
+      L.draw([241, 245, 249]);
+      L.pdf.setLineWidth(0.2);
+      L.pdf.line(MX, L.y - 0.5, MX + CW, L.y - 0.5);
+      if (i < body.length) { L.newPage(); header(true); }
+    }
+  }
+}
+
+function patternAssessment(L: P, r: PremiumReport, p: ClinicalPattern, idx: number) {
+  const tone = TONE_OF[p.priority];
+  const bullets = (xs: readonly string[]) => xs.map((x) => `• ${x}`).join("\n");
+  const related = (r.patternConcerns?.[p.id] ?? []).map((id) => r.concerns.find((c) => c.concernId === id)).filter((c): c is NonNullable<typeof c> => Boolean(c));
+  const hyp = p.hypotheses.map((h) => h.replace(/^Hypothesis: /, "").toLowerCase());
+  const alternatives = [...new Set(related.flatMap((c) => c.alternatives))].filter((a) => !hyp.some((h) => h.includes(a.toLowerCase().slice(0, 24)))).slice(0, 4);
+  const status = related.map((c) => r.base.review.statuses[c.concernId]?.label).find((x) => x && !x.startsWith("Pending")) ?? "Pending Ground Medical review (session review — not persisted)";
+  const extraSupport = p.supporting.filter((x) => !p.observed.includes(x));
+  const rows: [string, string][] = [
+    ["Warning priority", `${p.priorityLabel} (rule ${p.rules.join(", ")}). ${p.rationale}${p.dataCheck && p.priority !== "DATA_CHECK" ? " A DATA CHECK also applies; it does not lower this priority." : ""}`],
+    ["Clinical class", bullets(r.patternClasses?.[p.id] ?? [])],
+    ["Observed", bullets(p.observed)],
+    ["Measurement quality", bullets(p.measurement)],
+    ["Clinical pattern", p.pattern],
+    ["Hypotheses", bullets(p.hypotheses.map((h) => h.replace(/^Hypothesis: (.)/, (_m, c: string) => c.toUpperCase())))],
+    ["Also supporting", bullets(extraSupport)],
+    ["Contradicting / limiting", bullets(p.contradicting)],
+    ["Alternatives (P58)", bullets(alternatives)],
+    ["Missing context", bullets(p.missing)],
+    ["Confirm", bullets(p.confirm)],
+    ["Sources · GM status", `${p.sources.map((s) => shortSource(s)).join("; ")}. Ground Medical: ${status}.`],
+  ];
+  const header = (cont: boolean) => {
+    const title = L.capped(`${idx + 1} · ${p.title}${cont ? " (continued)" : ""}`, 10.4, CW - 70, 2, true);
+    const hh = title.length * lh(10.4) + 3.2;
+    L.box(MX, L.y, CW, hh, tone.soft, undefined, 2);
+    L.fill(tone.stroke);
+    L.pdf.rect(MX, L.y + 0.3, 1.4, hh - 0.6, "F");
+    L.lines(title, MX + 3.4, L.y + 1.4, 10.4, true, COLOR.navy);
+    let bx = MX + CW - 2;
+    const pill = WARNING_PRIORITY_LABEL[p.priority];
+    const pw = L.width(pill, 6.6, true) + 5.6;
+    bx -= pw;
+    badge(L, PRIORITY_BADGE[p.priority], pill, bx, L.y + 1.6);
+    if (p.dataCheck && p.priority !== "DATA_CHECK") { const cw = L.width("DATA CHECK", 6.6, true) + 3; badge(L, "check", "DATA CHECK", bx - cw - 1.5, L.y + 1.6); }
+    L.y += hh + 0.8;
+  };
+  L.ensure(40);
+  header(false);
+  labelledRows(L, rows, header);
+  L.y += 4;
 }
 
 // ------------------------------------------------------------------ charts
@@ -666,7 +883,10 @@ function longitudinal(L: P, r: PremiumReport) {
     pair.forEach((c, j) => chartPanel(L, c, MX + j * (COL2 + GUT), L.y, COL2, false));
     L.y += h + GUT;
   }
-  const single = r.charts.filter((c) => c.base.kind === "single");
+  const inPattern = new Set((r.patterns?.patterns ?? []).flatMap((p) => p.recordIds));
+  const notableSingle = (c: PremiumChart) => !r.patterns?.patterns.length || c.highReview || c.dataCheck || c.pointClasses.some((p) => p.cls !== "NEUTRAL") || r.rows.some((x) => x.metricId === c.base.metricId && x.unit === c.base.unit && inPattern.has(x.recordId));
+  const single = r.charts.filter((c) => c.base.kind === "single" && notableSingle(c));
+  const hiddenSingles = r.charts.filter((c) => c.base.kind === "single").length - single.length;
   const groups = new Map<string, PremiumChart[]>();
   for (const c of single) {
     const g = r.rows.find((x) => x.metricId === c.base.metricId && x.unit === c.base.unit)?.group ?? "other";
@@ -681,7 +901,8 @@ function longitudinal(L: P, r: PremiumReport) {
     pair.forEach(([t, cs], j) => singlePanel(L, t, cs, MX + j * (COL2 + GUT), L.y, COL2, false));
     L.y += h + GUT;
   }
-  if (r.base.charts.omitted.length) L.para(`${r.base.charts.omitted.length} further result(s) are shown in the results table only.`, 7.6, COLOR.muted);
+  const tableOnly = r.base.charts.omitted.length + hiddenSingles;
+  if (tableOnly) L.para(`${tableOnly} further unflagged, unclassified result(s) are shown in the results table only.`, 7.6, COLOR.muted);
 }
 
 // ------------------------------------------------------------------ preliminary medical assessment
@@ -690,8 +911,12 @@ function assessment(L: P, r: PremiumReport) {
   L.sectionBreak(0.45);
   L.h2("Preliminary Medical Assessment — For Ground Medical Review", 40);
   L.para("Automated preliminary assessment generated from the recorded measurements. It lists possible conditions for a qualified clinician to evaluate; it is not a physician-certified diagnosis and assigns no probabilities. Symptoms, examination findings, medications, age and sex were not available unless shown.", 7.9, [51, 65, 85]);
-  if (!r.concerns.length) { L.para("No preliminary clinical concern was identified in this period.", 9); return; }
-  r.concerns.forEach((c, idx) => {
+  const P = r.patterns?.patterns ?? [];
+  P.forEach((p, idx) => patternAssessment(L, r, p, idx));
+  const rest = r.concerns.filter((c) => !(r.coveredConcerns ?? []).includes(c.concernId));
+  if (!P.length && !rest.length) { L.para("No preliminary clinical concern was identified in this period.", 9); return; }
+  rest.forEach((c, i) => {
+    const idx = P.length + i;
     const decision = r.priorities?.[c.concernId];
     const TINT: Record<string, RGB> = { red: COLOR.redSoft, amber: COLOR.amberSoft, purple: COLOR.violetSoft, green: COLOR.greenSoft, neutral: COLOR.panel };
     const pill = decision
@@ -768,14 +993,19 @@ function recommendations(L: P, r: PremiumReport) {
   for (let i = 0; i < cols.length; i += 2) {
     const pair = cols.slice(i, i + 2);
     const h = Math.max(...pair.map((c) => card(c, 0, 0, COL2, true)));
-    if (h <= BOTTOM - TOP) {
+    if (h <= L.room() || (h <= BOTTOM - TOP && L.room() < (BOTTOM - TOP) * 0.4)) {
       L.ensure(h);
       pair.forEach((c, j) => card(c, MX + j * (COL2 + GUT), L.y, COL2, false));
       L.y += h + GUT;
     } else {
+      // P60: flow the pair as lists (no half-empty page before a tall card pair).
       for (const c of pair) {
-        L.h3(`${c.column}`);
-        for (const it of c.items) L.para(`${it.authorization === "clinician_required" ? "[GM] " : ""}${it.text} → ${it.basis.join("; ")}`, 8.1);
+        L.h3(`${c.column}`, 14);
+        for (const it of c.items) {
+          L.para(`${it.authorization === "clinician_required" ? "GM · " : "• "}${it.text}`, 8.1, COLOR.ink, MX + 3, CW - 3);
+          L.y -= 1.2;
+          L.para(`→ ${it.basis.join("; ")}`, 7, COLOR.muted, MX + 6, CW - 6);
+        }
       }
     }
   }
@@ -789,7 +1019,7 @@ function results(L: P, r: PremiumReport) {
   const c = r.counts;
   L.para(`${c.observations} observations in ${c.series} biomarker series from ${c.examinationDates} examination date(s), exactly as recorded (no unit conversion). Classes use approved criteria${r.options.provisionalActive ? " or, where marked PROVISIONAL, literature criteria for this synthetic demonstration" : ""}; review priority and data quality are shown separately.`, 7.8, [51, 65, 85]);
   const cols = [
-    { k: "Measurement", w: 0.25 }, { k: "Value", w: 0.13 }, { k: "Date", w: 0.09 }, { k: "Class", w: 0.13 }, { k: "Review / data", w: 0.13 }, { k: "Criterion & limitation", w: 0.27 },
+    { k: "Measurement", w: 0.28 }, { k: "Value", w: 0.14 }, { k: "Date", w: 0.07 }, { k: "Class", w: 0.13 }, { k: "Review / data", w: 0.11 }, { k: "Criterion", w: 0.27 },
   ].map((x) => ({ ...x, w: x.w * CW }));
   const xs = cols.map((_, i) => MX + cols.slice(0, i).reduce((s, x) => s + x.w, 0));
   const head = () => {
@@ -798,9 +1028,11 @@ function results(L: P, r: PremiumReport) {
     cols.forEach((col, i) => L.lines([L.t(col.k)], xs[i]! + 1.4, L.y + 0.9, 7.1, true, COLOR.white, 1.2));
     L.y += 5.6;
   };
+  const crit = (x: ResultRow) => (x.criterionShort === undefined ? `${x.criterionText}${x.limitation ? ` ${x.limitation}` : ""}` : `${x.criterionShort || "—"}${x.notes?.length ? ` ${x.notes.join(" ")}` : ""}`);
   const rowH = (x: ResultRow) => {
-    const a = L.wrap(x.name, 7.7, cols[0]!.w - 2.5).length, b = L.wrap(`${x.criterionText}${x.limitation ? ` ${x.limitation}` : ""}`, 6.9, cols[5]!.w - 2.5).length;
-    return Math.max(a * lh(7.7), b * lh(6.9), 5) + 1.8;
+    const a = L.wrap(x.name, 7.7, cols[0]!.w - 2.5).length, b = L.wrap(crit(x), 6.9, cols[5]!.w - 2.5).length;
+    const v = L.capped(`${x.valueText} ${x.unit}`, 7.7, cols[1]!.w - 2.5, 2, true).length;
+    return Math.max(a * lh(7.7), v * lh(7.7), b * lh(6.9), 4.3) + 1.5;
   };
   L.ensure(20);
   head();
@@ -824,20 +1056,24 @@ function results(L: P, r: PremiumReport) {
       if (x.axes.review.value === "HIGH") bx += badge(L, "flag", "HIGH", bx, L.y + 0.8) + 1;
       if (x.axes.dataQuality.value === "DATA_QUALITY_WARNING") badge(L, "check", "CHECK", bx, L.y + 0.8);
       else if (x.axes.review.value !== "HIGH") L.lines(["—"], bx, L.y + 0.5, 7.4, false, COLOR.muted);
-      L.lines(L.wrap(`${x.criterionText}${x.limitation ? ` ${x.limitation}` : ""}`, 6.9, cols[5]!.w - 2.5), xs[5]! + 1.2, L.y + 0.6, 6.9, false, [51, 65, 85]);
+      L.lines(L.wrap(crit(x), 6.9, cols[5]!.w - 2.5), xs[5]! + 1.2, L.y + 0.6, 6.9, false, [51, 65, 85]);
       L.y += h;
       L.draw(COLOR.rule);
       L.pdf.setLineWidth(0.15);
       L.pdf.line(MX, L.y - 0.4, MX + CW, L.y - 0.4);
     }
   }
+  if (r.tableNotes?.length) {
+    L.y += 1.5;
+    for (const n of r.tableNotes) L.para(n, 6.9, COLOR.muted);
+  }
 }
 
 function methodology(L: P, r: PremiumReport) {
-  L.y += 3;
-  L.h2("Methodology note", 30);
   const c = r.counts;
+  const cov = r.coverage;
   const items = [
+    ...(r.census ? [`Data source and census. ${cov ? `Read from this device's encrypted local store: ${cov.readRecords} record(s) read${cov.storedRecords !== null ? ` of ${cov.storedRecords} stored` : ""}${cov.complete === true ? " (complete)" : cov.complete === false ? " — INCOMPLETE READ; regenerate before use" : ""}. ` : ""}Census ${r.census.version}: ${r.census.observations} observations, ${r.census.series} series, dates ${r.census.dates.join(", ")}; SHA-256 ${r.census.sha256}. Records held only on another device or only in the cloud are not included unless imported through the explicit cross-device sync. Generator ${r.generator ?? r.version} · Evidence ID ${r.header.evidenceId}.`] : []),
     `Data. ${c.observations} observations · ${c.series} biomarker series (exact catalog identity + unit) · ${c.examinationDates} examination date(s) · ${c.comparedSeries} series compared between examinations${c.excluded.length ? ` · excluded: ${c.excluded.map((e) => `${e.n} ${e.reason}`).join("; ")}` : ""}. Values exactly as recorded; no unit conversion or interpolation. ${r.header.provenanceLabel}.`,
     "Calculations. Changes only between consecutive observations of the same identity and unit; the full trajectory, including intermediate peaks and troughs, is reported.",
     `Criteria. ${c.approvedCriteria} Researcher-approved criteria available. ${r.options.provisionalActive ? `${r.demonstrationLabel}: provisional literature interpretation ON (synthetic demonstration only; marked PROVISIONAL; never approved classifications or validated alerts). ` : "Provisional literature interpretation OFF. "}General-population criteria are not NASA flight limits.`,
@@ -845,11 +1081,25 @@ function methodology(L: P, r: PremiumReport) {
       const used = [...new Map(r.rows.filter((x) => x.identityRoute?.kind === "demonstration_mapping").map((x) => [x.metricId, `${x.name} (${x.metricId} → ${x.identityRoute!.target}, ${x.unit})`])).values()];
       return `Synthetic identity mappings. ${demonstrationMappings().length} owner-directed mappings re-verified against the repository (same concept, identical unit, same domain, unique target, named mission); not Researcher-approved and never used for approved classification, real data or unit conversion. Used in this report: ${used.length ? used.join("; ") : "none"}.`;
     })()] : []),
-    ...(Object.keys(r.priorities ?? {}).length ? [`Warning priority (panel colour; separate from clinical class; owner-directed, pending Researcher review). ${WARNING_PRIORITY_RULES.map((x) => `${x.id} ${WARNING_PRIORITY_LABEL[x.priority]}: ${x.text}`).join(" ")} NEUTRAL: ${WARNING_PRIORITY_MEANING.INSUFFICIENT_EVIDENCE}`] : []),
+    ...(Object.keys(r.priorities ?? {}).length && r.patterns?.patterns.length && r.concerns.every((c) => (r.coveredConcerns ?? []).includes(c.concernId)) ? ["Warning priority (panel colour) is a separate axis from clinical class. Every P58 concern in this report is represented by a P60 pattern, so the P59 rules WP-1 to WP-5 are not shown here; they remain in force for concerns that no pattern covers."] : []),
+    ...(Object.keys(r.priorities ?? {}).length && !(r.patterns?.patterns.length && r.concerns.every((c) => (r.coveredConcerns ?? []).includes(c.concernId))) ? [`Warning priority (panel colour; separate from clinical class; owner-directed, pending Researcher review). ${WARNING_PRIORITY_RULES.map((x) => `${x.id} ${WARNING_PRIORITY_LABEL[x.priority]}: ${x.text}`).join(" ")} NEUTRAL: ${WARNING_PRIORITY_MEANING.INSUFFICIENT_EVIDENCE}`] : []),
+    ...(r.patterns ? [`${r.patterns.basis}${r.patterns.active ? " Priority rules: PP-1 any vital sign in a NEWS2 3-point band; PP-2 two independent findings converging on the same or adjacent dates; PP-3 sodium change above 10 mmol/L within one day with abnormal values at both ends (plus DATA CHECK); PP-4 single threshold or review change (monitoring); PP-5 all contributing results held (data check)." : ""}`] : []),
     `Automated assessment. ${r.base.clinical.aiStatus} Review priority and data quality are separate from clinical classification. Not a diagnosis; no medication or dose advice.`,
-    `Generator ${r.version} · Evidence ID ${r.header.evidenceId}.`,
+    ...(r.census ? [] : [`Generator ${r.version} · Evidence ID ${r.header.evidenceId}.`]),
   ];
-  for (const it of items) L.para(`• ${it}`, 7.6, [51, 65, 85]);
+  const used = [...new Set((r.patterns?.patterns ?? []).flatMap((p) => p.sources))];
+  const refs = used.map((id) => `${shortSource(id)} — ${sourceCitation(id) ?? id}`);
+  // Keep the methodology together when it fits on one page (no near-empty trailing page).
+  const size = 7.4, refSize = 6.8;
+  const total = 12 + items.reduce((s, it) => s + L.wrap(`• ${it}`, size, CW).length * lh(size) + 1.6, 0) + (refs.length ? 9 + refs.reduce((s, x) => s + L.wrap(x, refSize, CW).length * lh(refSize) + 1.6, 0) : 0);
+  if (total > L.room() - 3 && total <= BOTTOM - TOP) L.newPage();
+  else L.y += 3;
+  L.h2("Methodology note", 30);
+  for (const it of items) L.para(`• ${it}`, size, [51, 65, 85]);
+  if (refs.length) {
+    L.h3("References for the cross-domain patterns", 10);
+    for (const x of refs) L.para(x, refSize, [71, 85, 105]);
+  }
 }
 
 // ------------------------------------------------------------------ header / footer pass and entry points

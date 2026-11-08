@@ -104,7 +104,11 @@ export async function listBoneEntries(
   crewMemberId: string,
   profile: MeasurementProfile = BONE_MEASUREMENT_PROFILE,
 ): Promise<BoneHealthEntry[]> {
-  const records = await getOfflineMissionStore().list(1000);
+  // P60: read every stored record (count-based) so entries older than the newest 1000 records of
+  // all missions are never silently dropped; stores without countRecords keep the 1000-record page.
+  const store = getOfflineMissionStore();
+  const total = typeof store.countRecords === "function" ? await store.countRecords() : 0;
+  const records = await store.list(Math.max(1000, total));
   const versions = records
     .filter(
       (record) =>

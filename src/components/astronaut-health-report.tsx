@@ -478,11 +478,13 @@ export function AstronautHealthReport() {
         approved: criteriaResolution.approved,
         missionId: reviewScope.missionId,
         options: { provisionalLiterature: synthetic && demonstrationMode, demonstrationMappings: synthetic && demonstrationMode },
+        // P60: loader coverage (records read from this device's encrypted store) for the methodology census.
+        coverage: inputs.coverage ?? null,
       });
     } catch {
       return null; // the P58 professional PDF remains available as the fallback
     }
-  }, [professionalReport, unified, biomarkerAssessment, reviewScope, criteriaResolution, provenance, demonstrationMode]);
+  }, [professionalReport, unified, biomarkerAssessment, reviewScope, criteriaResolution, provenance, demonstrationMode, inputs.coverage]);
   const [appendixOpen, setAppendixOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash === "#ground-medical-attestation") setAppendixOpen(true);

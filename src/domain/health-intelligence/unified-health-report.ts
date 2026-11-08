@@ -443,6 +443,8 @@ export interface UnifiedReportInputs {
   domainEntries: Partial<Record<MeasurementDomainId, readonly BoneHealthEntry[]>>;
   unifiedObservations: readonly UnifiedObservation[];
   deviceRecords: readonly RawOfflineRecord[];
+  /** P60: how many stored records the loader read (never used to build rows). */
+  coverage?: import("./p60-observation-census").ReportSourceCoverage;
 }
 
 export function buildUnifiedHealthReport(
