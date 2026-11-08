@@ -390,7 +390,7 @@
         {
           "category": "nutrition",
           "authorization": "clinician_required",
-          "text": "Ground Medical should review calcium and vitamin D adequacy; MITOCHONDRIA does not suggest supplements or doses."
+          "text": "Ground Medical should review calcium and vitamin D adequacy; any decision about supplementation belongs to Ground Medical."
         },
         {
           "category": "further_examination",
