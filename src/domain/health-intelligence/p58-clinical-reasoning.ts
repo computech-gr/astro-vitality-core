@@ -32,6 +32,7 @@ import {
 } from "./p56-pattern-library";
 import { bundledCriteriaRegistry, sourceOf, type CriteriaRegistry, type ReferenceCriterion } from "./p57-reference-criteria";
 import { redactProhibitedNames } from "./report-identity-redaction";
+import { aiClaimProblem, type ClaimContext } from "./p571-ai-claim-guard";
 import { observationDay } from "./observation-date";
 
 export const CLINICAL_SECTION_TITLE = "Preliminary Clinical Assessment — Pending Ground Medical Review";
@@ -484,8 +485,17 @@ export function validateClinicalAi(raw: unknown, p: ClinicalPacket): { ok: true;
   if (!r || r.schemaVersion !== CLINICAL_AI_SCHEMA_VERSION) return { ok: false, reason: "The AI response did not match the required structure." };
   const corpus = new Set(numbersIn(JSON.stringify(p)));
   const rejected: { section: string; text: string; reason: string }[] = [];
+  // P57.1 additive guard: no foreign citations, no threshold language without an applied approved
+  // criterion (deterministic severities exist only from approved criteria), no contradicting status.
+  const claimCtx: ClaimContext = {
+    allowedCitations: [...new Set(p.concerns.flatMap((c) => c.criteria))],
+    approvedCriterionApplied: p.items.some((i) => i.severity !== "neutral"),
+    clinicalClasses: [...new Set(p.items.map((i) => (i.severity === "red" ? "RED" : i.severity === "amber" ? "AMBER" : i.severity === "normal" ? "NORMAL" : "NEUTRAL") as ClaimContext["clinicalClasses"][number]))],
+  };
   const problem = (t: string): string | null => {
     if (t.length > MAX) return "statement too long";
+    const claim = aiClaimProblem(t, claimCtx);
+    if (claim) return claim;
     if (CONFIRMED.test(t)) return "asserts a confirmed diagnosis";
     if (PROBABILITY.test(t)) return "states a probability or confidence";
     if (INVENTED.test(t)) return "refers to history, symptoms or examinations that are not recorded";
