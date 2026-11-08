@@ -495,7 +495,11 @@ export function P37CatalogPanel() {
             missionLabel={`${mission.missionName} (${mission.missionCode})`}
           />
 
-          <P38BulkDemoResearcher key={`bulk-${mission.missionId}`} missionId={mission.missionId} />
+          <P38BulkDemoResearcher
+            key={`bulk-${mission.missionId}`}
+            missionId={mission.missionId}
+            missionLabel={`${mission.missionName} (${mission.missionCode})`}
+          />
 
           <ScientificApproveWorkspace
             mission={mission}
