@@ -1,0 +1,698 @@
+{
+  "schema": "mitochondria.p57-reference-criteria.v1",
+  "version": 1,
+  "status": "P571_CANDIDATES_NOT_BUNDLED",
+  "note": "P57.1 candidate criteria in the exact P57 schema. This file is NOT imported by the application: it is validated by tests only. Each candidate needs Researcher review; to make one approvable it must be merged into data/scientific/p57-reference-criteria.v1.json through a reviewed patch (see IMPLEMENTATION_PLAN.md). Candidates without a catalog identity remain unapprovable. All are terrestrial general-population criteria; none is a NASA flight rule.",
+  "retrievedAt": "2026-11-08",
+  "kinds": {
+    "reference_interval": "Range observed in a defined reference population (usually laboratory- and method-specific). Describes typical values, not disease.",
+    "diagnostic_threshold": "Published cut point used, with stated confirmation requirements, as a criterion for a diagnosis. Meeting it is never itself a confirmed diagnosis.",
+    "risk_category": "Published category boundaries used to stratify risk in a defined population. Not a diagnosis and not a reference interval.",
+    "action_threshold": "Published value above or below which the source recommends a specific follow-up action (for example repeat testing).",
+    "critical_limit": "Laboratory critical (panic) value requiring immediate clinician notification. None is seeded: no verified source was retrieved.",
+    "longitudinal_review_rule": "Rule about change between examinations used for review triage. The existing P56.1 rules live in data/scientific/p56-review-priority-rules.v1.json and are not duplicated here; they never set RED, AMBER or NORMAL.",
+    "mission_operational_limit": "Astronaut mission-specific operational limit. None is seeded: no verified astronaut-specific numerical criterion was retrieved."
+  },
+  "sources": [
+    {
+      "id": "aasm-srs-sleep-2015",
+      "organization": "American Academy of Sleep Medicine and Sleep Research Society",
+      "publication": "2015; J Clin Sleep Med 11(6):591-592",
+      "title": "Recommended Amount of Sleep for a Healthy Adult (joint consensus statement; Watson NF et al.)",
+      "url": "https://www.aasm.org/resources/pdf/adultsleepdurationconsensus.pdf",
+      "doi": "10.5664/jcsm.4758",
+      "publicationDate": "2015; J Clin Sleep Med 11(6):591-592",
+      "documentType": "Consensus statement",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "acc-aha-2025-bp-press",
+      "organization": "American College of Cardiology / American Heart Association",
+      "publication": "14 August 2025; guideline published in Circulation, Hypertension and JACC",
+      "title": "New High Blood Pressure Guideline Emphasizes Prevention, Early Treatment to Reduce CVD Risk (press release for the 2025 AHA/ACC high blood pressure guideline)",
+      "url": "https://www.acc.org/about-acc/press-releases/2025/08/13/20/03/new-high-blood-pressure-guideline-emphasizes-prevention-early-treatment-to-reduce-cvd-risk",
+      "doi": null,
+      "publicationDate": "14 August 2025; guideline published in Circulation, Hypertension and JACC",
+      "documentType": "Society press release summarising a clinical practice guideline",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "ese-hyponatraemia-2014",
+      "organization": "European Society of Endocrinology / ESICM / ERA-EDTA (Hyponatraemia Guideline Development Group)",
+      "publication": "2014; Eur J Endocrinol 170(3):G1",
+      "title": "Clinical practice guideline on diagnosis and treatment of hyponatraemia (Spasovski G et al.)",
+      "url": "https://academic.oup.com/ejendo/article/170/3/G1/6668028",
+      "doi": "10.1530/EJE-13-1020",
+      "publicationDate": "2014; Eur J Endocrinol 170(3):G1",
+      "documentType": "Joint European clinical practice guideline",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "nih-ods-vitamin-d",
+      "organization": "NIH Office of Dietary Supplements",
+      "publication": "Page last modified 20 October 2026 (HTTP metadata)",
+      "title": "Vitamin D — Fact Sheet for Health Professionals",
+      "url": "https://ods.od.nih.gov/factsheets/vitaminD-healthProfessional/",
+      "doi": null,
+      "publicationDate": "Page last modified 20 October 2026 (HTTP metadata)",
+      "documentType": "Government health-professional fact sheet",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "ukka-hyperkalaemia-2026",
+      "organization": "UK Kidney Association (UKKA)",
+      "publication": "Updated July 2026 (earlier versions July 2020, October 2023)",
+      "title": "Clinical Practice Guideline – Management of Hyperkalaemia in Adults (cover: Treatment of Acute Hyperkalaemia in Adults)",
+      "url": "https://www.ukkidney.org/sites/default/files/documents/FINAL%20VERSION%20-%20UKKA%20CLINICAL%20PRACTICE%20GUIDELINE%20-%20MANAGEMENT%20OF%20HYPERKALAEMIA%20IN%20ADULTS%20-%20UPDATED%20JULY%202026_0.pdf",
+      "doi": null,
+      "publicationDate": "Updated July 2026 (earlier versions July 2020, October 2023)",
+      "documentType": "National professional clinical practice guideline (adopts the ERC definition)",
+      "retrievedAt": "2026-11-08"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "p571-ukka2026-hyperkalaemia-severity",
+      "kind": "diagnostic_threshold",
+      "title": "Hyperkalaemia severity classification (UKKA 2026, adopting the ERC definition)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-071",
+        "catalogName": "Potassium",
+        "unit": "mmol/L",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "Serum or lithium-heparin plasma (specimen type must be recorded)",
+      "method": "Laboratory analyser or point-of-care blood gas analyser",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "mild",
+          "label": "Mild hyperkalaemia (UKKA)",
+          "lower": 5.5,
+          "lowerInclusive": true,
+          "upper": 5.9,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "Serum potassium 5.5–5.9 mmol/L is classified by the UKKA guideline as mild hyperkalaemia; pseudohyperkalaemia must be excluded."
+        },
+        {
+          "id": "moderate",
+          "label": "Moderate hyperkalaemia (UKKA)",
+          "lower": 6.0,
+          "lowerInclusive": true,
+          "upper": 6.4,
+          "upperInclusive": true,
+          "severity": "red",
+          "direction": "above",
+          "meaning": "Serum potassium 6.0–6.4 mmol/L is classified by the UKKA guideline as moderate hyperkalaemia."
+        },
+        {
+          "id": "severe",
+          "label": "Severe hyperkalaemia (UKKA)",
+          "lower": 6.5,
+          "lowerInclusive": true,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "above",
+          "meaning": "Serum potassium of 6.5 mmol/L or higher is classified by the UKKA guideline as severe hyperkalaemia."
+        }
+      ],
+      "uncoveredMeaning": "Values below 5.5 mmol/L are not categorized by this criterion, so no NORMAL status is derived from it; low potassium (hypokalaemia) is not covered. Values between published bounds (for example 5.95) are not classified.",
+      "highValues": "Higher potassium in the stated ranges meets the guideline's hyperkalaemia severity classes, subject to exclusion of pseudohyperkalaemia and clinical confirmation.",
+      "lowValues": "This criterion makes no statement about low potassium.",
+      "limitations": [
+        "The source states there is no universally accepted definition of hyperkalaemia.",
+        "Pseudohyperkalaemia (haemolysis, long transit, delayed separation) must be excluded; unexpected results should be repeated.",
+        "Colour mapping (mild = AMBER, moderate and severe = RED) is a proposal of this package and needs Researcher approval.",
+        "RCUK/ERC 2025 text writes the severe class as '> 6.5' whereas UKKA writes '≥ 6.5'."
+      ],
+      "confirmation": "Repeat measurement with paired lithium-heparin and clotted samples from a large vein with prompt analysis when pseudohyperkalaemia is suspected; clinical assessment by Ground Medical.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "pseudohyperkalaemia_excluded",
+            "text": "Haemolysis, prolonged transit and delayed separation are recorded as excluded for this sample."
+          },
+          {
+            "id": "specimen_type_recorded",
+            "text": "The specimen type (serum or lithium-heparin plasma) is recorded for this sample."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "ukka-hyperkalaemia-2026",
+        "locator": "Introduction (definition and severity classification); Guidelines 3.1, 15.1–15.3",
+        "quote": "It is further classified by severity into mild (5.5-5.9 mmol/l), moderate (6.0-6.4 mmol/l) or severe (≥ 6.5 mmol/l)."
+      },
+      "evidenceQuality": "National professional guideline adopting the ERC definition; ungraded definition.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Guideline PDF retrieved from ukkidney.org; severity sentence matched.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial adult guideline; not a NASA flight rule. Spaceflight fluid shifts and sample handling in flight are not addressed by the source.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1 from the UKKA July 2026 guideline; pending Researcher review; not bundled into the live registry."
+        }
+      ]
+    },
+    {
+      "id": "p571-ese2014-hyponatraemia-biochemical",
+      "kind": "diagnostic_threshold",
+      "title": "Hyponatraemia biochemical severity (ESE/ESICM/ERA-EDTA 2014)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-070",
+        "catalogName": "Sodium",
+        "unit": "mmol/L",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "Serum",
+      "method": "Ion-specific electrode",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "mild",
+          "label": "Mild hyponatraemia (biochemical, ESE)",
+          "lower": 130,
+          "lowerInclusive": true,
+          "upper": 135,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Serum sodium 130 to below 135 mmol/L is classified by the guideline as mild hyponatraemia (biochemical finding)."
+        },
+        {
+          "id": "moderate",
+          "label": "Moderate hyponatraemia (biochemical, ESE)",
+          "lower": 125,
+          "lowerInclusive": true,
+          "upper": 129,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Serum sodium 125–129 mmol/L is classified by the guideline as moderate hyponatraemia (biochemical finding)."
+        },
+        {
+          "id": "profound",
+          "label": "Profound hyponatraemia (biochemical, ESE)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 125,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "below",
+          "meaning": "Serum sodium below 125 mmol/L is classified by the guideline as profound hyponatraemia (biochemical finding)."
+        }
+      ],
+      "uncoveredMeaning": "Values of 135 mmol/L or higher are not categorized by this criterion, so no NORMAL status is derived from it; high sodium (hypernatraemia) is not covered. Values between published bounds (for example 129.5) are not classified.",
+      "highValues": "This criterion makes no statement about high sodium.",
+      "lowValues": "Lower sodium in the stated ranges meets the guideline's biochemical severity classes; symptom severity and acute versus chronic onset are classified separately by the source.",
+      "limitations": [
+        "The source writes mild as 'between 130 and 135'; this candidate encodes the upper bound as below 135 because hyponatraemia is defined below 135 mmol/L. Researcher must confirm.",
+        "Hyperglycaemia must be excluded or sodium corrected for glucose before interpretation (source section 6.2.1.1).",
+        "Wording read from a full-text mirror; re-verify against the publisher PDF before approval.",
+        "2014 guideline; check for later revisions."
+      ],
+      "confirmation": "Confirm with repeat measurement by ion-specific electrode, exclude hyperglycaemia and assess symptoms and onset clinically (Ground Medical).",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "ion_specific_electrode",
+            "text": "The observation records that sodium was measured by ion-specific electrode."
+          },
+          {
+            "id": "hyperglycaemia_excluded",
+            "text": "Hyperglycaemia is recorded as excluded for this sample (or a glucose-corrected sodium is recorded)."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "ese-hyponatraemia-2014",
+        "locator": "Section 6.1.1 (classification based on biochemical severity)",
+        "quote": "We define 'mild' hyponatraemia as a biochemical finding of a serum sodium concentration between 130 and 135 mmol/l"
+      },
+      "evidenceQuality": "Joint European clinical practice guideline; definitions are consensus-based (ungraded).",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Full text read from a mirror PDF and bibliographic data from the OUP landing page; definition sentence matched.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial adult guideline; not a NASA flight rule. Spaceflight fluid and sodium regulation are not addressed by the source.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1; pending Researcher review; not bundled into the live registry."
+        }
+      ]
+    },
+    {
+      "id": "p571-accaha2025-sbp-stage-ranges",
+      "kind": "diagnostic_threshold",
+      "title": "Systolic value in hypertension stage ranges (2025 AHA/ACC guideline, per press release)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-005",
+        "catalogName": "SBP",
+        "unit": "mmHg",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "Not applicable (physiological measurement)",
+      "method": "Validated blood-pressure measurement; averaged readings",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "stage1",
+          "label": "Systolic in stage 1 hypertension range (AHA/ACC 2025)",
+          "lower": 130,
+          "lowerInclusive": true,
+          "upper": 139,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "Systolic 130–139 mmHg is in the stage 1 hypertension range; the overall stage also depends on diastolic pressure."
+        },
+        {
+          "id": "stage2",
+          "label": "Systolic in stage 2 hypertension range (AHA/ACC 2025)",
+          "lower": 140,
+          "lowerInclusive": true,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "above",
+          "meaning": "Systolic of 140 mmHg or higher is in the stage 2 hypertension range."
+        }
+      ],
+      "uncoveredMeaning": "Systolic values below 130 mmHg are not categorized per component: 'normal' and 'elevated' require both systolic and diastolic values, so no NORMAL status is derived. Low blood pressure is not covered.",
+      "highValues": "Systolic values in the stated ranges fall in the guideline's hypertension stages when based on properly averaged readings.",
+      "lowValues": "This criterion makes no statement about low blood pressure.",
+      "limitations": [
+        "Source retrieved is the ACC press release; guideline full text and measurement protocol were not retrieved.",
+        "A single reading never establishes hypertension.",
+        "Per-component evaluation reports the component's stage range only; the overall category is the higher of both components."
+      ],
+      "confirmation": "Confirm with averaged readings on separate occasions using a validated device, as specified by the guideline; Ground Medical decides follow-up.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "bp_averaged_readings",
+            "text": "The observation records that the value is an average of properly measured readings on more than one occasion."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "acc-aha-2025-bp-press",
+        "locator": "Press release, category definitions paragraph",
+        "quote": "stage 1 hypertension is 130-139 mm Hg or 80-89 mm Hg; and stage 2 hypertension is ≥140 mm Hg or ≥90 mm Hg."
+      },
+      "evidenceQuality": "Clinical practice guideline summarized by the issuing society's press release; guideline evidence grades not retrieved.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "ACC press release retrieved; category sentence matched. Guideline full text not retrieved.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial adult guideline; not a NASA flight rule. Microgravity fluid shifts alter blood pressure regulation.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1; pending Researcher review; not bundled into the live registry."
+        }
+      ]
+    },
+    {
+      "id": "p571-accaha2025-dbp-stage-ranges",
+      "kind": "diagnostic_threshold",
+      "title": "Diastolic value in hypertension stage ranges (2025 AHA/ACC guideline, per press release)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-006",
+        "catalogName": "DBP",
+        "unit": "mmHg",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "Not applicable (physiological measurement)",
+      "method": "Validated blood-pressure measurement; averaged readings",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "stage1",
+          "label": "Diastolic in stage 1 hypertension range (AHA/ACC 2025)",
+          "lower": 80,
+          "lowerInclusive": true,
+          "upper": 89,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "Diastolic 80–89 mmHg is in the stage 1 hypertension range; the overall stage also depends on systolic pressure."
+        },
+        {
+          "id": "stage2",
+          "label": "Diastolic in stage 2 hypertension range (AHA/ACC 2025)",
+          "lower": 90,
+          "lowerInclusive": true,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "above",
+          "meaning": "Diastolic of 90 mmHg or higher is in the stage 2 hypertension range."
+        }
+      ],
+      "uncoveredMeaning": "Diastolic values below 80 mmHg are not categorized per component, so no NORMAL status is derived. Low blood pressure is not covered.",
+      "highValues": "Diastolic values in the stated ranges fall in the guideline's hypertension stages when based on properly averaged readings.",
+      "lowValues": "This criterion makes no statement about low blood pressure.",
+      "limitations": [
+        "Source retrieved is the ACC press release; guideline full text and measurement protocol were not retrieved.",
+        "A single reading never establishes hypertension."
+      ],
+      "confirmation": "Confirm with averaged readings on separate occasions using a validated device, as specified by the guideline; Ground Medical decides follow-up.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "bp_averaged_readings",
+            "text": "The observation records that the value is an average of properly measured readings on more than one occasion."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "acc-aha-2025-bp-press",
+        "locator": "Press release, category definitions paragraph",
+        "quote": "stage 1 hypertension is 130-139 mm Hg or 80-89 mm Hg; and stage 2 hypertension is ≥140 mm Hg or ≥90 mm Hg."
+      },
+      "evidenceQuality": "Clinical practice guideline summarized by the issuing society's press release; guideline evidence grades not retrieved.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "ACC press release retrieved; category sentence matched. Guideline full text not retrieved.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial adult guideline; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1; pending Researcher review; not bundled into the live registry."
+        }
+      ]
+    },
+    {
+      "id": "p571-nihods-25ohd-status",
+      "kind": "risk_category",
+      "title": "Serum 25(OH)D status categories (NIH Office of Dietary Supplements)",
+      "domain": "bone",
+      "identity": {
+        "catalogId": null,
+        "catalogName": "25(OH) Vitamin D",
+        "unit": "ng/mL",
+        "status": "NO_CATALOG_IDENTITY"
+      },
+      "specimen": "Serum",
+      "method": "25(OH)D assay (method must be recorded; assays vary considerably)",
+      "population": "Healthy individuals",
+      "demographicConditions": [
+        "General population"
+      ],
+      "bands": [
+        {
+          "id": "deficiency",
+          "label": "Associated with deficiency (NIH ODS)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 12,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Below 12 ng/mL is associated with vitamin D deficiency (NIH ODS Table 1)."
+        },
+        {
+          "id": "inadequate",
+          "label": "Generally considered inadequate (NIH ODS)",
+          "lower": 12,
+          "lowerInclusive": true,
+          "upper": 20,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "12 to below 20 ng/mL is generally considered inadequate for bone and overall health in healthy individuals."
+        },
+        {
+          "id": "adequate",
+          "label": "Generally considered adequate (NIH ODS)",
+          "lower": 20,
+          "lowerInclusive": true,
+          "upper": 50,
+          "upperInclusive": true,
+          "severity": "normal",
+          "direction": "within",
+          "meaning": "20–50 ng/mL is generally considered adequate for bone and overall health in healthy individuals."
+        },
+        {
+          "id": "high",
+          "label": "Linked to potential adverse effects (NIH ODS)",
+          "lower": 50,
+          "lowerInclusive": false,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "Above 50 ng/mL is linked to potential adverse effects, particularly above 60 ng/mL."
+        }
+      ],
+      "uncoveredMeaning": "All numeric values fall in one of the four categories.",
+      "highValues": "Values above 50 ng/mL are linked by the source to potential adverse effects.",
+      "lowValues": "Values below 20 ng/mL are generally considered inadequate; below 12 ng/mL are associated with deficiency.",
+      "limitations": [
+        "The source states that 25(OH)D concentrations associated with deficiency have not been definitively identified.",
+        "The Endocrine Society (2024) states that outcome-specific thresholds have not been established and suggests against routine testing.",
+        "Considerable assay variability."
+      ],
+      "confirmation": "Interpret with calcium, PTH, phosphate and bone-turnover context; Ground Medical decides any action.",
+      "applicability": {
+        "missionLevel": [],
+        "perObservation": [
+          {
+            "id": "assay_method_recorded",
+            "text": "The observation records the 25(OH)D assay method."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "nih-ods-vitamin-d",
+        "locator": "Table 1: Serum 25(OH)D Concentrations and Health",
+        "quote": "Associated with vitamin D deficiency, which can lead to rickets in infants and children and osteomalacia in adults"
+      },
+      "evidenceQuality": "Government fact sheet summarizing Institute of Medicine-based categories; not a graded guideline.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "NIH ODS page retrieved; Table 1 wording matched.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population categories; not a NASA flight rule. Spaceflight lacks UV exposure and crews are supplemented.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1; blocked from approval until the catalog defines 25(OH)D with unit ng/mL; not bundled."
+        }
+      ]
+    },
+    {
+      "id": "p571-aasm2015-sleep-duration",
+      "kind": "risk_category",
+      "title": "Habitual adult sleep duration (AASM/SRS consensus 2015)",
+      "domain": "behavioral",
+      "identity": {
+        "catalogId": null,
+        "catalogName": "Total sleep time (habitual)",
+        "unit": "h",
+        "status": "NO_CATALOG_IDENTITY"
+      },
+      "specimen": "Not applicable",
+      "method": "Actigraphy, polysomnography or validated diary (method must be recorded)",
+      "population": "Adults aged 18 to 60 years",
+      "demographicConditions": [
+        "Adults aged 18 to 60 years"
+      ],
+      "bands": [
+        {
+          "id": "below",
+          "label": "Below the recommended 7 hours (AASM/SRS)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 7,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Habitual sleep below 7 hours per night is below the consensus recommendation for adults."
+        },
+        {
+          "id": "recommended",
+          "label": "Within the recommendation (AASM/SRS)",
+          "lower": 7,
+          "lowerInclusive": true,
+          "upper": 9,
+          "upperInclusive": true,
+          "severity": "normal",
+          "direction": "within",
+          "meaning": "7 or more hours per night on a regular basis is recommended to promote optimal health."
+        }
+      ],
+      "uncoveredMeaning": "Above 9 hours the source states that health risk is uncertain for most adults, so no category is derived.",
+      "highValues": "Above 9 hours: uncertain; may be appropriate for young adults, people recovering from sleep debt or with illness.",
+      "lowValues": "Habitual sleep below 7 hours is below the recommendation.",
+      "limitations": [
+        "Applies to habitual sleep, not a single night.",
+        "Consensus statement for healthy adults aged 18 to 60."
+      ],
+      "confirmation": "Assess habitual sleep over multiple nights with the recorded method; Ground Medical / behavioural health decide follow-up.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_18_60",
+            "text": "The crew members of this mission are adults aged 18 to 60 years."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "habitual_multi_night",
+            "text": "The value is a habitual average over multiple nights, not a single night."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "aasm-srs-sleep-2015",
+        "locator": "Consensus recommendation",
+        "quote": "Adults should sleep 7 or more hours per night on a regular basis to promote optimal health."
+      },
+      "evidenceQuality": "Joint consensus statement (modified RAND appropriateness method).",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "AASM consensus PDF retrieved; recommendation sentence matched.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population consensus; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1; blocked from approval until the catalog defines total sleep time with unit h; not bundled."
+        }
+      ]
+    }
+  ],
+  "retrievalRecords": [
+    {
+      "organization": "Resuscitation Council UK (ERC 2025)",
+      "url": "https://www.resus.org.uk/print/pdf/node/36442",
+      "retrievedAt": "2026-11-08",
+      "biomarkers": [
+        "cv-071 Potassium (mmol/L) — hypokalaemia"
+      ],
+      "outcome": "NO_NUMERIC_CRITERION_STATED",
+      "note": "States hypokalaemia treatment is guided by severity, symptoms and ECG; no mmol/L thresholds stated."
+    },
+    {
+      "organization": "World Health Organization",
+      "url": "https://www.who.int/publications-detail-redirect/9789240088542",
+      "retrievedAt": "2026-11-08",
+      "biomarkers": [
+        "cv-075 Hemoglobin (g/dL)"
+      ],
+      "outcome": "VALUES_NOT_RETRIEVED_UNIT_MISMATCH",
+      "note": "Landing page lacks values; guideline uses g/L, catalog uses g/dL; no conversion is permitted."
+    },
+    {
+      "organization": "ACC/AHA 2026 dyslipidemia guideline (press release)",
+      "url": "https://acc.org/about-acc/press-releases/2026/03/13/18/01/accaha-issue-updated-guideline-for-managing-lipids-cholesterol",
+      "retrievedAt": "2026-11-08",
+      "biomarkers": [
+        "cv-086 LDL-C",
+        "cv-089 ApoB"
+      ],
+      "outcome": "NO_NUMERIC_CRITERION_STATED",
+      "note": "Gives treatment goals, not classification thresholds; the 2018 thresholds (secondary summary) may be superseded."
+    },
+    {
+      "organization": "Nunan et al. 2010 (PACE)",
+      "url": "https://repository.essex.ac.uk/943/",
+      "retrievedAt": "2026-11-08",
+      "biomarkers": [
+        "cv-026 SDNN",
+        "cv-027 RMSSD"
+      ],
+      "outcome": "NO_NUMERIC_CRITERION_STATED",
+      "note": "'There are currently no normative data for short-term measures of HRV.'"
+    },
+    {
+      "organization": "NASA OCHMO (NASA-STD-3001 Vol 1 Rev C)",
+      "url": "https://standards.nasa.gov/sites/default/files/standards/NASA/C//nasa-std-3001-vol-1-rev-c-signature.pdf",
+      "retrievedAt": "2026-11-08",
+      "biomarkers": [
+        "all priority biomarkers"
+      ],
+      "outcome": "NO_ASTRONAUT_NUMERIC_CRITERION",
+      "note": "Bone (DXA ≥95% of pre-mission) and nutrition-status requirements only; no blood-biomarker thresholds in examined text."
+    }
+  ]
+}

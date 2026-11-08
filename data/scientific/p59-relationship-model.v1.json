@@ -1,0 +1,32 @@
+{
+  "schema": "mitochondria.p59-relationship-model.v1",
+  "version": 1,
+  "status": "PENDING_SCIENTIFIC_REVIEW",
+  "note": "Cross-domain relationship model for the premium report diagram and integrated assessment. Edge classes: ESTABLISHED_MECHANISM (solid arrow, must cite a source or carry 'referencePending'), OBSERVED_CO_OCCURRENCE (dashed, no arrowhead; generated only when both nodes changed or were flagged in the same period), HYPOTHESIS (dashed, labelled 'hypothesis'; generated only when its trigger is satisfied by recorded data). UNSUPPORTED relationships are listed so that AI text asserting them is rejected. Nodes bind exact catalog IDs; demo identities only through explicitly curated aliases.",
+  "nodes": [
+    { "id": "inflammation", "label": "Inflammation", "domain": "immune", "markers": ["cv-092", "cv-091"] },
+    { "id": "clotting", "label": "Clotting markers", "domain": "cardiovascular", "markers": [] },
+    { "id": "lipids", "label": "Lipids", "domain": "cardiovascular", "markers": ["cv-088", "cv-087", "cv-086", "cv-089"] },
+    { "id": "glycaemia", "label": "Glucose / HbA1c", "domain": "cardiovascular", "markers": ["cv-085", "cv-083", "cv-084"] },
+    { "id": "electrolytes", "label": "Fluid & electrolytes", "domain": "cardiovascular", "markers": ["cv-070", "cv-071", "cv-005", "cv-006"] },
+    { "id": "red_cells", "label": "Red cells", "domain": "cardiovascular", "markers": ["cv-075", "cv-076"] },
+    { "id": "bone", "label": "Bone & vitamin D", "domain": "bone", "markers": ["bone-001", "bone-009", "bone-012", "bone-019"] },
+    { "id": "recovery", "label": "Recovery / autonomic", "domain": "behavioral", "markers": ["cv-026", "cv-027", "BSC-001", "BSC-002"] }
+  ],
+  "aliases": { "note": "Researcher-curated exact identity aliases (e.g. demo:ubt-… → node). Empty until curated.", "map": {} },
+  "edges": [
+    { "id": "E1", "from": "inflammation", "to": "clotting", "class": "ESTABLISHED_MECHANISM", "label": "drives acute-phase proteins (CRP, fibrinogen)", "sources": [], "referencePending": true },
+    { "id": "E2", "from": "inflammation", "to": "lipids", "class": "ESTABLISHED_MECHANISM", "label": "raises triglycerides, alters HDL", "sources": ["khovidhunkit-2004"] },
+    { "id": "E3", "from": "red_cells", "to": "glycaemia", "class": "ESTABLISHED_MECHANISM", "label": "altered red-cell turnover distorts HbA1c", "sources": ["ada-soc-2026-s2"] },
+    { "id": "E4", "from": "bone", "to": "bone", "class": "ESTABLISHED_MECHANISM", "label": "spaceflight increases resorption; formation unchanged or reduced", "sources": ["smith-ntrs-2014"], "contextOnly": true },
+    { "id": "E5", "from": "inflammation", "to": "recovery", "class": "OBSERVED_CO_OCCURRENCE", "label": "co-occurs (not causal)", "sources": [] },
+    { "id": "E6", "from": "electrolytes", "to": "red_cells", "class": "HYPOTHESIS", "label": "same-day rise: possible haemoconcentration (hypothesis)", "trigger": { "allIncrease": ["cv-070", "cv-075", "cv-076"], "sameInterval": true }, "sources": [] },
+    { "id": "E7", "from": "glycaemia", "to": "lipids", "class": "OBSERVED_CO_OCCURRENCE", "label": "co-occurs (insulin resistance is a hypothesis)", "sources": [] }
+  ],
+  "unsupported": [
+    "inflammation causes the potassium change",
+    "low vitamin D caused the osteocalcin change",
+    "reduced HRV caused the inflammatory response",
+    "triglyceride peak proves a specific dietary cause"
+  ]
+}

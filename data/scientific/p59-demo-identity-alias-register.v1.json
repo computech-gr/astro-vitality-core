@@ -1,0 +1,3817 @@
+{
+  "schema": "mitochondria.p59-demo-identity-alias-register.v1",
+  "status": "PROPOSED_PENDING_RESEARCHER_APPROVAL",
+  "generatedAt": "2026-11-08",
+  "note": "Proposed register only. NOT read by application code. Each PROPOSED row becomes effective only if a Researcher copies it into data/scientific/p59-provisional-literature-criteria.v1.json demoAliases.map with approvedBy/approvedAt through a reviewed patch. Applies to provisional (synthetic demonstration) mode only; never to approved P57 classification, never to real data. Mission-scoped: demo identities are per-mission.",
+  "method": "All 186 activated entries of the MITO_DEMO_2026 synthetic demo catalog (read-only fixture copy) compared with the production catalogs. PROPOSED_EXACT requires: curated same-analyte name equivalence, identical unit string, same domain, a production identity that defines that unit, and a one-to-one relation. Concepts that are narrower/broader, combined, cross-domain or unit-mismatched are not proposed.",
+  "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+  "missionCode": "MITO_DEMO_2026",
+  "counts": {
+    "NO_PRODUCTION_COUNTERPART": 133,
+    "PROPOSED_CRITERION_SCOPED": 2,
+    "NOT_MAPPABLE_TARGET_HAS_NO_UNIT": 8,
+    "PROPOSED_EXACT": 23,
+    "NOT_MAPPABLE_UNIT_DIFFERS": 12,
+    "AMBIGUOUS_NOT_PROPOSED": 7,
+    "NOT_PROPOSED_DOMAIN_DIFFERS": 1
+  },
+  "rows": [
+    {
+      "demoId": "demo:ubt-efe7e2fb",
+      "displayName": "Sleep efficiency",
+      "unit": "%",
+      "domain": "behavioral",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "criterion:p59-nsf2017-sleep-efficiency",
+      "targetName": "Sleep efficiency",
+      "targetUnit": "%",
+      "status": "PROPOSED_CRITERION_SCOPED",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v77, entrySha256 534cf4ea8b7d…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Provisional criterion concept 'Sleep efficiency' with identical unit '%' and no production catalog unit to bind; alias is criterion-scoped (provisional mode only)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-nsf2017-sleep-efficiency"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-7b25ce69",
+      "displayName": "25-Hydroxyvitamin D",
+      "unit": "ng/mL",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "criterion:p59-nihods-25ohd",
+      "targetName": "25-Hydroxyvitamin D",
+      "targetUnit": "ng/mL",
+      "status": "PROPOSED_CRITERION_SCOPED",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T12:19:13Z, demo catalog v2, entrySha256 8bf531a851a9…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts, tests/domain/p58-professional-report.test.ts",
+        "Name equivalence: Same analyte (25(OH) Vitamin D)",
+        "Provisional criterion concept '25-Hydroxyvitamin D' with identical unit 'ng/mL' and no production catalog unit to bind; alias is criterion-scoped (provisional mode only)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-nihods-25ohd"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-ba9160b9",
+      "displayName": "Apolipoprotein B",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-089",
+      "targetName": "ApoB",
+      "targetUnit": "mg/dL",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v348, entrySha256 171d2f266f3e…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json",
+        "Name equivalence: Same analyte (ApoB)",
+        "Exact unit match 'mg/dL' = catalog 'mg/dL'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-08a9fc70",
+      "displayName": "Arterial stiffness PWV",
+      "unit": "m/s",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-045",
+      "targetName": "PWV",
+      "targetUnit": "m/s",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v262, entrySha256 6e6287c491d3…)",
+        "Name equivalence: Same measure (PWV)",
+        "Exact unit match 'm/s' = catalog 'm/s'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5042fe95",
+      "displayName": "Carotid intima media thickness",
+      "unit": "mm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-044",
+      "targetName": "cIMT",
+      "targetUnit": "mm",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v292, entrySha256 c0d9111fe657…)",
+        "Name equivalence: Same measure (cIMT)",
+        "Exact unit match 'mm' = catalog 'mm'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b6e9b94f",
+      "displayName": "Coronary calcium score",
+      "unit": "Agatston",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-048",
+      "targetName": "CAC score",
+      "targetUnit": "Agatston",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v344, entrySha256 9f81f7c2ea75…)",
+        "Name equivalence: Same measure (CAC score)",
+        "Exact unit match 'Agatston' = catalog 'Agatston'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5d16fcaf",
+      "displayName": "Diastolic blood pressure",
+      "unit": "mmHg",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-006",
+      "targetName": "DBP",
+      "targetUnit": "mmHg",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v300, entrySha256 37c8bc93c3f0…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure (DBP)",
+        "Exact unit match 'mmHg' = catalog 'mmHg'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-nhlbi-low-dbp"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-8296e127",
+      "displayName": "ECG PR interval",
+      "unit": "ms",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-030",
+      "targetName": "PR",
+      "targetUnit": "ms",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v316, entrySha256 bc80cd7b2414…)",
+        "Name equivalence: Same measure (PR)",
+        "Exact unit match 'ms' = catalog 'ms'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b06fd072",
+      "displayName": "ECG QRS duration",
+      "unit": "ms",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-031",
+      "targetName": "QRS",
+      "targetUnit": "ms",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v341, entrySha256 7f72bf954ad7…)",
+        "Name equivalence: Same measure (QRS)",
+        "Exact unit match 'ms' = catalog 'ms'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-33eb23f7",
+      "displayName": "ECG QTc interval",
+      "unit": "ms",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-032",
+      "targetName": "QTc",
+      "targetUnit": "ms",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v280, entrySha256 b62dcaace01f…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure (QTc)",
+        "Exact unit match 'ms' = catalog 'ms'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ea5d2d7c",
+      "displayName": "Endothelial function FMD",
+      "unit": "%",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-046",
+      "targetName": "FMD",
+      "targetUnit": "%",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v370, entrySha256 bd21971a6ddf…)",
+        "Name equivalence: Same measure (FMD)",
+        "Exact unit match '%' = catalog '%'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-aaaf9c39",
+      "displayName": "Exercise workload",
+      "unit": "W",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-064",
+      "targetName": "Workload",
+      "targetUnit": "W",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v333, entrySha256 628e28cc73ef…)",
+        "Name equivalence: Workload",
+        "Exact unit match 'W' = catalog 'W'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5ad8b852",
+      "displayName": "HDL cholesterol",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-087",
+      "targetName": "HDL-C",
+      "targetUnit": "mg/dL",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v296, entrySha256 a9915d98bc2d…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json",
+        "Name equivalence: Same analyte (HDL-C)",
+        "Exact unit match 'mg/dL' = catalog 'mg/dL'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-atp3-hdl"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-deedc9c4",
+      "displayName": "High sensitivity CRP",
+      "unit": "mg/L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-091",
+      "targetName": "hsCRP",
+      "targetUnit": "mg/L",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v364, entrySha256 dba405f1bb03…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte and assay class (hsCRP)",
+        "Exact unit match 'mg/L' = catalog 'mg/L'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p57-cdc-aha-hscrp-repeat-above-10"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-26a9a98e",
+      "displayName": "LDL cholesterol",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-086",
+      "targetName": "LDL-C",
+      "targetUnit": "mg/dL",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v274, entrySha256 f23768883c50…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts",
+        "Name equivalence: Same analyte (LDL-C)",
+        "Exact unit match 'mg/dL' = catalog 'mg/dL'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-atp3-ldl"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-20c7ea4a",
+      "displayName": "Left ventricular mass",
+      "unit": "g",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-019",
+      "targetName": "LV mass",
+      "targetUnit": "g",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v270, entrySha256 dcdd0c8bcccf…)",
+        "Name equivalence: Same measure (LV mass)",
+        "Exact unit match 'g' = catalog 'g'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-714f7e9a",
+      "displayName": "Mean arterial pressure",
+      "unit": "mmHg",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-007",
+      "targetName": "MAP",
+      "targetUnit": "mmHg",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v312, entrySha256 3e66fa48ca4c…)",
+        "Name equivalence: Same measure (MAP)",
+        "Exact unit match 'mmHg' = catalog 'mmHg'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-003f487c",
+      "displayName": "Orthostatic heart rate change",
+      "unit": "bpm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-039",
+      "targetName": "Orthostatic ΔHR",
+      "targetUnit": "bpm",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v258, entrySha256 2f7b4557f7c3…)",
+        "Name equivalence: Same measure (orthostatic ΔHR)",
+        "Exact unit match 'bpm' = catalog 'bpm'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-0a64e6b2",
+      "displayName": "Orthostatic systolic change",
+      "unit": "mmHg",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-038",
+      "targetName": "Orthostatic ΔSBP",
+      "targetUnit": "mmHg",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v264, entrySha256 114fa8746b10…)",
+        "Name equivalence: Same measure (orthostatic ΔSBP)",
+        "Exact unit match 'mmHg' = catalog 'mmHg'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-625f8d98",
+      "displayName": "Resting heart rate",
+      "unit": "bpm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-002",
+      "targetName": "Resting HR",
+      "targetUnit": "bpm",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v304, entrySha256 5dbf11bd686c…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure (Resting HR)",
+        "Exact unit match 'bpm' = catalog 'bpm'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b278c97e",
+      "displayName": "ST segment deviation",
+      "unit": "mm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-037",
+      "targetName": "ST changes",
+      "targetUnit": "mm",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v342, entrySha256 aa987b45e6f5…)",
+        "Name equivalence: ST changes",
+        "Exact unit match 'mm' = catalog 'mm'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-4afd25a0",
+      "displayName": "Serum potassium",
+      "unit": "mmol/L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-071",
+      "targetName": "Potassium",
+      "targetUnit": "mmol/L",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v288, entrySha256 5fe932186af5…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p56-review-priority-rules.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts",
+        "Name equivalence: Same analyte (serum potassium vs 'Potassium')",
+        "Exact unit match 'mmol/L' = catalog 'mmol/L'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-ukka2026-hyperkalaemia",
+        "p59-statpearls-hypokalaemia"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-2841fb44",
+      "displayName": "Serum sodium",
+      "unit": "mmol/L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-070",
+      "targetName": "Sodium",
+      "targetUnit": "mmol/L",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v275, entrySha256 115f81408411…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p56-review-priority-rules.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts",
+        "Name equivalence: Same analyte (serum sodium vs 'Sodium'); catalog note: electrolyte panel",
+        "Exact unit match 'mmol/L' = catalog 'mmol/L'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-ese2014-hyponatraemia",
+        "p59-statpearls-hypernatraemia"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-12f6e490",
+      "displayName": "SpO2",
+      "unit": "%",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-065",
+      "targetName": "SpO₂",
+      "targetUnit": "%",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v265, entrySha256 1d32c883eabc…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure (SpO₂)",
+        "Exact unit match '%' = catalog '%'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-e1140df3",
+      "displayName": "Systolic blood pressure",
+      "unit": "mmHg",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-005",
+      "targetName": "SBP",
+      "targetUnit": "mmHg",
+      "status": "PROPOSED_EXACT",
+      "confidence": "high",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v366, entrySha256 0fa6ef3b5fea…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure (SBP)",
+        "Exact unit match 'mmHg' = catalog 'mmHg'; same domain (cardiovascular); one-to-one (no other demo entry with this name and unit)."
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": [
+        "p59-nhlbi-low-sbp"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-ae6dc3be",
+      "displayName": "Active heart rate",
+      "unit": "bpm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-003",
+      "targetName": "Exercise HR",
+      "targetUnit": "bpm",
+      "status": "AMBIGUOUS_NOT_PROPOSED",
+      "confidence": "low",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v339, entrySha256 1e560b904502…)",
+        "Name equivalence: Catalog is exercise HR; 'active' is not defined"
+      ],
+      "ambiguities": [
+        "Catalog is exercise HR; 'active' is not defined"
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-4982c524",
+      "displayName": "BNP",
+      "unit": "pg/mL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-081",
+      "targetName": "BNP/NT-proBNP",
+      "targetUnit": "pg/mL",
+      "status": "AMBIGUOUS_NOT_PROPOSED",
+      "confidence": "low",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v287, entrySha256 2683d9b007be…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Catalog combines BNP/NT-proBNP"
+      ],
+      "ambiguities": [
+        "Catalog combines BNP/NT-proBNP"
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5c1e9b1d",
+      "displayName": "Ejection fraction",
+      "unit": "%",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-021",
+      "targetName": "LVEF",
+      "targetUnit": "%",
+      "status": "AMBIGUOUS_NOT_PROPOSED",
+      "confidence": "low",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v297, entrySha256 2a9c0243057f…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: LVEF; demo name does not say 'left ventricular'"
+      ],
+      "ambiguities": [
+        "LVEF; demo name does not say 'left ventricular'"
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5c3aeb73",
+      "displayName": "End diastolic volume",
+      "unit": "mL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-017",
+      "targetName": "LV EDV",
+      "targetUnit": "mL",
+      "status": "AMBIGUOUS_NOT_PROPOSED",
+      "confidence": "low",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v298, entrySha256 4d4dce95237d…)",
+        "Name equivalence: Catalog is LV EDV; demo name does not specify the ventricle"
+      ],
+      "ambiguities": [
+        "Catalog is LV EDV; demo name does not specify the ventricle"
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-7f47ee7c",
+      "displayName": "Fasting glucose",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-083",
+      "targetName": "Glucose",
+      "targetUnit": "mg/dL",
+      "status": "AMBIGUOUS_NOT_PROPOSED",
+      "confidence": "low",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v314, entrySha256 ee637ca4506d…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts",
+        "Name equivalence: Glucose; demo name is narrower (fasting) than catalog 'Glucose'"
+      ],
+      "ambiguities": [
+        "Glucose; demo name is narrower (fasting) than catalog 'Glucose'"
+      ],
+      "provisionalCriteria": [
+        "p57-ada2026-fpg-categories",
+        "p57-ada2026-random-glucose"
+      ]
+    },
+    {
+      "demoId": "demo:ubt-a65dfc7c",
+      "displayName": "NT-proBNP",
+      "unit": "pg/mL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-081",
+      "targetName": "BNP/NT-proBNP",
+      "targetUnit": "pg/mL",
+      "status": "AMBIGUOUS_NOT_PROPOSED",
+      "confidence": "low",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v332, entrySha256 a2a72626cacf…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Catalog combines BNP/NT-proBNP"
+      ],
+      "ambiguities": [
+        "Catalog combines BNP/NT-proBNP"
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b9c97649",
+      "displayName": "VO2 max",
+      "unit": "mL/kg/min",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-063",
+      "targetName": "VO₂peak",
+      "targetUnit": "mL/kg/min",
+      "status": "AMBIGUOUS_NOT_PROPOSED",
+      "confidence": "low",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v346, entrySha256 9ae2889526cb…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Catalog is VO₂peak; 'max' and 'peak' are not identical protocols"
+      ],
+      "ambiguities": [
+        "Catalog is VO₂peak; 'max' and 'peak' are not identical protocols"
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d9870fc7",
+      "displayName": "CTX",
+      "unit": "ng/mL",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-001",
+      "targetName": "CTX / β-CTX",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v255, entrySha256 38c22e1e6ddd…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts",
+        "Name equivalence: Same analyte (CTX / β-CTX)"
+      ],
+      "ambiguities": [
+        "bone-001 'CTX / β-CTX' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d032c52f",
+      "displayName": "Deoxypyridinoline (DPD)",
+      "unit": "nmol/mmol creatinine",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-004",
+      "targetName": "Deoxypyridinoline (DPD)",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v120, entrySha256 1e28d606b4a4…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "bone-004 'Deoxypyridinoline (DPD)' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d71e8b4d",
+      "displayName": "Ionized Calcium",
+      "unit": "mmol/L",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-014",
+      "targetName": "Ionized Calcium",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v123, entrySha256 db578b361077…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p56-review-priority-rules.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "bone-014 'Ionized Calcium' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-12c22152",
+      "displayName": "Osteocalcin",
+      "unit": "ng/mL",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-012",
+      "targetName": "Osteocalcin",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v83, entrySha256 340bb0fa09c9…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts, tests/domain/p58-professional-report.test.ts",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "bone-012 'Osteocalcin' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-6c8bad01",
+      "displayName": "P1NP",
+      "unit": "ng/mL",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-009",
+      "targetName": "P1NP / PINP",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v254, entrySha256 49abf53f142d…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "bone-009 'P1NP / PINP' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-37f541f8",
+      "displayName": "P1NP / PINP",
+      "unit": "μg/L",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-009",
+      "targetName": "P1NP / PINP",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v92, entrySha256 e4affd0a5cef…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "bone-009 'P1NP / PINP' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ec404949",
+      "displayName": "PICP",
+      "unit": "μg/L",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-010",
+      "targetName": "PICP",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v130, entrySha256 6436f947f037…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "bone-010 'PICP' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-9908b9b9",
+      "displayName": "Pyridinoline (PYD)",
+      "unit": "nmol/mmol creatinine",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "bone-003",
+      "targetName": "Pyridinoline (PYD)",
+      "targetUnit": null,
+      "status": "NOT_MAPPABLE_TARGET_HAS_NO_UNIT",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v105, entrySha256 0687016a08d5…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "bone-003 'Pyridinoline (PYD)' defines no unit in the production catalog; an exact-unit binding is impossible until the catalog gate assigns one."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-bc4aef7f",
+      "displayName": "Blood volume",
+      "unit": "L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-015",
+      "targetName": "Blood volum",
+      "targetUnit": "mL",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v349, entrySha256 239ffeb5b607…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure ('Blood volum' in catalog)"
+      ],
+      "ambiguities": [
+        "Unit 'L' ≠ catalog unit 'mL'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-eed68002",
+      "displayName": "D-dimer",
+      "unit": "mg/L FEU",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-057",
+      "targetName": "D-dimer",
+      "targetUnit": "mg/L FEU ή DDU",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v131, entrySha256 fee66407473d…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "Unit 'mg/L FEU' ≠ catalog unit 'mg/L FEU ή DDU' (catalog unit is itself ambiguous); no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-c6a305ef",
+      "displayName": "Fibrinogen",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-059",
+      "targetName": "Fibrinogen",
+      "targetUnit": "g/L",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v114, entrySha256 1af9cab620be…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "Unit 'mg/dL' ≠ catalog unit 'g/L'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-cc2bd315",
+      "displayName": "Lipoprotein(a)",
+      "unit": "nmol/L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-090",
+      "targetName": "Lp(a)",
+      "targetUnit": "nmol/L ή mg/dL",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v354, entrySha256 17f71718f914…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "Unit 'nmol/L' ≠ catalog unit 'nmol/L ή mg/dL' (catalog unit is itself ambiguous); no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-381d2837",
+      "displayName": "Plasma volume",
+      "unit": "L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-014",
+      "targetName": "Plasma volume",
+      "targetUnit": "mL / % change",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v93, entrySha256 3a2bcdf664e4…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure"
+      ],
+      "ambiguities": [
+        "Unit 'L' ≠ catalog unit 'mL / % change' (catalog unit is itself ambiguous); no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-c4b4d258",
+      "displayName": "Platelet count",
+      "unit": "10^3/μL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-058",
+      "targetName": "Platelet count",
+      "targetUnit": "10⁹/L",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v113, entrySha256 d34b1beaa868…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure"
+      ],
+      "ambiguities": [
+        "Unit '10^3/μL' ≠ catalog unit '10⁹/L'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-f4b8be7b",
+      "displayName": "Respiratory rate",
+      "unit": "breaths/min",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-067",
+      "targetName": "Respiratory rate",
+      "targetUnit": "/min",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v134, entrySha256 4acd7e34720b…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same measure"
+      ],
+      "ambiguities": [
+        "Unit 'breaths/min' ≠ catalog unit '/min'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-c30c0952",
+      "displayName": "Serum magnesium",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-072",
+      "targetName": "Magnesium",
+      "targetUnit": "mmol/L",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v351, entrySha256 d7c6d5e59a7b…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p56-review-priority-rules.v1.json, data/scientific/p58-clinical-concern-library.v1.json",
+        "Name equivalence: Same analyte"
+      ],
+      "ambiguities": [
+        "Unit 'mg/dL' ≠ catalog unit 'mmol/L'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-40eb55be",
+      "displayName": "Stroke volume",
+      "unit": "mL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-009",
+      "targetName": "Stroke volume",
+      "targetUnit": "mL/beat",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v94, entrySha256 78d8a2b9d41f…)",
+        "Name equivalence: Same measure"
+      ],
+      "ambiguities": [
+        "Unit 'mL' ≠ catalog unit 'mL/beat'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-508e453f",
+      "displayName": "Troponin I",
+      "unit": "ng/L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-082",
+      "targetName": "Troponin I/T",
+      "targetUnit": "assay-specific",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v293, entrySha256 b4286fb90131…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Catalog combines Troponin I/T, assay-specific"
+      ],
+      "ambiguities": [
+        "Unit 'ng/L' ≠ catalog unit 'assay-specific'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-8b90c2ca",
+      "displayName": "Troponin T",
+      "unit": "ng/L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-082",
+      "targetName": "Troponin I/T",
+      "targetUnit": "assay-specific",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v321, entrySha256 a709139f2233…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Catalog combines Troponin I/T, assay-specific"
+      ],
+      "ambiguities": [
+        "Unit 'ng/L' ≠ catalog unit 'assay-specific'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-4f9451c8",
+      "displayName": "Vascular resistance",
+      "unit": "dyn·s/cm5",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-012",
+      "targetName": "SVR",
+      "targetUnit": "dyn·s/cm⁵",
+      "status": "NOT_MAPPABLE_UNIT_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v291, entrySha256 6bf118686934…)",
+        "Name equivalence: Catalog is systemic vascular resistance; demo name unspecific"
+      ],
+      "ambiguities": [
+        "Unit 'dyn·s/cm5' ≠ catalog unit 'dyn·s/cm⁵'; no conversion is permitted."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-516090ed",
+      "displayName": "TNF-alpha",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": "cv-093",
+      "targetName": "TNF-α",
+      "targetUnit": "pg/mL",
+      "status": "NOT_PROPOSED_DOMAIN_DIFFERS",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v294, entrySha256 3dc864d68d45…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json",
+        "Name equivalence: Same analyte (TNF-α)"
+      ],
+      "ambiguities": [
+        "Demo entry is in the 'immune' domain, catalog identity in 'cardiovascular'; P57 criteria bind the domain too."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-db1ff862",
+      "displayName": "Hydration intake",
+      "unit": "L/day",
+      "domain": "behavioral",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v256, entrySha256 18e5c6e92856…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-676690c9",
+      "displayName": "PVT_MEDIAN_RT",
+      "unit": "ms",
+      "domain": "behavioral",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v71, entrySha256 dfaf0b99851c…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-dfd7c929",
+      "displayName": "Sedentary time",
+      "unit": "hours/day",
+      "domain": "behavioral",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v257, entrySha256 c78f43aec6dc…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ed97000c",
+      "displayName": "Subjective sleep quality and perceived sleep quantity",
+      "unit": "score",
+      "domain": "behavioral",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v76, entrySha256 827eaa536e9e…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d900847d",
+      "displayName": "Total sleep time (main sleep + naps)",
+      "unit": "h",
+      "domain": "behavioral",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v74, entrySha256 a431dc5d3b97…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-f17497d1",
+      "displayName": "Bone Failure Load",
+      "unit": "N",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v133, entrySha256 5377f3000edd…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-534cc95f",
+      "displayName": "Brushite / Ca Phosphate Supersaturation",
+      "unit": "dimensionless/index",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v96, entrySha256 11c141601850…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-83a45516",
+      "displayName": "Calcium Oxalate Supersaturation",
+      "unit": "dimensionless/index",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v100, entrySha256 a31e66a56117…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ebf6e090",
+      "displayName": "Cortical vBMD",
+      "unit": "mg HA/cm³",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v129, entrySha256 3e5a678f0159…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-cf31f290",
+      "displayName": "Dietary Calcium Intake",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v119, entrySha256 b47f48d11a81…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-04f819f8",
+      "displayName": "Dietary Protein Intake",
+      "unit": "g/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v79, entrySha256 7de20343e060…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-cc047dd7",
+      "displayName": "Dietary Sodium Intake",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v118, entrySha256 94cd71755f79…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-9416d34e",
+      "displayName": "Dietary Vitamin D Intake",
+      "unit": "IU/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v103, entrySha256 8e884d4531c5…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-468cb43c",
+      "displayName": "Femoral Neck aBMD",
+      "unit": "g/cm²",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v95, entrySha256 06af3426a7ec…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-a42df5a7",
+      "displayName": "Fluid Intake",
+      "unit": "mL/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v107, entrySha256 c6d0c82b8ab3…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-893cc839",
+      "displayName": "Lumbar Spine aBMD",
+      "unit": "g/cm²",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v101, entrySha256 965fdbad2e74…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-75cf0ce6",
+      "displayName": "Mission Duration",
+      "unit": "days",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v98, entrySha256 a013c9f899ec…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-cb1c6a2f",
+      "displayName": "Resistance Exercise Adherence",
+      "unit": "% sessions",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v116, entrySha256 c89d337d4b16…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-1541fd5a",
+      "displayName": "Sodium Urate Supersaturation",
+      "unit": "dimensionless/index",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v85, entrySha256 08e3caa5e0d6…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-34f3b81d",
+      "displayName": "Stable Ca isotope ratio",
+      "unit": "δ44/42Ca ‰",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v91, entrySha256 520f2c511255…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-20430c14",
+      "displayName": "Struvite Supersaturation",
+      "unit": "dimensionless/index",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v88, entrySha256 532b3c1cf7b7…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-a6c35d86",
+      "displayName": "Total Hip aBMD",
+      "unit": "g/cm²",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v108, entrySha256 6cde1b82d68f…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-0bbaf9c4",
+      "displayName": "Total Urine Volume",
+      "unit": "mL/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v81, entrySha256 6d9fceeef2c8…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-608309a7",
+      "displayName": "Total vBMD",
+      "unit": "mg HA/cm³",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v97, entrySha256 ffe99657687d…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b9079b6f",
+      "displayName": "Trabecular Number",
+      "unit": "1/mm",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v110, entrySha256 770f37f8123b…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-2f5b3bb4",
+      "displayName": "Trabecular Separation",
+      "unit": "mm",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v89, entrySha256 800091db942b…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d86be1ae",
+      "displayName": "Trabecular Thickness",
+      "unit": "mm",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v124, entrySha256 cf2e2e89b95a…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-99e4c24e",
+      "displayName": "Trabecular vBMD",
+      "unit": "mg HA/cm³",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v106, entrySha256 d21ad5e41ee6…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-a8fb862a",
+      "displayName": "Uric Acid Supersaturation",
+      "unit": "dimensionless/index",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v109, entrySha256 f8224885fed3…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-83a192f6",
+      "displayName": "Urinary Calcium 24h",
+      "unit": "mg/24h",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v73, entrySha256 572551f0b731…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-efc03936",
+      "displayName": "Urinary Calcium 24h",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v132, entrySha256 756ebe5fb721…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-da887734",
+      "displayName": "Urinary Citrate",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v125, entrySha256 9292f80894ae…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-7d17696e",
+      "displayName": "Urinary Magnesium",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v99, entrySha256 d5fed1301525…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d1f6a210",
+      "displayName": "Urinary Oxalate",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v121, entrySha256 1e60a9819a0c…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d2e67c8d",
+      "displayName": "Urinary Phosphorus",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v122, entrySha256 e5051a97daa0…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-0312222c",
+      "displayName": "Urinary Potassium",
+      "unit": "mmol/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v78, entrySha256 0db26d5c3ec9…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-8a2490b0",
+      "displayName": "Urinary Sodium",
+      "unit": "mmol/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v102, entrySha256 481e86b7e308…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-065a2009",
+      "displayName": "Urinary Sulfate",
+      "unit": "mmol/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v80, entrySha256 3a9ce3d9a33b…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-df82304e",
+      "displayName": "Urinary Uric Acid",
+      "unit": "mg/day",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v126, entrySha256 1e85085dba29…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-14cbc5f0",
+      "displayName": "Urine pH",
+      "unit": "pH",
+      "domain": "bone",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v84, entrySha256 9b033d772940…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-abaa99f0",
+      "displayName": "Arrhythmia episodes",
+      "unit": "count/day",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v334, entrySha256 f56d26c2a0a7…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-dab74dfa",
+      "displayName": "Augmentation index",
+      "unit": "%",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v362, entrySha256 a379525bc70a…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-4bae0cb9",
+      "displayName": "Blood pressure evening",
+      "unit": "mmHg",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v289, entrySha256 3654f9e7f3cc…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-6afae6c9",
+      "displayName": "Blood pressure morning",
+      "unit": "mmHg",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v306, entrySha256 b5db17f3a05c…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ce07af24",
+      "displayName": "CK-MB",
+      "unit": "ng/mL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v357, entrySha256 94a6892263b2…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-919c3b20",
+      "displayName": "Cardiac MRI fibrosis",
+      "unit": "%",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v323, entrySha256 232f887b1fad…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-24edbf61",
+      "displayName": "Cardiac event history",
+      "unit": "count",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v272, entrySha256 e4b1139d7d20…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b72973e9",
+      "displayName": "Cardiac symptoms present",
+      "unit": "boolean",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v345, entrySha256 0fea3ea32356…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-2b397551",
+      "displayName": "Cardiovascular medication",
+      "unit": "boolean",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v276, entrySha256 7e5afd2f0312…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d4aacb73",
+      "displayName": "Daily steps",
+      "unit": "steps/day",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v359, entrySha256 750416a5627d…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ad58333a",
+      "displayName": "Dizziness score",
+      "unit": "0-10",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v336, entrySha256 57e60b76d863…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d7caa66d",
+      "displayName": "Dyspnea score",
+      "unit": "0-10",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v361, entrySha256 14d5b2f37e67…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-e34876dc",
+      "displayName": "ECG QT interval",
+      "unit": "ms",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v368, entrySha256 96c890b1c773…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-99b8e3da",
+      "displayName": "ECG rhythm",
+      "unit": "category",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v327, entrySha256 d9f5a9cebfac…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-a1554be7",
+      "displayName": "Exercise heart rate variability",
+      "unit": "ms",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v328, entrySha256 6374af3e52d7…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-184fddf1",
+      "displayName": "Exercise tolerance",
+      "unit": "minutes",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v268, entrySha256 5530867a36c0…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-e3bd07f2",
+      "displayName": "Fluid shift assessment",
+      "unit": "ordinal",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v369, entrySha256 5f76246b767f…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-8b2bb539",
+      "displayName": "HOMA-IR",
+      "unit": "ratio",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v320, entrySha256 f14773130ab2…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json, src/domain/health-intelligence/p58-report-charts.ts"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-2da60b45",
+      "displayName": "HRV LF/HF",
+      "unit": "ratio",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v277, entrySha256 371a2594e271…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-47fa5688",
+      "displayName": "Heart rate recovery 1 min",
+      "unit": "bpm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v286, entrySha256 6ebcdd6c3a16…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-e0dd046f",
+      "displayName": "Lower limb venous ultrasound",
+      "unit": "category",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v365, entrySha256 3d3f1a37a195…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-1730a838",
+      "displayName": "Maximum heart rate",
+      "unit": "bpm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v266, entrySha256 1b5acb70973c…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-70f0038e",
+      "displayName": "Orthostatic diastolic change",
+      "unit": "mmHg",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v311, entrySha256 b6e1f02a6dad…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-adb9f883",
+      "displayName": "Palpitations score",
+      "unit": "0-10",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v337, entrySha256 755dd7935ade…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-61407479",
+      "displayName": "Peripheral edema score",
+      "unit": "0-3",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v303, entrySha256 8c558b09e9ed…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-6cfda692",
+      "displayName": "Premature ventricular contractions",
+      "unit": "count/day",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v308, entrySha256 8a5c127ad1f2…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ca232512",
+      "displayName": "Radiation exposure cardiovascular",
+      "unit": "mSv",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v353, entrySha256 9e70d1ed7feb…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-cca016a0",
+      "displayName": "Red cell mass",
+      "unit": "L",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v355, entrySha256 14d37a04a46c…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5630390c",
+      "displayName": "Serum creatinine",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v295, entrySha256 7cae7ed4a583…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5d8a71ab",
+      "displayName": "Sleep heart rate",
+      "unit": "bpm",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v301, entrySha256 b1fbb92a7afd…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-6dd88f1d",
+      "displayName": "Syncope episodes",
+      "unit": "count",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v310, entrySha256 d00cf3a2c5ac…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-efb899fc",
+      "displayName": "Total cholesterol",
+      "unit": "mg/dL",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v371, entrySha256 e69e95c97b32…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-f75b1fa8",
+      "displayName": "Urine output",
+      "unit": "L/day",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v372, entrySha256 aedf35f5250f…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-645f4a78",
+      "displayName": "eGFR",
+      "unit": "mL/min/1.73m²",
+      "domain": "cardiovascular",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v305, entrySha256 7b04e3324ed7…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json, data/scientific/p58-clinical-concern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-4f02d7ad",
+      "displayName": "Absolute eosinophil count",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v290, entrySha256 9ae0cb2c8b68…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-6c941c77",
+      "displayName": "Absolute lymphocyte count",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v307, entrySha256 f82915b622f9…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-995ead5b",
+      "displayName": "Absolute monocyte count",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v326, entrySha256 4ba0da5b836b…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ae6a394d",
+      "displayName": "Absolute neutrophil count",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v338, entrySha256 d718e4af2362…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [
+        "Immune catalog (IMM-*) defines no units; also duplicate demo entries with different units (10^9/L, 10^3/μL, cells/μL, %)."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-3f7b3947",
+      "displayName": "Activated CD4 T cells",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v284, entrySha256 411f107b1795…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-36c2a893",
+      "displayName": "Activated CD8 T cells",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v281, entrySha256 82b44b18f923…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-a290ea35",
+      "displayName": "B cell proliferation",
+      "unit": "index",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v329, entrySha256 297721f8dc72…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-c461dc8b",
+      "displayName": "Basophils",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v112, entrySha256 0268cea1b6a9…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-323050f4",
+      "displayName": "Body temperature",
+      "unit": "°C",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v90, entrySha256 13c016f1a1dd…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-1d9912f9",
+      "displayName": "C-reactive protein",
+      "unit": "mg/L",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v69, entrySha256 11e0d430c305…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [
+        "Standard CRP is not hsCRP (cv-091); two demo entries ('C-reactive protein', 'CRP') exist; no production standard-CRP identity."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-8d2f835f",
+      "displayName": "CD16+ CD56+ NK cells",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v322, entrySha256 b61c57d3ab14…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-e177517d",
+      "displayName": "CD3+ T cells",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v367, entrySha256 e8f4433bc8c9…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-17462e9c",
+      "displayName": "CD4+ T cells",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v267, entrySha256 b0e9239c21a0…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-4000bbfc",
+      "displayName": "CD4/CD8 ratio",
+      "unit": "ratio",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v285, entrySha256 26687ffcacac…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-88a83390",
+      "displayName": "CD8+ T cells",
+      "unit": "cells/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v318, entrySha256 2c73b41607ea…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-21eb075c",
+      "displayName": "CH50",
+      "unit": "U/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v271, entrySha256 3a1e061d2c19…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-c86436e7",
+      "displayName": "CRP",
+      "unit": "mg/L",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v352, entrySha256 33e680204935…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [
+        "Standard CRP is not hsCRP (cv-091); two demo entries ('C-reactive protein', 'CRP') exist; no production standard-CRP identity."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-068660b8",
+      "displayName": "Complement C3",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v261, entrySha256 2b94db9347cb…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-aeccd711",
+      "displayName": "Complement C4",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v340, entrySha256 7ce361fc01d7…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-cdd416ed",
+      "displayName": "Cortisol/DHEA ratio",
+      "unit": "ratio",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v356, entrySha256 4e70d8a40830…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-81841015",
+      "displayName": "DHEA-S",
+      "unit": "μg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v315, entrySha256 444f6c2fdcdd…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-abe0007c",
+      "displayName": "EBV DNA viral load",
+      "unit": "copies/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v335, entrySha256 6dc63ed4a743…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b9d509ce",
+      "displayName": "ESR",
+      "unit": "mm/h",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v347, entrySha256 e6e5f61f5bd8…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-0d004123",
+      "displayName": "Eosinophils",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v82, entrySha256 2ed4162d0ee7…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-032aa50c",
+      "displayName": "G-CSF",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v259, entrySha256 2f4ac30ee11d…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-a3684aaf",
+      "displayName": "GM-CSF",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v330, entrySha256 9261e0922183…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-3ae71a7f",
+      "displayName": "IL-1 beta",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v282, entrySha256 4c681c87ffdb…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-e151a9b1",
+      "displayName": "IL-10",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v127, entrySha256 7c659e63ed0d…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-1cc68f93",
+      "displayName": "IL-12",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v86, entrySha256 e7f8a0a8c10c…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-885ffda0",
+      "displayName": "IL-17",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v317, entrySha256 326341ebd1e6…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-1fc27650",
+      "displayName": "IL-2",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v87, entrySha256 83308934aa28…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-be20d8ea",
+      "displayName": "IL-4",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v111, entrySha256 e27c9b8f88b9…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-3e52e7b6",
+      "displayName": "IL-8",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v283, entrySha256 43b66a03a0ca…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-03c4482d",
+      "displayName": "IP-10",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v260, entrySha256 3d8070fb11b5…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-ead50a31",
+      "displayName": "IgA",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v128, entrySha256 3eb2694651ed…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-7ef81986",
+      "displayName": "IgE",
+      "unit": "IU/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v313, entrySha256 3fe1b1c62813…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-c87840cb",
+      "displayName": "IgG",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v115, entrySha256 a966c4ea71aa…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-92711b5c",
+      "displayName": "IgG1",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v325, entrySha256 102351bd28f5…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-8ade1c2e",
+      "displayName": "IgG3",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v319, entrySha256 39d6d10ad54f…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-1b97f4fb",
+      "displayName": "IgG4",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v269, entrySha256 264a3c1608c3…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-97b6c305",
+      "displayName": "IgM",
+      "unit": "mg/dL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v104, entrySha256 aeb2940d2452…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-e0a346b9",
+      "displayName": "Lymphocyte count (absolute)",
+      "unit": "10^9/L",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v75, entrySha256 b3bf93b7ef2a…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-323bb129",
+      "displayName": "Lymphocytes",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v279, entrySha256 69f91a077be8…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d09698ea",
+      "displayName": "MCP-1",
+      "unit": "pg/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v358, entrySha256 2a1791696f21…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-a3dd9d05",
+      "displayName": "Memory CD4 T cells",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v331, entrySha256 bd28b1895cfb…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-0918cd59",
+      "displayName": "Memory CD8 T cells",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v263, entrySha256 94d20e2fca77…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-b4f34c19",
+      "displayName": "Monocytes",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v343, entrySha256 142dfb9ce551…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-bcf3c4ac",
+      "displayName": "NK cytotoxic activity",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v350, entrySha256 4146718b6f4f…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-d6ee4f3d",
+      "displayName": "Naive CD4 T cells",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v360, entrySha256 ea9d3bdbcf24…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5df10aa1",
+      "displayName": "Naive CD8 T cells",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v302, entrySha256 3865be55753f…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-91ab6b12",
+      "displayName": "Neopterin",
+      "unit": "nmol/L",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v324, entrySha256 254eaaa4a925…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-2e684454",
+      "displayName": "Neutrophil count (absolute)",
+      "unit": "10^9/L",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v70, entrySha256 b1baca7082cb…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [
+        "Immune catalog (IMM-*) defines no units; also duplicate demo entries with different units (10^9/L, 10^3/μL, cells/μL, %)."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-300b410b",
+      "displayName": "Neutrophils",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v278, entrySha256 d317f3052967…)"
+      ],
+      "ambiguities": [
+        "Immune catalog (IMM-*) defines no units; also duplicate demo entries with different units (10^9/L, 10^3/μL, cells/μL, %)."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-db2da093",
+      "displayName": "Procalcitonin",
+      "unit": "ng/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v363, entrySha256 987aa11d97b6…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-26813357",
+      "displayName": "T cell proliferation",
+      "unit": "index",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v273, entrySha256 2b92a5c34142…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-5cd8ce06",
+      "displayName": "TGF-beta",
+      "unit": "ng/mL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:41Z, demo catalog v299, entrySha256 5f148db5c51e…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-6d70e575",
+      "displayName": "Treg cells",
+      "unit": "%",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T14:42:42Z, demo catalog v309, entrySha256 461022c47fbe…)"
+      ],
+      "ambiguities": [],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-cbb5666e",
+      "displayName": "WBC",
+      "unit": "10^3/μL",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v117, entrySha256 008c73c286ed…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [
+        "Immune catalog (IMM-*) defines no units; also duplicate demo entries with different units (10^9/L, 10^3/μL, cells/μL, %)."
+      ],
+      "provisionalCriteria": []
+    },
+    {
+      "demoId": "demo:ubt-813d9e97",
+      "displayName": "White blood cell count (total leukocytes)",
+      "unit": "10^9/L",
+      "domain": "immune",
+      "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+      "missionCode": "MITO_DEMO_2026",
+      "revoked": false,
+      "target": null,
+      "targetName": null,
+      "targetUnit": null,
+      "status": "NO_PRODUCTION_COUNTERPART",
+      "confidence": "n/a",
+      "evidence": [
+        "Activated SYNTHETIC DEMO catalog entry (tests/fixtures/p40-mito-demo-active-catalog.v1.json; activation 2026-11-07T13:49:07Z, demo catalog v72, entrySha256 f458d9c755d3…)",
+        "Referenced with the same concept in: data/scientific/p56-health-pattern-library.v1.json"
+      ],
+      "ambiguities": [
+        "Immune catalog (IMM-*) defines no units; also duplicate demo entries with different units (10^9/L, 10^3/μL, cells/μL, %)."
+      ],
+      "provisionalCriteria": []
+    }
+  ]
+}

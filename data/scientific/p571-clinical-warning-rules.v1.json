@@ -1,0 +1,224 @@
+{
+  "schema": "mitochondria.p571-clinical-warning-rules.v1",
+  "version": 1,
+  "status": "PENDING_SCIENTIFIC_APPROVAL",
+  "note": "P57.1 three-axis warning model. Axis 1 (clinical classification) is decided ONLY by P54 verified intervals or P57 Researcher-approved, server-attested, applicable criteria. Axis 2 (review priority) and axis 3 (data quality) never change axis 1. Rules marked EXISTING_BEHAVIOUR restate behaviour already present in the repository; rules marked PENDING_SCIENTIFIC_APPROVAL are proposals and are NOT applied unless a caller explicitly asks for a labelled preview. No rule converts units, infers fasting status, specimen, method, symptoms or demographics, or uses synthetic demonstration identities for classification.",
+  "axes": {
+    "clinicalClassification": {
+      "values": [
+        "RED",
+        "AMBER",
+        "NORMAL",
+        "NEUTRAL"
+      ],
+      "rules": [
+        {
+          "id": "CC-1",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "P57 classifyWithCriteria outcome == 'classified' (or P54 verified interval match)",
+          "then": "red→RED, amber→AMBER, normal→NORMAL, none→NEUTRAL",
+          "codeRef": "src/domain/health-intelligence/p57-reference-criteria.ts classifyWithCriteria; biomarker-health-assessment.ts"
+        },
+        {
+          "id": "CC-2",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "approved applicable criteria disagree",
+          "then": "NEUTRAL (outcome 'conflict'); never reconciled automatically"
+        },
+        {
+          "id": "CC-3",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "series held (e.g., P561-R4 measurement-consistency hold)",
+          "then": "NEUTRAL (outcome 'held')"
+        },
+        {
+          "id": "CC-4",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "catalog identity starts with 'demo:' or has no exact catalog unit",
+          "then": "NEUTRAL; criteria cannot be approved for it"
+        },
+        {
+          "id": "CC-5",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "criterion not approved for this mission, or a mission-level / per-observation condition (fasting, specimen, method, symptoms) not recorded",
+          "then": "NEUTRAL with the missing condition named"
+        },
+        {
+          "id": "CC-6",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "always",
+          "then": "The source's own band label (e.g., 'Mild hyperkalaemia (UKKA)', 'Prediabetes range (ADA Table 2.2)') is carried with the colour so source distinctions are preserved"
+        }
+      ]
+    },
+    "reviewPriority": {
+      "values": [
+        "HIGH",
+        "ROUTINE",
+        "NO_FLAG"
+      ],
+      "rules": [
+        {
+          "id": "RP-1",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "any P56.1 flag of kind 'priority_review' (P561-R1 change ≥50 %, P561-R2 intermediate peak/trough ≥50 % vs first and last, P561-R3 electrolyte change ≥10 %)",
+          "then": "HIGH",
+          "note": "Relabels the existing 'Review flag'. The underlying percentages are themselves PENDING_SCIENTIFIC_REVIEW in data/scientific/p56-review-priority-rules.v1.json."
+        },
+        {
+          "id": "RP-2",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "any P56.1 flag of kind 'data_quality' (P561-R4)",
+          "then": "ROUTINE (measurement check before interpretation)",
+          "note": "Relabels existing 'Data check'."
+        },
+        {
+          "id": "RP-3",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "clinical classification == RED",
+          "then": "HIGH"
+        },
+        {
+          "id": "RP-4",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "clinical classification == AMBER",
+          "then": "ROUTINE (at least)"
+        },
+        {
+          "id": "RP-0",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "none of the above",
+          "then": "NO_FLAG"
+        }
+      ],
+      "precedence": "HIGH > ROUTINE > NO_FLAG; the highest applicable level wins."
+    },
+    "dataQuality": {
+      "values": [
+        "VERIFIED",
+        "DATA_QUALITY_WARNING",
+        "UNKNOWN"
+      ],
+      "meaning": {
+        "VERIFIED": "Provenance checks passed (exact non-demo catalog identity, exact catalog unit, specimen and method recorded, numeric value, no data-quality flag). It does NOT mean clinically validated.",
+        "DATA_QUALITY_WARNING": "A concrete reason to doubt the measurement exists; interpret only after verification.",
+        "UNKNOWN": "Information needed to judge data quality is missing."
+      },
+      "rules": [
+        {
+          "id": "DQ-1",
+          "status": "EXISTING_BEHAVIOUR",
+          "when": "P561-R4 slow-marker change (e.g., HbA1c ≥10 % in <28 days)",
+          "then": "DATA_QUALITY_WARNING"
+        },
+        {
+          "id": "DQ-2",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "recorded value is not a plain number",
+          "then": "DATA_QUALITY_WARNING"
+        },
+        {
+          "id": "DQ-3",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "repeated readings at one examination differ (ExamPoint.repeat == 'differing_repeats')",
+          "then": "DATA_QUALITY_WARNING"
+        },
+        {
+          "id": "DQ-4",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "catalog identity is a synthetic demonstration entry (demo:)",
+          "then": "UNKNOWN"
+        },
+        {
+          "id": "DQ-5",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "catalog unit missing or not identical to the recorded unit",
+          "then": "UNKNOWN"
+        },
+        {
+          "id": "DQ-6",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "specimen or method not recorded",
+          "then": "UNKNOWN"
+        },
+        {
+          "id": "DQ-7",
+          "status": "PENDING_SCIENTIFIC_APPROVAL",
+          "when": "all checks pass",
+          "then": "VERIFIED"
+        }
+      ],
+      "precedence": "DATA_QUALITY_WARNING > UNKNOWN > VERIFIED"
+    }
+  },
+  "independence": [
+    "Review priority and data quality never set, raise or lower the clinical classification.",
+    "A HIGH review priority may be drawn in red ONLY with the flag glyph and the words 'High review priority — not a clinical classification'; clinical RED is a filled red badge with the approved criterion's band label.",
+    "Pending rules are evaluated only in an explicitly labelled 'Proposed rules preview' and never in live reports."
+  ],
+  "legend": [
+    {
+      "axis": "clinicalClassification",
+      "value": "RED",
+      "style": "filled red badge",
+      "glyph": "●",
+      "text": "Clinical RED — meets a Researcher-approved criterion band labelled by its source (not a diagnosis)."
+    },
+    {
+      "axis": "clinicalClassification",
+      "value": "AMBER",
+      "style": "filled amber badge",
+      "glyph": "●",
+      "text": "Clinical AMBER — in an approved criterion's cautionary band."
+    },
+    {
+      "axis": "clinicalClassification",
+      "value": "NORMAL",
+      "style": "filled green badge",
+      "glyph": "●",
+      "text": "Clinical NORMAL — within an approved criterion's normal band."
+    },
+    {
+      "axis": "clinicalClassification",
+      "value": "NEUTRAL",
+      "style": "grey outline badge",
+      "glyph": "○",
+      "text": "NEUTRAL — no approved criterion applies; the value is shown without colour."
+    },
+    {
+      "axis": "reviewPriority",
+      "value": "HIGH",
+      "style": "red outline, no fill",
+      "glyph": "⚑",
+      "text": "High review priority — not a clinical classification. Change-based triage for Ground Medical review."
+    },
+    {
+      "axis": "reviewPriority",
+      "value": "ROUTINE",
+      "style": "dark outline, no fill",
+      "glyph": "⚐",
+      "text": "Routine review — not a clinical classification."
+    },
+    {
+      "axis": "dataQuality",
+      "value": "DATA_QUALITY_WARNING",
+      "style": "hatched amber outline",
+      "glyph": "!",
+      "text": "Data-quality warning — verify sample identity, method and entry before interpretation."
+    },
+    {
+      "axis": "dataQuality",
+      "value": "UNKNOWN",
+      "style": "dotted grey outline",
+      "glyph": "?",
+      "text": "Data quality unknown — specimen, method or exact identity not recorded."
+    },
+    {
+      "axis": "dataQuality",
+      "value": "VERIFIED",
+      "style": "thin grey outline",
+      "glyph": "✓",
+      "text": "Provenance checks passed (not clinical validation)."
+    }
+  ]
+}
