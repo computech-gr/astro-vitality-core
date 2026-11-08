@@ -1089,10 +1089,11 @@ function results(L: P, r: PremiumReport) {
   L.y += 3;
   L.h2("Complete results — all observations", 30);
   const c = r.counts;
-  L.para(`${c.observations} observations in ${c.series} biomarker series from ${c.examinationDates} examination date(s), exactly as recorded (no unit conversion). Classes use approved criteria${r.options.provisionalActive ? " or, where marked PROVISIONAL, literature criteria for this synthetic demonstration" : ""}; review priority and data quality are shown separately.`, 7.8, [51, 65, 85]);
+  L.para(`${c.observations} observations in ${c.series} biomarker series from ${c.examinationDates} examination date(s), exactly as recorded (no unit conversion). Classes use approved criteria${r.options.provisionalActive ? " or, where marked PROVISIONAL, literature criteria for this synthetic demonstration" : ""}. Priority is the medical-review priority of the finding the result belongs to (the same label as on page 1, in the charts and in the assessment); Trend / data shows a significant change between examinations (TREND REVIEW) and observation-level data-quality checks (CHECK) separately.`, 7.8, [51, 65, 85]);
   const cols = [
-    { k: "Measurement", w: 0.28 }, { k: "Value", w: 0.14 }, { k: "Date", w: 0.07 }, { k: "Class", w: 0.13 }, { k: "Review / data", w: 0.11 }, { k: "Criterion", w: 0.27 },
+    { k: "Measurement", w: 0.25 }, { k: "Value", w: 0.125 }, { k: "Date", w: 0.065 }, { k: "Class", w: 0.125 }, { k: "Priority", w: 0.125 }, { k: "Trend / data", w: 0.11 }, { k: "Criterion", w: 0.2 },
   ].map((x) => ({ ...x, w: x.w * CW }));
+  const TB = 5.9; // table badge size (pt)
   const xs = cols.map((_, i) => MX + cols.slice(0, i).reduce((s, x) => s + x.w, 0));
   const head = () => {
     L.fill(COLOR.navy);
@@ -1101,10 +1102,15 @@ function results(L: P, r: PremiumReport) {
     L.y += 5.6;
   };
   const crit = (x: ResultRow) => (x.criterionShort === undefined ? `${x.criterionText}${x.limitation ? ` ${x.limitation}` : ""}` : `${x.criterionShort || "—"}${x.notes?.length ? ` ${x.notes.join(" ")}` : ""}`);
+  const trendData = (x: ResultRow): [BadgeKind, string][] => [
+    ...(x.axes.review.value === "HIGH" ? ([["trend", TREND_REVIEW_LABEL]] as [BadgeKind, string][]) : []),
+    ...(x.axes.dataQuality.value === "DATA_QUALITY_WARNING" ? ([["check", "CHECK"]] as [BadgeKind, string][]) : []),
+  ];
+  const priH = (x: ResultRow) => (showsPriority(x.priority) ? 4.4 : 0) + (x.patternDataCheck ? 2.9 : 0);
   const rowH = (x: ResultRow) => {
-    const a = L.wrap(x.name, 7.7, cols[0]!.w - 2.5).length, b = L.wrap(crit(x), 6.9, cols[5]!.w - 2.5).length;
+    const a = L.wrap(x.name, 7.7, cols[0]!.w - 2.5).length, b = L.wrap(crit(x), 6.9, cols[6]!.w - 2.5).length;
     const v = L.capped(`${x.valueText} ${x.unit}`, 7.7, cols[1]!.w - 2.5, 2, true).length;
-    return Math.max(a * lh(7.7), v * lh(7.7), b * lh(6.9), 4.3) + 1.5;
+    return Math.max(a * lh(7.7), v * lh(7.7), b * lh(6.9), 4.3, trendData(x).length * 4.4, priH(x)) + 1.5;
   };
   L.ensure(20);
   head();
@@ -1124,11 +1130,15 @@ function results(L: P, r: PremiumReport) {
       L.lines(L.capped(`${x.valueText} ${x.unit}`, 7.7, cols[1]!.w - 2.5, 2, true), xs[1]! + 1.2, L.y + 0.5, 7.7, true, col);
       L.lines([L.t(x.date.slice(5).replace("-", "/"))], xs[2]! + 1.2, L.y + 0.5, 7.4);
       badge(L, badgeOf(x.displayClass), x.basis === "provisional" ? `${badgeLabel(x.displayClass, "approved")} PROV.` : badgeLabel(x.displayClass, x.basis), xs[3]! + 1.2, L.y + 0.8);
-      let bx = xs[4]! + 1.2;
-      if (x.axes.review.value === "HIGH") bx += badge(L, "flag", "HIGH", bx, L.y + 0.8) + 1;
-      if (x.axes.dataQuality.value === "DATA_QUALITY_WARNING") badge(L, "check", "CHECK", bx, L.y + 0.8);
-      else if (x.axes.review.value !== "HIGH") L.lines(["—"], bx, L.y + 0.5, 7.4, false, COLOR.muted);
-      L.lines(L.wrap(crit(x), 6.9, cols[5]!.w - 2.5), xs[5]! + 1.2, L.y + 0.6, 6.9, false, [51, 65, 85]);
+      // Priority: the finding's medical-review priority (never derived from the size of a change).
+      if (showsPriority(x.priority)) badge(L, PRIORITY_BADGE[x.priority], COMPACT_PRIORITY[x.priority], xs[4]! + 1.2, L.y + 0.8, TB, false);
+      else L.lines(["—"], xs[4]! + 1.2, L.y + 0.5, 7.4, false, COLOR.muted);
+      if (x.patternDataCheck) L.lines([L.t("+ pattern check †")], xs[4]! + 1.2, L.y + 0.6 + (showsPriority(x.priority) ? 4.4 : 0), 5.8, false, COLOR.violet, 1.2);
+      // Trend / data: significant change and observation-level data-quality checks, stacked (never side by side).
+      const td = trendData(x);
+      td.forEach(([k, label], i) => badge(L, k, label, xs[5]! + 1.2, L.y + 0.8 + i * 4.4, TB));
+      if (!td.length) L.lines(["—"], xs[5]! + 1.2, L.y + 0.5, 7.4, false, COLOR.muted);
+      L.lines(L.wrap(crit(x), 6.9, cols[6]!.w - 2.5), xs[6]! + 1.2, L.y + 0.6, 6.9, false, [51, 65, 85]);
       L.y += h;
       L.draw(COLOR.rule);
       L.pdf.setLineWidth(0.15);
@@ -1200,9 +1210,11 @@ function frame(L: P, r: PremiumReport) {
     L.pdf.setLineWidth(0.25);
     L.pdf.line(MX, H - 11.5, W - MX, H - 11.5);
     const synth = r.header.provenance === "synthetic" ? " · SYNTHETIC DEMONSTRATION DATA" : "";
-    L.font(6.6, false, COLOR.muted);
-    // Shortened to stay clear of the page number.
-    L.pdf.text(L.capped(`MITOCHONDRIA · Health Intelligence Report · ${r.header.astronaut}${synth} · Preliminary automated assessment — not a diagnosis`, 6.6, CW - 24, 1)[0] ?? "", MX, H - 8);
+    // P60.1: the complete footer is printed (wrapping to a second line when needed) instead of being cut short.
+    const foot = L.wrap(`MITOCHONDRIA · Health Intelligence Report · ${r.header.astronaut}${synth} · Preliminary automated assessment — not a diagnosis`, 6.4, CW - 24);
+    L.font(6.4, false, COLOR.muted);
+    if (foot.length <= 1) L.pdf.text(foot[0] ?? "", MX, H - 8);
+    else foot.slice(0, 2).forEach((line, i) => L.pdf.text(line, MX, H - 8.6 + i * 2.5));
     L.font(7, true, COLOR.navy);
     L.pdf.text(L.t(`Page ${p} of ${pages}`), W - MX, H - 8, { align: "right" });
   }
