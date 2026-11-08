@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { jsPDF } from "jspdf";
 import { renderPremium, type PremiumWriter } from "../src/domain/health-intelligence/p59-premium-pdf";
 import { premiumFrom, smallNormal, complexAbnormal, MITO_DEMO_MISSION_ID } from "../tests/support/p59-fixtures";
-import { alexNovemberExport, largeSynthetic } from "../tests/support/p60-fixtures";
+import { alexNovemberExport, largeSynthetic, missingContextAmbiguous } from "../tests/support/p60-fixtures";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const out = process.argv[2] ?? join(ROOT, "p60-preview");
@@ -23,6 +23,7 @@ const sets: [string, () => ReturnType<typeof premiumFrom>][] = [
   ["D3_complex_abnormal_demonstration", () => premiumFrom(complexAbnormal(), demo)],
   ["D6_alex_export_fixture_provisional_off", () => premiumFrom(alexNovemberExport(), { missionId: MITO_DEMO_MISSION_ID })],
   ["D9_large_synthetic_demonstration", () => premiumFrom(largeSynthetic(), demo)],
+  ["D10_missing_context_ambiguous_identities_demonstration", () => premiumFrom(missingContextAmbiguous(), demo)],
 ];
 for (const [name, build] of sets) {
   const r = build();

@@ -610,6 +610,15 @@
 - [x] Baseline matched P59 exactly; patch applied (14 files, all checksums match).
 - [x] Typecheck, lint, full suite, targeted suites, build, real-font PDF renders and geometry check.
 - [x] UI: demonstration checkbox only for synthetic; census identical with demonstration on/off.
-- [ ] Results-table "HIGH" review flag vs pattern "MONITORING" wording; purple "5 further findings" panel; chart caption/badge details — wait on owner approval to change.
+- [x] Results-table "HIGH" review flag vs pattern "MONITORING" wording; purple "5 further findings" panel; chart caption/badge details — corrected in P60.1 (owner-approved).
 - [ ] Census of the owner's stored November records vs fixture digest — needs the owner's own device.
 - [ ] Researcher review of the P60 pattern library; owner approval of visual baselines; census TXT button decision.
+
+## P60.1 Priority consistency, readability and production release (owner-authorized)
+
+- [x] One medical-review priority per result shared by page 1, charts, assessments and the results table; TREND REVIEW and observation-level CHECK separate; pattern-level DATA CHECK marked † without becoming a measurement error.
+- [x] Mixed page-1 overflow panel neutral; chart title/badge spacing, band captions, non-negative axes, untruncated map cards, page-1 cards, overview answers and footer; body-system tiles kept together.
+- [x] 25 regression tests; full suite, typecheck, lint, security audit, project checks, build, real-font renders (Alex on/off, small normal, complex, missing context, large) and geometry check.
+- [x] Signed-in Ground Medical browser export (demonstration on/off, real) — empty test-browser store only.
+- [ ] Publish verified build and check the live site.
+- [ ] Static public sample PDF still shows the earlier P60 labels; replacement needs owner approval.
