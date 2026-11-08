@@ -32,7 +32,9 @@ export type ReviewLedgerKind =
   /** P40: hash-chained biomarker interpretation review events (catalog-level, never synced). */
   | "biomarker-interpretation"
   /** P41: append-only literature evidence bundles and backlog attempts (catalog concepts only, never synced). */
-  | "interpretation-evidence";
+  | "interpretation-evidence"
+  /** P57: hash-chained reference-criteria decisions and server attestations (catalog level, never synced). */
+  | "reference-criteria-review";
 
 export interface ReviewLedgerEntry {
   id: string;
