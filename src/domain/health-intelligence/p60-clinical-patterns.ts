@@ -31,7 +31,7 @@ export interface PatternRow {
   displayClass: "RED" | "AMBER" | "NORMAL" | "NEUTRAL";
   basis: "approved" | "provisional" | "none";
   bandLabel: string | null;
-  /** Review-priority change flag from the existing P56.1 rules. */
+  /** Significant-change (trend review) flag from the existing P56.1 rules — not a medical-review priority. */
   reviewHigh: boolean;
   /** Held for measurement verification (data-quality warning or P57.1 hold). */
   held: boolean;
@@ -213,7 +213,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         ...v2.map((x) => `${vText(x)}.`),
         ...fever.map((o) => `Body temperature ${at(o)} — at or above ${feverMin} °C, the CDC fever definition.`),
         ...crp.map((o) => `${o.row.name} ${at(o)} — above ${crpAbove} mg/L; CDC/AHA advise repeating the test and looking for a source of infection or inflammation.`),
-        ...(il6Rise ? [`IL-6 ${il6.map(val).join(" → ")} (${dayText(il6[0]!.row.date)} → ${dayText(il6.at(-1)!.row.date)}) — review-priority change; no criterion classifies IL-6.`] : []),
+        ...(il6Rise ? [`IL-6 ${il6.map(val).join(" → ")} (${dayText(il6[0]!.row.date)} → ${dayText(il6.at(-1)!.row.date)}) — significant change (trend review); no criterion classifies IL-6.`] : []),
         ...lact.map((o) => `Lactate ${at(o)} — above ${num("lactate", "above")} mmol/L (${shortSource("singer-2016-sepsis3")}); interpret with the sampling conditions.`),
         ...usable("pao2").map((o) => `Arterial oxygen (PaO2) ${at(o)} — recorded; no criterion is applied in this report.`),
         ...usable("spo2").filter((o) => o.v < num("spo2Target", "min")).map((o) => `SpO2 ${at(o)} is below the 94–98 % target range used for acutely ill adults (${shortSource("bts-2017-oxygen")}).`),
@@ -502,7 +502,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         id: "p60-bone", title: "Bone-turnover change and low vitamin D", domains: ["bone"], priority: "MONITORING", rules: ["PP-4"], dataCheck: ocChange && days <= 2 && (ratio >= 2 || ratio <= 0.5),
         dataCheckRecordIds: oc.map((o) => o.row.recordId),
         headline: [ocChange ? `Osteocalcin ${oc.map((o) => o.row.valueText).join(" → ")} ng/mL within ${days} ${days === 1 ? "day" : "days"}` : "", ...[...new Set(vdLow.map((o) => val(o)))].map((v) => `vitamin D ${v} (${vdLow.filter((o) => val(o) === v).map((o) => dayText(o.row.date)).join(", ")})`)].filter(Boolean).join("; ").replace(/^./, (c) => c.toUpperCase()) + ".",
-        rationale: "PP-4: a review-priority change and/or a provisional AMBER vitamin D value; no threshold supports high priority.",
+        rationale: "PP-4: a significant change (trend review) and/or a provisional AMBER vitamin D value; no threshold supports high priority.",
         observed: [
           ...(ocChange ? [`Osteocalcin ${oc.map(at).join(" → ")} (${ratio >= 1 ? `${ratio.toFixed(1)}-fold rise` : `${(1 / ratio).toFixed(1)}-fold fall`}).`] : []),
           ...vdLow.map((o) => `25-hydroxyvitamin D ${at(o)} — ${o.row.bandLabel ?? "AMBER"} (provisional; ${shortSource("nih-ods-vitd")}).`),
@@ -533,10 +533,10 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
       patterns.push(make({
         id: "p60-recovery", title: "Poor sleep efficiency and reduced heart-rate variability", domains: ["recovery"], priority: "MONITORING", rules: ["PP-4"], dataCheck: false,
         headline: [...se.map((o) => `Sleep efficiency ${val(o)}`), ...(hrvDrop ? [`RMSSD ${hrv.map((o) => o.row.valueText).join(" → ")} ms`] : [])].join("; ") + ` (${uniq([...se, ...hrv].map((o) => o.row.date)).sort().map(dayText).join(", ")}).`,
-        rationale: "PP-4: provisional AMBER sleep efficiency and/or a review-priority HRV change; no threshold supports high priority.",
+        rationale: "PP-4: provisional AMBER sleep efficiency and/or a significant HRV change (trend review); no threshold supports high priority.",
         observed: [
           ...se.map((o) => `Sleep efficiency ${at(o)} — ${o.row.bandLabel ?? "AMBER"} (provisional; ${shortSource("nsf-2017-sleep")}).`),
-          ...(hrvDrop ? [`RMSSD ${hrv.map(at).join(" → ")} — review-priority change; no criterion classifies HRV.`] : []),
+          ...(hrvDrop ? [`RMSSD ${hrv.map(at).join(" → ")} — significant change (trend review); no criterion classifies HRV.`] : []),
         ],
         measurement: [`HRV depends strongly on recording length, posture, breathing and time of day (${shortSource("task-force-1996-hrv")}); these conditions are not recorded.`],
         pattern: `Disturbed sleep and lower parasympathetic (vagal) activity${overlap ? " coincide with the acute physiological pattern" : " were recorded in this period"}; they indicate reduced recovery but do not identify a cause.`,

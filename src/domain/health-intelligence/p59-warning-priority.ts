@@ -44,8 +44,8 @@ export const WARNING_PRIORITY_MEANING: Record<WarningPriority, string> = {
 
 export const WARNING_PRIORITY_RULES = [
   { id: "WP-1", priority: "HIGH_PRIORITY_MEDICAL_REVIEW", text: "A contributing result lies in a RED band of an approved criterion, or of a documented literature criterion (provisional, synthetic demonstration) whose per-measurement conditions are all recorded or that has none." },
-  { id: "WP-2", priority: "HIGH_PRIORITY_MEDICAL_REVIEW", text: "A contributing series meets the high review-priority change rules AND a contributing result lies in a band of a diagnostic or action threshold (approved, or provisional literature with no unrecorded per-measurement condition)." },
-  { id: "WP-3", priority: "MONITORING", text: "High review-priority change without WP-1/WP-2, or a contributing result in an AMBER band of a risk category, reference interval or threshold." },
+  { id: "WP-2", priority: "HIGH_PRIORITY_MEDICAL_REVIEW", text: "A contributing series shows a significant change under the trend-review rules AND a contributing result lies in a band of a diagnostic or action threshold (approved, or provisional literature with no unrecorded per-measurement condition)." },
+  { id: "WP-3", priority: "MONITORING", text: "Significant change (trend review) without WP-1/WP-2, or a contributing result in an AMBER band of a risk category, reference interval or threshold." },
   { id: "WP-4", priority: "DATA_CHECK", text: "Measurement-consistency check required. Shown as the panel colour only when no WP-1 to WP-3 evidence exists from other (non-held) results; otherwise added as a separate DATA CHECK badge." },
   { id: "WP-5", priority: "WITHIN_CRITERIA", text: "Every contributing classified result lies within a normal band and no review or data-quality flag applies." },
 ] as const satisfies readonly { id: string; priority: WarningPriority; text: string }[];
@@ -108,7 +108,7 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
   const incomplete = usable.filter((s) => s.basis !== "none" && s.displayClass !== "NORMAL" && !complete(s));
   if (high.length || amber.length)
     return decide("MONITORING", ["WP-3"], [
-      ...(high.length ? [`Review-priority change: ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}; no RED band or diagnostic/action threshold supports high priority.`] : []),
+      ...(high.length ? [`Significant change (trend review): ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}; no RED band or diagnostic/action threshold supports high priority.`] : []),
       ...(amber.length ? [`Band met: ${uniq(amber.map((s) => `${s.name} — ${s.bandLabel ?? "AMBER"} (${basisWord(s.basis)})`)).join("; ")}.`] : []),
       ...(incomplete.length ? [`Not used for high priority because conditions are not recorded: ${uniq(incomplete.flatMap((s) => s.unrecordedConditions ?? [])).join("; ")}.`] : []),
       ...checkNote,
