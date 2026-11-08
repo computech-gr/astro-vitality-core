@@ -102,6 +102,8 @@ export interface PremiumReport {
   demonstrationLabel: string | null;
   /** Warning priority per concern (separate from clinical classification). */
   priorities: Record<string, PriorityDecision>;
+  /** Clinical class statements per concern (separate field from the warning priority). */
+  concernClasses: Record<string, string[]>;
   counts: PremiumCounts;
   rows: ResultRow[];
   alerts: AlertCard[];
@@ -286,6 +288,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     return rows.filter((r) => ids.has(`${r.metricId}|${r.unit}`));
   };
   const priorities: Record<string, PriorityDecision> = {};
+  const concernClasses: Record<string, string[]> = {};
   const summaries: FindingSummary[] = concerns.map((c) => {
     const rs = rowsOfConcern(c);
     const worst = rs.reduce<ResultRow | null>((m, r) => (!m || rank[r.displayClass] > rank[m.displayClass] ? r : m), null);
@@ -303,6 +306,10 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       })),
     });
     priorities[c.concernId] = decision;
+    const classLines = rs
+      .filter((r) => r.displayClass !== "NEUTRAL" && r.basis !== "none")
+      .map((r) => `${r.name} ${r.valueText} ${r.unit} (${r.date}): ${r.displayClass === "NORMAL" ? "GREEN" : r.displayClass}${r.basis === "provisional" ? " (PROVISIONAL)" : ""} — ${r.bandLabel ?? "criterion band"}`);
+    concernClasses[c.concernId] = classLines.length ? [...new Set(classLines)] : ["NEUTRAL — insufficient classification evidence (no applicable criterion for the contributing results)."];
     return {
       priority: decision.priority,
       priorityRationale: decision.rationale,
@@ -416,6 +423,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     options: { provisionalLiterature: input.options.provisionalLiterature, provisionalActive, demonstrationMappingsActive },
     demonstrationLabel: provisionalActive ? DEMONSTRATION_LABEL : null,
     priorities,
+    concernClasses,
     counts, rows, alerts, nextSteps, overview, lead, systems, graph, integrated, charts, concerns, recommendations, basisText,
   };
 }
