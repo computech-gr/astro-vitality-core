@@ -1033,11 +1033,14 @@ export interface TextPdfResult {
   fontMode: "unicode" | "standard";
 }
 
-export async function createTextReportPdf(
-  input: TextReportInput,
-  deps?: { jsPDF?: new (o: Record<string, unknown>) => PdfWriter & { addFileToVFS(n: string, d: string): unknown; addFont(f: string, n: string, s: string): unknown; output(k: "blob"): Blob }; fonts?: ReportFonts | null },
-): Promise<TextPdfResult> {
-  const JsPdf = deps?.jsPDF ?? ((await import("jspdf")).jsPDF as unknown as NonNullable<NonNullable<typeof deps>["jsPDF"]>);
+export interface PdfDeps {
+  jsPDF?: PdfFactory;
+  fonts?: ReportFonts | null;
+}
+
+/** jsPDF + embedded fonts (Latin-1 fallback when the font cannot be loaded). */
+export async function openTextPdf(deps?: PdfDeps): Promise<{ pdf: InstanceType<PdfFactory>; fonts: ReportFonts | null }> {
+  const JsPdf = deps?.jsPDF ?? ((await import("jspdf")).jsPDF as unknown as PdfFactory);
   let fonts: ReportFonts | null = deps && "fonts" in deps ? (deps.fonts ?? null) : null;
   if (!deps || !("fonts" in deps)) {
     try {
@@ -1046,7 +1049,11 @@ export async function createTextReportPdf(
       fonts = null;
     }
   }
-  const pdf = new JsPdf({ unit: "mm", format: "a4", compress: true });
+  return { pdf: new JsPdf({ unit: "mm", format: "a4", compress: true }), fonts };
+}
+
+export async function createTextReportPdf(input: TextReportInput, deps?: PdfDeps): Promise<TextPdfResult> {
+  const { pdf, fonts } = await openTextPdf(deps);
   return renderDocumentToPdf(pdf, fonts, buildReportDocument(input), {
     title: redactProhibitedNames(input.title),
     subject: "Research-only unified health report (searchable text)",
