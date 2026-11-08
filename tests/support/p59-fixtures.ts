@@ -58,7 +58,7 @@ export function complexAbnormal(): UnifiedObservation[] {
   return out;
 }
 
-export function premiumFrom(history: UnifiedObservation[], opts: { provisional?: boolean; mappings?: boolean; approved?: ApprovedCriterion[]; registry?: unknown; provenance?: "synthetic" | "real" } = {}) {
+export function premiumFrom(history: UnifiedObservation[], opts: { provisional?: boolean; mappings?: boolean; missionId?: string; approved?: ApprovedCriterion[]; registry?: unknown; provenance?: "synthetic" | "real" } = {}) {
   const inputs = { domainEntries: {}, unifiedObservations: history, deviceRecords: [] };
   const unified = buildUnifiedHealthReport(inputs as never, V9_SCOPE, { from: "2026-11-01", to: "2026-11-08" }, "2026-11-08T12:00:00.000Z");
   const model = buildResearcherInterpretation(unified, buildScientificFindings(unified), []);
@@ -66,6 +66,8 @@ export function premiumFrom(history: UnifiedObservation[], opts: { provisional?:
   const assessment = buildHealthAssessment({ unified, model, biomarkers, identity: { missionName: "MITO_DEMO_2026", crewDisplayName: "Alex Morgan" }, scopeHistory: unified.rows });
   if (opts.provenance === "real") (assessment.header as { provenance: string }).provenance = "real";
   const report = buildProfessionalReport({ assessment, biomarkers });
-  return buildPremiumReport({ report, unified, biomarkers, approved: opts.approved ?? [], missionId: V9_SCOPE.missionId, options: { provisionalLiterature: Boolean(opts.provisional), demonstrationMappings: Boolean(opts.mappings) }, provisionalRegistry: opts.registry });
+  return buildPremiumReport({ report, unified, biomarkers, approved: opts.approved ?? [], missionId: opts.missionId ?? V9_SCOPE.missionId, options: { provisionalLiterature: Boolean(opts.provisional), demonstrationMappings: Boolean(opts.mappings) }, provisionalRegistry: opts.registry });
 }
 export { V9_SCOPE };
+/** Mission of the MITO_DEMO_2026 synthetic demonstration (demonstration mappings are scoped to it). */
+export const MITO_DEMO_MISSION_ID = "mission-9d8ce8f3e5554509a0885461f9ad2e1c";
