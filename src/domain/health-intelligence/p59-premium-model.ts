@@ -285,10 +285,27 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     const ids = new Set(c.contributorKeys.map((k) => contributors.find((x) => x.key === k)).filter((x): x is Contributor => Boolean(x)).map((x) => `${x.metricId}|${x.unit}`));
     return rows.filter((r) => ids.has(`${r.metricId}|${r.unit}`));
   };
+  const priorities: Record<string, PriorityDecision> = {};
   const summaries: FindingSummary[] = concerns.map((c) => {
     const rs = rowsOfConcern(c);
     const worst = rs.reduce<ResultRow | null>((m, r) => (!m || rank[r.displayClass] > rank[m.displayClass] ? r : m), null);
+    const decision = concernWarningPriority({
+      concernPriority: c.priority,
+      series: rs.map((r) => ({
+        name: `${r.name} ${r.valueText} ${r.unit}`,
+        displayClass: r.displayClass,
+        basis: r.basis,
+        criterionKind: r.criterionKind,
+        bandLabel: r.bandLabel,
+        highReview: r.axes.review.value === "HIGH",
+        dataCheck: r.axes.dataQuality.value === "DATA_QUALITY_WARNING" || r.provisional?.status === "HELD" || r.axes.clinical.reason === "held",
+      })),
+    });
+    priorities[c.concernId] = decision;
     return {
+      priority: decision.priority,
+      priorityRationale: decision.rationale,
+      priorityRules: decision.rules,
       id: c.concernId,
       title: c.title,
       clinical: worst?.displayClass ?? "NEUTRAL",
