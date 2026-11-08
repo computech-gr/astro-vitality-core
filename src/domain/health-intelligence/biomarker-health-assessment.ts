@@ -409,6 +409,8 @@ export interface BiomarkerAssessmentReport {
   entries: BiomarkerAssessment[];
   counts: Record<Severity, number>;
   referenceRegistry: { version: number; verifiedEntries: number; excluded: number };
+  /** P57: approved (server-attested) criteria supplied to this build and results they classified. */
+  criteria: { approved: number; classified: number };
   policy: string[];
 }
 
@@ -424,7 +426,7 @@ function approvedContent(r: ResolvedInterpretation | null) {
 }
 
 export const ASSESSMENT_POLICY: readonly string[] = [
-  "Colour and status come only from an applicable, independently verified reference interval or decision threshold for the exact biomarker, unit and domain, or from an approved adverse rule; everything else is NEUTRAL.",
+  "Colour and status come only from an applicable, independently verified reference interval or decision threshold for the exact biomarker, unit and domain, from a Researcher-approved P57 reference criterion whose applicability requirements are all met, or from an approved adverse rule; everything else is NEUTRAL.",
   NOT_HARMFUL_BY_CHANGE_TEXT,
   "Units are never converted; a reference in another unit is not applied. Terrestrial references are applied to astronauts only with their stated applicability and limitations.",
   "No diagnosis is generated. A newly activated catalog biomarker does not acquire an approved interpretation automatically.",
@@ -570,6 +572,7 @@ export function buildBiomarkerAssessment(
     entries,
     counts,
     referenceRegistry: { version: registry.version, verifiedEntries: registry.entries.length, excluded: registry.excluded.length },
+    criteria: { approved: options.criteria?.length ?? 0, classified: entries.filter((e) => e.classification.reason === "approved_criterion").length },
     policy: [...ASSESSMENT_POLICY],
   };
 }
