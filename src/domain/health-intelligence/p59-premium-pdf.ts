@@ -652,6 +652,10 @@ function singlePanel(L: P, title: string, cs: PremiumChart[], x: number, y: numb
 
 function longitudinal(L: P, r: PremiumReport) {
   L.y += 2;
+  // Keep the heading, its intro and the first chart row together (no orphan heading).
+  const firstRow = r.charts.filter((c) => c.base.kind === "line").slice(0, 2);
+  const firstH = firstRow.length ? Math.max(...firstRow.map((c) => chartPanel(L, c, 0, 0, COL2, true))) : 0;
+  L.ensure(12 + 14 + firstH);
   L.h2("Longitudinal biomarker intelligence", 80);
   L.para("Every chart shows only observed values, on their actual dates and in their original units. Coloured bands appear only where an approved (or, in demonstration mode, a provisional literature) criterion applies. Hollow violet markers and dashed lines: measurement must be verified first. Grey: unclassified.", 8, [51, 65, 85]);
   const line = r.charts.filter((c) => c.base.kind === "line");
