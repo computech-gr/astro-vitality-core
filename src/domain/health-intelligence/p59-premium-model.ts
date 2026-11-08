@@ -293,6 +293,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       concernPriority: c.priority,
       series: rs.map((r) => ({
         name: `${r.name} ${r.valueText} ${r.unit}`,
+        seriesName: r.name,
         displayClass: r.displayClass,
         basis: r.basis,
         criterionKind: r.criterionKind,

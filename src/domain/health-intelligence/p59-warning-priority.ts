@@ -51,7 +51,10 @@ export const WARNING_PRIORITY_RULES = [
 ] as const satisfies readonly { id: string; priority: WarningPriority; text: string }[];
 
 export interface PriorityEvidence {
+  /** Observation label including value and unit. */
   name: string;
+  /** Series label without value (used for change-based statements). */
+  seriesName?: string;
   displayClass: "RED" | "AMBER" | "NORMAL" | "NEUTRAL";
   basis: "approved" | "provisional" | "none";
   /** Kind of the criterion that produced the class (null when NEUTRAL). */
