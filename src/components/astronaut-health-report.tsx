@@ -433,7 +433,7 @@ export function AstronautHealthReport() {
     const timer = window.setTimeout(() => {
       void elaborateAi({ data: { missionId: reviewScope.missionId, crewMemberId: reviewScope.crewMemberId, packet: clinicalPacket } })
         .then((r): PreliminaryClinicalAssessment =>
-          r.ok ? mergeClinicalAi(deterministicClinical, clinicalPacket, { output: r.output, rejected: r.rejected, model: r.model }) : { ...deterministicClinical, aiStatus: `Deterministic clinical reasoning engine. ${r.message}` },
+          r.ok ? mergeClinicalAi(deterministicClinical, clinicalPacket, { output: r.output, rejected: r.rejected, model: r.model }) : { ...deterministicClinical, aiStatus: r.message },
         )
         .catch((): PreliminaryClinicalAssessment => ({ ...deterministicClinical, aiStatus: "Deterministic clinical reasoning engine (the AI step could not be reached)." }))
         .then((result) => {
