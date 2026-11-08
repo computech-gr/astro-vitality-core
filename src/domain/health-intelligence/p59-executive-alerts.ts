@@ -40,6 +40,11 @@ export interface AlertCard {
   clinical?: FindingSummary["clinical"];
   clinicalBasis?: FindingSummary["clinicalBasis"];
   dataCheck?: boolean;
+  /**
+   * P60.1: an overflow card that groups findings of different warning priorities. It is styled neutrally;
+   * purple is reserved for actual DATA CHECK information and red/amber for the matching priority.
+   */
+  mixed?: boolean;
 }
 
 const tier = (f: FindingSummary): [CardKind, number] | null => {
@@ -104,6 +109,7 @@ export function selectExecutiveAlerts(findings: readonly FindingSummary[], max =
         ? [...new Set(rest.map((r) => r.f.priority!))].map((p) => `${WARNING_PRIORITY_LABEL[p].charAt(0)}${WARNING_PRIORITY_LABEL[p].slice(1).toLowerCase()}: ${rest.filter((r) => r.f.priority === p).map((r) => r.f.title).join("; ")}.`).join(" ")
         : rest.map((r) => r.f.title).join("; "),
       nextStep: "See the Preliminary Medical Assessment.",
+      mixed: new Set(rest.map((r) => r.f.priority ?? r.t[0])).size > 1,
       ...(first.priority ? { priority: first.priority, priorityLabel: WARNING_PRIORITY_LABEL[first.priority], rationale: "Each finding's priority and its rationale are listed in the Preliminary Medical Assessment.", rules: [], clinical: "NEUTRAL" as const, clinicalBasis: "none" as const, dataCheck: false } : {}),
     });
   }
