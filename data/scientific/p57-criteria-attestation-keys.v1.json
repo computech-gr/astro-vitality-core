@@ -1,0 +1,11 @@
+{
+  "schema": "mitochondria.p57-criteria-attestation-keys.v1",
+  "note": "Public Ed25519 keys trusted for P57 reference-criteria decision attestations only. The private key is derived on the server from the existing secret-store seed with the label mitochondria.p57.criteria-attestation.v1| and never leaves server memory.",
+  "keys": [
+    {
+      "keyId": "p57-criteria-attestation-2026-11-08",
+      "publicKeySpkiBase64": "MCowBQYDK2VwAyEASjBoTd6aUE3k1plKBI47d1v+r4uj7WOraP/4PLW8xmM=",
+      "environment": "criteria_attestation"
+    }
+  ]
+}
