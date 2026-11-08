@@ -186,3 +186,22 @@ export function clarifyFit(g: GroundRecord): ActionFit {
   if (g.status === "already_active") return blocked("Already active; nothing to clarify.");
   return ok;
 }
+
+/** Text-only Ground Medical clarification note; it is never recorded and authorizes nothing. */
+export function clarificationNote(
+  missionLabel: string,
+  records: readonly GroundRecord[],
+  when: string,
+) {
+  return [
+    `MITOCHONDRIA — Ground Medical clarification request (SYNTHETIC DEMO)`,
+    `Mission: ${missionLabel}`,
+    `Prepared: ${when}`,
+    `Not recorded in any system; it activates or approves nothing.`,
+    "",
+    ...records.map((g) => {
+      const e = g.row.proposal.entry;
+      return `- ${e.displayName} · ${e.unit} · ${e.domain} (${g.row.proposal.termId}, decision ${g.row.proposal.decisionEventId}): ${GROUND_STATUS_LABEL[g.status]} — ${g.reason}`;
+    }),
+  ].join("\n");
+}

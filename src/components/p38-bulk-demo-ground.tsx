@@ -48,6 +48,7 @@ import {
   GROUND_ACTION_LABEL,
   GROUND_STATUS_LABEL,
   activateFit,
+  clarificationNote,
   clarifyFit,
   groundRecord,
   type GroundBulkAction,
@@ -75,24 +76,6 @@ const ACTION_DESCRIPTION: Record<GroundBulkAction, string> = {
   clarify: "Prepares a clarification note for the Researcher (text only; nothing is recorded).",
 };
 const idOf = (g: GroundRecord) => g.row.proposal.decisionEventId;
-
-export function clarificationNote(
-  missionLabel: string,
-  records: readonly GroundRecord[],
-  when: string,
-) {
-  return [
-    `MITOCHONDRIA — Ground Medical clarification request (SYNTHETIC DEMO)`,
-    `Mission: ${missionLabel}`,
-    `Prepared: ${when}`,
-    `Not recorded in any system; it activates or approves nothing.`,
-    "",
-    ...records.map((g) => {
-      const e = g.row.proposal.entry;
-      return `- ${e.displayName} · ${e.unit} · ${e.domain} (${g.row.proposal.termId}, decision ${g.row.proposal.decisionEventId}): ${GROUND_STATUS_LABEL[g.status]} — ${g.reason}`;
-    }),
-  ].join("\n");
-}
 
 export function P38BulkDemoGround({
   missionId,
