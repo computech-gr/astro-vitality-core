@@ -104,11 +104,11 @@ function buildDocument(a: HealthAssessment, level: number, pageException: boolea
   const brief = a.findings.filter((f) => !detailed.includes(f));
   for (const f of detailed) {
     blocks.push(
-      { kind: "h3", text: mark(f.marker, f.severity, `${f.title}${reviewTag(f)}${f.exploratory ? " — exploratory" : ""}`), tone: findingTone(f) },
-      { kind: "p", text: `What changed: ${f.whatChanged}`, size: 8.5, tone: f.severity !== "neutral" ? f.severity : undefined },
+      { kind: "h3", text: mark(f.marker, f.severity, `${f.title}${reviewTag(f)}${f.exploratory ? " — exploratory" : ""}`), ...(findingTone(f) ? { tone: findingTone(f)! } : {}) },
+      { kind: "p", text: `What changed: ${f.whatChanged}`, size: 8.5, ...(f.severity !== "neutral" ? { tone: f.severity } : {}) },
       ...(f.combined ? [{ kind: "p", text: `Together: ${f.combined}`, size: 8.5 } as Block] : []),
       ...(level <= 1 && f.reviewPriority !== "none" ? [{ kind: "p", text: `How they relate: ${f.relationship}`, size: 8, muted: true } as Block] : []),
-      { kind: "p", text: `Interpretation: ${f.interpretation}`, size: 8.5, tone: f.severity !== "neutral" ? f.severity : undefined },
+      { kind: "p", text: `Interpretation: ${f.interpretation}`, size: 8.5, ...(f.severity !== "neutral" ? { tone: f.severity } : {}) },
       ...(f.uncertainty.length && level <= 2 ? [{ kind: "p", text: `Uncertainty: ${f.uncertainty.join(" ")}`, size: 8, muted: true } as Block] : []),
     );
   }

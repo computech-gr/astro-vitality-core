@@ -232,7 +232,7 @@ export interface HealthAssessmentInput {
   /** Review rules override (tests); defaults to the bundled, validated rules. */
   reviewRules?: ReviewRules | null;
   /** Included rows of the SAME scope without the date filter, used only to say "measured outside the period". */
-  scopeHistory?: readonly ReportRow[];
+  scopeHistory?: readonly ReportRow[] | undefined;
 }
 
 export interface HealthAssessment {
