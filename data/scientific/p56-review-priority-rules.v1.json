@@ -1,0 +1,87 @@
+{
+  "schema": "mitochondria.p56-review-priority-rules.v1",
+  "version": 1,
+  "status": "PENDING_SCIENTIFIC_REVIEW",
+  "note": "Owner-requested P56.1 review-triage rules. They decide which recorded changes are brought to the attention of Ground Medical and the scientific reviewer, and in what order. They are NOT reference intervals, decision thresholds or clinical criteria: they never set RED, AMBER or NORMAL, never call a value abnormal and never establish a diagnosis. Percentages are relative changes between consecutive comparable examinations of the same exact catalog ID and exact unit. All values and statements are pending independent scientific review and may only be changed through a reviewed patch.",
+  "largeChange": {
+    "ruleId": "P561-R1-large-change",
+    "percent": 50,
+    "statement": "A change of at least 50% between consecutive comparable examinations is brought forward for scientific and medical review. The size of a change does not show whether it is harmful."
+  },
+  "transientExtreme": {
+    "ruleId": "P561-R2-transient-extreme",
+    "percent": 50,
+    "statement": "An intermediate peak or trough that differs by at least 50% from both the first and the last value in the period is reported explicitly, because comparing only the first and last values would hide it."
+  },
+  "tightlyRegulated": {
+    "ruleId": "P561-R3-tightly-regulated",
+    "percent": 10,
+    "ids": ["cv-070", "demo:ubt-2841fb44", "cv-071", "demo:ubt-4afd25a0", "cv-072", "demo:ubt-c30c0952", "bone-013", "bone-014", "cv-073", "demo:ubt-d71e8b4d"],
+    "statement": "Blood sodium, potassium, magnesium and calcium are normally held within narrow limits by the body, so a change of at least 10% between consecutive examinations is brought forward for prompt Ground Medical review, together with a check of sample handling and measurement reliability."
+  },
+  "slowMarkers": [
+    {
+      "ruleId": "P561-R4-slow-marker-hba1c",
+      "ids": ["cv-085"],
+      "name": "HbA1c",
+      "minimumDays": 28,
+      "percent": 10,
+      "statement": "HbA1c reflects average blood glucose over roughly the previous two to three months, so a large change within days is not biologically expected. The calculated difference is mathematically correct, but before it is interpreted the sample identity, laboratory method and data entry must be checked. It must not be described as a metabolic improvement or deterioration."
+    }
+  ],
+  "patternGuidance": {
+    "fluid_electrolyte_renal": {
+      "combined": "Sodium and potassium are regulated together by the kidneys and by hormones such as aldosterone; large changes in both over the same interval can affect nerve and heart-muscle function, which is why they are reviewed together. Simultaneous large changes can also come from sample handling (for example a delayed or haemolysed sample raising potassium) or fluid shifts, so measurement reliability, collection conditions and clinical context must be checked before any interpretation.",
+      "recommendations": [
+        { "category": "ground_medical", "authorization": "clinician_required", "text": "Review the electrolyte changes promptly and repeat appropriate confirmatory measurements under Ground Medical supervision; the timing should be decided by Ground Medical rather than deferred to the next routine examination." },
+        { "category": "further_examination", "authorization": "clinician_required", "text": "Check sample collection and handling, fluid intake and urine output, and kidney function (creatinine or eGFR) alongside the repeat measurements." }
+      ]
+    },
+    "inflammation_immune": {
+      "combined": "IL-6 is a short-acting inflammatory signal that can rise sharply with infection, injury, intense exercise, stress or sample handling. On its own it cannot establish infection or a systemic inflammatory condition; supporting evidence such as CRP, white-cell counts, body temperature and symptoms is needed.",
+      "recommendations": [
+        { "category": "ground_medical", "authorization": "clinician_required", "text": "Review symptoms, sample collection conditions and supporting inflammatory evidence (CRP, white-cell count, body temperature) before the inflammatory-marker change is interpreted." },
+        { "category": "recovery", "authorization": "general_wellness", "text": "Record symptoms, intense exercise and sleep around the next blood test so the inflammatory-marker change can be placed in context." }
+      ]
+    },
+    "bone_mineral": {
+      "combined": "Bone formation markers (such as osteocalcin and P1NP) and breakdown markers (such as CTX) are interpreted together, alongside calcium, phosphate, parathyroid hormone and vitamin D, which regulate the mineral supply to bone. A large change in one formation marker without matching breakdown, mineral and imaging evidence cannot establish bone loss or osteoporosis.",
+      "recommendations": [
+        { "category": "physical_activity", "authorization": "general_wellness", "text": "Review adherence to the prescribed resistance-exercise loading, the main countermeasure against bone breakdown in microgravity." },
+        { "category": "nutrition", "authorization": "clinician_required", "text": "Ground Medical should review calcium and vitamin D adequacy; MITOCHONDRIA does not suggest supplements or doses." },
+        { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical may request repeat bone-formation and bone-breakdown markers together and, where warranted, bone-density imaging." }
+      ]
+    },
+    "cardiometabolic": {
+      "combined": "Blood sugar markers change on different time scales: glucose varies from hour to hour, while HbA1c reflects about two to three months. Triglycerides vary strongly with recent meals and fasting state. A large short-interval change therefore first calls for a check of measurement consistency and fasting conditions.",
+      "recommendations": [
+        { "category": "further_examination", "authorization": "clinician_required", "text": "Review measurement consistency (sample identity, laboratory method, fasting state and data entry) and request relevant follow-up tests such as fasting glucose and a repeat lipid panel." },
+        { "category": "nutrition", "authorization": "general_wellness", "text": "Record actual food intake and fasting time before the next metabolic blood test." }
+      ]
+    },
+    "sleep_cognition": {
+      "combined": "Sleep duration, efficiency and alertness tests are interpreted together with heart-rate variability and the work/rest schedule.",
+      "recommendations": [
+        { "category": "sleep", "authorization": "general_wellness", "text": "Review sleep duration, the work/rest schedule and recovery indicators around the recorded change." }
+      ]
+    },
+    "cardiovascular_function": {
+      "combined": "Heart rate, blood pressure and cardiac measurements depend on posture, hydration, exercise and measurement method, so these must match before a change is interpreted.",
+      "recommendations": [
+        { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the cardiovascular change and confirm that posture, timing and method were the same for both measurements." }
+      ]
+    },
+    "coagulation": {
+      "combined": "Clotting markers are interpreted together with venous ultrasound findings.",
+      "recommendations": [
+        { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the clotting-marker change together with the venous ultrasound findings." }
+      ]
+    },
+    "blood_oxygen_transport": {
+      "combined": "Hemoglobin and hematocrit are concentrations, so they are interpreted together with plasma volume and hydration.",
+      "recommendations": [
+        { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical should review the red-cell change together with plasma volume and hydration measurements." }
+      ]
+    }
+  }
+}
