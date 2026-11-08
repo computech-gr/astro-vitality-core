@@ -565,3 +565,12 @@
 - [x] Automatic analysis on report generation; existing authorized AI path used only within its scope, deterministic fallback otherwise.
 - [x] Redesigned screen (2–4 page structure) with optional technical appendix; concise PDF (default) plus separate technical appendix PDF; prohibited name removed from exported text.
 - [x] Tests, full checks, PDF render inspection, browser check.
+
+## P56.1 Clinical interpretation, review prioritization and compact PDF
+
+- [ ] Root-cause audit of missing verified reference criteria (registry, handbooks, matrix, demo catalog, P41 records, source PDF).
+- [ ] Full longitudinal profile per series (first/last/min/max, peaks, troughs, reversals, intervals) and HbA1c plausibility.
+- [ ] Auditable review-priority rules (pending scientific review), separate from RED/AMBER/NORMAL/NEUTRAL; red text for validated adverse findings.
+- [ ] Cross-marker reasoning, finding-specific recommendations, single methodology note, missing-evidence provenance.
+- [ ] Compact PDF (≤4 pages, single-day without charts); screen and TXT parity.
+- [ ] Regression tests (Scenario A single-day, Scenario B multi-day), full checks, PDF visual and browser verification.
