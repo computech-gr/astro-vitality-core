@@ -100,7 +100,9 @@ export function selectExecutiveAlerts(findings: readonly FindingSummary[], max =
     cards.push({
       kind: rest[0]!.t[0], findingIds: rest.map((r) => r.f.id), title: usesPriority ? `${rest.length} further findings` : `${rest.length} further findings to monitor`,
       badges: [],
-      evidence: rest.map((r) => (r.f.priority ? `${r.f.title} — ${WARNING_PRIORITY_LABEL[r.f.priority].toLowerCase()}` : r.f.title)).join("; "),
+      evidence: usesPriority
+        ? [...new Set(rest.map((r) => r.f.priority!))].map((p) => `${WARNING_PRIORITY_LABEL[p].charAt(0)}${WARNING_PRIORITY_LABEL[p].slice(1).toLowerCase()}: ${rest.filter((r) => r.f.priority === p).map((r) => r.f.title).join("; ")}.`).join(" ")
+        : rest.map((r) => r.f.title).join("; "),
       nextStep: "See the Preliminary Medical Assessment.",
       ...(first.priority ? { priority: first.priority, priorityLabel: WARNING_PRIORITY_LABEL[first.priority], rationale: "Each finding's priority and its rationale are listed in the Preliminary Medical Assessment.", rules: [], clinical: "NEUTRAL" as const, clinicalBasis: "none" as const, dataCheck: false } : {}),
     });

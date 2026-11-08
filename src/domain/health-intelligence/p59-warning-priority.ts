@@ -76,7 +76,7 @@ export interface PriorityDecision {
 }
 
 const THRESHOLD_KINDS = new Set(["diagnostic_threshold", "action_threshold", "critical_limit"]);
-const basisWord = (b: PriorityEvidence["basis"]) => (b === "approved" ? "approved criterion" : "provisional literature criterion");
+const basisWord = (b: PriorityEvidence["basis"]) => (b === "approved" ? "approved" : "provisional");
 const uniq = (xs: string[]) => xs.filter((x, i) => xs.indexOf(x) === i);
 
 export function concernWarningPriority(input: { concernPriority: ConcernPriority; series: readonly PriorityEvidence[] }): PriorityDecision {
@@ -100,8 +100,7 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
   const threshold = usable.filter((s) => s.basis !== "none" && complete(s) && (s.displayClass === "AMBER" || s.displayClass === "RED") && s.criterionKind !== null && THRESHOLD_KINDS.has(s.criterionKind));
   if (high.length && threshold.length)
     return decide("HIGH_PRIORITY_MEDICAL_REVIEW", ["WP-2"], [
-      `Rapid change meeting the review-priority rules: ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}.`,
-      `Threshold met: ${uniq(threshold.map((s) => `${s.name} — ${s.bandLabel ?? "threshold band"} (${basisWord(s.basis)})`)).join("; ")}.`,
+      `Threshold met — ${uniq(threshold.map((s) => `${s.name}: ${s.bandLabel ?? "threshold band"} (${basisWord(s.basis)})`)).join("; ")} — with rapid change in ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}.`,
       ...checkNote,
     ]);
 

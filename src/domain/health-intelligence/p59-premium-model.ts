@@ -419,7 +419,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   if (report.clinical.crossDomain.length) integrated.push({ heading: "Across body systems", paragraphs: report.clinical.crossDomain.map((x) => x.text), evidenceKeys: report.clinical.crossDomain.flatMap((x) => x.contributorKeys) });
 
   const mappedRows = rows.filter((r) => r.identityRoute?.kind === "demonstration_mapping");
-  const basisText = `Clinical classes: ${counts.approvedCriteria} Researcher-approved criteria for this mission${provisionalActive ? "; PROVISIONAL classes come from documented literature criteria (synthetic demonstration only; never validated alerts)" : ""}${demonstrationMappingsActive ? `; ${new Set(mappedRows.map((r) => r.metricId)).size} synthetic identity mapping(s) applied (owner-directed, not Researcher-approved)` : ""}. Panel colour = warning priority, a separate field from each result's clinical class; a DATA CHECK never hides a medical-review priority. General-population criteria are not NASA flight limits.`;
+  const basisText = `Clinical classes: ${counts.approvedCriteria} Researcher-approved criteria for this mission${provisionalActive ? "; PROVISIONAL = documented literature criterion (synthetic demonstration only; never a validated alert)" : ""}${demonstrationMappingsActive ? `; ${new Set(mappedRows.map((r) => r.metricId)).size} synthetic identity mapping(s) applied (owner-directed)` : ""}. Panel colour = warning priority, separate from each result's clinical class. General-population criteria are not NASA flight limits.`;
 
   return {
     schema: PREMIUM_REPORT_SCHEMA, version: PREMIUM_GENERATOR_VERSION, base: report, header,
