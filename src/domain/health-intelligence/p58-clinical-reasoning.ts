@@ -66,7 +66,7 @@ export interface ConcernLibrary {
 }
 
 /** Medication doses (concentration units such as "mg/L" or "mg/dL" are measurements, not doses). */
-export const DOSE_PATTERN = /\b\d+(?:\.\d+)?\s*(?:mg|µg|μg|mcg|iu|g|ml|mmol)\b(?!\s*\/)|\bdos(?:e|es|ing)\b|\bprescrib\w*|\bsupplement with\b|\btake \d/i;
+export const DOSE_PATTERN = /\b\d+(?:\.\d+)?\s*(?:mg|µg|μg|mcg|iu|g|ml|mmol)\b(?!\s*\/)|\bdos(?:e|es|ing)\b|\bprescrib\w*\s+(?:a |an |the )?(?:drugs?|medications?|medicines?|tablets?|supplements?)\b|\bsupplement with\b|\btake \d/i;
 const filled = (s: unknown, min = 1): s is string => typeof s === "string" && s.trim().length >= min;
 const strings = (a: unknown, min = 1) => Array.isArray(a) && a.length >= min && a.every((x) => filled(x, 5));
 
@@ -463,7 +463,7 @@ export function clinicalPacketPrivacyProblem(p: ClinicalPacket): string | null {
 const CONFIRMED = /\b(?:confirm(?:s|ed)\s+(?:a|the)?\s*diagnos|definitive(?:ly)?|diagnosed with|is diagnostic of|establish(?:es|ed)? (?:a |the )?diagnosis|the (?:patient|astronaut|crew member) has\b)/i;
 const PROBABILITY = /\bprobabilit\w*|\b\d+(?:\.\d+)?\s*%\s*(?:chance|probability|likelihood|risk|confidence)|\bconfidence (?:level|interval|of|score)\b|\bodds of\b|\bpercent chance\b/i;
 const INVENTED = /\b(?:history of|medical history|family history|reported pain|on examination|physical exam\w*)\b|\b(?:has|had|reports?|reported|complains?|complained|experienc\w+|presents? with)\b[^.]{0,40}\bsymptom/i;
-const TREATMENT = /\b(?:treat(?:ment|ed|ing)? with|start (?:on|taking)|administer|prescrib\w*|dos(?:e|es|ing))\b/i;
+const TREATMENT = /\b(?:treat(?:ment|ed|ing)? with|start (?:on|taking)|administer|dos(?:e|es|ing)|supplement(?:s|ation|ing)?|medication|metformin|insulin therapy|statins?)\b/i;
 const MAX = 600;
 const numbersIn = (t: string) => [...t.matchAll(/(?<![\w.])[+-]?\d+(?:\.\d+)?/g)].map((m) => m[0].replace(/^\+/, ""));
 
