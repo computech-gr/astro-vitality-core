@@ -1,0 +1,1086 @@
+{
+  "schema": "mitochondria.p57-reference-criteria.v1",
+  "version": 1,
+  "status": "PROVISIONAL_LITERATURE_DEMONSTRATION_ONLY",
+  "note": "P59 provisional literature criteria for SYNTHETIC demonstration reports only. Never approved classifications, never merged into the mission registry, never applied to real provenance. Each criterion carries verificationTier; only PRIMARY, ARCHIVED_PRIMARY, FULL_TEXT_MIRROR and PEER_REVIEWED_REFERENCE tiers may colour a provisional result. Existing live P57 candidates listed in includeLiveCandidates are also evaluated in provisional mode (still never as approved).",
+  "retrievedAt": "2026-11-08",
+  "kinds": {
+    "reference_interval": "Range observed in a defined reference population (usually laboratory- and method-specific). Describes typical values, not disease.",
+    "diagnostic_threshold": "Published cut point used, with stated confirmation requirements, as a criterion for a diagnosis. Meeting it is never itself a confirmed diagnosis.",
+    "risk_category": "Published category boundaries used to stratify risk in a defined population. Not a diagnosis and not a reference interval.",
+    "action_threshold": "Published value above or below which the source recommends a specific follow-up action (for example repeat testing).",
+    "critical_limit": "Laboratory critical (panic) value requiring immediate clinician notification. None is seeded: no verified source was retrieved.",
+    "longitudinal_review_rule": "Rule about change between examinations used for review triage. The existing P56.1 rules live in data/scientific/p56-review-priority-rules.v1.json and are not duplicated here; they never set RED, AMBER or NORMAL.",
+    "mission_operational_limit": "Astronaut mission-specific operational limit. None is seeded: no verified astronaut-specific numerical criterion was retrieved."
+  },
+  "sources": [
+    {
+      "id": "ukka-hyperkalaemia-2026",
+      "organization": "UK Kidney Association",
+      "title": "Clinical Practice Guideline – Management of Hyperkalaemia in Adults",
+      "url": "https://www.ukkidney.org/",
+      "doi": null,
+      "publicationDate": "July 2026",
+      "publication": "UKKA",
+      "documentType": "National guideline",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "ese-hyponatraemia-2014",
+      "organization": "ESE/ESICM/ERA-EDTA",
+      "title": "Clinical practice guideline on diagnosis and treatment of hyponatraemia",
+      "url": "https://doi.org/10.1530/EJE-13-1020",
+      "doi": "10.1530/EJE-13-1020",
+      "publicationDate": "2014",
+      "publication": "Eur J Endocrinol 170(3):G1",
+      "documentType": "Joint guideline",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "statpearls-hypokalemia",
+      "organization": "StatPearls (NCBI Bookshelf)",
+      "title": "Hypokalemia (Castro D, Sharma S)",
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK482465/",
+      "doi": null,
+      "publicationDate": "Last update 2025-01-19",
+      "publication": "StatPearls",
+      "documentType": "Peer-reviewed reference",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "statpearls-hypernatremia",
+      "organization": "StatPearls (NCBI Bookshelf)",
+      "title": "Hypernatremia (Sonani B, Al-Dhahir MA)",
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK441960/",
+      "doi": null,
+      "publicationDate": "Last update 2023-08-24",
+      "publication": "StatPearls",
+      "documentType": "Peer-reviewed reference",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "nhlbi-atp3",
+      "organization": "NHLBI (NCEP ATP III)",
+      "title": "ATP III At-a-Glance: Quick Desk Reference (archived)",
+      "url": "https://webarchive.library.unt.edu/eot2008/20080917120629/http:/www.nhlbi.nih.gov/guidelines/cholesterol/atglance.htm",
+      "doi": null,
+      "publicationDate": "ATP III (archived 2008 capture)",
+      "publication": "NHLBI",
+      "documentType": "Archived government guideline summary",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "nhlbi-low-bp",
+      "organization": "NHLBI (NIH)",
+      "title": "Low Blood Pressure",
+      "url": "https://www.nhlbi.nih.gov/node/4880",
+      "doi": null,
+      "publicationDate": "Current page (undated)",
+      "publication": "NHLBI Health Topics",
+      "documentType": "Government health information",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "who-hb-2024",
+      "organization": "World Health Organization",
+      "title": "Guideline on haemoglobin cutoffs to define anaemia in individuals and populations",
+      "url": "https://www.who.int/publications-detail-redirect/9789240088542",
+      "doi": null,
+      "publicationDate": "2024-03-05",
+      "publication": "ISBN 978-92-4-008854-2",
+      "documentType": "WHO guideline",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "nih-ods-vitamin-d",
+      "organization": "NIH Office of Dietary Supplements",
+      "title": "Vitamin D — Fact Sheet for Health Professionals",
+      "url": "https://ods.od.nih.gov/factsheets/vitaminD-healthProfessional/",
+      "doi": null,
+      "publicationDate": "Modified 2026-10-20",
+      "publication": "NIH ODS",
+      "documentType": "Government fact sheet",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "nsf-sleep-quality-2017",
+      "organization": "National Sleep Foundation (Ohayon M et al.)",
+      "title": "National Sleep Foundation's sleep quality recommendations: first report",
+      "url": "https://doi.org/10.1016/j.sleh.2016.11.006",
+      "doi": "10.1016/j.sleh.2016.11.006",
+      "publicationDate": "2017",
+      "publication": "Sleep Health 3(1):6-19",
+      "documentType": "Consensus report",
+      "retrievedAt": "2026-11-08"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "p59-ukka2026-hyperkalaemia",
+      "kind": "diagnostic_threshold",
+      "title": "Hyperkalaemia severity classification (UKKA 2026, adopting the ERC definition)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-071",
+        "catalogName": "Potassium",
+        "unit": "mmol/L",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "Serum or lithium-heparin plasma (specimen type must be recorded)",
+      "method": "Laboratory analyser or point-of-care blood gas analyser",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "mild",
+          "label": "Mild hyperkalaemia (UKKA)",
+          "lower": 5.5,
+          "lowerInclusive": true,
+          "upper": 5.9,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "Serum potassium 5.5–5.9 mmol/L is classified by the UKKA guideline as mild hyperkalaemia; pseudohyperkalaemia must be excluded."
+        },
+        {
+          "id": "moderate",
+          "label": "Moderate hyperkalaemia (UKKA)",
+          "lower": 6.0,
+          "lowerInclusive": true,
+          "upper": 6.4,
+          "upperInclusive": true,
+          "severity": "red",
+          "direction": "above",
+          "meaning": "Serum potassium 6.0–6.4 mmol/L is classified by the UKKA guideline as moderate hyperkalaemia."
+        },
+        {
+          "id": "severe",
+          "label": "Severe hyperkalaemia (UKKA)",
+          "lower": 6.5,
+          "lowerInclusive": true,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "above",
+          "meaning": "Serum potassium of 6.5 mmol/L or higher is classified by the UKKA guideline as severe hyperkalaemia."
+        }
+      ],
+      "uncoveredMeaning": "Values below 5.5 mmol/L are not categorized by this criterion, so no NORMAL status is derived from it; low potassium (hypokalaemia) is not covered. Values between published bounds (for example 5.95) are not classified.",
+      "highValues": "Higher potassium in the stated ranges meets the guideline's hyperkalaemia severity classes, subject to exclusion of pseudohyperkalaemia and clinical confirmation.",
+      "lowValues": "This criterion makes no statement about low potassium.",
+      "limitations": [
+        "The source states there is no universally accepted definition of hyperkalaemia.",
+        "Pseudohyperkalaemia (haemolysis, long transit, delayed separation) must be excluded; unexpected results should be repeated.",
+        "Colour mapping (mild = AMBER, moderate and severe = RED) is a proposal of this package and needs Researcher approval.",
+        "RCUK/ERC 2025 text writes the severe class as '> 6.5' whereas UKKA writes '≥ 6.5'."
+      ],
+      "confirmation": "Repeat measurement with paired lithium-heparin and clotted samples from a large vein with prompt analysis when pseudohyperkalaemia is suspected; clinical assessment by Ground Medical.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "pseudohyperkalaemia_excluded",
+            "text": "Haemolysis, prolonged transit and delayed separation are recorded as excluded for this sample."
+          },
+          {
+            "id": "specimen_type_recorded",
+            "text": "The specimen type (serum or lithium-heparin plasma) is recorded for this sample."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "ukka-hyperkalaemia-2026",
+        "locator": "Introduction (definition and severity classification); Guidelines 3.1, 15.1–15.3",
+        "quote": "It is further classified by severity into mild (5.5-5.9 mmol/l), moderate (6.0-6.4 mmol/l) or severe (≥ 6.5 mmol/l)."
+      },
+      "evidenceQuality": "National professional guideline adopting the ERC definition; ungraded definition.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Guideline PDF retrieved from ukkidney.org; severity sentence matched.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial adult guideline; not a NASA flight rule. Spaceflight fluid shifts and sample handling in flight are not addressed by the source.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1 from the UKKA July 2026 guideline; pending Researcher review; not bundled into the live registry."
+        }
+      ],
+      "verificationTier": "FULL_TEXT_MIRROR"
+    },
+    {
+      "id": "p59-ese2014-hyponatraemia",
+      "kind": "diagnostic_threshold",
+      "title": "Hyponatraemia biochemical severity (ESE/ESICM/ERA-EDTA 2014)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-070",
+        "catalogName": "Sodium",
+        "unit": "mmol/L",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "Serum",
+      "method": "Ion-specific electrode",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "mild",
+          "label": "Mild hyponatraemia (biochemical, ESE)",
+          "lower": 130,
+          "lowerInclusive": true,
+          "upper": 135,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Serum sodium 130 to below 135 mmol/L is classified by the guideline as mild hyponatraemia (biochemical finding)."
+        },
+        {
+          "id": "moderate",
+          "label": "Moderate hyponatraemia (biochemical, ESE)",
+          "lower": 125,
+          "lowerInclusive": true,
+          "upper": 129,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Serum sodium 125–129 mmol/L is classified by the guideline as moderate hyponatraemia (biochemical finding)."
+        },
+        {
+          "id": "profound",
+          "label": "Profound hyponatraemia (biochemical, ESE)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 125,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "below",
+          "meaning": "Serum sodium below 125 mmol/L is classified by the guideline as profound hyponatraemia (biochemical finding)."
+        }
+      ],
+      "uncoveredMeaning": "Values of 135 mmol/L or higher are not categorized by this criterion, so no NORMAL status is derived from it; high sodium (hypernatraemia) is not covered. Values between published bounds (for example 129.5) are not classified.",
+      "highValues": "This criterion makes no statement about high sodium.",
+      "lowValues": "Lower sodium in the stated ranges meets the guideline's biochemical severity classes; symptom severity and acute versus chronic onset are classified separately by the source.",
+      "limitations": [
+        "The source writes mild as 'between 130 and 135'; this candidate encodes the upper bound as below 135 because hyponatraemia is defined below 135 mmol/L. Researcher must confirm.",
+        "Hyperglycaemia must be excluded or sodium corrected for glucose before interpretation (source section 6.2.1.1).",
+        "Wording read from a full-text mirror; re-verify against the publisher PDF before approval.",
+        "2014 guideline; check for later revisions."
+      ],
+      "confirmation": "Confirm with repeat measurement by ion-specific electrode, exclude hyperglycaemia and assess symptoms and onset clinically (Ground Medical).",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "ion_specific_electrode",
+            "text": "The observation records that sodium was measured by ion-specific electrode."
+          },
+          {
+            "id": "hyperglycaemia_excluded",
+            "text": "Hyperglycaemia is recorded as excluded for this sample (or a glucose-corrected sodium is recorded)."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "ese-hyponatraemia-2014",
+        "locator": "Section 6.1.1 (classification based on biochemical severity)",
+        "quote": "We define 'mild' hyponatraemia as a biochemical finding of a serum sodium concentration between 130 and 135 mmol/l"
+      },
+      "evidenceQuality": "Joint European clinical practice guideline; definitions are consensus-based (ungraded).",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Full text read from a mirror PDF and bibliographic data from the OUP landing page; definition sentence matched.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial adult guideline; not a NASA flight rule. Spaceflight fluid and sodium regulation are not addressed by the source.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1; pending Researcher review; not bundled into the live registry."
+        }
+      ],
+      "verificationTier": "FULL_TEXT_MIRROR"
+    },
+    {
+      "id": "p59-statpearls-hypokalaemia",
+      "kind": "diagnostic_threshold",
+      "title": "Potassium below lower limit / mild hypokalaemia (StatPearls)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-071",
+        "catalogName": "Potassium",
+        "unit": "mmol/L",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "mild",
+          "label": "Mild hypokalaemia (StatPearls)",
+          "lower": 3.0,
+          "lowerInclusive": true,
+          "upper": 3.5,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "3.0 to below 3.5 mmol/L is below the acceptable lower limit; classified mild."
+        },
+        {
+          "id": "moderate",
+          "label": "Moderate hypokalaemia (StatPearls)",
+          "lower": 2.5,
+          "lowerInclusive": true,
+          "upper": 3.0,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "below",
+          "meaning": "2.5 to below 3.0 mmol/L is classified moderate."
+        },
+        {
+          "id": "severe",
+          "label": "Severe hypokalaemia (StatPearls)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 2.5,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "below",
+          "meaning": "Below 2.5 mmol/L is classified severe."
+        }
+      ],
+      "uncoveredMeaning": "Values outside the listed bands are not categorized; no NORMAL status is derived.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "Educational reference, not a guideline; the source's staging section uses slightly different boundaries.",
+        "Laboratory interval preferred."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": []
+      },
+      "source": {
+        "sourceId": "statpearls-hypokalemia",
+        "locator": "Introduction",
+        "quote": "an acceptable lower limit for normal serum potassium is 3.5 mmol/L"
+      },
+      "evidenceQuality": "Verification tier: PEER_REVIEWED_REFERENCE.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: PEER_REVIEWED_REFERENCE); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "p59-statpearls-hypernatraemia",
+      "kind": "diagnostic_threshold",
+      "title": "Hypernatraemia (StatPearls)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-070",
+        "catalogName": "Sodium",
+        "unit": "mmol/L",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "hyper",
+          "label": "Hypernatraemia (StatPearls)",
+          "lower": 145,
+          "lowerInclusive": false,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "Serum sodium above 145 is defined as hypernatraemia."
+        }
+      ],
+      "uncoveredMeaning": "Values outside the listed bands are not categorized; no NORMAL status is derived.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "Educational reference; laboratory interval preferred."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": []
+      },
+      "source": {
+        "sourceId": "statpearls-hypernatremia",
+        "locator": "Definition",
+        "quote": "Hypernatremia is defined as a serum sodium concentration of greater than 145 meq/L."
+      },
+      "evidenceQuality": "Verification tier: PEER_REVIEWED_REFERENCE.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: PEER_REVIEWED_REFERENCE); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "p59-atp3-ldl",
+      "kind": "risk_category",
+      "title": "LDL cholesterol categories (NCEP ATP III)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-086",
+        "catalogName": "LDL-C",
+        "unit": "mg/dL",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "high",
+          "label": "High (ATP III)",
+          "lower": 160,
+          "lowerInclusive": true,
+          "upper": 189,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "LDL 160–189 mg/dL is 'High'."
+        },
+        {
+          "id": "veryhigh",
+          "label": "Very high (ATP III)",
+          "lower": 190,
+          "lowerInclusive": true,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "red",
+          "direction": "above",
+          "meaning": "LDL 190 mg/dL or more is 'Very high'."
+        }
+      ],
+      "uncoveredMeaning": "Values outside the listed bands are not categorized; no NORMAL status is derived.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "Programme superseded in part by later ACC/AHA guidelines (2018, 2026); categories remain descriptive.",
+        "Fasting lipid profile assumed."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "fasting_status_recorded",
+            "text": "The observation records the fasting state of the sample."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "nhlbi-atp3",
+        "locator": "ATP III At-a-Glance classification",
+        "quote": "160-189 | High"
+      },
+      "evidenceQuality": "Verification tier: ARCHIVED_PRIMARY.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: ARCHIVED_PRIMARY); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "ARCHIVED_PRIMARY"
+    },
+    {
+      "id": "p59-atp3-hdl",
+      "kind": "risk_category",
+      "title": "Low HDL cholesterol (NCEP ATP III)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-087",
+        "catalogName": "HDL-C",
+        "unit": "mg/dL",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "low",
+          "label": "Low HDL (ATP III)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 40,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "HDL below 40 mg/dL is 'Low'."
+        }
+      ],
+      "uncoveredMeaning": "Values outside the listed bands are not categorized; no NORMAL status is derived.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "Sex-independent at <40; ATP III context."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": []
+      },
+      "source": {
+        "sourceId": "nhlbi-atp3",
+        "locator": "ATP III At-a-Glance classification (HDL block)",
+        "quote": "<40 | Low ; 60 | High"
+      },
+      "evidenceQuality": "Verification tier: ARCHIVED_PRIMARY.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: ARCHIVED_PRIMARY); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "ARCHIVED_PRIMARY"
+    },
+    {
+      "id": "p59-nhlbi-low-sbp",
+      "kind": "reference_interval",
+      "title": "Low systolic blood pressure (NHLBI)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-005",
+        "catalogName": "SBP",
+        "unit": "mmHg",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "low",
+          "label": "Below 90 mmHg (NHLBI low blood pressure)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 90,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Low blood pressure is lower than 90/60 mm Hg; it may be normal for some people."
+        }
+      ],
+      "uncoveredMeaning": "Values outside the listed bands are not categorized; no NORMAL status is derived.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "May be normal for some people; symptoms decide significance."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": []
+      },
+      "source": {
+        "sourceId": "nhlbi-low-bp",
+        "locator": "Low Blood Pressure — definition",
+        "quote": "Low blood pressure is blood pressure that is lower than 90/60 mm Hg."
+      },
+      "evidenceQuality": "Verification tier: PRIMARY.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: PRIMARY); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "PRIMARY"
+    },
+    {
+      "id": "p59-nhlbi-low-dbp",
+      "kind": "reference_interval",
+      "title": "Low diastolic blood pressure (NHLBI)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-006",
+        "catalogName": "DBP",
+        "unit": "mmHg",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "low",
+          "label": "Below 60 mmHg (NHLBI low blood pressure)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 60,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Low blood pressure is lower than 90/60 mm Hg."
+        }
+      ],
+      "uncoveredMeaning": "Values outside the listed bands are not categorized; no NORMAL status is derived.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "May be normal for some people."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": []
+      },
+      "source": {
+        "sourceId": "nhlbi-low-bp",
+        "locator": "Low Blood Pressure — definition",
+        "quote": "Low blood pressure is blood pressure that is lower than 90/60 mm Hg."
+      },
+      "evidenceQuality": "Verification tier: PRIMARY.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: PRIMARY); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "PRIMARY"
+    },
+    {
+      "id": "p59-who2024-hb-anaemia",
+      "kind": "diagnostic_threshold",
+      "title": "Anaemia haemoglobin cut-offs, adults 15–65 (WHO 2024)",
+      "domain": "cardiovascular",
+      "identity": {
+        "catalogId": "cv-075",
+        "catalogName": "Hemoglobin",
+        "unit": "g/L",
+        "status": "EXACT_CATALOG_UNIT"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "below_men",
+          "label": "Below WHO cut-off for men and for non-pregnant women",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 120,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Below 120 g/L is below the anaemia cut-off for non-pregnant women (and men, <130)."
+        }
+      ],
+      "uncoveredMeaning": "Values outside the listed bands are not categorized; no NORMAL status is derived.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "Unit g/L does not match catalog unit g/dL: binds no data until a catalog decision is made (never converted silently).",
+        "Sex, age 15–65, pregnancy, altitude and smoking adjustment required."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          },
+          {
+            "id": "age_15_65_nonpregnant",
+            "text": "Crew member is 15–65 years and not pregnant (recorded)."
+          }
+        ],
+        "perObservation": [
+          {
+            "id": "sex_recorded",
+            "text": "The crew member's sex is recorded."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "who-hb-2024",
+        "locator": "Table 2",
+        "quote": "Adults, 15–65 years, nonpregnant women <120"
+      },
+      "evidenceQuality": "Verification tier: PRIMARY.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: PRIMARY); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "PRIMARY"
+    },
+    {
+      "id": "p59-nihods-25ohd",
+      "kind": "risk_category",
+      "title": "Serum 25(OH)D status categories (NIH Office of Dietary Supplements)",
+      "domain": "bone",
+      "identity": {
+        "catalogId": null,
+        "catalogName": "25(OH) Vitamin D",
+        "unit": "ng/mL",
+        "status": "NO_CATALOG_IDENTITY"
+      },
+      "specimen": "Serum",
+      "method": "25(OH)D assay (method must be recorded; assays vary considerably)",
+      "population": "Healthy individuals",
+      "demographicConditions": [
+        "General population"
+      ],
+      "bands": [
+        {
+          "id": "deficiency",
+          "label": "Associated with deficiency (NIH ODS)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 12,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Below 12 ng/mL is associated with vitamin D deficiency (NIH ODS Table 1)."
+        },
+        {
+          "id": "inadequate",
+          "label": "Generally considered inadequate (NIH ODS)",
+          "lower": 12,
+          "lowerInclusive": true,
+          "upper": 20,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "12 to below 20 ng/mL is generally considered inadequate for bone and overall health in healthy individuals."
+        },
+        {
+          "id": "adequate",
+          "label": "Generally considered adequate (NIH ODS)",
+          "lower": 20,
+          "lowerInclusive": true,
+          "upper": 50,
+          "upperInclusive": true,
+          "severity": "normal",
+          "direction": "within",
+          "meaning": "20–50 ng/mL is generally considered adequate for bone and overall health in healthy individuals."
+        },
+        {
+          "id": "high",
+          "label": "Linked to potential adverse effects (NIH ODS)",
+          "lower": 50,
+          "lowerInclusive": false,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "amber",
+          "direction": "above",
+          "meaning": "Above 50 ng/mL is linked to potential adverse effects, particularly above 60 ng/mL."
+        }
+      ],
+      "uncoveredMeaning": "All numeric values fall in one of the four categories.",
+      "highValues": "Values above 50 ng/mL are linked by the source to potential adverse effects.",
+      "lowValues": "Values below 20 ng/mL are generally considered inadequate; below 12 ng/mL are associated with deficiency.",
+      "limitations": [
+        "The source states that 25(OH)D concentrations associated with deficiency have not been definitively identified.",
+        "The Endocrine Society (2024) states that outcome-specific thresholds have not been established and suggests against routine testing.",
+        "Considerable assay variability."
+      ],
+      "confirmation": "Interpret with calcium, PTH, phosphate and bone-turnover context; Ground Medical decides any action.",
+      "applicability": {
+        "missionLevel": [],
+        "perObservation": [
+          {
+            "id": "assay_method_recorded",
+            "text": "The observation records the 25(OH)D assay method."
+          }
+        ]
+      },
+      "source": {
+        "sourceId": "nih-ods-vitamin-d",
+        "locator": "Table 1: Serum 25(OH)D Concentrations and Health",
+        "quote": "Associated with vitamin D deficiency, which can lead to rickets in infants and children and osteomalacia in adults"
+      },
+      "evidenceQuality": "Government fact sheet summarizing Institute of Medicine-based categories; not a graded guideline.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "NIH ODS page retrieved; Table 1 wording matched.",
+        "verifiedBy": "Automated source retrieval during the P57.1 build (not independent human verification)"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population categories; not a NASA flight rule. Spaceflight lacks UV exposure and crews are supplemented.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P57.1; blocked from approval until the catalog defines 25(OH)D with unit ng/mL; not bundled."
+        }
+      ],
+      "verificationTier": "PRIMARY"
+    },
+    {
+      "id": "p59-nsf2017-sleep-efficiency",
+      "kind": "risk_category",
+      "title": "Sleep efficiency and sleep quality (NSF 2017)",
+      "domain": "behavioral",
+      "identity": {
+        "catalogId": null,
+        "catalogName": "Sleep efficiency",
+        "unit": "%",
+        "status": "NO_CATALOG_IDENTITY"
+      },
+      "specimen": "As recorded",
+      "method": "As recorded",
+      "population": "Adults",
+      "demographicConditions": [
+        "Adults"
+      ],
+      "bands": [
+        {
+          "id": "notgood",
+          "label": "≤74 % — does not indicate good sleep quality (NSF)",
+          "lower": null,
+          "lowerInclusive": false,
+          "upper": 74,
+          "upperInclusive": true,
+          "severity": "amber",
+          "direction": "below",
+          "meaning": "Sleep efficiency ≤74% does not indicate good sleep quality in adults."
+        },
+        {
+          "id": "good",
+          "label": "≥85 % — good sleep quality (NSF)",
+          "lower": 85,
+          "lowerInclusive": true,
+          "upper": null,
+          "upperInclusive": false,
+          "severity": "normal",
+          "direction": "within",
+          "meaning": "Sleep efficiency ≥85% is an appropriate indicator of good sleep quality."
+        }
+      ],
+      "uncoveredMeaning": "75–84 % is not addressed by the source and is not categorized.",
+      "highValues": "See band meanings.",
+      "lowValues": "See band meanings.",
+      "limitations": [
+        "Consensus indicator; device and multi-night context required."
+      ],
+      "confirmation": "Ground Medical confirms with repeat measurement and clinical context.",
+      "applicability": {
+        "missionLevel": [
+          {
+            "id": "adult_crew",
+            "text": "The crew members of this mission are adults."
+          }
+        ],
+        "perObservation": []
+      },
+      "source": {
+        "sourceId": "nsf-sleep-quality-2017",
+        "locator": "Results — sleep efficiency",
+        "quote": "a sleep efficiency of ≥85% (ie, 85%-94% or ≥95%) was judged as an appropriate indicator of good sleep quality"
+      },
+      "evidenceQuality": "Verification tier: PRIMARY.",
+      "sourceVerification": {
+        "status": "SOURCE_WORDING_VERIFIED",
+        "retrievedAt": "2026-11-08",
+        "method": "Wording matched in retrieved text.",
+        "verifiedBy": "Automated retrieval (tier: PRIMARY); not independent human verification"
+      },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "General-population criterion; not a NASA flight rule.",
+      "audit": [
+        {
+          "at": "2026-11-08",
+          "event": "CANDIDATE_CREATED",
+          "by": "P57.1 research build (automated retrieval; not independent human verification)",
+          "note": "Created for P59 provisional literature demonstration mode; never an approved classification."
+        }
+      ],
+      "verificationTier": "PRIMARY"
+    }
+  ],
+  "includeLiveCandidates": [
+    "p57-ada2026-hba1c-categories",
+    "p57-ada2026-fpg-categories",
+    "p57-ada2026-random-glucose",
+    "p57-nhlbi-triglyceride-categories",
+    "p57-cdc-aha-hscrp-repeat-above-10"
+  ],
+  "demoAliases": {
+    "note": "Exact synthetic demonstration identities that a Researcher has mapped to a provisional criterion identity (same concept, same unit). Empty until curated; never inferred.",
+    "map": {}
+  },
+  "excludedFromColouring": [
+    {
+      "concept": "D-dimer",
+      "reason": "Interpretable only within a pretest-probability pathway (NICE NG158); shown as review priority, never as a colour."
+    },
+    {
+      "concept": "Apolipoprotein B",
+      "reason": "Threshold available only from a secondary summary of a possibly superseded guideline."
+    },
+    {
+      "concept": "Resting heart rate",
+      "reason": "60–100 bpm source is a consumer clinical page; individual context (rest protocol) not recorded — no GREEN."
+    },
+    {
+      "concept": "HRV (RMSSD, SDNN)",
+      "reason": "No normative short-term values; within-person change is a review rule, not a classification."
+    },
+    {
+      "concept": "IL-6, TNF-α, IL-10, bone turnover markers, fibrinogen, aPTT",
+      "reason": "Assay- or laboratory-specific."
+    }
+  ]
+}

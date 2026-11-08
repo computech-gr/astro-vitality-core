@@ -590,3 +590,17 @@
 - [ ] Researcher approval of any P57 criterion — waits on the Researcher (none approved; nothing is coloured).
 - [ ] Scientific review of the P58 concern-library text and P56.1 triage values — waits on the owner/Researcher.
 - [ ] Replacing the published competition sample PDF — waits on owner approval.
+
+## P59 Premium Health Intelligence Report (Revision 2)
+
+- [x] Add the package files unchanged; fix only genuine type errors.
+- [x] Owner-directed synthetic demonstration: provisional literature mode on by default for synthetic reports (clear label), off/absent for real data.
+- [x] Re-verified synthetic identity mappings (exact + criterion-scoped) used only in the synthetic demonstration, with provenance.
+- [x] Five warning categories (red high-priority review, amber monitoring, purple data check, green, neutral) kept separate from clinical class, with documented priority rationale.
+- [x] Premium export button + demonstration checkbox in the Medical Report; P58 export kept ("Previous-format PDF").
+- [x] AI claim guard added to P58 AI validation.
+- [x] Read-only identity census: readable Cloud records hold only October values; the November exam PDF has no catalog IDs — owner-local records remain uncensused.
+- [x] Real jsPDF tests and rendered PDFs (Alex full, small normal, complex abnormal, provisional off) inspected page by page.
+- [x] Alex Morgan premium PDF (test reconstruction) delivered; browser export verified.
+- [ ] Researcher review of provisional criteria, mappings and WP-1..WP-5 priority rules — waits on the Researcher.
+- [ ] Small-normal report is 6 pages vs package target of 5 — owner decision whether to tighten.

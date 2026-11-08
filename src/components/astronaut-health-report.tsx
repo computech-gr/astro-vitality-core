@@ -74,6 +74,7 @@ import {
 } from "@/domain/health-intelligence/p58-clinical-reasoning";
 import { buildProfessionalReport, professionalReportPlainText } from "@/domain/health-intelligence/p58-professional-report";
 import { createProfessionalReportPdf } from "@/domain/health-intelligence/p58-professional-pdf";
+import { buildPremiumReport, DEMONSTRATION_LABEL } from "@/domain/health-intelligence/p59-premium-model";
 
 /** Cheap, stable fingerprint so the automatic analysis runs at most once per evidence packet. */
 function packetKey(value: unknown): string {
@@ -463,6 +464,25 @@ export function AstronautHealthReport() {
     setClinicianDecisions((cur) => [...cur, plan.decision]);
     return null;
   };
+  // P59: premium Health Intelligence PDF. Literature-based demonstration colouring (and owner-directed
+  // synthetic identity mappings) is on by default for synthetic data only; real data never uses it.
+  const [demonstrationMode, setDemonstrationMode] = useState(true);
+  const premiumReport = useMemo(() => {
+    if (!professionalReport || !unified || !biomarkerAssessment || !reviewScope) return null;
+    try {
+      const synthetic = provenance === "synthetic" && unified.scope.provenance === "synthetic";
+      return buildPremiumReport({
+        report: professionalReport,
+        unified,
+        biomarkers: biomarkerAssessment,
+        approved: criteriaResolution.approved,
+        missionId: reviewScope.missionId,
+        options: { provisionalLiterature: synthetic && demonstrationMode, demonstrationMappings: synthetic && demonstrationMode },
+      });
+    } catch {
+      return null; // the P58 professional PDF remains available as the fallback
+    }
+  }, [professionalReport, unified, biomarkerAssessment, reviewScope, criteriaResolution, provenance, demonstrationMode]);
   const [appendixOpen, setAppendixOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash === "#ground-medical-attestation") setAppendixOpen(true);
@@ -471,12 +491,12 @@ export function AstronautHealthReport() {
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
   const currentExport = useRef({ unified, userId: identity?.userId });
   currentExport.current = { unified, userId: identity?.userId };
-  const performExport = async (kind: "pdf" | "appendix-pdf" | "text" | "appendix-text" | "print") => {
+  const performExport = async (kind: "pdf" | "p58-pdf" | "appendix-pdf" | "text" | "appendix-text" | "print") => {
     if (!member || !report || !unified || exporting) return;
     const snapshot = currentExport.current;
     const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
     setExporting(true);
-    setExportStatus(kind === "pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
+    setExportStatus(kind === "pdf" || kind === "p58-pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
     try {
       const fresh = await loadMissionIdentity();
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && fresh.memberships.some(m =>
@@ -498,11 +518,14 @@ export function AstronautHealthReport() {
       } else {
         let blob: Blob;
         let pdfInfo = "";
-        const fileName = kind === "pdf" ? `${exportName}_Assessment.pdf` : `${exportName}_Technical_Appendix.pdf`;
+        const fileName = kind === "pdf" ? `${exportName}_Health_Intelligence.pdf` : kind === "p58-pdf" ? `${exportName}_Assessment.pdf` : `${exportName}_Technical_Appendix.pdf`;
         try {
-          if (kind === "pdf" && !healthAssessment) throw new Error("The health assessment is not ready yet.");
+          if ((kind === "pdf" || kind === "p58-pdf") && !healthAssessment) throw new Error("The health assessment is not ready yet.");
           // Searchable text PDF built from the same read models as screen/TXT (never a DOM screenshot).
-          const result = kind === "pdf" && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
+          const premium = kind === "pdf" ? premiumReport : null;
+          const result = premium
+            ? await (await import("@/domain/health-intelligence/p59-premium-pdf")).createPremiumReportPdf(premium)
+            : (kind === "pdf" || kind === "p58-pdf") && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
             unified,
             findings,
             summary: healthSummary,
@@ -629,11 +652,20 @@ export function AstronautHealthReport() {
         <article ref={reportRef} className="report-print medical-report-ui space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
           <div className="flex flex-wrap justify-between gap-3 print:hidden">
             <Button className="medical-action-primary" disabled={exporting || !healthAssessment} onClick={() => void performExport("pdf")}>Download PDF</Button>
+            <Button className="medical-action-secondary" variant="outline" disabled={exporting || !healthAssessment} onClick={() => void performExport("p58-pdf")}>Previous-format PDF</Button>
             <Button className="medical-action-secondary" variant="outline" disabled={exporting} onClick={() => void performExport("print")}>Print</Button>
             <Button className="medical-action-secondary" variant="outline" disabled={exporting || !healthAssessment} onClick={() => void performExport("text")}>
               Export text
             </Button>
           </div>
+          {provenance === "synthetic" && unified.scope.provenance === "synthetic" ? (
+            <label className="print:hidden flex items-start gap-2 text-xs text-muted-foreground">
+              <input type="checkbox" className="mt-0.5" checked={demonstrationMode} onChange={(e) => setDemonstrationMode(e.currentTarget.checked)} />
+              <span>
+                <strong>{DEMONSTRATION_LABEL}.</strong> Colour this synthetic report with documented literature criteria in the downloaded PDF. Not Researcher-approved; never applied to real data.
+              </span>
+            </label>
+          ) : null}
           <p className="print:hidden text-xs text-muted-foreground" role="status" aria-live="polite">{exportStatus}</p>
           <div className="report-print-header hidden print:flex">
             <span>MITOCHONDRIA · Health Assessment</span>
