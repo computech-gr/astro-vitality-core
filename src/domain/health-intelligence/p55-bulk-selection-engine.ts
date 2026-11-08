@@ -219,3 +219,28 @@ export function outcomeCounts(outcomes: readonly RecordOutcome[]): Record<BulkOu
 /** Retry Failed Selection: only failed records; successful or already-completed writes are never resent. */
 export const retryFailedIds = (outcomes: readonly RecordOutcome[]) =>
   outcomes.filter((o) => o.retryAvailable).map((o) => o.id);
+
+/**
+ * Runs the actionable records of a confirmed preflight through bounded batches
+ * (existing P38 batch runner) and returns per-record outcomes, including the
+ * records the preflight never sent.
+ */
+export async function executeBulk<R>(input: {
+  preflight: BulkPreflight<R>;
+  idOf: (r: R) => string;
+  labelOf: (id: string) => string;
+  send: (batch: R[]) => Promise<import("./p38-bulk-demo-batches").BatchResponse>;
+  onProgress?: (p: import("./p38-bulk-demo-batches").BulkProgress) => void;
+}) {
+  const { runBulkBatches } = await import("./p38-bulk-demo-batches");
+  const res = await runBulkBatches(input.preflight.actionable, input.send, input.onProgress);
+  const outcomes = runOutcomes({
+    results: res.results,
+    unconfirmedIds: res.remaining.map(input.idOf),
+    preflightAlready: input.preflight.already.map((x) => ({ id: input.idOf(x.record), reason: x.reason })),
+    preflightBlocked: input.preflight.blocked.map((x) => ({ id: input.idOf(x.record), reason: x.reason })),
+    labelOf: input.labelOf,
+    failureMessage: res.failure,
+  });
+  return { outcomes, progress: res.progress, failure: res.failure };
+}
