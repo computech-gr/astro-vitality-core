@@ -39,6 +39,7 @@ export const competitionPdfs = {
       "Synthetic demonstration data. Preliminary automated assessment for Ground Medical review. Not a clinical diagnosis.",
     provenance:
       "This sample was generated from reconstructed synthetic demonstration data. It is not based on verified local November records or on any real astronaut. Reports created inside the app are built from the selected crew member's own observations.",
+    offerDownload: true,
   },
 } as const satisfies Record<string, CompetitionPdfEntry>;
 

@@ -233,4 +233,5 @@ test("P60 public sample is the owner-supplied 16-page PDF, byte-identical, with 
   );
   expect(sample?.provenance).toContain("reconstructed synthetic demonstration data");
   expect(sample?.provenance).toContain("not based on verified local November records");
+  expect(sample?.offerDownload).toBe(true);
 });
