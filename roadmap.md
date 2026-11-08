@@ -576,3 +576,14 @@
 - [x] Regression tests (Scenario A single-day, Scenario B multi-day), full checks, PDF visual and browser verification.
 - [ ] Owner/scientific review of the review-triage rule values (50% change, 10% electrolyte change, 50% intermediate extreme, HbA1c 28-day interval) — waits on the owner.
 - [ ] Verified reference intervals (registry still empty) — waits on independently verified sources.
+
+## P57/P58 Scientific evidence registry, clinical reasoning and adaptive professional report
+
+- [ ] P57 versioned reference-criteria registry from verified source wording (ADA 2026 §2, NIDDK, NHLBI, KDIGO 2024, CDC/AHA hs-CRP); distinct criterion kinds; all pending Researcher review.
+- [ ] Researcher review queue (bulk by domain, individual exceptions, evidence preview, server-attested append-only decisions, mission applicability).
+- [ ] Evidence-aware classification: approved + fully applicable criteria only; exact units; data-quality holds; synthetic-demo separation.
+- [ ] P58 Preliminary Clinical Assessment — Pending Ground Medical Review (deterministic concern library; AI elaboration in the existing authorized scope; GM accept/amend/reject/add; separate audit records).
+- [ ] Evidence gaps + curated literature retrieval in the evidence trail (report evidence identifier), never auto-promoted to rules.
+- [ ] Adaptive professional colour PDF (no page cap) with mandatory charts and single-measurement visuals; screen/TXT parity.
+- [ ] Preview-only reproducible competition sample PDF (existing sample untouched until owner approval).
+- [ ] Regression tests, full checks, visual inspection of every PDF page, browser verification.
