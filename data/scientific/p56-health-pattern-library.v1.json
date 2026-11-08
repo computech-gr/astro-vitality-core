@@ -1,0 +1,475 @@
+{
+  "schema": "mitochondria.p56-health-pattern-library.v1",
+  "version": 1,
+  "status": "PENDING_SCIENTIFIC_REVIEW",
+  "note": "Owner-requested P56 grouping of biologically related biomarkers by EXACT catalog ID (handbook, domain catalog, or MITO_DEMO_2026 synthetic-demo term ID). Relationship text is a plain-language general-physiology summary pending independent scientific review; it never sets a severity, threshold, diagnosis or treatment. Severity comes only from the verified-reference registry. Membership is never widened by label or synonym matching in code.",
+  "patterns": [
+    {
+      "id": "fluid_electrolyte_renal",
+      "title": "Fluids, electrolytes and kidney function",
+      "area": "Renal and electrolyte health",
+      "relationship": "Sodium and potassium are the main dissolved salts (electrolytes) that control body-fluid balance and the electrical activity of nerves and heart muscle. The kidneys, reflected by creatinine and eGFR (estimated filtration rate), and hormones such as aldosterone, vasopressin and ANP keep them in balance, while fluid intake and urine output show the overall water balance.",
+      "spaceflightContext": "Microgravity shifts body fluid toward the head and changes the hormones that regulate salt and water.",
+      "handbookIds": ["cv-070", "cv-071", "cv-072", "cv-077", "cv-078", "cv-079", "cv-080", "bone-031", "bone-032", "bone-035", "bone-037", "bone-061"],
+      "members": [
+        { "id": "cv-070", "name": "Sodium", "role": "electrolyte" },
+        { "id": "cv-071", "name": "Potassium", "role": "electrolyte" },
+        { "id": "cv-072", "name": "Magnesium", "role": "electrolyte" },
+        { "id": "demo:ubt-2841fb44", "name": "Serum sodium", "role": "electrolyte" },
+        { "id": "demo:ubt-4afd25a0", "name": "Serum potassium", "role": "electrolyte" },
+        { "id": "demo:ubt-c30c0952", "name": "Serum magnesium", "role": "electrolyte" },
+        { "id": "demo:ubt-5630390c", "name": "Serum creatinine", "role": "kidney" },
+        { "id": "demo:ubt-645f4a78", "name": "eGFR (estimated kidney filtration)", "role": "kidney" },
+        { "id": "bone-035", "name": "Urinary creatinine", "role": "kidney" },
+        { "id": "cv-077", "name": "Renin", "role": "hormone" },
+        { "id": "cv-078", "name": "Aldosterone", "role": "hormone" },
+        { "id": "cv-079", "name": "Vasopressin / copeptin", "role": "hormone" },
+        { "id": "cv-080", "name": "ANP (atrial natriuretic peptide)", "role": "hormone" },
+        { "id": "demo:ubt-f75b1fa8", "name": "Urine output", "role": "fluid_balance" },
+        { "id": "bone-037", "name": "Total urine volume", "role": "fluid_balance" },
+        { "id": "demo:ubt-0bbaf9c4", "name": "Total urine volume", "role": "fluid_balance" },
+        { "id": "bone-061", "name": "Fluid intake", "role": "fluid_balance" },
+        { "id": "demo:ubt-a42df5a7", "name": "Fluid intake", "role": "fluid_balance" },
+        { "id": "demo:ubt-db1ff862", "name": "Hydration intake", "role": "fluid_balance" },
+        { "id": "bone-031", "name": "Urinary sodium", "role": "urine_electrolyte" },
+        { "id": "demo:ubt-8a2490b0", "name": "Urinary sodium", "role": "urine_electrolyte" },
+        { "id": "bone-032", "name": "Urinary potassium", "role": "urine_electrolyte" },
+        { "id": "demo:ubt-0312222c", "name": "Urinary potassium", "role": "urine_electrolyte" }
+      ],
+      "keyEvidence": [
+        { "label": "sodium", "ids": ["cv-070", "demo:ubt-2841fb44"] },
+        { "label": "potassium", "ids": ["cv-071", "demo:ubt-4afd25a0"] },
+        { "label": "kidney function (creatinine or eGFR)", "ids": ["demo:ubt-5630390c", "demo:ubt-645f4a78", "bone-035"] }
+      ],
+      "conditions": [
+        { "name": "Electrolyte imbalance", "requires": "a verified out-of-range classification of sodium, potassium or magnesium" },
+        { "name": "Renal-health concern", "requires": "a verified out-of-range classification of creatinine or eGFR" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical should assess the electrolyte and kidney results before any change in salt, potassium or fluid intake is recommended." },
+          { "category": "hydration", "authorization": "clinician_required", "text": "Any corrective fluid or electrolyte intake must be decided by Ground Medical; MITOCHONDRIA does not suggest amounts." },
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat the same electrolyte and kidney tests with the same laboratory method so the change can be confirmed." }
+        ],
+        "change": [
+          { "category": "hydration", "authorization": "general_wellness", "text": "Record fluid intake and urine output consistently so that the change in electrolytes can be interpreted against water balance." },
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat sodium, potassium and kidney-function tests at the next scheduled examination with the same laboratory method." },
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review whether the recorded change needs earlier testing." }
+        ]
+      }
+    },
+    {
+      "id": "coagulation",
+      "title": "Blood clotting and venous flow",
+      "area": "Hematology",
+      "relationship": "D-dimer (a breakdown product of clots), fibrinogen, platelets and clotting times (PT/INR, aPTT) describe how the blood forms and dissolves clots. Ultrasound of the jugular vein shows whether blood flow is slow, stagnant or reversed, which in astronauts has been associated with venous clots.",
+      "spaceflightContext": "Head-ward fluid shift in microgravity can slow or reverse flow in the neck veins.",
+      "handbookIds": ["cv-051", "cv-052", "cv-053", "cv-054", "cv-055", "cv-056", "cv-057", "cv-058", "cv-059", "cv-060", "cv-061", "cv-062"],
+      "members": [
+        { "id": "cv-056", "name": "Thrombus on ultrasound", "role": "imaging" },
+        { "id": "cv-051", "name": "Jugular vein flow direction", "role": "imaging" },
+        { "id": "cv-052", "name": "Jugular vein peak velocity", "role": "imaging" },
+        { "id": "cv-053", "name": "Jugular vein flow grade", "role": "imaging" },
+        { "id": "cv-054", "name": "Jugular vein compressibility", "role": "imaging" },
+        { "id": "cv-055", "name": "Spontaneous echo contrast", "role": "imaging" },
+        { "id": "cv-057", "name": "D-dimer", "role": "clotting_marker" },
+        { "id": "demo:ubt-eed68002", "name": "D-dimer", "role": "clotting_marker" },
+        { "id": "cv-059", "name": "Fibrinogen", "role": "clotting_marker" },
+        { "id": "demo:ubt-c6a305ef", "name": "Fibrinogen", "role": "clotting_marker" },
+        { "id": "cv-058", "name": "Platelet count", "role": "clotting_marker" },
+        { "id": "demo:ubt-c4b4d258", "name": "Platelet count", "role": "clotting_marker" },
+        { "id": "cv-060", "name": "PT / INR (clotting time)", "role": "clotting_time" },
+        { "id": "cv-061", "name": "aPTT (clotting time)", "role": "clotting_time" },
+        { "id": "cv-062", "name": "von Willebrand factor", "role": "clotting_marker" },
+        { "id": "demo:ubt-e0dd046f", "name": "Lower-limb venous ultrasound", "role": "imaging" }
+      ],
+      "keyEvidence": [
+        { "label": "D-dimer", "ids": ["cv-057", "demo:ubt-eed68002"] },
+        { "label": "venous ultrasound", "ids": ["cv-056", "cv-051", "cv-052", "demo:ubt-e0dd046f"] }
+      ],
+      "conditions": [
+        { "name": "Venous thrombosis-related pattern", "requires": "clinician-confirmed imaging together with a verified classification of clotting markers" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the ultrasound and clotting results promptly; any anticoagulation decision belongs to the clinician." },
+          { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical may request repeat venous ultrasound and clotting tests to confirm the finding." }
+        ],
+        "change": [
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat clotting markers and venous ultrasound with the same method so the recorded change can be confirmed." },
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the change in clotting markers together with the ultrasound findings." }
+        ]
+      }
+    },
+    {
+      "id": "cardiovascular_function",
+      "title": "Heart and circulation",
+      "area": "Cardiovascular health",
+      "relationship": "Blood pressure, heart rate, stroke volume and cardiac output describe how much blood the heart moves; ejection fraction (LVEF) and filling ratios (E/A, E/e′) describe how the heart pumps and relaxes; the QTc interval describes the heart's electrical recovery; orthostatic blood-pressure change and baroreflex sensitivity show how circulation adapts on standing; VO₂peak summarises exercise capacity, and oxygen saturation and lactate show oxygen delivery to tissues.",
+      "spaceflightContext": "After weeks in microgravity the heart and blood volume adapt to lower workload, and dizziness or fainting on standing after landing is a known risk.",
+      "handbookIds": ["cv-001", "cv-005", "cv-006", "cv-009", "cv-010", "cv-021", "cv-022", "cv-023", "cv-032", "cv-038", "cv-041", "cv-063", "cv-065", "cv-069"],
+      "members": [
+        { "id": "cv-001", "name": "Heart rate", "role": "rate_rhythm" },
+        { "id": "cv-002", "name": "Resting heart rate", "role": "rate_rhythm" },
+        { "id": "demo:ubt-625f8d98", "name": "Resting heart rate", "role": "rate_rhythm" },
+        { "id": "cv-005", "name": "Systolic blood pressure", "role": "pressure" },
+        { "id": "cv-006", "name": "Diastolic blood pressure", "role": "pressure" },
+        { "id": "cv-007", "name": "Mean arterial pressure", "role": "pressure" },
+        { "id": "cv-008", "name": "Pulse pressure", "role": "pressure" },
+        { "id": "demo:ubt-e1140df3", "name": "Systolic blood pressure", "role": "pressure" },
+        { "id": "demo:ubt-5d16fcaf", "name": "Diastolic blood pressure", "role": "pressure" },
+        { "id": "cv-009", "name": "Stroke volume", "role": "pump" },
+        { "id": "cv-010", "name": "Cardiac output", "role": "pump" },
+        { "id": "cv-011", "name": "Cardiac index", "role": "pump" },
+        { "id": "cv-012", "name": "Systemic vascular resistance", "role": "pressure" },
+        { "id": "cv-013", "name": "Central venous pressure", "role": "pressure" },
+        { "id": "cv-016", "name": "Venous return", "role": "pump" },
+        { "id": "cv-017", "name": "Left-ventricle end-diastolic volume", "role": "structure" },
+        { "id": "cv-018", "name": "Left-ventricle end-systolic volume", "role": "structure" },
+        { "id": "cv-019", "name": "Left-ventricle mass", "role": "structure" },
+        { "id": "cv-021", "name": "Ejection fraction (LVEF)", "role": "pump" },
+        { "id": "demo:ubt-5c1e9b1d", "name": "Ejection fraction", "role": "pump" },
+        { "id": "cv-022", "name": "Filling ratio E/A", "role": "relaxation" },
+        { "id": "cv-023", "name": "Filling pressure ratio E/e′", "role": "relaxation" },
+        { "id": "cv-025", "name": "RR interval", "role": "rate_rhythm" },
+        { "id": "cv-030", "name": "PR interval", "role": "electrical" },
+        { "id": "cv-031", "name": "QRS duration", "role": "electrical" },
+        { "id": "cv-032", "name": "QTc interval", "role": "electrical" },
+        { "id": "demo:ubt-33eb23f7", "name": "QTc interval", "role": "electrical" },
+        { "id": "cv-037", "name": "ST-segment change", "role": "electrical" },
+        { "id": "cv-038", "name": "Orthostatic change in systolic pressure", "role": "orthostatic" },
+        { "id": "cv-039", "name": "Orthostatic change in heart rate", "role": "orthostatic" },
+        { "id": "cv-041", "name": "Baroreflex sensitivity", "role": "orthostatic" },
+        { "id": "cv-042", "name": "Cerebral blood-flow velocity", "role": "orthostatic" },
+        { "id": "cv-044", "name": "Carotid wall thickness (cIMT)", "role": "vessels" },
+        { "id": "cv-045", "name": "Pulse-wave velocity (arterial stiffness)", "role": "vessels" },
+        { "id": "cv-046", "name": "Flow-mediated dilation (vessel function)", "role": "vessels" },
+        { "id": "cv-063", "name": "VO₂peak (exercise capacity)", "role": "fitness" },
+        { "id": "cv-064", "name": "Exercise workload", "role": "fitness" },
+        { "id": "demo:ubt-b9c97649", "name": "VO₂ max", "role": "fitness" },
+        { "id": "cv-065", "name": "Oxygen saturation (SpO₂)", "role": "oxygen" },
+        { "id": "demo:ubt-12f6e490", "name": "Oxygen saturation (SpO₂)", "role": "oxygen" },
+        { "id": "cv-066", "name": "Arterial oxygen (PaO₂)", "role": "oxygen" },
+        { "id": "cv-067", "name": "Respiratory rate", "role": "oxygen" },
+        { "id": "demo:ubt-f4b8be7b", "name": "Respiratory rate", "role": "oxygen" },
+        { "id": "cv-068", "name": "End-tidal CO₂", "role": "oxygen" },
+        { "id": "cv-069", "name": "Lactate", "role": "oxygen" },
+        { "id": "cv-081", "name": "BNP / NT-proBNP (heart strain)", "role": "cardiac_marker" },
+        { "id": "demo:ubt-a65dfc7c", "name": "NT-proBNP (heart strain)", "role": "cardiac_marker" },
+        { "id": "demo:ubt-4982c524", "name": "BNP (heart strain)", "role": "cardiac_marker" },
+        { "id": "cv-082", "name": "Troponin (heart-muscle injury)", "role": "cardiac_marker" },
+        { "id": "demo:ubt-508e453f", "name": "Troponin I", "role": "cardiac_marker" },
+        { "id": "demo:ubt-8b90c2ca", "name": "Troponin T", "role": "cardiac_marker" }
+      ],
+      "keyEvidence": [
+        { "label": "blood pressure", "ids": ["cv-005", "cv-006", "demo:ubt-e1140df3"] },
+        { "label": "heart pumping function (ejection fraction)", "ids": ["cv-021", "demo:ubt-5c1e9b1d"] },
+        { "label": "ECG timing (QTc)", "ids": ["cv-032", "demo:ubt-33eb23f7"] }
+      ],
+      "conditions": [
+        { "name": "Cardiovascular deconditioning or orthostatic intolerance", "requires": "verified classification of blood-pressure, pumping or orthostatic measures and clinician review" },
+        { "name": "Heart-rhythm or conduction concern", "requires": "clinician review of the ECG together with a verified classification of the interval measures" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the cardiovascular results, including the ECG, before any change in exercise intensity is advised." },
+          { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical may request repeat ECG, echocardiography or orthostatic testing to confirm the finding." },
+          { "category": "physical_activity", "authorization": "clinician_required", "text": "Exercise prescription changes after a cardiovascular finding must be authorised by Ground Medical." }
+        ],
+        "change": [
+          { "category": "physical_activity", "authorization": "general_wellness", "text": "Continue the prescribed aerobic and resistance countermeasure sessions, which are the main protection against cardiovascular deconditioning in microgravity." },
+          { "category": "recovery", "authorization": "general_wellness", "text": "Record exercise sessions, sleep and hydration alongside the next measurement so that the change can be interpreted." },
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat the changed measurements with the same device or method at the next scheduled examination." }
+        ]
+      }
+    },
+    {
+      "id": "blood_oxygen_transport",
+      "title": "Red blood cells and blood volume",
+      "area": "Hematology",
+      "relationship": "Hemoglobin is the oxygen-carrying protein in red blood cells, and hematocrit is the share of blood made up of red cells. Both are concentrations, so they depend on red-cell mass and on plasma volume. Ferritin reflects iron stores but also rises with inflammation.",
+      "spaceflightContext": "Spaceflight reduces plasma volume and red-cell mass (often called space anaemia), so concentration values are interpreted together with volume measurements.",
+      "handbookIds": ["cv-014", "cv-015", "cv-075", "cv-076"],
+      "members": [
+        { "id": "cv-075", "name": "Hemoglobin", "role": "red_cells" },
+        { "id": "cv-076", "name": "Hematocrit", "role": "red_cells" },
+        { "id": "demo:ubt-cca016a0", "name": "Red-cell mass", "role": "red_cells" },
+        { "id": "cv-014", "name": "Plasma volume", "role": "volume" },
+        { "id": "demo:ubt-381d2837", "name": "Plasma volume", "role": "volume" },
+        { "id": "cv-015", "name": "Blood volume", "role": "volume" },
+        { "id": "demo:ubt-bc4aef7f", "name": "Blood volume", "role": "volume" },
+        { "id": "IMM-031", "name": "Ferritin (iron stores)", "role": "iron" }
+      ],
+      "keyEvidence": [
+        { "label": "hemoglobin", "ids": ["cv-075"] },
+        { "label": "hematocrit", "ids": ["cv-076"] },
+        { "label": "iron stores (ferritin)", "ids": ["IMM-031"] },
+        { "label": "plasma or blood volume", "ids": ["cv-014", "cv-015", "demo:ubt-381d2837", "demo:ubt-bc4aef7f"] }
+      ],
+      "conditions": [
+        { "name": "Anaemia-related pattern", "requires": "a verified below-range classification of hemoglobin or hematocrit" },
+        { "name": "Iron-deficiency (nutritional) pattern", "requires": "a verified classification of ferritin interpreted with inflammation markers" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical should investigate possible nutritional, inflammatory or blood-loss contributions; iron or other supplementation must be decided by the clinician." },
+          { "category": "nutrition", "authorization": "clinician_required", "text": "Ground Medical should review dietary iron and energy intake; MITOCHONDRIA does not suggest supplements or doses." }
+        ],
+        "change": [
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat hemoglobin and hematocrit together with plasma-volume measures so that a concentration change can be separated from a volume change." },
+          { "category": "nutrition", "authorization": "general_wellness", "text": "Keep the planned mission diet and record actual intake, so that Ground Medical can assess nutritional contributions." }
+        ]
+      }
+    },
+    {
+      "id": "inflammation_immune",
+      "title": "Inflammation and immune activity",
+      "area": "Immune and inflammatory health",
+      "relationship": "CRP, IL-6 and TNF-α are signals that rise during inflammation; white blood cells, lymphocytes and immunoglobulins (antibodies) describe the capacity of the immune system; body temperature and procalcitonin can accompany infection. Inflammation markers rise for many reasons, such as infection, injury, intense exercise or stress.",
+      "spaceflightContext": "Spaceflight stress, disturbed sleep and radiation are known to alter immune regulation, and dormant viruses such as EBV can reactivate.",
+      "handbookIds": ["cv-091", "cv-092", "cv-093", "IMM-001", "IMM-007", "IMM-008", "IMM-014", "IMM-015"],
+      "members": [
+        { "id": "cv-091", "name": "hsCRP (inflammation)", "role": "inflammation" },
+        { "id": "cv-092", "name": "IL-6 (inflammatory signal)", "role": "inflammation" },
+        { "id": "cv-093", "name": "TNF-α (inflammatory signal)", "role": "inflammation" },
+        { "id": "IMM-007", "name": "C-reactive protein", "role": "inflammation" },
+        { "id": "demo:ubt-1d9912f9", "name": "C-reactive protein", "role": "inflammation" },
+        { "id": "demo:ubt-c86436e7", "name": "CRP", "role": "inflammation" },
+        { "id": "demo:ubt-deedc9c4", "name": "High-sensitivity CRP", "role": "inflammation" },
+        { "id": "demo:ubt-3ae71a7f", "name": "IL-1β", "role": "inflammation" },
+        { "id": "demo:ubt-3e52e7b6", "name": "IL-8", "role": "inflammation" },
+        { "id": "demo:ubt-885ffda0", "name": "IL-17", "role": "inflammation" },
+        { "id": "demo:ubt-516090ed", "name": "TNF-α", "role": "inflammation" },
+        { "id": "demo:ubt-e151a9b1", "name": "IL-10 (anti-inflammatory signal)", "role": "regulation" },
+        { "id": "demo:ubt-1cc68f93", "name": "IL-12", "role": "regulation" },
+        { "id": "demo:ubt-1fc27650", "name": "IL-2", "role": "regulation" },
+        { "id": "demo:ubt-be20d8ea", "name": "IL-4", "role": "regulation" },
+        { "id": "demo:ubt-b9d509ce", "name": "ESR (sedimentation rate)", "role": "inflammation" },
+        { "id": "demo:ubt-db2da093", "name": "Procalcitonin", "role": "infection" },
+        { "id": "demo:ubt-323050f4", "name": "Body temperature", "role": "infection" },
+        { "id": "IMM-001", "name": "White blood cell count", "role": "immune_cells" },
+        { "id": "IMM-002", "name": "Neutrophil count", "role": "immune_cells" },
+        { "id": "IMM-003", "name": "Lymphocyte count", "role": "immune_cells" },
+        { "id": "demo:ubt-cbb5666e", "name": "White blood cell count", "role": "immune_cells" },
+        { "id": "demo:ubt-813d9e97", "name": "White blood cell count", "role": "immune_cells" },
+        { "id": "demo:ubt-ae6a394d", "name": "Neutrophil count", "role": "immune_cells" },
+        { "id": "demo:ubt-2e684454", "name": "Neutrophil count", "role": "immune_cells" },
+        { "id": "demo:ubt-6c941c77", "name": "Lymphocyte count", "role": "immune_cells" },
+        { "id": "demo:ubt-e0a346b9", "name": "Lymphocyte count", "role": "immune_cells" },
+        { "id": "IMM-014", "name": "Immunoglobulins", "role": "antibodies" },
+        { "id": "demo:ubt-c87840cb", "name": "IgG (antibodies)", "role": "antibodies" },
+        { "id": "demo:ubt-ead50a31", "name": "IgA (antibodies)", "role": "antibodies" },
+        { "id": "demo:ubt-97b6c305", "name": "IgM (antibodies)", "role": "antibodies" },
+        { "id": "IMM-015", "name": "Latent herpesvirus shedding", "role": "viral" },
+        { "id": "demo:ubt-abe0007c", "name": "EBV viral load", "role": "viral" }
+      ],
+      "keyEvidence": [
+        { "label": "CRP", "ids": ["cv-091", "IMM-007", "demo:ubt-1d9912f9", "demo:ubt-c86436e7", "demo:ubt-deedc9c4"] },
+        { "label": "white blood cell count", "ids": ["IMM-001", "demo:ubt-cbb5666e", "demo:ubt-813d9e97"] }
+      ],
+      "conditions": [
+        { "name": "Inflammatory pattern", "requires": "a verified out-of-range classification of CRP or inflammatory cytokines" },
+        { "name": "Immune-suppression pattern", "requires": "a verified below-range classification of white-cell or lymphocyte counts" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should evaluate possible infection or other causes of inflammation; any treatment decision belongs to the clinician." },
+          { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical may request repeat inflammatory markers, a white-cell differential or viral testing." }
+        ],
+        "change": [
+          { "category": "sleep", "authorization": "general_wellness", "text": "Protect the scheduled sleep period, since sleep loss and stress are known to influence immune regulation." },
+          { "category": "recovery", "authorization": "general_wellness", "text": "Record symptoms, intense exercise and sleep around the next blood test so the change in inflammation markers can be interpreted." },
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat the changed immune and inflammation markers at the next scheduled examination with the same laboratory method." }
+        ]
+      }
+    },
+    {
+      "id": "bone_mineral",
+      "title": "Bone and mineral health",
+      "area": "Bone and mineral health",
+      "relationship": "Bone is constantly broken down (resorption) and rebuilt (formation). Resorption markers such as CTX, pyridinoline and deoxypyridinoline reflect breakdown; formation markers such as P1NP and osteocalcin reflect rebuilding, and the two are interpreted together. Calcium, phosphate, parathyroid hormone (PTH) and vitamin D regulate the mineral supply to bone, and bone-density scans show the structural result over months.",
+      "spaceflightContext": "Without the loading of gravity, bone breakdown increases in microgravity; resistance exercise, calcium and vitamin D are the main countermeasures.",
+      "handbookIds": ["bone-001", "bone-009", "bone-013", "bone-016", "bone-018", "bone-019", "bone-043"],
+      "members": [
+        { "id": "bone-001", "name": "CTX (bone breakdown)", "role": "resorption" },
+        { "id": "demo:ubt-d9870fc7", "name": "CTX (bone breakdown)", "role": "resorption" },
+        { "id": "bone-002", "name": "NTX (bone breakdown)", "role": "resorption" },
+        { "id": "bone-003", "name": "Pyridinoline (bone breakdown)", "role": "resorption" },
+        { "id": "demo:ubt-9908b9b9", "name": "Pyridinoline (bone breakdown)", "role": "resorption" },
+        { "id": "bone-004", "name": "Deoxypyridinoline (bone breakdown)", "role": "resorption" },
+        { "id": "demo:ubt-d032c52f", "name": "Deoxypyridinoline (bone breakdown)", "role": "resorption" },
+        { "id": "bone-008", "name": "TRAP5b (bone breakdown)", "role": "resorption" },
+        { "id": "bone-009", "name": "P1NP (bone formation)", "role": "formation" },
+        { "id": "demo:ubt-6c8bad01", "name": "P1NP (bone formation)", "role": "formation" },
+        { "id": "demo:ubt-37f541f8", "name": "P1NP (bone formation)", "role": "formation" },
+        { "id": "bone-010", "name": "PICP (bone formation)", "role": "formation" },
+        { "id": "demo:ubt-ec404949", "name": "PICP (bone formation)", "role": "formation" },
+        { "id": "bone-011", "name": "Bone-specific alkaline phosphatase (bone formation)", "role": "formation" },
+        { "id": "bone-012", "name": "Osteocalcin (bone formation)", "role": "formation" },
+        { "id": "demo:ubt-12c22152", "name": "Osteocalcin (bone formation)", "role": "formation" },
+        { "id": "bone-013", "name": "Serum total calcium", "role": "mineral" },
+        { "id": "bone-014", "name": "Ionized calcium", "role": "mineral" },
+        { "id": "cv-073", "name": "Serum calcium", "role": "mineral" },
+        { "id": "demo:ubt-d71e8b4d", "name": "Ionized calcium", "role": "mineral" },
+        { "id": "bone-015", "name": "Urinary calcium (24 h)", "role": "mineral" },
+        { "id": "demo:ubt-83a192f6", "name": "Urinary calcium (24 h)", "role": "mineral" },
+        { "id": "demo:ubt-efc03936", "name": "Urinary calcium (24 h)", "role": "mineral" },
+        { "id": "bone-016", "name": "Serum phosphate", "role": "mineral" },
+        { "id": "cv-074", "name": "Phosphate", "role": "mineral" },
+        { "id": "bone-017", "name": "Urinary phosphorus", "role": "mineral" },
+        { "id": "demo:ubt-d2e67c8d", "name": "Urinary phosphorus", "role": "mineral" },
+        { "id": "bone-018", "name": "Parathyroid hormone (PTH)", "role": "mineral_hormone" },
+        { "id": "bone-019", "name": "Vitamin D (25-hydroxy)", "role": "mineral_hormone" },
+        { "id": "IMM-030", "name": "Vitamin D (25-hydroxy)", "role": "mineral_hormone" },
+        { "id": "demo:ubt-7b25ce69", "name": "Vitamin D (25-hydroxy)", "role": "mineral_hormone" },
+        { "id": "bone-020", "name": "Active vitamin D (1,25-dihydroxy)", "role": "mineral_hormone" },
+        { "id": "bone-021", "name": "FGF23", "role": "mineral_hormone" },
+        { "id": "bone-022", "name": "Sclerostin", "role": "bone_signal" },
+        { "id": "bone-026", "name": "Stable calcium isotope ratio", "role": "mineral" },
+        { "id": "demo:ubt-34f3b81d", "name": "Stable calcium isotope ratio", "role": "mineral" },
+        { "id": "bone-043", "name": "Total hip bone density", "role": "density" },
+        { "id": "demo:ubt-a6c35d86", "name": "Total hip bone density", "role": "density" },
+        { "id": "bone-044", "name": "Femoral neck bone density", "role": "density" },
+        { "id": "demo:ubt-468cb43c", "name": "Femoral neck bone density", "role": "density" },
+        { "id": "bone-045", "name": "Lumbar spine bone density", "role": "density" },
+        { "id": "demo:ubt-893cc839", "name": "Lumbar spine bone density", "role": "density" },
+        { "id": "bone-046", "name": "Total volumetric bone density", "role": "density" },
+        { "id": "demo:ubt-608309a7", "name": "Total volumetric bone density", "role": "density" },
+        { "id": "bone-047", "name": "Cortical volumetric bone density", "role": "density" },
+        { "id": "demo:ubt-ebf6e090", "name": "Cortical volumetric bone density", "role": "density" },
+        { "id": "bone-048", "name": "Trabecular volumetric bone density", "role": "density" },
+        { "id": "demo:ubt-99e4c24e", "name": "Trabecular volumetric bone density", "role": "density" },
+        { "id": "bone-049", "name": "Trabecular thickness", "role": "structure" },
+        { "id": "demo:ubt-d86be1ae", "name": "Trabecular thickness", "role": "structure" },
+        { "id": "bone-050", "name": "Trabecular number", "role": "structure" },
+        { "id": "demo:ubt-b9079b6f", "name": "Trabecular number", "role": "structure" },
+        { "id": "bone-051", "name": "Trabecular separation", "role": "structure" },
+        { "id": "demo:ubt-2f5b3bb4", "name": "Trabecular separation", "role": "structure" },
+        { "id": "bone-053", "name": "Bone failure load (strength)", "role": "structure" },
+        { "id": "demo:ubt-f17497d1", "name": "Bone failure load (strength)", "role": "structure" },
+        { "id": "bone-055", "name": "Resistance-exercise adherence", "role": "countermeasure" },
+        { "id": "demo:ubt-cb1c6a2f", "name": "Resistance-exercise adherence", "role": "countermeasure" },
+        { "id": "bone-057", "name": "Dietary calcium intake", "role": "nutrition" },
+        { "id": "demo:ubt-cf31f290", "name": "Dietary calcium intake", "role": "nutrition" },
+        { "id": "bone-058", "name": "Dietary vitamin D intake", "role": "nutrition" },
+        { "id": "demo:ubt-9416d34e", "name": "Dietary vitamin D intake", "role": "nutrition" },
+        { "id": "bone-059", "name": "Dietary protein intake", "role": "nutrition" },
+        { "id": "demo:ubt-04f819f8", "name": "Dietary protein intake", "role": "nutrition" }
+      ],
+      "keyEvidence": [
+        { "label": "a bone-breakdown marker", "ids": ["bone-001", "bone-002", "bone-003", "bone-004", "bone-008", "demo:ubt-d9870fc7", "demo:ubt-9908b9b9", "demo:ubt-d032c52f"] },
+        { "label": "a bone-formation marker", "ids": ["bone-009", "bone-010", "bone-011", "bone-012", "demo:ubt-6c8bad01", "demo:ubt-37f541f8", "demo:ubt-ec404949", "demo:ubt-12c22152"] },
+        { "label": "vitamin D", "ids": ["bone-019", "IMM-030", "demo:ubt-7b25ce69"] },
+        { "label": "parathyroid hormone (PTH)", "ids": ["bone-018"] },
+        { "label": "blood calcium", "ids": ["bone-013", "bone-014", "cv-073", "demo:ubt-d71e8b4d"] },
+        { "label": "bone-density imaging", "ids": ["bone-043", "bone-044", "bone-045", "bone-046", "demo:ubt-a6c35d86", "demo:ubt-468cb43c", "demo:ubt-893cc839", "demo:ubt-608309a7"] }
+      ],
+      "conditions": [
+        { "name": "Bone-health deterioration", "requires": "a verified classification of bone-turnover or bone-density measures, or comparable changes in both breakdown and formation markers reviewed by a clinician" },
+        { "name": "Osteoporosis-related risk", "requires": "bone-density imaging interpreted against validated diagnostic criteria by a clinician; never from vitamin D or blood markers alone" },
+        { "name": "Vitamin D or calcium insufficiency (nutritional)", "requires": "a verified below-range classification of vitamin D or calcium" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review calcium and vitamin D adequacy; any supplementation decision and dose belongs to the clinician." },
+          { "category": "further_examination", "authorization": "clinician_required", "text": "Ground Medical may request bone-density imaging (DXA or QCT) and repeat bone-turnover markers to confirm whether bone loss is occurring." },
+          { "category": "physical_activity", "authorization": "general_wellness", "text": "Continue the prescribed resistance-exercise countermeasure, because loss of skeletal loading is the main driver of bone loss in microgravity." }
+        ],
+        "change": [
+          { "category": "physical_activity", "authorization": "general_wellness", "text": "Review adherence to the prescribed resistance-exercise sessions, because loss of skeletal loading is the main driver of bone breakdown in microgravity." },
+          { "category": "nutrition", "authorization": "clinician_required", "text": "Ground Medical should review whether calcium, vitamin D and protein intake are adequate; MITOCHONDRIA does not suggest supplements or doses." },
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat bone-breakdown and bone-formation markers together, with the same laboratory method, at the next scheduled examination." }
+        ]
+      }
+    },
+    {
+      "id": "cardiometabolic",
+      "title": "Blood sugar and blood fats",
+      "area": "Metabolic health",
+      "relationship": "Glucose, insulin and HbA1c (average blood sugar over about three months) describe how the body handles sugar. LDL cholesterol, ApoB, HDL cholesterol and triglycerides describe blood fats. Together they inform long-term heart and metabolic health.",
+      "spaceflightContext": "Reduced physical activity and changes in diet during missions can affect both blood sugar control and blood fats.",
+      "handbookIds": ["cv-083", "cv-084", "cv-085", "cv-086", "cv-087", "cv-088", "cv-089", "cv-090"],
+      "members": [
+        { "id": "cv-083", "name": "Glucose", "role": "sugar" },
+        { "id": "demo:ubt-7f47ee7c", "name": "Fasting glucose", "role": "sugar" },
+        { "id": "cv-084", "name": "Insulin", "role": "sugar" },
+        { "id": "cv-085", "name": "HbA1c (3-month average blood sugar)", "role": "sugar" },
+        { "id": "demo:ubt-8b2bb539", "name": "HOMA-IR (insulin resistance)", "role": "sugar" },
+        { "id": "cv-086", "name": "LDL cholesterol", "role": "fats" },
+        { "id": "demo:ubt-26a9a98e", "name": "LDL cholesterol", "role": "fats" },
+        { "id": "cv-087", "name": "HDL cholesterol", "role": "fats" },
+        { "id": "demo:ubt-5ad8b852", "name": "HDL cholesterol", "role": "fats" },
+        { "id": "cv-088", "name": "Triglycerides", "role": "fats" },
+        { "id": "cv-089", "name": "ApoB", "role": "fats" },
+        { "id": "demo:ubt-ba9160b9", "name": "ApoB", "role": "fats" },
+        { "id": "cv-090", "name": "Lipoprotein(a)", "role": "fats" },
+        { "id": "demo:ubt-cc2bd315", "name": "Lipoprotein(a)", "role": "fats" },
+        { "id": "demo:ubt-efb899fc", "name": "Total cholesterol", "role": "fats" }
+      ],
+      "keyEvidence": [
+        { "label": "glucose or HbA1c", "ids": ["cv-083", "cv-085", "demo:ubt-7f47ee7c"] },
+        { "label": "LDL cholesterol or ApoB", "ids": ["cv-086", "cv-089", "demo:ubt-26a9a98e", "demo:ubt-ba9160b9"] }
+      ],
+      "conditions": [
+        { "name": "Cardiometabolic concern", "requires": "a verified out-of-range classification of glucose, HbA1c or blood fats" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the blood-sugar and blood-fat results; any medication decision belongs to the clinician." },
+          { "category": "nutrition", "authorization": "clinician_required", "text": "Ground Medical and the mission nutritionist should review the menu plan in light of these results." }
+        ],
+        "change": [
+          { "category": "physical_activity", "authorization": "general_wellness", "text": "Continue the prescribed aerobic exercise sessions, which support blood-sugar control and blood-fat balance." },
+          { "category": "nutrition", "authorization": "general_wellness", "text": "Record actual food intake around the next test so Ground Medical can interpret the change." },
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Repeat these tests in a fasting state with the same laboratory method at the next scheduled examination." }
+        ]
+      }
+    },
+    {
+      "id": "sleep_cognition",
+      "title": "Sleep, alertness and recovery",
+      "area": "Sleep and cognitive health",
+      "relationship": "Total sleep time and sleep efficiency (the share of time in bed actually asleep) describe sleep quantity and quality; reaction-time tests such as the PVT show how sleep affects alertness. Heart-rate variability (RMSSD, SDNN) reflects recovery of the nervous system and tends to fall with sleep loss and stress.",
+      "spaceflightContext": "Mission schedules, noise, light, temperature and carbon dioxide on board are known to disturb sleep.",
+      "handbookIds": ["BSC-001", "BSC-002", "BSC-017", "BSC-028", "cv-026", "cv-027"],
+      "members": [
+        { "id": "BSC-001", "name": "Total sleep time", "role": "sleep" },
+        { "id": "demo:ubt-d900847d", "name": "Total sleep time", "role": "sleep" },
+        { "id": "BSC-002", "name": "Sleep efficiency", "role": "sleep" },
+        { "id": "demo:ubt-efe7e2fb", "name": "Sleep efficiency", "role": "sleep" },
+        { "id": "BSC-003", "name": "Wake after sleep onset", "role": "sleep" },
+        { "id": "BSC-004", "name": "Time to fall asleep", "role": "sleep" },
+        { "id": "BSC-008", "name": "Subjective sleep quality", "role": "sleep" },
+        { "id": "demo:ubt-ed97000c", "name": "Subjective sleep quality", "role": "sleep" },
+        { "id": "BSC-015", "name": "Sleepiness (KSS)", "role": "alertness" },
+        { "id": "BSC-016", "name": "Fatigue", "role": "alertness" },
+        { "id": "BSC-017", "name": "Reaction-time test (PVT)", "role": "alertness" },
+        { "id": "demo:ubt-676690c9", "name": "Reaction-time test (PVT median)", "role": "alertness" },
+        { "id": "BSC-025", "name": "Perceived stress", "role": "stress" },
+        { "id": "BSC-028", "name": "Night-time heart rate and HRV", "role": "recovery" },
+        { "id": "cv-026", "name": "Heart-rate variability (SDNN)", "role": "recovery" },
+        { "id": "cv-027", "name": "Heart-rate variability (RMSSD)", "role": "recovery" },
+        { "id": "demo:ubt-dfd7c929", "name": "Sedentary time", "role": "activity" }
+      ],
+      "keyEvidence": [
+        { "label": "sleep duration", "ids": ["BSC-001", "demo:ubt-d900847d"] },
+        { "label": "sleep efficiency", "ids": ["BSC-002", "demo:ubt-efe7e2fb"] },
+        { "label": "an alertness test", "ids": ["BSC-017", "demo:ubt-676690c9"] }
+      ],
+      "conditions": [
+        { "name": "Sleep disruption", "requires": "a verified classification of sleep duration or efficiency, or a clinician-reviewed sleep assessment" }
+      ],
+      "recommendations": {
+        "concern": [
+          { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the sleep findings; any sleep medication decision belongs to the clinician." },
+          { "category": "sleep", "authorization": "general_wellness", "text": "Review the work/rest schedule, light exposure, noise and cabin temperature during the sleep period." }
+        ],
+        "change": [
+          { "category": "sleep", "authorization": "general_wellness", "text": "Review the sleep schedule and sleep environment (light, noise, temperature, CO₂) for the period in which the change occurred." },
+          { "category": "recovery", "authorization": "general_wellness", "text": "Avoid scheduling intense exercise close to the sleep period and record sleep consistently with the same device." },
+          { "category": "monitoring", "authorization": "general_wellness", "text": "Continue nightly sleep recording so the change can be confirmed over several nights." }
+        ]
+      }
+    }
+  ]
+}
