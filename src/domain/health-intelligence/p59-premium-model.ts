@@ -324,12 +324,12 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       review: c.priority === "high" || c.priority === "prompt" ? "HIGH" : "ROUTINE",
       dataQuality: c.priority === "measurement_check" || rs.some((r) => r.axes.dataQuality.value === "DATA_QUALITY_WARNING") ? "DATA_QUALITY_WARNING" : "UNKNOWN",
       evidence: c.narrative.whatHappened,
-      nextStep: c.confirmation[0] ?? c.narrative.nextSteps[0] ?? "Ground Medical review.",
+      nextStep: (decision.priority === "DATA_CHECK" ? [...c.narrative.nextSteps, ...c.confirmation].find((x) => /\b(?:verif|repeat|new sample|method|sample identity)/i.test(x)) : undefined) ?? c.confirmation[0] ?? c.narrative.nextSteps[0] ?? "Ground Medical review.",
       clinicalOrder: order.includes(c.concernId) ? order.indexOf(c.concernId) : order.length,
     };
   });
   const alerts = selectExecutiveAlerts(summaries, 4);
-  const nextSteps = alerts.filter((a) => a.kind !== "none").map((a) => a.nextStep).filter((s, i, arr) => arr.indexOf(s) === i).slice(0, 4);
+  const nextSteps = alerts.filter((a) => a.kind !== "none").map((a) => a.nextStep).filter((s, i, arr) => arr.indexOf(s) === i && (s !== "See the Preliminary Medical Assessment." || arr.length === 1)).slice(0, 4);
 
   // ---------- systems at a glance
   const systems: SystemTile[] = GROUPS.filter((g) => g.id !== "other").map((g) => {
@@ -419,7 +419,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   if (report.clinical.crossDomain.length) integrated.push({ heading: "Across body systems", paragraphs: report.clinical.crossDomain.map((x) => x.text), evidenceKeys: report.clinical.crossDomain.flatMap((x) => x.contributorKeys) });
 
   const mappedRows = rows.filter((r) => r.identityRoute?.kind === "demonstration_mapping");
-  const basisText = `Clinical colours: ${counts.approvedCriteria} Researcher-approved criteria available for this mission${provisionalActive ? `; ${DEMONSTRATION_LABEL.toLowerCase()} — provisional literature interpretation is ON (badges marked PROVISIONAL; never approved classifications; never counted as validated alerts)${demonstrationMappingsActive ? `; ${new Set(mappedRows.map((r) => r.metricId)).size} synthetic demonstration identity mapping(s) applied (owner-directed, not Researcher-approved)` : ""}` : ""}. General-population criteria are not NASA flight limits. Panel colour states review priority; the clinical class of each result is a separate field. Data quality is shown separately.`;
+  const basisText = `Clinical classes: ${counts.approvedCriteria} Researcher-approved criteria for this mission${provisionalActive ? "; PROVISIONAL classes come from documented literature criteria (synthetic demonstration only; never validated alerts)" : ""}${demonstrationMappingsActive ? `; ${new Set(mappedRows.map((r) => r.metricId)).size} synthetic identity mapping(s) applied (owner-directed, not Researcher-approved)` : ""}. Panel colour = warning priority, a separate field from each result's clinical class; a DATA CHECK never hides a medical-review priority. General-population criteria are not NASA flight limits.`;
 
   return {
     schema: PREMIUM_REPORT_SCHEMA, version: PREMIUM_GENERATOR_VERSION, base: report, header,

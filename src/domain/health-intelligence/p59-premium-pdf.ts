@@ -226,8 +226,8 @@ function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureO
   const soft: RGB = tone === "red" ? COLOR.redSoft : tone === "amber" ? COLOR.amberSoft : tone === "check" ? COLOR.violetSoft : tone === "green" ? COLOR.greenSoft : COLOR.panel;
   const inner = w - 7;
   const title = L.capped(a.title, 10, inner, 2, true);
-  const ev = L.capped(a.evidence, 8.1, inner, 5);
-  const why = a.priority && a.rationale ? L.capped(`Why this priority: ${a.rationale}`, 7.3, inner, 4) : [];
+  const ev = L.capped(a.evidence, 8.1, inner, a.priority ? 4 : 5);
+  const why = a.priority && a.rationale ? L.capped(`Why this priority: ${a.rationale}`, 7.3, inner, 3) : [];
   const next = L.capped(`Next: ${a.nextStep}`, 7.9, inner, 4);
   const clinicalRow = Boolean(a.priority) && a.findingIds.length === 1;
   const badgeRows = a.priority ? 5 + (clinicalRow ? 5 : 0) : a.badges.length ? 5 : 0;
@@ -274,7 +274,7 @@ function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureO
 
 function demonstrationBanner(L: P, r: PremiumReport) {
   if (!r.demonstrationLabel) return;
-  const text = `${r.demonstrationLabel}. Literature criteria${r.options.demonstrationMappingsActive ? " and owner-directed synthetic identity mappings" : ""} colour results for this synthetic demonstration only. They are not Researcher-approved, are never counted as validated alerts and are never applied to real data.`;
+  const text = `${r.demonstrationLabel}. Literature criteria${r.options.demonstrationMappingsActive ? " and synthetic identity mappings" : ""} colour results for demonstration only: not Researcher-approved, never validated alerts, never applied to real data.`;
   const ls = L.wrap(text, 7.6, CW - 8, true);
   const h = ls.length * lh(7.6) + 3.4;
   L.box(MX, L.y, CW, h, [255, 248, 225], COLOR.amber, 1.8, 0.4);
@@ -304,12 +304,12 @@ function pageOne(L: P, r: PremiumReport) {
   const usesPriority = cards.some((c) => c.priority);
   const items: [BadgeKind, string, string][] = usesPriority
     ? [
-        ["pri-red", "RED", "High priority medical review — documented evidence; not a diagnosis"],
+        ["pri-red", "RED", "High priority medical review; not a diagnosis"],
         ["pri-amber", "AMBER", "Monitoring or further evaluation"],
-        ["pri-purple", "PURPLE · DATA CHECK", "Verify the measurement before interpretation"],
+        ["pri-purple", "DATA CHECK", "Purple — verify the measurement first"],
         ["green", "GREEN", "Within applicable reference criteria"],
         ["neutral", "NEUTRAL", "Insufficient classification evidence"],
-        ...(r.options.provisionalActive ? ([["amber", "(PROVISIONAL)", "Literature-based class, synthetic demonstration — not clinically validated"]] as [BadgeKind, string, string][]) : []),
+        ...(r.options.provisionalActive ? ([["amber", "(PROVISIONAL)", "Literature-based class; not clinically validated"]] as [BadgeKind, string, string][]) : []),
       ]
     : [
         ["red", "RED", "Important medical concern — criterion met"],
@@ -320,7 +320,7 @@ function pageOne(L: P, r: PremiumReport) {
         ["flag", "HIGH-PRIORITY REVIEW", "Urgency only — not a classification"],
       ];
   if (legendProblems(REPORT_LEGEND).length) throw new Error("Report legend failed validation; PDF not created.");
-  const note = usesPriority ? L.wrap("Panel colour = warning priority. Badge on each result = clinical class (approved criterion, or PROVISIONAL literature criterion). The two are separate fields; a DATA CHECK never hides a medical-review priority.", 6.8, CW - 6) : [];
+  const note = usesPriority ? L.wrap(r.basisText, 6.8, CW - 6) : [];
   const lgH = 2 * 9 + 3 + (note.length ? note.length * lh(6.8) + 1 : 0);
   L.ensure(lgH);
   L.box(MX, L.y, CW, lgH, COLOR.panel, COLOR.rule);
@@ -340,6 +340,7 @@ function pageOne(L: P, r: PremiumReport) {
       L.y += L.lines(ls, MX + 5, L.y, 8.1) + 0.6;
     });
   }
+  if (usesPriority) return;
   const basis = L.wrap(r.basisText, 7.5, CW - 6);
   L.ensure(basis.length * lh(7.5) + 4);
   L.y += 1.5;
