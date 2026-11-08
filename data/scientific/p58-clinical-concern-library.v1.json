@@ -8,135 +8,466 @@
       "id": "dysglycemia",
       "title": "Possible disturbance of blood-sugar regulation (dysglycemia)",
       "patternId": "cardiometabolic",
-      "markers": ["cv-085", "cv-083", "demo:ubt-7f47ee7c", "cv-084", "demo:ubt-8b2bb539"],
-      "criteriaIds": ["p57-ada2026-hba1c-categories", "p57-niddk-hba1c-categories", "p57-ada2026-fpg-categories", "p57-ada2026-random-glucose"],
-      "whyItMatters": "HbA1c (glycated hemoglobin) reflects average blood glucose over roughly the previous two to three months, while plasma glucose reflects the moment of sampling. Persistently raised values indicate that glucose regulation by insulin may be impaired, which over time affects blood vessels, nerves, kidneys and the eyes.",
-      "mechanisms": ["Reduced insulin sensitivity (insulin resistance), for example with physical inactivity, stress hormones or sleep loss.", "Reduced insulin secretion by the pancreas.", "Recent food intake or acute stress raising a single glucose reading."],
-      "alternatives": ["Sample mix-up or data-entry error, especially when HbA1c changes markedly within days.", "Conditions altering red-cell turnover (anemia, blood loss, transfusion, hemolysis) or hemoglobin variants affecting HbA1c.", "A non-fasting or random glucose interpreted as fasting."],
-      "missingTests": [
-        { "label": "Fasting plasma glucose with documented fasting time", "ids": ["cv-083", "demo:ubt-7f47ee7c"] },
-        { "label": "Repeat HbA1c from a new sample (NGSP-certified method)", "ids": ["cv-085"] },
-        { "label": "Hemoglobin and red-cell indices (to judge HbA1c validity)", "ids": ["cv-075", "cv-076"] }
+      "markers": [
+        "cv-085",
+        "cv-083",
+        "demo:ubt-7f47ee7c",
+        "cv-084",
+        "demo:ubt-8b2bb539"
       ],
-      "contextNeeded": ["Fasting state and time of sampling", "Recent meals, illness, stress or sleep loss", "Sample identity and laboratory method"],
-      "confirmation": ["Confirm any criterion-level result with a second abnormal test (same test at a later time point, or a different test), as required by the ADA Standards of Care.", "Check sample identity and laboratory method before interpreting an HbA1c change over a short interval."],
-      "groundMedicalVerify": ["Sample identity, laboratory method and data entry for the HbA1c results", "Fasting status for each glucose result", "Red-cell parameters that could invalidate HbA1c"],
+      "criteriaIds": [
+        "p57-ada2026-hba1c-categories",
+        "p57-niddk-hba1c-categories",
+        "p57-ada2026-fpg-categories",
+        "p57-ada2026-random-glucose"
+      ],
+      "whyItMatters": "HbA1c (glycated hemoglobin) reflects average blood glucose over roughly the previous two to three months, while plasma glucose reflects the moment of sampling. Persistently raised values indicate that glucose regulation by insulin may be impaired, which over time affects blood vessels, nerves, kidneys and the eyes.",
+      "mechanisms": [
+        "Reduced insulin sensitivity (insulin resistance), for example with physical inactivity, stress hormones or sleep loss.",
+        "Reduced insulin secretion by the pancreas.",
+        "Recent food intake or acute stress raising a single glucose reading."
+      ],
+      "alternatives": [
+        "Sample mix-up or data-entry error, especially when HbA1c changes markedly within days.",
+        "Conditions altering red-cell turnover (anemia, blood loss, transfusion, hemolysis) or hemoglobin variants affecting HbA1c.",
+        "A non-fasting or random glucose interpreted as fasting."
+      ],
+      "missingTests": [
+        {
+          "label": "Fasting plasma glucose with documented fasting time",
+          "ids": [
+            "cv-083",
+            "demo:ubt-7f47ee7c"
+          ]
+        },
+        {
+          "label": "Repeat HbA1c from a new sample (NGSP-certified method)",
+          "ids": [
+            "cv-085"
+          ]
+        },
+        {
+          "label": "Hemoglobin and red-cell indices (to judge HbA1c validity)",
+          "ids": [
+            "cv-075",
+            "cv-076"
+          ]
+        }
+      ],
+      "contextNeeded": [
+        "Fasting state and time of sampling",
+        "Recent meals, illness, stress or sleep loss",
+        "Sample identity and laboratory method"
+      ],
+      "confirmation": [
+        "Confirm any criterion-level result with a second abnormal test (same test at a later time point, or a different test), as required by the ADA Standards of Care.",
+        "Check sample identity and laboratory method before interpreting an HbA1c change over a short interval."
+      ],
+      "groundMedicalVerify": [
+        "Sample identity, laboratory method and data entry for the HbA1c results",
+        "Fasting status for each glucose result",
+        "Red-cell parameters that could invalidate HbA1c"
+      ],
       "recommendations": [
-        { "category": "further_examination", "authorization": "clinician_required", "text": "Request a repeat HbA1c from a new sample and a fasting plasma glucose with documented fasting time, so that a criterion-level result can be confirmed or excluded." },
-        { "category": "nutrition", "authorization": "general_wellness", "text": "Record meal timing and content before blood tests. Diets built on vegetables, legumes, whole grains and adequate protein, with fewer refined sugars and sugary drinks, are generally associated with steadier blood glucose; individual changes should follow Ground Medical advice." },
-        { "category": "physical_activity", "authorization": "general_wellness", "text": "Maintain the prescribed aerobic and resistance exercise; muscle activity increases glucose uptake and insulin sensitivity." }
+        {
+          "category": "further_examination",
+          "authorization": "clinician_required",
+          "text": "Request a repeat HbA1c from a new sample and a fasting plasma glucose with documented fasting time, so that a criterion-level result can be confirmed or excluded."
+        },
+        {
+          "category": "nutrition",
+          "authorization": "general_wellness",
+          "text": "Record meal timing and content before blood tests. Diets built on vegetables, legumes, whole grains and adequate protein, with fewer refined sugars and sugary drinks, are generally associated with steadier blood glucose; individual changes should follow Ground Medical advice."
+        },
+        {
+          "category": "physical_activity",
+          "authorization": "general_wellness",
+          "text": "Maintain the prescribed aerobic and resistance exercise; muscle activity increases glucose uptake and insulin sensitivity."
+        }
       ]
     },
     {
       "id": "triglyceride_elevation",
       "title": "Raised blood triglycerides (possible lipid-metabolism concern)",
       "patternId": "cardiometabolic",
-      "markers": ["cv-088", "cv-086", "cv-087", "cv-089", "demo:ubt-26a9a98e", "demo:ubt-5ad8b852"],
-      "criteriaIds": ["p57-nhlbi-triglyceride-categories"],
-      "whyItMatters": "Triglycerides are the main form in which the body transports and stores fat. Levels rise for several hours after a meal; persistently raised fasting levels are associated with heart and blood-vessel complications, and very high levels can inflame the pancreas.",
-      "mechanisms": ["Recent food intake, particularly sugars, refined carbohydrates or alcohol.", "Insulin resistance increasing triglyceride production by the liver.", "Reduced physical activity lowering triglyceride clearance."],
-      "alternatives": ["Non-fasting sample (the most common cause of a single high value).", "Recent alcohol intake.", "Medications or other metabolic conditions affecting lipids.", "Laboratory or sample-handling variation."],
-      "missingTests": [
-        { "label": "Fasting lipid panel (LDL-C, HDL-C, triglycerides) with documented fasting time", "ids": ["cv-086", "cv-087"] },
-        { "label": "ApoB", "ids": ["cv-089", "demo:ubt-ba9160b9"] }
+      "markers": [
+        "cv-088",
+        "cv-086",
+        "cv-087",
+        "cv-089",
+        "demo:ubt-26a9a98e",
+        "demo:ubt-5ad8b852"
       ],
-      "contextNeeded": ["Fasting state and time of the last meal", "Recent alcohol intake", "Current medications"],
-      "confirmation": ["Repeat triglycerides in a documented fasting sample before any category is applied; NHLBI bases the diagnosis on fasting levels that are regularly elevated."],
-      "groundMedicalVerify": ["Fasting state of each triglyceride sample", "Meal and alcohol history before sampling"],
+      "criteriaIds": [
+        "p57-nhlbi-triglyceride-categories"
+      ],
+      "whyItMatters": "Triglycerides are the main form in which the body transports and stores fat. Levels rise for several hours after a meal; persistently raised fasting levels are associated with heart and blood-vessel complications, and very high levels can inflame the pancreas.",
+      "mechanisms": [
+        "Recent food intake, particularly sugars, refined carbohydrates or alcohol.",
+        "Insulin resistance increasing triglyceride production by the liver.",
+        "Reduced physical activity lowering triglyceride clearance."
+      ],
+      "alternatives": [
+        "Non-fasting sample (the most common cause of a single high value).",
+        "Recent alcohol intake.",
+        "Medications or other metabolic conditions affecting lipids.",
+        "Laboratory or sample-handling variation."
+      ],
+      "missingTests": [
+        {
+          "label": "Fasting lipid panel (LDL-C, HDL-C, triglycerides) with documented fasting time",
+          "ids": [
+            "cv-086",
+            "cv-087"
+          ]
+        },
+        {
+          "label": "ApoB",
+          "ids": [
+            "cv-089",
+            "demo:ubt-ba9160b9"
+          ]
+        }
+      ],
+      "contextNeeded": [
+        "Fasting state and time of the last meal",
+        "Recent alcohol intake",
+        "Current medications"
+      ],
+      "confirmation": [
+        "Repeat triglycerides in a documented fasting sample before any category is applied; NHLBI bases the diagnosis on fasting levels that are regularly elevated."
+      ],
+      "groundMedicalVerify": [
+        "Fasting state of each triglyceride sample",
+        "Meal and alcohol history before sampling"
+      ],
       "recommendations": [
-        { "category": "further_examination", "authorization": "clinician_required", "text": "Repeat a fasting lipid panel with documented fasting time to establish whether triglycerides remain raised." },
-        { "category": "nutrition", "authorization": "general_wellness", "text": "Triglycerides respond strongly to recent sugars, refined carbohydrates and alcohol; recording intake in the 24 hours before sampling helps interpret the result. Dietary changes should be agreed with Ground Medical." },
-        { "category": "physical_activity", "authorization": "general_wellness", "text": "Regular aerobic exercise increases the clearance of triglycerides from the blood; maintain the prescribed exercise programme." }
+        {
+          "category": "further_examination",
+          "authorization": "clinician_required",
+          "text": "Repeat a fasting lipid panel with documented fasting time to establish whether triglycerides remain raised."
+        },
+        {
+          "category": "nutrition",
+          "authorization": "general_wellness",
+          "text": "Triglycerides respond strongly to recent sugars, refined carbohydrates and alcohol; recording intake in the 24 hours before sampling helps interpret the result. Dietary changes should be agreed with Ground Medical."
+        },
+        {
+          "category": "physical_activity",
+          "authorization": "general_wellness",
+          "text": "Regular aerobic exercise increases the clearance of triglycerides from the blood; maintain the prescribed exercise programme."
+        }
       ]
     },
     {
       "id": "electrolyte_disturbance",
       "title": "Possible electrolyte disturbance (sodium / potassium)",
       "patternId": "fluid_electrolyte_renal",
-      "markers": ["cv-070", "cv-071", "cv-072", "demo:ubt-2841fb44", "demo:ubt-4afd25a0", "demo:ubt-c30c0952"],
+      "markers": [
+        "cv-070",
+        "cv-071",
+        "cv-072",
+        "demo:ubt-2841fb44",
+        "demo:ubt-4afd25a0",
+        "demo:ubt-c30c0952"
+      ],
       "criteriaIds": [],
       "whyItMatters": "Sodium and potassium are held within narrow limits because they control fluid distribution and the electrical activity of nerves and heart muscle. Large changes, particularly in potassium, can affect heart rhythm and therefore need prompt medical review rather than waiting for the next routine examination.",
-      "mechanisms": ["Changes in fluid intake, fluid loss or fluid shifts (including the headward fluid shift of microgravity).", "Hormonal regulation by aldosterone and vasopressin acting on the kidneys.", "Changes in kidney function."],
-      "alternatives": ["Sample hemolysis or delayed processing, which can falsely raise measured potassium.", "Contamination from an intravenous line.", "Dilution or concentration of the sample.", "Laboratory variation between examinations."],
-      "missingTests": [
-        { "label": "Kidney function (creatinine / eGFR)", "ids": ["demo:ubt-5630390c", "demo:ubt-645f4a78"] },
-        { "label": "Repeat electrolytes with careful sample handling", "ids": ["cv-070", "cv-071"] },
-        { "label": "Urine sodium and potassium, urine volume", "ids": ["bone-031", "bone-032", "bone-037"] }
+      "mechanisms": [
+        "Changes in fluid intake, fluid loss or fluid shifts (including the headward fluid shift of microgravity).",
+        "Hormonal regulation by aldosterone and vasopressin acting on the kidneys.",
+        "Changes in kidney function."
       ],
-      "contextNeeded": ["Sample handling and hemolysis index", "Fluid intake and urine output", "ECG findings if potassium is markedly changed"],
-      "confirmation": ["Repeat sodium and potassium promptly under Ground Medical supervision with careful sample handling; the timing is a clinical decision.", "Interpret against the performing laboratory's own reference interval — no general interval is approved in this application."],
-      "groundMedicalVerify": ["Hemolysis or delayed processing of the samples", "Fluid balance and medications", "Need for ECG assessment"],
+      "alternatives": [
+        "Sample hemolysis or delayed processing, which can falsely raise measured potassium.",
+        "Contamination from an intravenous line.",
+        "Dilution or concentration of the sample.",
+        "Laboratory variation between examinations."
+      ],
+      "missingTests": [
+        {
+          "label": "Kidney function (creatinine / eGFR)",
+          "ids": [
+            "demo:ubt-5630390c",
+            "demo:ubt-645f4a78"
+          ]
+        },
+        {
+          "label": "Repeat electrolytes with careful sample handling",
+          "ids": [
+            "cv-070",
+            "cv-071"
+          ]
+        },
+        {
+          "label": "Urine sodium and potassium, urine volume",
+          "ids": [
+            "bone-031",
+            "bone-032",
+            "bone-037"
+          ]
+        }
+      ],
+      "contextNeeded": [
+        "Sample handling and hemolysis index",
+        "Fluid intake and urine output",
+        "ECG findings if potassium is markedly changed"
+      ],
+      "confirmation": [
+        "Repeat sodium and potassium promptly under Ground Medical supervision with careful sample handling; the timing is a clinical decision.",
+        "Interpret against the performing laboratory's own reference interval — no general interval is approved in this application."
+      ],
+      "groundMedicalVerify": [
+        "Hemolysis or delayed processing of the samples",
+        "Fluid balance and medications",
+        "Need for ECG assessment"
+      ],
       "recommendations": [
-        { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review the sodium and potassium changes promptly and decide on repeat measurements; do not defer this to the next routine examination." },
-        { "category": "hydration", "authorization": "clinician_required", "text": "Do not change fluid or salt intake on the basis of these results until Ground Medical has reviewed them; the appropriate direction depends on the cause." }
+        {
+          "category": "ground_medical",
+          "authorization": "clinician_required",
+          "text": "Ground Medical should review the sodium and potassium changes promptly and decide on repeat measurements; do not defer this to the next routine examination."
+        },
+        {
+          "category": "hydration",
+          "authorization": "clinician_required",
+          "text": "Do not change fluid or salt intake on the basis of these results until Ground Medical has reviewed them; the appropriate direction depends on the cause."
+        }
       ]
     },
     {
       "id": "systemic_inflammation",
       "title": "Possible inflammatory response",
       "patternId": "inflammation_immune",
-      "markers": ["cv-091", "cv-092", "cv-093", "IMM-007", "IMM-001", "IMM-002", "IMM-003"],
-      "criteriaIds": ["p57-cdc-aha-hscrp-repeat-above-10", "p57-cdc-aha-hscrp-risk-categories"],
-      "whyItMatters": "Inflammatory markers rise when the immune system responds to infection, injury, strenuous exercise or stress. IL-6 is a short-lived signalling molecule; CRP is produced by the liver in response to IL-6 over the following day. A marked rise calls for a search for its cause.",
-      "mechanisms": ["Infection or tissue injury activating the innate immune response.", "Strenuous or unaccustomed exercise causing muscle micro-injury.", "Psychological or physiological stress and sleep loss."],
-      "alternatives": ["Intense exercise before sampling.", "Sample handling (IL-6 can change with processing delay).", "Assay differences between examinations."],
-      "missingTests": [
-        { "label": "CRP (hs-CRP)", "ids": ["cv-091"] },
-        { "label": "White-cell count and differential", "ids": ["IMM-001", "IMM-002", "IMM-003"] },
-        { "label": "Body temperature and clinical examination", "ids": [] }
+      "markers": [
+        "cv-091",
+        "cv-092",
+        "cv-093",
+        "IMM-007",
+        "IMM-001",
+        "IMM-002",
+        "IMM-003"
       ],
-      "contextNeeded": ["Symptoms and body temperature (not recorded here)", "Exercise in the preceding 24–48 hours", "Recent injury"],
-      "confirmation": ["Repeat the inflammatory markers and examine for sources of infection or inflammation; the CDC/AHA statement recommends repeating hs-CRP above 10 mg/L."],
-      "groundMedicalVerify": ["Symptoms and temperature at the time of sampling", "Exercise and injury history", "Sample processing time"],
+      "criteriaIds": [
+        "p57-cdc-aha-hscrp-repeat-above-10",
+        "p57-cdc-aha-hscrp-risk-categories"
+      ],
+      "whyItMatters": "Inflammatory markers rise when the immune system responds to infection, injury, strenuous exercise or stress. IL-6 is a short-lived signalling molecule; CRP is produced by the liver in response to IL-6 over the following day. A marked rise calls for a search for its cause.",
+      "mechanisms": [
+        "Infection or tissue injury activating the innate immune response.",
+        "Strenuous or unaccustomed exercise causing muscle micro-injury.",
+        "Psychological or physiological stress and sleep loss."
+      ],
+      "alternatives": [
+        "Intense exercise before sampling.",
+        "Sample handling (IL-6 can change with processing delay).",
+        "Assay differences between examinations."
+      ],
+      "missingTests": [
+        {
+          "label": "CRP (hs-CRP)",
+          "ids": [
+            "cv-091"
+          ]
+        },
+        {
+          "label": "White-cell count and differential",
+          "ids": [
+            "IMM-001",
+            "IMM-002",
+            "IMM-003"
+          ]
+        },
+        {
+          "label": "Body temperature and clinical examination",
+          "ids": []
+        }
+      ],
+      "contextNeeded": [
+        "Symptoms and body temperature (not recorded here)",
+        "Exercise in the preceding 24–48 hours",
+        "Recent injury"
+      ],
+      "confirmation": [
+        "Repeat the inflammatory markers and examine for sources of infection or inflammation; the CDC/AHA statement recommends repeating hs-CRP above 10 mg/L."
+      ],
+      "groundMedicalVerify": [
+        "Symptoms and temperature at the time of sampling",
+        "Exercise and injury history",
+        "Sample processing time"
+      ],
       "recommendations": [
-        { "category": "ground_medical", "authorization": "clinician_required", "text": "Ground Medical should review symptoms, temperature and sample conditions and decide whether repeat inflammatory markers and an examination for infection or inflammation are needed." },
-        { "category": "recovery", "authorization": "general_wellness", "text": "Record exercise intensity, sleep and any illness symptoms in the days before the next blood test so the inflammatory markers can be placed in context." }
+        {
+          "category": "ground_medical",
+          "authorization": "clinician_required",
+          "text": "Ground Medical should review symptoms, temperature and sample conditions and decide whether repeat inflammatory markers and an examination for infection or inflammation are needed."
+        },
+        {
+          "category": "recovery",
+          "authorization": "general_wellness",
+          "text": "Record exercise intensity, sleep and any illness symptoms in the days before the next blood test so the inflammatory markers can be placed in context."
+        }
       ]
     },
     {
       "id": "bone_turnover_change",
       "title": "Change in bone-turnover markers (possible bone-health concern)",
       "patternId": "bone_mineral",
-      "markers": ["bone-012", "demo:ubt-12c22152", "bone-001", "demo:ubt-d9870fc7", "bone-009", "demo:ubt-6c8bad01", "bone-018", "bone-019", "demo:ubt-7b25ce69", "bone-013", "cv-073"],
+      "markers": [
+        "bone-012",
+        "demo:ubt-12c22152",
+        "bone-001",
+        "demo:ubt-d9870fc7",
+        "bone-009",
+        "demo:ubt-6c8bad01",
+        "bone-018",
+        "bone-019",
+        "demo:ubt-7b25ce69",
+        "bone-013",
+        "cv-073"
+      ],
       "criteriaIds": [],
       "whyItMatters": "Bone is continuously rebuilt: osteoblasts form new bone (formation markers such as osteocalcin and P1NP) while osteoclasts break it down (resorption markers such as CTX). In microgravity, unloading increases resorption, so formation and resorption markers, calcium, parathyroid hormone and vitamin D are interpreted together.",
-      "mechanisms": ["Skeletal unloading in microgravity increasing bone resorption.", "Changes in vitamin D status or calcium supply affecting mineralisation.", "Changes in exercise loading."],
-      "alternatives": ["Assay or laboratory differences (osteocalcin is assay-dependent).", "Circadian and fasting effects on bone markers.", "Recent fracture healing or intense loading."],
-      "missingTests": [
-        { "label": "Bone resorption marker (CTX)", "ids": ["bone-001", "demo:ubt-d9870fc7"] },
-        { "label": "Bone formation marker (P1NP)", "ids": ["bone-009", "demo:ubt-6c8bad01"] },
-        { "label": "Parathyroid hormone (PTH)", "ids": ["bone-018"] },
-        { "label": "Bone density imaging (DXA / QCT)", "ids": ["bone-043", "bone-044", "bone-045"] }
+      "mechanisms": [
+        "Skeletal unloading in microgravity increasing bone resorption.",
+        "Changes in vitamin D status or calcium supply affecting mineralisation.",
+        "Changes in exercise loading."
       ],
-      "contextNeeded": ["Time of day and fasting state of the bone-marker sample", "Resistance-exercise adherence", "Vitamin D and calcium intake"],
-      "confirmation": ["Measure formation and resorption markers together under the same sampling conditions; confirm a bone-health concern only with imaging and clinical evaluation."],
-      "groundMedicalVerify": ["Sampling conditions and assay for bone markers", "Exercise-countermeasure adherence", "Vitamin D and calcium adequacy"],
+      "alternatives": [
+        "Assay or laboratory differences (osteocalcin is assay-dependent).",
+        "Circadian and fasting effects on bone markers.",
+        "Recent fracture healing or intense loading."
+      ],
+      "missingTests": [
+        {
+          "label": "Bone resorption marker (CTX)",
+          "ids": [
+            "bone-001",
+            "demo:ubt-d9870fc7"
+          ]
+        },
+        {
+          "label": "Bone formation marker (P1NP)",
+          "ids": [
+            "bone-009",
+            "demo:ubt-6c8bad01"
+          ]
+        },
+        {
+          "label": "Parathyroid hormone (PTH)",
+          "ids": [
+            "bone-018"
+          ]
+        },
+        {
+          "label": "Bone density imaging (DXA / QCT)",
+          "ids": [
+            "bone-043",
+            "bone-044",
+            "bone-045"
+          ]
+        }
+      ],
+      "contextNeeded": [
+        "Time of day and fasting state of the bone-marker sample",
+        "Resistance-exercise adherence",
+        "Vitamin D and calcium intake"
+      ],
+      "confirmation": [
+        "Measure formation and resorption markers together under the same sampling conditions; confirm a bone-health concern only with imaging and clinical evaluation."
+      ],
+      "groundMedicalVerify": [
+        "Sampling conditions and assay for bone markers",
+        "Exercise-countermeasure adherence",
+        "Vitamin D and calcium adequacy"
+      ],
       "recommendations": [
-        { "category": "physical_activity", "authorization": "general_wellness", "text": "Keep to the prescribed resistance-exercise loading; mechanical loading is the main countermeasure against bone breakdown in microgravity." },
-        { "category": "nutrition", "authorization": "clinician_required", "text": "Ground Medical should review calcium and vitamin D adequacy; MITOCHONDRIA does not suggest supplements or doses." },
-        { "category": "further_examination", "authorization": "clinician_required", "text": "Request formation and resorption markers together (P1NP and CTX) with PTH, and consider bone-density imaging when markers continue to change." }
+        {
+          "category": "physical_activity",
+          "authorization": "general_wellness",
+          "text": "Keep to the prescribed resistance-exercise loading; mechanical loading is the main countermeasure against bone breakdown in microgravity."
+        },
+        {
+          "category": "nutrition",
+          "authorization": "clinician_required",
+          "text": "Ground Medical should review calcium and vitamin D adequacy; MITOCHONDRIA does not suggest supplements or doses."
+        },
+        {
+          "category": "further_examination",
+          "authorization": "clinician_required",
+          "text": "Request formation and resorption markers together (P1NP and CTX) with PTH, and consider bone-density imaging when markers continue to change."
+        }
       ]
     },
     {
       "id": "autonomic_recovery_strain",
       "title": "Reduced heart-rate variability (possible recovery or autonomic strain)",
-      "patternId": "cardiovascular_function",
-      "markers": ["cv-027", "cv-026", "cv-028", "cv-029", "cv-002", "BSC-001", "BSC-002", "BSC-003"],
+      "patternId": "sleep_cognition",
+      "markers": [
+        "cv-027",
+        "cv-026",
+        "cv-028",
+        "cv-029",
+        "cv-002",
+        "BSC-001",
+        "BSC-002",
+        "BSC-003"
+      ],
       "criteriaIds": [],
       "whyItMatters": "Heart-rate variability (for example RMSSD) reflects the balance of the autonomic nervous system. Lower values often accompany fatigue, stress, sleep loss, illness or heavy training, and can indicate incomplete recovery; they are highly dependent on measurement conditions.",
-      "mechanisms": ["Increased sympathetic (stress) activity or reduced parasympathetic activity.", "Sleep restriction and circadian disruption.", "Accumulated training load or illness."],
-      "alternatives": ["Different measurement posture, time of day or device between examinations.", "Recent caffeine, exercise or meals before the recording.", "Short recording duration."],
-      "missingTests": [
-        { "label": "Sleep duration and efficiency for the same nights", "ids": ["BSC-001", "BSC-002", "BSC-003"] },
-        { "label": "Resting heart rate under the same conditions", "ids": ["cv-002"] }
+      "mechanisms": [
+        "Increased sympathetic (stress) activity or reduced parasympathetic activity.",
+        "Sleep restriction and circadian disruption.",
+        "Accumulated training load or illness."
       ],
-      "contextNeeded": ["Recording protocol (posture, time of day, duration, device)", "Sleep and workload in the preceding days"],
-      "confirmation": ["Repeat the recording under a standardised protocol and compare with the crew member's own baseline."],
-      "groundMedicalVerify": ["Recording protocol consistency", "Sleep, workload and illness around the recordings"],
+      "alternatives": [
+        "Different measurement posture, time of day or device between examinations.",
+        "Recent caffeine, exercise or meals before the recording.",
+        "Short recording duration."
+      ],
+      "missingTests": [
+        {
+          "label": "Sleep duration and efficiency for the same nights",
+          "ids": [
+            "BSC-001",
+            "BSC-002",
+            "BSC-003"
+          ]
+        },
+        {
+          "label": "Resting heart rate under the same conditions",
+          "ids": [
+            "cv-002"
+          ]
+        }
+      ],
+      "contextNeeded": [
+        "Recording protocol (posture, time of day, duration, device)",
+        "Sleep and workload in the preceding days"
+      ],
+      "confirmation": [
+        "Repeat the recording under a standardised protocol and compare with the crew member's own baseline."
+      ],
+      "groundMedicalVerify": [
+        "Recording protocol consistency",
+        "Sleep, workload and illness around the recordings"
+      ],
       "recommendations": [
-        { "category": "sleep", "authorization": "general_wellness", "text": "Protect the scheduled sleep period and record sleep duration around the next recordings." },
-        { "category": "recovery", "authorization": "general_wellness", "text": "Review training load and rest days with the exercise team when heart-rate variability falls." },
-        { "category": "monitoring", "authorization": "general_wellness", "text": "Record heart-rate variability under the same posture, time of day and device so that changes can be compared." }
+        {
+          "category": "sleep",
+          "authorization": "general_wellness",
+          "text": "Protect the scheduled sleep period and record sleep duration around the next recordings."
+        },
+        {
+          "category": "recovery",
+          "authorization": "general_wellness",
+          "text": "Review training load and rest days with the exercise team when heart-rate variability falls."
+        },
+        {
+          "category": "monitoring",
+          "authorization": "general_wellness",
+          "text": "Record heart-rate variability under the same posture, time of day and device so that changes can be compared."
+        }
       ]
     }
   ]
