@@ -189,7 +189,7 @@ function badge(L: P, kind: BadgeKind, label: string, x: number, y: number): numb
 // ------------------------------------------------------------------ page 1
 
 function hero(L: P, r: PremiumReport) {
-  const x = MX, y = TOP1, h = 47;
+  const x = MX, y = TOP1, h = r.demonstrationLabel && r.header.provenance === "synthetic" ? 48.5 : 47;
   const strips = 24;
   for (let i = 0; i < strips; i++) {
     const f = i / (strips - 1);
@@ -214,7 +214,10 @@ function hero(L: P, r: PremiumReport) {
     L.lines([L.t(k!)], tx + 2, y + 25, 6.2, true, COLOR.heroKicker);
     L.lines(L.capped(v!, 7.8, tw - 4, 2), tx + 2, y + 28.4, 7.8, false, COLOR.white, 1.25);
   });
-  if (r.header.provenance === "synthetic")
+  if (r.header.provenance === "synthetic" && r.demonstrationLabel) {
+    L.lines(L.capped("SYNTHETIC DEMONSTRATION DATA — not real astronaut data. Age, sex, symptoms, medications and history are not recorded or assumed.", 7, CW - 10, 1, true), x + 5, y + 38.2, 7, true, COLOR.synthetic, 1.2);
+    L.lines([L.t(r.demonstrationLabel)], x + 5, y + 41.9, 8.6, true, COLOR.white, 1.2);
+  } else if (r.header.provenance === "synthetic")
     L.lines(L.capped("SYNTHETIC DEMONSTRATION DATA — not real astronaut data. Age, sex, symptoms, medications and medical history are not recorded and are not assumed.", 7.2, CW - 10, 2, true), x + 5, y + 38.6, 7.2, true, COLOR.synthetic, 1.25);
   L.y = y + h + 4;
 }
@@ -274,12 +277,12 @@ function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureO
 
 function demonstrationBanner(L: P, r: PremiumReport) {
   if (!r.demonstrationLabel) return;
-  const text = `${r.demonstrationLabel}. Literature criteria${r.options.demonstrationMappingsActive ? " and synthetic identity mappings" : ""} colour results for demonstration only: not Researcher-approved, never validated alerts, never applied to real data.`;
-  const ls = L.wrap(text, 7.6, CW - 8, true);
-  const h = ls.length * lh(7.6) + 3.4;
-  L.box(MX, L.y, CW, h, [255, 248, 225], COLOR.amber, 1.8, 0.4);
-  L.lines(ls, MX + 4, L.y + 1.5, 7.6, true, COLOR.amberDeep);
-  L.y += h + 3;
+  const text = `Literature criteria${r.options.demonstrationMappingsActive ? " and synthetic identity mappings" : ""} colour results for this demonstration only: not Researcher-approved, never validated alerts, never applied to real data.`;
+  const ls = L.wrap(text, 7.4, CW - 8, true);
+  const h = ls.length * lh(7.4) + 2.6;
+  L.box(MX, L.y - 1.5, CW, h, [255, 248, 225], COLOR.amber, 1.4, 0.35);
+  L.lines(ls, MX + 4, L.y - 0.4, 7.4, true, COLOR.amberDeep);
+  L.y += h + 1;
 }
 
 function pageOne(L: P, r: PremiumReport) {
@@ -352,7 +355,8 @@ function pageOne(L: P, r: PremiumReport) {
 // ------------------------------------------------------------------ overview
 
 function overview(L: P, r: PremiumReport) {
-  L.newPage();
+  if (L.page === 1) L.newPage();
+  else L.y += 4;
   L.h2("Executive health overview");
   L.para(r.lead, 9);
   for (let i = 0; i < r.overview.length; i += 2) {
