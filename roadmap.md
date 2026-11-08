@@ -622,4 +622,3 @@
 - [x] Signed-in Ground Medical browser export (demonstration on/off, real) — empty test-browser store only.
 - [ ] Publish verified build and check the live site.
 - [ ] Static public sample PDF still shows the earlier P60 labels; replacement needs owner approval.
-
