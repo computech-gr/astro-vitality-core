@@ -64,7 +64,7 @@ function FindingCard({ f }: { f: Finding }) {
         </span>
       </header>
       <p className="break-words text-sm"><span className="font-medium">What changed: </span>{f.whatChanged}</p>
-      <p className="break-words text-sm text-muted-foreground"><span className="font-medium text-foreground">How they relate: </span>{f.relationship} {f.spaceflightContext}</p>
+      <p className="break-words text-sm"><span className="font-medium">How they relate: </span><span className="text-muted-foreground">{f.relationship} {f.spaceflightContext}</span></p>
       <p className="break-words text-sm"><span className="font-medium">Interpretation: </span>{f.interpretation}</p>
       <ul className="list-disc space-y-0.5 pl-5 text-xs text-muted-foreground">
         {f.uncertainty.map((u) => <li key={u} className="break-words">{u}</li>)}
