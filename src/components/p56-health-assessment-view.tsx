@@ -166,7 +166,7 @@ function TrendCard({ t }: { t: TrendChart }) {
         <span>
           {t.name} <span className="font-normal text-muted-foreground">[{t.unit}] · {t.findingTitle}</span>
         </span>
-        {t.flagged ? <ReviewBadge kind={t.trend.profile && t.trend.profile.steps.length && t.trend.pattern !== "not_comparable" && t.points.length ? "priority_review" : "data_quality_review"} /> : null}
+        {t.flagged !== "none" ? <ReviewBadge kind={t.flagged} /> : null}
       </figcaption>
       <div className="h-40 w-full">
         <ResponsiveContainer width="100%" height="100%">

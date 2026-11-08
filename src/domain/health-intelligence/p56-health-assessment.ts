@@ -205,7 +205,7 @@ export interface TrendChart {
   findingTitle: string;
   points: { at: string; label: string; value: number }[];
   trend: SeriesTrend;
-  flagged: boolean;
+  flagged: ReviewPriority;
 }
 
 export interface PriorityItem {
@@ -613,7 +613,7 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
     findingTitle: f.title,
     points: seriesByKey.get(c.key)!.longitudinal.points.map((p) => ({ at: p.at, label: day(p.at), value: p.value! })),
     trend: c.trend,
-    flagged: c.review.flags.length > 0,
+    flagged: (c.review.flags.some((x) => x.kind === "priority_review") ? "priority_review" : c.review.flags.length ? "data_quality_review" : "none") as ReviewPriority,
   }));
   const trendNote = trends.length
     ? `The ${trends.length === 1 ? "chart shows the series" : `${trends.length} charts show the series`} with the most informative changes (review flags, intermediate peaks, largest changes)${chartCandidates.length > trends.length ? `; ${chartCandidates.length - trends.length} further comparable series are described in the findings` : ""}.`

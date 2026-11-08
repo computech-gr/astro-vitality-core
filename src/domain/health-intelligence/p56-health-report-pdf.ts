@@ -147,7 +147,7 @@ function buildDocument(a: HealthAssessment, level: number, pageException: boolea
   if (a.trends.length) {
     blocks.push(...(breaks || level === 1 ? [{ kind: "pagebreak" } as Block] : []), { kind: "h1", text: "Longitudinal trends" }, { kind: "p", text: a.trendNote, muted: true, size: 8.5 });
     for (const t of a.trends.slice(0, maxCharts))
-      blocks.push({ kind: "chart", title: `${t.flagged ? `${REVIEW_MARKER} ` : ""}${t.name} — ${t.findingTitle}`, unit: t.unit, points: t.points.map((p) => ({ label: p.label, value: p.value })), caption: t.trend.text });
+      blocks.push({ kind: "chart", title: `${t.flagged === "priority_review" ? `${REVIEW_MARKER} ` : t.flagged === "data_quality_review" ? `${DATA_CHECK_MARKER} ` : ""}${t.name} — ${t.findingTitle}`, unit: t.unit, points: t.points.map((p) => ({ label: p.label, value: p.value })), caption: t.trend.text });
     if (maxCharts < a.trends.length)
       blocks.push({ kind: "p", size: 8, muted: true, text: `Further charted series are described in the findings: ${a.trends.slice(maxCharts).map((t) => `${t.name} (${t.trend.text})`).join("; ")}` });
   } else {
