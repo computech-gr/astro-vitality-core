@@ -14,12 +14,11 @@ import type { Contributor } from "./p56-health-assessment";
 import type { ReportChart } from "./p58-report-charts";
 import type { ClinicalConcern } from "./p58-clinical-reasoning";
 import type { ReviewFlag } from "./p56-longitudinal-profile";
-import { classifyWithCriteria, type ApprovedCriterion, type CriteriaClassification } from "./p57-reference-criteria";
+import { bundledCriteriaRegistry, classifyWithCriteria, type ApprovedCriterion, type CriteriaClassification } from "./p57-reference-criteria";
 import { deriveWarningAxes, type WarningAxes } from "./p571-warning-axes";
 import { chartReferenceBands } from "./p571-report-legend";
 import { provisionalInterpretation, provisionalBandsFor, provisionalRegistry, type IdentityRoute, type ProvisionalResult } from "./p59-provisional-interpretation";
 import { concernWarningPriority, type PriorityDecision } from "./p59-warning-priority";
-import { bundledCriteriaRegistry } from "./p57-reference-criteria";
 
 /** Visible label for every report that uses provisional literature interpretation. */
 export const DEMONSTRATION_LABEL = "LITERATURE-BASED SYNTHETIC DEMONSTRATION — NOT CLINICALLY VALIDATED";
