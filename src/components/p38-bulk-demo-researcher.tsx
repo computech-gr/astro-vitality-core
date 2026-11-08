@@ -732,33 +732,100 @@ export function P38BulkDemoResearcher({
             </div>
           </div>
 
+          <div className="grid gap-2 sm:grid-cols-4" data-testid="p55-researcher-filters">
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-triage" className="text-xs">
+                Review (triage) state
+              </Label>
+              <select
+                id="p55-r-triage"
+                value={triageFilter}
+                onChange={(e) => setTriageFilter(e.target.value as TriageFilter)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                {(Object.keys(TRIAGE_FILTER_LABEL) as TriageFilter[]).map((k) => (
+                  <option key={k} value={k}>
+                    {TRIAGE_FILTER_LABEL[k]}
+                    {k === "all"
+                      ? ""
+                      : ` (${rows.filter((r) => triageStateOf(r.triageAction) === k).length})`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-unit" className="text-xs">
+                Exact unit
+              </Label>
+              <select
+                id="p55-r-unit"
+                value={unitFilter}
+                onChange={(e) => setUnitFilter(e.target.value)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">All units</option>
+                {units.map((u) => (
+                  <option key={u || "none"} value={u}>
+                    {u || "(no unit)"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-identity" className="text-xs">
+                Catalog identity
+              </Label>
+              <select
+                id="p55-r-identity"
+                value={identityFilter}
+                onChange={(e) => setIdentityFilter(e.target.value as typeof identityFilter)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">All</option>
+                <option value="with_reference">Has an existing catalog reference</option>
+                <option value="no_reference">No catalog reference</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-crew" className="text-xs">
+                Crew (pseudonym)
+              </Label>
+              <select
+                id="p55-r-crew"
+                value={crewFilter}
+                onChange={(e) => setCrewFilter(e.target.value)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">All permitted crew</option>
+                {crews.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <BulkSelectionToolbar
+            idPrefix="p55-researcher"
+            scope={selScope}
+            pageCount={pageRows.length}
+            onSelectAllFiltered={() => setSelected((s) => selectAllFiltered(s, filteredIds))}
+            onSelectPage={() => setSelected((s) => selectIds(s, pageRows.map((r) => r.key)))}
+            onDeselectAll={() => setSelected(deselectAll())}
+            onKeepOnlyFiltered={() => setSelected((s) => pruneSelection(s, filteredIds))}
+            extra={
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelected(new Set(allEligible.map((r) => r.key)))}
+              >
+                <ListChecks className="mr-1 h-4 w-4" aria-hidden />
+                Select All Eligible for a demo decision ({allEligible.length})
+              </Button>
+            }
+          />
           <div className="flex flex-wrap items-end gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setSelected(new Set(allEligible.map((r) => r.key)))}
-            >
-              <ListChecks className="mr-1 h-4 w-4" aria-hidden />
-              Select All Eligible ({allEligible.length})
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                setSelected(
-                  (s) =>
-                    new Set([
-                      ...s,
-                      ...pageRows.filter((r) => decidable(r, scope)).map((r) => r.key),
-                    ]),
-                )
-              }
-            >
-              Select Page
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setSelected(new Set())}>
-              Deselect All
-            </Button>
             <div className="flex items-end gap-1">
               <div className="space-y-1">
                 <Label htmlFor="p38-bulk-domain" className="text-xs">
@@ -831,7 +898,6 @@ export function P38BulkDemoResearcher({
                         <input
                           type="checkbox"
                           aria-label={`Select ${r.labels[0] ?? r.termId}`}
-                          disabled={!decidable(r, scope)}
                           checked={selected.has(r.key)}
                           onChange={(e) => toggle(r.key, e.target.checked)}
                         />
@@ -853,7 +919,11 @@ export function P38BulkDemoResearcher({
                             ? "Accepted for review"
                             : "Not yet accepted for review"}
                           {r.inScope ? "" : " · outside owner demo scope"}
+                          {crewOf.get(r.submissionId) ? ` · ${crewOf.get(r.submissionId)}` : ""}
                         </div>
+                        {acknowledged.has(r.key) ? (
+                          <Badge variant="secondary">Match acknowledged (this session)</Badge>
+                        ) : null}
                       </td>
                       <td className="p-1">
                         {editable ? (
@@ -936,148 +1006,104 @@ export function P38BulkDemoResearcher({
             </Button>
           </div>
 
-          <div
-            className="space-y-2 rounded-md border border-border p-3"
-            data-testid="p38-bulk-preview"
+          <BulkActionTable
+            idPrefix="p55-researcher"
+            actions={actionOptions}
+            selected={selected.size}
+            busy={busy}
+            onReview={(id) => openPreflight(id as ResearcherBulkAction)}
+            onClear={() => setSelected(deselectAll())}
+          />
+          <BulkPreflightDialog
+            preflight={pending?.preflight ?? null}
+            labelOf={rowLabel}
+            confirmLabel={pending ? `Confirm: ${RESEARCHER_ACTION_LABEL[pending.action]}` : "Confirm"}
+            confirmDisabled={
+              busy ||
+              (pending?.action === "demo_decide" && !ack) ||
+              (pending?.action === "request_clarification" && !!clarificationProblem)
+            }
+            safeguard={
+              pending?.action === "accept_review"
+                ? "Accepting for scientific review is triage only. It is not scientific approval and never activates anything."
+                : pending?.action === "demo_decide"
+                  ? `${SYNTHETIC_DEMO_LABEL}. Decisions are not scientific approvals and activate nothing; Ground Medical activates separately.`
+                  : pending?.action === "request_clarification"
+                    ? "Records a REQUEST_MORE_EVIDENCE triage event for each actionable term. Units are never chosen or converted."
+                    : "Only shows the existing catalog identity. Nothing is saved and no catalog entry is created."
+            }
+            onCancel={() => setPending(null)}
+            onConfirm={() => void confirmPending()}
           >
-            <p className="text-sm font-medium">Bulk preview</p>
-            <p className="text-xs">
-              Selected {selectedRows.length}: {needTriage.length} need review acceptance first,{" "}
-              {toDecide.length} ready for a synthetic demo decision, {excludedSelected.length}{" "}
-              excluded.
-            </p>
-            {excludedSelected.length ? (
-              <ul className="list-disc pl-5 text-xs text-muted-foreground">
-                {excludedSelected.slice(0, 20).map((r) => (
-                  <li key={r.key}>
-                    {r.labels[0]} ({r.termId}):{" "}
-                    {!r.inScope
-                      ? "outside the owner-authorized demo scope"
-                      : scope.get(r.key)?.submittedByCaller
-                        ? "you submitted this term"
-                        : (r.reasons[0] ?? PREFLIGHT_CATEGORY_LABEL[r.category])}
-                  </li>
-                ))}
-              </ul>
+            {pending?.action === "demo_decide" ? (
+              <label className="flex items-start gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={ack}
+                  onChange={(e) => setAck(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  I understand these are SYNTHETIC DEMO decisions, labelled NOT SCIENTIFICALLY
+                  VALIDATED. They are not scientific approvals, cite no source validation, assay
+                  method, specimen or protocol, activate nothing and never enter the production
+                  catalog.
+                </span>
+              </label>
             ) : null}
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={busy || !data.canTriage || !needTriage.length}
-              onClick={() => void startTriage(needTriage)}
-            >
-              Accept {needTriage.length} selected for scientific review
-            </Button>
-            <label className="flex items-start gap-2 text-xs">
-              <input
-                type="checkbox"
-                checked={ack}
-                onChange={(e) => setAck(e.target.checked)}
-                className="mt-0.5"
-              />
-              <span>
-                I understand these are SYNTHETIC DEMO decisions, labelled NOT SCIENTIFICALLY
-                VALIDATED. They are not scientific approvals, cite no source validation, assay
-                method, specimen or protocol, activate nothing and never enter the production
-                catalog.
-              </span>
-            </label>
-            <Button
-              size="sm"
-              disabled={busy || !ack || !data.canDecide || !toDecide.length}
-              onClick={() => void startDecide(toDecide)}
-            >
-              <FlaskConical className="mr-1 h-4 w-4" aria-hidden />
-              Record Bulk SYNTHETIC DEMO Decisions ({toDecide.length})
-            </Button>
-          </div>
-
-          {run ? (
-            <div
-              role="status"
-              className="space-y-1 rounded-md border border-border p-3 text-xs"
-              data-testid="p38-bulk-run"
-            >
-              <p className="font-medium">
-                {run.kind === "triage" ? "Review acceptance" : "Synthetic demo decisions"}: batch{" "}
-                {run.progress.batchesDone} of {run.progress.batchesTotal} · {run.progress.itemsDone}{" "}
-                of {run.progress.itemsTotal} terms processed
-              </p>
-              {summary ? (
-                <p>
-                  Recorded {summary.recorded} · already recorded (retry) {summary.duplicate} ·
-                  skipped {summary.skipped} · rejected {summary.rejected} · changed meanwhile{" "}
-                  {summary.stale}
-                </p>
-              ) : null}
-              {run.results
-                .filter((r) => r.status === "rejected" || r.status === "stale")
-                .slice(0, 20)
-                .map((r) => (
-                  <p key={r.ref} className="text-destructive">
-                    {r.termId}: {r.detail ?? r.status}
-                  </p>
-                ))}
-              {run.results.length ? (
-                <details data-testid="p54-bulk-item-results">
-                  <summary className="cursor-pointer">
-                    Per-item results ({run.results.length})
-                  </summary>
-                  <ul className="mt-1 max-h-64 space-y-0.5 overflow-auto">
-                    {run.results.map((r) => (
-                      <li
-                        key={r.ref}
-                        className={
-                          r.status === "rejected" || r.status === "stale" ? "text-destructive" : ""
+            {pending?.action === "request_clarification" ? (
+              <div className="space-y-2">
+                <fieldset className="grid grid-cols-2 gap-2">
+                  <legend className="mb-1 text-xs text-muted-foreground">
+                    Missing evidence (at least one; suggested from the blocking reasons)
+                  </legend>
+                  {EVIDENCE_REQUIREMENTS.map((q) => (
+                    <div key={q} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`p55-req-${q}`}
+                        checked={reqs.includes(q)}
+                        onCheckedChange={(c) =>
+                          setReqs((cur) => (c ? [...new Set([...cur, q])] : cur.filter((x) => x !== q)))
                         }
-                      >
-                        {r.termId}:{" "}
-                        {r.status === "recorded"
-                          ? "recorded"
-                          : r.status === "duplicate"
-                            ? "already recorded"
-                            : r.status === "stale"
-                              ? "changed meanwhile"
-                              : r.status}
-                        {r.detail ? ` — ${r.detail}` : ""}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              ) : null}
-              {retry.keys.length ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => setSelected(new Set(retry.keys))}
-                >
-                  <RotateCcw className="mr-1 h-4 w-4" aria-hidden />
-                  Select {retry.keys.length} failed item(s) again for retry
-                </Button>
-              ) : null}
-              {retry.notRetryable ? (
-                <p className="text-muted-foreground">
-                  {retry.notRetryable} failed item(s) are no longer eligible and cannot be retried.
-                </p>
-              ) : null}
-              {run.failure ? (
-                <p role="alert" className="text-destructive">
-                  {run.failure}
-                </p>
-              ) : null}
-              {run.retry ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => void run.retry?.()}
-                >
-                  <RotateCcw className="mr-1 h-4 w-4" aria-hidden />
-                  Retry remaining batches
-                </Button>
-              ) : null}
-            </div>
+                      />
+                      <Label htmlFor={`p55-req-${q}`} className="text-xs font-normal">
+                        {REQUIREMENT_LABEL[q]}
+                      </Label>
+                    </div>
+                  ))}
+                </fieldset>
+                <div className="space-y-1">
+                  <Label htmlFor="p55-req-reason" className="text-xs">
+                    Reason (required, 8–2000 characters; recorded for every actionable term)
+                  </Label>
+                  <Textarea
+                    id="p55-req-reason"
+                    value={reason}
+                    maxLength={2000}
+                    rows={3}
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                </div>
+                {clarificationProblem ? (
+                  <p className="text-xs text-muted-foreground">{clarificationProblem}</p>
+                ) : null}
+              </div>
+            ) : null}
+          </BulkPreflightDialog>
+          {run ? (
+            <BulkOutcomePanel
+              idPrefix="p55-researcher"
+              title={RESEARCHER_ACTION_LABEL[run.action]}
+              progress={run.progress}
+              outcomes={run.outcomes}
+              failure={run.failure}
+              busy={busy}
+              onRetryFailed={(ids) => {
+                const sel = new Set(ids);
+                setSelected(sel);
+                openPreflight(run.action, sel);
+              }}
+            />
           ) : null}
         </div>
       )}
