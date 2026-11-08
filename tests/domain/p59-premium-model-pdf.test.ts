@@ -138,7 +138,7 @@ describe("P59 renderer (SVG test writer)", () => {
   it("F16 no dose wording; provisional labelled in text; review flag never a filled red badge", () => {
     const { w, text } = render(D1);
     // the fixed disclaimers ("no medication or supplement doses", "no medication or dose advice") are the only allowed matches
-    const scrubbed = text.replace(/No medication or\s+supplement doses are given\./g, "").replace(/supplement doses are given\./g, "").replace(/no medication or dose advice\./g, "");
+    const scrubbed = text.replace(/No medication or\s+supplement doses are given\./g, "").replace(/supplement doses are given\./g, "").replace(/no\s+medication\s+or\s+dose\s+advice\./g, "");
     expect(DOSE_PATTERN.test(scrubbed)).toBe(false);
     expect(text).toContain("PROVISIONAL");
     // filled red rectangles must never carry the review label

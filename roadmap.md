@@ -604,3 +604,12 @@
 - [x] Alex Morgan premium PDF (test reconstruction) delivered; browser export verified.
 - [ ] Researcher review of provisional criteria, mappings and WP-1..WP-5 priority rules — waits on the Researcher.
 - [ ] Small-normal report is 6 pages vs package target of 5 — owner decision whether to tighten.
+
+## P60 Premium Report Upgrade (package applied as-is)
+
+- [x] Baseline matched P59 exactly; patch applied (14 files, all checksums match).
+- [x] Typecheck, lint, full suite, targeted suites, build, real-font PDF renders and geometry check.
+- [x] UI: demonstration checkbox only for synthetic; census identical with demonstration on/off.
+- [ ] Results-table "HIGH" review flag vs pattern "MONITORING" wording; purple "5 further findings" panel; chart caption/badge details — wait on owner approval to change.
+- [ ] Census of the owner's stored November records vs fixture digest — needs the owner's own device.
+- [ ] Researcher review of the P60 pattern library; owner approval of visual baselines; census TXT button decision.

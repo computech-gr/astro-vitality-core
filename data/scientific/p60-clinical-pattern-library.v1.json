@@ -1,0 +1,827 @@
+{
+  "schema": "mitochondria.p60-clinical-pattern-library.v1",
+  "version": 1,
+  "status": "OWNER_DIRECTED_SYNTHETIC_DEMONSTRATION_PENDING_RESEARCHER_REVIEW",
+  "note": "P60 cross-domain clinical pattern library. Used ONLY in the literature-based synthetic demonstration (synthetic provenance + provisional literature mode). Concept membership is by EXACT identity + unit taken from the cardiovascular handbook catalog (cv-*) or the activated MITO_DEMO_2026 synthetic demo catalog (demo:ubt-*); every member is re-verified by tests/domain/p60-clinical-patterns.test.ts. Thresholds are quoted from the cited sources; nothing here is a NASA flight rule, a Researcher-approved criterion or a diagnosis. Patterns never change a result's clinical class and never convert units.",
+  "concepts": [
+    {
+      "key": "sodium",
+      "label": "Sodium",
+      "members": [
+        {
+          "id": "cv-070",
+          "unit": "mmol/L"
+        },
+        {
+          "id": "demo:ubt-2841fb44",
+          "unit": "mmol/L"
+        }
+      ]
+    },
+    {
+      "key": "potassium",
+      "label": "Potassium",
+      "members": [
+        {
+          "id": "cv-071",
+          "unit": "mmol/L"
+        },
+        {
+          "id": "demo:ubt-4afd25a0",
+          "unit": "mmol/L"
+        }
+      ]
+    },
+    {
+      "key": "magnesium",
+      "label": "Magnesium",
+      "members": [
+        {
+          "id": "cv-072",
+          "unit": "mmol/L"
+        },
+        {
+          "id": "demo:ubt-c30c0952",
+          "unit": "mg/dL"
+        }
+      ]
+    },
+    {
+      "key": "qtc",
+      "label": "QTc interval",
+      "members": [
+        {
+          "id": "cv-032",
+          "unit": "ms"
+        },
+        {
+          "id": "demo:ubt-33eb23f7",
+          "unit": "ms"
+        }
+      ]
+    },
+    {
+      "key": "st",
+      "label": "ST-segment change",
+      "members": [
+        {
+          "id": "cv-037",
+          "unit": "mm"
+        }
+      ]
+    },
+    {
+      "key": "spo2",
+      "label": "Oxygen saturation (SpO2)",
+      "members": [
+        {
+          "id": "cv-065",
+          "unit": "%"
+        },
+        {
+          "id": "demo:ubt-12f6e490",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "key": "rr",
+      "label": "Respiratory rate",
+      "members": [
+        {
+          "id": "cv-067",
+          "unit": "/min"
+        },
+        {
+          "id": "demo:ubt-f4b8be7b",
+          "unit": "breaths/min"
+        }
+      ]
+    },
+    {
+      "key": "sbp",
+      "label": "Systolic blood pressure",
+      "members": [
+        {
+          "id": "cv-005",
+          "unit": "mmHg"
+        },
+        {
+          "id": "demo:ubt-e1140df3",
+          "unit": "mmHg"
+        }
+      ]
+    },
+    {
+      "key": "hr",
+      "label": "Heart rate",
+      "members": [
+        {
+          "id": "cv-001",
+          "unit": "bpm"
+        },
+        {
+          "id": "cv-002",
+          "unit": "bpm"
+        },
+        {
+          "id": "demo:ubt-625f8d98",
+          "unit": "bpm"
+        }
+      ]
+    },
+    {
+      "key": "temp",
+      "label": "Body temperature",
+      "members": [
+        {
+          "id": "demo:ubt-323050f4",
+          "unit": "°C"
+        }
+      ]
+    },
+    {
+      "key": "lactate",
+      "label": "Lactate",
+      "members": [
+        {
+          "id": "cv-069",
+          "unit": "mmol/L"
+        }
+      ]
+    },
+    {
+      "key": "pao2",
+      "label": "Arterial oxygen (PaO2)",
+      "members": [
+        {
+          "id": "cv-066",
+          "unit": "mmHg"
+        }
+      ]
+    },
+    {
+      "key": "hscrp",
+      "label": "C-reactive protein",
+      "members": [
+        {
+          "id": "cv-091",
+          "unit": "mg/L"
+        },
+        {
+          "id": "demo:ubt-deedc9c4",
+          "unit": "mg/L"
+        },
+        {
+          "id": "demo:ubt-1d9912f9",
+          "unit": "mg/L"
+        },
+        {
+          "id": "demo:ubt-c86436e7",
+          "unit": "mg/L"
+        }
+      ]
+    },
+    {
+      "key": "il6",
+      "label": "IL-6",
+      "members": [
+        {
+          "id": "cv-092",
+          "unit": "pg/mL"
+        }
+      ]
+    },
+    {
+      "key": "tnf",
+      "label": "TNF-α",
+      "members": [
+        {
+          "id": "cv-093",
+          "unit": "pg/mL"
+        },
+        {
+          "id": "demo:ubt-516090ed",
+          "unit": "pg/mL"
+        }
+      ]
+    },
+    {
+      "key": "ddimer",
+      "label": "D-dimer",
+      "members": [
+        {
+          "id": "demo:ubt-eed68002",
+          "unit": "mg/L FEU"
+        }
+      ]
+    },
+    {
+      "key": "fibrinogen",
+      "label": "Fibrinogen",
+      "members": [
+        {
+          "id": "cv-059",
+          "unit": "g/L"
+        },
+        {
+          "id": "demo:ubt-c6a305ef",
+          "unit": "mg/dL"
+        }
+      ]
+    },
+    {
+      "key": "triglycerides",
+      "label": "Triglycerides",
+      "members": [
+        {
+          "id": "cv-088",
+          "unit": "mg/dL"
+        }
+      ]
+    },
+    {
+      "key": "hba1c",
+      "label": "HbA1c",
+      "members": [
+        {
+          "id": "cv-085",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "key": "osteocalcin",
+      "label": "Osteocalcin",
+      "members": [
+        {
+          "id": "demo:ubt-12c22152",
+          "unit": "ng/mL"
+        }
+      ]
+    },
+    {
+      "key": "vitd",
+      "label": "25-hydroxyvitamin D",
+      "members": [
+        {
+          "id": "demo:ubt-7b25ce69",
+          "unit": "ng/mL"
+        }
+      ]
+    },
+    {
+      "key": "sleep_eff",
+      "label": "Sleep efficiency",
+      "members": [
+        {
+          "id": "demo:ubt-efe7e2fb",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "key": "rmssd",
+      "label": "Heart-rate variability (RMSSD)",
+      "members": [
+        {
+          "id": "cv-027",
+          "unit": "ms"
+        }
+      ]
+    },
+    {
+      "key": "lvef",
+      "label": "Left-ventricular ejection fraction",
+      "members": [
+        {
+          "id": "cv-021",
+          "unit": "%"
+        },
+        {
+          "id": "demo:ubt-5c1e9b1d",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "key": "ee",
+      "label": "Filling pressure ratio E/e′",
+      "members": [
+        {
+          "id": "cv-023",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "key": "ntprobnp",
+      "label": "NT-proBNP",
+      "members": [
+        {
+          "id": "demo:ubt-a65dfc7c",
+          "unit": "pg/mL"
+        }
+      ]
+    },
+    {
+      "key": "hb",
+      "label": "Haemoglobin",
+      "members": [
+        {
+          "id": "cv-075",
+          "unit": "g/dL"
+        }
+      ]
+    },
+    {
+      "key": "hdl",
+      "label": "HDL cholesterol",
+      "members": [
+        {
+          "id": "cv-087",
+          "unit": "mg/dL"
+        },
+        {
+          "id": "demo:ubt-5ad8b852",
+          "unit": "mg/dL"
+        }
+      ]
+    },
+    {
+      "key": "ldl",
+      "label": "LDL cholesterol",
+      "members": [
+        {
+          "id": "cv-086",
+          "unit": "mg/dL"
+        },
+        {
+          "id": "demo:ubt-26a9a98e",
+          "unit": "mg/dL"
+        }
+      ]
+    },
+    {
+      "key": "wbc",
+      "label": "White-cell count",
+      "members": [
+        {
+          "id": "demo:ubt-cbb5666e",
+          "unit": "10^3/μL"
+        },
+        {
+          "id": "demo:ubt-813d9e97",
+          "unit": "10^9/L"
+        },
+        {
+          "id": "demo:ubt-ae6a394d",
+          "unit": "cells/μL"
+        },
+        {
+          "id": "demo:ubt-2e684454",
+          "unit": "10^9/L"
+        }
+      ]
+    },
+    {
+      "key": "creatinine",
+      "label": "Kidney function (creatinine / eGFR)",
+      "members": [
+        {
+          "id": "demo:ubt-5630390c",
+          "unit": "mg/dL"
+        },
+        {
+          "id": "demo:ubt-645f4a78",
+          "unit": "mL/min/1.73m²"
+        }
+      ]
+    },
+    {
+      "key": "troponin",
+      "label": "Troponin",
+      "members": [
+        {
+          "id": "demo:ubt-508e453f",
+          "unit": "ng/L"
+        },
+        {
+          "id": "demo:ubt-8b90c2ca",
+          "unit": "ng/L"
+        }
+      ]
+    },
+    {
+      "key": "platelets",
+      "label": "Platelet count",
+      "members": [
+        {
+          "id": "demo:ubt-c4b4d258",
+          "unit": "10^3/μL"
+        }
+      ]
+    },
+    {
+      "key": "glucose",
+      "label": "Glucose",
+      "members": [
+        {
+          "id": "cv-083",
+          "unit": "mg/dL"
+        },
+        {
+          "id": "demo:ubt-7f47ee7c",
+          "unit": "mg/dL"
+        }
+      ]
+    },
+    {
+      "key": "p1np_ctx",
+      "label": "Reference bone-turnover markers (P1NP, CTX)",
+      "members": [
+        {
+          "id": "demo:ubt-6c8bad01",
+          "unit": "ng/mL"
+        },
+        {
+          "id": "demo:ubt-37f541f8",
+          "unit": "μg/L"
+        },
+        {
+          "id": "demo:ubt-d9870fc7",
+          "unit": "ng/mL"
+        }
+      ]
+    }
+  ],
+  "excludedIdentities": [
+    {
+      "id": "cv-057",
+      "reason": "Catalog unit is 'mg/L FEU ή DDU' (two alternative unit systems); not one exact unit, so no D-dimer threshold can bind it."
+    },
+    {
+      "id": "cv-081",
+      "reason": "Catalog concept 'BNP / NT-proBNP' combines two different peptides with different cut-offs; ambiguous."
+    },
+    {
+      "id": "IMM-007",
+      "reason": "Immune catalog defines no unit."
+    }
+  ],
+  "sources": [
+    {
+      "id": "rcp-news2-2017",
+      "citation": "Royal College of Physicians. National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS. Updated report of a working party. London: RCP, 2017.",
+      "url": "https://www.rcp.ac.uk/improving-care/resources/national-early-warning-score-news-2/",
+      "tier": "PRIMARY"
+    },
+    {
+      "id": "singer-2016-sepsis3",
+      "citation": "Singer M, Deutschman CS, Seymour CW, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801-810.",
+      "url": "https://doi.org/10.1001/jama.2016.0287",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "evans-2021-ssc",
+      "citation": "Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: international guidelines for management of sepsis and septic shock 2021. Crit Care Med. 2021;49(11):e1063-e1143.",
+      "url": "https://sccm.org/sepsisguidelines",
+      "tier": "PRIMARY",
+      "quote": "We recommend against using the quick Sequential Organ Failure Score … compared with systemic inflammatory response syndrome criteria, the National Early Warning Score, or the Modified Early Warning Score as a single screening tool for sepsis or septic shock."
+    },
+    {
+      "id": "cdc-fever",
+      "citation": "Centers for Disease Control and Prevention. Definitions of Signs, Symptoms, and Conditions of Ill Travelers (Port Health).",
+      "url": "https://www.cdc.gov/port-health/php/definitions-symptoms-reportable-illness",
+      "tier": "PRIMARY",
+      "quote": "a measured temperature of 100.4°F [38°C] or greater"
+    },
+    {
+      "id": "pearson-2003-cdc-aha",
+      "citation": "Pearson TA, Mensah GA, Alexander RW, et al. Markers of inflammation and cardiovascular disease: application to clinical and public health practice. A statement for healthcare professionals from the CDC and the AHA. Circulation. 2003;107(3):499-511.",
+      "url": "https://doi.org/10.1161/01.CIR.0000052939.59093.45",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "bts-2017-oxygen",
+      "citation": "O'Driscoll BR, Howard LS, Earis J, Mak V. BTS guideline for oxygen use in adults in healthcare and emergency settings. Thorax. 2017;72(Suppl 1):ii1-ii90.",
+      "url": "https://www.brit-thoracic.org.uk/document-library/guidelines/emergency-oxygen/web-appendix-3-summary-of-guideline-for-hospital-use",
+      "tier": "PRIMARY",
+      "quote": "target saturations of 94-98% for most acutely ill patients"
+    },
+    {
+      "id": "drew-2010-tdp",
+      "citation": "Drew BJ, Ackerman MJ, Funk M, et al. Prevention of torsade de pointes in hospital settings: a scientific statement from the American Heart Association and the American College of Cardiology Foundation. Circulation. 2010;121:1047-1060.",
+      "url": "https://hrsonline.org/documents/prevention-torsade-de-pointes-hospital-settingspdf/download",
+      "tier": "PRIMARY",
+      "quote": "hypokalemia … is a well-established predisposing risk factor for TdP"
+    },
+    {
+      "id": "sfe-2022-hyponatraemia",
+      "citation": "Society for Endocrinology Endocrine Emergency Guidance: Emergency management of severe and moderately severely symptomatic hyponatraemia in adult patients (2022).",
+      "url": "https://www.endocrinology.org/media/xhrhxhxm/emergency-management-of-severe-and-moderately-severely-symptomatic-hyponatraemia-in-adult-patients-2022.pdf",
+      "tier": "PRIMARY",
+      "quote": "a rise of > 10 mmol/L in the first 24 hours … risks precipitating osmotic demyelination"
+    },
+    {
+      "id": "esc-2019-pe",
+      "citation": "Konstantinides SV, Meyer G, Becattini C, et al. 2019 ESC Guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society. Eur Heart J. 2020;41(4):543-603.",
+      "url": "https://doi.org/10.1093/eurheartj/ehz405",
+      "tier": "PEER_REVIEWED_REFERENCE",
+      "quote": "D-dimer cut-offs should be adjusted to age and pretest probability rather than fixed values."
+    },
+    {
+      "id": "khovidhunkit-2004",
+      "citation": "Khovidhunkit W, Kim MS, Memon RA, et al. Effects of infection and inflammation on lipid and lipoprotein metabolism: mechanisms and consequences to the host. J Lipid Res. 2004;45(7):1169-1196.",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/15102878/",
+      "tier": "PEER_REVIEWED_REFERENCE",
+      "quote": "Plasma triglyceride levels increase from increased VLDL secretion as a result of adipose tissue lipolysis"
+    },
+    {
+      "id": "esc-2021-hf",
+      "citation": "McDonagh TA, Metra M, Adamo M, et al. 2021 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure. Eur Heart J. 2021;42(36):3599-3726.",
+      "url": "https://doi.org/10.1093/eurheartj/ehab368",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "nagueh-2016-diastolic",
+      "citation": "Nagueh SF, Smiseth OA, Appleton CP, et al. Recommendations for the evaluation of left ventricular diastolic function by echocardiography: an update from the ASE and EACVI. J Am Soc Echocardiogr. 2016;29(4):277-314.",
+      "url": "https://doi.org/10.1016/j.echo.2016.01.011",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "ada-standards-glycemic",
+      "citation": "American Diabetes Association Professional Practice Committee. Glycemic Goals and Hypoglycemia: Standards of Care in Diabetes (section 6).",
+      "url": "https://diabetesjournals.org/care",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "vasikaran-2011-iof",
+      "citation": "Vasikaran S, Eastell R, Bruyère O, et al. Markers of bone turnover for the prediction of fracture risk and monitoring of osteoporosis treatment: a need for international reference standards. Osteoporos Int. 2011;22(2):391-420.",
+      "url": "https://doi.org/10.1007/s00198-010-1501-1",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "task-force-1996-hrv",
+      "citation": "Task Force of the European Society of Cardiology and the North American Society of Pacing and Electrophysiology. Heart rate variability: standards of measurement, physiological interpretation and clinical use. Circulation. 1996;93(5):1043-1065.",
+      "url": "https://doi.org/10.1161/01.CIR.93.5.1043",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "gabay-1999",
+      "citation": "Gabay C, Kushner I. Acute-phase proteins and other systemic responses to inflammation. N Engl J Med. 1999;340(6):448-454.",
+      "url": "https://doi.org/10.1056/NEJM199902113400607",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "statpearls-hyperkalemia",
+      "citation": "Simon LV, Hashmi MF, Farrell MW. Hyperkalemia. StatPearls. Treasure Island (FL): StatPearls Publishing.",
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK470284/",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    },
+    {
+      "id": "nih-ods-vitd",
+      "citation": "NIH Office of Dietary Supplements. Vitamin D — Fact Sheet for Health Professionals.",
+      "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/",
+      "tier": "PRIMARY"
+    },
+    {
+      "id": "nsf-2017-sleep",
+      "citation": "Ohayon M, Wickwire EM, Hirshkowitz M, et al. National Sleep Foundation's sleep quality recommendations: first report. Sleep Health. 2017;3(1):6-19.",
+      "url": "https://doi.org/10.1016/j.sleh.2016.11.006",
+      "tier": "PEER_REVIEWED_REFERENCE"
+    }
+  ],
+  "thresholds": {
+    "news2": {
+      "sourceId": "rcp-news2-2017",
+      "note": "Single-parameter bands only. An aggregate NEWS2 score is never calculated: consciousness level and supplemental oxygen are not recorded and same-time measurement is not established. SpO2 uses Scale 1 (the default for adults without documented hypercapnic respiratory failure).",
+      "bands": {
+        "rr": [
+          {
+            "max": 8,
+            "points": 3
+          },
+          {
+            "min": 9,
+            "max": 11,
+            "points": 1
+          },
+          {
+            "min": 12,
+            "max": 20,
+            "points": 0
+          },
+          {
+            "min": 21,
+            "max": 24,
+            "points": 2
+          },
+          {
+            "min": 25,
+            "points": 3
+          }
+        ],
+        "spo2": [
+          {
+            "max": 91,
+            "points": 3
+          },
+          {
+            "min": 92,
+            "max": 93,
+            "points": 2
+          },
+          {
+            "min": 94,
+            "max": 95,
+            "points": 1
+          },
+          {
+            "min": 96,
+            "points": 0
+          }
+        ],
+        "sbp": [
+          {
+            "max": 90,
+            "points": 3
+          },
+          {
+            "min": 91,
+            "max": 100,
+            "points": 2
+          },
+          {
+            "min": 101,
+            "max": 110,
+            "points": 1
+          },
+          {
+            "min": 111,
+            "max": 219,
+            "points": 0
+          },
+          {
+            "min": 220,
+            "points": 3
+          }
+        ],
+        "hr": [
+          {
+            "max": 40,
+            "points": 3
+          },
+          {
+            "min": 41,
+            "max": 50,
+            "points": 1
+          },
+          {
+            "min": 51,
+            "max": 90,
+            "points": 0
+          },
+          {
+            "min": 91,
+            "max": 110,
+            "points": 1
+          },
+          {
+            "min": 111,
+            "max": 130,
+            "points": 2
+          },
+          {
+            "min": 131,
+            "points": 3
+          }
+        ],
+        "temp": [
+          {
+            "max": 35.0,
+            "points": 3
+          },
+          {
+            "min": 35.1,
+            "max": 36.0,
+            "points": 1
+          },
+          {
+            "min": 36.1,
+            "max": 38.0,
+            "points": 0
+          },
+          {
+            "min": 38.1,
+            "max": 39.0,
+            "points": 1
+          },
+          {
+            "min": 39.1,
+            "points": 2
+          }
+        ]
+      }
+    },
+    "qsofa": {
+      "sourceId": "singer-2016-sepsis3",
+      "rrMin": 22,
+      "sbpMax": 100,
+      "caveatSourceId": "evans-2021-ssc"
+    },
+    "fever": {
+      "sourceId": "cdc-fever",
+      "min": 38.0,
+      "unit": "°C"
+    },
+    "crpInflammation": {
+      "sourceId": "pearson-2003-cdc-aha",
+      "above": 10,
+      "unit": "mg/L",
+      "text": "CRP above 10 mg/L: repeat the test and look for a source of infection or inflammation (CDC/AHA)."
+    },
+    "lactate": {
+      "sourceId": "singer-2016-sepsis3",
+      "above": 2,
+      "unit": "mmol/L",
+      "text": "Serum lactate above 2 mmol/L is one element of the Sepsis-3 septic-shock definition (together with vasopressor need, not recorded here); lactate also rises with exercise, sampling delay and other causes."
+    },
+    "spo2Target": {
+      "sourceId": "bts-2017-oxygen",
+      "min": 94,
+      "max": 98,
+      "unit": "%"
+    },
+    "qtc": {
+      "sourceId": "drew-2010-tdp",
+      "above": 500,
+      "unit": "ms"
+    },
+    "hypokalaemia": {
+      "sourceId": "drew-2010-tdp",
+      "below": 3.5,
+      "unit": "mmol/L"
+    },
+    "sodiumRate": {
+      "sourceId": "sfe-2022-hyponatraemia",
+      "maxRisePer24h": 10,
+      "unit": "mmol/L"
+    },
+    "ddimer": {
+      "sourceId": "esc-2019-pe",
+      "conventionalCutoff": 0.5,
+      "unit": "mg/L FEU",
+      "text": "Above the conventional 0.5 mg/L FEU cut-off used by many assays; cut-offs are assay-specific and age-adjusted above 50 years (ESC 2019). Age is not recorded."
+    },
+    "ntprobnp": {
+      "sourceId": "esc-2021-hf",
+      "nonAcuteRuleOut": 125,
+      "acuteRuleOut": 300,
+      "unit": "pg/mL"
+    },
+    "lvef": {
+      "sourceId": "esc-2021-hf",
+      "mildlyReducedMin": 41,
+      "mildlyReducedMax": 49,
+      "unit": "%"
+    },
+    "ee": {
+      "sourceId": "nagueh-2016-diastolic",
+      "above": 14,
+      "unit": "ratio",
+      "text": "Average E/e′ above 14 is one of the ASE/EACVI criteria for raised left-ventricular filling pressure; septal vs lateral vs average is not recorded."
+    },
+    "cardiacConvergence": {
+      "sourceId": "esc-2021-hf",
+      "text": "Cardiac findings converge for PP-2 only when LVEF is 40 % or lower, or E/e′ above 14 coincides with NT-proBNP at or above the acute-setting threshold (300 pg/mL). Otherwise MONITORING."
+    }
+  },
+  "priorityRules": [
+    {
+      "id": "PP-1",
+      "priority": "HIGH_PRIORITY_MEDICAL_REVIEW",
+      "text": "A vital-sign value lies in a NEWS2 single-parameter 3-point band (RCP 2017). NEWS2 bands have no measurement precondition that could lower the score; unrecorded oxygen therapy or consciousness could only raise it."
+    },
+    {
+      "id": "PP-2",
+      "priority": "HIGH_PRIORITY_MEDICAL_REVIEW",
+      "text": "Two independent findings converge on the same concern on the same or adjacent dates (for example fever with CRP above 10 mg/L; QTc above 500 ms with potassium below 3.5 mmol/L; D-dimer above the cut-off with SpO2 or respiratory rate in a NEWS2 ≥2-point band). Convergence is required because each single finding has an unrecorded condition (assay, correction formula, fasting, timing)."
+    },
+    {
+      "id": "PP-3",
+      "priority": "HIGH_PRIORITY_MEDICAL_REVIEW",
+      "text": "A sodium change larger than the 10 mmol/L-per-24-hours limit between two observations at most one day apart, with provisional abnormal values at both ends. Also carries a DATA CHECK because a change of this size without documented treatment first requires sample and analyser verification."
+    },
+    {
+      "id": "PP-4",
+      "priority": "MONITORING",
+      "text": "A single literature threshold is met without convergence, or a contributing result is AMBER (provisional) or carries a review-priority change."
+    },
+    {
+      "id": "PP-5",
+      "priority": "DATA_CHECK",
+      "text": "Every contributing result is held for measurement verification, so no clinical statement is made until it is repeated."
+    }
+  ]
+}

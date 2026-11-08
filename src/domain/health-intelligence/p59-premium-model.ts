@@ -24,11 +24,15 @@ import { concernWarningPriority, type PriorityDecision } from "./p59-warning-pri
 export const DEMONSTRATION_LABEL = "LITERATURE-BASED SYNTHETIC DEMONSTRATION — NOT CLINICALLY VALIDATED";
 import { relationshipGraph, type SeriesFact } from "./p59-relationship-graph";
 import { selectExecutiveAlerts, type AlertCard, type FindingSummary } from "./p59-executive-alerts";
+import { evaluateClinicalPatterns, shortSource, type ClinicalPattern, type PatternLink, type PatternResult, type PatternRow } from "./p60-clinical-patterns";
+import { observationCensus, type ObservationCensus, type ReportSourceCoverage } from "./p60-observation-census";
 import cvCatalog from "../../../data/scientific/cardiovascular-handbook.catalog.v1.json";
 import interpretationRegistry from "../../../data/scientific/biomarker-interpretation-registry.v1.json";
 
 export const PREMIUM_REPORT_SCHEMA = "mitochondria.p59-premium-report.v1" as const;
 export const PREMIUM_GENERATOR_VERSION = "p59-premium-report.v1" as const;
+/** P60 upgrade of the same schema (additive fields only; P59 fields keep their meaning). */
+export const P60_GENERATOR_VERSION = "p60-premium-report.v1" as const;
 
 export type DisplayClass = "RED" | "AMBER" | "NORMAL" | "NEUTRAL";
 export type ClassBasis = "approved" | "provisional" | "none";
@@ -58,6 +62,10 @@ export interface PremiumInput {
   options: { provisionalLiterature: boolean; demonstrationMappings?: boolean };
   /** Optional provisional registry override (tests only). */
   provisionalRegistry?: unknown;
+  /** P60: loader coverage (how many stored records were read); null/undefined when unknown. */
+  coverage?: ReportSourceCoverage | null;
+  /** P60: optional pattern-library override (tests only). */
+  patternLibrary?: unknown;
 }
 
 export interface ResultRow {
@@ -82,6 +90,10 @@ export interface ResultRow {
   identityRoute: IdentityRoute | null;
   /** Per-observation criterion conditions that are not recorded (empty for approved classes, which require them). */
   unrecordedConditions: string[];
+  /** P60: compact criterion text for the results table ("" = no applicable criterion); details move to table notes. */
+  criterionShort: string;
+  /** P60: table note markers that apply to this row ("‡" unrecorded conditions, "§" demonstration mapping, "◊" demo identity). */
+  notes: string[];
 }
 export interface PremiumChart {
   base: ReportChart;
@@ -119,6 +131,28 @@ export interface PremiumReport {
   concerns: ClinicalConcern[];
   recommendations: { column: RecColumn; items: MergedRecommendation[] }[];
   basisText: string;
+  /** P60 generator version (the schema stays PREMIUM_REPORT_SCHEMA). */
+  generator: typeof P60_GENERATOR_VERSION;
+  /** P60 cross-domain clinical patterns (synthetic demonstration only; empty otherwise). */
+  patterns: PatternResult;
+  /** P60 page-1 cards built from patterns (null when no pattern exists; renderer then uses `alerts`). */
+  patternAlerts: AlertCard[] | null;
+  /** P60 relationship map between patterns (non-overlapping layout in the renderer). */
+  patternGraph: { nodes: { id: string; title: string; priority: ClinicalPattern["priority"]; dataCheck: boolean; headline: string }[]; edges: (PatternLink & { n: number })[] };
+  /** P60 integrated synthesis paragraph(s) (empty when no pattern exists). */
+  synthesis: string[];
+  /** P60 clinical-class lines per pattern (separate from its warning priority). */
+  patternClasses: Record<string, string[]>;
+  /** P60 P58 concerns whose contributing results are all covered by patterns (not rendered twice). */
+  coveredConcerns: string[];
+  /** P60 P58 concern ids related to each pattern (their alternatives are shown with the pattern). */
+  patternConcerns: Record<string, string[]>;
+  /** P60 results-table notes (markers explained once instead of per row). */
+  tableNotes: string[];
+  /** P60 observation census (count, series, dates, SHA-256) of exactly the rows used. */
+  census: ObservationCensus;
+  /** P60 loader coverage, when supplied. */
+  coverage: ReportSourceCoverage | null;
 }
 export type RecColumn = "Nutrition" | "Exercise" | "Sleep and recovery" | "Medical follow-up";
 const REC_COLUMN: Record<MergedRecommendation["category"], RecColumn> = {
@@ -181,6 +215,8 @@ const day = (iso: string) => iso.slice(0, 10);
 const NUMERIC = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/;
 const sevToClass = (s: string): DisplayClass => (s === "red" ? "RED" : s === "amber" ? "AMBER" : s === "normal" ? "NORMAL" : "NEUTRAL");
 const rank: Record<DisplayClass, number> = { RED: 3, AMBER: 2, NORMAL: 1, NEUTRAL: 0 };
+/** Lower-cases the first letter only for ordinary words (keeps HbA1c, IL-6, QTc, D-dimer). */
+const lcFirst = (t: string) => { const w = t.split(/[\s(]/)[0] ?? ""; return w.length > 1 && !/\d/.test(w) && (w.match(/[A-Z]/g) ?? []).length < 2 && !/^[A-Z]-/.test(w) ? t.charAt(0).toLowerCase() + t.slice(1) : t; };
 const fmtPct = (p: number | null) => (p === null ? "" : `${p > 0 ? "+" : ""}${Math.abs(p) >= 100 ? p.toFixed(0) : p.toFixed(1)} %`);
 
 function shortOutcome(c: CriteriaClassification | null): string {
@@ -252,7 +288,17 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       : provisional && provisional.status !== "DISABLED" && provisional.status !== "NO_CRITERION" ? provisional.label
       : shortOutcome(approvedCls);
     const limitation = holds.length ? "Held for measurement verification before interpretation." : !NUMERIC.test(r.value.trim()) ? "Non-numeric value; shown as recorded." : r.metricId.startsWith("demo:") ? "Synthetic demonstration catalog identity (not scientifically validated)." : null;
-    return { recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: basis === "provisional" ? unrecordedPerObservation(provisional?.criterionIds ?? []) : [] };
+    const unrec = basis === "provisional" ? unrecordedPerObservation(provisional?.criterionIds ?? []) : [];
+    const notes = [...(unrec.length ? ["‡"] : []), ...(route?.kind === "demonstration_mapping" && basis === "provisional" ? ["§"] : []), ...(r.metricId.startsWith("demo:") ? ["◊"] : [])];
+    const criterionShort =
+      holds.length ? "Held — verify the measurement first"
+      : basis === "approved" ? `${bandLabel ?? "Approved band"} (approved)`
+      : basis === "provisional" ? `${provisional!.bandLabel} (${provisional!.rangeText})`
+      : !NUMERIC.test(r.value.trim()) ? "Non-numeric; shown as recorded"
+      : approvedCls?.outcome === "pending_approval" ? "Candidate criterion pending approval"
+      : provisional && provisional.status === "PROVISIONAL" && provisional.severity === "neutral" ? "Outside the provisional bands"
+      : "";
+    return { criterionShort, notes, recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: unrec };
   });
 
   rows.sort((a, b) => GROUPS.findIndex((g) => g.id === a.group) - GROUPS.findIndex((g) => g.id === b.group) || a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit) || a.date.localeCompare(b.date) || a.recordId.localeCompare(b.recordId));
@@ -422,6 +468,111 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   }));
   if (report.clinical.crossDomain.length) integrated.push({ heading: "Across body systems", paragraphs: report.clinical.crossDomain.map((x) => x.text), evidenceKeys: report.clinical.crossDomain.flatMap((x) => x.contributorKeys) });
 
+  // ---------- P60 cross-domain clinical patterns (synthetic demonstration only)
+  const isHeld = (r: ResultRow) => r.axes.dataQuality.value === "DATA_QUALITY_WARNING" || r.provisional?.status === "HELD" || Boolean(r.limitation?.startsWith("Held"));
+  const patternRows: PatternRow[] = rows.map((r) => ({ recordId: r.recordId, metricId: r.metricId, unit: r.unit, valueText: r.valueText, date: r.date, name: r.name, displayClass: r.displayClass, basis: r.basis, bandLabel: r.bandLabel, reviewHigh: r.axes.review.value === "HIGH", held: isHeld(r) }));
+  const patterns = evaluateClinicalPatterns(patternRows, { active: provisionalActive, library: input.patternLibrary });
+  const P = patterns.patterns;
+  const rowById = new Map(rows.map((r) => [r.recordId, r]));
+  const patternClasses: Record<string, string[]> = {};
+  for (const p of P) {
+    const rs = p.recordIds.map((id) => rowById.get(id)).filter((r): r is ResultRow => Boolean(r) && r!.displayClass !== "NEUTRAL" && r!.basis !== "none");
+    const lines = [...new Set(rs.map((r) => `${r.name} ${r.valueText} ${r.unit} (${r.date.slice(5).replace("-", "/")}): ${r.displayClass === "NORMAL" ? "GREEN" : r.displayClass}${r.basis === "provisional" ? " (PROVISIONAL)" : ""} — ${r.bandLabel ?? "criterion band"}`))];
+    patternClasses[p.id] = lines.length ? lines : ["NEUTRAL — no applicable criterion classifies the contributing results; the pattern rests on cited thresholds and review rules, not on a clinical class."];
+  }
+  const patternIds = new Set(P.flatMap((p) => p.recordIds));
+  const patternConcerns: Record<string, string[]> = {};
+  for (const p of P) patternConcerns[p.id] = concerns.filter((c) => rowsOfConcern(c).some((r) => p.recordIds.includes(r.recordId))).map((c) => c.concernId);
+  // A P58 concern that shares results with a pattern is represented by it (its alternatives are shown there).
+  const coveredConcerns = [...new Set(Object.values(patternConcerns).flat())].filter(() => patternIds.size > 0);
+  const worstOf = (ids: readonly string[]) => ids.map((id) => rowById.get(id)).filter((r): r is ResultRow => Boolean(r)).reduce<ResultRow | null>((m, r) => (!m || rank[r.displayClass] > rank[m.displayClass] ? r : m), null);
+  const patternAlerts = P.length
+    ? selectExecutiveAlerts(P.map((p, i) => {
+        const w = worstOf(p.recordIds);
+        return { id: p.id, title: p.title, clinical: w?.displayClass ?? "NEUTRAL", clinicalBasis: w && w.displayClass !== "NEUTRAL" ? w.basis : "none", review: p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" ? "HIGH" : "ROUTINE", dataQuality: p.dataCheck ? "DATA_QUALITY_WARNING" : "UNKNOWN", evidence: p.headline, nextStep: p.nextStep, clinicalOrder: i, priority: p.priority, priorityRationale: p.rationale, priorityRules: p.rules } as FindingSummary;
+      }), 4)
+    : null;
+  // Overflow card: one short line per further pattern (never cut mid-list).
+  const over = patternAlerts?.find((a) => a.findingIds.length > 1);
+  if (over) over.evidence = over.findingIds.map((id) => P.find((p) => p.id === id)!).map((p) => `• ${p.title} — ${p.priorityLabel.toLowerCase()}${p.dataCheck && p.priority !== "DATA_CHECK" ? " + data check" : ""}`).join("\n");
+  if (patternAlerts) {
+    nextSteps.length = 0;
+    nextSteps.push(...[...new Set(P.filter((p) => p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" || p.priority === "DATA_CHECK").map((p) => p.nextStep))].slice(0, 4));
+    if (!nextSteps.length) nextSteps.push(...P.slice(0, 2).map((p) => p.nextStep));
+  }
+  // Relationship map: one edge per unordered pair (labels merged), numbered for the legend.
+  const pairKey = (a: string, b: string) => [a, b].sort().join("|");
+  const merged = new Map<string, PatternLink & { n: number }>();
+  for (const l of patterns.links) {
+    const k = pairKey(l.from, l.to);
+    const prev = merged.get(k);
+    if (!prev) merged.set(k, { ...l, n: merged.size + 1 });
+    else if (l.kind === "established" && prev.kind !== "established") merged.set(k, { ...l, n: prev.n, label: `${l.label}; also ${lcFirst(prev.label)}` });
+    else if (!prev.label.includes(l.label)) merged.set(k, { ...prev, label: `${prev.label}; also ${lcFirst(l.label)}` });
+  }
+  const patternGraph = { nodes: P.map((p) => ({ id: p.id, title: p.title, priority: p.priority, dataCheck: p.dataCheck, headline: p.headline })), edges: [...merged.values()].sort((a, b) => a.n - b.n) };
+  // Integrated synthesis (deterministic): lead pattern, what connects to it, what must be verified first.
+  const synthesis: string[] = [];
+  if (P.length) {
+    const titleOf = (id: string) => lcFirst(P.find((p) => p.id === id)?.title ?? id);
+    const high = P.filter((p) => p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW");
+    const lead = high[0] ?? P[0]!;
+    const linked = patternGraph.edges.filter((e) => e.from === lead.id || e.to === lead.id).map((e) => ({ other: e.from === lead.id ? e.to : e.from, e }));
+    const est = linked.filter((x) => x.e.kind === "established");
+    const co = linked.filter((x) => x.e.kind !== "established");
+    synthesis.push(
+      `${high.length ? `${high.length} pattern(s) warrant high-priority Ground Medical review` : "No pattern reaches high priority"}; the leading one is ${titleOf(lead.id)}.` +
+      (est.length ? ` Part of the picture may follow from it through established biology: ${est.map((x) => `${titleOf(x.other)} (${lcFirst(x.e.label)}${x.e.sourceId ? `; ${shortSource(x.e.sourceId)}` : ""})`).join("; ")}.` : "") +
+      (co.length ? ` Other findings occur at the same time without an established causal link: ${co.map((x) => titleOf(x.other)).join("; ")} — co-occurrence does not show cause.` : ""),
+    );
+    const checks = P.filter((p) => p.dataCheck);
+    if (checks.length) synthesis.push(`Before interpretation, measurements must be verified for: ${checks.map((p) => titleOf(p.id)).join("; ")}. A data check never lowers a medical-review priority.`);
+    const rest = P.filter((p) => p !== lead && !linked.some((x) => x.other === p.id) && !p.dataCheck);
+    if (rest.length) synthesis.push(`Independent findings for monitoring: ${rest.map((p) => titleOf(p.id)).join("; ")}.`);
+    synthesis.push("All patterns are preliminary, rest on synthetic demonstration data and literature thresholds that are not Researcher-approved, and require clinical evaluation; none is a diagnosis.");
+  }
+  // Pattern-derived Ground Medical actions first; P58 items kept unless near-duplicates.
+  if (P.length) {
+    const words = (t: string) => new Set(t.toLowerCase().match(/[a-z0-9]+/g) ?? []);
+    const similar = (a: string, b: string) => { const A = words(a), B = words(b); const inter = [...A].filter((w) => B.has(w)).length; return inter / Math.min(A.size, B.size) > 0.6; };
+    const template = report.recommendations.find((r) => r.authorization === "clinician_required");
+    const p60Items: MergedRecommendation[] = P.flatMap((p) => p.confirm.slice(0, p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" ? 2 : 1).map((text, i) => ({
+      id: `p60:${p.id}:${i}`, category: "ground_medical" as MergedRecommendation["category"], categoryLabel: template?.categoryLabel ?? "Ground Medical",
+      authorization: "clinician_required" as MergedRecommendation["authorization"], authorizationLabel: template?.authorizationLabel ?? "Requires a Ground Medical decision",
+      text, basis: [p.title], origin: "pattern" as const, priority: p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW",
+    }))).filter((x, i, arr) => arr.findIndex((y) => y.text === x.text) === i);
+    const med = recommendations.find((c) => c.column === "Medical follow-up")!;
+    const coveredSet = new Set(coveredConcerns);
+    // P58 items are kept only when they do not repeat a pattern action; items about represented concerns are already covered.
+    med.items = [...p60Items, ...med.items.filter((r) => !p60Items.some((x) => similar(x.text, r.text)) && !r.basis.some((b) => concerns.some((c) => coveredSet.has(c.concernId) && (b.includes(c.title) || b.includes(c.concernId)))))];
+    // During an acute high-priority pattern, general exercise suggestions are deferred to Ground Medical.
+    const acute = P.find((p) => p.id === "p60-acute-physiology" && p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW");
+    if (acute) {
+      const ex = recommendations.find((c) => c.column === "Exercise")!;
+      ex.items = [{ id: "p60:defer-exercise", category: "physical_activity" as MergedRecommendation["category"], categoryLabel: ex.items[0]?.categoryLabel ?? "Physical activity", authorization: "clinician_required" as MergedRecommendation["authorization"], authorizationLabel: template?.authorizationLabel ?? "Requires a Ground Medical decision", text: "Follow Ground Medical's advice on physical activity until the acute findings have been assessed; general exercise suggestions are deferred.", basis: [acute.title], origin: "pattern", priority: true }];
+    }
+  }
+  // Overview answers that patterns make more precise (others unchanged).
+  if (P.length) {
+    const set = (q: string, answer: string, keys: string[]) => { const i = overview.findIndex((x) => x.question === q); if (i >= 0) overview[i] = { question: q, answer, evidenceKeys: keys }; };
+    set("What is happening?", `${P.length} connected finding pattern(s) for Ground Medical review: ${P.map((p) => `${p.title.toLowerCase()} (${p.priorityLabel.toLowerCase()})`).join("; ")}.`, P.flatMap((p) => p.recordIds));
+    set("How are the biomarkers related?", patternGraph.edges.length ? `${patternGraph.edges.map((e) => `${P.find((p) => p.id === e.from)!.title} – ${P.find((p) => p.id === e.to)!.title}: ${e.label}${e.kind === "established" && e.sourceId ? ` (established; ${shortSource(e.sourceId)})` : e.kind === "hypothesis" ? " (hypothesis)" : ""}`).join("; ")}. Co-occurrence does not show cause.` : "No documented relationship connects the patterns.", patternGraph.edges.map((e) => `${e.from}|${e.to}`));
+    set("Which conditions could explain the findings?", `${[...new Set(P.flatMap((p) => p.hypotheses.map((h) => h.replace(/^Hypothesis: /, ""))))].slice(0, 6).join("; ")}. All are hypotheses for clinical evaluation, not diagnoses.`, P.map((p) => p.id));
+    set("What supports or contradicts them?", P.map((p) => `${p.title}: ${p.observed.length + p.supporting.filter((x) => !p.observed.includes(x)).length} supporting, ${p.contradicting.length} contradicting/limiting`).join("; ") + ".", P.map((p) => p.id));
+    if (P.some((p) => p.id === "p60-acute-physiology" && p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW"))
+      set("What should the astronaut do?", `Report any symptoms to Ground Medical now (for example fever, breathlessness, chest pain, palpitations or dizziness).${P.some((p) => p.id === "p60-electrolytes") ? " Do not change fluid, salt or potassium intake before Ground Medical review." : ""} Do not start or change supplements or exercise until Ground Medical has reviewed these findings.`, P.map((p) => p.id));
+    set("What should Ground Medical confirm?", [...new Set(P.filter((p) => p.priority !== "MONITORING").map((p) => p.confirm[0]!))].slice(0, 4).join(" "), P.map((p) => p.id));
+  }
+  // Results-table notes: explained once.
+  const unrecAll = [...new Set(rows.flatMap((r) => (r.notes.includes("‡") ? r.unrecordedConditions : [])))];
+  const tableNotes = [
+    "— No applicable criterion: NEUTRAL (insufficient classification evidence).",
+    ...(unrecAll.length ? [`‡ Per-measurement conditions of the provisional criterion that are not recorded: ${unrecAll.map((x) => x.replace(/\.$/, "")).join("; ")}.`] : []),
+    ...(rows.some((r) => r.notes.includes("§")) ? ["§ Identity bound through an owner-directed synthetic demonstration mapping (not Researcher-approved)."] : []),
+    ...(rows.some((r) => r.notes.includes("◊")) ? ["◊ Synthetic demonstration catalog identity (not scientifically validated)."] : []),
+  ];
+  const census = observationCensus(included.map((r) => ({ metricId: r.metricId, unit: r.unit, date: day(r.observedAt), valueText: r.value, provenance: r.provenance })));
+
   const mappedRows = rows.filter((r) => r.identityRoute?.kind === "demonstration_mapping");
   const basisText = `Clinical classes: ${counts.approvedCriteria} Researcher-approved criteria for this mission${provisionalActive ? "; PROVISIONAL = documented literature criterion (synthetic demonstration only; never a validated alert)" : ""}${demonstrationMappingsActive ? `; ${new Set(mappedRows.map((r) => r.metricId)).size} synthetic identity mapping(s) applied (owner-directed)` : ""}. Panel colour = warning priority, separate from each result's clinical class. General-population criteria are not NASA flight limits.`;
 
@@ -432,5 +583,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     priorities,
     concernClasses,
     counts, rows, alerts, nextSteps, overview, lead, systems, graph, integrated, charts, concerns, recommendations, basisText,
+    generator: P60_GENERATOR_VERSION, patterns, patternAlerts, patternGraph, synthesis, patternClasses, coveredConcerns, patternConcerns, tableNotes, census,
+    coverage: input.coverage ?? null,
   };
 }
