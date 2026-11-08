@@ -385,7 +385,11 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const down = compared.filter((k) => seriesFacts.find((f) => `${f.metricId}|${series(k)[0]!.unit}` === k)?.direction === "down");
   const highKeys = [...new Set(rows.filter((r) => r.axes.review.value === "HIGH").map((r) => `${r.metricId}|${r.unit}`))];
   const checkKeys = [...new Set(rows.filter((r) => r.axes.dataQuality.value === "DATA_QUALITY_WARNING").map((r) => `${r.metricId}|${r.unit}`))];
-  const classified = [...new Set(rows.filter((r) => r.displayClass !== "NEUTRAL").map((r) => `${r.name} ${r.valueText} ${r.unit} (${r.displayClass}${r.basis === "provisional" ? ", provisional" : ""})`))];
+  const classified = (() => {
+    const bySeries = new Map<string, ResultRow[]>();
+    for (const r of rows.filter((x) => x.displayClass !== "NEUTRAL")) bySeries.set(`${r.metricId}|${r.unit}`, [...(bySeries.get(`${r.metricId}|${r.unit}`) ?? []), r]);
+    return [...bySeries.values()].map((rs) => `${rs[0]!.name} ${rs.map((r) => r.valueText).join(" / ")} ${rs[0]!.unit} (${[...new Set(rs.map((r) => (r.displayClass === "NORMAL" ? "GREEN" : r.displayClass)))].join("/")}${rs.some((r) => r.basis === "provisional") ? ", provisional" : ""})`);
+  })();
   const affected = systems.filter((s) => s.measured && (s.high || s.dataCheck || s.worst !== "NEUTRAL"));
   const gm = report.recommendations.filter((r) => r.authorization === "clinician_required");
   const wellness = report.recommendations.filter((r) => r.authorization === "general_wellness");
@@ -394,11 +398,11 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     for (const c of concerns) for (const x of c.missing) m.set(x.replace(/ — .*$/, ""), (m.get(x.replace(/ — .*$/, "")) ?? 0) + 1);
     return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => k);
   })();
-  const join = (xs: string[], none: string) => (xs.length ? xs.join("; ") : none);
+  const join = (xs: string[], none: string) => (xs.length ? xs.map((x, i) => (i < xs.length - 1 && /[.!?]$/.test(x) ? `${x} ` : i < xs.length - 1 ? `${x}; ` : x)).join("") : none);
   const electrolyte = concerns.some((c) => c.concernId === "electrolyte_disturbance");
   const overview: OverviewAnswer[] = [
     { question: "What is happening?", answer: concerns.length ? `${concerns.length} possible concern area(s) for Ground Medical review: ${concerns.map((c) => c.title.replace(/\s*\(.*\)$/, "").toLowerCase()).join("; ")}.${report.clinical.crossDomain[0] ? ` ${report.clinical.crossDomain[0].text}` : ""}` : "No concern pattern was identified in this period.", evidenceKeys: concerns.flatMap((c) => c.contributorKeys) },
-    { question: "Which results are abnormal or concerning?", answer: `${classified.length ? `Classified: ${classified.slice(0, 8).join("; ")}.` : "No result is clinically classified (no applicable criterion)."} ${highKeys.length ? `High-priority review (not a classification): ${highKeys.map((k) => series(k)[0]!.name).join(", ")}.` : ""}`.trim(), evidenceKeys: notableRows.map((r) => r.recordId) },
+    { question: "Which results are abnormal or concerning?", answer: `${classified.length ? `Classified: ${classified.slice(0, 10).join("; ")}.` : "No result is clinically classified (no applicable criterion)."} ${highKeys.length ? `High-priority review (not a classification): ${highKeys.map((k) => series(k)[0]!.name).join(", ")}.` : ""}`.trim(), evidenceKeys: notableRows.map((r) => r.recordId) },
     { question: "What increased or decreased?", answer: `${up.length ? `Increased: ${up.map(trendText).join("; ")}.` : "No series increased."} ${down.length ? `Decreased: ${down.map(trendText).join("; ")}.` : "No series decreased."}`, evidenceKeys: compared },
     { question: "Which changes are biologically meaningful?", answer: `${highKeys.filter((k) => !checkKeys.includes(k)).length ? `Plausible and important if confirmed: ${highKeys.filter((k) => !checkKeys.includes(k)).map((k) => series(k)[0]!.name).join(", ")}.` : ""} ${checkKeys.length ? `Verify the measurement first: ${checkKeys.map((k) => series(k)[0]!.name).join(", ")}.` : ""}`.trim() || "No change met the review rules.", evidenceKeys: [...highKeys, ...checkKeys] },
     { question: "Which body systems are affected?", answer: join(affected.map((s) => s.label), "No body system shows a flagged or classified result."), evidenceKeys: affected.map((s) => s.group) },
