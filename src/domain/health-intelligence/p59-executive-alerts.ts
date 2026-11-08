@@ -98,7 +98,7 @@ export function selectExecutiveAlerts(findings: readonly FindingSummary[], max =
   } else if (rest.length > 1) {
     const first = rest[0]!.f;
     cards.push({
-      kind: rest[0]!.t[0], findingIds: rest.map((r) => r.f.id), title: `${rest.length} further findings`,
+      kind: rest[0]!.t[0], findingIds: rest.map((r) => r.f.id), title: usesPriority ? `${rest.length} further findings` : `${rest.length} further findings to monitor`,
       badges: [],
       evidence: rest.map((r) => (r.f.priority ? `${r.f.title} — ${WARNING_PRIORITY_LABEL[r.f.priority].toLowerCase()}` : r.f.title)).join("; "),
       nextStep: "See the Preliminary Medical Assessment.",

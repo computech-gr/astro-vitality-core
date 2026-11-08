@@ -17,7 +17,12 @@ import type { ReviewFlag } from "./p56-longitudinal-profile";
 import { classifyWithCriteria, type ApprovedCriterion, type CriteriaClassification } from "./p57-reference-criteria";
 import { deriveWarningAxes, type WarningAxes } from "./p571-warning-axes";
 import { chartReferenceBands } from "./p571-report-legend";
-import { provisionalInterpretation, provisionalBandsFor, type ProvisionalResult } from "./p59-provisional-interpretation";
+import { provisionalInterpretation, provisionalBandsFor, provisionalRegistry, type IdentityRoute, type ProvisionalResult } from "./p59-provisional-interpretation";
+import { concernWarningPriority, type PriorityDecision } from "./p59-warning-priority";
+import { bundledCriteriaRegistry } from "./p57-reference-criteria";
+
+/** Visible label for every report that uses provisional literature interpretation. */
+export const DEMONSTRATION_LABEL = "LITERATURE-BASED SYNTHETIC DEMONSTRATION — NOT CLINICALLY VALIDATED";
 import { relationshipGraph, type SeriesFact } from "./p59-relationship-graph";
 import { selectExecutiveAlerts, type AlertCard, type FindingSummary } from "./p59-executive-alerts";
 import cvCatalog from "../../../data/scientific/cardiovascular-handbook.catalog.v1.json";
@@ -46,7 +51,12 @@ export interface PremiumInput {
   biomarkers: BiomarkerAssessmentReport;
   approved: readonly ApprovedCriterion[];
   missionId: string;
-  options: { provisionalLiterature: boolean };
+  /**
+   * provisionalLiterature: synthetic-only literature interpretation (always labelled PROVISIONAL).
+   * demonstrationMappings: owner-directed synthetic identity mappings (P59 Rev 2), used only
+   * together with provisionalLiterature on synthetic data; never for approved classification.
+   */
+  options: { provisionalLiterature: boolean; demonstrationMappings?: boolean };
   /** Optional provisional registry override (tests only). */
   provisionalRegistry?: unknown;
 }
@@ -67,6 +77,10 @@ export interface ResultRow {
   criterionText: string;
   limitation: string | null;
   syntheticDemoIdentity: boolean;
+  /** Kind of the criterion that produced a non-neutral class (approved or provisional). */
+  criterionKind: string | null;
+  /** Identity route when a demonstration mapping or alias bound the criterion (traceability). */
+  identityRoute: IdentityRoute | null;
 }
 export interface PremiumChart {
   base: ReportChart;
@@ -84,7 +98,11 @@ export interface PremiumReport {
   version: typeof PREMIUM_GENERATOR_VERSION;
   base: ProfessionalReport;
   header: ProfessionalReport["assessment"]["header"] & { evidenceId: string };
-  options: { provisionalLiterature: boolean; provisionalActive: boolean };
+  options: { provisionalLiterature: boolean; provisionalActive: boolean; demonstrationMappingsActive: boolean };
+  /** Visible demonstration label (null when provisional literature interpretation is off). */
+  demonstrationLabel: string | null;
+  /** Warning priority per concern (separate from clinical classification). */
+  priorities: Record<string, PriorityDecision>;
   counts: PremiumCounts;
   rows: ResultRow[];
   alerts: AlertCard[];
