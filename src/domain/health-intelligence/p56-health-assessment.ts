@@ -239,7 +239,7 @@ export function seriesTrend(s: InterpretationSeries): SeriesTrend {
       direction: "insufficient",
       earliest,
       text:
-        pair?.status === "differing_repeats" || pair?.status === "differing_repeated_readings"
+        pair?.status === "differing_repeated_readings"
           ? "Repeated readings at one examination differ, so no single value is compared."
           : pair?.status === "ordering_ambiguous"
             ? "A date-only and a timed reading cannot be ordered; not compared."
