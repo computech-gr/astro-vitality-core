@@ -576,3 +576,17 @@
 - [x] Regression tests (Scenario A single-day, Scenario B multi-day), full checks, PDF visual and browser verification.
 - [ ] Owner/scientific review of the review-triage rule values (50% change, 10% electrolyte change, 50% intermediate extreme, HbA1c 28-day interval) — waits on the owner.
 - [ ] Verified reference intervals (registry still empty) — waits on independently verified sources.
+
+## P57/P58 Scientific evidence registry, clinical reasoning and adaptive professional report
+
+- [x] P57 versioned reference-criteria registry from verified source wording (ADA 2026 §2, NIDDK, NHLBI, KDIGO 2024, CDC/AHA hs-CRP); distinct criterion kinds; all pending Researcher review.
+- [x] Researcher review queue (bulk by domain, individual exceptions, evidence preview, server-attested append-only decisions, mission applicability).
+- [x] Evidence-aware classification: approved + fully applicable criteria only; exact units; data-quality holds; synthetic-demo separation.
+- [x] P58 Preliminary Clinical Assessment — Pending Ground Medical Review (deterministic concern library; AI elaboration in the existing authorized scope; GM accept/amend/reject/add; separate audit records).
+- [x] Evidence gaps listed in the report evidence trail with the Evidence ID; retrieval stays in the existing Researcher literature tool, never auto-promoted to rules.
+- [x] Adaptive professional colour PDF (no page cap) with mandatory charts and single-measurement visuals; screen/TXT parity.
+- [x] Preview-only reproducible sample PDF generated (existing competition sample untouched).
+- [x] Regression tests, full checks, visual inspection of every PDF page, browser verification.
+- [ ] Researcher approval of any P57 criterion — waits on the Researcher (none approved; nothing is coloured).
+- [ ] Scientific review of the P58 concern-library text and P56.1 triage values — waits on the owner/Researcher.
+- [ ] Replacing the published competition sample PDF — waits on owner approval.

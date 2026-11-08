@@ -61,6 +61,19 @@ import { buildHealthAssessment, healthAssessmentPlainText, type AutomatedAnalysi
 import { createHealthAssessmentPdf } from "@/domain/health-intelligence/p56-health-report-pdf";
 import { redactProhibitedNames } from "@/domain/health-intelligence/report-identity-redaction";
 import { HealthAssessmentView } from "@/components/p56-health-assessment-view";
+import { ClinicalAssessmentView } from "@/components/p58-clinical-assessment-view";
+import { useCriteriaResolution } from "@/hooks/use-approved-criteria";
+import { elaborateClinicalAssessment } from "@/lib/clinical-reasoning.functions";
+import {
+  buildClinicalPacket,
+  buildPreliminaryClinicalAssessment,
+  mergeClinicalAi,
+  planClinicianDecision,
+  type ClinicianDecision,
+  type PreliminaryClinicalAssessment,
+} from "@/domain/health-intelligence/p58-clinical-reasoning";
+import { buildProfessionalReport, professionalReportPlainText } from "@/domain/health-intelligence/p58-professional-report";
+import { createProfessionalReportPdf } from "@/domain/health-intelligence/p58-professional-pdf";
 
 /** Cheap, stable fingerprint so the automatic analysis runs at most once per evidence packet. */
 function packetKey(value: unknown): string {
@@ -308,10 +321,12 @@ export function AstronautHealthReport() {
     () => (unified && findings ? buildScientificHealthSummary(unified, findings, report, attestationSummary, interpretation?.validatedInterpretations ?? 0) : null),
     [unified, findings, report, attestationSummary, interpretation],
   );
-  // P54: one biomarker assessment shared by screen, PDF and TXT (verified references only).
+  // P54/P57: one biomarker assessment shared by screen, PDF and TXT (verified references and
+  // Researcher-approved, server-attested reference criteria only).
+  const { resolution: criteriaResolution } = useCriteriaResolution();
   const biomarkerAssessment = useMemo(
-    () => (unified && interpretation ? buildBiomarkerAssessment(unified, interpretation, interpretationSnapshot) : null),
-    [unified, interpretation, interpretationSnapshot],
+    () => (unified && interpretation ? buildBiomarkerAssessment(unified, interpretation, interpretationSnapshot, { criteria: criteriaResolution.approved }) : null),
+    [unified, interpretation, interpretationSnapshot, criteriaResolution],
   );
   const reviewScope = useMemo(
     () => (member ? { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance } : null),
@@ -388,6 +403,66 @@ export function AstronautHealthReport() {
         : null,
     [unified, interpretation, biomarkerAssessment, member, interpretationSnapshot, automated, scopeHistory],
   );
+  // P58: preliminary clinical assessment (deterministic engine; optional validated AI elaboration only
+  // for synthetic data and this crew member's Ground Medical clinician; the server switch still decides).
+  const deterministicClinical = useMemo(
+    () => (healthAssessment && biomarkerAssessment ? buildPreliminaryClinicalAssessment({ assessment: healthAssessment, biomarkers: biomarkerAssessment }) : null),
+    [healthAssessment, biomarkerAssessment],
+  );
+  const elaborateAi = useServerFn(elaborateClinicalAssessment);
+  const clinicalAttempts = useRef(new Map<string, PreliminaryClinicalAssessment>());
+  const [clinical, setClinical] = useState<PreliminaryClinicalAssessment | null>(null);
+  useEffect(() => {
+    if (!deterministicClinical || !healthAssessment || !reviewScope) {
+      setClinical(deterministicClinical);
+      return;
+    }
+    if (reviewScope.provenance !== "synthetic" || !isGroundMedical || !deterministicClinical.concerns.length) {
+      setClinical({ ...deterministicClinical, aiStatus: reviewScope.provenance !== "synthetic" ? "Deterministic clinical reasoning engine (real crew data is never sent to an AI service)." : deterministicClinical.aiStatus });
+      return;
+    }
+    const clinicalPacket = buildClinicalPacket(healthAssessment, deterministicClinical);
+    const k = `${reviewScope.missionId}|${reviewScope.crewMemberId}|${packetKey(clinicalPacket)}`;
+    const done = clinicalAttempts.current.get(k);
+    if (done) {
+      setClinical(done);
+      return;
+    }
+    setClinical(deterministicClinical);
+    let live = true;
+    const timer = window.setTimeout(() => {
+      void elaborateAi({ data: { missionId: reviewScope.missionId, crewMemberId: reviewScope.crewMemberId, packet: clinicalPacket } })
+        .then((r): PreliminaryClinicalAssessment =>
+          r.ok ? mergeClinicalAi(deterministicClinical, clinicalPacket, { output: r.output, rejected: r.rejected, model: r.model }) : { ...deterministicClinical, aiStatus: r.message },
+        )
+        .catch((): PreliminaryClinicalAssessment => ({ ...deterministicClinical, aiStatus: "Deterministic clinical reasoning engine (the AI step could not be reached)." }))
+        .then((result) => {
+          clinicalAttempts.current.set(k, result); // one attempt per evidence packet; no automatic retry
+          if (live) setClinical(result);
+        });
+    }, 1500);
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+    };
+  }, [deterministicClinical, healthAssessment, reviewScope, isGroundMedical, elaborateAi]);
+  // Ground Medical review of the preliminary clinical assessment: session-only (component memory).
+  const [clinicianDecisions, setClinicianDecisions] = useState<ClinicianDecision[]>([]);
+  useEffect(() => setClinicianDecisions([]), [reviewScope?.missionId, reviewScope?.crewMemberId, reviewScope?.provenance]);
+  const professionalReport = useMemo(
+    () =>
+      healthAssessment && biomarkerAssessment && clinical
+        ? buildProfessionalReport({ assessment: healthAssessment, biomarkers: biomarkerAssessment, clinical, decisions: clinicianDecisions, scope: reviewScope })
+        : null,
+    [healthAssessment, biomarkerAssessment, clinical, clinicianDecisions, reviewScope],
+  );
+  const decideClinical = (concern: Parameters<typeof planClinicianDecision>[0], decision: Parameters<typeof planClinicianDecision>[2]["decision"], text: string): string | null => {
+    if (!reviewScope) return "Select an authorized crew member first.";
+    const plan = planClinicianDecision(concern, { userId: identity?.userId, rolesForScope, scope: reviewScope, now: new Date().toISOString() }, { decision, text });
+    if (!plan.ok) return plan.reason;
+    setClinicianDecisions((cur) => [...cur, plan.decision]);
+    return null;
+  };
   const [appendixOpen, setAppendixOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash === "#ground-medical-attestation") setAppendixOpen(true);
@@ -414,7 +489,7 @@ export function AstronautHealthReport() {
         setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
         if (!healthAssessment) throw new Error("The health assessment is not ready yet. No file downloaded.");
-        downloadReportBlob(new Blob([healthAssessmentPlainText(healthAssessment)], { type: "text/plain;charset=utf-8" }), `${exportName}_Assessment.txt`);
+        downloadReportBlob(new Blob([professionalReport ? professionalReportPlainText(professionalReport) : healthAssessmentPlainText(healthAssessment)], { type: "text/plain;charset=utf-8" }), `${exportName}_Assessment.txt`);
         setExportStatus(`Assessment text created locally and download started as ${exportName}_Assessment.txt. No medical data was uploaded.`);
       } else if (kind === "appendix-text") {
         const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${biomarkerAssessment ? biomarkerAssessmentPlainText(biomarkerAssessment) : ""}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
@@ -427,7 +502,7 @@ export function AstronautHealthReport() {
         try {
           if (kind === "pdf" && !healthAssessment) throw new Error("The health assessment is not ready yet.");
           // Searchable text PDF built from the same read models as screen/TXT (never a DOM screenshot).
-          const result = kind === "pdf" && healthAssessment ? await createHealthAssessmentPdf(healthAssessment) : await createTextReportPdf({
+          const result = kind === "pdf" && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
             unified,
             findings,
             summary: healthSummary,
@@ -571,7 +646,15 @@ export function AstronautHealthReport() {
             <span>{healthAssessment?.disclosure ?? "Automated health assessment — subject to Ground Medical review."}</span>
           </div>
           {healthAssessment ? (
-            <HealthAssessmentView assessment={healthAssessment} automatedStatus={healthAssessment.generation.automatedNote} />
+            <HealthAssessmentView
+              assessment={healthAssessment}
+              automatedStatus={healthAssessment.generation.automatedNote}
+              professional={
+                professionalReport
+                  ? { report: professionalReport, clinicalSlot: <ClinicalAssessmentView report={professionalReport} canReview={isGroundMedical} onDecide={decideClinical} /> }
+                  : undefined
+              }
+            />
           ) : (
             <p className="text-sm text-muted-foreground" role="status">Preparing the health assessment…</p>
           )}

@@ -5,6 +5,7 @@ import {
   BULK_RESEARCHER_ANCHOR,
   BULK_RESEARCHER_HEADING,
 } from "@/components/p38-bulk-researcher-anchor";
+import { CRITERIA_REVIEW_ANCHOR, CRITERIA_REVIEW_HEADING, ReferenceCriteriaReview } from "@/components/p57-reference-criteria-review";
 import { operationalRouteHead } from "@/infrastructure/seo";
 
 export const Route = createFileRoute("/mission/scientific-review")({
@@ -28,9 +29,14 @@ function ScientificReviewPage() {
         >
           Jump to {BULK_RESEARCHER_HEADING}
         </a>
+        <span className="mx-2 text-muted-foreground" aria-hidden>·</span>
+        <a href={`#${CRITERIA_REVIEW_ANCHOR}`} className="text-sm font-medium text-primary underline underline-offset-4">
+          Jump to {CRITERIA_REVIEW_HEADING}
+        </a>
       </nav>
       <P36ScientificReviewWorkspace />
       <BiomarkerInterpretationReview />
+      <ReferenceCriteriaReview />
     </>
   );
 }

@@ -40,6 +40,8 @@ import {
   type ResearcherInterpretationModel,
 } from "./researcher-interpretation";
 import type { ExamPoint, PairComparison } from "./longitudinal-comparison";
+import { classifyWithCriteria, type ApprovedCriterion, type CriteriaClassification } from "./p57-reference-criteria";
+import { bundledReviewRules, reviewSeries, seriesProfile } from "./p56-longitudinal-profile";
 
 // ------------------------------------------------------------ vocabulary
 
@@ -90,7 +92,14 @@ export type InsufficientReason =
   | "conflicting_references"
   | "measurement_conditions_unverified"
   | "threshold_not_crossed"
-  | "no_observation";
+  | "no_observation"
+  /** P57: candidate criteria exist but are not approved / applicable / agreeing for this value. */
+  | "criteria_pending"
+  | "criteria_not_applicable"
+  | "criteria_held"
+  | "criteria_conflict"
+  | "criteria_outside_bands"
+  | "criteria_informational";
 
 // ------------------------------------------------------------ verified reference registry
 
@@ -218,11 +227,36 @@ export interface ClassificationInput {
 export interface Classification {
   status: MeasurementStatus;
   severity: Severity;
-  reason: InsufficientReason | "verified_reference" | "approved_adverse_rule";
+  reason: InsufficientReason | "verified_reference" | "approved_adverse_rule" | "approved_criterion";
   /** Plain explanation shared by screen, PDF and TXT. */
   explanation: string;
   reference: VerifiedReference | null;
   syntheticDemoReference: boolean;
+  /** P57 evaluation (approved reference criteria), when the P54 registry had no entry. */
+  criteria?: CriteriaClassification | null;
+}
+
+const CRITERIA_REASON: Partial<Record<CriteriaClassification["outcome"], InsufficientReason>> = {
+  pending_approval: "criteria_pending",
+  not_applicable: "criteria_not_applicable",
+  held: "criteria_held",
+  conflict: "criteria_conflict",
+  outside_bands: "criteria_outside_bands",
+  non_numeric: "non_numeric_value",
+};
+
+/** P57 → P54 classification (only an approved, fully applicable, agreeing criterion can colour a result). */
+export function classificationFromCriteria(cc: CriteriaClassification, fallback: Classification): Classification {
+  if (cc.outcome === "no_candidate") return { ...fallback, criteria: cc };
+  if (cc.outcome === "classified" && cc.severity !== "neutral") {
+    const status: MeasurementStatus =
+      cc.severity === "red" ? "clinically_concerning" : cc.severity === "normal" ? "within_verified_reference" : cc.direction === "below" ? "below_verified_reference" : "above_verified_reference";
+    return { status, severity: cc.severity, reason: "approved_criterion", explanation: cc.explanation, reference: null, syntheticDemoReference: false, criteria: cc };
+  }
+  const reason = cc.outcome === "classified" ? "criteria_informational" : (CRITERIA_REASON[cc.outcome] ?? "no_verified_reference");
+  const explanation =
+    cc.outcome === "classified" ? `${cc.explanation} This category carries no clinical colour.` : cc.explanation;
+  return { status: "insufficient_evidence", severity: "neutral", reason, explanation, reference: null, syntheticDemoReference: false, criteria: cc };
 }
 
 const NUMERIC = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/;
@@ -375,6 +409,8 @@ export interface BiomarkerAssessmentReport {
   entries: BiomarkerAssessment[];
   counts: Record<Severity, number>;
   referenceRegistry: { version: number; verifiedEntries: number; excluded: number };
+  /** P57: approved (server-attested) criteria supplied to this build and results they classified. */
+  criteria: { approved: number; classified: number };
   policy: string[];
 }
 
@@ -390,7 +426,7 @@ function approvedContent(r: ResolvedInterpretation | null) {
 }
 
 export const ASSESSMENT_POLICY: readonly string[] = [
-  "Colour and status come only from an applicable, independently verified reference interval or decision threshold for the exact biomarker, unit and domain, or from an approved adverse rule; everything else is NEUTRAL.",
+  "Colour and status come only from an applicable, independently verified reference interval or decision threshold for the exact biomarker, unit and domain, from a Researcher-approved P57 reference criterion whose applicability requirements are all met, or from an approved adverse rule; everything else is NEUTRAL.",
   NOT_HARMFUL_BY_CHANGE_TEXT,
   "Units are never converted; a reference in another unit is not applied. Terrestrial references are applied to astronauts only with their stated applicability and limitations.",
   "No diagnosis is generated. A newly activated catalog biomarker does not acquire an approved interpretation automatically.",
@@ -404,6 +440,7 @@ function buildEntry(
   snapshot: InterpretationSnapshot,
   registry: ReferenceRegistry,
   adverse: AdverseResolution | null,
+  criteria: readonly ApprovedCriterion[] = [],
 ): BiomarkerAssessment {
   const points = s.longitudinal.points;
   const lastPoint = points.at(-1)!;
@@ -424,10 +461,29 @@ function buildEntry(
     registry,
   );
   // A differing-repeat examination is reported as such, never as "no observation".
-  const finalClass: Classification =
+  const p54Class: Classification =
     lastPoint.repeat === "differing_repeats" && classification.reason === "no_observation"
       ? { ...classification, reason: "differing_repeats", explanation: "Repeated readings at the latest examination differ; none is selected for classification." }
       : classification;
+  // P57: approved reference criteria apply only where the P54 registry has no entry for this identity.
+  let finalClass = p54Class;
+  if (p54Class.reason === "no_verified_reference" || p54Class.reason === "differing_repeats") {
+    const review = reviewSeries(s.metricId, seriesProfile(points), s.unit, bundledReviewRules().rules);
+    const holds = [
+      ...review.flags.filter((f) => f.kind === "data_quality").map((f) => `measurement-consistency check required (${f.text})`),
+      ...(lastPoint.repeat === "differing_repeats" ? ["repeated readings at the latest examination differ"] : []),
+    ];
+    const cc = classifyWithCriteria(
+      { metricId: s.metricId, unit: s.unit, domain, value: lastPoint.repeat === "differing_repeats" ? null : lastPoint.valueText, provenance: scope.provenance, missionId: scope.missionId, holds },
+      criteria,
+    );
+    const fromCriteria = classificationFromCriteria(cc, p54Class);
+    finalClass =
+      p54Class.reason === "differing_repeats" && fromCriteria.severity === "neutral" && cc.outcome !== "held"
+        ? { ...p54Class, criteria: cc }
+        : fromCriteria;
+  }
+  const criteriaUsed = finalClass.criteria?.outcome === "classified" ? finalClass.criteria : null;
 
   const match = matchInterpretation(snapshot, { metricId: s.metricId, unit: s.unit, domain, missionId: scope.missionId, provenance: scope.provenance });
   const approved = approvedContent(match.exact);
@@ -469,9 +525,13 @@ function buildEntry(
     statusLabel: MEASUREMENT_STATUS_LABELS[finalClass.status],
     severityLabel: SEVERITY_LABELS[finalClass.severity],
     marker: SEVERITY_MARKERS[finalClass.severity],
-    referenceText: ref ? `${referenceRangeText(ref)}${ref.environment === "synthetic_demo" ? " (SYNTHETIC DEMO reference)" : ""}` : null,
-    applicabilityText: ref ? referenceApplicabilityText(ref) : null,
-    referenceCitation: ref ? `${ref.citation.title} - ${ref.citation.locator}${ref.citation.url ? ` ${ref.citation.url}` : ""}; verified by ${ref.verification.verifiedBy} on ${ref.verification.verifiedAt} (${ref.verification.verificationRef})` : null,
+    referenceText: ref ? `${referenceRangeText(ref)}${ref.environment === "synthetic_demo" ? " (SYNTHETIC DEMO reference)" : ""}` : criteriaUsed?.referenceText ?? null,
+    applicabilityText: ref ? referenceApplicabilityText(ref) : criteriaUsed ? "Approved P57 criterion; every applicability requirement recorded for this mission. Terrestrial source applied with its stated limitations." : null,
+    referenceCitation: ref
+      ? `${ref.citation.title} - ${ref.citation.locator}${ref.citation.url ? ` ${ref.citation.url}` : ""}; verified by ${ref.verification.verifiedBy} on ${ref.verification.verifiedAt} (${ref.verification.verificationRef})`
+      : criteriaUsed
+        ? criteriaUsed.used.map((u) => `${u.source}, ${u.locator}${u.url ? ` ${u.url}` : ""}; Researcher approval ${u.approvalRef}`).join("; ")
+        : null,
     explanation,
     higherValues,
     lowerValues,
@@ -491,11 +551,11 @@ export function buildBiomarkerAssessment(
   report: UnifiedHealthReport,
   model: ResearcherInterpretationModel,
   snapshot: InterpretationSnapshot = registryInterpretationSnapshot(),
-  options: { registry?: ReferenceRegistry; adverse?: AdverseResolution | null } = {},
+  options: { registry?: ReferenceRegistry; adverse?: AdverseResolution | null; criteria?: readonly ApprovedCriterion[] } = {},
 ): BiomarkerAssessmentReport {
   const registry = options.registry ?? bundledReferenceRegistry();
   const entries = model.domains.flatMap((d) =>
-    d.series.filter((s) => s.longitudinal.points.length > 0).map((s) => buildEntry(s, d.domain, report.scope, report.rows, snapshot, registry, options.adverse ?? null)),
+    d.series.filter((s) => s.longitudinal.points.length > 0).map((s) => buildEntry(s, d.domain, report.scope, report.rows, snapshot, registry, options.adverse ?? null, options.criteria ?? [])),
   );
   entries.sort(
     (a, b) =>
@@ -512,6 +572,7 @@ export function buildBiomarkerAssessment(
     entries,
     counts,
     referenceRegistry: { version: registry.version, verifiedEntries: registry.entries.length, excluded: registry.excluded.length },
+    criteria: { approved: options.criteria?.length ?? 0, classified: entries.filter((e) => e.classification.reason === "approved_criterion").length },
     policy: [...ASSESSMENT_POLICY],
   };
 }

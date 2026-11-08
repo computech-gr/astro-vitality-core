@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Flag, Minus, SearchCheck } from "lucide-react";
-import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceDot, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { ProfessionalReport } from "@/domain/health-intelligence/p58-professional-report";
+import type { ReportChart } from "@/domain/health-intelligence/p58-report-charts";
 import { SeverityBadge } from "@/components/biomarker-health-assessment-view";
 import type { Severity } from "@/domain/health-intelligence/biomarker-health-assessment";
 import {
@@ -185,6 +188,67 @@ function TrendCard({ t }: { t: TrendChart }) {
   );
 }
 
+const POINT_FILL: Record<Severity, string> = { red: "var(--severity-red)", amber: "var(--severity-amber)", normal: "var(--severity-normal)", neutral: "var(--primary)" };
+
+/** P58 chart: every comparable examination; reference lines only from an approved, applicable criterion. */
+function ReportChartCard({ c }: { c: ReportChart }) {
+  const peak = c.points.find((p) => p.annotation);
+  const last = c.points.at(-1)!;
+  if (c.kind === "single")
+    return (
+      <figure className="report-avoid-break flex flex-col justify-between gap-1 rounded-lg border border-border p-3" data-testid="p58-single">
+        <figcaption className="flex items-start justify-between gap-2">
+          <span className="text-sm font-medium">
+            {c.name}
+            <span className="block text-xs font-normal text-muted-foreground">{c.domainLabel} · {last.day}</span>
+          </span>
+          <span className={`text-right text-2xl font-semibold ${SEVERITY_TEXT[c.severity]}`}>
+            {last.valueText}
+            <span className="block text-xs font-normal text-muted-foreground">{c.unit}</span>
+          </span>
+        </figcaption>
+        <p className="text-xs text-muted-foreground">{c.caption} {c.limitation}</p>
+      </figure>
+    );
+  return (
+    <figure className="report-avoid-break space-y-1 rounded-lg border border-border p-3" data-testid="p58-chart" data-metric={c.metricId}>
+      <figcaption className="flex flex-wrap items-center justify-between gap-2 text-sm font-medium">
+        <span>
+          {c.name} <span className="font-normal text-muted-foreground">[{c.unit}] · {c.domainLabel}</span>
+        </span>
+        {c.flagged !== "none" ? <ReviewBadge kind={c.flagged} /> : null}
+      </figcaption>
+      <div className="h-44 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={c.points} margin={{ top: 14, right: 16, bottom: 0, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+            <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} width={44} domain={["auto", "auto"]} />
+            <Tooltip formatter={(v) => [`${v} ${c.unit}`, c.name]} contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", color: "var(--popover-foreground)" }} />
+            {c.referenceLines.map((r) => (
+              <ReferenceLine key={r.label} y={r.value} stroke="var(--muted-foreground)" strokeDasharray="4 3" label={{ value: r.label, position: "insideTopRight", fontSize: 10, fill: "var(--muted-foreground)" }} />
+            ))}
+            <Line
+              type="linear"
+              dataKey="value"
+              stroke="var(--primary)"
+              strokeWidth={2}
+              isAnimationActive={false}
+              dot={(props: { cx?: number; cy?: number; index?: number }) => {
+                const p = c.points[props.index ?? 0];
+                return <circle key={props.index} cx={props.cx} cy={props.cy} r={p && p.severity !== "neutral" ? 5 : 3.5} fill={POINT_FILL[p?.severity ?? "neutral"]} stroke="var(--background)" strokeWidth={1.5} />;
+              }}
+            />
+            {peak ? <ReferenceDot x={peak.label} y={peak.value} r={8} fill="none" stroke="var(--review-flag)" strokeDasharray="3 2" label={{ value: `${peak.annotation} ${peak.valueText}`, position: "top", fontSize: 10, fill: "var(--review-flag)" }} /> : null}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <p className="text-xs">{c.caption}</p>
+      {c.limitation ? <p className="text-xs text-muted-foreground">{c.limitation}</p> : null}
+    </figure>
+  );
+}
+
 function PriorityList({ title, items, kind }: { title: string; items: { text: string; ruleId?: string }[]; kind?: Exclude<ReviewPriority, "none"> }) {
   return (
     <div className="space-y-1">
@@ -208,9 +272,19 @@ function PriorityList({ title, items, kind }: { title: string; items: { text: st
 }
 
 /** P56 concise health assessment: the main report view (detailed evidence lives in the technical appendix). */
-export function HealthAssessmentView({ assessment: a, automatedStatus }: { assessment: HealthAssessment; automatedStatus: string }) {
+export function HealthAssessmentView({
+  assessment: a,
+  automatedStatus,
+  professional,
+}: {
+  assessment: HealthAssessment;
+  automatedStatus: string;
+  /** P58: professional report additions (Evidence ID, mandatory charts, clinical assessment, merged recommendations). */
+  professional?: { report: ProfessionalReport; clinicalSlot: ReactNode } | undefined;
+}) {
   const h = a.header;
   const pr = a.priorities;
+  const recommendations = professional ? professional.report.recommendations.map((r) => ({ ...r, findingIds: [] as string[] })) : a.recommendations;
   return (
     <section aria-label="Health assessment" className="space-y-6" data-testid="p56-health-assessment">
       <div className="space-y-1">
@@ -227,6 +301,12 @@ export function HealthAssessmentView({ assessment: a, automatedStatus }: { asses
           <dd>{h.examinationDates.length ? h.examinationDates.join(", ") : "none in this period"}</dd>
           <dt className="text-muted-foreground">Data</dt>
           <dd>{h.provenanceLabel}</dd>
+          {professional ? (
+            <>
+              <dt className="text-muted-foreground">Evidence ID</dt>
+              <dd className="font-mono text-xs" data-testid="p58-evidence-id">{professional.report.evidenceId}</dd>
+            </>
+          ) : null}
         </dl>
       </div>
 
@@ -283,10 +363,24 @@ export function HealthAssessmentView({ assessment: a, automatedStatus }: { asses
         {a.otherResults.statement ? <p className="text-xs text-muted-foreground">{a.otherResults.statement}</p> : null}
       </section>
 
+      {professional ? (
+        <section aria-label="Visual summary" className="space-y-3" data-testid="p58-visual-summary">
+          <h3 className="text-lg font-semibold">Visual summary</h3>
+          <p className="text-xs text-muted-foreground">{professional.report.charts.note}</p>
+          {professional.report.charts.charts.length ? (
+            <div className="grid gap-3 md:grid-cols-2">{professional.report.charts.charts.map((c) => <ReportChartCard key={c.key} c={c} />)}</div>
+          ) : null}
+          {professional.report.charts.omitted.length ? (
+            <p className="text-xs text-muted-foreground">Not charted: {professional.report.charts.omitted.map((o) => `${o.name} (${o.reason})`).join("; ")}.</p>
+          ) : null}
+        </section>
+      ) : null}
+      {professional?.clinicalSlot}
+
       <section aria-label="Recommendations" className="report-avoid-break space-y-3 rounded-lg border border-border p-4">
         <h3 className="text-lg font-semibold">Recommendations</h3>
         <ul className="space-y-2 text-sm" data-testid="p56-recommendations">
-          {a.recommendations.map((r) => (
+          {recommendations.map((r) => (
             <li key={r.id} className="space-y-0.5">
               <p className="break-words">
                 <span className="font-mono text-xs text-muted-foreground">{r.id}</span>{" "}
@@ -298,7 +392,7 @@ export function HealthAssessmentView({ assessment: a, automatedStatus }: { asses
               </p>
             </li>
           ))}
-          {!a.recommendations.length ? <li className="text-muted-foreground">No recommendations: no reviewed results in this period.</li> : null}
+          {!recommendations.length ? <li className="text-muted-foreground">No recommendations: no reviewed results in this period.</li> : null}
         </ul>
         <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
           <dt className="font-medium">Observed abnormal (validated)</dt>
@@ -310,7 +404,7 @@ export function HealthAssessmentView({ assessment: a, automatedStatus }: { asses
         </dl>
       </section>
 
-      <section aria-label="Longitudinal trends" className="space-y-3">
+      <section aria-label="Longitudinal trends" className="space-y-3" hidden={Boolean(professional)}>
         <h3 className="text-lg font-semibold">Longitudinal trends</h3>
         <p className="text-xs text-muted-foreground">{a.trendNote}</p>
         {a.trends.length ? <div className="grid gap-3 md:grid-cols-2">{a.trends.map((t) => <TrendCard key={t.key} t={t} />)}</div> : null}
