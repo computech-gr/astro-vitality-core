@@ -187,7 +187,14 @@ function CompetitionPdfViewer() {
     <main className="mx-auto w-full max-w-5xl px-3 py-8 sm:px-6">
       <p className="section-kicker mb-2">NASA Space Apps Challenge 2026</p>
       <h1 className="mb-2 font-display text-2xl font-semibold sm:text-3xl">{document.title}</h1>
-      <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground" aria-live="polite">
+      {document.subtitle ? <p className="mb-3 text-base text-muted-foreground sm:text-lg">{document.subtitle}</p> : null}
+      {document.disclaimer ? (
+        <p role="note" className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm font-semibold text-foreground">
+          {document.disclaimer}
+        </p>
+      ) : null}
+      {document.provenance ? <p className="mb-4 text-sm text-muted-foreground">{document.provenance}</p> : null}
+      <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground" aria-live="polite">
         {state.kind === "loading" ? (
           <span>
             Loading document
@@ -197,6 +204,13 @@ function CompetitionPdfViewer() {
         {state.kind === "ready" ? <span>{state.doc.numPages} pages</span> : null}
         <a className="underline underline-offset-4 hover:text-foreground" href={fileHref} target="_blank" rel="noopener noreferrer">
           Open in the browser's PDF viewer
+        </a>
+        <a
+          className="inline-flex items-center rounded-md border border-border bg-card px-3 py-1.5 font-medium text-foreground hover:bg-muted"
+          href={fileHref}
+          download={document.file}
+        >
+          Download PDF
         </a>
       </div>
       {state.kind === "error" ? (
