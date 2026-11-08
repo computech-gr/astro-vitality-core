@@ -188,7 +188,7 @@ function TrendCard({ t }: { t: TrendChart }) {
   );
 }
 
-const POINT_FILL: Record<Severity, string> = { red: "var(--severity-red)", amber: "var(--severity-amber)", normal: "var(--severity-green)", neutral: "var(--primary)" };
+const POINT_FILL: Record<Severity, string> = { red: "var(--severity-red)", amber: "var(--severity-amber)", normal: "var(--severity-normal)", neutral: "var(--primary)" };
 
 /** P58 chart: every comparable examination; reference lines only from an approved, applicable criterion. */
 function ReportChartCard({ c }: { c: ReportChart }) {
