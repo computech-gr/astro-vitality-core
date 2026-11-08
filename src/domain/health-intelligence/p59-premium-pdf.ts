@@ -1091,7 +1091,7 @@ function results(L: P, r: PremiumReport) {
   const c = r.counts;
   L.para(`${c.observations} observations in ${c.series} biomarker series from ${c.examinationDates} examination date(s), exactly as recorded (no unit conversion). Classes use approved criteria${r.options.provisionalActive ? " or, where marked PROVISIONAL, literature criteria for this synthetic demonstration" : ""}. Priority is the medical-review priority of the finding the result belongs to (the same label as on page 1, in the charts and in the assessment); Trend / data shows a significant change between examinations (TREND REVIEW) and observation-level data-quality checks (CHECK) separately.`, 7.8, [51, 65, 85]);
   const cols = [
-    { k: "Measurement", w: 0.25 }, { k: "Value", w: 0.125 }, { k: "Date", w: 0.065 }, { k: "Class", w: 0.125 }, { k: "Priority", w: 0.125 }, { k: "Trend / data", w: 0.11 }, { k: "Criterion", w: 0.2 },
+    { k: "Measurement", w: 0.245 }, { k: "Value", w: 0.12 }, { k: "Date", w: 0.06 }, { k: "Class", w: 0.125 }, { k: "Priority", w: 0.12 }, { k: "Trend / data", w: 0.125 }, { k: "Criterion", w: 0.205 },
   ].map((x) => ({ ...x, w: x.w * CW }));
   const TB = 5.9; // table badge size (pt)
   const xs = cols.map((_, i) => MX + cols.slice(0, i).reduce((s, x) => s + x.w, 0));
