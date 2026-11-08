@@ -99,27 +99,40 @@ export function provisionalRegistry(raw: unknown = provisionalJson) {
 }
 
 /** Resolve an observation identity to provisional candidates (exact ID, or an applicable Researcher-approved alias). */
-function candidatesFor(metricId: string, unit: string, missionId: string | undefined, reg: CriteriaRegistry, extra: ProvisionalFile): ReferenceCriterion[] {
+function resolveCandidates(metricId: string, unit: string, missionId: string | undefined, reg: CriteriaRegistry, extra: ProvisionalFile, useDemonstration = false): { cands: ReferenceCriterion[]; route: IdentityRoute | undefined } {
   const a = extra.demoAliases?.map?.[metricId];
   let target = metricId;
-  if (typeof a === "string") target = a;
-  else if (a) {
+  let route: IdentityRoute | undefined;
+  if (typeof a === "string") {
+    target = a;
+    route = { kind: "researcher_alias", observedId: metricId, target, registerRef: null };
+  } else if (a) {
     const ok = a.unit === unit && Boolean(missionId) && a.missionId === missionId && a.approvedBy.trim().length > 0 && a.approvedAt.trim().length > 0;
-    if (!ok) return [];
+    if (!ok) return { cands: [], route: undefined };
     target = a.target;
+    route = { kind: "researcher_alias", observedId: metricId, target, registerRef: a.registerRef };
+  } else if (useDemonstration && metricId.startsWith("demo:") && missionId) {
+    const hits = demonstrationMappings().filter((m) => m.demoId === metricId && m.unit === unit && m.missionId === missionId);
+    if (hits.length === 1) {
+      target = hits[0]!.target;
+      route = { kind: "demonstration_mapping", observedId: metricId, target, registerRef: hits[0]!.registerRef };
+    }
   }
   if (target.startsWith("criterion:")) {
     const c = reg.criteria.find((x) => x.id === target.slice("criterion:".length));
-    return c && c.identity.unit === unit ? [c] : [];
+    return { cands: c && c.identity.unit === unit ? [c] : [], route };
   }
-  return reg.criteria.filter((c) => c.identity.catalogId === target && c.identity.unit === unit);
+  return { cands: reg.criteria.filter((c) => c.identity.catalogId === target && c.identity.unit === unit), route };
+}
+function candidatesFor(metricId: string, unit: string, missionId: string | undefined, reg: CriteriaRegistry, extra: ProvisionalFile, useDemonstration = false): ReferenceCriterion[] {
+  return resolveCandidates(metricId, unit, missionId, reg, extra, useDemonstration).cands;
 }
 
 /** Provisional reference bands for charts (same gate and identity rules as the interpretation). */
-export function provisionalBandsFor(ctx: Pick<ProvisionalContext, "metricId" | "unit" | "provenance" | "mode" | "missionId">, raw: unknown = provisionalJson): { criterionId: string; lower: number | null; upper: number | null; severity: string; label: string }[] {
+export function provisionalBandsFor(ctx: Pick<ProvisionalContext, "metricId" | "unit" | "provenance" | "mode" | "missionId" | "demonstrationMappings">, raw: unknown = provisionalJson): { criterionId: string; lower: number | null; upper: number | null; severity: string; label: string }[] {
   if (ctx.mode !== "synthetic-demonstration" || ctx.provenance !== "synthetic") return [];
   const { reg, extra, tiers } = provisionalRegistry(raw);
-  return candidatesFor(ctx.metricId, ctx.unit, ctx.missionId, reg, extra)
+  return candidatesFor(ctx.metricId, ctx.unit, ctx.missionId, reg, extra, Boolean(ctx.demonstrationMappings))
     .filter((c) => (ALLOWED_TIERS as readonly string[]).includes(tiers.get(c.id) ?? ""))
     .flatMap((c) => c.bands.map((b) => ({ criterionId: c.id, lower: b.lower, upper: b.upper, severity: b.severity, label: `${b.label}: ${bandRangeText(b, c.identity.unit)}` })));
 }
@@ -130,8 +143,13 @@ const off = (status: ProvisionalResult["status"], label: string): ProvisionalRes
 export function provisionalInterpretation(ctx: ProvisionalContext, raw: unknown = provisionalJson): ProvisionalResult {
   if (ctx.mode !== "synthetic-demonstration" || ctx.provenance !== "synthetic") return off("DISABLED", "Provisional interpretation is available only for synthetic demonstration reports.");
   const { reg, extra, tiers } = provisionalRegistry(raw);
-  const cands = candidatesFor(ctx.metricId, ctx.unit, ctx.missionId, reg, extra);
+  const { cands, route } = resolveCandidates(ctx.metricId, ctx.unit, ctx.missionId, reg, extra, Boolean(ctx.demonstrationMappings));
   if (!cands.length) return off("NO_CRITERION", "No provisional literature criterion for this exact identity and unit.");
+  const withRoute = (r: ProvisionalResult): ProvisionalResult => (route ? { ...r, identityRoute: route } : r);
+  return withRoute(evaluate(ctx, cands, tiers));
+}
+
+function evaluate(ctx: ProvisionalContext, cands: ReferenceCriterion[], tiers: Map<string, string>): ProvisionalResult {
   const usable = cands.filter((c) => (ALLOWED_TIERS as readonly string[]).includes(tiers.get(c.id) ?? ""));
   if (!usable.length) return off("INTERPRETATION_ONLY", "Only lower-tier sources exist; shown without colour.");
   if (ctx.holds?.length) return { ...off("HELD", `Held: ${ctx.holds.join("; ")}`), criterionIds: usable.map((c) => c.id) };
