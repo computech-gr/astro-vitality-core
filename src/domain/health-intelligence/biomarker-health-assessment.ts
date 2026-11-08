@@ -40,6 +40,8 @@ import {
   type ResearcherInterpretationModel,
 } from "./researcher-interpretation";
 import type { ExamPoint, PairComparison } from "./longitudinal-comparison";
+import { classifyWithCriteria, type ApprovedCriterion, type CriteriaClassification } from "./p57-reference-criteria";
+import { bundledReviewRules, reviewSeries, seriesProfile } from "./p56-longitudinal-profile";
 
 // ------------------------------------------------------------ vocabulary
 
@@ -90,7 +92,14 @@ export type InsufficientReason =
   | "conflicting_references"
   | "measurement_conditions_unverified"
   | "threshold_not_crossed"
-  | "no_observation";
+  | "no_observation"
+  /** P57: candidate criteria exist but are not approved / applicable / agreeing for this value. */
+  | "criteria_pending"
+  | "criteria_not_applicable"
+  | "criteria_held"
+  | "criteria_conflict"
+  | "criteria_outside_bands"
+  | "criteria_informational";
 
 // ------------------------------------------------------------ verified reference registry
 
@@ -218,11 +227,36 @@ export interface ClassificationInput {
 export interface Classification {
   status: MeasurementStatus;
   severity: Severity;
-  reason: InsufficientReason | "verified_reference" | "approved_adverse_rule";
+  reason: InsufficientReason | "verified_reference" | "approved_adverse_rule" | "approved_criterion";
   /** Plain explanation shared by screen, PDF and TXT. */
   explanation: string;
   reference: VerifiedReference | null;
   syntheticDemoReference: boolean;
+  /** P57 evaluation (approved reference criteria), when the P54 registry had no entry. */
+  criteria?: CriteriaClassification | null;
+}
+
+const CRITERIA_REASON: Partial<Record<CriteriaClassification["outcome"], InsufficientReason>> = {
+  pending_approval: "criteria_pending",
+  not_applicable: "criteria_not_applicable",
+  held: "criteria_held",
+  conflict: "criteria_conflict",
+  outside_bands: "criteria_outside_bands",
+  non_numeric: "non_numeric_value",
+};
+
+/** P57 → P54 classification (only an approved, fully applicable, agreeing criterion can colour a result). */
+export function classificationFromCriteria(cc: CriteriaClassification, fallback: Classification): Classification {
+  if (cc.outcome === "no_candidate") return { ...fallback, criteria: cc };
+  if (cc.outcome === "classified" && cc.severity !== "neutral") {
+    const status: MeasurementStatus =
+      cc.severity === "red" ? "clinically_concerning" : cc.severity === "normal" ? "within_verified_reference" : cc.direction === "below" ? "below_verified_reference" : "above_verified_reference";
+    return { status, severity: cc.severity, reason: "approved_criterion", explanation: cc.explanation, reference: null, syntheticDemoReference: false, criteria: cc };
+  }
+  const reason = cc.outcome === "classified" ? "criteria_informational" : (CRITERIA_REASON[cc.outcome] ?? "no_verified_reference");
+  const explanation =
+    cc.outcome === "classified" ? `${cc.explanation} This category carries no clinical colour.` : cc.explanation;
+  return { status: "insufficient_evidence", severity: "neutral", reason, explanation, reference: null, syntheticDemoReference: false, criteria: cc };
 }
 
 const NUMERIC = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/;
@@ -404,6 +438,7 @@ function buildEntry(
   snapshot: InterpretationSnapshot,
   registry: ReferenceRegistry,
   adverse: AdverseResolution | null,
+  criteria: readonly ApprovedCriterion[] = [],
 ): BiomarkerAssessment {
   const points = s.longitudinal.points;
   const lastPoint = points.at(-1)!;
@@ -424,10 +459,24 @@ function buildEntry(
     registry,
   );
   // A differing-repeat examination is reported as such, never as "no observation".
-  const finalClass: Classification =
+  const p54Class: Classification =
     lastPoint.repeat === "differing_repeats" && classification.reason === "no_observation"
       ? { ...classification, reason: "differing_repeats", explanation: "Repeated readings at the latest examination differ; none is selected for classification." }
       : classification;
+  // P57: approved reference criteria apply only where the P54 registry has no entry for this identity.
+  let finalClass = p54Class;
+  if (p54Class.reason === "no_verified_reference" || p54Class.reason === "differing_repeats") {
+    const review = reviewSeries(s.metricId, seriesProfile(points), s.unit, bundledReviewRules().rules);
+    const holds = [
+      ...review.flags.filter((f) => f.kind === "data_quality").map((f) => `measurement-consistency check required (${f.text})`),
+      ...(lastPoint.repeat === "differing_repeats" ? ["repeated readings at the latest examination differ"] : []),
+    ];
+    const cc = classifyWithCriteria(
+      { metricId: s.metricId, unit: s.unit, domain, value: lastPoint.repeat === "differing_repeats" ? null : lastPoint.valueText, provenance: scope.provenance, missionId: scope.missionId, holds },
+      criteria,
+    );
+    finalClass = classificationFromCriteria(cc, p54Class);
+  }
 
   const match = matchInterpretation(snapshot, { metricId: s.metricId, unit: s.unit, domain, missionId: scope.missionId, provenance: scope.provenance });
   const approved = approvedContent(match.exact);
