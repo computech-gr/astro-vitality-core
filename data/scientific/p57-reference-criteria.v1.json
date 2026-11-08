@@ -1,0 +1,364 @@
+{
+  "schema": "mitochondria.p57-reference-criteria.v1",
+  "version": 1,
+  "status": "PENDING_RESEARCHER_REVIEW",
+  "note": "P57 candidate reference criteria. Each entry was created from the current wording of the named public source, retrieved on 2026-11-08 and quoted verbatim. Retrieval and quotation are automated build steps, not independent human verification, scientific approval or clinical activation. No entry is used for RED, AMBER or NORMAL classification until a Researcher approves its exact fingerprint (server-attested) for a named mission and every applicability requirement is satisfied. Coverage is NOT comprehensive: it starts with biomarkers in the Alex Morgan examination and lists searched sources that stated no usable numeric criterion. Values are never converted between units. Changing any criterion value invalidates earlier approvals because approvals bind the criterion fingerprint.",
+  "retrievedAt": "2026-11-08",
+  "kinds": {
+    "reference_interval": "Range observed in a defined reference population (usually laboratory- and method-specific). Describes typical values, not disease.",
+    "diagnostic_threshold": "Published cut point used, with stated confirmation requirements, as a criterion for a diagnosis. Meeting it is never itself a confirmed diagnosis.",
+    "risk_category": "Published category boundaries used to stratify risk in a defined population. Not a diagnosis and not a reference interval.",
+    "action_threshold": "Published value above or below which the source recommends a specific follow-up action (for example repeat testing).",
+    "critical_limit": "Laboratory critical (panic) value requiring immediate clinician notification. None is seeded: no verified source was retrieved.",
+    "longitudinal_review_rule": "Rule about change between examinations used for review triage. The existing P56.1 rules live in data/scientific/p56-review-priority-rules.v1.json and are not duplicated here; they never set RED, AMBER or NORMAL.",
+    "mission_operational_limit": "Astronaut mission-specific operational limit. None is seeded: no verified astronaut-specific numerical criterion was retrieved."
+  },
+  "sources": [
+    {
+      "id": "ada-soc-2026-s2",
+      "organization": "American Diabetes Association Professional Practice Committee",
+      "publication": "Diabetes Care 2026;49(Supplement_1):S27",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes—2026",
+      "url": "https://doi.org/10.2337/dc26-S002",
+      "doi": "10.2337/dc26-S002",
+      "publicationDate": "2026 (Volume 49, Supplement 1)",
+      "documentType": "Professional society clinical practice guideline (graded recommendations)",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "niddk-diabetes-tests-2022",
+      "organization": "National Institute of Diabetes and Digestive and Kidney Diseases (NIH)",
+      "publication": "NIDDK Health Information",
+      "title": "Diabetes Tests & Diagnosis",
+      "url": "https://www.niddk.nih.gov/health-information/diabetes/overview/tests-diagnosis",
+      "doi": null,
+      "publicationDate": "Last reviewed July 2022",
+      "documentType": "Government health-information page (not graded)",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "nhlbi-triglycerides-2023",
+      "organization": "National Heart, Lung, and Blood Institute (NIH)",
+      "publication": "NHLBI Health Topics",
+      "title": "High Blood Triglycerides",
+      "url": "https://www.nhlbi.nih.gov/health/high-blood-triglycerides",
+      "doi": null,
+      "publicationDate": "Last updated April 19, 2023",
+      "documentType": "Government health-information page (not graded)",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "cdc-aha-inflammation-2003",
+      "organization": "Centers for Disease Control and Prevention and American Heart Association",
+      "publication": "Circulation 2003;107(3):499-511",
+      "title": "Markers of inflammation and cardiovascular disease: application to clinical and public health practice (Pearson TA et al.)",
+      "url": "https://doi.org/10.1161/01.CIR.0000052939.59093.45",
+      "doi": "10.1161/01.CIR.0000052939.59093.45",
+      "publicationDate": "2003-01-28",
+      "documentType": "Joint scientific statement (class and level of evidence per recommendation)",
+      "retrievedAt": "2026-11-08"
+    },
+    {
+      "id": "kdigo-ckd-2024",
+      "organization": "Kidney Disease: Improving Global Outcomes (KDIGO)",
+      "publication": "Kidney International (published March 2024); executive summary retrieved",
+      "title": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+      "url": "https://kdigo.org/guidelines/ckd-evaluation-and-management/",
+      "doi": null,
+      "publicationDate": "March 2024",
+      "documentType": "International clinical practice guideline (graded recommendations and practice points)",
+      "retrievedAt": "2026-11-08"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "p57-ada2026-hba1c-categories",
+      "kind": "diagnostic_threshold",
+      "title": "HbA1c criteria for prediabetes and diabetes (nonpregnant individuals)",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": "cv-085", "catalogName": "HbA1c", "unit": "%", "status": "EXACT_CATALOG_UNIT" },
+      "specimen": "Blood (glycated hemoglobin)",
+      "method": "NGSP-certified method standardized to the DCCT assay",
+      "population": "Nonpregnant individuals",
+      "demographicConditions": ["Not pregnant", "No condition altering the relationship between HbA1c and glycemia (hemoglobin variants, G6PD deficiency, HIV, altered red-cell turnover)"],
+      "bands": [
+        { "id": "prediabetes", "label": "Prediabetes range (ADA Table 2.2)", "lower": 5.7, "lowerInclusive": true, "upper": 6.4, "upperInclusive": true, "severity": "amber", "direction": "above", "meaning": "HbA1c 5.7–6.4% is the ADA criterion defining prediabetes; it identifies increased risk of diabetes and cardiovascular outcomes and calls for further assessment." },
+        { "id": "diabetes", "label": "Diabetes diagnostic criterion (ADA Table 2.1)", "lower": 6.5, "lowerInclusive": true, "upper": null, "upperInclusive": false, "severity": "red", "direction": "above", "meaning": "HbA1c of 6.5% or higher meets the ADA diagnostic criterion for diabetes; in the absence of unequivocal hyperglycemia a confirmatory abnormal result is required before a diagnosis can be made." }
+      ],
+      "uncoveredMeaning": "Values below 5.7% are not categorized by this ADA criterion, so no NORMAL status is derived from it. Values between published bounds (for example 6.45%) are not classified.",
+      "highValues": "Higher HbA1c reflects higher average blood glucose over roughly the preceding months; values in the stated ranges meet prediabetes or diabetes criteria subject to confirmation.",
+      "lowValues": "This criterion makes no statement about low HbA1c values.",
+      "limitations": [
+        "Altered erythrocyte turnover (anemia, iron status, splenectomy, blood loss, transfusion, hemolysis, G6PD deficiency, erythropoietin), HIV, cirrhosis, kidney failure, dialysis and pregnancy can affect HbA1c results.",
+        "Assay interferences include hemoglobin variants, severe hypertriglyceridemia and severe hyperbilirubinemia.",
+        "A large HbA1c change over days is not biologically expected; such a series is held for a measurement-consistency check before any criterion is applied."
+      ],
+      "confirmation": "In the absence of unequivocal hyperglycemia, diagnosis requires two abnormal results from different tests, which may be obtained at the same time (e.g., A1C and FPG), or the same test at two different time points.",
+      "applicability": {
+        "missionLevel": [
+          { "id": "nonpregnant", "text": "The crew members of this mission are not pregnant during the examination period." },
+          { "id": "ngsp_method", "text": "The mission laboratory measures HbA1c with an NGSP-certified method standardized to the DCCT assay." }
+        ],
+        "perObservation": []
+      },
+      "source": {
+        "sourceId": "ada-soc-2026-s2",
+        "locator": "Table 2.1, Table 2.2; Recommendations 2.1a, 2.1b, 2.4",
+        "quote": "A1C ≥6.5% (≥48 mmol/mol). The test should be performed in a laboratory using a method that is NGSP certified and standardized to the DCCT assay. | A1C 5.7–6.4% (39–47 mmol/mol)"
+      },
+      "evidenceQuality": "ADA evidence grade B for recommendations 2.1a, 2.1b and 2.4.",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Full text retrieved from the DOI landing page; quoted table text matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial guideline for nonpregnant individuals; spaceflight effects on red-cell turnover and plasma volume are not addressed by the source.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Created from ADA Standards of Care 2026 Section 2 as named by the owner; pending Researcher review." }]
+    },
+    {
+      "id": "p57-niddk-hba1c-categories",
+      "kind": "diagnostic_threshold",
+      "title": "HbA1c result categories: normal, prediabetes, diabetes (NIDDK)",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": "cv-085", "catalogName": "HbA1c", "unit": "%", "status": "EXACT_CATALOG_UNIT" },
+      "specimen": "Blood (glycated hemoglobin)",
+      "method": null,
+      "population": "People tested for diabetes or prediabetes (non-gestational testing)",
+      "demographicConditions": ["Not pregnant (gestational diabetes uses different tests)"],
+      "bands": [
+        { "id": "normal", "label": "Normal (NIDDK)", "lower": null, "lowerInclusive": false, "upper": 5.7, "upperInclusive": false, "severity": "normal", "direction": "within", "meaning": "HbA1c below 5.7% is in the NIDDK normal category." },
+        { "id": "prediabetes", "label": "Prediabetes (NIDDK)", "lower": 5.7, "lowerInclusive": true, "upper": 6.4, "upperInclusive": true, "severity": "amber", "direction": "above", "meaning": "HbA1c 5.7% to 6.4% is in the NIDDK prediabetes category." },
+        { "id": "diabetes", "label": "Diabetes (NIDDK)", "lower": 6.5, "lowerInclusive": true, "upper": null, "upperInclusive": false, "severity": "red", "direction": "above", "meaning": "HbA1c 6.5% or above is in the NIDDK diabetes category; NIDDK notes that a second test is usually used to confirm diabetes." }
+      ],
+      "uncoveredMeaning": "Values between published bounds (for example 6.45%) are not classified.",
+      "highValues": "Higher HbA1c reflects higher average blood glucose over the preceding months.",
+      "lowValues": "Values below 5.7% are in the normal category; the source makes no statement about very low values.",
+      "limitations": ["Health-information page, last reviewed July 2022; not a graded guideline.", "Usually a second test is used to confirm diabetes."],
+      "confirmation": "Usually, your doctor will use a second test to confirm you have diabetes.",
+      "applicability": {
+        "missionLevel": [{ "id": "nonpregnant", "text": "The crew members of this mission are not pregnant during the examination period." }],
+        "perObservation": []
+      },
+      "source": { "sourceId": "niddk-diabetes-tests-2022", "locator": "Table: Test results for diagnosis of prediabetes and diabetes", "quote": "Normal | below 5.7% | Prediabetes | 5.7% to 6.4% | Diabetes | 6.5% or above" },
+      "evidenceQuality": "Government health-information page; consistent with the ADA criteria; not graded.",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Page retrieved; table cells matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial population categories; not validated for spaceflight.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Owner-named NIDDK source; pending Researcher review." }]
+    },
+    {
+      "id": "p57-ada2026-fpg-categories",
+      "kind": "diagnostic_threshold",
+      "title": "Fasting plasma glucose criteria for prediabetes (IFG) and diabetes",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": "cv-083", "catalogName": "Glucose", "unit": "mg/dL", "status": "EXACT_CATALOG_UNIT" },
+      "specimen": "Plasma",
+      "method": "Fasting plasma glucose (no caloric intake for at least 8 h)",
+      "population": "Nonpregnant individuals",
+      "demographicConditions": ["Not pregnant"],
+      "bands": [
+        { "id": "ifg", "label": "Impaired fasting glucose / prediabetes (ADA Table 2.2)", "lower": 100, "lowerInclusive": true, "upper": 125, "upperInclusive": true, "severity": "amber", "direction": "above", "meaning": "FPG 100–125 mg/dL meets the ADA criterion for impaired fasting glucose (prediabetes)." },
+        { "id": "diabetes", "label": "Diabetes diagnostic criterion (ADA Table 2.1)", "lower": 126, "lowerInclusive": true, "upper": null, "upperInclusive": false, "severity": "red", "direction": "above", "meaning": "FPG of 126 mg/dL or higher meets the ADA diagnostic criterion for diabetes, subject to confirmation." }
+      ],
+      "uncoveredMeaning": "Values below 100 mg/dL are not categorized by this criterion. A glucose result that is not a documented fasting plasma glucose is never compared with these bounds.",
+      "highValues": "Higher fasting plasma glucose indicates impaired fasting glucose or meets the diabetes criterion, subject to confirmation.",
+      "lowValues": "This criterion makes no statement about low glucose values.",
+      "limitations": ["Diurnal variation, medications, alcohol, smoking, sample handling/processing time and hemolysis can affect glucose results.", "Random, post-meal or continuous glucose readings are different tests and are not interpreted with these bounds."],
+      "confirmation": "In the absence of unequivocal hyperglycemia, diagnosis requires two abnormal results from different tests, which may be obtained at the same time (e.g., A1C and FPG), or the same test at two different time points.",
+      "applicability": {
+        "missionLevel": [{ "id": "nonpregnant", "text": "The crew members of this mission are not pregnant during the examination period." }],
+        "perObservation": [
+          { "id": "fasting_8h", "text": "The observation records that the sample was taken after at least 8 hours without caloric intake." },
+          { "id": "plasma_specimen", "text": "The observation records a plasma (not capillary or interstitial) glucose specimen." }
+        ]
+      },
+      "source": { "sourceId": "ada-soc-2026-s2", "locator": "Table 2.1, Table 2.2", "quote": "FPG ≥126 mg/dL (≥7.0 mmol/L). Fasting is defined as no caloric intake for at least 8 h. | FPG 100 mg/dL (5.6 mmol/L) to 125 mg/dL (6.9 mmol/L) (IFG)" },
+      "evidenceQuality": "ADA evidence grade B for recommendations 2.1a and 2.1b.",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Full text retrieved from the DOI landing page; quoted table text matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial guideline; fasting status and specimen type are not captured by Medical Intake today, so this criterion cannot become applicable until they are recorded.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Owner-named ADA source; pending Researcher review." }]
+    },
+    {
+      "id": "p57-ada2026-random-glucose",
+      "kind": "diagnostic_threshold",
+      "title": "Random plasma glucose with classic hyperglycemia symptoms",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": "cv-083", "catalogName": "Glucose", "unit": "mg/dL", "status": "EXACT_CATALOG_UNIT" },
+      "specimen": "Plasma",
+      "method": "Random (non-fasting) plasma glucose",
+      "population": "Individuals with classic symptoms of hyperglycemia or hyperglycemic crisis",
+      "demographicConditions": [],
+      "bands": [
+        { "id": "diabetes", "label": "Random glucose diabetes criterion with symptoms (ADA)", "lower": 200, "lowerInclusive": true, "upper": null, "upperInclusive": false, "severity": "red", "direction": "above", "meaning": "With classic hyperglycemia symptoms or hyperglycemic crisis, random plasma glucose of 200 mg/dL or higher is sufficient for the ADA diabetes criterion." }
+      ],
+      "uncoveredMeaning": "Without recorded classic symptoms this criterion never applies.",
+      "highValues": "Applies only together with classic symptoms or a hyperglycemic crisis.",
+      "lowValues": "No statement about low values.",
+      "limitations": ["Requires clinician-documented symptoms; MITOCHONDRIA never infers symptoms."],
+      "confirmation": "Applies only in the stated clinical scenario; otherwise repeat testing is required to confirm the diagnosis regardless of the test used.",
+      "applicability": {
+        "missionLevel": [],
+        "perObservation": [
+          { "id": "random_plasma_glucose", "text": "The observation records a random (non-fasting) plasma glucose test." },
+          { "id": "classic_symptoms_documented", "text": "A clinician documented classic hyperglycemia symptoms or a hyperglycemic crisis at the time of the test." }
+        ]
+      },
+      "source": { "sourceId": "ada-soc-2026-s2", "locator": "Section 2, Diagnostic Tests for Diabetes", "quote": "symptoms of hyperglycemia or hyperglycemic crisis plus random plasma glucose ≥200 mg/dL [≥11.1 mmol/L]" },
+      "evidenceQuality": "ADA evidence grade B for recommendation 2.1a.",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Full text retrieved; sentence matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Requires clinical documentation that the application does not hold.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Added so a random glucose is never interpreted with fasting bounds; pending Researcher review." }]
+    },
+    {
+      "id": "p57-nhlbi-triglyceride-categories",
+      "kind": "risk_category",
+      "title": "Adult blood triglyceride categories (NHLBI)",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": "cv-088", "catalogName": "Triglycerides", "unit": "mg/dL", "status": "EXACT_CATALOG_UNIT" },
+      "specimen": "Blood",
+      "method": null,
+      "population": "Adults",
+      "demographicConditions": ["Adult (children and teens use a different healthy limit)"],
+      "bands": [
+        { "id": "healthy", "label": "Healthy (NHLBI, adults)", "lower": null, "lowerInclusive": false, "upper": 150, "upperInclusive": false, "severity": "normal", "direction": "within", "meaning": "Below 150 mg/dL is the NHLBI healthy category for adults." },
+        { "id": "borderline", "label": "Borderline high (NHLBI)", "lower": 150, "lowerInclusive": true, "upper": 199, "upperInclusive": true, "severity": "amber", "direction": "above", "meaning": "Between 150 and 199 mg/dL is borderline high." },
+        { "id": "high", "label": "High (NHLBI)", "lower": 200, "lowerInclusive": true, "upper": 499, "upperInclusive": true, "severity": "amber", "direction": "above", "meaning": "Between 200 and 499 mg/dL is high; persistently raised levels can raise the risk of heart complications." },
+        { "id": "very_high", "label": "Very high (NHLBI)", "lower": 500, "lowerInclusive": false, "upper": null, "upperInclusive": false, "severity": "red", "direction": "above", "meaning": "Above 500 mg/dL is very high and can raise the risk of acute pancreatitis." }
+      ],
+      "uncoveredMeaning": "The source places 'High' at 200–499 and 'Very high' above 500 mg/dL; a value of exactly 500 mg/dL (or between 499 and 500) is not assigned by the source and is not classified. Note: the owner brief listed very high as ≥500; the retrieved source says 'Above 500'.",
+      "highValues": "Higher triglycerides can raise the risk of heart complications; very high levels can raise the risk of acute pancreatitis.",
+      "lowValues": "Below 150 mg/dL is the healthy adult category; no statement about very low values.",
+      "limitations": ["Recent food intake strongly raises triglycerides; NHLBI bases the diagnosis on fasting levels that are regularly 150 mg/dL or higher and separately describes non-fasting levels above 175 mg/dL.", "Alcohol, medications and metabolic conditions affect triglycerides."],
+      "confirmation": "Your healthcare provider may diagnose you with high blood triglycerides if your fasting blood triglyceride levels are regularly 150 milligrams mg/dL or higher.",
+      "applicability": {
+        "missionLevel": [{ "id": "adult_crew", "text": "The crew members of this mission are adults." }],
+        "perObservation": [{ "id": "fasting_status_recorded", "text": "The observation records the fasting state (fasting time) of the sample." }]
+      },
+      "source": { "sourceId": "nhlbi-triglycerides-2023", "locator": "What are high blood triglycerides?", "quote": "Healthy: Below 150 milligrams per deciliter (mg/dL) for adults | Borderline high: Between 150 and 199 mg/dL | High: Between 200 and 499 mg/dL | Very high: Above 500 mg/dL" },
+      "evidenceQuality": "Government health-information page (last updated April 19, 2023); not graded.",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Page retrieved; category lines matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial adult categories; fasting state is not captured by Medical Intake today, so the criterion stays inapplicable until it is recorded.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Owner-named NHLBI source; the very-high boundary follows the source wording ('Above 500'), not the brief; pending Researcher review." }]
+    },
+    {
+      "id": "p57-cdc-aha-hscrp-risk-categories",
+      "kind": "risk_category",
+      "title": "hs-CRP relative cardiovascular risk categories (CDC/AHA)",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": "cv-091", "catalogName": "hsCRP", "unit": "mg/L", "status": "EXACT_CATALOG_UNIT" },
+      "specimen": "Serum or plasma (standardized hs-CRP assay)",
+      "method": "Standardized high-sensitivity CRP assay; two measurements averaged, optimally two weeks apart",
+      "population": "Adults without known cardiovascular disease, metabolically stable, without obvious inflammatory or infectious conditions",
+      "demographicConditions": ["Adult"],
+      "bands": [
+        { "id": "low", "label": "Low relative risk (CDC/AHA)", "lower": null, "lowerInclusive": false, "upper": 1, "upperInclusive": false, "severity": "none", "direction": "within", "meaning": "Below 1 mg/L is the low relative-risk category." },
+        { "id": "average", "label": "Average relative risk (CDC/AHA)", "lower": 1, "lowerInclusive": true, "upper": 3, "upperInclusive": true, "severity": "none", "direction": "within", "meaning": "1.0 to 3.0 mg/L is the average relative-risk category." },
+        { "id": "high", "label": "High relative risk (CDC/AHA)", "lower": 3, "lowerInclusive": false, "upper": null, "upperInclusive": false, "severity": "amber", "direction": "above", "meaning": "Above 3.0 mg/L is the high relative-risk category (about twofold relative risk versus the low tertile)." }
+      ],
+      "uncoveredMeaning": "These are relative-risk tertiles, not a reference interval or a diagnosis; low and average categories carry no clinical colour.",
+      "highValues": "Higher hs-CRP in a metabolically stable person is associated with higher relative cardiovascular risk.",
+      "lowValues": "Lower values fall in the low relative-risk category.",
+      "limitations": ["Applies only to a metabolically stable person without obvious inflammatory or infectious conditions, using two averaged assays.", "Values above 10 mg/L are handled by the separate repeat-testing action threshold."],
+      "confirmation": "Measurement of markers should be done twice (averaging results), optimally two weeks apart, fasting or nonfasting in metabolically stable patients.",
+      "applicability": {
+        "missionLevel": [{ "id": "adult_crew", "text": "The crew members of this mission are adults." }],
+        "perObservation": [
+          { "id": "metabolically_stable_no_infection", "text": "The observation records that the crew member was metabolically stable without obvious infection or inflammation." },
+          { "id": "averaged_two_assays", "text": "The value is the average of two assays, optimally two weeks apart." }
+        ]
+      },
+      "source": { "sourceId": "cdc-aha-inflammation-2003", "locator": "Table 4, Laboratory Testing recommendation 3", "quote": "Low <1 mg/L | Average 1.0 to 3.0 mg/L | High >3.0 mg/ L | (Class IIa, Level of Evidence B)" },
+      "evidenceQuality": "Class IIa, Level of Evidence B (CDC/AHA 2003).",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Full text retrieved from the DOI landing page; table cells matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial risk stratification from 2003; spaceflight inflammation is not addressed.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Extended authoritative source (CDC/AHA) for hsCRP in the Alex Morgan examination; pending Researcher review." }]
+    },
+    {
+      "id": "p57-cdc-aha-hscrp-repeat-above-10",
+      "kind": "action_threshold",
+      "title": "hs-CRP above 10 mg/L: repeat and examine for infection or inflammation (CDC/AHA)",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": "cv-091", "catalogName": "hsCRP", "unit": "mg/L", "status": "EXACT_CATALOG_UNIT" },
+      "specimen": "Serum or plasma (standardized hs-CRP assay)",
+      "method": "Standardized high-sensitivity CRP assay",
+      "population": "Adults",
+      "demographicConditions": ["Adult"],
+      "bands": [
+        { "id": "repeat", "label": "Above 10 mg/L — repeat and evaluate (CDC/AHA)", "lower": 10, "lowerInclusive": false, "upper": null, "upperInclusive": false, "severity": "amber", "direction": "above", "meaning": "The source recommends repeating the test and examining for sources of infection or inflammation when hs-CRP is above 10 mg/L." }
+      ],
+      "uncoveredMeaning": "Values of 10 mg/L or below are not assessed by this action threshold.",
+      "highValues": "A marked elevation calls for repeat testing and evaluation for infection or inflammation; persistent unexplained elevation should be evaluated for noncardiovascular causes.",
+      "lowValues": "No statement.",
+      "limitations": ["An action threshold, not a diagnosis: it does not identify the cause of the elevation."],
+      "confirmation": "If hs-CRP level is >10 mg/L, test should be repeated and patient examined for sources of infection or inflammation.",
+      "applicability": {
+        "missionLevel": [{ "id": "adult_crew", "text": "The crew members of this mission are adults." }],
+        "perObservation": []
+      },
+      "source": { "sourceId": "cdc-aha-inflammation-2003", "locator": "Table 4, Laboratory Testing recommendation 2", "quote": "If hs-CRP level is >10 mg/L, test should be repeated and patient examined for sources of infection or inflammation. (Class IIa, Level of Evidence B)" },
+      "evidenceQuality": "Class IIa, Level of Evidence B (CDC/AHA 2003).",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Full text retrieved from the DOI landing page; sentence matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Terrestrial recommendation; used only to prompt repeat testing and Ground Medical evaluation.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Extended authoritative source for hsCRP; pending Researcher review." }]
+    },
+    {
+      "id": "p57-kdigo2024-albuminuria-confirm",
+      "kind": "action_threshold",
+      "title": "Urine albumin-to-creatinine ratio of 30 mg/g or more: confirm with a first-morning sample (KDIGO 2024)",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": null, "catalogName": "Urine albumin-to-creatinine ratio (ACR)", "unit": "mg/g", "status": "NO_CATALOG_IDENTITY" },
+      "specimen": "Urine (random untimed, confirmed with first morning void)",
+      "method": "Quantified urine ACR",
+      "population": "Adults and children evaluated for CKD",
+      "demographicConditions": [],
+      "bands": [
+        { "id": "confirm", "label": "ACR ≥30 mg/g — confirm (KDIGO)", "lower": 30, "lowerInclusive": true, "upper": null, "upperInclusive": false, "severity": "amber", "direction": "above", "meaning": "An ACR of 30 mg/g or more on a random sample should be confirmed with a subsequent first-morning midstream sample." }
+      ],
+      "uncoveredMeaning": "Not usable: the MITOCHONDRIA catalog has no exact ACR identity.",
+      "highValues": "Persistent albuminuria is a marker of kidney damage when present for more than three months.",
+      "lowValues": "No statement.",
+      "limitations": ["Do not assume chronicity based upon a single abnormal level for eGFR and ACR."],
+      "confirmation": "Confirm ACR ≥30 mg/g (≥3 mg/mmol) on a random untimed urine with a subsequent first morning void in the morning midstream urine sample.",
+      "applicability": { "missionLevel": [], "perObservation": [] },
+      "source": { "sourceId": "kdigo-ckd-2024", "locator": "Executive summary, Chapter 1 practice points (1.1.3.2, albuminuria testing)", "quote": "Confirm ACR ≥30 mg/g (≥3 mg/mmol) on a random untimed urine with a subsequent first morning void in the morning midstream urine sample." },
+      "evidenceQuality": "KDIGO practice point (expert judgement, not graded).",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Executive summary PDF retrieved from kdigo.org; sentence matched (≥ rendered as $ in extracted text).", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Kept as a catalog gap: an exact ACR catalog identity must be approved before this criterion can ever apply.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Owner-named KDIGO source; blocked by missing catalog identity." }]
+    },
+    {
+      "id": "p57-kdigo2024-egfr-below-60",
+      "kind": "diagnostic_threshold",
+      "title": "eGFR below 60 mL/min per 1.73 m² (GFR categories G3a–G5), chronicity required (KDIGO 2024)",
+      "domain": "cardiovascular",
+      "identity": { "catalogId": null, "catalogName": "Estimated glomerular filtration rate (eGFR)", "unit": "mL/min/1.73 m²", "status": "NO_CATALOG_IDENTITY" },
+      "specimen": "Serum creatinine and/or cystatin C",
+      "method": "eGFR equation (creatinine and cystatin C combined where available)",
+      "population": "Adults and children evaluated for CKD",
+      "demographicConditions": [],
+      "bands": [
+        { "id": "g3a_g5", "label": "GFR categories G3a–G5 (KDIGO)", "lower": null, "lowerInclusive": false, "upper": 60, "upperInclusive": false, "severity": "amber", "direction": "below", "meaning": "eGFR below 60 mL/min per 1.73 m² corresponds to KDIGO GFR categories G3a–G5; CKD requires persistence for more than three months." }
+      ],
+      "uncoveredMeaning": "Not usable: the MITOCHONDRIA catalog has no exact eGFR identity.",
+      "highValues": "No statement.",
+      "lowValues": "Lower eGFR indicates reduced kidney filtration; chronicity must be established before CKD is considered.",
+      "limitations": ["Do not assume chronicity based upon a single abnormal level for eGFR and ACR, as the finding could be the result of a recent acute event."],
+      "confirmation": "Do not assume chronicity based upon a single abnormal level for eGFR and ACR, as the finding could be the result of a recent acute kidney injury or acute kidney disease.",
+      "applicability": { "missionLevel": [], "perObservation": [] },
+      "source": { "sourceId": "kdigo-ckd-2024", "locator": "Executive summary, Practice Point 1.1.3.2; GFR <60 ml/min per 1.73 m2 (CKD G3a–G5)", "quote": "GFR <60 ml/min per 1.73 m2 (CKD G3a–G5)" },
+      "evidenceQuality": "KDIGO guideline (graded recommendations and practice points).",
+      "sourceVerification": { "status": "SOURCE_WORDING_VERIFIED", "retrievedAt": "2026-11-08", "method": "Executive summary PDF retrieved from kdigo.org; phrase matched verbatim.", "verifiedBy": "Automated source retrieval during the P57 build (not independent human verification)" },
+      "astronautApplicability": "terrestrial_with_stated_limitations",
+      "astronautNote": "Kept as a catalog gap: an exact eGFR catalog identity must be approved before this criterion can ever apply.",
+      "audit": [{ "at": "2026-11-08", "event": "CANDIDATE_CREATED", "by": "P57 registry build", "note": "Owner-named KDIGO source; blocked by missing catalog identity." }]
+    }
+  ],
+  "retrievalRecords": [
+    { "organization": "MedlinePlus (U.S. National Library of Medicine)", "url": "https://medlineplus.gov/lab-tests/sodium-blood-test/", "retrievedAt": "2026-11-08", "biomarkers": ["cv-070 Sodium (mmol/L)"], "outcome": "NO_NUMERIC_CRITERION_STATED", "note": "The page states that the body keeps sodium in a very narrow range and refers to laboratory reference ranges; it gives no numeric interval. A laboratory-specific reference interval is required." },
+    { "organization": "MedlinePlus (U.S. National Library of Medicine)", "url": "https://medlineplus.gov/lab-tests/potassium-blood-test/", "retrievedAt": "2026-11-08", "biomarkers": ["cv-071 Potassium (mmol/L)"], "outcome": "NO_NUMERIC_CRITERION_STATED", "note": "No numeric interval stated; results depend on the laboratory reference range. Hemolysis and sample handling can raise measured potassium." },
+    { "organization": "Searched for an astronaut-specific numerical criterion", "url": null, "retrievedAt": "2026-11-08", "biomarkers": ["IL-6", "Osteocalcin", "HRV RMSSD", "Sodium", "Potassium"], "outcome": "NO_VERIFIED_CRITERION", "note": "No standardized clinical reference interval or NASA mission operational limit with exact identity and unit was retrieved for these markers; they remain NEUTRAL and are handled by review-triage rules only." }
+  ]
+}
