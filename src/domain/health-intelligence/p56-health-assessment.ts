@@ -572,10 +572,11 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
     ? `Data completeness: ${all.length} measurements included (${joinAnd(areas)}); ${comparable} with comparable earlier results.${missingAreas.length ? ` No data in this period for: ${joinAnd(missingAreas)}.` : ""}${unified.coverage.pendingReview ? ` ${unified.coverage.pendingReview} record(s) awaiting review are not used.` : ""}${unified.coverage.excluded ? ` ${unified.coverage.excluded} excluded record(s) are not used.` : ""}${unified.coverage.outOfFilter ? ` ${unified.coverage.outOfFilter} record(s) fall outside the selected period.` : ""}${outsideNote}`
     : "Data completeness: no included results in this period.";
 
-  const verified = biomarkers.referenceRegistry.verifiedEntries;
+  const verified = biomarkers.referenceRegistry.verifiedEntries + (biomarkers.criteria?.approved ?? 0);
+  const classifiedCount = all.filter((c) => c.severity !== "neutral").length;
   const methodology = R(
     [
-      `How to read this report: RED, AMBER and NORMAL appear only when a result is checked against an independently verified reference interval for its exact catalog ID and unit (${verified} verified reference${verified === 1 ? "" : "s"} available${verified ? "" : ", so every result is NEUTRAL — not classified"}).`,
+      `How to read this report: RED, AMBER and NORMAL appear only when a result is checked against Researcher-approved reference criteria for its exact catalog ID and unit whose applicability requirements are all met (${verified} approved criteri${verified === 1 ? "on" : "a"} available; ${classifiedCount} result${classifiedCount === 1 ? "" : "s"} classified${verified ? "" : ", so every result is NEUTRAL — not classified"}). Candidate criteria retrieved from published sources are never applied before approval.`,
       rules
         ? `Review flags come from explicit review-triage rules (pending scientific review): a change of at least ${rules.largeChange.percent}% between examinations, at least ${rules.tightlyRegulated.percent}% for blood electrolytes, intermediate peaks or troughs of at least ${rules.transientExtreme.percent}%, and changes in slowly changing markers such as HbA1c over short intervals. They show what to review first, not that a value is abnormal.`
         : "Review-triage rules are unavailable, so no change is flagged for review.",
@@ -811,7 +812,7 @@ function buildFinding(
   const rulesApplied = [
     ...(usedRefs.length
       ? usedRefs.map((c) => `${c.name}: ${c.classification}`)
-      : [`No verified reference interval or decision threshold applies (verified references available: ${biomarkers.referenceRegistry.verifiedEntries}); every result is NEUTRAL.`]),
+      : [`No approved, applicable reference criterion applies (approved criteria available: ${biomarkers.referenceRegistry.verifiedEntries + (biomarkers.criteria?.approved ?? 0)}); every result is NEUTRAL.`]),
     ...reviewFlags.map((f) => `${f.flag.ruleId} (${f.flag.kind === "priority_review" ? "review priority" : "data-quality check"}) — ${f.name}: ${f.flag.text}`),
   ];
   const confidence: Finding["why"]["confidence"] =
