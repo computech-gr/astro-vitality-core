@@ -13,7 +13,13 @@
  * map server item statuses onto five user-facing outcomes; only failed records
  * are offered for retry, so successful writes are never repeated.
  */
-import type { BulkItemResult, BulkItemStatus } from "./p38-bulk-demo-batches";
+import {
+  runBulkBatches,
+  type BatchResponse,
+  type BulkItemResult,
+  type BulkItemStatus,
+  type BulkProgress,
+} from "./p38-bulk-demo-batches";
 
 export type SelectionSet = ReadonlySet<string>;
 
@@ -229,10 +235,9 @@ export async function executeBulk<R>(input: {
   preflight: BulkPreflight<R>;
   idOf: (r: R) => string;
   labelOf: (id: string) => string;
-  send: (batch: R[]) => Promise<import("./p38-bulk-demo-batches").BatchResponse>;
-  onProgress?: (p: import("./p38-bulk-demo-batches").BulkProgress) => void;
+  send: (batch: R[]) => Promise<BatchResponse>;
+  onProgress?: (p: BulkProgress) => void;
 }) {
-  const { runBulkBatches } = await import("./p38-bulk-demo-batches");
   const res = await runBulkBatches(input.preflight.actionable, input.send, input.onProgress);
   const outcomes = runOutcomes({
     results: res.results,
