@@ -562,8 +562,14 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
           : { level: "not_determined", label: "Not determined", text: "No validated alert and no review flag; Ground Medical reviews the recorded values at the next scheduled conference.", clinicalSeverity };
 
   const comparable = compared.length;
+  const inPeriod = new Set(rows.map((r) => r.recordId));
+  const outsideMetrics = new Set((input.scopeHistory ?? []).filter((r) => !inPeriod.has(r.recordId)).map((r) => r.metricId));
+  const alsoOutside = all.filter((c) => outsideMetrics.has(c.metricId)).map((c) => c.name);
+  const outsideNote = alsoOutside.length
+    ? ` ${plural(alsoOutside.length, "measured marker")} also ${alsoOutside.length === 1 ? "has" : "have"} readings outside the selected period (${list(alsoOutside, 5)}); widen the period to compare them.`
+    : "";
   const completeness = rows.length
-    ? `Data completeness: ${all.length} measurements included (${joinAnd(areas)}); ${comparable} with comparable earlier results.${missingAreas.length ? ` No data in this period for: ${joinAnd(missingAreas)}.` : ""}${unified.coverage.pendingReview ? ` ${unified.coverage.pendingReview} record(s) awaiting review are not used.` : ""}${unified.coverage.excluded ? ` ${unified.coverage.excluded} excluded record(s) are not used.` : ""}${unified.coverage.outOfFilter ? ` ${unified.coverage.outOfFilter} record(s) fall outside the selected period.` : ""}`
+    ? `Data completeness: ${all.length} measurements included (${joinAnd(areas)}); ${comparable} with comparable earlier results.${missingAreas.length ? ` No data in this period for: ${joinAnd(missingAreas)}.` : ""}${unified.coverage.pendingReview ? ` ${unified.coverage.pendingReview} record(s) awaiting review are not used.` : ""}${unified.coverage.excluded ? ` ${unified.coverage.excluded} excluded record(s) are not used.` : ""}${unified.coverage.outOfFilter ? ` ${unified.coverage.outOfFilter} record(s) fall outside the selected period.` : ""}${outsideNote}`
     : "Data completeness: no included results in this period.";
 
   const verified = biomarkers.referenceRegistry.verifiedEntries;

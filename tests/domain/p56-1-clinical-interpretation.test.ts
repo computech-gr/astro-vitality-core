@@ -297,3 +297,11 @@ describe("P56.1 Alex Morgan scenarios (PDF pagination and accessibility)", () =>
     expect(containsProhibitedName(txt)).toBe(false);
   }, 60_000);
 });
+
+describe("P56.1 single-day provenance", () => {
+  it("says which single-day markers have readings outside the period instead of implying no history", () => {
+    const a = assess(briefSeries(), { from: "2026-11-08", to: "2026-11-08" });
+    expect(a.trends).toEqual([]);
+    expect(a.completeness).toMatch(/also have readings outside the selected period \(.*Sodium.*\)/);
+  });
+});
