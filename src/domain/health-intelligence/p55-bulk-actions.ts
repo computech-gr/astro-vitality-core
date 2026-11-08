@@ -6,7 +6,6 @@
  * triage only, a synthetic demo decision is not a scientific approval, and
  * nothing here activates; Ground Medical activation is a separate role.
  */
-import type { TriageAction } from "@/lib/p36-global-triage-rules";
 import type { ActionFit } from "./p55-bulk-selection-engine";
 import type { ActivationRow } from "./p38-bulk-demo-batches";
 import type { PreflightCategory } from "./p38-bulk-demo-preflight";
@@ -27,7 +26,7 @@ export const RESEARCHER_ACTION_LABEL: Record<ResearcherBulkAction, string> = {
 export const NO_TRIAGE_GRANT = "This account has no triage grant (separately provisioned by the owner).";
 
 /** Bulk triage acceptance: only terms still awaiting triage. */
-export function acceptReviewFit(r: { triageAction: TriageAction | null }, canTriage: boolean): ActionFit {
+export function acceptReviewFit(r: { triageAction: string | null }, canTriage: boolean): ActionFit {
   if (r.triageAction === "ACCEPT_FOR_REVIEW") return already("Already accepted for scientific review.");
   if (r.triageAction === "REJECT_REVIEW_REQUEST")
     return blocked("The review request was rejected; a new submission is required.");
@@ -42,7 +41,7 @@ const RESOLVED: readonly PreflightCategory[] = ["already_active", "already_decid
 
 /** Bulk REQUEST_MORE_EVIDENCE: unresolved terms whose request was not rejected and not already pending evidence. */
 export function requestClarificationFit(
-  r: { triageAction: TriageAction | null; category?: PreflightCategory },
+  r: { triageAction: string | null; category?: PreflightCategory },
   canTriage: boolean,
 ): ActionFit {
   if (r.triageAction === "REQUEST_MORE_EVIDENCE") return already("More evidence was already requested.");
@@ -73,7 +72,7 @@ export function suggestedRequirements(categories: readonly (PreflightCategory | 
  * owner demo scope, not the caller's own submission) plus prior review acceptance.
  */
 export function demoDecideFit(
-  r: { category: PreflightCategory; inScope: boolean; triageAction: TriageAction | null; reasons: readonly string[] },
+  r: { category: PreflightCategory; inScope: boolean; triageAction: string | null; reasons: readonly string[] },
   ctx: { submittedByCaller: boolean; canDecide: boolean },
 ): ActionFit {
   if (r.category === "already_active") return already("Already active as a synthetic demo entry.");
