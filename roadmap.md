@@ -579,11 +579,14 @@
 
 ## P57/P58 Scientific evidence registry, clinical reasoning and adaptive professional report
 
-- [ ] P57 versioned reference-criteria registry from verified source wording (ADA 2026 §2, NIDDK, NHLBI, KDIGO 2024, CDC/AHA hs-CRP); distinct criterion kinds; all pending Researcher review.
-- [ ] Researcher review queue (bulk by domain, individual exceptions, evidence preview, server-attested append-only decisions, mission applicability).
-- [ ] Evidence-aware classification: approved + fully applicable criteria only; exact units; data-quality holds; synthetic-demo separation.
-- [ ] P58 Preliminary Clinical Assessment — Pending Ground Medical Review (deterministic concern library; AI elaboration in the existing authorized scope; GM accept/amend/reject/add; separate audit records).
-- [ ] Evidence gaps + curated literature retrieval in the evidence trail (report evidence identifier), never auto-promoted to rules.
-- [ ] Adaptive professional colour PDF (no page cap) with mandatory charts and single-measurement visuals; screen/TXT parity.
-- [ ] Preview-only reproducible competition sample PDF (existing sample untouched until owner approval).
-- [ ] Regression tests, full checks, visual inspection of every PDF page, browser verification.
+- [x] P57 versioned reference-criteria registry from verified source wording (ADA 2026 §2, NIDDK, NHLBI, KDIGO 2024, CDC/AHA hs-CRP); distinct criterion kinds; all pending Researcher review.
+- [x] Researcher review queue (bulk by domain, individual exceptions, evidence preview, server-attested append-only decisions, mission applicability).
+- [x] Evidence-aware classification: approved + fully applicable criteria only; exact units; data-quality holds; synthetic-demo separation.
+- [x] P58 Preliminary Clinical Assessment — Pending Ground Medical Review (deterministic concern library; AI elaboration in the existing authorized scope; GM accept/amend/reject/add; separate audit records).
+- [x] Evidence gaps listed in the report evidence trail with the Evidence ID; retrieval stays in the existing Researcher literature tool, never auto-promoted to rules.
+- [x] Adaptive professional colour PDF (no page cap) with mandatory charts and single-measurement visuals; screen/TXT parity.
+- [x] Preview-only reproducible sample PDF generated (existing competition sample untouched).
+- [x] Regression tests, full checks, visual inspection of every PDF page, browser verification.
+- [ ] Researcher approval of any P57 criterion — waits on the Researcher (none approved; nothing is coloured).
+- [ ] Scientific review of the P58 concern-library text and P56.1 triage values — waits on the owner/Researcher.
+- [ ] Replacing the published competition sample PDF — waits on owner approval.

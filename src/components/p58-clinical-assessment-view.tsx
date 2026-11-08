@@ -117,7 +117,10 @@ export function ClinicalAssessmentView({
           <p>Concern library v{c.library.version} ({c.library.status === "PENDING_SCIENTIFIC_REVIEW" ? "pending scientific review" : c.library.status}). Concern fingerprints: {c.concerns.map((x) => `${x.concernId} ${x.fingerprint}`).join("; ") || "none"}.</p>
           {c.evidenceGaps.length ? (
             <div>
-              <p className="font-medium">Evidence gaps (Researcher literature retrieval can address these)</p>
+              <p className="font-medium">
+                Evidence gaps — a Researcher can retrieve literature for these on{" "}
+                <a href="/mission/scientific-review" className="text-primary underline underline-offset-2">Scientific Review</a>
+              </p>
               <ul className="list-disc pl-4">{c.evidenceGaps.map((g) => <li key={g.id} className="break-words">{g.label} — {g.reason}</li>)}</ul>
             </div>
           ) : null}
