@@ -25,6 +25,21 @@ import { appendGlobalTriage, listGlobalReviewMissions, listGlobalReviewSubmissio
 import { EVIDENCE_REQUIREMENTS, latestTriageByTerm, triageInputProblem, type EvidenceRequirement, type TriageAction, type TriageEvent } from "@/lib/p36-global-triage-rules";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import { openBulkDemoDecisions } from "@/components/p38-bulk-navigation";
+import { bulkGlobalTriageFn } from "@/lib/p55-bulk-triage.functions";
+import { BulkActionTable, BulkOutcomePanel, BulkPreflightDialog, BulkSelectionToolbar } from "@/components/p55-bulk-controls";
+import {
+  buildBulkPreflight, deselectAll, executeBulk, pruneSelection, selectAllFiltered, selectIds, selectionScope, toggleId,
+  type BulkPreflight, type RecordOutcome,
+} from "@/domain/health-intelligence/p55-bulk-selection-engine";
+import { RESEARCHER_ACTION_LABEL, acceptReviewFit, requestClarificationFit } from "@/domain/health-intelligence/p55-bulk-actions";
+import type { BulkProgress } from "@/domain/health-intelligence/p38-bulk-demo-batches";
+
+type GlobalBulkAction = "accept_review" | "request_clarification";
+const GLOBAL_ACTIONS: GlobalBulkAction[] = ["accept_review", "request_clarification"];
+const GLOBAL_ACTION_DESCRIPTION: Record<GlobalBulkAction, string> = {
+  accept_review: "Triage only for terms awaiting triage: not scientific approval and never activation.",
+  request_clarification: "Records REQUEST_MORE_EVIDENCE with the evidence you name (e.g. unit, identity).",
+};
 import {
   ALL_CREWS, ALL_MISSIONS, REVIEW_STATE_LABEL, SCIENTIFIC_STATE_LABEL, canChooseAllMissions, crewOptions, dashboardCounts, filterTerms,
   flattenTerms, missionsForSelection, paginate, sortTerms, type ReviewState, type TermRow, type TermSort,
@@ -259,7 +274,14 @@ export function P36GlobalReviewPanel() {
   const [canTriage, setCanTriage] = useState(false);
   const [triageNote, setTriageNote] = useState("");
   const listTriage = useServerFn(listGlobalTriage);
+  const bulkTriage = useServerFn(bulkGlobalTriageFn);
   const epoch = useRef(0);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [pending, setPending] = useState<{ action: GlobalBulkAction; preflight: BulkPreflight<TermRow> } | null>(null);
+  const [run, setRun] = useState<{ action: GlobalBulkAction; progress: BulkProgress | null; outcomes: RecordOutcome[]; failure: string | null } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [bulkReason, setBulkReason] = useState("");
+  const [bulkReqs, setBulkReqs] = useState<EvidenceRequirement[]>([]);
 
   useEffect(() => {
     let live = true;
@@ -289,6 +311,7 @@ export function P36GlobalReviewPanel() {
   const load = useCallback(async (value: string) => {
     const mine = ++epoch.current;
     setSubmissions([]); setCrew(ALL_CREWS); setPage(1); setDetailKey(null); setTriageEvents([]); setCanTriage(false); setTriageNote("");
+    setSelected(new Set()); setRun(null); setPending(null);
     const targets = missionsForSelection(missions, value);
     if (!targets.length) { setSubState("idle"); return; }
     setSubState("loading");
@@ -319,6 +342,60 @@ export function P36GlobalReviewPanel() {
   const visible = useMemo(() => sortTerms(filterTerms(rows, { query, crew, state, classification }), sort), [rows, query, crew, state, classification, sort]);
   const paged = paginate(visible, page, PAGE_SIZE);
   const receipts = useMemo(() => new Set(scoped.map((r) => r.submission.submissionId)).size, [scoped]);
+
+  // P55 bulk triage: stable submission:term keys across every page of the filtered list.
+  const visibleIds = useMemo(() => visible.map((r) => r.key), [visible]);
+  const selScope = selectionScope(selected, visibleIds);
+  useEffect(() => { setSelected((s) => pruneSelection(s, rows.map((r) => r.key))); }, [rows]);
+  const rowByKey = useMemo(() => new Map(rows.map((r) => [r.key, r])), [rows]);
+  const termLabel = (key: string) => {
+    const r = rowByKey.get(key);
+    return r ? `${r.term.originalLabels[0] ?? r.term.termId} · ${r.term.exactUnit || "no unit"} (${r.term.termId}, ${r.submission.crewPseudonym})` : key;
+  };
+  const singleMission = selection !== ALL_MISSIONS && !!selectedMission;
+  const fitFor = (a: GlobalBulkAction) => (r: TermRow) => {
+    const t = { triageAction: r.triage?.action ?? null };
+    return a === "accept_review" ? acceptReviewFit(t, canTriage) : requestClarificationFit(t, canTriage);
+  };
+  const preflightFor = (a: GlobalBulkAction, sel: ReadonlySet<string> = selected) => buildBulkPreflight({
+    records: rows, idOf: (r) => r.key, selected: sel, filteredIds: visibleIds, fit: fitFor(a),
+    missionLabel: selectedMission ? `${selectedMission.missionName} (${selectedMission.missionCode})` : "All authorized missions",
+    roleLabel: "Researcher (global scientific review)", actionLabel: RESEARCHER_ACTION_LABEL[a],
+  });
+  const openPreflight = (a: GlobalBulkAction, sel: ReadonlySet<string> = selected) => {
+    if (a === "request_clarification") { setBulkReason(""); setBulkReqs([]); }
+    setPending({ action: a, preflight: preflightFor(a, sel) });
+  };
+  const bulkProblem = triageInputProblem({ action: "REQUEST_MORE_EVIDENCE", reason: bulkReason, evidenceRequirements: bulkReqs });
+  const actionOptions = GLOBAL_ACTIONS.map((id) => {
+    const p = preflightFor(id);
+    return {
+      id, label: RESEARCHER_ACTION_LABEL[id], description: GLOBAL_ACTION_DESCRIPTION[id],
+      actionable: p.actionable.length, already: p.already.length, blocked: p.blocked.length,
+      unavailable: !singleMission ? "Choose one mission: bulk actions never span missions."
+        : !canTriage ? (triageNote || NO_GRANT_REASON) : null,
+    };
+  });
+  const confirmBulk = async () => {
+    if (!pending || !selectedMission) return;
+    const { action, preflight } = pending;
+    setPending(null); setBusy(true);
+    setRun({ action, progress: null, outcomes: [], failure: null });
+    const res = await executeBulk({
+      preflight, idOf: (r) => r.key, labelOf: termLabel,
+      send: (batch) => bulkTriage({ data: {
+        missionId: selectedMission.missionId,
+        action: action === "accept_review" ? "ACCEPT_FOR_REVIEW" : "REQUEST_MORE_EVIDENCE",
+        reason: action === "accept_review" ? null : bulkReason.trim(),
+        evidenceRequirements: action === "accept_review" ? [] : bulkReqs,
+        items: batch.map((r) => ({ submissionId: r.submission.submissionId, termId: r.term.termId, expectedPreviousEventId: r.triage?.eventId ?? null })),
+      } }),
+      onProgress: (progress) => setRun({ action, progress, outcomes: [], failure: null }),
+    });
+    setRun({ action, ...res });
+    await refreshTriage();
+    setBusy(false);
+  };
 
   const allowAll = canChooseAllMissions(missions);
   const missionOptions: ComboOption[] = [
@@ -413,11 +490,17 @@ export function P36GlobalReviewPanel() {
           </div>
 
           <p role="status" className="font-medium">{visible.length} of {scoped.length} terms shown</p>
+          <BulkSelectionToolbar idPrefix="p55-global" scope={selScope} pageCount={paged.items.length}
+            onSelectAllFiltered={() => setSelected((s) => selectAllFiltered(s, visibleIds))}
+            onSelectPage={() => setSelected((s) => selectIds(s, paged.items.map((r) => r.key)))}
+            onDeselectAll={() => setSelected(deselectAll())}
+            onKeepOnlyFiltered={() => setSelected((s) => pruneSelection(s, visibleIds))} />
           {!visible.length ? <p className="text-muted-foreground">No submitted terms match these filters.</p> : (
             <div className="overflow-x-auto rounded-md border border-border">
               <table className="w-full min-w-[44rem] text-left text-xs">
                 <thead className="bg-muted/50 text-muted-foreground">
                   <tr>
+                    <th className="p-2"><span className="sr-only">Select</span></th>
                     <th className="p-2">Biomarker label</th><th className="p-2">Exact unit</th><th className="p-2">Classification</th>
                     <th className="p-2">Mission · crew</th><th className="p-2">Receipt</th><th className="p-2">Triage</th><th className="p-2"><span className="sr-only">Open</span></th>
                   </tr>
@@ -425,6 +508,10 @@ export function P36GlobalReviewPanel() {
                 <tbody>
                   {paged.items.map((r) => (
                     <tr key={r.key} className="border-t border-border">
+                      <td className="p-2">
+                        <input type="checkbox" aria-label={`Select ${r.term.originalLabels[0] ?? r.term.termId}`} checked={selected.has(r.key)}
+                          onChange={(e) => setSelected((s) => toggleId(s, r.key, e.target.checked))} />
+                      </td>
                       <td className="p-2">{r.term.originalLabels.join(" · ")}</td>
                       <td className="p-2">{r.term.exactUnit}</td>
                       <td className="p-2">{r.term.classification}</td>
@@ -444,6 +531,39 @@ export function P36GlobalReviewPanel() {
               <span className="tabular-nums">Page {paged.page} of {paged.pages}</span>
               <Button variant="outline" size="sm" disabled={paged.page >= paged.pages} onClick={() => setPage(paged.page + 1)}>Next</Button>
             </nav>
+          ) : null}
+          <BulkActionTable idPrefix="p55-global" actions={actionOptions} selected={selected.size} busy={busy}
+            onReview={(id) => openPreflight(id as GlobalBulkAction)} onClear={() => setSelected(deselectAll())} />
+          <BulkPreflightDialog preflight={pending?.preflight ?? null} labelOf={(r) => termLabel(r.key)}
+            confirmLabel={pending ? `Confirm: ${RESEARCHER_ACTION_LABEL[pending.action]}` : "Confirm"}
+            confirmDisabled={busy || (pending?.action === "request_clarification" && !!bulkProblem)}
+            safeguard={pending?.action === "accept_review"
+              ? "Accepting for scientific review is triage only. It is not scientific approval and never activates anything."
+              : "Records a REQUEST_MORE_EVIDENCE triage event for each actionable term. Units are never chosen or converted."}
+            onCancel={() => setPending(null)} onConfirm={() => void confirmBulk()}>
+            {pending?.action === "request_clarification" ? (
+              <div className="space-y-2">
+                <fieldset className="grid grid-cols-2 gap-2">
+                  <legend className="mb-1 text-xs text-muted-foreground">Missing evidence (at least one)</legend>
+                  {EVIDENCE_REQUIREMENTS.map((q) => (
+                    <div key={q} className="flex items-center gap-2">
+                      <Checkbox id={`p55-g-req-${q}`} checked={bulkReqs.includes(q)} onCheckedChange={(c) => setBulkReqs((cur) => (c ? [...new Set([...cur, q])] : cur.filter((x) => x !== q)))} />
+                      <Label htmlFor={`p55-g-req-${q}`} className="text-xs font-normal">{REQUIREMENT_LABEL[q]}</Label>
+                    </div>
+                  ))}
+                </fieldset>
+                <div className="space-y-1">
+                  <Label htmlFor="p55-g-reason" className="text-xs">Reason (required, 8–2000 characters)</Label>
+                  <Textarea id="p55-g-reason" value={bulkReason} maxLength={2000} rows={3} onChange={(e) => setBulkReason(e.target.value)} />
+                </div>
+                {bulkProblem ? <p className="text-xs text-muted-foreground">{bulkProblem}</p> : null}
+              </div>
+            ) : null}
+          </BulkPreflightDialog>
+          {run ? (
+            <BulkOutcomePanel idPrefix="p55-global" title={RESEARCHER_ACTION_LABEL[run.action]} progress={run.progress}
+              outcomes={run.outcomes} failure={run.failure} busy={busy}
+              onRetryFailed={(ids) => { const sel = new Set(ids); setSelected(sel); openPreflight(run.action, sel); }} />
           ) : null}
         </div>
       ) : null}
