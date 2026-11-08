@@ -354,7 +354,10 @@ export function buildPreliminaryClinicalAssessment(input: ClinicalInput): Prelim
   }
 
   const rank: Record<ConcernPriority, number> = { high: 0, prompt: 1, measurement_check: 2, routine: 3 };
-  concerns.sort((a, b) => rank[a.priority] - rank[b.priority] || b.supporting.length - a.supporting.length || a.title.localeCompare(b.title));
+  // Within a priority, concerns with more immediate physiological risk come first (electrolytes affect heart rhythm).
+  const clinicalOrder = ["electrolyte_disturbance", "systemic_inflammation", "dysglycemia", "triglyceride_elevation", "bone_turnover_change", "autonomic_recovery_strain"];
+  const order = (id: string) => (clinicalOrder.includes(id) ? clinicalOrder.indexOf(id) : clinicalOrder.length);
+  concerns.sort((a, b) => rank[a.priority] - rank[b.priority] || order(a.concernId) - order(b.concernId) || a.title.localeCompare(b.title));
 
   // Deterministic cross-domain co-observation (never causation): concerns from different domains changed in one period.
   const crossDomain: PreliminaryClinicalAssessment["crossDomain"] = [];
