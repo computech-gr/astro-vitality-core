@@ -344,6 +344,7 @@ export function P36GlobalReviewPanel() {
   const receipts = useMemo(() => new Set(scoped.map((r) => r.submission.submissionId)).size, [scoped]);
 
   // P55 bulk triage: stable submission:term keys across every page of the filtered list.
+  const bulkMission = missions.find((m) => m.missionId === selection);
   const visibleIds = useMemo(() => visible.map((r) => r.key), [visible]);
   const selScope = selectionScope(selected, visibleIds);
   useEffect(() => { setSelected((s) => pruneSelection(s, rows.map((r) => r.key))); }, [rows]);
@@ -352,14 +353,14 @@ export function P36GlobalReviewPanel() {
     const r = rowByKey.get(key);
     return r ? `${r.term.originalLabels[0] ?? r.term.termId} · ${r.term.exactUnit || "no unit"} (${r.term.termId}, ${r.submission.crewPseudonym})` : key;
   };
-  const singleMission = selection !== ALL_MISSIONS && !!selectedMission;
+  const singleMission = selection !== ALL_MISSIONS && !!bulkMission;
   const fitFor = (a: GlobalBulkAction) => (r: TermRow) => {
     const t = { triageAction: r.triage?.action ?? null };
     return a === "accept_review" ? acceptReviewFit(t, canTriage) : requestClarificationFit(t, canTriage);
   };
   const preflightFor = (a: GlobalBulkAction, sel: ReadonlySet<string> = selected) => buildBulkPreflight({
     records: rows, idOf: (r) => r.key, selected: sel, filteredIds: visibleIds, fit: fitFor(a),
-    missionLabel: selectedMission ? `${selectedMission.missionName} (${selectedMission.missionCode})` : "All authorized missions",
+    missionLabel: bulkMission ? `${bulkMission.missionName} (${bulkMission.missionCode})` : "All authorized missions",
     roleLabel: "Researcher (global scientific review)", actionLabel: RESEARCHER_ACTION_LABEL[a],
   });
   const openPreflight = (a: GlobalBulkAction, sel: ReadonlySet<string> = selected) => {
@@ -377,14 +378,14 @@ export function P36GlobalReviewPanel() {
     };
   });
   const confirmBulk = async () => {
-    if (!pending || !selectedMission) return;
+    if (!pending || !bulkMission) return;
     const { action, preflight } = pending;
     setPending(null); setBusy(true);
     setRun({ action, progress: null, outcomes: [], failure: null });
     const res = await executeBulk({
       preflight, idOf: (r) => r.key, labelOf: termLabel,
       send: (batch) => bulkTriage({ data: {
-        missionId: selectedMission.missionId,
+        missionId: bulkMission.missionId,
         action: action === "accept_review" ? "ACCEPT_FOR_REVIEW" : "REQUEST_MORE_EVIDENCE",
         reason: action === "accept_review" ? null : bulkReason.trim(),
         evidenceRequirements: action === "accept_review" ? [] : bulkReqs,
