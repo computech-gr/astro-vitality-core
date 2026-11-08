@@ -345,7 +345,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     let bands: PremiumChart["bands"] = approvedBands.bands.map((b) => ({ ...b, severity: b.severity }));
     let bandSource: PremiumChart["bandSource"] = bands.length ? "approved" : "none";
     if (!bands.length && provisionalActive) {
-      bands = provisionalBandsFor({ metricId: ch.metricId, unit: ch.unit, provenance: "synthetic", mode, missionId: input.missionId }, input.provisionalRegistry);
+      bands = provisionalBandsFor({ metricId: ch.metricId, unit: ch.unit, provenance: "synthetic", mode, missionId: input.missionId, demonstrationMappings: demonstrationMappingsActive }, input.provisionalRegistry);
       bandSource = bands.length ? "provisional" : "none";
     }
     const dataCheck = rs.some((r) => r.axes.dataQuality.value === "DATA_QUALITY_WARNING");
