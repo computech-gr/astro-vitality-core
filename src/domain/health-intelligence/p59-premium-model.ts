@@ -113,7 +113,8 @@ const CV_UNITS: Map<string, string> = (() => {
     if (Array.isArray(o)) o.forEach(walk);
     else if (o && typeof o === "object") {
       const r = o as Record<string, unknown>;
-      if (typeof r.id === "string" && /^cv-\d+$/.test(r.id) && typeof r.unit === "string") m.set(r.id, r.unit);
+      const id = r["id"], unit = r["unit"];
+      if (typeof id === "string" && /^cv-\d+$/.test(id) && typeof unit === "string") m.set(id, unit);
       Object.values(r).forEach(walk);
     }
   };
