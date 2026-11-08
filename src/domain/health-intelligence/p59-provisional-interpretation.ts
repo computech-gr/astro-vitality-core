@@ -9,6 +9,7 @@
  *  - criteria in excluded concepts or below the allowed verification tiers never colour a result.
  */
 import provisionalJson from "../../../data/scientific/p59-provisional-literature-criteria.v1.json";
+import demonstrationMappingsJson from "../../../data/scientific/p59-synthetic-demonstration-mappings.v1.json";
 import { bundledCriteriaRegistry, inBand, validateCriteriaRegistry, bandRangeText, type CriteriaRegistry, type ReferenceCriterion } from "./p57-reference-criteria";
 
 export const PROVISIONAL_LABEL = "Provisional literature interpretation — synthetic demonstration only; not an approved clinical classification";
@@ -26,6 +27,18 @@ export interface ProvisionalContext {
   missionId?: string;
   /** A hold (e.g. measurement-consistency check) suppresses any provisional colour. */
   holds?: readonly string[];
+  /**
+   * Owner-directed synthetic demonstration mappings (P59 Rev 2). Consulted only when no Researcher
+   * alias exists, only in synthetic-demonstration mode, only for the named mission and exact unit.
+   */
+  demonstrationMappings?: boolean;
+}
+/** Identity route used for a provisional result (traceability). */
+export interface IdentityRoute {
+  kind: "exact" | "researcher_alias" | "demonstration_mapping";
+  observedId: string;
+  target: string;
+  registerRef: string | null;
 }
 export interface ProvisionalResult {
   status: "DISABLED" | "NO_CRITERION" | "INTERPRETATION_ONLY" | "HELD" | "OUTSIDE_BANDS" | "CONFLICT" | "PROVISIONAL";
@@ -36,6 +49,30 @@ export interface ProvisionalResult {
   unmetConditions: string[];
   criterionIds: string[];
   sourceIds: string[];
+  /** Present only when the identity was bound through an alias or a demonstration mapping. */
+  identityRoute?: IdentityRoute;
+}
+
+export interface DemonstrationMapping {
+  demoId: string;
+  displayName: string;
+  unit: string;
+  domain: string;
+  missionId: string;
+  target: string;
+  targetName: string | null;
+  kind: "exact_catalog_identity" | "criterion_scoped";
+  registerStatus: string;
+  registerRef: string;
+  provisionalCriteria: string[];
+  demoEntrySha256: string;
+}
+interface DemonstrationFile { schema: string; status: string; missionId: string; mappings: DemonstrationMapping[] }
+/** Fail closed: an unexpected file shape yields no mappings. */
+export function demonstrationMappings(raw: unknown = demonstrationMappingsJson): DemonstrationMapping[] {
+  const f = raw as Partial<DemonstrationFile> | null;
+  if (!f || f.schema !== "mitochondria.p59-synthetic-demonstration-mappings.v1" || f.status !== "OWNER_DIRECTED_SYNTHETIC_DEMONSTRATION_ONLY" || !Array.isArray(f.mappings)) return [];
+  return f.mappings.filter((m) => typeof m?.demoId === "string" && typeof m.unit === "string" && typeof m.target === "string" && m.missionId === f.missionId && m.demoId.startsWith("demo:"));
 }
 
 /**
