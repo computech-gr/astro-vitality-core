@@ -614,7 +614,15 @@ type MapGraph = { nodes: { id: string; title: string; priority: WarningPriority;
 function patternMap(L: P, g: MapGraph) {
   const lay = mapLayout(g.nodes, g.edges);
   const rows = Math.max(...lay.map((p) => p.row)) + 1;
-  const bw = COL3, bh = 22, gy = 10, pad = 4;
+  const bw = COL3, gy = 10, pad = 4;
+  // P60.1: box height follows the longest card (title ≤ 3 lines, values ≤ 6 lines) instead of truncating.
+  const cardText = (n: MapGraph["nodes"][number]) => {
+    const title = L.capped(n.title, 8.2, bw - 4.8, 3, true);
+    const head = L.capped(n.headline, 6.4, bw - 4.8, 6);
+    return { title, head };
+  };
+  const texts = new Map(g.nodes.map((n) => [n.id, cardText(n)]));
+  const bh = Math.max(22, ...[...texts.values()].map((t) => 4.4 + t.title.length * lh(8.2, 1.15) + 0.3 + t.head.length * lh(6.4, 1.15) + 1.8));
   const h = rows * bh + (rows - 1) * gy + 2 * pad;
   const legend = g.edges.map((e) => {
     const a = g.nodes.find((n) => n.id === e.from)!, b = g.nodes.find((n) => n.id === e.to)!;
@@ -658,9 +666,9 @@ function patternMap(L: P, g: MapGraph) {
     const tone = TONE_OF[n.priority];
     L.box(p.x, p.y, bw, bh, tone.soft, tone.stroke, 2, 0.45);
     L.lines([L.t(n.kicker ?? SHORT_PRIORITY[n.priority] + (n.dataCheck && n.priority !== "DATA_CHECK" ? " · DATA CHECK" : ""))], p.x + 2.4, p.y + 1.2, 6, true, tone.text, 1.15);
-    const title = L.capped(n.title, 8.2, bw - 4.8, 2, true);
+    const { title, head } = texts.get(n.id)!;
     L.lines(title, p.x + 2.4, p.y + 4.4, 8.2, true, COLOR.navy, 1.15);
-    L.lines(L.capped(n.headline, 6.4, bw - 4.8, title.length > 1 ? 2 : 3), p.x + 2.4, p.y + 4.4 + title.length * lh(8.2, 1.15) + 0.3, 6.4, false, [51, 65, 85], 1.15);
+    L.lines(head, p.x + 2.4, p.y + 4.4 + title.length * lh(8.2, 1.15) + 0.3, 6.4, false, [51, 65, 85], 1.15);
   }
   L.y = top + h + 3;
   for (const x of legend) {
@@ -754,27 +762,54 @@ function patternAssessment(L: P, r: PremiumReport, p: ClinicalPattern, idx: numb
 
 // ------------------------------------------------------------------ charts
 
+/** P60.1: chart caption that never contradicts the bands actually drawn. */
+export function chartCaption(c: PremiumChart): string {
+  const drawn = c.bands.length > 0;
+  const noBand = /no reference band is drawn|without a reference band/i;
+  const limitation = c.base.limitation && !(drawn && noBand.test(c.base.limitation)) ? ` ${c.base.limitation}` : "";
+  const bandNote = !drawn ? ""
+    : c.dataCheck ? ` ${c.bandSource === "provisional" ? "Provisional literature" : "Approved"} criterion limits are shown only as dashed orientation lines until the measurement is verified.`
+    : c.bandSource === "provisional" ? " No Researcher-approved criterion applies; the coloured bands are provisional literature criteria (synthetic demonstration)."
+    : "";
+  return `${c.base.name}. ${c.base.caption}${limitation}${bandNote}`;
+}
+/** P60.1: lower axis bound — never below zero for a series whose observed values (and drawn limits) are all non-negative. */
+export function chartAxisFloor(values: readonly number[], limits: readonly number[], proposed: number): number {
+  return proposed < 0 && values.every((v) => v >= 0) && limits.every((v) => v >= 0) ? 0 : proposed;
+}
+function chartBadges(c: PremiumChart): [BadgeKind, string][] {
+  return [
+    ...(showsPriority(c.priority) ? ([[PRIORITY_BADGE[c.priority], COMPACT_PRIORITY[c.priority]]] as [BadgeKind, string][]) : []),
+    ...(c.highReview ? ([["trend", TREND_REVIEW_LABEL]] as [BadgeKind, string][]) : []),
+    ...(c.dataCheck && c.priority !== "DATA_CHECK" ? ([["check", "DATA CHECK"]] as [BadgeKind, string][]) : []),
+  ];
+}
 function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, measureOnly: boolean): number {
-  const caption = L.capped(`${c.base.name}. ${c.base.caption}${c.base.limitation ? ` ${c.base.limitation}` : ""}${c.bandSource === "provisional" ? " Bands: provisional literature criteria (synthetic demonstration)." : ""}`, 7.6, w - 6, 6);
+  const caption = L.capped(chartCaption(c), 7.6, w - 6, 7);
   const plotH = 46;
   const legendRows = c.bands.length && !c.dataCheck ? c.bands.length : 0;
-  const h = 9 + plotH + 9 + legendRows * 3.6 + caption.length * lh(7.6) + 3;
+  const title = L.capped(c.base.name, 9.6, w - 22, 2, true);
+  const titleH = title.length * lh(9.6) + 1.2; // descenders included: badges start below the title block
+  const bs = chartBadges(c);
+  const badgeRows = bs.length ? flowBadges(L, bs, 0, 0, w - 6, true) : 0;
+  const top = 1.6 + titleH + badgeRows * 4.6 + (c.patternDataCheck ? 3.4 : 0);
+  const h = top + 3 + plotH + 9 + legendRows * 3.6 + caption.length * lh(7.6) + 3;
   if (measureOnly) return h;
   L.box(x, y, w, h, COLOR.white, COLOR.rule);
-  L.lines(L.capped(c.base.name, 9.6, w - 30, 1, true), x + 3, y + 1.6, 9.6, true, COLOR.navy);
+  L.lines(title, x + 3, y + 1.6, 9.6, true, COLOR.navy);
   L.font(7.6, false, COLOR.muted);
   L.pdf.text(L.t(c.base.unit), x + w - 3, y + 5, { align: "right" });
-  let bx = x + 3;
-  if (c.highReview) bx += badge(L, "flag", "REVIEW", bx, y + 5.8) + 1;
-  if (c.dataCheck) bx += badge(L, "check", "DATA CHECK", bx, y + 5.8) + 1;
-  const px0 = x + 13, px1 = x + w - 4, py0 = y + 12, py1 = y + 9 + plotH;
+  if (bs.length) flowBadges(L, bs, x + 3, y + 1.6 + titleH, w - 6, false);
+  if (c.patternDataCheck) L.lines([L.t("+ pattern data check † — verify this series before interpretation")], x + 3, y + 1.6 + titleH + badgeRows * 4.6 - 0.2, 6.2, false, COLOR.violet, 1.2);
+  const px0 = x + 13, px1 = x + w - 4, py0 = y + top + 3, py1 = y + top + plotH;
   const pts = c.base.points;
   const vals = pts.map((p) => p.value);
   let lo = Math.min(...vals), hi = Math.max(...vals);
   const span = hi - lo || Math.abs(hi) * 0.2 || 1;
   for (const b of c.bands) for (const v of [b.lower, b.upper]) if (v !== null && v >= lo - span * 1.2 && v <= hi + span * 1.2) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
   const pad = (hi - lo || 1) * 0.15;
-  const ticks = niceTicks(lo - pad, hi + pad);
+  const limits = c.bands.flatMap((b) => [b.lower, b.upper]).filter((v): v is number => v !== null && v >= lo && v <= hi);
+  const ticks = niceTicks(chartAxisFloor(vals, limits, lo - pad), hi + pad);
   const ymin = ticks[0]!, ymax = ticks.at(-1)!;
   const Y = (v: number) => py1 - ((v - ymin) / (ymax - ymin || 1)) * (py1 - py0);
   // bands
@@ -883,7 +918,7 @@ function singlePanel(L: P, title: string, cs: PremiumChart[], x: number, y: numb
     const col: RGB = pc.cls === "RED" ? COLOR.red : pc.cls === "AMBER" ? COLOR.amber : pc.cls === "NORMAL" ? COLOR.green : pc.cls === "CHECK" ? COLOR.violet : COLOR.neutral;
     const ry = y + 9 + i * rowH;
     L.lines(L.capped(c.base.name, 7.8, 38, 1, true), x + 3, ry, 7.8, true, COLOR.ink);
-    L.lines([L.t(`${p.day}${c.highReview ? " · review flag" : ""}`)], x + 3, ry + 3.6, 6.4, false, COLOR.muted);
+    L.lines([L.t(`${p.day}${showsPriority(c.priority) ? ` · ${COMPACT_PRIORITY[c.priority].toLowerCase()}` : ""}${c.highReview ? " · trend review" : ""}`)], x + 3, ry + 3.6, 6.4, false, COLOR.muted);
     const tx = x + 44, tw = w - 44 - 28;
     const bandMax = Math.max(...c.bands.flatMap((b) => [b.lower ?? 0, b.upper ?? 0]).filter((v) => v < p.value * 4), 0);
     const scale = Math.max(p.value, bandMax) * 1.15 || 1;
