@@ -554,7 +554,7 @@
 
 ## P55 Unified Researcher & Ground Medical bulk selection
 
-- [ ] Shared pure selection engine (stable IDs, Select All Filtered across pages, page, deselect, hidden-selection scope, counts, preflight, per-record outcomes, retry failed only).
-- [ ] Researcher: any-category selection in Global Scientific Review and P38; bulk accept for review, bulk evidence/unit clarification (existing triage RPC, server-side deterministic idempotency), synthetic demo decisions, session-only existing-match acknowledgement.
-- [ ] Ground Medical: domain + status filters, any-category selection, preflight, activation of eligible only, clarification note, already-active view, Researcher decision identity.
-- [ ] Tests, full checks, browser check of both roles without writes.
+- [x] Shared pure selection engine (stable IDs, Select All Filtered across pages, page, deselect, hidden-selection scope, counts, preflight, per-record outcomes, retry failed only).
+- [x] Researcher: any-category selection in Global Scientific Review and P38; bulk accept for review, bulk evidence/unit clarification (existing triage RPC, server-side deterministic idempotency), synthetic demo decisions, session-only existing-match acknowledgement.
+- [x] Ground Medical: domain + status filters, any-category selection, preflight, activation of eligible only, clarification note, already-active view, Researcher decision identity.
+- [x] Tests, full checks, browser check of both roles without writes.
