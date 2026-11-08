@@ -558,3 +558,10 @@
 - [x] Researcher: any-category selection in Global Scientific Review and P38; bulk accept for review, bulk evidence/unit clarification (existing triage RPC, server-side deterministic idempotency), synthetic demo decisions, session-only existing-match acknowledgement.
 - [x] Ground Medical: domain + status filters, any-category selection, preflight, activation of eligible only, clarification note, already-active view, Researcher decision identity.
 - [x] Tests, full checks, browser check of both roles without writes.
+
+## P56 Concise longitudinal health assessment report
+
+- [x] Pure assessment model over existing report read models: date-range first/last changes, trend direction, cross-domain pattern library (exact IDs), validated-only severity, finding-specific recommendations, "Why this conclusion?" evidence, identity from selected crew only.
+- [x] Automatic analysis on report generation; existing authorized AI path used only within its scope, deterministic fallback otherwise.
+- [x] Redesigned screen (2–4 page structure) with optional technical appendix; concise PDF (default) plus separate technical appendix PDF; prohibited name removed from exported text.
+- [x] Tests, full checks, PDF render inspection, browser check.

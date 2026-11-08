@@ -54,6 +54,21 @@ import { useInterpretationSnapshot } from "@/hooks/use-interpretation-snapshot";
 import { buildBiomarkerAssessment, biomarkerAssessmentPlainText } from "@/domain/health-intelligence/biomarker-health-assessment";
 import { BiomarkerHealthAssessmentView } from "@/components/biomarker-health-assessment-view";
 import { PreliminaryMedicalAssessmentPanel } from "@/components/preliminary-medical-assessment-panel";
+import { useServerFn } from "@tanstack/react-start";
+import { draftPreliminaryAssessment } from "@/lib/preliminary-assessment.functions";
+import { buildAssessmentPacket, buildDeterministicAssessment } from "@/domain/health-intelligence/preliminary-medical-assessment";
+import { buildHealthAssessment, healthAssessmentPlainText, type AutomatedAnalysisInput } from "@/domain/health-intelligence/p56-health-assessment";
+import { createHealthAssessmentPdf } from "@/domain/health-intelligence/p56-health-report-pdf";
+import { redactProhibitedNames } from "@/domain/health-intelligence/report-identity-redaction";
+import { HealthAssessmentView } from "@/components/p56-health-assessment-view";
+
+/** Cheap, stable fingerprint so the automatic analysis runs at most once per evidence packet. */
+function packetKey(value: unknown): string {
+  const text = JSON.stringify(value);
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return `${text.length}:${(h >>> 0).toString(36)}`;
+}
 
 const EMPTY_INPUTS: UnifiedReportInputs = {
   domainEntries: {},
@@ -294,15 +309,89 @@ export function AstronautHealthReport() {
     [member, provenance],
   );
 
+  // P56: automatic analysis on report generation. The deterministic evidence engine always runs; the
+  // existing P54 AI step is requested automatically only inside its authorized scope (synthetic data,
+  // Ground Medical for this exact crew member) and the server's default-off switch still decides.
+  const isGroundMedical = rolesForScope.includes("ground_medical");
+  const packet = useMemo(
+    () => (biomarkerAssessment && interpretation ? buildAssessmentPacket(biomarkerAssessment, interpretation, interpretationSnapshot) : null),
+    [biomarkerAssessment, interpretation, interpretationSnapshot],
+  );
+  const draftAi = useServerFn(draftPreliminaryAssessment);
+  const aiAttempts = useRef(new Map<string, AutomatedAnalysisInput>());
+  const [automated, setAutomated] = useState<AutomatedAnalysisInput | null>(null);
+  useEffect(() => {
+    if (!packet || !reviewScope) {
+      setAutomated(null);
+      return;
+    }
+    const deterministic = buildDeterministicAssessment(packet);
+    if (reviewScope.provenance !== "synthetic") {
+      setAutomated({ assessment: deterministic, status: "ai_not_authorized", note: "Real crew data is never sent to an AI service; the deterministic evidence engine produced this assessment." });
+      return;
+    }
+    if (!isGroundMedical) {
+      setAutomated({ assessment: deterministic, status: "ai_not_authorized", note: "The AI step runs only for this crew member's Ground Medical clinician; the deterministic evidence engine produced this assessment." });
+      return;
+    }
+    const key = `${reviewScope.missionId}|${reviewScope.crewMemberId}|${packetKey(packet)}`;
+    const done = aiAttempts.current.get(key);
+    if (done) {
+      setAutomated(done);
+      return;
+    }
+    setAutomated({ assessment: deterministic, status: "ai_pending", note: "Automated analysis in progress; the deterministic assessment is shown meanwhile." });
+    let live = true;
+    const timer = window.setTimeout(() => {
+      void draftAi({ data: { missionId: reviewScope.missionId, crewMemberId: reviewScope.crewMemberId, packet } })
+        .then((r): AutomatedAnalysisInput =>
+          !r.ok
+            ? { assessment: deterministic, status: "ai_unavailable", note: `${r.message} The deterministic evidence engine produced this assessment.` }
+            : r.aiCalled
+              ? { assessment: r.assessment, status: "ai_used", note: "Validated AI-assisted notes are included where they cite the measurements." }
+              : { assessment: deterministic, status: "ai_not_needed", note: "No verified finding or approved interpretation required an AI step; the deterministic evidence engine produced this assessment." },
+        )
+        .catch((): AutomatedAnalysisInput => ({ assessment: deterministic, status: "ai_unavailable", note: "The AI step could not be reached; the deterministic evidence engine produced this assessment." }))
+        .then((result) => {
+          // One attempt per evidence packet; no automatic retry.
+          aiAttempts.current.set(key, result);
+          if (live) setAutomated(result);
+        });
+    }, 1200);
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+    };
+  }, [packet, reviewScope, isGroundMedical, draftAi]);
+
+  const healthAssessment = useMemo(
+    () =>
+      unified && interpretation && biomarkerAssessment && member
+        ? buildHealthAssessment({
+            unified,
+            model: interpretation,
+            biomarkers: biomarkerAssessment,
+            identity: { missionName: member.missionName, crewDisplayName: member.crewDisplayName },
+            snapshot: interpretationSnapshot,
+            automated,
+          })
+        : null,
+    [unified, interpretation, biomarkerAssessment, member, interpretationSnapshot, automated],
+  );
+  const [appendixOpen, setAppendixOpen] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#ground-medical-attestation") setAppendixOpen(true);
+  }, []);
+
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
   const currentExport = useRef({ unified, userId: identity?.userId });
   currentExport.current = { unified, userId: identity?.userId };
-  const performExport = async (kind: "pdf" | "text" | "print") => {
+  const performExport = async (kind: "pdf" | "appendix-pdf" | "text" | "appendix-text" | "print") => {
     if (!member || !report || !unified || exporting) return;
     const snapshot = currentExport.current;
     const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
     setExporting(true);
-    setExportStatus(kind === "pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
+    setExportStatus(kind === "pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
     try {
       const fresh = await loadMissionIdentity();
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && fresh.memberships.some(m =>
@@ -314,15 +403,21 @@ export function AstronautHealthReport() {
         try { document.title = exportName; window.print(); } finally { document.title = previous; }
         setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
+        if (!healthAssessment) throw new Error("The health assessment is not ready yet. No file downloaded.");
+        downloadReportBlob(new Blob([healthAssessmentPlainText(healthAssessment)], { type: "text/plain;charset=utf-8" }), `${exportName}_Assessment.txt`);
+        setExportStatus(`Assessment text created locally and download started as ${exportName}_Assessment.txt. No medical data was uploaded.`);
+      } else if (kind === "appendix-text") {
         const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${biomarkerAssessment ? biomarkerAssessmentPlainText(biomarkerAssessment) : ""}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
-        downloadReportBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `${exportName}.txt`);
-        setExportStatus(`Evidence TXT created locally and download started as ${exportName}.txt. No medical data was uploaded.`);
+        downloadReportBlob(new Blob([redactProhibitedNames(text)], { type: "text/plain;charset=utf-8" }), `${exportName}_Technical_Appendix.txt`);
+        setExportStatus(`Technical appendix TXT created locally and download started as ${exportName}_Technical_Appendix.txt. No medical data was uploaded.`);
       } else {
         let blob: Blob;
         let pdfInfo = "";
+        const fileName = kind === "pdf" ? `${exportName}_Assessment.pdf` : `${exportName}_Technical_Appendix.pdf`;
         try {
+          if (kind === "pdf" && !healthAssessment) throw new Error("The health assessment is not ready yet.");
           // Searchable text PDF built from the same read models as screen/TXT (never a DOM screenshot).
-          const result = await createTextReportPdf({
+          const result = kind === "pdf" && healthAssessment ? await createHealthAssessmentPdf(healthAssessment) : await createTextReportPdf({
             unified,
             findings,
             summary: healthSummary,
@@ -341,8 +436,8 @@ export function AstronautHealthReport() {
         const after = await loadMissionIdentity();
         if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>
           m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled; no PDF was downloaded.");
-        downloadReportBlob(blob, `${exportName}.pdf`);
-        setExportStatus(`PDF created locally (${pdfInfo}, ${(blob.size / 1_048_576).toFixed(2)} MB) and download started as ${exportName}.pdf. Check your browser downloads. No medical data was uploaded.`);
+        downloadReportBlob(blob, fileName);
+        setExportStatus(`PDF created locally (${pdfInfo}, ${(blob.size / 1_048_576).toFixed(2)} MB) and download started as ${fileName}. Check your browser downloads. No medical data was uploaded.`);
       }
     } catch (error) {
       setExportStatus(error instanceof Error ? error.message : "Export failed. No file downloaded.");
@@ -448,23 +543,43 @@ export function AstronautHealthReport() {
       {report && unified && (
         <article ref={reportRef} className="report-print medical-report-ui space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
           <div className="flex flex-wrap justify-between gap-3 print:hidden">
-            <Button className="medical-action-primary" disabled={exporting} onClick={() => void performExport("pdf")}>Download PDF</Button>
+            <Button className="medical-action-primary" disabled={exporting || !healthAssessment} onClick={() => void performExport("pdf")}>Download PDF</Button>
             <Button className="medical-action-secondary" variant="outline" disabled={exporting} onClick={() => void performExport("print")}>Print</Button>
-            <Button className="medical-action-secondary" variant="outline" disabled={exporting} onClick={() => void performExport("text")}>
-              Export evidence text
+            <Button className="medical-action-secondary" variant="outline" disabled={exporting || !healthAssessment} onClick={() => void performExport("text")}>
+              Export text
             </Button>
           </div>
           <p className="print:hidden text-xs text-muted-foreground" role="status" aria-live="polite">{exportStatus}</p>
           <div className="report-print-header hidden print:flex">
-            <span>MITOCHONDRIA · Unified Health &amp; Device Report</span>
-            <span>RESEARCH USE ONLY · {unified.scope.provenance.toUpperCase()}</span>
+            <span>MITOCHONDRIA · Health Assessment</span>
+            <span>{healthAssessment?.header.provenanceLabel ?? unified.scope.provenance.toUpperCase()}</span>
           </div>
           <div className="report-print-footer hidden print:flex">
             <span>
-              {member?.missionName ?? unified.scope.missionId} / {member?.crewDisplayName ?? unified.scope.crewMemberId}
+              {healthAssessment ? `${healthAssessment.header.astronaut} · ${healthAssessment.header.mission}` : unified.scope.missionId}
             </span>
-            <span>Generated {unified.generatedAt} UTC · not a diagnosis</span>
+            <span>{healthAssessment?.disclosure ?? "Automated health assessment — subject to Ground Medical review."}</span>
           </div>
+          {healthAssessment ? (
+            <HealthAssessmentView assessment={healthAssessment} automatedStatus={healthAssessment.generation.automatedNote} />
+          ) : (
+            <p className="text-sm text-muted-foreground" role="status">Preparing the health assessment…</p>
+          )}
+          <details
+            id="technical-appendix"
+            className="rounded-lg border border-dashed p-4"
+            open={appendixOpen}
+            onToggle={(e) => setAppendixOpen((e.currentTarget as HTMLDetailsElement).open)}
+          >
+            <summary className="cursor-pointer text-base font-semibold">Technical appendix — detailed evidence report (optional)</summary>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Full record-level evidence, provenance, catalog identity, attestation and review workflows. Excluded from the main report, Print and the main PDF by default.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2 print:hidden">
+              <Button className="medical-action-secondary" variant="outline" size="sm" disabled={exporting} onClick={() => void performExport("appendix-pdf")}>Download technical appendix (PDF)</Button>
+              <Button className="medical-action-secondary" variant="outline" size="sm" disabled={exporting} onClick={() => void performExport("appendix-text")}>Export technical appendix text</Button>
+            </div>
+            <div className="mt-4 space-y-5">
           <div className="report-cover space-y-1">
             <p className="text-xs font-semibold tracking-widest text-muted-foreground">
               MITOCHONDRIA
@@ -565,7 +680,7 @@ export function AstronautHealthReport() {
                 {healthSummary.implicationGaps.length ? <ul className="list-disc pl-5 text-xs text-muted-foreground">{healthSummary.implicationGaps.map((g) => <li key={g} className="report-avoid-break">{g}</li>)}</ul> : null}
               </div>
               <div className="report-avoid-break space-y-1">
-                <h4 className="font-semibold">4. Nikolas-governed cross-domain context</h4>
+                <h4 className="font-semibold">4. Governed cross-domain context</h4>
                 <ul className="list-disc pl-5 text-sm">{healthSummary.crossDomain.map((c) => <li key={c}>{c}</li>)}</ul>
               </div>
               <div className="space-y-1">
@@ -625,7 +740,7 @@ export function AstronautHealthReport() {
                 Every row below is already an accepted stored observation. Attestation is an additional, append-only
                 confirmation by an authenticated Ground Medical member for exactly this mission, crew member and provenance.
                 Rows without one remain accepted. Attestation never changes catalog or scientific review status
-                (PENDING_NIKOLAS_REVIEW) and is not a diagnosis or legal signature.
+                (pending scientific review) and is not a diagnosis or legal signature.
               </p>
               {attestationSummary && (
                 <p className="text-sm" role="status">
@@ -882,6 +997,8 @@ export function AstronautHealthReport() {
               ))}
             </ul>
           </section>
+            </div>
+          </details>
         </article>
       )}
     </main>

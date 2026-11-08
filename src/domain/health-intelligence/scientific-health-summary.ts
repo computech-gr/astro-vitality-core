@@ -92,9 +92,9 @@ function handbookIndex(): Map<string, HandbookEntry> {
   if (handbookCache) return handbookCache;
   const map = new Map<string, HandbookEntry>();
   for (const v of localizedBoneVariables())
-    map.set(v.id, { domain: "bone", handbook: "Astronaut Bone Health Handbook v7 (Nikolas)", reviewStatus: v.reviewStatus, what: v.what, increase: v.increase, decrease: v.decrease });
+    map.set(v.id, { domain: "bone", handbook: "Astronaut Bone Health Handbook v7", reviewStatus: v.reviewStatus, what: v.what, increase: v.increase, decrease: v.decrease });
   for (const m of localizedCardiovascularMetrics())
-    map.set(m.id, { domain: "cardiovascular", handbook: "NASA Cardiovascular Handbook (Nikolas)", reviewStatus: m.reviewStatus, what: m.biology, context: m.context, linkage: m.linkage });
+    map.set(m.id, { domain: "cardiovascular", handbook: "NASA Cardiovascular Handbook", reviewStatus: m.reviewStatus, what: m.biology, context: m.context, linkage: m.linkage });
   handbookCache = map;
   return map;
 }
@@ -219,7 +219,7 @@ export function buildScientificHealthSummary(
       domain: REPORT_SOURCE_LABELS[badge],
       present,
       source: governed
-        ? badge === "bone" ? "Astronaut Bone Health Handbook v7 (Nikolas)" : "NASA Cardiovascular Handbook (Nikolas)"
+        ? badge === "bone" ? "Astronaut Bone Health Handbook v7" : "NASA Cardiovascular Handbook"
         : null,
       status: governed
         ? "Handbook text quoted by exact catalog ID; machine-assisted English pending independent scientific review."
@@ -260,7 +260,7 @@ export function buildScientificHealthSummary(
     reconciliation,
     boundaries: [
       "Research-use-only. No diagnosis, treatment, risk score or fitness-for-duty judgment is generated.",
-      "Biological implications are quoted from Nikolas's handbooks (machine-assisted English, pending independent scientific review) and describe the measure, not this crew member's condition.",
+      "Biological implications are quoted from the governed handbooks (machine-assisted English, pending independent scientific review) and describe the measure, not this crew member's condition.",
       "AI-assisted drafts are unverified, are kept separate from these findings and are excluded from PDF and TXT exports.",
     ],
   };
@@ -286,7 +286,7 @@ export function scientificHealthSummaryPlainText(s: ScientificHealthSummary): st
     "3. Possible biological implications (handbook-documented, pending review)",
     ...list(s.implications.map((i) => `${i.label} (${i.metricId}, ${i.direction}): ${i.statement} [${i.handbook}; ${i.reviewStatus}; evidence ${i.evidenceIds.join(", ")}]`), "None documented for the observed changes."),
     ...s.implicationGaps.map((g) => `- Gap: ${g}`),
-    "4. Nikolas-governed cross-domain context",
+    "4. Governed cross-domain context",
     ...list(s.crossDomain, "None."),
     "5. Missing data, uncertainty and confounders",
     ...list(s.uncertainty, "None listed."),
