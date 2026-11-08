@@ -88,7 +88,7 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
     rationale: uniq(why).join(" "),
     dataCheck,
   });
-  const checkNote = dataCheck ? [`Verify first: ${uniq(input.series.filter((s) => s.dataCheck).map((s) => s.name)).join(", ") || "measurement consistency"} (data check).`] : [];
+  const checkNote = dataCheck ? [`Verify first: ${uniq(input.series.filter((s) => s.dataCheck).map((s) => s.seriesName ?? s.name)).join(", ") || "measurement consistency"} (data check).`] : [];
 
   const red = usable.filter((s) => s.displayClass === "RED" && s.basis !== "none");
   if (red.length) return decide("HIGH_PRIORITY_MEDICAL_REVIEW", ["WP-1"], [`${red.map((s) => `${s.name}: ${s.bandLabel ?? "RED band"} (${basisWord(s.basis)})`).join("; ")}.`, ...checkNote]);
@@ -97,7 +97,7 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
   const threshold = usable.filter((s) => s.basis !== "none" && (s.displayClass === "AMBER" || s.displayClass === "RED") && s.criterionKind !== null && THRESHOLD_KINDS.has(s.criterionKind));
   if (high.length && threshold.length)
     return decide("HIGH_PRIORITY_MEDICAL_REVIEW", ["WP-2"], [
-      `Rapid change meeting the review-priority rules: ${uniq(high.map((s) => s.name)).join(", ")}.`,
+      `Rapid change meeting the review-priority rules: ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}.`,
       `Threshold met: ${uniq(threshold.map((s) => `${s.name} — ${s.bandLabel ?? "threshold band"} (${basisWord(s.basis)})`)).join("; ")}.`,
       ...checkNote,
     ]);
@@ -105,7 +105,7 @@ export function concernWarningPriority(input: { concernPriority: ConcernPriority
   const amber = usable.filter((s) => s.displayClass === "AMBER" && s.basis !== "none");
   if (high.length || amber.length)
     return decide("MONITORING", ["WP-3"], [
-      ...(high.length ? [`Review-priority change: ${uniq(high.map((s) => s.name)).join(", ")}; no RED band or diagnostic/action threshold supports high priority.`] : []),
+      ...(high.length ? [`Review-priority change: ${uniq(high.map((s) => s.seriesName ?? s.name)).join(", ")}; no RED band or diagnostic/action threshold supports high priority.`] : []),
       ...(amber.length ? [`AMBER band: ${uniq(amber.map((s) => `${s.name} — ${s.bandLabel ?? "AMBER"} (${basisWord(s.basis)})`)).join("; ")}.`] : []),
       ...checkNote,
     ]);
