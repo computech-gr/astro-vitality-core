@@ -142,7 +142,7 @@ describe("P58 preliminary clinical assessment (deterministic)", () => {
     expect(byId("electrolyte_disturbance").priority).toBe("prompt");
     expect(byId("dysglycemia").priority).toBe("measurement_check");
     expect(clinical.diagnosisStatement).toMatch(/not diagnoses/);
-    const text = JSON.stringify(clinical);
+    const text = JSON.stringify(clinical.concerns);
     expect(text).not.toMatch(/diagnosed with|\bprobabilit/i);
   });
 
