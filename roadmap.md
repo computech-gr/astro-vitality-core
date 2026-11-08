@@ -561,7 +561,7 @@
 
 ## P56 Concise longitudinal health assessment report
 
-- [ ] Pure assessment model over existing report read models: date-range first/last changes, trend direction, cross-domain pattern library (exact IDs), validated-only severity, finding-specific recommendations, "Why this conclusion?" evidence, identity from selected crew only.
-- [ ] Automatic analysis on report generation; existing authorized AI path used only within its scope, deterministic fallback otherwise.
-- [ ] Redesigned screen (2–4 page structure) with optional technical appendix; concise PDF (default) plus separate technical appendix PDF; prohibited name removed from exported text.
-- [ ] Tests, full checks, PDF render inspection, browser check.
+- [x] Pure assessment model over existing report read models: date-range first/last changes, trend direction, cross-domain pattern library (exact IDs), validated-only severity, finding-specific recommendations, "Why this conclusion?" evidence, identity from selected crew only.
+- [x] Automatic analysis on report generation; existing authorized AI path used only within its scope, deterministic fallback otherwise.
+- [x] Redesigned screen (2–4 page structure) with optional technical appendix; concise PDF (default) plus separate technical appendix PDF; prohibited name removed from exported text.
+- [x] Tests, full checks, PDF render inspection, browser check.
