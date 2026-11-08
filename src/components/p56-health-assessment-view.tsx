@@ -245,7 +245,7 @@ export function HealthAssessmentView({ assessment: a, automatedStatus }: { asses
                 ) : (
                   <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground" />
                 )}
-                <span className="break-words">{k.text}</span>
+                <span className="break-words">{k.text.replace(/^\[(?:REVIEW|DATA CHECK)\]\s*/, "")}</span>
               </li>
             ))}
             {!a.keyFindings.length ? <li className="text-muted-foreground">No reviewed results in this period.</li> : null}
