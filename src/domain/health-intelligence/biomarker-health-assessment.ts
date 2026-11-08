@@ -475,8 +475,13 @@ function buildEntry(
       { metricId: s.metricId, unit: s.unit, domain, value: lastPoint.repeat === "differing_repeats" ? null : lastPoint.valueText, provenance: scope.provenance, missionId: scope.missionId, holds },
       criteria,
     );
-    finalClass = classificationFromCriteria(cc, p54Class);
+    const fromCriteria = classificationFromCriteria(cc, p54Class);
+    finalClass =
+      p54Class.reason === "differing_repeats" && fromCriteria.severity === "neutral" && cc.outcome !== "held"
+        ? { ...p54Class, criteria: cc }
+        : fromCriteria;
   }
+  const criteriaUsed = finalClass.criteria?.outcome === "classified" ? finalClass.criteria : null;
 
   const match = matchInterpretation(snapshot, { metricId: s.metricId, unit: s.unit, domain, missionId: scope.missionId, provenance: scope.provenance });
   const approved = approvedContent(match.exact);
