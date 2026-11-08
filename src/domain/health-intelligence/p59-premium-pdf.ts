@@ -13,6 +13,8 @@ import { COLOR, PAGE, type RGB } from "./p59-report-tokens";
 import type { PremiumChart, PremiumReport, ResultRow, DisplayClass, ClassBasis, SystemTile } from "./p59-premium-model";
 import { GROUPS } from "./p59-premium-model";
 import type { AlertCard } from "./p59-executive-alerts";
+import { WARNING_PRIORITY_LABEL, WARNING_PRIORITY_MEANING, WARNING_PRIORITY_RULES, WARNING_PRIORITY_TONE, type WarningPriority } from "./p59-warning-priority";
+import { demonstrationMappings } from "./p59-provisional-interpretation";
 
 export type PremiumWriter = PdfWriter & {
   roundedRect?(x: number, y: number, w: number, h: number, rx: number, ry: number, style?: string): unknown;
@@ -128,7 +130,10 @@ class P {
 
 // ------------------------------------------------------------------ badges
 
-type BadgeKind = "red" | "amber" | "green" | "neutral" | "check" | "flag" | "gm";
+type BadgeKind = "red" | "amber" | "green" | "neutral" | "check" | "flag" | "gm" | "pri-red" | "pri-amber" | "pri-purple" | "pri-green" | "pri-neutral";
+const PRIORITY_BADGE: Record<WarningPriority, BadgeKind> = {
+  HIGH_PRIORITY_MEDICAL_REVIEW: "pri-red", MONITORING: "pri-amber", DATA_CHECK: "pri-purple", WITHIN_CRITERIA: "pri-green", INSUFFICIENT_EVIDENCE: "pri-neutral",
+};
 function badgeOf(cls: DisplayClass): BadgeKind {
   return cls === "RED" ? "red" : cls === "AMBER" ? "amber" : cls === "NORMAL" ? "green" : "neutral";
 }
@@ -139,10 +144,24 @@ function badgeLabel(cls: DisplayClass, basis: ClassBasis) {
 /** Draws a badge at (x, y = top); returns its width. */
 function badge(L: P, kind: BadgeKind, label: string, x: number, y: number): number {
   const size = 6.6;
-  const flagW = kind === "flag" ? 2.6 : 0;
+  const flagW = kind === "flag" || kind === "pri-red" || kind === "pri-amber" || kind === "pri-purple" ? 2.6 : 0;
   const w = L.width(label, size, true) + 3 + flagW;
   const h = 3.9;
-  if (kind === "red" || kind === "amber" || kind === "green") {
+  if (kind === "pri-red" || kind === "pri-amber" || kind === "pri-purple" || kind === "pri-green") {
+    // Warning-priority pill: filled tone with a white vector flag (review priority, not a clinical class).
+    const c = kind === "pri-red" ? COLOR.redDeep : kind === "pri-amber" ? COLOR.amberDeep : kind === "pri-purple" ? COLOR.violet : COLOR.green;
+    L.box(x, y, w, h, c, undefined, 0.9);
+    if (flagW) {
+      L.draw(COLOR.white);
+      L.pdf.setLineWidth(0.3);
+      L.pdf.line(x + 1.3, y + 0.8, x + 1.3, y + 3.2);
+      if (L.pdf.triangle) { L.fill(COLOR.white); L.pdf.triangle(x + 1.3, y + 0.8, x + 2.9, y + 1.35, x + 1.3, y + 1.9, "F"); }
+    }
+    L.lines([L.t(label)], x + 1.5 + flagW, y + 0.2, size, true, COLOR.white, 1.2);
+  } else if (kind === "pri-neutral") {
+    L.box(x, y, w, h, COLOR.white, COLOR.neutral, 0.9, 0.3);
+    L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, NEUTRAL_TEXT, 1.2);
+  } else if (kind === "red" || kind === "amber" || kind === "green") {
     const c = kind === "red" ? COLOR.red : kind === "amber" ? COLOR.amber : COLOR.green;
     L.box(x, y, w, h, c, undefined, 0.9);
     L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, COLOR.white, 1.2);
@@ -201,28 +220,47 @@ function hero(L: P, r: PremiumReport) {
 }
 
 function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureOnly: boolean): number {
-  const tone = a.kind === "clinical-red" ? "red" : a.kind === "data-check" ? "check" : a.kind === "clinical-amber" || a.kind === "provisional" ? "amber" : a.kind === "review-high" ? "red" : "neutral";
-  const deep: RGB = tone === "red" ? COLOR.redDeep : tone === "amber" ? COLOR.amberDeep : tone === "check" ? COLOR.violet : COLOR.navy;
-  const soft: RGB = tone === "red" ? COLOR.redSoft : tone === "amber" ? COLOR.amberSoft : tone === "check" ? COLOR.violetSoft : COLOR.panel;
+  const pr = a.priority ? WARNING_PRIORITY_TONE[a.priority] : null;
+  const tone = pr ? (pr === "purple" ? "check" : pr) : a.kind === "clinical-red" ? "red" : a.kind === "data-check" ? "check" : a.kind === "clinical-amber" || a.kind === "provisional" ? "amber" : a.kind === "review-high" ? "red" : "neutral";
+  const deep: RGB = tone === "red" ? COLOR.redDeep : tone === "amber" ? COLOR.amberDeep : tone === "check" ? COLOR.violet : tone === "green" ? COLOR.green : COLOR.navy;
+  const soft: RGB = tone === "red" ? COLOR.redSoft : tone === "amber" ? COLOR.amberSoft : tone === "check" ? COLOR.violetSoft : tone === "green" ? COLOR.greenSoft : COLOR.panel;
   const inner = w - 7;
   const title = L.capped(a.title, 10, inner, 2, true);
   const ev = L.capped(a.evidence, 8.1, inner, 5);
+  const why = a.priority && a.rationale ? L.capped(`Why this priority: ${a.rationale}`, 7.3, inner, 4) : [];
   const next = L.capped(`Next: ${a.nextStep}`, 7.9, inner, 4);
-  const h = 3 + (a.badges.length ? 5 : 0) + title.length * lh(10) + 1 + ev.length * lh(8.1) + 3 + next.length * lh(7.9) + 2.5;
+  const clinicalRow = Boolean(a.priority) && a.findingIds.length === 1;
+  const badgeRows = a.priority ? 5 + (clinicalRow ? 5 : 0) : a.badges.length ? 5 : 0;
+  const h = 3 + badgeRows + title.length * lh(10) + 1 + ev.length * lh(8.1) + (why.length ? 1 + why.length * lh(7.3) : 0) + 3 + next.length * lh(7.9) + 2.5;
   if (measureOnly) return h;
   L.box(x, y, w, h, soft, undefined, 2.4);
   L.fill(deep);
   L.pdf.rect(x, y + 0.4, 1.6, h - 0.8, "F");
   let cy = y + 2.6;
   let bx = x + 4.2;
-  for (const b of a.badges) {
-    const kind: BadgeKind = /^RED/.test(b) ? "red" : /^AMBER/.test(b) ? "amber" : /^NORMAL|^GREEN/.test(b) ? "green" : b === "DATA CHECK" ? "check" : b.startsWith("HIGH") ? "flag" : "neutral";
-    bx += badge(L, kind, b, bx, cy) + 1.5;
+  if (a.priority) {
+    badge(L, PRIORITY_BADGE[a.priority], WARNING_PRIORITY_LABEL[a.priority], bx, cy);
+    cy += 5;
+    if (clinicalRow) {
+      L.lines([L.t("Clinical class")], bx, cy + 0.1, 6.6, true, COLOR.muted, 1.2);
+      bx += L.width("Clinical class", 6.6, true) + 1.8;
+      const cls = a.clinical ?? "NEUTRAL";
+      const basis = a.clinicalBasis ?? "none";
+      bx += badge(L, cls === "NEUTRAL" || basis === "none" ? "neutral" : badgeOf(cls), cls === "NEUTRAL" || basis === "none" ? "NEUTRAL" : badgeLabel(cls, basis), bx, cy) + 1.5;
+      if (a.dataCheck || a.badges.includes("DATA CHECK")) badge(L, "check", "DATA CHECK", bx, cy);
+      cy += 5;
+    }
+  } else {
+    for (const b of a.badges) {
+      const kind: BadgeKind = /^RED/.test(b) ? "red" : /^AMBER/.test(b) ? "amber" : /^NORMAL|^GREEN/.test(b) ? "green" : b === "DATA CHECK" ? "check" : b.startsWith("HIGH") ? "flag" : "neutral";
+      bx += badge(L, kind, b, bx, cy) + 1.5;
+    }
+    if (a.badges.length) cy += 5;
   }
-  if (a.badges.length) cy += 5;
   cy += L.lines(title, x + 4.2, cy, 10, true, deep);
   cy += 1;
   cy += L.lines(ev, x + 4.2, cy, 8.1, false, COLOR.ink);
+  if (why.length) { cy += 1; cy += L.lines(why, x + 4.2, cy, 7.3, false, [71, 85, 105]); }
   cy += 1.2;
   L.draw([180, 180, 190]);
   L.pdf.setLineWidth(0.2);
@@ -234,8 +272,19 @@ function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureO
   return h;
 }
 
+function demonstrationBanner(L: P, r: PremiumReport) {
+  if (!r.demonstrationLabel) return;
+  const text = `${r.demonstrationLabel}. Literature criteria${r.options.demonstrationMappingsActive ? " and owner-directed synthetic identity mappings" : ""} colour results for this synthetic demonstration only. They are not Researcher-approved, are never counted as validated alerts and are never applied to real data.`;
+  const ls = L.wrap(text, 7.6, CW - 8, true);
+  const h = ls.length * lh(7.6) + 3.4;
+  L.box(MX, L.y, CW, h, [255, 248, 225], COLOR.amber, 1.8, 0.4);
+  L.lines(ls, MX + 4, L.y + 1.5, 7.6, true, COLOR.amberDeep);
+  L.y += h + 3;
+}
+
 function pageOne(L: P, r: PremiumReport) {
   hero(L, r);
+  demonstrationBanner(L, r);
   L.h2("Most important findings", 40);
   const cards = r.alerts;
   if (cards.length === 1) {
@@ -251,17 +300,28 @@ function pageOne(L: P, r: PremiumReport) {
       L.y += h + GUT;
     }
   }
-  // legend
-  const items: [BadgeKind, string, string][] = [
-    ["red", "RED", "Important medical concern — criterion met"],
-    ["amber", "AMBER", "Monitor / further evaluation"],
-    ["green", "GREEN", "Supported normal — criterion applicable"],
-    ["neutral", "NEUTRAL", "Insufficient evidence to classify"],
-    ["check", "DATA CHECK", "Verify the measurement before interpretation"],
-    ["flag", "HIGH-PRIORITY REVIEW", "Urgency only — not a classification"],
-  ];
+  // legend: warning priority (panels) and clinical class (badges) are separate fields
+  const usesPriority = cards.some((c) => c.priority);
+  const items: [BadgeKind, string, string][] = usesPriority
+    ? [
+        ["pri-red", "RED", "High priority medical review — documented evidence; not a diagnosis"],
+        ["pri-amber", "AMBER", "Monitoring or further evaluation"],
+        ["pri-purple", "PURPLE · DATA CHECK", "Verify the measurement before interpretation"],
+        ["green", "GREEN", "Within applicable reference criteria"],
+        ["neutral", "NEUTRAL", "Insufficient classification evidence"],
+        ["amber", "(PROVISIONAL)", "Literature-based class, synthetic demonstration — not clinically validated"],
+      ]
+    : [
+        ["red", "RED", "Important medical concern — criterion met"],
+        ["amber", "AMBER", "Monitor / further evaluation"],
+        ["green", "GREEN", "Supported normal — criterion applicable"],
+        ["neutral", "NEUTRAL", "Insufficient evidence to classify"],
+        ["check", "DATA CHECK", "Verify the measurement before interpretation"],
+        ["flag", "HIGH-PRIORITY REVIEW", "Urgency only — not a classification"],
+      ];
   if (legendProblems(REPORT_LEGEND).length) throw new Error("Report legend failed validation; PDF not created.");
-  const lgH = 2 * 9 + 3;
+  const note = usesPriority ? L.wrap("Panel colour = warning priority. Badge on each result = clinical class (approved criterion, or PROVISIONAL literature criterion). The two are separate fields; a DATA CHECK never hides a medical-review priority.", 6.8, CW - 6) : [];
+  const lgH = 2 * 9 + 3 + (note.length ? note.length * lh(6.8) + 1 : 0);
   L.ensure(lgH);
   L.box(MX, L.y, CW, lgH, COLOR.panel, COLOR.rule);
   items.forEach(([k, label, text], i) => {
@@ -269,6 +329,7 @@ function pageOne(L: P, r: PremiumReport) {
     const bw = badge(L, k, label, cx, cy);
     L.lines(L.capped(text, 7, CW / 3 - bw - 6, 2), cx + bw + 1.5, cy - 0.3, 7, false, COLOR.ink, 1.25);
   });
+  if (note.length) L.lines(note, MX + 3, L.y + 2 + 2 * 9 - 0.6, 6.8, false, COLOR.muted, 1.25);
   L.y += lgH + 3;
   if (r.nextSteps.length) {
     L.h3("Priority next steps", 12);
@@ -614,9 +675,17 @@ function assessment(L: P, r: PremiumReport) {
   L.para("Automated preliminary assessment generated from the recorded measurements. It lists possible conditions for a qualified clinician to evaluate; it is not a physician-certified diagnosis and assigns no probabilities. Symptoms, examination findings, medications, age and sex were not available unless shown.", 7.9, [51, 65, 85]);
   if (!r.concerns.length) { L.para("No preliminary clinical concern was identified in this period.", 9); return; }
   r.concerns.forEach((c, idx) => {
-    const pill = c.priority === "high" || c.priority === "prompt" ? { t: "HIGH-PRIORITY REVIEW", k: "flag" as BadgeKind, tint: COLOR.redSoft } : c.priority === "measurement_check" ? { t: "VERIFY FIRST", k: "check" as BadgeKind, tint: COLOR.violetSoft } : { t: "ROUTINE", k: "neutral" as BadgeKind, tint: COLOR.panel };
+    const decision = r.priorities?.[c.concernId];
+    const TINT: Record<string, RGB> = { red: COLOR.redSoft, amber: COLOR.amberSoft, purple: COLOR.violetSoft, green: COLOR.greenSoft, neutral: COLOR.panel };
+    const pill = decision
+      ? { t: decision.label, k: PRIORITY_BADGE[decision.priority], tint: TINT[decision.tone]! }
+      : c.priority === "high" || c.priority === "prompt" ? { t: "HIGH-PRIORITY REVIEW", k: "flag" as BadgeKind, tint: COLOR.redSoft } : c.priority === "measurement_check" ? { t: "VERIFY FIRST", k: "check" as BadgeKind, tint: COLOR.violetSoft } : { t: "ROUTINE", k: "neutral" as BadgeKind, tint: COLOR.panel };
     const status = r.base.review.statuses[c.concernId]?.label ?? "Pending Ground Medical review";
     const rows: [string, string][] = [
+      ...(decision ? ([
+        ["Warning priority", `${decision.label}${decision.rules.length ? ` (rule ${decision.rules.join(", ")})` : ""}. ${decision.rationale}${decision.dataCheck && decision.priority !== "DATA_CHECK" ? " A DATA CHECK also applies; it does not lower this priority." : ""}`],
+        ["Clinical class", (r.concernClasses?.[c.concernId] ?? []).map((x) => `• ${x}`).join("\n")],
+      ] as [string, string][]) : []),
       ["Clinical concern", c.narrative.whyItMatters],
       ["Observation", c.narrative.whatHappened],
       ["Supporting", c.supporting.map((s) => `• ${s}`).join("\n")],
@@ -754,7 +823,12 @@ function methodology(L: P, r: PremiumReport) {
   const items = [
     `Data. ${c.observations} observations · ${c.series} biomarker series (exact catalog identity + unit) · ${c.examinationDates} examination date(s) · ${c.comparedSeries} series compared between examinations${c.excluded.length ? ` · excluded: ${c.excluded.map((e) => `${e.n} ${e.reason}`).join("; ")}` : ""}. Values exactly as recorded; no unit conversion or interpolation. ${r.header.provenanceLabel}.`,
     "Calculations. Changes only between consecutive observations of the same identity and unit; the full trajectory, including intermediate peaks and troughs, is reported.",
-    `Criteria. ${c.approvedCriteria} Researcher-approved criteria available. ${r.options.provisionalActive ? "Provisional literature interpretation ON (synthetic demonstration only; marked PROVISIONAL; never approved classifications). " : ""}General-population criteria are not NASA flight limits.`,
+    `Criteria. ${c.approvedCriteria} Researcher-approved criteria available. ${r.options.provisionalActive ? `${r.demonstrationLabel}: provisional literature interpretation ON (synthetic demonstration only; marked PROVISIONAL; never approved classifications or validated alerts). ` : "Provisional literature interpretation OFF. "}General-population criteria are not NASA flight limits.`,
+    ...(r.options.demonstrationMappingsActive ? [(() => {
+      const used = [...new Map(r.rows.filter((x) => x.identityRoute?.kind === "demonstration_mapping").map((x) => [x.metricId, `${x.name} (${x.metricId} → ${x.identityRoute!.target}, ${x.unit})`])).values()];
+      return `Synthetic identity mappings. ${demonstrationMappings().length} owner-directed mappings re-verified against the repository (same concept, identical unit, same domain, unique target, named mission); not Researcher-approved and never used for approved classification, real data or unit conversion. Used in this report: ${used.length ? used.join("; ") : "none"}.`;
+    })()] : []),
+    ...(Object.keys(r.priorities ?? {}).length ? [`Warning priority (panel colour; separate from clinical class; owner-directed, pending Researcher review). ${WARNING_PRIORITY_RULES.map((x) => `${x.id} ${WARNING_PRIORITY_LABEL[x.priority]}: ${x.text}`).join(" ")} NEUTRAL: ${WARNING_PRIORITY_MEANING.INSUFFICIENT_EVIDENCE}`] : []),
     `Automated assessment. ${r.base.clinical.aiStatus} Review priority and data quality are separate from clinical classification. Not a diagnosis; no medication or dose advice.`,
     `Generator ${r.version} · Evidence ID ${r.header.evidenceId}.`,
   ];
@@ -770,6 +844,7 @@ function frame(L: P, r: PremiumReport) {
     if (p > 1) {
       L.font(6.8, false, COLOR.muted);
       L.pdf.text(L.t("MITOCHONDRIA · Astronaut Health Intelligence"), MX, 9.5);
+      if (r.demonstrationLabel) { L.font(6.6, true, COLOR.amberDeep); L.pdf.text(L.t(r.demonstrationLabel), W / 2, 9.5, { align: "center" }); L.font(6.8, false, COLOR.muted); }
       L.pdf.text(L.t(`${r.header.astronaut} · ${r.header.mission}`), W - MX, 9.5, { align: "right" });
       L.draw(COLOR.rule);
       L.pdf.setLineWidth(0.2);
