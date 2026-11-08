@@ -9,17 +9,32 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { FileSearch, FlaskConical, ListChecks, RotateCcw } from "lucide-react";
+import { FileSearch, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
-import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-rules";
+import {
+  EVIDENCE_REQUIREMENTS,
+  latestTriageByTerm,
+  triageInputProblem,
+  type EvidenceRequirement,
+  type TriageEvent,
+} from "@/lib/p36-global-triage-rules";
 import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
 import { getSyntheticDemoLifecycle } from "@/lib/p37-synthetic-demo.functions";
 import type { DemoLifecycleRow, DemoScopeTerm } from "@/lib/p37-synthetic-demo.server";
-import { bulkDemoDecideFn, bulkTriageAcceptFn } from "@/lib/p38-bulk-demo.functions";
+import { bulkDemoDecideFn } from "@/lib/p38-bulk-demo.functions";
+import { bulkGlobalTriageFn } from "@/lib/p55-bulk-triage.functions";
+import {
+  BulkActionTable,
+  BulkOutcomePanel,
+  BulkPreflightDialog,
+  BulkSelectionToolbar,
+} from "@/components/p55-bulk-controls";
 import type { GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import {
   PREFLIGHT_CATEGORIES,
@@ -34,12 +49,28 @@ import {
   type PreflightOverride,
   type PreflightRow,
 } from "@/domain/health-intelligence/p38-bulk-demo-preflight";
+import type { BulkProgress } from "@/domain/health-intelligence/p38-bulk-demo-batches";
 import {
-  runBulkBatches,
-  summarizeBulk,
-  type BulkItemResult,
-  type BulkProgress,
-} from "@/domain/health-intelligence/p38-bulk-demo-batches";
+  buildBulkPreflight,
+  deselectAll,
+  executeBulk,
+  pruneSelection,
+  selectAllFiltered,
+  selectIds,
+  selectionScope,
+  toggleId,
+  type BulkPreflight,
+  type RecordOutcome,
+} from "@/domain/health-intelligence/p55-bulk-selection-engine";
+import {
+  RESEARCHER_ACTION_LABEL,
+  acceptReviewFit,
+  acknowledgeMatchFit,
+  demoDecideFit,
+  requestClarificationFit,
+  suggestedRequirements,
+  type ResearcherBulkAction,
+} from "@/domain/health-intelligence/p55-bulk-actions";
 import {
   SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
   SYNTHETIC_DEMO_LABEL,
@@ -57,7 +88,6 @@ import {
   bulkResearcherVisibility,
   bulkSelectionCounts,
   isDecidable,
-  retrySelection,
 } from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
 import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
@@ -91,11 +121,47 @@ type Loaded = {
   events: DemoLifecycleRow[];
 };
 type Run = {
-  kind: "triage" | "decide";
-  progress: BulkProgress;
-  results: BulkItemResult[];
+  action: ResearcherBulkAction;
+  progress: BulkProgress | null;
+  outcomes: RecordOutcome[];
   failure: string | null;
-  retry: (() => Promise<void>) | null;
+};
+type TriageFilter = "all" | "awaiting_triage" | "accepted" | "more_evidence" | "rejected";
+const TRIAGE_FILTER_LABEL: Record<TriageFilter, string> = {
+  all: "All review states",
+  awaiting_triage: "Awaiting triage",
+  accepted: "Accepted for scientific review",
+  more_evidence: "More evidence requested",
+  rejected: "Review request rejected",
+};
+const triageStateOf = (a: string | null): Exclude<TriageFilter, "all"> =>
+  a === "ACCEPT_FOR_REVIEW"
+    ? "accepted"
+    : a === "REQUEST_MORE_EVIDENCE"
+      ? "more_evidence"
+      : a === "REJECT_REVIEW_REQUEST"
+        ? "rejected"
+        : "awaiting_triage";
+const REQUIREMENT_LABEL: Record<EvidenceRequirement, string> = {
+  identity: "Biomarker identity",
+  unit: "Unit",
+  method: "Measurement method",
+  specimen: "Specimen",
+  protocol: "Protocol",
+  source_validation: "Source validation",
+  other: "Other",
+};
+const ACTION_ORDER: ResearcherBulkAction[] = [
+  "accept_review",
+  "demo_decide",
+  "request_clarification",
+  "acknowledge_match",
+];
+const ACTION_DESCRIPTION: Record<ResearcherBulkAction, string> = {
+  accept_review: "Triage only: not scientific approval and never activation.",
+  demo_decide: "SYNTHETIC DEMO decisions for accepted, eligible terms; Ground Medical activates separately.",
+  request_clarification: "Records a REQUEST_MORE_EVIDENCE triage event with the evidence you name.",
+  acknowledge_match: "Shows the existing catalog identity; creates no entry and is not saved (this session only).",
 };
 
 /** Ready for a decision request now (selection eligibility; shared pure rule). */
@@ -103,11 +169,17 @@ const decidable = (r: PreflightRow, scope: Map<string, DemoScopeTerm>) => isDeci
 
 const LOADING_NOTE = "Reading every submitted term of this mission…";
 
-export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
+export function P38BulkDemoResearcher({
+  missionId,
+  missionLabel,
+}: {
+  missionId: string;
+  missionLabel?: string;
+}) {
   const listSubs = useServerFn(listGlobalReviewSubmissions);
   const listTriage = useServerFn(listGlobalTriage);
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
-  const triageFn = useServerFn(bulkTriageAcceptFn);
+  const triageFn = useServerFn(bulkGlobalTriageFn);
   const decideFn = useServerFn(bulkDemoDecideFn);
   const [data, setData] = useState<Loaded | null>(null);
   const [note, setNote] = useState(LOADING_NOTE);
@@ -126,6 +198,18 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const [ack, setAck] = useState(false);
   const [run, setRun] = useState<Run | null>(null);
   const [busy, setBusy] = useState(false);
+  const [triageFilter, setTriageFilter] = useState<TriageFilter>("all");
+  const [crewFilter, setCrewFilter] = useState("all");
+  const [unitFilter, setUnitFilter] = useState("all");
+  const [identityFilter, setIdentityFilter] = useState<"all" | "with_reference" | "no_reference">("all");
+  const [pending, setPending] = useState<{
+    action: ResearcherBulkAction;
+    preflight: BulkPreflight<PreflightRow>;
+  } | null>(null);
+  const [reason, setReason] = useState("");
+  const [reqs, setReqs] = useState<EvidenceRequirement[]>([]);
+  /** Session-only acknowledgements of existing catalog matches (never saved, no catalog entry). */
+  const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     const [s, t, l] = await Promise.all([
@@ -181,6 +265,12 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
     });
   }, [data, overrides, existingMatch, extraDocs, acceptedSection]);
   const counts = preflightCounts(rows);
+  const crewOf = useMemo(
+    () => new Map((data?.subs ?? []).map((s) => [s.submissionId, s.crewPseudonym])),
+    [data],
+  );
+  const crews = [...new Set(crewOf.values())].sort();
+  const units = useMemo(() => [...new Set(rows.map((r) => r.unit))].sort(), [rows]);
   const domainChoice = rows.filter(needsDomainChoice).length;
   const awaiting = rows.filter(awaitsSectionAcceptance);
   const acceptedRows = rows.filter((r) => r.sectionAccepted);
@@ -263,97 +353,178 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
         : domainFilter !== "all" && r.domain !== domainFilter
     )
       return false;
+    if (triageFilter !== "all" && triageStateOf(r.triageAction) !== triageFilter) return false;
+    if (crewFilter !== "all" && crewOf.get(r.submissionId) !== crewFilter) return false;
+    if (unitFilter !== "all" && r.unit !== unitFilter) return false;
+    if (identityFilter === "with_reference" && !r.references.length) return false;
+    if (identityFilter === "no_reference" && r.references.length) return false;
     const q = query.trim().toLowerCase();
     return (
       !q ||
       r.termId.includes(q) ||
       r.labels.some((l) => l.toLowerCase().includes(q)) ||
       r.displayName.toLowerCase().includes(q) ||
-      r.unit.toLowerCase().includes(q)
+      r.unit.toLowerCase().includes(q) ||
+      r.references.some((x) => x.id.toLowerCase().includes(q) || x.name.toLowerCase().includes(q))
     );
   });
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE);
-  useEffect(() => setPage(0), [query, category, domainFilter]);
+  useEffect(() => setPage(0), [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter]);
 
   const scope = data?.scope ?? new Map<string, DemoScopeTerm>();
-  const selectedRows = rows.filter((r) => selected.has(r.key));
-  const ready = selectedRows.filter((r) => decidable(r, scope));
-  const needTriage = ready.filter((r) => r.triageAction !== "ACCEPT_FOR_REVIEW");
-  const toDecide = ready.filter((r) => r.triageAction === "ACCEPT_FOR_REVIEW");
-  const excludedSelected = selectedRows.filter((r) => !decidable(r, scope));
   const allEligible = rows.filter((r) => decidable(r, scope));
+  const filteredIds = filtered.map((r) => r.key);
+  const selScope = selectionScope(selected, filteredIds);
+  const rowByKey = useMemo(() => new Map(rows.map((r) => [r.key, r])), [rows]);
+  const labelOf = (key: string) => {
+    const r = rowByKey.get(key);
+    return r ? `${r.labels[0] ?? r.termId} · ${r.unit || "no unit"} (${r.termId})` : key;
+  };
+  const rowLabel = (r: PreflightRow) => labelOf(r.key);
+  // Drop selections that no longer exist after a reload; never adds any.
+  useEffect(() => {
+    if (data) setSelected((s) => pruneSelection(s, rows.map((r) => r.key)));
+  }, [data, rows]);
 
   const setOverride = (key: string, patch: PreflightOverride) =>
     setOverrides((m) => new Map(m).set(key, { ...m.get(key), ...patch }));
-  const toggle = (key: string, on: boolean) =>
-    setSelected((s) => {
-      const n = new Set(s);
-      if (on) n.add(key);
-      else n.delete(key);
-      return n;
-    });
+  const toggle = (key: string, on: boolean) => setSelected((s) => toggleId(s, key, on));
 
-  const triageEventOf = (r: PreflightRow) => data?.triage.get(r.key)?.eventId ?? null;
-  const startTriage = async (items: PreflightRow[]) => {
-    setBusy(true);
-    const send = (batch: PreflightRow[]) =>
-      triageFn({
-        data: {
-          missionId,
-          items: batch.map((r) => ({
-            submissionId: r.submissionId,
-            termId: r.termId,
-            expectedPreviousEventId: triageEventOf(r),
-          })),
-        },
-      });
-    const res = await runBulkBatches(items, send, (progress) =>
-      setRun({ kind: "triage", progress, results: [], failure: null, retry: null }),
-    );
-    setRun({
-      kind: "triage",
-      progress: res.progress,
-      results: res.results,
-      failure: res.failure,
-      retry: res.remaining.length ? () => startTriage(res.remaining) : null,
+  const fitFor = (action: ResearcherBulkAction) => (r: PreflightRow) => {
+    if (action === "accept_review") return acceptReviewFit(r, !!data?.canTriage);
+    if (action === "request_clarification") return requestClarificationFit(r, !!data?.canTriage);
+    if (action === "acknowledge_match") return acknowledgeMatchFit(r, acknowledged.has(r.key));
+    return demoDecideFit(r, {
+      submittedByCaller: !!scope.get(r.key)?.submittedByCaller,
+      canDecide: !!data?.canDecide,
     });
-    await load();
-    setBusy(false);
   };
-  const startDecide = async (items: PreflightRow[]) => {
-    setBusy(true);
-    const send = (batch: PreflightRow[]) =>
-      decideFn({
-        data: {
-          missionId,
-          acknowledgement: SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
-          items: batch.map((r) => ({
-            submissionId: r.submissionId,
-            termId: r.termId,
-            displayName: r.displayName,
-            domain: r.domain!,
-          })),
-        },
-      });
-    const res = await runBulkBatches(items, send, (progress) =>
-      setRun({ kind: "decide", progress, results: [], failure: null, retry: null }),
-    );
-    setRun({
-      kind: "decide",
-      progress: res.progress,
-      results: res.results,
-      failure: res.failure,
-      retry: res.remaining.length ? () => startDecide(res.remaining) : null,
+  const preflightFor = (action: ResearcherBulkAction, sel: ReadonlySet<string> = selected) =>
+    buildBulkPreflight({
+      records: rows,
+      idOf: (r) => r.key,
+      selected: sel,
+      filteredIds,
+      fit: fitFor(action),
+      missionLabel: missionLabel ?? missionId,
+      roleLabel: "Researcher",
+      actionLabel: RESEARCHER_ACTION_LABEL[action],
     });
+  const openPreflight = (action: ResearcherBulkAction, sel: ReadonlySet<string> = selected) => {
+    const preflight = preflightFor(action, sel);
+    if (action === "request_clarification") {
+      setReqs(suggestedRequirements(preflight.actionable.map((r) => r.category)));
+      setReason("");
+    }
+    if (action === "demo_decide") setAck(false);
+    setPending({ action, preflight });
+  };
+  const triageEventOf = (r: PreflightRow) => data?.triage.get(r.key)?.eventId ?? null;
+  const triageItems = (batch: PreflightRow[]) =>
+    batch.map((r) => ({
+      submissionId: r.submissionId,
+      termId: r.termId,
+      expectedPreviousEventId: triageEventOf(r),
+    }));
+  const clarificationProblem = triageInputProblem({
+    action: "REQUEST_MORE_EVIDENCE",
+    reason,
+    evidenceRequirements: reqs,
+  });
+  const confirmPending = async () => {
+    if (!pending) return;
+    const { action, preflight } = pending;
+    setPending(null);
+    if (action === "acknowledge_match") {
+      setAcknowledged((s) => selectIds(s, preflight.actionable.map((r) => r.key)));
+      setRun({
+        action,
+        progress: null,
+        failure: null,
+        outcomes: [
+          ...preflight.actionable.map((r) => ({
+            id: r.key,
+            label: rowLabel(r),
+            outcome: "success" as const,
+            detail: `${r.reasons[0] ?? "Existing catalog match"} Acknowledged in this session only; nothing was saved and no catalog entry was created.`,
+            retryAvailable: false,
+          })),
+          ...preflight.already.map((x) => ({
+            id: x.record.key,
+            label: rowLabel(x.record),
+            outcome: "already_completed" as const,
+            detail: x.reason,
+            retryAvailable: false,
+          })),
+          ...preflight.blocked.map((x) => ({
+            id: x.record.key,
+            label: rowLabel(x.record),
+            outcome: "blocked" as const,
+            detail: x.reason,
+            retryAvailable: false,
+          })),
+        ],
+      });
+      return;
+    }
+    setBusy(true);
+    setRun({ action, progress: null, outcomes: [], failure: null });
+    const send =
+      action === "demo_decide"
+        ? (batch: PreflightRow[]) =>
+            decideFn({
+              data: {
+                missionId,
+                acknowledgement: SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
+                items: batch.map((r) => ({
+                  submissionId: r.submissionId,
+                  termId: r.termId,
+                  displayName: r.displayName,
+                  domain: r.domain!,
+                })),
+              },
+            })
+        : (batch: PreflightRow[]) =>
+            triageFn({
+              data: {
+                missionId,
+                action: action === "accept_review" ? "ACCEPT_FOR_REVIEW" : "REQUEST_MORE_EVIDENCE",
+                reason: action === "accept_review" ? null : reason.trim(),
+                evidenceRequirements: action === "accept_review" ? [] : reqs,
+                items: triageItems(batch),
+              },
+            });
+    const res = await executeBulk({
+      preflight,
+      idOf: (r) => r.key,
+      labelOf,
+      send,
+      onProgress: (progress) => setRun({ action, progress, outcomes: [], failure: null }),
+    });
+    setRun({ action, ...res });
     setAck(false);
     await load();
     setBusy(false);
   };
-
-  const summary = run ? summarizeBulk(run.results) : null;
   const workflow = bulkSelectionCounts(rows, scope);
-  const retry = run ? retrySelection(run.results, rows, scope) : { keys: [], notRetryable: 0 };
+  const actionOptions = ACTION_ORDER.map((id) => {
+    const p = preflightFor(id);
+    return {
+      id,
+      label: RESEARCHER_ACTION_LABEL[id],
+      description: ACTION_DESCRIPTION[id],
+      actionable: p.actionable.length,
+      already: p.already.length,
+      blocked: p.blocked.length,
+      unavailable:
+        (id === "accept_review" || id === "request_clarification") && data && !data.canTriage
+          ? "This account has no triage grant; triage actions are unavailable."
+          : id === "demo_decide" && data && !data.canDecide
+            ? "This account has no scientific approver grant."
+            : null,
+    };
+  });
   const visibility = bulkResearcherVisibility({
     authorizedMissions: 1,
     missionSelected: true,
