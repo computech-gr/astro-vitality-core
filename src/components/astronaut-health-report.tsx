@@ -223,6 +223,15 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
+  // P56.1: same scope and sources without the date filter — used only to say "measured outside the period".
+  const scopeHistory = useMemo(
+    () =>
+      member && (from || to)
+        ? buildUnifiedHealthReport(inputs, { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance }, { sources }).rows
+        : undefined,
+    [inputs, member, provenance, from, to, sources],
+  );
+
   // Roles held for exactly the selected mission + crew (never inferred from other memberships).
   const rolesForScope = useMemo(
     () =>
@@ -374,9 +383,10 @@ export function AstronautHealthReport() {
             identity: { missionName: member.missionName, crewDisplayName: member.crewDisplayName },
             snapshot: interpretationSnapshot,
             automated,
+            scopeHistory,
           })
         : null,
-    [unified, interpretation, biomarkerAssessment, member, interpretationSnapshot, automated],
+    [unified, interpretation, biomarkerAssessment, member, interpretationSnapshot, automated, scopeHistory],
   );
   const [appendixOpen, setAppendixOpen] = useState(false);
   useEffect(() => {

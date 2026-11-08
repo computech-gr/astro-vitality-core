@@ -29,18 +29,21 @@ export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 // ---------------- Document model ----------------
 
 export type Block =
-  | { kind: "h1" | "h2" | "h3"; text: string; tone?: Severity }
-  | { kind: "p"; text: string; bold?: boolean; muted?: boolean; tone?: Severity; size?: number }
+  | { kind: "h1" | "h2" | "h3"; text: string; tone?: TextTone }
+  | { kind: "p"; text: string; bold?: boolean; muted?: boolean; tone?: TextTone; size?: number }
   | { kind: "banner"; text: string }
   /** Boxed notice. "pending" is a heavy-bordered call-out used for outstanding Ground Medical attestation. */
   | { kind: "alert"; tone: "pending" | "complete" | "info"; title: string; lines: string[] }
-  | { kind: "bullets"; items: string[]; tones?: (Severity | null)[] }
+  | { kind: "bullets"; items: string[]; tones?: (TextTone | null)[]; size?: number }
   /** P56: small line chart of one exact metric + unit series (values as recorded, never converted). */
   | { kind: "chart"; title: string; unit: string; points: { label: string; value: number }[]; caption: string }
   | { kind: "kv"; rows: [string, string][] }
   | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][]; adverseRows?: number[]; rowTones?: Severity[] }
   | { kind: "link"; text: string; url: string }
   | { kind: "pagebreak" };
+
+/** P56.1: "review" = priority review flag (dark blue), never a clinical severity colour. */
+export type TextTone = Severity | "review";
 
 export interface ReportDocument {
   title: string;
@@ -684,7 +687,7 @@ export interface RenderOptions {
   redact?: boolean;
 }
 
-const TONE_RGB: Partial<Record<Severity, [number, number, number]>> = { red: [180, 30, 40], amber: [150, 90, 0], normal: [20, 100, 50] };
+const TONE_RGB: Partial<Record<TextTone, [number, number, number]>> = { red: [180, 30, 40], amber: [150, 90, 0], normal: [20, 100, 50], review: [25, 60, 140] };
 
 export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: RenderOptions): { pages: number } {
   const L = TEXT_PDF_LAYOUT;
@@ -694,7 +697,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     return opts.unicode ? r : toWinAnsi(r);
   };
   let y = L.top;
-  const font = (style: "normal" | "bold", size: number, muted = false, tone?: Severity | null) => {
+  const font = (style: "normal" | "bold", size: number, muted = false, tone?: TextTone | null) => {
     pdf.setFont(opts.family, style);
     pdf.setFontSize(size);
     const rgb = tone ? TONE_RGB[tone] : undefined;
@@ -759,7 +762,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     }
     return out.length ? out : [""];
   };
-  const paragraph = (text: string, size: number, style: "normal" | "bold", muted = false, indent = 0, bullet = false, tone?: Severity | null) => {
+  const paragraph = (text: string, size: number, style: "normal" | "bold", muted = false, indent = 0, bullet = false, tone?: TextTone | null) => {
     const ls = lines(text, size, style, width - indent - (bullet ? 4 : 0));
     const lh = lineHeight(size);
     ls.forEach((l, i) => {
@@ -856,11 +859,13 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       continue;
     }
     if (b.kind === "bullets") {
-      b.items.forEach((item, i) => paragraph(item, L.body, "normal", false, 1, true, b.tones?.[i]));
+      b.items.forEach((item, i) => paragraph(item, b.size ?? L.body, "normal", false, 1, true, b.tones?.[i]));
       continue;
     }
     if (b.kind === "chart") {
-      const h = 34;
+      font("normal", 8, true);
+      const captionLines = pdf.splitTextToSize(clean(b.caption), width).slice(0, 3);
+      const h = 34 + Math.max(0, captionLines.length - 1) * 3.4;
       ensure(h + 3);
       font("bold", 9);
       pdf.text(clean(`${b.title} [${b.unit}]`), L.marginX, y + 3.5);
@@ -894,8 +899,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
         if (n <= 8 || i === 0 || i === n - 1) pdf.text(clean(p.label), xAt(i), py + ph + 3.5, { align: i === 0 ? "left" : i === n - 1 ? "right" : "center" });
       });
       font("normal", 8, true);
-      const cl = pdf.splitTextToSize(clean(b.caption), width).slice(0, 2);
-      cl.forEach((l, i) => pdf.text(l, L.marginX, py + ph + 7.5 + i * 3.4));
+      captionLines.forEach((l, i) => pdf.text(l, L.marginX, py + ph + 7.5 + i * 3.4));
       y += h;
       continue;
     }

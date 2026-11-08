@@ -1,5 +1,5 @@
 /**
- * P56 — concise longitudinal health assessment (pure, deterministic, offline).
+ * P56 / P56.1 — concise longitudinal health assessment (pure, deterministic, offline).
  *
  * A reader-facing layer over the existing read models of ONE authorized
  * mission + crew + provenance scope, for the selected date range:
@@ -11,8 +11,12 @@
  *   - optionally an automated preliminary assessment (deterministic, or an AI
  *     draft already validated by preliminary-medical-assessment.ts).
  *
- * Reasoning order per finding: observation → change → biological relationship
- * (P56 pattern library, exact IDs) → interpretation → recommended action.
+ * P56.1 adds the complete longitudinal profile of every series (peaks,
+ * troughs, reversals, intervals) and explicit review-triage rules
+ * (p56-longitudinal-profile.ts). Review priority is kept strictly separate
+ * from clinical classification: a flagged change is "Priority scientific /
+ * medical review required", never RED or AMBER.
+ *
  * Never: unit conversion, invented history/thresholds/diagnoses, severity from
  * the size of a change, or causal claims. Identity comes only from the
  * selected crew member; the prohibited reviewer name is redacted from text.
@@ -33,7 +37,7 @@ import {
   type ResearcherInterpretationModel,
 } from "./researcher-interpretation";
 import { governedHandbookEntry } from "./scientific-health-summary";
-import { REPORT_SOURCE_LABELS, type UnifiedHealthReport } from "./unified-health-report";
+import { REPORT_SOURCE_LABELS, type ReportRow, type UnifiedHealthReport } from "./unified-health-report";
 import { observationDay } from "./observation-date";
 import {
   AUTHORIZATION_LABELS,
@@ -44,22 +48,40 @@ import {
   type RecommendationAuthorization,
   type RecommendationCategory,
 } from "./p56-pattern-library";
+import {
+  PATTERN_LABELS,
+  bundledReviewRules,
+  profileText,
+  reviewSeries,
+  seriesProfile,
+  signedNumber,
+  type ReviewFlag,
+  type ReviewRules,
+  type SeriesPattern,
+  type SeriesProfile,
+  type SeriesReview,
+} from "./p56-longitudinal-profile";
 import { redactProhibitedNames, reportAstronautName } from "./report-identity-redaction";
 
-export const HEALTH_ASSESSMENT_SCHEMA = "mitochondria.p56-health-assessment.v1" as const;
+export const HEALTH_ASSESSMENT_SCHEMA = "mitochondria.p56-health-assessment.v2" as const;
 export const AUTOMATED_DISCLOSURE = "Automated health assessment — subject to Ground Medical review.";
 export const CONFIRMED_DIAGNOSES_TEXT =
   "None. MITOCHONDRIA does not record diagnoses; a diagnosis requires examination and authorization by a qualified clinician.";
 export const MAX_KEY_FINDINGS = 5;
 export const COMPARABILITY_NOTE =
   "Specimen, laboratory method and collection conditions are not recorded, so comparability between examinations is not verified.";
+export const REVIEW_FLAG_LABEL = "Priority scientific/medical review required";
+export const DATA_QUALITY_LABEL = "Measurement-consistency check required";
+export const REVIEW_MARKER = "[REVIEW]";
+export const DATA_CHECK_MARKER = "[DATA CHECK]";
 
 /** Categorical/yes-no results are shown as recorded, without a pseudo-unit such as "yes/no". */
 export const isNumericValue = (v: string) => /^[<>≤≥]?\s*-?\d/.test(v.trim());
 export function formatResult(name: string, value: string, unit: string): string {
   return isNumericValue(value) ? `${name} ${value} ${unit}` : `${name}: ${value}`;
 }
-export const MAX_TRENDS = 6;
+/** Charts in the main report: only the most informative series (page budget). */
+export const MAX_TRENDS = 4;
 
 // ------------------------------------------------------------ types
 
@@ -73,15 +95,24 @@ export const TREND_LABELS: Record<TrendDirection, string> = {
 export const TREND_MARKERS: Record<TrendDirection, string> = { increase: "↑", decrease: "↓", stable: "→", insufficient: "·" };
 
 export interface SeriesTrend {
+  /** First-to-last direction (kept for counts); the full shape is in `pattern`/`profile`. */
   direction: TrendDirection;
+  pattern: SeriesPattern | "not_comparable";
   earliest: { value: string; at: string; precision: "date" | "instant" } | null;
   latest: { value: string; at: string; precision: "date" | "instant" };
   absolute: number | null;
   percent: number | null;
   observationCount: number;
   examinationDates: string[];
-  /** Plain-language explanation (never a judgement). */
+  profile: SeriesProfile | null;
+  /** Plain-language explanation of the whole period (never a judgement). */
   text: string;
+}
+
+export interface Interpretability {
+  mathematical: string;
+  biological: string;
+  clinical: string;
 }
 
 export interface Contributor {
@@ -96,6 +127,8 @@ export interface Contributor {
   classification: string;
   referenceText: string | null;
   trend: SeriesTrend;
+  review: SeriesReview;
+  interpretability: Interpretability;
   syntheticDemo: boolean;
   interpretationStatus: "approved" | "pending" | "revoked";
   attestation: { attested: number; total: number };
@@ -104,6 +137,13 @@ export interface Contributor {
 }
 
 export type FindingState = "validated_concern" | "changed" | "stable" | "baseline";
+export type ReviewPriority = "priority_review" | "data_quality_review" | "none";
+export type MissingStatus = "outside_period" | "not_recorded";
+export interface MissingEvidence {
+  label: string;
+  status: MissingStatus;
+  text: string;
+}
 export interface Finding {
   id: string;
   patternId: string;
@@ -112,16 +152,30 @@ export interface Finding {
   state: FindingState;
   severity: Severity;
   marker: string;
+  reviewPriority: ReviewPriority;
+  reviewFlags: { name: string; flag: ReviewFlag }[];
   headline: string;
   whatChanged: string;
   contributors: Contributor[];
   relationship: string;
   spaceflightContext: string;
+  /** Cross-marker statement for changes over the same interval; null when none. */
+  combined: string | null;
   interpretation: string;
+  /** Finding-specific uncertainty only (general limits are in the methodology note). */
   uncertainty: string[];
   exploratory: boolean;
   missingKeyEvidence: string[];
+  missingDetail: MissingEvidence[];
   conditions: { name: string; status: "possible_requires_evaluation" | "not_assessable"; requires: string }[];
+  reasoning: {
+    observations: string;
+    changes: string;
+    relationshipStatus: string;
+    combinedSupport: string;
+    missingEvidence: string;
+    followUp: string;
+  };
   why: {
     rules: string[];
     confidence: { level: "Low" | "Moderate" | "Higher"; basis: string };
@@ -139,6 +193,9 @@ export interface Recommendation {
   authorizationLabel: string;
   text: string;
   basis: string[];
+  findingIds: string[];
+  /** True when the recommendation answers a priority review flag. */
+  priority: boolean;
 }
 
 export interface TrendChart {
@@ -148,6 +205,13 @@ export interface TrendChart {
   findingTitle: string;
   points: { at: string; label: string; value: number }[];
   trend: SeriesTrend;
+  flagged: ReviewPriority;
+}
+
+export interface PriorityItem {
+  findingId: string;
+  text: string;
+  ruleId?: string;
 }
 
 export interface AutomatedAnalysisInput {
@@ -165,6 +229,10 @@ export interface HealthAssessmentInput {
   snapshot?: InterpretationSnapshot;
   automated?: AutomatedAnalysisInput | null;
   library?: PatternLibrary;
+  /** Review rules override (tests); defaults to the bundled, validated rules. */
+  reviewRules?: ReviewRules | null;
+  /** Included rows of the SAME scope without the date filter, used only to say "measured outside the period". */
+  scopeHistory?: readonly ReportRow[] | undefined;
 }
 
 export interface HealthAssessment {
@@ -179,11 +247,19 @@ export interface HealthAssessment {
     provenanceLabel: string;
   };
   overview: string[];
-  keyFindings: { findingId: string; severity: Severity; marker: string; text: string }[];
+  keyFindings: { findingId: string; severity: Severity; marker: string; review: ReviewPriority; text: string }[];
   warnings: { severity: Severity; marker: string; text: string }[];
   warningsStatement: string;
-  followUp: { level: "high" | "moderate" | "routine" | "not_determined"; label: string; text: string };
+  priorities: {
+    validatedAlerts: PriorityItem[];
+    reviewRequired: PriorityItem[];
+    dataQuality: PriorityItem[];
+    exploratory: PriorityItem[];
+    routine: { count: number; text: string };
+  };
+  followUp: { level: "high" | "moderate" | "review_required" | "routine" | "not_determined"; label: string; text: string; clinicalSeverity: string };
   completeness: string;
+  methodology: string;
   findings: Finding[];
   assessment: {
     abnormal: string[];
@@ -205,6 +281,8 @@ export interface HealthAssessment {
     aiModel: string | null;
     patternLibraryVersion: number;
     patternLibraryStatus: string;
+    reviewRulesVersion: number | null;
+    reviewRulesStatus: string;
     verifiedReferences: number;
     biomarkers: number;
   };
@@ -212,7 +290,6 @@ export interface HealthAssessment {
 
 // ------------------------------------------------------------ helpers
 
-const signed = (x: number) => (x > 0 ? `+${x}` : `${x}`);
 const day = (at: string) => observationDay(at);
 const list = (items: readonly string[], max = 6) =>
   items.length <= max ? joinAnd(items) : `${items.slice(0, max).join(", ")} and ${items.length - max} more`;
@@ -222,29 +299,31 @@ function joinAnd(items: readonly string[]): string {
 }
 const severityRank = (s: Severity) => SEVERITY_ORDER.indexOf(s);
 const R = redactProhibitedNames;
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 function cleanName(label: string): string {
   return label.replace(/\s+—\s+SYNTHETIC DEMO.*$/u, "").trim();
 }
 
-/** Earliest-to-latest trend at recorded precision; same-UTC-day spans are never longitudinal. */
+/** Complete period trend at recorded precision; same-UTC-day spans are never longitudinal. */
 export function seriesTrend(s: InterpretationSeries): SeriesTrend {
   const points: ExamPoint[] = s.longitudinal.points;
   const last = points.at(-1)!;
   const first = points[0]!;
   const dates = [...new Set(points.map((p) => p.at))];
   const latest = { value: last.valueText, at: last.at, precision: last.precision };
-  const base = { latest, observationCount: s.readings, examinationDates: dates, absolute: null, percent: null };
+  const base = { latest, observationCount: s.readings, examinationDates: dates, absolute: null, percent: null, profile: null };
   if (points.length < 2)
-    return { ...base, direction: "insufficient", earliest: null, text: "Only one examination in this period — a trend cannot be established." };
+    return { ...base, direction: "insufficient", pattern: "single", earliest: null, text: "Only one examination in this period — a trend cannot be established." };
   const earliest = { value: first.valueText, at: first.at, precision: first.precision };
   if (first.day === last.day)
-    return { ...base, direction: "insufficient", earliest, text: "All readings fall on one calendar day; this is not a change over time." };
+    return { ...base, direction: "insufficient", pattern: "same_day", earliest, text: "All readings fall on one calendar day; this is not a change over time." };
   const pair = s.longitudinal.baselineToLatest ?? s.longitudinal.consecutive[0] ?? null;
   if (!pair || pair.status !== "compared" || pair.absolute === null)
     return {
       ...base,
       direction: "insufficient",
+      pattern: "not_comparable",
       earliest,
       text:
         pair?.status === "differing_repeated_readings"
@@ -254,12 +333,10 @@ export function seriesTrend(s: InterpretationSeries): SeriesTrend {
             : "Values are not plain numbers; no change is calculated.",
     };
   const direction: TrendDirection = pair.direction === "higher" ? "increase" : pair.direction === "lower" ? "decrease" : "stable";
-  const pct = pair.percent !== null ? ` (${signed(pair.percent)}%)` : "";
-  const text =
-    direction === "stable"
-      ? `No recorded change between ${day(first.at)} and ${day(last.at)} (${first.valueText} ${s.unit}).`
-      : `${direction === "increase" ? "Increased" : "Decreased"} from ${first.valueText} to ${last.valueText} ${s.unit}${pct} between ${day(first.at)} and ${day(last.at)}.`;
-  return { ...base, direction, earliest, absolute: pair.absolute, percent: pair.percent, text };
+  const profile = seriesProfile(points);
+  const text = profile && profile.pattern !== "single" && profile.pattern !== "same_day" ? profileText(profile, s.unit) : `${first.valueText} → ${last.valueText} ${s.unit}`;
+  const notCompared = profile?.notCompared ? ` ${plural(profile.notCompared, "examination")} with non-numeric or differing repeated readings not compared.` : "";
+  return { ...base, direction, pattern: profile?.pattern ?? "not_comparable", earliest, absolute: pair.absolute, percent: pair.percent, profile, text: text + notCompared };
 }
 
 function nameLookup(snapshot: InterpretationSnapshot | undefined): Map<string, string> {
@@ -268,11 +345,27 @@ function nameLookup(snapshot: InterpretationSnapshot | undefined): Map<string, s
   return map;
 }
 
+function interpretabilityOf(trend: SeriesTrend, review: SeriesReview, severity: Severity, classification: string): Interpretability {
+  const p = trend.profile;
+  const mathematical =
+    p && p.steps.length
+      ? `Calculated from ${plural(p.points.length, "comparable examination")} over ${plural(p.spanDays, "day")}${p.percent !== null ? `; first to last ${signedNumber(p.percent)}%` : ""}.`
+      : "No change calculated (single examination, same day or non-comparable values).";
+  const biological =
+    review.plausibility === "not_expected_over_interval"
+      ? `Not biologically expected over this interval. ${review.plausibilityText ?? ""}`.trim()
+      : "Not assessed: no governed plausibility rule exists for this marker.";
+  const clinical = severity === "neutral" ? "Not clinically interpretable: no verified reference criteria apply." : `Classified against verified criteria: ${classification}`;
+  return { mathematical, biological, clinical };
+}
+
 // ------------------------------------------------------------ builder
 
 export function buildHealthAssessment(input: HealthAssessmentInput): HealthAssessment {
   const { unified, model, biomarkers } = input;
   const library = input.library ?? bundledPatternLibrary();
+  const bundledRules = bundledReviewRules();
+  const rules = input.reviewRules === undefined ? bundledRules.rules : input.reviewRules;
   const names = nameLookup(input.snapshot);
   const memberOf = new Map<string, { pattern: HealthPattern; name: string }>();
   for (const p of library.patterns) for (const m of p.members) memberOf.set(m.id, { pattern: p, name: m.name });
@@ -295,6 +388,9 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
   const contributorOf = (e: BiomarkerAssessment, displayName: string): Contributor => {
     const s = seriesByKey.get(e.key)!;
     const hb = governedHandbookEntry(e.metricId);
+    const trend = seriesTrend(s);
+    const review = reviewSeries(e.metricId, trend.profile, e.unit, rules);
+    const classification = R(e.classification.explanation);
     return {
       key: e.key,
       metricId: e.metricId,
@@ -304,9 +400,11 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
       severity: e.classification.severity,
       marker: e.marker,
       statusLabel: e.statusLabel,
-      classification: R(e.classification.explanation),
+      classification,
       referenceText: e.referenceText,
-      trend: seriesTrend(s),
+      trend,
+      review: { ...review, flags: review.flags.map((f) => ({ ...f, text: R(f.text) })) },
+      interpretability: interpretabilityOf(trend, review, e.classification.severity, classification),
       syntheticDemo: Boolean(e.nonClinicalLabel),
       interpretationStatus: e.interpretationStatus,
       attestation: { attested: s.attestation.attested, total: s.readings },
@@ -331,9 +429,16 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
     grouped.set(m.pattern.id, g);
   }
 
+  // Scope history (all dates) for missing-evidence provenance; never used for findings or trends.
+  const historyLatest = new Map<string, string>();
+  for (const r of input.scopeHistory ?? []) {
+    const d = day(r.observedAt);
+    if ((historyLatest.get(r.metricId) ?? "") < d) historyLatest.set(r.metricId, d);
+  }
+
   const findings = library.patterns
     .filter((p) => grouped.has(p.id))
-    .map((p, order) => buildFinding(p, grouped.get(p.id)!.contributors, order, automatedNotes, biomarkers));
+    .map((p, order) => buildFinding(p, grouped.get(p.id)!.contributors, order, automatedNotes, biomarkers, rules, library, historyLatest));
   findings.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
 
   const rows = unified.rows;
@@ -358,33 +463,12 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
   const missingAreas = unified.summaries.filter((s) => s.included === 0).map((s) => REPORT_SOURCE_LABELS[s.badge]);
   const demo = all.filter((c) => c.syntheticDemo).length;
   const approved = all.filter((c) => c.interpretationStatus === "approved").length;
+  const flaggedPriority = all.filter((c) => c.review.flags.some((f) => f.kind === "priority_review"));
+  const flaggedQuality = all.filter((c) => c.review.flags.some((f) => f.kind === "data_quality"));
+  const differingRepeats = all.filter((c) => c.trend.pattern === "not_comparable" && /differ/.test(c.trend.text));
 
-  const overview: string[] = [];
-  if (!rows.length) {
-    overview.push(`No reviewed results are available for ${header.astronaut} in the selected period (${header.period}). Nothing is inferred from missing data.`);
-  } else {
-    overview.push(
-      `This assessment covers ${all.length} reviewed measurement${all.length === 1 ? "" : "s"} for ${header.astronaut} from ${allDates.length} examination date${allDates.length === 1 ? "" : "s"} (${allDates.length === 1 ? allDates[0] : `${allDates[0]} to ${allDates.at(-1)}`}) across ${joinAnd(areas)}.`,
-    );
-    overview.push(
-      compared.length
-        ? `${compared.length} measurement${compared.length === 1 ? "" : "s"} could be compared between examinations: ${inc} increased, ${dec} decreased and ${stable} showed no recorded change. ${all.length - compared.length} were measured only once in this period, so no trend can be established for them.`
-        : "Every measurement comes from a single examination in this period, so no change over time can be established yet; these results serve as a baseline.",
-    );
-    overview.push(
-      validated.length
-        ? `${validated.length} result${validated.length === 1 ? "" : "s"} met verified reference criteria for a health concern (see warnings).`
-        : `No result could be checked against verified reference criteria, so the report does not classify any value as low, high or normal. This is not evidence that the results are normal.`,
-    );
-    const caveats = [
-      ...(demo ? [`${demo} result${demo === 1 ? " uses" : "s use"} synthetic demonstration catalog entries that are not scientifically validated`] : []),
-      approved < all.length ? "biological interpretations are pending independent scientific review" : "",
-    ].filter(Boolean);
-    if (caveats.length) overview.push(`${caveats.join("; ").replace(/^./, (c) => c.toUpperCase())}.`);
-  }
-
-  const keyFindings = findings.slice(0, MAX_KEY_FINDINGS).map((f) => ({ findingId: f.id, severity: f.severity, marker: f.marker, text: f.headline }));
-
+  // ---- priority summary (validated alerts are separate from review triage)
+  const findingOf = (c: Contributor) => findings.find((f) => f.contributors.includes(c))?.id ?? "other";
   const warnings = validated
     .sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || a.name.localeCompare(b.name))
     .map((c) => ({
@@ -392,71 +476,168 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
       marker: c.marker,
       text: `${formatResult(c.name, c.trend.latest.value, c.unit)} on ${day(c.trend.latest.at)} — ${c.statusLabel}${c.referenceText ? ` (${c.referenceText})` : ""}.`,
     }));
+  const priorities: HealthAssessment["priorities"] = {
+    validatedAlerts: validated.map((c) => ({ findingId: findingOf(c), text: `${c.marker} ${formatResult(c.name, c.trend.latest.value, c.unit)} — ${c.statusLabel}.` })),
+    reviewRequired: flaggedPriority.map((c) => {
+      const fs = c.review.flags.filter((f) => f.kind === "priority_review");
+      return { findingId: findingOf(c), ruleId: fs.map((f) => f.ruleId).join(", "), text: `${c.name}: ${fs.map((f) => f.text).join(" ")}` };
+    }),
+    dataQuality: [
+      ...flaggedQuality.flatMap((c) => c.review.flags.filter((f) => f.kind === "data_quality").map((f) => ({ findingId: findingOf(c), ruleId: f.ruleId, text: `${c.name}: ${f.text}` }))),
+      ...differingRepeats.map((c) => ({ findingId: findingOf(c), text: `${c.name}: ${c.trend.text}` })),
+    ],
+    exploratory: findings
+      .filter((f) => f.contributors.some((c) => c.syntheticDemo))
+      .map((f) => ({ findingId: f.id, text: `${f.title}: ${plural(f.contributors.filter((c) => c.syntheticDemo).length, "result")} from synthetic demonstration catalog entries (not scientifically validated).` })),
+    routine: { count: 0, text: "" },
+  };
+  const routineCount = all.length - new Set([...validated, ...flaggedPriority, ...flaggedQuality, ...differingRepeats]).size;
+  priorities.routine = {
+    count: routineCount,
+    text: `${plural(routineCount, "further measurement")} without a validated alert or review flag (recorded for monitoring; not shown to be normal).`,
+  };
+
+  // ---- overview (concise; general limits once in the methodology note)
+  const overview: string[] = [];
+  if (!rows.length) {
+    overview.push(`No reviewed results are available for ${header.astronaut} in the selected period (${header.period}). Nothing is inferred from missing data.`);
+  } else {
+    overview.push(
+      `This assessment covers ${plural(all.length, "reviewed measurement")} for ${header.astronaut} from ${plural(allDates.length, "examination date")} (${allDates.length === 1 ? allDates[0] : `${allDates[0]} to ${allDates.at(-1)}`}) across ${joinAnd(areas)}.`,
+    );
+    overview.push(
+      compared.length
+        ? `${plural(compared.length, "measurement")} could be compared between examinations (${inc} increased, ${dec} decreased, ${stable} unchanged first to last); ${all.length - compared.length} ${all.length - compared.length === 1 ? "was" : "were"} measured only once in this period.`
+        : "Every measurement comes from a single examination in this period, so no change over time can be established; these results serve as a baseline.",
+    );
+    const attention: string[] = [];
+    if (validated.length) attention.push(`${plural(validated.length, "result")} met verified criteria for a health concern`);
+    if (flaggedPriority.length) attention.push(`${plural(flaggedPriority.length, "change")} require${flaggedPriority.length === 1 ? "s" : ""} priority scientific/medical review (${list(flaggedPriority.map((c) => c.name), 5)})`);
+    if (flaggedQuality.length) attention.push(`${plural(flaggedQuality.length, "change")} need${flaggedQuality.length === 1 ? "s" : ""} a measurement-consistency check before interpretation (${list(flaggedQuality.map((c) => c.name), 3)})`);
+    overview.push(
+      attention.length
+        ? `${attention.join("; ").replace(/^./, (x) => x.toUpperCase())}. No result has been classified as abnormal unless stated; review flags are not diagnoses.`
+        : "No validated alert and no change meeting the review rules. This is not evidence that the results are normal.",
+    );
+    const caveats = [
+      ...(demo ? [`${plural(demo, "result")} use${demo === 1 ? "s" : ""} synthetic demonstration catalog entries that are not scientifically validated`] : []),
+      approved < all.length ? "biological interpretations are pending independent scientific review" : "",
+    ].filter(Boolean);
+    if (caveats.length) overview.push(`${caveats.join("; ").replace(/^./, (x) => x.toUpperCase())}.`);
+  }
+
+  const keyFindings = findings
+    .slice(0, MAX_KEY_FINDINGS)
+    .map((f) => ({ findingId: f.id, severity: f.severity, marker: f.marker, review: f.reviewPriority, text: f.headline }));
+
   const warningsStatement = warnings.length
-    ? `${warnings.length} validated health warning${warnings.length === 1 ? "" : "s"}.`
+    ? `${plural(warnings.length, "validated health warning")}.`
     : rows.length
-      ? "No validated health warning. None of the results could be checked against verified reference criteria, so the absence of a warning does not mean the results are normal."
+      ? `No validated clinical alert: no result could be checked against verified reference criteria. This does not mean there is no health concern${flaggedPriority.length + flaggedQuality.length ? " — see the review items below" : ""}.`
       : "No validated health warning; no results in this period.";
 
   const red = validated.some((c) => c.severity === "red");
   const amber = validated.some((c) => c.severity === "amber");
   const allNormal = all.length > 0 && all.every((c) => c.severity === "normal");
-  const followUp: HealthAssessment["followUp"] = red
-    ? { level: "high", label: "High", text: "Ground Medical review of the RED finding(s) is recommended promptly." }
+  const clinicalSeverity = red
+    ? "RED — verified clinically concerning result(s)."
     : amber
-      ? { level: "moderate", label: "Moderate", text: "Ground Medical review of the AMBER finding(s) at the next scheduled medical conference." }
+      ? "AMBER — verified cautionary result(s)."
       : allNormal
-        ? { level: "routine", label: "Routine", text: "All results are within verified reference criteria; continue scheduled monitoring." }
-        : {
-            level: "not_determined",
-            label: "Not determined",
-            text: "No result could be classified against verified criteria. Ground Medical should review all results before a priority is assigned.",
-          };
+        ? "NORMAL — all results within verified reference criteria."
+        : "Not determined — no verified reference criteria apply, so no clinical severity is assigned.";
+  const followUp: HealthAssessment["followUp"] = red
+    ? { level: "high", label: "High", text: "Ground Medical review of the RED finding(s) is recommended promptly.", clinicalSeverity }
+    : amber
+      ? { level: "moderate", label: "Moderate", text: "Ground Medical review of the AMBER finding(s) at the next scheduled medical conference.", clinicalSeverity }
+      : flaggedPriority.length || flaggedQuality.length
+        ? {
+            level: "review_required",
+            label: "Prompt review (review triage, not clinical severity)",
+            text: `${REVIEW_FLAG_LABEL} for ${plural(flaggedPriority.length + flaggedQuality.length, "measurement")}, under the explicit review rules listed in the methodology. Ground Medical decides the clinical urgency.`,
+            clinicalSeverity,
+          }
+        : allNormal
+          ? { level: "routine", label: "Routine", text: "All results are within verified reference criteria; continue scheduled monitoring.", clinicalSeverity }
+          : { level: "not_determined", label: "Not determined", text: "No validated alert and no review flag; Ground Medical reviews the recorded values at the next scheduled conference.", clinicalSeverity };
 
-  const comparable = all.filter((c) => c.trend.direction !== "insufficient").length;
+  const comparable = compared.length;
+  const inPeriod = new Set(rows.map((r) => r.recordId));
+  const outsideMetrics = new Set((input.scopeHistory ?? []).filter((r) => !inPeriod.has(r.recordId)).map((r) => r.metricId));
+  const alsoOutside = all.filter((c) => outsideMetrics.has(c.metricId)).map((c) => c.name);
+  const outsideNote = alsoOutside.length
+    ? ` ${plural(alsoOutside.length, "measured marker")} also ${alsoOutside.length === 1 ? "has" : "have"} readings outside the selected period (${list(alsoOutside, 5)}); widen the period to compare them.`
+    : "";
   const completeness = rows.length
-    ? `Data completeness: ${all.length} measurements included (${joinAnd(areas)}); ${comparable} with comparable earlier results.${missingAreas.length ? ` No data in this period for: ${joinAnd(missingAreas)}.` : ""}${unified.coverage.pendingReview ? ` ${unified.coverage.pendingReview} record(s) awaiting review are not used.` : ""}${unified.coverage.excluded ? ` ${unified.coverage.excluded} excluded record(s) are not used.` : ""}`
+    ? `Data completeness: ${all.length} measurements included (${joinAnd(areas)}); ${comparable} with comparable earlier results.${missingAreas.length ? ` No data in this period for: ${joinAnd(missingAreas)}.` : ""}${unified.coverage.pendingReview ? ` ${unified.coverage.pendingReview} record(s) awaiting review are not used.` : ""}${unified.coverage.excluded ? ` ${unified.coverage.excluded} excluded record(s) are not used.` : ""}${unified.coverage.outOfFilter ? ` ${unified.coverage.outOfFilter} record(s) fall outside the selected period.` : ""}${outsideNote}`
     : "Data completeness: no included results in this period.";
+
+  const verified = biomarkers.referenceRegistry.verifiedEntries;
+  const methodology = R(
+    [
+      `How to read this report: RED, AMBER and NORMAL appear only when a result is checked against an independently verified reference interval for its exact catalog ID and unit (${verified} verified reference${verified === 1 ? "" : "s"} available${verified ? "" : ", so every result is NEUTRAL — not classified"}).`,
+      rules
+        ? `Review flags come from explicit review-triage rules (pending scientific review): a change of at least ${rules.largeChange.percent}% between examinations, at least ${rules.tightlyRegulated.percent}% for blood electrolytes, intermediate peaks or troughs of at least ${rules.transientExtreme.percent}%, and changes in slowly changing markers such as HbA1c over short intervals. They show what to review first, not that a value is abnormal.`
+        : "Review-triage rules are unavailable, so no change is flagged for review.",
+      `Changes are calculated only between examinations on different calendar days in the same unit, using every comparable examination in the period. ${COMPARABILITY_NOTE} Changes that occur together do not show that one caused the other, and the report records no diagnoses.`,
+    ].join(" "),
+  );
 
   // Assessment categories (observed abnormal → changes → possible patterns → evaluation → confirmed).
   const assessment: HealthAssessment["assessment"] = {
     abnormal: warnings.map((w) => `${w.marker} ${w.text}`),
     changes: compared
-      .filter((c) => c.trend.direction === "increase" || c.trend.direction === "decrease")
+      .filter((c) => c.trend.direction === "increase" || c.trend.direction === "decrease" || c.trend.profile?.intermediate)
       .map((c) => `${TREND_MARKERS[c.trend.direction]} ${c.name}: ${c.trend.text}`),
     possiblePatterns: findings.flatMap((f) => f.conditions.filter((c) => c.status === "possible_requires_evaluation").map((c) => `${c.name} (${f.title}) — possible pattern requiring further evaluation.`)),
     furtherEvaluation: findings
-      .filter((f) => f.state === "validated_concern" || f.state === "changed")
-      .map((f) => `${f.title}: ${f.state === "validated_concern" ? "results meet verified criteria for a concern" : "related markers changed between examinations"}; Ground Medical evaluation is needed.`),
+      .filter((f) => f.state === "validated_concern" || f.reviewPriority !== "none")
+      .map((f) => `${f.title}: ${f.state === "validated_concern" ? "results meet verified criteria for a concern" : f.reviewPriority === "priority_review" ? "changes meet the review rules" : "measurement consistency must be checked"}.`),
     confirmedDiagnoses: CONFIRMED_DIAGNOSES_TEXT,
   };
-  if (!assessment.furtherEvaluation.length && findings.length)
-    assessment.furtherEvaluation.push("All measured areas: Ground Medical should review the recorded values against appropriate reference criteria, because none are verified in this application.");
 
-  const recommendations = buildRecommendations(findings);
-  const trends = findings
-    .flatMap((f) => f.contributors.filter((c) => c.trend.direction !== "insufficient").map((c) => ({ f, c })))
-    .filter(({ c }) => seriesByKey.get(c.key)!.longitudinal.points.every((p) => p.value !== null))
-    .slice(0, MAX_TRENDS)
-    .map(({ f, c }) => ({
-      key: c.key,
-      name: c.name,
-      unit: c.unit,
-      findingTitle: f.title,
-      points: seriesByKey.get(c.key)!.longitudinal.points.map((p) => ({ at: p.at, label: day(p.at), value: p.value! })),
-      trend: c.trend,
-    }));
+  const recommendations = buildRecommendations(findings, rules, library);
+  for (const f of findings) {
+    const recs = recommendations.filter((r) => r.findingIds.includes(f.id));
+    f.reasoning.followUp = recs.length ? recs.map((r) => r.id).join(", ") + ` — ${recs[0]!.text}` : "Routine monitoring only.";
+  }
+
+  // Most informative charts: priority flags, data checks, intermediate extremes, then the largest changes.
+  const chartCandidates = findings
+    .flatMap((f) => f.contributors.filter((c) => c.trend.direction !== "insufficient" && c.trend.profile).map((c) => ({ f, c })))
+    .filter(({ c }) => seriesByKey.get(c.key)!.longitudinal.points.every((p) => p.value !== null));
+  const informative = (c: Contributor) =>
+    (c.review.flags.some((x) => x.kind === "priority_review") ? 4000 : 0) +
+    (c.review.flags.some((x) => x.kind === "data_quality") ? 3000 : 0) +
+    (c.trend.profile?.intermediate ? 1500 : 0) +
+    Math.min(Math.abs(c.trend.profile?.largestStep?.percent ?? 0), 1000);
+  chartCandidates.sort((a, b) => informative(b.c) - informative(a.c) || a.c.name.localeCompare(b.c.name));
+  const trends = chartCandidates.slice(0, MAX_TRENDS).map(({ f, c }) => ({
+    key: c.key,
+    name: c.name,
+    unit: c.unit,
+    findingTitle: f.title,
+    points: seriesByKey.get(c.key)!.longitudinal.points.map((p) => ({ at: p.at, label: day(p.at), value: p.value! })),
+    trend: c.trend,
+    flagged: (c.review.flags.some((x) => x.kind === "priority_review") ? "priority_review" : c.review.flags.length ? "data_quality_review" : "none") as ReviewPriority,
+  }));
   const trendNote = trends.length
-    ? `Charts show measurements with at least two comparable examinations in the same unit${comparable > trends.length ? `; ${trends.length} of ${comparable} are shown, prioritised by finding` : ""}.`
+    ? `The ${trends.length === 1 ? "chart shows the series" : `${trends.length} charts show the series`} with the most informative changes (review flags, intermediate peaks, largest changes)${chartCandidates.length > trends.length ? `; ${chartCandidates.length - trends.length} further comparable series are described in the findings` : ""}.`
     : "No trend charts: no measurement has two or more comparable examinations in this period.";
 
   const otherResults = {
     count: other.length,
     names: other.map((c) => c.name).sort(),
     statement: other.length
-      ? `${other.length} further result${other.length === 1 ? " is" : "s are"} not part of a documented relationship group and ${other.length === 1 ? "is" : "are"} listed in the technical appendix only.`
+      ? `${plural(other.length, "further result")} ${other.length === 1 ? "is" : "are"} not part of a documented relationship group and ${other.length === 1 ? "is" : "are"} listed in the technical appendix only${other.some((c) => c.review.flags.length) ? `; flagged for review: ${list(other.filter((c) => c.review.flags.length).map((c) => c.name), 4)}` : ""}.`
       : "",
   };
+  for (const c of other.filter((x) => x.review.flags.length))
+    for (const f of c.review.flags)
+      (f.kind === "priority_review" ? priorities.reviewRequired : priorities.dataQuality).push({ findingId: "other", ruleId: f.ruleId, text: `${c.name}: ${f.text}` });
+  // De-duplicate: other-results flags may already be listed above.
+  priorities.reviewRequired = dedupe(priorities.reviewRequired);
+  priorities.dataQuality = dedupe(priorities.dataQuality);
 
   return {
     schema: HEALTH_ASSESSMENT_SCHEMA,
@@ -465,8 +646,10 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
     keyFindings,
     warnings,
     warningsStatement,
+    priorities,
     followUp,
     completeness,
+    methodology,
     findings,
     assessment,
     recommendations,
@@ -481,10 +664,24 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
       aiModel: auto?.origin === "ai_assisted" ? auto.model : null,
       patternLibraryVersion: library.version,
       patternLibraryStatus: library.status,
-      verifiedReferences: biomarkers.referenceRegistry.verifiedEntries,
+      reviewRulesVersion: rules?.version ?? null,
+      reviewRulesStatus: rules ? rules.status : `UNAVAILABLE (${bundledRules.problem ?? "disabled"})`,
+      verifiedReferences: verified,
       biomarkers: biomarkers.entries.length,
     },
   };
+}
+
+function dedupe(items: PriorityItem[]): PriorityItem[] {
+  const seen = new Set<string>();
+  return items.filter((i) => (seen.has(i.text) ? false : (seen.add(i.text), true)));
+}
+
+function changeLabel(c: Contributor): string {
+  const p = c.trend.profile;
+  if (p?.intermediate) return `${c.name} ${p.intermediate.kind} ${p.intermediate.point.valueText} ${c.unit} on ${p.intermediate.point.day}`;
+  const pct = c.trend.percent !== null ? `${signedNumber(c.trend.percent)}%` : c.trend.direction;
+  return `${c.name} ${TREND_MARKERS[c.trend.direction]} ${pct}`;
 }
 
 function buildFinding(
@@ -493,18 +690,30 @@ function buildFinding(
   order: number,
   automatedNotes: Map<string, string[]>,
   biomarkers: BiomarkerAssessmentReport,
+  rules: ReviewRules | null,
+  library: PatternLibrary,
+  historyLatest: Map<string, string>,
 ): Finding {
+  const flagRank = (c: Contributor) => (c.review.flags.some((f) => f.kind === "priority_review") ? 0 : c.review.flags.length ? 1 : 2);
   const contributors = [...contributorsIn].sort(
     (a, b) =>
       severityRank(a.severity) - severityRank(b.severity) ||
+      flagRank(a) - flagRank(b) ||
       Number(b.trend.direction !== "insufficient") - Number(a.trend.direction !== "insufficient") ||
       Number(isNumericValue(a.trend.latest.value)) - Number(isNumericValue(b.trend.latest.value)) ||
       p.members.findIndex((m) => m.id === a.metricId) - p.members.findIndex((m) => m.id === b.metricId),
   );
   const ids = new Set(contributors.map((c) => c.metricId));
   const validated = contributors.filter((c) => c.severity === "red" || c.severity === "amber");
-  const changed = contributors.filter((c) => c.trend.direction === "increase" || c.trend.direction === "decrease");
-  const stableOnes = contributors.filter((c) => c.trend.direction === "stable");
+  const changed = contributors.filter((c) => c.trend.direction === "increase" || c.trend.direction === "decrease" || c.trend.profile?.intermediate);
+  const stableOnes = contributors.filter((c) => c.trend.direction === "stable" && !c.trend.profile?.intermediate);
+  const flagged = contributors.filter((c) => c.review.flags.length);
+  const reviewFlags = flagged.flatMap((c) => c.review.flags.map((flag) => ({ name: c.name, flag })));
+  const reviewPriority: ReviewPriority = reviewFlags.some((f) => f.flag.kind === "priority_review")
+    ? "priority_review"
+    : reviewFlags.length
+      ? "data_quality_review"
+      : "none";
   const state: FindingState = validated.length ? "validated_concern" : changed.length ? "changed" : stableOnes.length ? "stable" : "baseline";
   const severity: Severity = validated.some((c) => c.severity === "red")
     ? "red"
@@ -516,49 +725,73 @@ function buildFinding(
   const dates = [...new Set(contributors.flatMap((c) => c.trend.examinationDates.map(day)))].sort();
   const valueOf = (c: Contributor) => formatResult(c.name, c.trend.latest.value, c.unit);
   const categorical = contributors.filter((c) => !isNumericValue(c.trend.latest.value));
-  const missingKeyEvidence = p.keyEvidence.filter((k) => !k.ids.some((id) => ids.has(id))).map((k) => k.label);
+  const missingDetail: MissingEvidence[] = p.keyEvidence
+    .filter((k) => !k.ids.some((id) => ids.has(id)))
+    .map((k) => {
+      const latest = k.ids.map((id) => historyLatest.get(id)).filter((x): x is string => Boolean(x)).sort().at(-1);
+      return latest
+        ? { label: k.label, status: "outside_period" as const, text: `${k.label}: measured outside the selected period (latest ${latest})` }
+        : { label: k.label, status: "not_recorded" as const, text: `${k.label}: not among the included records (not measured, or not safely matched to a catalog identity during intake)` };
+    });
+  const missingKeyEvidence = missingDetail.map((m) => m.label);
   const exploratory = contributors.every((c) => c.syntheticDemo);
   const area = p.area.toLowerCase();
+  const guidance = rules?.patternGuidance[p.id] ?? null;
+
+  // Cross-marker statement: two or more changed markers over the same interval.
+  const byInterval = new Map<string, Contributor[]>();
+  for (const c of changed) {
+    const s = c.trend.profile?.largestStep;
+    if (!s) continue;
+    const k = `${s.from.day}|${s.to.day}`;
+    byInterval.set(k, [...(byInterval.get(k) ?? []), c]);
+  }
+  const together = [...byInterval.entries()].filter(([, cs]) => cs.length >= 2).sort((a, b) => b[1].length - a[1].length)[0];
+  let combined: string | null = null;
+  if (together) {
+    const [k, cs] = together;
+    const [from, to] = k.split("|");
+    const dirs = new Set(cs.map((c) => Math.sign(c.trend.profile!.largestStep!.absolute)));
+    combined = `${list(cs.map((c) => `${c.name} (${c.trend.profile!.largestStep!.percent !== null ? `${signedNumber(c.trend.profile!.largestStep!.percent!)}%` : "changed"})`), 4)} changed over the same interval (${from} to ${to})${dirs.size > 1 ? ", in opposite directions" : ", in the same direction"}.`;
+  }
 
   let whatChanged: string;
   let interpretation: string;
   let headline: string;
+  const flagText = reviewPriority === "priority_review" ? `${REVIEW_MARKER} ` : reviewPriority === "data_quality_review" ? `${DATA_CHECK_MARKER} ` : "";
   if (state === "validated_concern") {
     whatChanged = validated.map((c) => `${valueOf(c)} on ${day(c.trend.latest.at)} — ${c.statusLabel.toLowerCase()}${c.referenceText ? ` (${c.referenceText})` : ""}.`).join(" ");
     if (changed.length) whatChanged += ` ${changed.map((c) => `${c.name}: ${c.trend.text}`).join(" ")}`;
-    interpretation = `${validated.length} result${validated.length === 1 ? "" : "s"} in this group meet${validated.length === 1 ? "s" : ""} verified criteria for ${validated.some((c) => c.severity === "red") ? "a clinically concerning finding" : "a cautionary finding"}. Considered with the related markers, this supports further evaluation of ${area}; it does not by itself establish a diagnosis.`;
+    interpretation = `${plural(validated.length, "result")} in this group meet${validated.length === 1 ? "s" : ""} verified criteria for ${validated.some((c) => c.severity === "red") ? "a clinically concerning finding" : "a cautionary finding"}. Considered with the related markers, this supports further evaluation of ${area}; it does not by itself establish a diagnosis.`;
     headline = `${p.title}: ${list(validated.map((c) => `${c.name} ${c.statusLabel.toLowerCase()}`), 3)}.`;
   } else if (state === "changed") {
     whatChanged = changed.map((c) => `${c.name}: ${c.trend.text}`).join(" ");
     const once = contributors.length - changed.length - stableOnes.length;
     if (stableOnes.length) whatChanged += ` No recorded change in ${list(stableOnes.map((c) => c.name), 4)}.`;
-    if (once > 0) whatChanged += ` ${once} related result${once === 1 ? " has" : "s have"} no comparable earlier measurement.`;
-    const roles = new Set(changed.map((c) => p.members.find((m) => m.id === c.metricId)?.role));
-    interpretation =
-      changed.length >= 2
-        ? `Several related markers changed between examinations (${list(changed.map((c) => c.name), 4)}). Because they belong to the same biological system${roles.size > 1 ? " but describe different aspects of it" : ""}, the combined change may be relevant to ${area}. Changes occurring together do not show that one caused the other, and without verified reference criteria they cannot be classified as harmful or beneficial.`
-        : `One marker changed (${changed[0]!.name}); the related markers have no comparable change to place it in context yet. Without verified reference criteria the change cannot be classified as harmful or beneficial.`;
-    headline = `${p.title}: ${list(changed.map((c) => `${c.name} ${TREND_MARKERS[c.trend.direction]} ${c.trend.percent !== null ? `${signed(c.trend.percent)}%` : c.trend.direction}`), 3)} between examinations.`;
+    if (once > 0) whatChanged += ` ${plural(once, "related result")} measured once (${list(contributors.filter((c) => c.trend.direction === "insufficient" && !c.trend.profile?.intermediate).map(valueOf), 4)}).`;
+    const quality = flagged.filter((c) => c.review.plausibility === "not_expected_over_interval");
+    const parts: string[] = [];
+    if (reviewPriority !== "none" && guidance) parts.push(guidance.combined);
+    else if (changed.length >= 2) parts.push(`Several related markers changed (${list(changed.map((c) => c.name), 4)}); because they describe the same biological system, the combined change is reviewed together.`);
+    else parts.push(`One marker changed (${changed[0]!.name}); the related markers give no comparable change to place it in context yet.`);
+    for (const q of quality) parts.push(`${q.name}: the calculated difference is mathematically correct, but it is not biologically expected over this interval. ${q.review.plausibilityText ?? ""}`.trim());
+    interpretation = parts.join(" ");
+    headline = `${flagText}${p.title}: ${list(changed.map(changeLabel), 3)}.`;
   } else if (state === "stable") {
-    whatChanged = `No recorded change in ${list(stableOnes.map((c) => c.name), 5)} between comparable examinations.${contributors.length > stableOnes.length ? ` ${contributors.length - stableOnes.length} related result(s) were measured only once.` : ""}`;
-    interpretation = "The related markers did not change between comparable examinations. This does not establish that the values are normal, because no verified reference criteria were applied.";
-    headline = `${p.title}: no recorded change in ${stableOnes.length} related measurement${stableOnes.length === 1 ? "" : "s"}.`;
+    whatChanged = `No recorded change in ${list(stableOnes.map((c) => c.name), 5)} between comparable examinations.${contributors.length > stableOnes.length ? ` ${plural(contributors.length - stableOnes.length, "related result")} measured only once.` : ""}`;
+    interpretation = "The related markers did not change between comparable examinations.";
+    headline = `${p.title}: no recorded change in ${plural(stableOnes.length, "related measurement")}.`;
   } else {
-    whatChanged = `Measured on ${joinAnd(dates)} only: ${list(contributors.map(valueOf), 6)}. With no comparable earlier result, no change over time can be established.`;
-    interpretation = `A single-time baseline for ${area}. Without verified reference criteria no value is called low, high or normal; Ground Medical review of the recorded values is needed.`;
-    headline = `${p.title}: ${contributors.length} related result${contributors.length === 1 ? "" : "s"} on ${joinAnd(dates)}${categorical.length ? `, including ${list(categorical.map((c) => `${c.name} — ${c.trend.latest.value} (as recorded)`), 2)}` : ""}; baseline only, not classifiable against verified criteria.`;
+    whatChanged = `Measured on ${joinAnd(dates)} only: ${list(contributors.map(valueOf), 6)}.`;
+    interpretation = `A single-time baseline for ${area}; no change over time can be established yet.`;
+    headline = `${p.title}: ${plural(contributors.length, "related result")} on ${joinAnd(dates)}${categorical.length ? `, including ${list(categorical.map((c) => `${c.name} — ${c.trend.latest.value} (as recorded)`), 2)}` : ""}; baseline only.`;
   }
 
   const units = new Set<string>();
+  const demoCount = contributors.filter((c) => c.syntheticDemo).length;
   const uncertainty = [
-    ...(missingKeyEvidence.length ? [`Not available in this period: ${joinAnd(missingKeyEvidence)}.`] : []),
-    COMPARABILITY_NOTE,
-    ...(state === "changed" ? ["Changes occurring together do not show that one caused the other."] : []),
-    ...(contributors.some((c) => c.syntheticDemo)
-      ? [
-          `${contributors.filter((c) => c.syntheticDemo).length} of these results ${contributors.filter((c) => c.syntheticDemo).length === 1 ? "uses a synthetic demonstration catalog entry, which is" : "use synthetic demonstration catalog entries, which are"} not scientifically validated (exploratory).`,
-        ]
-      : []),
+    ...(missingDetail.length ? [`Not available: ${missingDetail.map((m) => m.text).join("; ")}.`] : []),
+    ...(demoCount ? [`${demoCount} of these results ${demoCount === 1 ? "uses a synthetic demonstration catalog entry" : "use synthetic demonstration catalog entries"} (not scientifically validated; exploratory).`] : []),
     ...(contributors.some((c) => {
       const before = units.size;
       units.add(`${c.metricId}`);
@@ -575,9 +808,12 @@ function buildFinding(
   }));
 
   const usedRefs = contributors.filter((c) => c.referenceText);
-  const rules = usedRefs.length
-    ? usedRefs.map((c) => `${c.name}: ${c.classification}`)
-    : [`No verified reference interval or decision threshold applies to these results (verified references available: ${biomarkers.referenceRegistry.verifiedEntries}). Every result is NEUTRAL.`];
+  const rulesApplied = [
+    ...(usedRefs.length
+      ? usedRefs.map((c) => `${c.name}: ${c.classification}`)
+      : [`No verified reference interval or decision threshold applies (verified references available: ${biomarkers.referenceRegistry.verifiedEntries}); every result is NEUTRAL.`]),
+    ...reviewFlags.map((f) => `${f.flag.ruleId} (${f.flag.kind === "priority_review" ? "review priority" : "data-quality check"}) — ${f.name}: ${f.flag.text}`),
+  ];
   const confidence: Finding["why"]["confidence"] =
     validated.length && changed.length
       ? { level: "Higher", basis: "Verified reference criteria applied and comparable repeated measurements available." }
@@ -590,14 +826,29 @@ function buildFinding(
   const review = [
     `Biological interpretation: ${approved} of ${contributors.length} marker(s) have an approved interpretation; the rest are pending independent scientific review.`,
     `Ground Medical evidence attestation: ${attested} of ${readings} reading(s) attested. Attestation confirms the evidence, not a diagnosis.`,
-    `Catalog identity: ${contributors.length - contributors.filter((c) => c.syntheticDemo).length} handbook/catalog, ${contributors.filter((c) => c.syntheticDemo).length} synthetic demonstration (not scientifically validated).`,
-    `Relationship text: P56 health pattern library, pending independent scientific review.`,
+    `Catalog identity: ${contributors.length - demoCount} handbook/catalog, ${demoCount} synthetic demonstration (not scientifically validated).`,
+    `Relationship text: P56 health pattern library, ${library.status === "PENDING_SCIENTIFIC_REVIEW" ? "pending independent scientific review" : library.status}.`,
   ];
   const references = contributors.flatMap((c) => (c.handbookContext ? [`${c.name}: ${c.handbookContext}`] : []));
   const notes = contributors.flatMap((c) => automatedNotes.get(c.key) ?? []);
 
+  const reasoning: Finding["reasoning"] = {
+    observations: `${plural(contributors.length, "measurement")}: ${list(contributors.map(valueOf), 5)}.`,
+    changes: changed.length ? changed.map((c) => `${c.name}: ${c.trend.text}`).join(" ") : "No change over time in this period.",
+    relationshipStatus: `General physiology described in the P56 pattern library (${library.status === "PENDING_SCIENTIFIC_REVIEW" ? "pending independent scientific review" : library.status}); not yet validated for this application.`,
+    combinedSupport:
+      state === "validated_concern"
+        ? "Verified criteria apply; together with the related markers this supports Ground Medical evaluation — not a diagnosis."
+        : reviewPriority !== "none"
+          ? `${combined ? `${combined} ` : ""}The combined pattern is a review signal only; without verified criteria it supports no clinical interpretation or diagnosis.`
+          : "No combined interpretation is supported; values are recorded for monitoring.",
+    missingEvidence: missingDetail.length ? missingDetail.map((m) => m.text).join("; ") : "No key measurement of this group is missing.",
+    followUp: "",
+  };
+
   const score =
-    (severity === "red" ? 1000 : severity === "amber" ? 800 : 0) +
+    (severity === "red" ? 10_000 : severity === "amber" ? 8_000 : 0) +
+    (reviewPriority === "priority_review" ? 4_000 + reviewFlags.length * 100 : reviewPriority === "data_quality_review" ? 3_000 : 0) +
     (state === "changed" ? 200 + changed.length * 20 : state === "stable" ? 50 : 0) +
     Math.min(contributors.length, 20) * 2 -
     order;
@@ -610,69 +861,88 @@ function buildFinding(
     state,
     severity,
     marker: SEVERITY_MARKERS[severity],
+    reviewPriority,
+    reviewFlags,
     headline: R(headline),
     whatChanged: R(whatChanged),
     contributors,
     relationship: R(p.relationship),
     spaceflightContext: R(p.spaceflightContext),
+    combined: combined && R(combined),
     interpretation: R(interpretation),
     uncertainty: uncertainty.map(R),
     exploratory,
     missingKeyEvidence,
+    missingDetail,
     conditions,
-    why: { rules: rules.map(R), confidence, references, review, automatedNotes: [...new Set(notes)] },
+    reasoning,
+    why: { rules: rulesApplied.map(R), confidence, references, review, automatedNotes: [...new Set(notes)] },
     score,
   };
 }
 
-function buildRecommendations(findings: readonly Finding[]): Recommendation[] {
-  const lib = bundledPatternLibrary();
+function buildRecommendations(findings: readonly Finding[], rules: ReviewRules | null, library: PatternLibrary): Recommendation[] {
   const out = new Map<string, Recommendation>();
-  const add = (category: RecommendationCategory, authorization: RecommendationAuthorization, text: string, basis: string) => {
+  const add = (category: RecommendationCategory, authorization: RecommendationAuthorization, text: string, basis: string, findingIds: readonly string[], priority = false) => {
     const key = `${category}|${text}`;
     const existing = out.get(key);
     if (existing) {
       if (!existing.basis.includes(basis)) existing.basis.push(basis);
+      for (const id of findingIds) if (!existing.findingIds.includes(id)) existing.findingIds.push(id);
+      existing.priority ||= priority;
       return;
     }
-    out.set(key, { id: "", category, authorization, authorizationLabel: AUTHORIZATION_LABELS[authorization], text: R(text), basis: [basis] });
+    out.set(key, { id: "", category, authorization, authorizationLabel: AUTHORIZATION_LABELS[authorization], text: R(text), basis: [basis], findingIds: [...findingIds], priority });
   };
-  const stateLabel = (f: Finding) =>
-    f.state === "validated_concern" ? "validated concern" : f.state === "changed" ? "change between examinations" : f.state === "stable" ? "no recorded change" : "single examination";
+  const flaggedBasis = (f: Finding) => `${f.title} — ${list([...new Set(f.reviewFlags.map((x) => x.name))], 4)} (review flag)`;
+  const monitorChanged: Finding[] = [];
   const baseline: Finding[] = [];
   const missing: string[] = [];
   for (const f of findings) {
-    const p = lib.patterns.find((x) => x.id === f.patternId);
-    const basis = `${f.title} (${stateLabel(f)})`;
-    if (p && f.state === "validated_concern") for (const r of p.recommendations.concern) add(r.category, r.authorization, r.text, basis);
-    else if (p && f.state === "changed") for (const r of p.recommendations.change) add(r.category, r.authorization, r.text, basis);
-    else baseline.push(f);
-    if (f.missingKeyEvidence.length) missing.push(`${joinAnd(f.missingKeyEvidence)} (${f.title.toLowerCase()})`);
+    const p = library.patterns.find((x) => x.id === f.patternId);
+    const guidance = rules?.patternGuidance[f.patternId];
+    if (p && f.state === "validated_concern") for (const r of p.recommendations.concern) add(r.category, r.authorization, r.text, `${f.title} (validated concern)`, [f.id], true);
+    if (f.reviewPriority !== "none") {
+      const recs = guidance?.recommendations ?? p?.recommendations.change ?? [];
+      for (const r of recs) add(r.category, r.authorization, r.text, flaggedBasis(f), [f.id], f.reviewPriority === "priority_review");
+    } else if (f.state === "changed") monitorChanged.push(f);
+    else if (f.state !== "validated_concern") baseline.push(f);
+    for (const m of f.missingDetail.filter((x) => x.status === "not_recorded")) missing.push(`${m.label} (${f.title.toLowerCase()})`);
   }
-  const groupBasis = (fs: readonly Finding[]) =>
-    fs.length > 1 && fs.length === findings.length && fs.every((f) => f.state === fs[0]!.state)
-      ? `all measured areas (${stateLabel(fs[0]!)})`
-      : fs.map((f) => `${f.title} (${stateLabel(f)})`).join("; ");
-  if (baseline.length) {
-    const basis = groupBasis(baseline);
-    add("monitoring", "general_wellness", "Repeat these measurements at the next scheduled examination with the same laboratory, method and units, so that changes over time can be measured.", basis);
-    add("ground_medical", "clinician_required", "Ground Medical should review the recorded values against appropriate reference criteria; none are verified in this application, so no value has been classified.", basis);
-  }
-  if (missing.length)
+  if (monitorChanged.length)
+    add(
+      "monitoring",
+      "general_wellness",
+      `Repeat the changed measurements in ${list(monitorChanged.map((f) => f.title.toLowerCase()), 4)} with the same laboratory method at the next scheduled examination, so the change can be confirmed.`,
+      monitorChanged.map((f) => `${f.title} (change below the review rules)`).join("; "),
+      monitorChanged.map((f) => f.id),
+    );
+  if (baseline.length)
+    add(
+      "monitoring",
+      "general_wellness",
+      "Repeat the single-examination measurements at the next scheduled examination with the same laboratory, method and units, so that changes over time can be measured.",
+      baseline.map((f) => `${f.title} (${f.state === "stable" ? "no recorded change" : "single examination"})`).join("; "),
+      baseline.map((f) => f.id),
+    );
+  if (missing.length) {
     add(
       "further_examination",
       "clinician_required",
-      `The picture is incomplete in some areas. Not available in this period: ${missing.join("; ")}. Ground Medical may request these tests.`,
+      `The picture is incomplete. Not recorded in this period: ${missing.join("; ")}. Ground Medical may request these tests.`,
       "documented relationship groups (missing key measurements)",
+      findings.filter((f) => f.missingDetail.some((m) => m.status === "not_recorded")).map((f) => f.id),
     );
+  }
   return [...out.values()]
-    .sort((a, b) => RECOMMENDATION_CATEGORIES.indexOf(a.category) - RECOMMENDATION_CATEGORIES.indexOf(b.category))
-    .map((r, i) => ({ ...r, id: `rec-${i + 1}` }));
+    .sort((a, b) => Number(b.priority) - Number(a.priority) || RECOMMENDATION_CATEGORIES.indexOf(a.category) - RECOMMENDATION_CATEGORIES.indexOf(b.category))
+    .map((r, i) => ({ ...r, id: `R${i + 1}` }));
 }
 
 // ------------------------------------------------------------ plain text (TXT export)
 
 export function healthAssessmentPlainText(a: HealthAssessment): string {
+  const pr = a.priorities;
   const lines = [
     "HEALTH ASSESSMENT",
     `Astronaut: ${a.header.astronaut}`,
@@ -683,38 +953,47 @@ export function healthAssessmentPlainText(a: HealthAssessment): string {
     ...a.overview,
     "",
     "Most important findings:",
-    ...a.keyFindings.map((k) => `- ${k.marker} ${k.text}`),
+    ...a.keyFindings.map((k) => `- ${k.severity !== "neutral" ? `${k.marker} ` : ""}${k.text}`),
     "",
-    `Validated health warnings: ${a.warningsStatement}`,
+    `Validated clinical alerts: ${a.warningsStatement}`,
     ...a.warnings.map((w) => `- ${w.marker} ${w.text}`),
+    `${REVIEW_FLAG_LABEL}: ${pr.reviewRequired.length ? "" : "none"}`,
+    ...pr.reviewRequired.map((i) => `- ${REVIEW_MARKER} ${i.text}`),
+    `Data-quality / plausibility checks: ${pr.dataQuality.length ? "" : "none"}`,
+    ...pr.dataQuality.map((i) => `- ${DATA_CHECK_MARKER} ${i.text}`),
+    ...(pr.exploratory.length ? ["Exploratory observations:", ...pr.exploratory.map((i) => `- ${i.text}`)] : []),
+    `Routine: ${pr.routine.text}`,
+    `Clinical severity: ${a.followUp.clinicalSeverity}`,
     `Follow-up priority: ${a.followUp.label} — ${a.followUp.text}`,
     a.completeness,
     "",
     "KEY BIOLOGICAL FINDINGS",
     ...a.findings.flatMap((f) => [
-      `${f.marker} ${f.title}${f.exploratory ? " [exploratory]" : ""}`,
+      `${f.severity !== "neutral" ? `${f.marker} ` : ""}${f.title}${f.reviewPriority === "priority_review" ? ` ${REVIEW_MARKER}` : f.reviewPriority === "data_quality_review" ? ` ${DATA_CHECK_MARKER}` : ""}${f.exploratory ? " [exploratory]" : ""}`,
       `  What changed: ${f.whatChanged}`,
+      ...(f.combined ? [`  Together: ${f.combined}`] : []),
       `  How they relate: ${f.relationship} ${f.spaceflightContext}`,
       `  Interpretation: ${f.interpretation}`,
       ...f.uncertainty.map((u) => `  Uncertainty: ${u}`),
+      `  Follow-up: ${f.reasoning.followUp}`,
     ]),
     "",
-    "HEALTH ASSESSMENT AND RECOMMENDATIONS",
-    `Observed abnormal measurements (validated): ${a.assessment.abnormal.length ? a.assessment.abnormal.join("; ") : "none"}`,
-    `Longitudinal changes: ${a.assessment.changes.length ? a.assessment.changes.join("; ") : "none measurable"}`,
+    "RECOMMENDATIONS",
+    ...a.recommendations.map((r) => `- ${r.id} [${r.authorizationLabel}] ${r.text} (based on: ${r.basis.join("; ")})`),
     `Possible condition-related patterns: ${a.assessment.possiblePatterns.length ? a.assessment.possiblePatterns.join("; ") : "none could be assessed"}`,
-    ...a.assessment.furtherEvaluation.map((x) => `Further evaluation: ${x}`),
     `Confirmed diagnoses: ${a.assessment.confirmedDiagnoses}`,
-    ...a.recommendations.map((r) => `- [${r.authorizationLabel}] ${r.text} (based on: ${r.basis.join("; ")})`),
     "",
     "LONGITUDINAL TRENDS",
     a.trendNote,
-    ...a.trends.map((t) => `- ${t.name} [${t.unit}]: ${t.points.map((p) => `${p.label} ${p.value}`).join(" → ")}`),
+    ...a.trends.map((t) => `- ${t.name} [${t.unit}]: ${t.points.map((p) => `${p.label} ${p.value}`).join(" → ")} — ${t.trend.text}`),
     ...(a.otherResults.statement ? ["", a.otherResults.statement] : []),
+    "",
+    "METHODOLOGY",
+    a.methodology,
     "",
     a.disclosure,
   ];
   return lines.map(R).join("\n");
 }
 
-export { RESEARCHER_DOMAIN_LABELS };
+export { PATTERN_LABELS, RESEARCHER_DOMAIN_LABELS };
