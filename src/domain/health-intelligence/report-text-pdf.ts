@@ -863,7 +863,9 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       continue;
     }
     if (b.kind === "chart") {
-      const h = 34;
+      font("normal", 8, true);
+      const captionLines = pdf.splitTextToSize(clean(b.caption), width).slice(0, 3);
+      const h = 34 + Math.max(0, captionLines.length - 1) * 3.4;
       ensure(h + 3);
       font("bold", 9);
       pdf.text(clean(`${b.title} [${b.unit}]`), L.marginX, y + 3.5);
@@ -897,8 +899,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
         if (n <= 8 || i === 0 || i === n - 1) pdf.text(clean(p.label), xAt(i), py + ph + 3.5, { align: i === 0 ? "left" : i === n - 1 ? "right" : "center" });
       });
       font("normal", 8, true);
-      const cl = pdf.splitTextToSize(clean(b.caption), width).slice(0, 2);
-      cl.forEach((l, i) => pdf.text(l, L.marginX, py + ph + 7.5 + i * 3.4));
+      captionLines.forEach((l, i) => pdf.text(l, L.marginX, py + ph + 7.5 + i * 3.4));
       y += h;
       continue;
     }

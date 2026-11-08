@@ -95,9 +95,9 @@ function buildDocument(a: HealthAssessment, level: number, pageException: boolea
       ],
     },
     { kind: "p", text: a.completeness, muted: true, size: 8.5 },
-    { kind: "p", text: a.methodology, muted: true, size: 8 },
     ...(breaks ? [{ kind: "pagebreak" } as Block] : []),
     { kind: "h1", text: "Key biological findings" },
+    { kind: "p", text: a.methodology, muted: true, size: 8 },
   );
 
   const detailed = a.findings.filter((f) => f.state === "validated_concern" || f.state === "changed" || f.reviewPriority !== "none");
@@ -172,10 +172,14 @@ export async function createHealthAssessmentPdf(a: HealthAssessment, deps?: PdfD
   const first = await openTextPdf(deps);
   const again = async () => (await openTextPdf({ ...(deps?.jsPDF ? { jsPDF: deps.jsPDF } : {}), fonts: first.fonts })).pdf;
   let pdf = first.pdf;
+  // Level 0 keeps one section per page; level 1 lets sections flow. The flowing
+  // layout wins whenever it needs fewer pages (no near-empty pages).
+  let best: (TextPdfResult & { compaction: number; pageException: boolean }) | null = null;
   for (let level = 0; level < COMPACTION_LEVELS; level++) {
     const out = renderDocumentToPdf(pdf, first.fonts, buildHealthAssessmentDocument(a, level), meta);
-    if (out.pages <= MAX_ASSESSMENT_PAGES) return { ...out, compaction: level, pageException: false };
     pdf = await again();
+    if (out.pages <= MAX_ASSESSMENT_PAGES && (!best || out.pages < best.pages)) best = { ...out, compaction: level, pageException: false };
+    if (best && level >= 1) return best;
   }
   const out = renderDocumentToPdf(pdf, first.fonts, buildHealthAssessmentDocument(a, COMPACTION_LEVELS - 1, true), meta);
   return { ...out, compaction: COMPACTION_LEVELS - 1, pageException: true };

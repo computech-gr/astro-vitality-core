@@ -725,7 +725,7 @@ function buildFinding(
       const latest = k.ids.map((id) => historyLatest.get(id)).filter((x): x is string => Boolean(x)).sort().at(-1);
       return latest
         ? { label: k.label, status: "outside_period" as const, text: `${k.label}: measured outside the selected period (latest ${latest})` }
-        : { label: k.label, status: "not_recorded" as const, text: `${k.label}: not recorded in the included records for this crew member` };
+        : { label: k.label, status: "not_recorded" as const, text: `${k.label}: not among the included records (not measured, or not safely matched to a catalog identity during intake)` };
     });
   const missingKeyEvidence = missingDetail.map((m) => m.label);
   const exploratory = contributors.every((c) => c.syntheticDemo);
@@ -888,7 +888,7 @@ function buildRecommendations(findings: readonly Finding[], rules: ReviewRules |
     }
     out.set(key, { id: "", category, authorization, authorizationLabel: AUTHORIZATION_LABELS[authorization], text: R(text), basis: [basis], findingIds: [...findingIds], priority });
   };
-  const flaggedBasis = (f: Finding) => `${f.title}: ${list([...new Set(f.reviewFlags.map((x) => `${x.name} (${x.flag.ruleId})`))], 4)}`;
+  const flaggedBasis = (f: Finding) => `${f.title} — ${list([...new Set(f.reviewFlags.map((x) => x.name))], 4)} (review flag)`;
   const monitorChanged: Finding[] = [];
   const baseline: Finding[] = [];
   const missing: string[] = [];
