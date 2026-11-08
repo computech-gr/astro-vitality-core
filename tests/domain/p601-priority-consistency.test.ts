@@ -52,6 +52,8 @@ describe("P60.1 — 1. a large change alone never becomes HIGH PRIORITY", () => 
   it("results-table HIGH PRIORITY badges match exactly the results whose finding is high priority", () => {
     const { w } = render(D1);
     const t = tableTexts(w);
+    expect(t.length).toBeGreaterThan(300);
+    expect(t.filter((x) => x.text === "HIGH PRIORITY").length).toBeGreaterThan(0);
     expect(t.filter((x) => x.text === "HIGH PRIORITY").length).toBe(D1.rows.filter((r) => r.priority === "HIGH_PRIORITY_MEDICAL_REVIEW").length);
     expect(t.filter((x) => x.text === TREND_REVIEW_LABEL).length).toBe(D1.rows.filter((r) => r.axes.review.value === "HIGH").length);
     // the P59 red "HIGH" review badge is gone from the table
@@ -111,7 +113,7 @@ describe("P60.1 — 4. clinical classification is never overwritten by priority"
   it("no result without a criterion has a non-neutral class, whatever its priority", () => {
     for (const r of D1.rows) if (r.basis === "none") expect(r.displayClass).toBe("NEUTRAL");
   });
-  it("classes are identical with and without the priority layer (OFF has no patterns)", () => {
+  it("real-provenance results stay NEUTRAL (no provisional class reaches real data)", () => {
     const real = REAL.rows.map((r) => `${r.recordId}:${r.displayClass}:${r.basis}`);
     expect(real.every((x) => x.endsWith(":NEUTRAL:none"))).toBe(true);
   });
@@ -193,6 +195,7 @@ describe("P60.1 — 9. PDF readability", () => {
     for (const [, r] of SETS) {
       const { w } = render(r);
       const t = tableTexts(w);
+      expect(t.length).toBeGreaterThan(20);
       for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) if (t[i]!.page === t[j]!.page) expect(overlaps(t[i]!, t[j]!) ? `${t[i]!.text} × ${t[j]!.text}` : "").toBe("");
       const titles = w.texts.filter((x) => x.size === 9.6 && x.bold);
       const small = w.texts.filter((x) => x.size <= 6.6);
