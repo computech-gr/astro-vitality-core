@@ -71,7 +71,9 @@ describe("official competition team destinations", () => {
       ["Watch NASA Demo Video", "/competition/demo-video"],
     ]);
     // No competition material points at a GitHub blob page any more.
-    expect(competitionDocuments.some((document) => document.url.includes("github.com"))).toBe(false);
+    expect(competitionDocuments.some((document) => document.url.includes("github.com"))).toBe(
+      false,
+    );
     // Obsolete direct-download entries must never return to the competition list.
     expect(competitionDocuments.some((document) => /\.(pdf|pptx|mp4)$/.test(document.url))).toBe(
       false,
@@ -126,12 +128,12 @@ describe("official competition team destinations", () => {
       "MITOCHONDRIA_NASA_Space_Apps_2026_Presentation_FINAL.pdf",
       "MITOCHONDRIA_NASA_Evaluator_Quick_Start_Guide_FINAL.pdf",
       "MITOCHONDRIA_Master_Operations_Technical_Manual_FINAL.pdf",
-      "MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf",
+      "MITOCHONDRIA_P60_Alex_Morgan_Premium_Health_Intelligence_Report_SYNTHETIC.pdf",
     ]);
     for (const document of Object.values(competitionPdfs)) {
-      expect(
-        existsSync(new URL(`../../docs/competition/${document.file}`, import.meta.url)),
-      ).toBe(true);
+      expect(existsSync(new URL(`../../docs/competition/${document.file}`, import.meta.url))).toBe(
+        true,
+      );
     }
     for (const id of ["__proto__", "constructor", "../presentation", "presentation.pdf", ""]) {
       expect(findCompetitionPdf(id)).toBeUndefined();
@@ -181,7 +183,8 @@ describe("P53 same-origin competition PDFs", () => {
   });
 
   test("build staging and the Vite safeguard ship exactly the three registry PDFs", async () => {
-    const { COMPETITION_PDF_FILES } = await import("../../scripts/competition-pdf-assets-plugin.mjs");
+    const { COMPETITION_PDF_FILES } =
+      await import("../../scripts/competition-pdf-assets-plugin.mjs");
     const files = Object.values(competitionPdfs).map((document) => document.file);
     expect(COMPETITION_PDF_FILES).toEqual(files);
     const stage = readFileSync(
@@ -204,6 +207,30 @@ describe("P53 same-origin competition PDFs", () => {
 test("P36.8.2 sample health report is reachable from Competition Materials at /competition/pdf/sample", () => {
   const shell = readFileSync("src/components/app-shell.tsx", "utf8");
   expect(shell).toContain('"Sample Astronaut Health Report (PDF)"');
-  expect(shell).toMatch(/Sample Astronaut Health Report \(PDF\)"\)\s*return "\/competition\/pdf\/sample"/);
-  expect(findCompetitionPdf("sample")?.file).toBe("MITOCHONDRIA_Synthetic_Astronaut_Health_Report_SAMPLE.pdf");
+  expect(shell).toMatch(
+    /Sample Astronaut Health Report \(PDF\)"\)\s*return "\/competition\/pdf\/sample"/,
+  );
+  expect(findCompetitionPdf("sample")?.file).toBe(
+    "MITOCHONDRIA_P60_Alex_Morgan_Premium_Health_Intelligence_Report_SYNTHETIC.pdf",
+  );
+});
+
+test("P60 public sample is the owner-supplied 16-page PDF, byte-identical, with its required labels", () => {
+  const bytes = readFileSync(
+    new URL(
+      "../../docs/competition/MITOCHONDRIA_P60_Alex_Morgan_Premium_Health_Intelligence_Report_SYNTHETIC.pdf",
+      import.meta.url,
+    ),
+  );
+  const sha = new Bun.CryptoHasher("sha256").update(bytes).digest("hex");
+  expect(sha).toBe("e7cee20e43804ef55d65f9485b2ace8bdd11421be50dace2ffd7619da2591b8e");
+  expect(bytes.byteLength).toBe(177827);
+  const sample = findCompetitionPdf("sample");
+  expect(sample?.title).toBe("MITOCHONDRIA — Premium Health Intelligence Report");
+  expect(sample?.subtitle).toBe("Alex Morgan | Synthetic Astronaut | P60 Demonstration");
+  expect(sample?.disclaimer).toBe(
+    "Synthetic demonstration data. Preliminary automated assessment for Ground Medical review. Not a clinical diagnosis.",
+  );
+  expect(sample?.provenance).toContain("reconstructed synthetic demonstration data");
+  expect(sample?.provenance).toContain("not based on verified local November records");
 });

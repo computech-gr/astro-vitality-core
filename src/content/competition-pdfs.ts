@@ -11,6 +11,8 @@ type CompetitionPdfEntry = {
   disclaimer?: string;
   /** Optional plain-language note on where the document's data came from. */
   provenance?: string;
+  /** Show an explicit "Download PDF" button. */
+  offerDownload?: boolean;
 };
 
 export const competitionPdfs = {
