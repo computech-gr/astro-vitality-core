@@ -298,7 +298,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
         criterionKind: r.criterionKind,
         bandLabel: r.bandLabel,
         highReview: r.axes.review.value === "HIGH",
-        dataCheck: r.axes.dataQuality.value === "DATA_QUALITY_WARNING" || r.provisional?.status === "HELD" || r.axes.clinical.reason === "held",
+        dataCheck: r.axes.dataQuality.value === "DATA_QUALITY_WARNING" || r.provisional?.status === "HELD" || Boolean(r.limitation?.startsWith("Held")),
       })),
     });
     priorities[c.concernId] = decision;
