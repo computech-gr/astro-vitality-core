@@ -5,11 +5,30 @@
  * state the same findings. The detailed evidence report remains a separate,
  * optional technical appendix (createTextReportPdf).
  */
-import type { HealthAssessment } from "./p56-health-assessment";
+import { COMPARABILITY_NOTE, type HealthAssessment } from "./p56-health-assessment";
+import type { Severity } from "./biomarker-health-assessment";
 import { RECOMMENDATION_CATEGORY_LABELS } from "./p56-pattern-library";
 import { openTextPdf, renderDocumentToPdf, type Block, type PdfDeps, type ReportDocument, type TextPdfResult } from "./report-text-pdf";
 
+/** Colour and marker only for results classified against verified criteria; unclassified text stays plain. */
+const mark = (marker: string, severity: Severity, text: string) => (severity === "neutral" ? text : `${marker} ${text}`);
+/** Subscript digits are missing from the embedded font; print them as plain digits. */
+const SUB: Record<string, string> = { "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4", "₅": "5", "₆": "6", "₇": "7", "₈": "8", "₉": "9" };
+const plainDigits = (t: string) => t.replace(/[₀-₉]/g, (c) => SUB[c] ?? c);
+
 export function buildHealthAssessmentDocument(a: HealthAssessment): ReportDocument {
+  const doc = buildDocument(a);
+  const fix = (b: Block): Block => {
+    if (b.kind === "h1" || b.kind === "h2" || b.kind === "h3" || b.kind === "p") return { ...b, text: plainDigits(b.text) };
+    if (b.kind === "bullets") return { ...b, items: b.items.map(plainDigits) };
+    if (b.kind === "kv") return { ...b, rows: b.rows.map(([k, v]) => [plainDigits(k), plainDigits(v)] as [string, string]) };
+    if (b.kind === "chart") return { ...b, title: plainDigits(b.title), unit: plainDigits(b.unit), caption: plainDigits(b.caption) };
+    return b;
+  };
+  return { ...doc, blocks: doc.blocks.map(fix) };
+}
+
+function buildDocument(a: HealthAssessment): ReportDocument {
   const h = a.header;
   const blocks: Block[] = [
     { kind: "h1", text: "Health Assessment" },
@@ -27,23 +46,26 @@ export function buildHealthAssessmentDocument(a: HealthAssessment): ReportDocume
     ...a.overview.map((text): Block => ({ kind: "p", text })),
     { kind: "h3", text: "Most important findings" },
     a.keyFindings.length
-      ? { kind: "bullets", items: a.keyFindings.map((k) => `${k.marker} ${k.text}`), tones: a.keyFindings.map((k) => k.severity) }
+      ? { kind: "bullets", items: a.keyFindings.map((k) => mark(k.marker, k.severity, k.text)), tones: a.keyFindings.map((k) => k.severity) }
       : { kind: "p", text: "No findings: no reviewed results in this period." },
     { kind: "h3", text: "Validated health warnings" },
     { kind: "p", text: a.warningsStatement },
-    ...(a.warnings.length ? [{ kind: "bullets", items: a.warnings.map((w) => `${w.marker} ${w.text}`), tones: a.warnings.map((w) => w.severity) } as Block] : []),
+    ...(a.warnings.length ? [{ kind: "bullets", items: a.warnings.map((w) => mark(w.marker, w.severity, w.text)), tones: a.warnings.map((w) => w.severity) } as Block] : []),
     { kind: "kv", rows: [["Follow-up priority", `${a.followUp.label} — ${a.followUp.text}`]] },
     { kind: "p", text: a.completeness, muted: true, size: 9 },
     { kind: "pagebreak" },
     { kind: "h1", text: "Key biological findings" },
+    { kind: "p", text: `Related results are explained together. Colour and markers are used only for results classified against verified reference criteria. ${COMPARABILITY_NOTE}`, muted: true, size: 8.5 },
   ];
   for (const f of a.findings) {
     blocks.push(
-      { kind: "h3", text: `${f.marker} ${f.title}${f.exploratory ? " — exploratory (synthetic demonstration catalog)" : ""}`, tone: f.severity },
-      { kind: "p", text: `What changed: ${f.whatChanged}`, size: 9.5 },
-      { kind: "p", text: `How they relate: ${f.relationship} ${f.spaceflightContext}`, size: 9, muted: true },
-      { kind: "p", text: `Interpretation: ${f.interpretation}`, size: 9.5 },
-      { kind: "p", text: `Uncertainty: ${f.uncertainty.join(" ")}`, size: 8.5, muted: true },
+      { kind: "h3", text: mark(f.marker, f.severity, `${f.title}${f.exploratory ? " — exploratory (synthetic demonstration catalog)" : ""}`), tone: f.severity },
+      { kind: "p", text: `What changed: ${f.whatChanged}`, size: 9 },
+      { kind: "p", text: `How they relate: ${f.relationship} ${f.spaceflightContext}`, size: 8.5, muted: true },
+      { kind: "p", text: `Interpretation: ${f.interpretation}`, size: 9 },
+      ...(f.uncertainty.some((u) => u !== COMPARABILITY_NOTE)
+        ? [{ kind: "p", text: `Uncertainty: ${f.uncertainty.filter((u) => u !== COMPARABILITY_NOTE).join(" ")}`, size: 8.5, muted: true } as Block]
+        : []),
     );
   }
   if (a.otherResults.statement) blocks.push({ kind: "p", text: a.otherResults.statement, muted: true, size: 9 });

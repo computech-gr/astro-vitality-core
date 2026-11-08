@@ -51,6 +51,14 @@ export const AUTOMATED_DISCLOSURE = "Automated health assessment — subject to 
 export const CONFIRMED_DIAGNOSES_TEXT =
   "None. MITOCHONDRIA does not record diagnoses; a diagnosis requires examination and authorization by a qualified clinician.";
 export const MAX_KEY_FINDINGS = 5;
+export const COMPARABILITY_NOTE =
+  "Specimen, laboratory method and collection conditions are not recorded, so comparability between examinations is not verified.";
+
+/** Categorical/yes-no results are shown as recorded, without a pseudo-unit such as "yes/no". */
+export const isNumericValue = (v: string) => /^[<>≤≥]?\s*-?\d/.test(v.trim());
+export function formatResult(name: string, value: string, unit: string): string {
+  return isNumericValue(value) ? `${name} ${value} ${unit}` : `${name}: ${value}`;
+}
 export const MAX_TRENDS = 6;
 
 // ------------------------------------------------------------ types
@@ -382,7 +390,7 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
     .map((c) => ({
       severity: c.severity,
       marker: c.marker,
-      text: `${c.name}: ${c.trend.latest.value} ${c.unit} on ${day(c.trend.latest.at)} — ${c.statusLabel}${c.referenceText ? ` (${c.referenceText})` : ""}.`,
+      text: `${formatResult(c.name, c.trend.latest.value, c.unit)} on ${day(c.trend.latest.at)} — ${c.statusLabel}${c.referenceText ? ` (${c.referenceText})` : ""}.`,
     }));
   const warningsStatement = warnings.length
     ? `${warnings.length} validated health warning${warnings.length === 1 ? "" : "s"}.`
@@ -490,6 +498,7 @@ function buildFinding(
     (a, b) =>
       severityRank(a.severity) - severityRank(b.severity) ||
       Number(b.trend.direction !== "insufficient") - Number(a.trend.direction !== "insufficient") ||
+      Number(isNumericValue(a.trend.latest.value)) - Number(isNumericValue(b.trend.latest.value)) ||
       p.members.findIndex((m) => m.id === a.metricId) - p.members.findIndex((m) => m.id === b.metricId),
   );
   const ids = new Set(contributors.map((c) => c.metricId));
@@ -505,7 +514,8 @@ function buildFinding(
         ? "normal"
         : "neutral";
   const dates = [...new Set(contributors.flatMap((c) => c.trend.examinationDates.map(day)))].sort();
-  const valueOf = (c: Contributor) => `${c.name} ${c.trend.latest.value} ${c.unit}`;
+  const valueOf = (c: Contributor) => formatResult(c.name, c.trend.latest.value, c.unit);
+  const categorical = contributors.filter((c) => !isNumericValue(c.trend.latest.value));
   const missingKeyEvidence = p.keyEvidence.filter((k) => !k.ids.some((id) => ids.has(id))).map((k) => k.label);
   const exploratory = contributors.every((c) => c.syntheticDemo);
   const area = p.area.toLowerCase();
@@ -514,7 +524,7 @@ function buildFinding(
   let interpretation: string;
   let headline: string;
   if (state === "validated_concern") {
-    whatChanged = validated.map((c) => `${c.name} was ${c.trend.latest.value} ${c.unit} on ${day(c.trend.latest.at)} — ${c.statusLabel.toLowerCase()}${c.referenceText ? ` (${c.referenceText})` : ""}.`).join(" ");
+    whatChanged = validated.map((c) => `${valueOf(c)} on ${day(c.trend.latest.at)} — ${c.statusLabel.toLowerCase()}${c.referenceText ? ` (${c.referenceText})` : ""}.`).join(" ");
     if (changed.length) whatChanged += ` ${changed.map((c) => `${c.name}: ${c.trend.text}`).join(" ")}`;
     interpretation = `${validated.length} result${validated.length === 1 ? "" : "s"} in this group meet${validated.length === 1 ? "s" : ""} verified criteria for ${validated.some((c) => c.severity === "red") ? "a clinically concerning finding" : "a cautionary finding"}. Considered with the related markers, this supports further evaluation of ${area}; it does not by itself establish a diagnosis.`;
     headline = `${p.title}: ${list(validated.map((c) => `${c.name} ${c.statusLabel.toLowerCase()}`), 3)}.`;
@@ -535,17 +545,19 @@ function buildFinding(
     headline = `${p.title}: no recorded change in ${stableOnes.length} related measurement${stableOnes.length === 1 ? "" : "s"}.`;
   } else {
     whatChanged = `Measured on ${joinAnd(dates)} only: ${list(contributors.map(valueOf), 6)}. With no comparable earlier result, no change over time can be established.`;
-    interpretation = `These results describe ${area} at one point in time. The application has no verified reference criteria for them, so it does not say whether any value is low, high or normal; they form a baseline for later comparison and for Ground Medical review.`;
-    headline = `${p.title}: ${contributors.length} related result${contributors.length === 1 ? "" : "s"} recorded on ${joinAnd(dates)}; baseline only, not classifiable against verified criteria.`;
+    interpretation = `A single-time baseline for ${area}. Without verified reference criteria no value is called low, high or normal; Ground Medical review of the recorded values is needed.`;
+    headline = `${p.title}: ${contributors.length} related result${contributors.length === 1 ? "" : "s"} on ${joinAnd(dates)}${categorical.length ? `, including ${list(categorical.map((c) => `${c.name} — ${c.trend.latest.value} (as recorded)`), 2)}` : ""}; baseline only, not classifiable against verified criteria.`;
   }
 
   const units = new Set<string>();
   const uncertainty = [
     ...(missingKeyEvidence.length ? [`Not available in this period: ${joinAnd(missingKeyEvidence)}.`] : []),
-    "Specimen, laboratory method and collection conditions are not recorded, so comparability between examinations is not verified.",
+    COMPARABILITY_NOTE,
     ...(state === "changed" ? ["Changes occurring together do not show that one caused the other."] : []),
     ...(contributors.some((c) => c.syntheticDemo)
-      ? [`${contributors.filter((c) => c.syntheticDemo).length} of these results use synthetic demonstration catalog entries, which are not scientifically validated (exploratory).`]
+      ? [
+          `${contributors.filter((c) => c.syntheticDemo).length} of these results ${contributors.filter((c) => c.syntheticDemo).length === 1 ? "uses a synthetic demonstration catalog entry, which is" : "use synthetic demonstration catalog entries, which are"} not scientifically validated (exploratory).`,
+        ]
       : []),
     ...(contributors.some((c) => {
       const before = units.size;
@@ -623,29 +635,39 @@ function buildRecommendations(findings: readonly Finding[]): Recommendation[] {
       if (!existing.basis.includes(basis)) existing.basis.push(basis);
       return;
     }
-    out.set(key, { id: `rec-${out.size + 1}`, category, authorization, authorizationLabel: AUTHORIZATION_LABELS[authorization], text: R(text), basis: [basis] });
+    out.set(key, { id: "", category, authorization, authorizationLabel: AUTHORIZATION_LABELS[authorization], text: R(text), basis: [basis] });
   };
-  const baselineFindings: Finding[] = [];
+  const stateLabel = (f: Finding) =>
+    f.state === "validated_concern" ? "validated concern" : f.state === "changed" ? "change between examinations" : f.state === "stable" ? "no recorded change" : "single examination";
+  const baseline: Finding[] = [];
+  const missing: string[] = [];
   for (const f of findings) {
     const p = lib.patterns.find((x) => x.id === f.patternId);
-    const basis = `${f.title} (${f.state === "validated_concern" ? "validated concern" : f.state === "changed" ? "change between examinations" : f.state === "stable" ? "no recorded change" : "single examination"})`;
+    const basis = `${f.title} (${stateLabel(f)})`;
     if (p && f.state === "validated_concern") for (const r of p.recommendations.concern) add(r.category, r.authorization, r.text, basis);
     else if (p && f.state === "changed") for (const r of p.recommendations.change) add(r.category, r.authorization, r.text, basis);
-    else baselineFindings.push(f);
-    if (f.missingKeyEvidence.length)
-      add(
-        "further_examination",
-        "clinician_required",
-        `${f.title}: the picture is incomplete — ${joinAnd(f.missingKeyEvidence)} ${f.missingKeyEvidence.length === 1 ? "was" : "were"} not available in this period. Ground Medical may request ${f.missingKeyEvidence.length === 1 ? "it" : "them"}.`,
-        basis,
-      );
+    else baseline.push(f);
+    if (f.missingKeyEvidence.length) missing.push(`${joinAnd(f.missingKeyEvidence)} (${f.title.toLowerCase()})`);
   }
-  for (const f of baselineFindings) {
-    const basis = `${f.title} (${f.state === "stable" ? "no recorded change" : "single examination"})`;
+  const groupBasis = (fs: readonly Finding[]) =>
+    fs.length > 1 && fs.length === findings.length && fs.every((f) => f.state === fs[0]!.state)
+      ? `all measured areas (${stateLabel(fs[0]!)})`
+      : fs.map((f) => `${f.title} (${stateLabel(f)})`).join("; ");
+  if (baseline.length) {
+    const basis = groupBasis(baseline);
     add("monitoring", "general_wellness", "Repeat these measurements at the next scheduled examination with the same laboratory, method and units, so that changes over time can be measured.", basis);
     add("ground_medical", "clinician_required", "Ground Medical should review the recorded values against appropriate reference criteria; none are verified in this application, so no value has been classified.", basis);
   }
-  return [...out.values()].sort((a, b) => RECOMMENDATION_CATEGORIES.indexOf(a.category) - RECOMMENDATION_CATEGORIES.indexOf(b.category));
+  if (missing.length)
+    add(
+      "further_examination",
+      "clinician_required",
+      `The picture is incomplete in some areas. Not available in this period: ${missing.join("; ")}. Ground Medical may request these tests.`,
+      "documented relationship groups (missing key measurements)",
+    );
+  return [...out.values()]
+    .sort((a, b) => RECOMMENDATION_CATEGORIES.indexOf(a.category) - RECOMMENDATION_CATEGORIES.indexOf(b.category))
+    .map((r, i) => ({ ...r, id: `rec-${i + 1}` }));
 }
 
 // ------------------------------------------------------------ plain text (TXT export)
