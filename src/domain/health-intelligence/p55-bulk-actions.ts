@@ -15,7 +15,8 @@ const already = (reason: string): ActionFit => ({ kind: "already", reason });
 const blocked = (reason: string): ActionFit => ({ kind: "blocked", reason });
 
 // --- Researcher -----------------------------------------------------------------
-export type ResearcherBulkAction = "accept_review" | "request_clarification" | "demo_decide" | "acknowledge_match";
+export type ResearcherBulkAction =
+  "accept_review" | "request_clarification" | "demo_decide" | "acknowledge_match";
 export const RESEARCHER_ACTION_LABEL: Record<ResearcherBulkAction, string> = {
   accept_review: "Accept Selected for Scientific Review",
   request_clarification: "Request Evidence / Unit Clarification",
@@ -23,28 +24,37 @@ export const RESEARCHER_ACTION_LABEL: Record<ResearcherBulkAction, string> = {
   acknowledge_match: "Acknowledge Existing Catalog Matches",
 };
 
-export const NO_TRIAGE_GRANT = "This account has no triage grant (separately provisioned by the owner).";
+export const NO_TRIAGE_GRANT =
+  "This account has no triage grant (separately provisioned by the owner).";
 
 /** Bulk triage acceptance: only terms still awaiting triage. */
 export function acceptReviewFit(r: { triageAction: string | null }, canTriage: boolean): ActionFit {
-  if (r.triageAction === "ACCEPT_FOR_REVIEW") return already("Already accepted for scientific review.");
+  if (r.triageAction === "ACCEPT_FOR_REVIEW")
+    return already("Already accepted for scientific review.");
   if (r.triageAction === "REJECT_REVIEW_REQUEST")
     return blocked("The review request was rejected; a new submission is required.");
   if (r.triageAction === "REQUEST_MORE_EVIDENCE")
-    return blocked("More evidence was requested; accept it individually once the evidence is supplied.");
+    return blocked(
+      "More evidence was requested; accept it individually once the evidence is supplied.",
+    );
   if (!canTriage) return blocked(NO_TRIAGE_GRANT);
   return ok;
 }
 
 /** Categories already resolved in the demo catalog or the existing catalog: nothing to clarify. */
-const RESOLVED: readonly PreflightCategory[] = ["already_active", "already_decided", "existing_catalog_match"];
+const RESOLVED: readonly PreflightCategory[] = [
+  "already_active",
+  "already_decided",
+  "existing_catalog_match",
+];
 
 /** Bulk REQUEST_MORE_EVIDENCE: unresolved terms whose request was not rejected and not already pending evidence. */
 export function requestClarificationFit(
   r: { triageAction: string | null; category?: PreflightCategory },
   canTriage: boolean,
 ): ActionFit {
-  if (r.triageAction === "REQUEST_MORE_EVIDENCE") return already("More evidence was already requested.");
+  if (r.triageAction === "REQUEST_MORE_EVIDENCE")
+    return already("More evidence was already requested.");
   if (r.triageAction === "REJECT_REVIEW_REQUEST")
     return blocked("The review request was rejected; a new submission is required.");
   if (r.category && RESOLVED.includes(r.category))
@@ -72,23 +82,37 @@ export function suggestedRequirements(categories: readonly (PreflightCategory | 
  * owner demo scope, not the caller's own submission) plus prior review acceptance.
  */
 export function demoDecideFit(
-  r: { category: PreflightCategory; inScope: boolean; triageAction: string | null; reasons: readonly string[] },
+  r: {
+    category: PreflightCategory;
+    inScope: boolean;
+    triageAction: string | null;
+    reasons: readonly string[];
+  },
   ctx: { submittedByCaller: boolean; canDecide: boolean },
 ): ActionFit {
   if (r.category === "already_active") return already("Already active as a synthetic demo entry.");
-  if (r.category === "already_decided") return already("A synthetic demo decision already exists; Ground Medical activates it.");
-  if (r.category !== "eligible") return blocked(r.reasons[0] ?? "Not eligible for a synthetic demo decision.");
+  if (r.category === "already_decided")
+    return already("A synthetic demo decision already exists; Ground Medical activates it.");
+  if (r.category !== "eligible")
+    return blocked(r.reasons[0] ?? "Not eligible for a synthetic demo decision.");
   if (!r.inScope) return blocked("Outside the owner-authorized synthetic demo scope.");
-  if (ctx.submittedByCaller) return blocked("You submitted this term; an independent Researcher must decide it.");
-  if (r.triageAction !== "ACCEPT_FOR_REVIEW") return blocked("Accept it for scientific review first.");
+  if (ctx.submittedByCaller)
+    return blocked("You submitted this term; an independent Researcher must decide it.");
+  if (r.triageAction !== "ACCEPT_FOR_REVIEW")
+    return blocked("Accept it for scientific review first.");
   if (!ctx.canDecide) return blocked("This account has no scientific approver grant.");
   return ok;
 }
 
 /** Session-only acknowledgement that a term maps to an existing catalog identity (no write, no new entry). */
-export function acknowledgeMatchFit(r: { category: PreflightCategory }, acknowledged: boolean): ActionFit {
+export function acknowledgeMatchFit(
+  r: { category: PreflightCategory },
+  acknowledged: boolean,
+): ActionFit {
   if (r.category !== "existing_catalog_match")
-    return blocked("Only terms already recognized by an existing catalog identity can be acknowledged.");
+    return blocked(
+      "Only terms already recognized by an existing catalog identity can be acknowledged.",
+    );
   if (acknowledged) return already("Existing catalog match already acknowledged in this session.");
   return ok;
 }
@@ -121,10 +145,15 @@ export interface GroundRecord {
  * category, plus a conservative block when an existing catalog identity already
  * recognizes the same label and exact unit (the mapping is shown, never duplicated).
  */
-export function groundRecord(row: ActivationRow, existingMatch: (label: string, unit: string) => string | null): GroundRecord {
+export function groundRecord(
+  row: ActivationRow,
+  existingMatch: (label: string, unit: string) => string | null,
+): GroundRecord {
   const e = row.proposal.entry;
-  const match = [e.displayName, ...e.aliases].map((l) => existingMatch(l, e.unit)).find((m) => m) ?? null;
-  if (row.category === "already_active") return { row, status: "already_active", reason: row.reason, existingMatch: match };
+  const match =
+    [e.displayName, ...e.aliases].map((l) => existingMatch(l, e.unit)).find((m) => m) ?? null;
+  if (row.category === "already_active")
+    return { row, status: "already_active", reason: row.reason, existingMatch: match };
   if (row.category === "eligible" && match)
     return {
       row,
@@ -132,8 +161,10 @@ export function groundRecord(row: ActivationRow, existingMatch: (label: string, 
       reason: `Already recognized by ${match} with this exact unit; a demo entry would never apply, so it is not activated.`,
       existingMatch: match,
     };
-  if (row.category === "eligible") return { row, status: "awaiting_activation", reason: row.reason, existingMatch: null };
-  if (row.category === "conflict") return { row, status: "requires_clarification", reason: row.reason, existingMatch: match };
+  if (row.category === "eligible")
+    return { row, status: "awaiting_activation", reason: row.reason, existingMatch: null };
+  if (row.category === "conflict")
+    return { row, status: "requires_clarification", reason: row.reason, existingMatch: match };
   return { row, status: "blocked", reason: row.reason, existingMatch: match };
 }
 
@@ -146,7 +177,8 @@ export const GROUND_ACTION_LABEL: Record<GroundBulkAction, string> = {
 export function activateFit(g: GroundRecord, canActivate: boolean): ActionFit {
   if (g.status === "already_active") return already("Already active; never activated twice.");
   if (g.status !== "awaiting_activation") return blocked(g.reason);
-  if (!canActivate) return blocked("Activation needs an active Ground Medical member of this mission.");
+  if (!canActivate)
+    return blocked("Activation needs an active Ground Medical member of this mission.");
   return ok;
 }
 

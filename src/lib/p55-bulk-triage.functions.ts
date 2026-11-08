@@ -13,7 +13,17 @@ export const bulkGlobalTriageFn = createServerFn({ method: "POST" })
         action: z.enum(["ACCEPT_FOR_REVIEW", "REQUEST_MORE_EVIDENCE"]),
         reason: z.string().max(2000).nullable(),
         evidenceRequirements: z
-          .array(z.enum(["identity", "unit", "method", "specimen", "protocol", "source_validation", "other"]))
+          .array(
+            z.enum([
+              "identity",
+              "unit",
+              "method",
+              "specimen",
+              "protocol",
+              "source_validation",
+              "other",
+            ]),
+          )
           .max(7),
         items: z
           .array(
@@ -29,7 +39,8 @@ export const bulkGlobalTriageFn = createServerFn({ method: "POST" })
       .parse(v),
   )
   .handler(async ({ data, context }) => {
-    const rpc: Rpc = (fn, args) => (context.supabase.rpc as unknown as Rpc).call(context.supabase, fn, args);
+    const rpc: Rpc = (fn, args) =>
+      (context.supabase.rpc as unknown as Rpc).call(context.supabase, fn, args);
     const { bulkTriageCore } = await import("./p55-bulk-triage.server");
     return bulkTriageCore(rpc, context.userId, data);
   });

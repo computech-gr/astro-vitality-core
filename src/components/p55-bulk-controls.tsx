@@ -52,7 +52,12 @@ export function BulkSelectionToolbar({
   return (
     <div className="space-y-2" data-testid={`${idPrefix}-selection-toolbar`}>
       <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Bulk selection">
-        <Button size="sm" variant="secondary" disabled={!scope.totalMatching} onClick={onSelectAllFiltered}>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={!scope.totalMatching}
+          onClick={onSelectAllFiltered}
+        >
           <ListChecks className="mr-1 h-4 w-4" aria-hidden />
           Select All Filtered ({scope.totalMatching})
         </Button>
@@ -67,15 +72,15 @@ export function BulkSelectionToolbar({
         {extra}
       </div>
       <p role="status" aria-live="polite" className="text-xs">
-        <span className="font-medium">Selected {scope.selected}</span> · matching the current filters{" "}
-        {scope.totalMatching} (all pages)
+        <span className="font-medium">Selected {scope.selected}</span> · matching the current
+        filters {scope.totalMatching} (all pages)
         {scope.allFilteredSelected ? " · every filtered record is selected" : ""}
       </p>
       {scope.selectedHidden ? (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 p-2 text-xs">
           <span>
-            {scope.selectedHidden} selected record(s) are hidden by the current filters. They stay selected and are
-            listed in the preflight before anything is recorded.
+            {scope.selectedHidden} selected record(s) are hidden by the current filters. They stay
+            selected and are listed in the preflight before anything is recorded.
           </span>
           <Button size="sm" variant="ghost" onClick={onKeepOnlyFiltered}>
             Keep only filtered records
@@ -113,7 +118,10 @@ export function BulkActionTable({
   onClear: () => void;
 }) {
   return (
-    <div className="space-y-2 rounded-md border border-border p-3" data-testid={`${idPrefix}-action-table`}>
+    <div
+      className="space-y-2 rounded-md border border-border p-3"
+      data-testid={`${idPrefix}-action-table`}
+    >
       <p className="text-sm font-medium">Bulk actions for the {selected} selected record(s)</p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[34rem] text-left text-xs">
@@ -163,7 +171,13 @@ export function BulkActionTable({
 }
 
 const LIST_LIMIT = 60;
-function RecordList({ title, items }: { title: string; items: { label: string; reason?: string }[] }) {
+function RecordList({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; reason?: string }[];
+}) {
   if (!items.length) return null;
   return (
     <details className="rounded border border-border p-2">
@@ -214,7 +228,10 @@ export function BulkPreflightDialog<R>({
               <AlertDialogTitle>Preflight: {p.actionLabel}</AlertDialogTitle>
               <AlertDialogDescription>{safeguard}</AlertDialogDescription>
             </AlertDialogHeader>
-            <dl className="grid grid-cols-[11rem_1fr] gap-x-3 gap-y-1 text-sm" data-testid="p55-preflight-summary">
+            <dl
+              className="grid grid-cols-[11rem_1fr] gap-x-3 gap-y-1 text-sm"
+              data-testid="p55-preflight-summary"
+            >
               <dt className="text-muted-foreground">Selected mission</dt>
               <dd>{p.missionLabel}</dd>
               <dt className="text-muted-foreground">Your role</dt>
@@ -224,7 +241,9 @@ export function BulkPreflightDialog<R>({
               <dt className="text-muted-foreground">Selected records</dt>
               <dd>
                 {p.selected}
-                {p.selectedHidden ? ` (including ${p.selectedHidden} hidden by the current filters)` : ""}
+                {p.selectedHidden
+                  ? ` (including ${p.selectedHidden} hidden by the current filters)`
+                  : ""}
               </dd>
               <dt className="text-muted-foreground">Eligible / actionable</dt>
               <dd>{p.actionable.length}</dd>
@@ -248,7 +267,10 @@ export function BulkPreflightDialog<R>({
               </div>
             ) : null}
             <div className="space-y-1">
-              <RecordList title="Will be processed" items={p.actionable.map((r) => ({ label: labelOf(r) }))} />
+              <RecordList
+                title="Will be processed"
+                items={p.actionable.map((r) => ({ label: labelOf(r) }))}
+              />
               <RecordList
                 title="Already processed (skipped)"
                 items={p.already.map((x) => ({ label: labelOf(x.record), reason: x.reason }))}
@@ -267,8 +289,8 @@ export function BulkPreflightDialog<R>({
             </AlertDialogFooter>
             {!p.actionable.length ? (
               <p className="text-xs text-muted-foreground">
-                No selected record is eligible for this action, so nothing can be recorded. The selection stays available
-                for inspection.
+                No selected record is eligible for this action, so nothing can be recorded. The
+                selection stays available for inspection.
               </p>
             ) : null}
           </>
@@ -309,7 +331,11 @@ export function BulkOutcomePanel({
   const failed = outcomes.filter((o) => o.retryAvailable).map((o) => o.id);
   const shown = outcomes.filter((o) => filter === "all" || o.outcome === filter);
   return (
-    <div role="status" className="space-y-2 rounded-md border border-border p-3 text-xs" data-testid={`${idPrefix}-outcomes`}>
+    <div
+      role="status"
+      className="space-y-2 rounded-md border border-border p-3 text-xs"
+      data-testid={`${idPrefix}-outcomes`}
+    >
       <p className="font-medium">
         {title}
         {progress
@@ -333,14 +359,23 @@ export function BulkOutcomePanel({
           <summary className="cursor-pointer">Per-record results ({outcomes.length})</summary>
           <div className="mt-1 flex flex-wrap gap-1" role="group" aria-label="Filter results">
             {(["all", ...Object.keys(BULK_OUTCOME_LABEL)] as (BulkOutcome | "all")[]).map((k) => (
-              <Button key={k} size="sm" variant={filter === k ? "secondary" : "ghost"} aria-pressed={filter === k} onClick={() => setFilter(k)}>
+              <Button
+                key={k}
+                size="sm"
+                variant={filter === k ? "secondary" : "ghost"}
+                aria-pressed={filter === k}
+                onClick={() => setFilter(k)}
+              >
                 {k === "all" ? "All" : BULK_OUTCOME_LABEL[k]}
               </Button>
             ))}
           </div>
           <ul className="mt-1 max-h-64 space-y-0.5 overflow-auto">
             {shown.map((o) => (
-              <li key={`${o.outcome}-${o.id}`} className={o.outcome === "failed" ? "text-destructive" : ""}>
+              <li
+                key={`${o.outcome}-${o.id}`}
+                className={o.outcome === "failed" ? "text-destructive" : ""}
+              >
                 {o.label}: {BULK_OUTCOME_LABEL[o.outcome]}
                 {o.detail ? ` — ${o.detail}` : ""}
               </li>

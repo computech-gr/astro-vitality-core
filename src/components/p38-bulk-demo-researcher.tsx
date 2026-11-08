@@ -159,9 +159,11 @@ const ACTION_ORDER: ResearcherBulkAction[] = [
 ];
 const ACTION_DESCRIPTION: Record<ResearcherBulkAction, string> = {
   accept_review: "Triage only: not scientific approval and never activation.",
-  demo_decide: "SYNTHETIC DEMO decisions for accepted, eligible terms; Ground Medical activates separately.",
+  demo_decide:
+    "SYNTHETIC DEMO decisions for accepted, eligible terms; Ground Medical activates separately.",
   request_clarification: "Records a REQUEST_MORE_EVIDENCE triage event with the evidence you name.",
-  acknowledge_match: "Shows the existing catalog identity; creates no entry and is not saved (this session only).",
+  acknowledge_match:
+    "Shows the existing catalog identity; creates no entry and is not saved (this session only).",
 };
 
 /** Ready for a decision request now (selection eligibility; shared pure rule). */
@@ -201,7 +203,9 @@ export function P38BulkDemoResearcher({
   const [triageFilter, setTriageFilter] = useState<TriageFilter>("all");
   const [crewFilter, setCrewFilter] = useState("all");
   const [unitFilter, setUnitFilter] = useState("all");
-  const [identityFilter, setIdentityFilter] = useState<"all" | "with_reference" | "no_reference">("all");
+  const [identityFilter, setIdentityFilter] = useState<"all" | "with_reference" | "no_reference">(
+    "all",
+  );
   const [pending, setPending] = useState<{
     action: ResearcherBulkAction;
     preflight: BulkPreflight<PreflightRow>;
@@ -370,7 +374,10 @@ export function P38BulkDemoResearcher({
   });
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE);
-  useEffect(() => setPage(0), [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter]);
+  useEffect(
+    () => setPage(0),
+    [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter],
+  );
 
   const scope = data?.scope ?? new Map<string, DemoScopeTerm>();
   const allEligible = rows.filter((r) => decidable(r, scope));
@@ -384,7 +391,13 @@ export function P38BulkDemoResearcher({
   const rowLabel = (r: PreflightRow) => labelOf(r.key);
   // Drop selections that no longer exist after a reload; never adds any.
   useEffect(() => {
-    if (data) setSelected((s) => pruneSelection(s, rows.map((r) => r.key)));
+    if (data)
+      setSelected((s) =>
+        pruneSelection(
+          s,
+          rows.map((r) => r.key),
+        ),
+      );
   }, [data, rows]);
 
   const setOverride = (key: string, patch: PreflightOverride) =>
@@ -437,7 +450,12 @@ export function P38BulkDemoResearcher({
     const { action, preflight } = pending;
     setPending(null);
     if (action === "acknowledge_match") {
-      setAcknowledged((s) => selectIds(s, preflight.actionable.map((r) => r.key)));
+      setAcknowledged((s) =>
+        selectIds(
+          s,
+          preflight.actionable.map((r) => r.key),
+        ),
+      );
       setRun({
         action,
         progress: null,
@@ -811,7 +829,14 @@ export function P38BulkDemoResearcher({
             scope={selScope}
             pageCount={pageRows.length}
             onSelectAllFiltered={() => setSelected((s) => selectAllFiltered(s, filteredIds))}
-            onSelectPage={() => setSelected((s) => selectIds(s, pageRows.map((r) => r.key)))}
+            onSelectPage={() =>
+              setSelected((s) =>
+                selectIds(
+                  s,
+                  pageRows.map((r) => r.key),
+                ),
+              )
+            }
             onDeselectAll={() => setSelected(deselectAll())}
             onKeepOnlyFiltered={() => setSelected((s) => pruneSelection(s, filteredIds))}
             extra={
@@ -1017,7 +1042,9 @@ export function P38BulkDemoResearcher({
           <BulkPreflightDialog
             preflight={pending?.preflight ?? null}
             labelOf={rowLabel}
-            confirmLabel={pending ? `Confirm: ${RESEARCHER_ACTION_LABEL[pending.action]}` : "Confirm"}
+            confirmLabel={
+              pending ? `Confirm: ${RESEARCHER_ACTION_LABEL[pending.action]}` : "Confirm"
+            }
             confirmDisabled={
               busy ||
               (pending?.action === "demo_decide" && !ack) ||
@@ -1063,7 +1090,9 @@ export function P38BulkDemoResearcher({
                         id={`p55-req-${q}`}
                         checked={reqs.includes(q)}
                         onCheckedChange={(c) =>
-                          setReqs((cur) => (c ? [...new Set([...cur, q])] : cur.filter((x) => x !== q)))
+                          setReqs((cur) =>
+                            c ? [...new Set([...cur, q])] : cur.filter((x) => x !== q),
+                          )
                         }
                       />
                       <Label htmlFor={`p55-req-${q}`} className="text-xs font-normal">

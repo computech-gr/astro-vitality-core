@@ -76,7 +76,11 @@ const ACTION_DESCRIPTION: Record<GroundBulkAction, string> = {
 };
 const idOf = (g: GroundRecord) => g.row.proposal.decisionEventId;
 
-export function clarificationNote(missionLabel: string, records: readonly GroundRecord[], when: string) {
+export function clarificationNote(
+  missionLabel: string,
+  records: readonly GroundRecord[],
+  when: string,
+) {
   return [
     `MITOCHONDRIA — Ground Medical clarification request (SYNTHETIC DEMO)`,
     `Mission: ${missionLabel}`,
@@ -90,7 +94,13 @@ export function clarificationNote(missionLabel: string, records: readonly Ground
   ].join("\n");
 }
 
-export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: string; missionLabel?: string }) {
+export function P38BulkDemoGround({
+  missionId,
+  missionLabel,
+}: {
+  missionId: string;
+  missionLabel?: string;
+}) {
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
   const activateFn = useServerFn(bulkDemoActivateFn);
   const sync = useServerFn(getSignedSyntheticDemoSnapshot);
@@ -107,7 +117,10 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
   const [unit, setUnit] = useState("all");
   const [page, setPage] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState<{ action: GroundBulkAction; preflight: BulkPreflight<GroundRecord> } | null>(null);
+  const [pending, setPending] = useState<{
+    action: GroundBulkAction;
+    preflight: BulkPreflight<GroundRecord>;
+  } | null>(null);
   const [run, setRun] = useState<{
     action: GroundBulkAction;
     progress: BulkProgress | null;
@@ -163,7 +176,8 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
     [records],
   );
   const byDomain = (g: GroundRecord) => domain === "all" || g.row.proposal.entry.domain === domain;
-  const statusCount = (s: GroundStatus) => records.filter((g) => g.status === s && byDomain(g)).length;
+  const statusCount = (s: GroundStatus) =>
+    records.filter((g) => g.status === s && byDomain(g)).length;
   const filtered = records.filter((g) => {
     if (status !== "all" && g.status !== status) return false;
     if (!byDomain(g)) return false;
@@ -187,7 +201,9 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
   const recordById = useMemo(() => new Map(records.map((g) => [idOf(g), g])), [records]);
   const labelOf = (id: string) => {
     const g = recordById.get(id);
-    return g ? `${g.row.proposal.entry.displayName} · ${g.row.proposal.entry.unit} (${g.row.proposal.termId})` : id;
+    return g
+      ? `${g.row.proposal.entry.displayName} · ${g.row.proposal.entry.unit} (${g.row.proposal.termId})`
+      : id;
   };
 
   const fitFor = (a: GroundBulkAction) => (g: GroundRecord) =>
@@ -290,7 +306,9 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
 
   const downloadNote = () => {
     if (!clarification) return;
-    const url = URL.createObjectURL(new Blob([clarification], { type: "text/plain;charset=utf-8" }));
+    const url = URL.createObjectURL(
+      new Blob([clarification], { type: "text/plain;charset=utf-8" }),
+    );
     const a = document.createElement("a");
     a.href = url;
     a.download = `mitochondria-clarification-${missionId}.txt`;
@@ -323,9 +341,21 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
         </p>
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="p38-activation-counts">
+          <div
+            className="flex flex-wrap items-center gap-2 text-xs"
+            data-testid="p38-activation-counts"
+          >
             {STATUSES.map((s) => (
-              <Badge key={s} variant={s === "awaiting_activation" ? "default" : s === "already_active" ? "secondary" : "outline"}>
+              <Badge
+                key={s}
+                variant={
+                  s === "awaiting_activation"
+                    ? "default"
+                    : s === "already_active"
+                      ? "secondary"
+                      : "outline"
+                }
+              >
                 {GROUND_STATUS_LABEL[s]} {statusCount(s)}
               </Badge>
             ))}
@@ -352,7 +382,12 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
               <Label htmlFor="p38-g-search" className="text-xs">
                 Search name, label, unit, demo or term ID
               </Label>
-              <Input id="p38-g-search" value={query} onChange={(e) => setQuery(e.target.value)} className="h-8" />
+              <Input
+                id="p38-g-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="h-8"
+              />
             </div>
             <div className="space-y-1">
               <Label htmlFor="p55-g-domain" className="text-xs">
@@ -367,7 +402,8 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
                 <option value="all">All domains ({records.length})</option>
                 {domains.map((d) => (
                   <option key={d} value={d}>
-                    {DOMAIN_LABEL[d] ?? d} ({records.filter((g) => g.row.proposal.entry.domain === d).length})
+                    {DOMAIN_LABEL[d] ?? d} (
+                    {records.filter((g) => g.row.proposal.entry.domain === d).length})
                   </option>
                 ))}
               </select>
@@ -419,7 +455,10 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
             onKeepOnlyFiltered={() => setSelected((s) => pruneSelection(s, filteredIds))}
           />
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[40rem] text-left text-xs" aria-label="Synthetic demo proposals">
+            <table
+              className="w-full min-w-[40rem] text-left text-xs"
+              aria-label="Synthetic demo proposals"
+            >
               <thead className="text-muted-foreground">
                 <tr>
                   <th className="p-1">Select</th>
@@ -441,7 +480,9 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
                           type="checkbox"
                           aria-label={`Select ${p.entry.displayName}`}
                           checked={selected.has(p.decisionEventId)}
-                          onChange={(e) => setSelected((s) => toggleId(s, p.decisionEventId, e.target.checked))}
+                          onChange={(e) =>
+                            setSelected((s) => toggleId(s, p.decisionEventId, e.target.checked))
+                          }
                         />
                       </td>
                       <td className="p-1">
@@ -449,9 +490,12 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
                         <div className="font-mono text-muted-foreground">{p.demoId}</div>
                       </td>
                       <td className="p-1">
-                        {[...new Set([p.entry.displayName, ...p.entry.aliases])].join(", ")} · {p.entry.unit}
+                        {[...new Set([p.entry.displayName, ...p.entry.aliases])].join(", ")} ·{" "}
+                        {p.entry.unit}
                         {g.existingMatch ? (
-                          <div className="text-muted-foreground">Existing catalog identity: {g.existingMatch}</div>
+                          <div className="text-muted-foreground">
+                            Existing catalog identity: {g.existingMatch}
+                          </div>
                         ) : null}
                       </td>
                       <td className="p-1">{DOMAIN_LABEL[p.entry.domain] ?? p.entry.domain}</td>
@@ -477,16 +521,28 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
             </table>
           </div>
           {!filtered.length ? (
-            <p className="text-xs text-muted-foreground">No synthetic demo proposal matches these filters.</p>
+            <p className="text-xs text-muted-foreground">
+              No synthetic demo proposal matches these filters.
+            </p>
           ) : null}
           <div className="flex items-center gap-2 text-xs">
-            <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 0}
+              onClick={() => setPage((p) => p - 1)}
+            >
               Previous
             </Button>
             <span>
               Page {page + 1} of {pages} · {filtered.length} shown of {records.length}
             </span>
-            <Button size="sm" variant="outline" disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page + 1 >= pages}
+              onClick={() => setPage((p) => p + 1)}
+            >
               Next
             </Button>
           </div>
@@ -495,13 +551,20 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
             actions={actionOptions}
             selected={selected.size}
             busy={busy}
-            onReview={(id) => setPending({ action: id as GroundBulkAction, preflight: preflightFor(id as GroundBulkAction) })}
+            onReview={(id) =>
+              setPending({
+                action: id as GroundBulkAction,
+                preflight: preflightFor(id as GroundBulkAction),
+              })
+            }
             onClear={() => setSelected(deselectAll())}
           />
           <BulkPreflightDialog
             preflight={pending?.preflight ?? null}
             labelOf={(g) => labelOf(idOf(g))}
-            confirmLabel={pending?.action === "clarify" ? "Prepare clarification note" : "Confirm activation"}
+            confirmLabel={
+              pending?.action === "clarify" ? "Prepare clarification note" : "Confirm activation"
+            }
             confirmDisabled={busy}
             safeguard={
               pending?.action === "clarify"
@@ -528,11 +591,22 @@ export function P38BulkDemoGround({ missionId, missionLabel }: { missionId: stri
             />
           ) : null}
           {clarification ? (
-            <div className="space-y-2 rounded-md border border-border p-3 text-xs" data-testid="p55-clarification-note">
-              <p className="font-medium">Clarification note (not recorded; share it with the Researcher)</p>
-              <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded bg-muted/40 p-2">{clarification}</pre>
+            <div
+              className="space-y-2 rounded-md border border-border p-3 text-xs"
+              data-testid="p55-clarification-note"
+            >
+              <p className="font-medium">
+                Clarification note (not recorded; share it with the Researcher)
+              </p>
+              <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded bg-muted/40 p-2">
+                {clarification}
+              </pre>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => void navigator.clipboard?.writeText(clarification)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void navigator.clipboard?.writeText(clarification)}
+                >
                   <Copy className="mr-1 h-4 w-4" aria-hidden />
                   Copy
                 </Button>

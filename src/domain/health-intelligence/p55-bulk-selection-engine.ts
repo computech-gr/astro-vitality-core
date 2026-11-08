@@ -55,7 +55,10 @@ export interface SelectionScope {
   allFilteredSelected: boolean;
 }
 
-export function selectionScope(selected: SelectionSet, filteredIds: readonly string[]): SelectionScope {
+export function selectionScope(
+  selected: SelectionSet,
+  filteredIds: readonly string[],
+): SelectionScope {
   const filtered = new Set(filteredIds);
   let visible = 0;
   for (const id of selected) if (filtered.has(id)) visible++;
@@ -210,14 +213,31 @@ export function runOutcomes(input: {
       retryAvailable: true,
     });
   for (const b of input.preflightAlready ?? [])
-    out.push({ id: b.id, label: input.labelOf(b.id), outcome: "already_completed", detail: b.reason, retryAvailable: false });
+    out.push({
+      id: b.id,
+      label: input.labelOf(b.id),
+      outcome: "already_completed",
+      detail: b.reason,
+      retryAvailable: false,
+    });
   for (const b of input.preflightBlocked ?? [])
-    out.push({ id: b.id, label: input.labelOf(b.id), outcome: "blocked", detail: b.reason, retryAvailable: false });
+    out.push({
+      id: b.id,
+      label: input.labelOf(b.id),
+      outcome: "blocked",
+      detail: b.reason,
+      retryAvailable: false,
+    });
   return out;
 }
 
 export function outcomeCounts(outcomes: readonly RecordOutcome[]): Record<BulkOutcome, number> {
-  const c: Record<BulkOutcome, number> = { success: 0, already_completed: 0, blocked: 0, failed: 0 };
+  const c: Record<BulkOutcome, number> = {
+    success: 0,
+    already_completed: 0,
+    blocked: 0,
+    failed: 0,
+  };
   for (const o of outcomes) c[o.outcome]++;
   return c;
 }
@@ -242,8 +262,14 @@ export async function executeBulk<R>(input: {
   const outcomes = runOutcomes({
     results: res.results,
     unconfirmedIds: res.remaining.map(input.idOf),
-    preflightAlready: input.preflight.already.map((x) => ({ id: input.idOf(x.record), reason: x.reason })),
-    preflightBlocked: input.preflight.blocked.map((x) => ({ id: input.idOf(x.record), reason: x.reason })),
+    preflightAlready: input.preflight.already.map((x) => ({
+      id: input.idOf(x.record),
+      reason: x.reason,
+    })),
+    preflightBlocked: input.preflight.blocked.map((x) => ({
+      id: input.idOf(x.record),
+      reason: x.reason,
+    })),
     labelOf: input.labelOf,
     failureMessage: res.failure,
   });
