@@ -144,7 +144,7 @@ class Layout {
     this.y += 1.2;
   }
   /** Card made of rows; breaks only between rows; each row segment carries the accent bar and tint. */
-  card(rows: { label?: string; text: string[]; size?: number; bold?: boolean; color?: RGB }[], accent: RGB, tint: RGB, header?: { title: string; chip?: { text: string; color: RGB; dashed?: boolean } }) {
+  card(rows: { label?: string; text: string[]; size?: number; bold?: boolean; color?: RGB }[], accent: RGB, tint: RGB, header?: { title: string; chip?: { text: string; color: RGB; dashed?: boolean } | undefined }) {
     const pad = 3;
     const labelW = 36;
     const prepared = rows
@@ -188,7 +188,7 @@ class Layout {
     drawSegBg(pad - 1.5);
     this.y += pad - 1.5 + 3.5;
   }
-  chip(text: string, x: number, y: number, w: number, color: RGB, dashed = false) {
+  chip(text: string, x: number, y: number, w: number, color: RGB, dashed: boolean | undefined = false) {
     const ls = this.wrap(text, 7, w - 3, true);
     const h = ls.length * lh(7) + 1.6;
     this.fill(C.white);

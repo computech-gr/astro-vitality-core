@@ -280,7 +280,7 @@ export function HealthAssessmentView({
   assessment: HealthAssessment;
   automatedStatus: string;
   /** P58: professional report additions (Evidence ID, mandatory charts, clinical assessment, merged recommendations). */
-  professional?: { report: ProfessionalReport; clinicalSlot: ReactNode };
+  professional?: { report: ProfessionalReport; clinicalSlot: ReactNode } | undefined;
 }) {
   const h = a.header;
   const pr = a.priorities;
