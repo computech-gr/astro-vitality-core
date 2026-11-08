@@ -22,18 +22,21 @@ import { observationDay, observationDateLabel } from "./observation-date";
 import { NOT_ASSESSED_TEXT, resolveAdverseAnnotations, type AdverseAssessmentInput } from "./adverse-annotations";
 import { buildBiomarkerAssessment, SEVERITY_LABELS, SEVERITY_MARKERS, SEVERITY_ORDER, severityCountsLine, type ReferenceRegistry, type Severity } from "./biomarker-health-assessment";
 import { registryInterpretationSnapshot } from "./biomarker-interpretation-ledger";
+import { redactProhibitedNames } from "./report-identity-redaction";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
 // ---------------- Document model ----------------
 
 export type Block =
-  | { kind: "h1" | "h2" | "h3"; text: string }
-  | { kind: "p"; text: string; bold?: boolean; muted?: boolean }
+  | { kind: "h1" | "h2" | "h3"; text: string; tone?: Severity }
+  | { kind: "p"; text: string; bold?: boolean; muted?: boolean; tone?: Severity; size?: number }
   | { kind: "banner"; text: string }
   /** Boxed notice. "pending" is a heavy-bordered call-out used for outstanding Ground Medical attestation. */
   | { kind: "alert"; tone: "pending" | "complete" | "info"; title: string; lines: string[] }
-  | { kind: "bullets"; items: string[] }
+  | { kind: "bullets"; items: string[]; tones?: (Severity | null)[] }
+  /** P56: small line chart of one exact metric + unit series (values as recorded, never converted). */
+  | { kind: "chart"; title: string; unit: string; points: { label: string; value: number }[]; caption: string }
   | { kind: "kv"; rows: [string, string][] }
   | { kind: "table"; columns: { title: string; width: number }[]; rows: string[][]; adverseRows?: number[]; rowTones?: Severity[] }
   | { kind: "link"; text: string; url: string }
@@ -677,17 +680,26 @@ export function toWinAnsi(text: string): string {
 export interface RenderOptions {
   family: string;
   unicode: boolean;
+  /** P56: remove the prohibited reviewer name from every rendered string (display only). */
+  redact?: boolean;
 }
+
+const TONE_RGB: Partial<Record<Severity, [number, number, number]>> = { red: [180, 30, 40], amber: [150, 90, 0], normal: [20, 100, 50] };
 
 export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: RenderOptions): { pages: number } {
   const L = TEXT_PDF_LAYOUT;
   const width = L.pageWidth - 2 * L.marginX;
-  const clean = (t: string) => (opts.unicode ? t : toWinAnsi(t));
+  const clean = (t: string) => {
+    const r = opts.redact ? redactProhibitedNames(t) : t;
+    return opts.unicode ? r : toWinAnsi(r);
+  };
   let y = L.top;
-  const font = (style: "normal" | "bold", size: number, muted = false) => {
+  const font = (style: "normal" | "bold", size: number, muted = false, tone?: Severity | null) => {
     pdf.setFont(opts.family, style);
     pdf.setFontSize(size);
-    if (muted) pdf.setTextColor(80, 80, 80);
+    const rgb = tone ? TONE_RGB[tone] : undefined;
+    if (rgb) pdf.setTextColor(rgb[0], rgb[1], rgb[2]);
+    else if (muted) pdf.setTextColor(80, 80, 80);
     else pdf.setTextColor(17, 17, 17);
   };
   const newPage = () => {
@@ -747,12 +759,12 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
     }
     return out.length ? out : [""];
   };
-  const paragraph = (text: string, size: number, style: "normal" | "bold", muted = false, indent = 0, bullet = false) => {
+  const paragraph = (text: string, size: number, style: "normal" | "bold", muted = false, indent = 0, bullet = false, tone?: Severity | null) => {
     const ls = lines(text, size, style, width - indent - (bullet ? 4 : 0));
     const lh = lineHeight(size);
     ls.forEach((l, i) => {
       ensure(lh);
-      font(style, size, muted);
+      font(style, size, muted, tone);
       if (bullet && i === 0) pdf.text(opts.unicode ? "•" : "-", L.marginX + indent, y + lh * 0.75);
       pdf.text(l, L.marginX + indent + (bullet ? 4 : 0), y + lh * 0.75);
       y += lh;
@@ -773,7 +785,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       // Orphan protection: heading plus at least three body lines must fit.
       ensure(h + 3 * lineHeight(L.body) + 2);
       y += b.kind === "h3" ? 1 : 2;
-      font("bold", size);
+      font("bold", size, false, b.tone);
       for (const l of ls) {
         pdf.text(l, L.marginX, y + lineHeight(size) * 0.75);
         y += lineHeight(size);
@@ -832,7 +844,7 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       continue;
     }
     if (b.kind === "p") {
-      paragraph(b.text, L.body, b.bold ? "bold" : "normal", b.muted);
+      paragraph(b.text, b.size ?? L.body, b.bold ? "bold" : "normal", b.muted, 0, false, b.tone);
       continue;
     }
     if (b.kind === "link") {
@@ -844,7 +856,47 @@ export function renderReportDocument(doc: ReportDocument, pdf: PdfWriter, opts: 
       continue;
     }
     if (b.kind === "bullets") {
-      for (const item of b.items) paragraph(item, L.body, "normal", false, 1, true);
+      b.items.forEach((item, i) => paragraph(item, L.body, "normal", false, 1, true, b.tones?.[i]));
+      continue;
+    }
+    if (b.kind === "chart") {
+      const h = 34;
+      ensure(h + 3);
+      font("bold", 9);
+      pdf.text(clean(`${b.title} [${b.unit}]`), L.marginX, y + 3.5);
+      const px = L.marginX + 18;
+      const pw = width - 26;
+      const py = y + 6;
+      const ph = 18;
+      pdf.setDrawColor(170, 170, 170);
+      pdf.setLineWidth(0.2);
+      pdf.line(px, py, px, py + ph);
+      pdf.line(px, py + ph, px + pw, py + ph);
+      const vals = b.points.map((p) => p.value);
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+      const span = max - min || Math.abs(max) || 1;
+      const lo = max === min ? min - span / 2 : min;
+      const hi = max === min ? max + span / 2 : max;
+      const n = b.points.length;
+      const xAt = (i: number) => px + (n === 1 ? pw / 2 : (pw * i) / (n - 1));
+      const yAt = (v: number) => py + ph - ((v - lo) / (hi - lo)) * ph;
+      font("normal", 7, true);
+      pdf.text(clean(String(max)), px - 1.5, yAt(max) + 1, { align: "right" });
+      if (max !== min) pdf.text(clean(String(min)), px - 1.5, yAt(min) + 1, { align: "right" });
+      pdf.setDrawColor(30, 70, 130);
+      pdf.setLineWidth(0.5);
+      for (let i = 1; i < n; i++) pdf.line(xAt(i - 1), yAt(b.points[i - 1]!.value), xAt(i), yAt(b.points[i]!.value));
+      pdf.setFillColor(30, 70, 130);
+      b.points.forEach((p, i) => {
+        pdf.rect(xAt(i) - 0.8, yAt(p.value) - 0.8, 1.6, 1.6, "F");
+        font("normal", 7, true);
+        if (n <= 8 || i === 0 || i === n - 1) pdf.text(clean(p.label), xAt(i), py + ph + 3.5, { align: i === 0 ? "left" : i === n - 1 ? "right" : "center" });
+      });
+      font("normal", 8, true);
+      const cl = pdf.splitTextToSize(clean(b.caption), width).slice(0, 2);
+      cl.forEach((l, i) => pdf.text(l, L.marginX, py + ph + 7.5 + i * 3.4));
+      y += h;
       continue;
     }
     if (b.kind === "kv") {
@@ -995,6 +1047,22 @@ export async function createTextReportPdf(
     }
   }
   const pdf = new JsPdf({ unit: "mm", format: "a4", compress: true });
+  return renderDocumentToPdf(pdf, fonts, buildReportDocument(input), {
+    title: redactProhibitedNames(input.title),
+    subject: "Research-only unified health report (searchable text)",
+    keywords: "research only, not a diagnosis",
+  });
+}
+
+export type PdfFactory = new (o: Record<string, unknown>) => PdfWriter & { addFileToVFS(n: string, d: string): unknown; addFont(f: string, n: string, s: string): unknown; output(k: "blob"): Blob };
+
+/** Shared text-PDF path (P56 concise report and technical appendix): embedded font, redaction, non-empty check. */
+export function renderDocumentToPdf(
+  pdf: InstanceType<PdfFactory>,
+  fonts: ReportFonts | null,
+  doc: ReportDocument,
+  meta: { title: string; subject: string; keywords: string },
+): TextPdfResult {
   let family = "helvetica";
   if (fonts) {
     pdf.addFileToVFS("LiberationSans-Regular.ttf", fonts.regular);
@@ -1003,9 +1071,8 @@ export async function createTextReportPdf(
     pdf.addFont("LiberationSans-Bold.ttf", "LiberationSans", "bold");
     family = "LiberationSans";
   }
-  const doc = buildReportDocument(input);
-  pdf.setProperties({ title: input.title, subject: "Research-only unified health report (searchable text)", creator: "MITOCHONDRIA - local export", keywords: "research only, not a diagnosis" });
-  const { pages } = renderReportDocument(doc, pdf, { family, unicode: Boolean(fonts) });
+  pdf.setProperties({ title: meta.title, subject: meta.subject, creator: "MITOCHONDRIA - local export", keywords: meta.keywords });
+  const { pages } = renderReportDocument(doc, pdf, { family, unicode: Boolean(fonts), redact: true });
   const blob = pdf.output("blob");
   if (!(blob.size > 0)) throw new Error("The PDF file is empty.");
   return { blob, pages, fontMode: fonts ? "unicode" : "standard" };
