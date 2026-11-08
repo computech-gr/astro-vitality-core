@@ -37,6 +37,7 @@ const NEUTRAL_TEXT: RGB = [71, 85, 105];
 
 class P {
   y = TOP1;
+  usesPriorityLayout = false;
   page = 1;
   pageHasBody = false;
   constructor(readonly pdf: PremiumWriter, readonly family: string, readonly unicode: boolean) {}
@@ -61,10 +62,11 @@ class P {
   capped(text: string, size: number, width: number, maxLines: number, bold = false): string[] {
     const ls = this.wrap(text, size, width, bold);
     if (ls.length <= maxLines) return ls;
-    const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g) ?? [text];
+    // Sentence ends only where punctuation is followed by whitespace (decimals such as 3.2 never split).
+    const sentences = text.split(/(?<=[.!?])\s+/);
     let acc = "";
     for (const s of sentences) {
-      const next = acc + s;
+      const next = acc ? `${acc} ${s}` : s;
       if (this.wrap(next.trim(), size, width, bold).length > maxLines) break;
       acc = next;
     }
@@ -305,6 +307,7 @@ function pageOne(L: P, r: PremiumReport) {
   }
   // legend: warning priority (panels) and clinical class (badges) are separate fields
   const usesPriority = cards.some((c) => c.priority);
+  L.usesPriorityLayout = usesPriority;
   const items: [BadgeKind, string, string][] = usesPriority
     ? [
         ["pri-red", "RED", "High priority medical review; not a diagnosis"],
@@ -335,8 +338,13 @@ function pageOne(L: P, r: PremiumReport) {
   if (note.length) L.lines(note, MX + 3, L.y + 2 + 2 * 9 - 0.6, 6.8, false, COLOR.muted, 1.25);
   L.y += lgH + 3;
   if (r.nextSteps.length) {
+    // Steps repeat the cards' "Next" lines; on page 1 show those that fit (at least one) to avoid a near-empty page 2.
+    const stepH = r.nextSteps.map((s) => L.capped(s, 8.1, CW - 6, 2).length * lh(8.1) + 0.6);
+    let fit = 0, acc = 9.5;
+    for (const h of stepH) { if (L.y + acc + h > BOTTOM) break; acc += h; fit++; }
+    const steps = L.page === 1 && fit >= 1 && L.usesPriorityLayout ? r.nextSteps.slice(0, fit) : r.nextSteps;
     L.h3("Priority next steps", 12);
-    r.nextSteps.forEach((s, i) => {
+    steps.forEach((s, i) => {
       const ls = L.capped(s, 8.1, CW - 6, 2);
       L.ensure(ls.length * lh(8.1));
       L.lines([`${i + 1}.`], MX, L.y, 8.1, true, COLOR.navy);

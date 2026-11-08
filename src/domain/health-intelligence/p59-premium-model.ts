@@ -406,7 +406,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     { question: "Which conditions could explain the findings?", answer: join(concerns.map((c) => c.title), "None identified.") + (concerns.length ? " All are preliminary and require clinical evaluation." : ""), evidenceKeys: concerns.map((c) => c.concernId) },
     { question: "What supports or contradicts them?", answer: concerns.length ? `${concerns.map((c) => `${c.title.replace(/\s*\(.*\)$/, "")}: ${c.supporting.length} supporting, ${c.contradicting.length} contradicting item(s)`).join("; ")}. Most often missing: ${join(missingTop, "—")}.` : "Not applicable.", evidenceKeys: concerns.map((c) => c.concernId) },
     { question: "What should the astronaut do?", answer: `${electrolyte ? "Do not change fluid, salt or potassium intake before Ground Medical review. " : ""}Report any symptoms. ${wellness.slice(0, 2).map((r) => r.text).join(" ")}`.trim(), evidenceKeys: wellness.map((r) => r.id) },
-    { question: "What should Ground Medical confirm?", answer: join(gm.slice(0, 4).map((r) => r.text), "Routine review only."), evidenceKeys: gm.map((r) => r.id) },
+    { question: "What should Ground Medical confirm?", answer: join(gm.map((r) => r.text.trim()).filter(Boolean).slice(0, 4), "Routine review only."), evidenceKeys: gm.map((r) => r.id) },
   ];
   const lead = `${counts.examinationDates} examination date(s) with ${counts.observations} observation(s) in ${counts.series} biomarker series. ${affected.length} body system(s) show flagged or classified results; ${highKeys.length} series require high-priority review and ${checkKeys.length} require measurement verification first.`;
 
