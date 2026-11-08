@@ -478,9 +478,10 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
     }));
   const priorities: HealthAssessment["priorities"] = {
     validatedAlerts: validated.map((c) => ({ findingId: findingOf(c), text: `${c.marker} ${formatResult(c.name, c.trend.latest.value, c.unit)} — ${c.statusLabel}.` })),
-    reviewRequired: flaggedPriority.flatMap((c) =>
-      c.review.flags.filter((f) => f.kind === "priority_review").slice(0, 1).map((f) => ({ findingId: findingOf(c), ruleId: f.ruleId, text: `${c.name}: ${f.text}` })),
-    ),
+    reviewRequired: flaggedPriority.map((c) => {
+      const fs = c.review.flags.filter((f) => f.kind === "priority_review");
+      return { findingId: findingOf(c), ruleId: fs.map((f) => f.ruleId).join(", "), text: `${c.name}: ${fs.map((f) => f.text).join(" ")}` };
+    }),
     dataQuality: [
       ...flaggedQuality.flatMap((c) => c.review.flags.filter((f) => f.kind === "data_quality").map((f) => ({ findingId: findingOf(c), ruleId: f.ruleId, text: `${c.name}: ${f.text}` }))),
       ...differingRepeats.map((c) => ({ findingId: findingOf(c), text: `${c.name}: ${c.trend.text}` })),
@@ -876,16 +877,16 @@ function buildFinding(
 
 function buildRecommendations(findings: readonly Finding[], rules: ReviewRules | null, library: PatternLibrary): Recommendation[] {
   const out = new Map<string, Recommendation>();
-  const add = (category: RecommendationCategory, authorization: RecommendationAuthorization, text: string, basis: string, findingId: string | null, priority = false) => {
+  const add = (category: RecommendationCategory, authorization: RecommendationAuthorization, text: string, basis: string, findingIds: readonly string[], priority = false) => {
     const key = `${category}|${text}`;
     const existing = out.get(key);
     if (existing) {
       if (!existing.basis.includes(basis)) existing.basis.push(basis);
-      if (findingId && !existing.findingIds.includes(findingId)) existing.findingIds.push(findingId);
+      for (const id of findingIds) if (!existing.findingIds.includes(id)) existing.findingIds.push(id);
       existing.priority ||= priority;
       return;
     }
-    out.set(key, { id: "", category, authorization, authorizationLabel: AUTHORIZATION_LABELS[authorization], text: R(text), basis: [basis], findingIds: findingId ? [findingId] : [], priority });
+    out.set(key, { id: "", category, authorization, authorizationLabel: AUTHORIZATION_LABELS[authorization], text: R(text), basis: [basis], findingIds: [...findingIds], priority });
   };
   const flaggedBasis = (f: Finding) => `${f.title}: ${list([...new Set(f.reviewFlags.map((x) => `${x.name} (${x.flag.ruleId})`))], 4)}`;
   const monitorChanged: Finding[] = [];
@@ -894,10 +895,10 @@ function buildRecommendations(findings: readonly Finding[], rules: ReviewRules |
   for (const f of findings) {
     const p = library.patterns.find((x) => x.id === f.patternId);
     const guidance = rules?.patternGuidance[f.patternId];
-    if (p && f.state === "validated_concern") for (const r of p.recommendations.concern) add(r.category, r.authorization, r.text, `${f.title} (validated concern)`, f.id, true);
+    if (p && f.state === "validated_concern") for (const r of p.recommendations.concern) add(r.category, r.authorization, r.text, `${f.title} (validated concern)`, [f.id], true);
     if (f.reviewPriority !== "none") {
       const recs = guidance?.recommendations ?? p?.recommendations.change ?? [];
-      for (const r of recs) add(r.category, r.authorization, r.text, flaggedBasis(f), f.id, f.reviewPriority === "priority_review");
+      for (const r of recs) add(r.category, r.authorization, r.text, flaggedBasis(f), [f.id], f.reviewPriority === "priority_review");
     } else if (f.state === "changed") monitorChanged.push(f);
     else if (f.state !== "validated_concern") baseline.push(f);
     for (const m of f.missingDetail.filter((x) => x.status === "not_recorded")) missing.push(`${m.label} (${f.title.toLowerCase()})`);
@@ -908,27 +909,23 @@ function buildRecommendations(findings: readonly Finding[], rules: ReviewRules |
       "general_wellness",
       `Repeat the changed measurements in ${list(monitorChanged.map((f) => f.title.toLowerCase()), 4)} with the same laboratory method at the next scheduled examination, so the change can be confirmed.`,
       monitorChanged.map((f) => `${f.title} (change below the review rules)`).join("; "),
-      null,
+      monitorChanged.map((f) => f.id),
     );
-  for (const f of monitorChanged) out.forEach((r) => r.text.includes(f.title.toLowerCase()) && !r.findingIds.includes(f.id) && r.findingIds.push(f.id));
-  if (baseline.length) {
+  if (baseline.length)
     add(
       "monitoring",
       "general_wellness",
       "Repeat the single-examination measurements at the next scheduled examination with the same laboratory, method and units, so that changes over time can be measured.",
       baseline.map((f) => `${f.title} (${f.state === "stable" ? "no recorded change" : "single examination"})`).join("; "),
-      null,
+      baseline.map((f) => f.id),
     );
-    const r = [...out.values()].at(-1)!;
-    r.findingIds.push(...baseline.map((f) => f.id));
-  }
   if (missing.length) {
     add(
       "further_examination",
       "clinician_required",
       `The picture is incomplete. Not recorded in this period: ${missing.join("; ")}. Ground Medical may request these tests.`,
       "documented relationship groups (missing key measurements)",
-      null,
+      findings.filter((f) => f.missingDetail.some((m) => m.status === "not_recorded")).map((f) => f.id),
     );
   }
   return [...out.values()]
