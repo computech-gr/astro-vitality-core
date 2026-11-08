@@ -99,7 +99,7 @@ describe("P59 renderer (SVG test writer)", () => {
   it("P1 page 1 content and legend", () => {
     const { w } = render(D1);
     const p1 = w.texts.filter((t) => t.page === 1).map((t) => t.text).join(" ");
-    for (const s of ["Health Intelligence Report", "Alex Morgan", "Most important findings", "Priority next steps", "HIGH-PRIORITY REVIEW", "DATA CHECK", "NEUTRAL", "SYNTHETIC DEMONSTRATION DATA"]) expect(p1).toContain(s);
+    for (const s of ["Health Intelligence Report", "Alex Morgan", "Most important findings", "Priority next steps", "HIGH PRIORITY MEDICAL REVIEW", "MONITORING OR FURTHER EVALUATION", "DATA CHECK", "NEUTRAL", "SYNTHETIC DEMONSTRATION DATA"]) expect(p1).toContain(s);
   });
   it("P2 section order", () => {
     const { text } = render(D1);

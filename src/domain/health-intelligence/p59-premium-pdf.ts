@@ -309,7 +309,7 @@ function pageOne(L: P, r: PremiumReport) {
         ["pri-purple", "PURPLE · DATA CHECK", "Verify the measurement before interpretation"],
         ["green", "GREEN", "Within applicable reference criteria"],
         ["neutral", "NEUTRAL", "Insufficient classification evidence"],
-        ["amber", "(PROVISIONAL)", "Literature-based class, synthetic demonstration — not clinically validated"],
+        ...(r.options.provisionalActive ? ([["amber", "(PROVISIONAL)", "Literature-based class, synthetic demonstration — not clinically validated"]] as [BadgeKind, string, string][]) : []),
       ]
     : [
         ["red", "RED", "Important medical concern — criterion met"],
