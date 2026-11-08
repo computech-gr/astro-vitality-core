@@ -843,7 +843,7 @@ function frame(L: P, r: PremiumReport) {
     L.pdf.setPage(p);
     if (p > 1) {
       L.font(6.8, false, COLOR.muted);
-      L.pdf.text(L.t("MITOCHONDRIA · Astronaut Health Intelligence"), MX, 9.5);
+      L.pdf.text(L.t(r.demonstrationLabel ? "MITOCHONDRIA" : "MITOCHONDRIA · Astronaut Health Intelligence"), MX, 9.5);
       if (r.demonstrationLabel) { L.font(6.6, true, COLOR.amberDeep); L.pdf.text(L.t(r.demonstrationLabel), W / 2, 9.5, { align: "center" }); L.font(6.8, false, COLOR.muted); }
       L.pdf.text(L.t(`${r.header.astronaut} · ${r.header.mission}`), W - MX, 9.5, { align: "right" });
       L.draw(COLOR.rule);
