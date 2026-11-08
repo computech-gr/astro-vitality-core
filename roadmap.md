@@ -590,3 +590,16 @@
 - [ ] Researcher approval of any P57 criterion — waits on the Researcher (none approved; nothing is coloured).
 - [ ] Scientific review of the P58 concern-library text and P56.1 triage values — waits on the owner/Researcher.
 - [ ] Replacing the published competition sample PDF — waits on owner approval.
+
+## P59 Premium Health Intelligence Report (Revision 2)
+
+- [ ] Add the package files unchanged; fix only genuine type errors.
+- [ ] Owner-directed synthetic demonstration: provisional literature mode on by default for synthetic reports (clear label), off/absent for real data.
+- [ ] Re-verified synthetic identity mappings (exact + criterion-scoped) used only in the synthetic demonstration, with provenance.
+- [ ] Five warning categories (red high-priority review, amber monitoring, purple data check, green, neutral) kept separate from clinical class, with documented priority rationale.
+- [ ] Premium export button + provisional checkbox in the Medical Report; P58 export kept.
+- [ ] AI claim guard added to P58 AI validation.
+- [ ] Read-only identity census of Alex Morgan records (Cloud + actual exam PDF).
+- [ ] Real jsPDF tests and rendered PDFs (Alex full, small normal, complex abnormal, provisional off) inspected page by page.
+- [ ] Alex Morgan premium PDF delivered; browser export verified.
+- [ ] Researcher review of provisional criteria, mappings and priority rules — waits on the Researcher.
