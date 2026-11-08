@@ -201,6 +201,13 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const synthetic = header.provenance === "synthetic";
   const provisionalActive = input.options.provisionalLiterature && synthetic;
   const mode = provisionalActive ? ("synthetic-demonstration" as const) : ("off" as const);
+  const demonstrationMappingsActive = provisionalActive && Boolean(input.options.demonstrationMappings);
+  const kindOf = (() => {
+    const m = new Map<string, string>();
+    for (const c of bundledCriteriaRegistry().criteria) m.set(c.id, c.kind);
+    for (const c of provisionalRegistry(input.provisionalRegistry ?? undefined).reg.criteria) m.set(c.id, c.kind);
+    return (ids: readonly string[]) => ids.map((id) => m.get(id)).find((k): k is string => Boolean(k)) ?? null;
+  })();
   const contributors: Contributor[] = report.assessment.findings.flatMap((f) => f.contributors);
   const contribOf = (metricId: string, unit: string) => contributors.find((c) => c.metricId === metricId && c.unit === unit) ?? null;
   const entryOf = (metricId: string, unit: string): BiomarkerAssessment | null => biomarkers.entries.find((e) => e.metricId === metricId && e.unit === unit) ?? null;
@@ -225,20 +232,23 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     let bandLabel = axes.clinical.bandLabel;
     let provisional: ProvisionalResult | null = null;
     if (provisionalActive && basis === "none") {
-      provisional = provisionalInterpretation({ metricId: r.metricId, unit: r.unit, value: r.value, provenance: "synthetic", mode, missionId: input.missionId, holds }, input.provisionalRegistry);
+      provisional = provisionalInterpretation({ metricId: r.metricId, unit: r.unit, value: r.value, provenance: "synthetic", mode, missionId: input.missionId, holds, demonstrationMappings: demonstrationMappingsActive }, input.provisionalRegistry);
       if (provisional.status === "PROVISIONAL" && provisional.severity !== "neutral") {
         displayClass = sevToClass(provisional.severity);
         basis = "provisional";
         bandLabel = provisional.bandLabel;
       }
     }
+    const route = provisional?.identityRoute ?? null;
+    const routeText = route?.kind === "demonstration_mapping" ? `; identity via synthetic demonstration mapping ${route.observedId} → ${route.target} (not Researcher-approved)` : route?.kind === "researcher_alias" ? `; identity via Researcher alias ${route.observedId} → ${route.target}` : "";
+    const criterionKind = basis === "approved" ? kindOf(approvedCls?.used.map((u) => u.id) ?? []) : basis === "provisional" ? kindOf(provisional?.criterionIds ?? []) : null;
     const criterionText =
       basis === "approved" ? `${bandLabel ?? ""}${approvedCls?.referenceText ? ` — ${approvedCls.referenceText}` : ""} (approved criterion)`
-      : basis === "provisional" ? `${provisional!.bandLabel} (${provisional!.rangeText}) — provisional literature${provisional!.unmetConditions.length ? `; not recorded: ${provisional!.unmetConditions.join("; ")}` : ""}`
+      : basis === "provisional" ? `${provisional!.bandLabel} (${provisional!.rangeText}) — provisional literature${provisional!.unmetConditions.length ? `; not recorded: ${provisional!.unmetConditions.join("; ")}` : ""}${routeText}`
       : provisional && provisional.status !== "DISABLED" && provisional.status !== "NO_CRITERION" ? provisional.label
       : shortOutcome(approvedCls);
     const limitation = holds.length ? "Held for measurement verification before interpretation." : !NUMERIC.test(r.value.trim()) ? "Non-numeric value; shown as recorded." : r.metricId.startsWith("demo:") ? "Synthetic demonstration catalog identity (not scientifically validated)." : null;
-    return { recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:") };
+    return { recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null };
   });
 
   rows.sort((a, b) => GROUPS.findIndex((g) => g.id === a.group) - GROUPS.findIndex((g) => g.id === b.group) || a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit) || a.date.localeCompare(b.date) || a.recordId.localeCompare(b.recordId));
