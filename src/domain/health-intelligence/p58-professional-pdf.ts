@@ -164,22 +164,11 @@ class Layout {
     const headH = header ? headLines.length * lh(11) + 3 : 0;
     const firstH = headH + (prepared[0]?.h ?? 0) + pad;
     this.ensure(Math.min(firstH, BOTTOM - TOP));
-    let segTop = this.y;
-    const startSeg = () => {
-      segTop = this.y;
-    };
-    const closeSeg = () => {
-      const h = this.y - segTop;
-      if (h <= 0) return;
-      // background drawn after content would hide text; so tint is drawn first via measuring below
-    };
-    void closeSeg;
     const drawSegBg = (h: number) => {
       this.rect(M, this.y, CW, h, tint);
       this.fill(accent);
       this.pdf.rect(M, this.y, 1.6, h, "F");
     };
-    startSeg();
     if (header) {
       drawSegBg(headH + pad);
       this.y += pad;
