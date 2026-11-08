@@ -145,7 +145,18 @@ class P {
 
 // ------------------------------------------------------------------ badges
 
-type BadgeKind = "red" | "amber" | "green" | "neutral" | "check" | "flag" | "gm" | "pri-red" | "pri-amber" | "pri-purple" | "pri-green" | "pri-neutral";
+type BadgeKind = "red" | "amber" | "green" | "neutral" | "check" | "flag" | "gm" | "trend" | "pri-red" | "pri-amber" | "pri-purple" | "pri-green" | "pri-neutral";
+/**
+ * P60.1 terminology (one meaning per label across page 1, charts, assessments and the results table):
+ * HIGH PRIORITY / MONITORING / DATA CHECK = the finding's medical-review (warning) priority;
+ * TREND REVIEW = a significant longitudinal change (P56 review rules) that never establishes a priority by itself;
+ * CHECK = an observation-level data-quality rule. Clinical class stays a separate badge.
+ */
+export const TREND_REVIEW_LABEL = "TREND REVIEW";
+const COMPACT_PRIORITY: Record<WarningPriority, string> = {
+  HIGH_PRIORITY_MEDICAL_REVIEW: "HIGH PRIORITY", MONITORING: "MONITORING", DATA_CHECK: "DATA CHECK", WITHIN_CRITERIA: "WITHIN CRITERIA", INSUFFICIENT_EVIDENCE: "NEUTRAL",
+};
+const showsPriority = (p: WarningPriority | null | undefined): p is WarningPriority => p === "HIGH_PRIORITY_MEDICAL_REVIEW" || p === "MONITORING" || p === "DATA_CHECK";
 const PRIORITY_BADGE: Record<WarningPriority, BadgeKind> = {
   HIGH_PRIORITY_MEDICAL_REVIEW: "pri-red", MONITORING: "pri-amber", DATA_CHECK: "pri-purple", WITHIN_CRITERIA: "pri-green", INSUFFICIENT_EVIDENCE: "pri-neutral",
 };
@@ -156,10 +167,14 @@ function badgeLabel(cls: DisplayClass, basis: ClassBasis) {
   const base = cls === "NORMAL" ? "GREEN" : cls;
   return basis === "provisional" ? `${base} (PROVISIONAL)` : base;
 }
+/** Width a badge will take (same arithmetic as badge()). */
+function badgeWidth(L: P, kind: BadgeKind, label: string, size = 6.6, flag = true): number {
+  const flagW = flag && (kind === "flag" || kind === "pri-red" || kind === "pri-amber" || kind === "pri-purple") ? 2.6 : 0;
+  return L.width(label, size, true) + 3 + flagW;
+}
 /** Draws a badge at (x, y = top); returns its width. */
-function badge(L: P, kind: BadgeKind, label: string, x: number, y: number): number {
-  const size = 6.6;
-  const flagW = kind === "flag" || kind === "pri-red" || kind === "pri-amber" || kind === "pri-purple" ? 2.6 : 0;
+function badge(L: P, kind: BadgeKind, label: string, x: number, y: number, size = 6.6, flag = true): number {
+  const flagW = flag && (kind === "flag" || kind === "pri-red" || kind === "pri-amber" || kind === "pri-purple") ? 2.6 : 0;
   const w = L.width(label, size, true) + 3 + flagW;
   const h = 3.9;
   if (kind === "pri-red" || kind === "pri-amber" || kind === "pri-purple" || kind === "pri-green") {
@@ -186,6 +201,10 @@ function badge(L: P, kind: BadgeKind, label: string, x: number, y: number): numb
   } else if (kind === "check") {
     L.box(x, y, w, h, COLOR.white, COLOR.violet, 0.9, 0.4);
     L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, COLOR.violet, 1.2);
+  } else if (kind === "trend") {
+    // Trend review: teal outline with a small rising/falling glyph — deliberately unlike the red priority pill.
+    L.box(x, y, w, h, COLOR.white, COLOR.teal, 0.9, 0.4);
+    L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, COLOR.teal, 1.2);
   } else if (kind === "gm") {
     L.box(x, y, w, h, COLOR.rule, undefined, 0.9);
     L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, COLOR.navy, 1.2);
@@ -238,17 +257,17 @@ function hero(L: P, r: PremiumReport) {
 }
 
 function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureOnly: boolean): number {
-  const pr = a.priority ? WARNING_PRIORITY_TONE[a.priority] : null;
+  const pr = a.mixed ? "neutral" : a.priority ? WARNING_PRIORITY_TONE[a.priority] : null;
   const tone = pr ? (pr === "purple" ? "check" : pr) : a.kind === "clinical-red" ? "red" : a.kind === "data-check" ? "check" : a.kind === "clinical-amber" || a.kind === "provisional" ? "amber" : a.kind === "review-high" ? "red" : "neutral";
   const deep: RGB = tone === "red" ? COLOR.redDeep : tone === "amber" ? COLOR.amberDeep : tone === "check" ? COLOR.violet : tone === "green" ? COLOR.green : COLOR.navy;
   const soft: RGB = tone === "red" ? COLOR.redSoft : tone === "amber" ? COLOR.amberSoft : tone === "check" ? COLOR.violetSoft : tone === "green" ? COLOR.greenSoft : COLOR.panel;
   const inner = w - 7;
   const title = L.capped(a.title, 10, inner, 2, true);
-  const ev = a.findingIds.length > 1 ? a.evidence.split("\n").flatMap((x) => L.capped(x, 8.1, inner, 2)) : L.capped(a.evidence, 8.1, inner, a.priority ? 4 : 5);
+  const ev = a.findingIds.length > 1 ? a.evidence.split("\n").flatMap((x) => L.capped(x, 8.1, inner, 6)) : L.capped(a.evidence, 8.1, inner, a.priority ? 6 : 7);
   const why = a.priority && a.rationale && a.findingIds.length === 1 ? L.capped(`Why this priority: ${a.rationale}`, 7.3, inner, 4) : [];
   const next = L.capped(`Next: ${a.nextStep}`, 7.9, inner, 4);
   const clinicalRow = Boolean(a.priority) && a.findingIds.length === 1;
-  const badgeRows = a.priority ? 5 + (clinicalRow ? 5 : 0) : a.badges.length ? 5 : 0;
+  const badgeRows = a.mixed || a.priority ? 5 + (clinicalRow ? 5 : 0) : a.badges.length ? 5 : 0;
   const h = 3 + badgeRows + title.length * lh(10) + 1 + ev.length * lh(8.1) + (why.length ? 1 + why.length * lh(7.3) : 0) + 3 + next.length * lh(7.9) + 2.5;
   if (measureOnly) return h;
   L.box(x, y, w, h, soft, undefined, 2.4);
@@ -256,7 +275,10 @@ function alertCard(L: P, a: AlertCard, x: number, y: number, w: number, measureO
   L.pdf.rect(x, y + 0.4, 1.6, h - 0.8, "F");
   let cy = y + 2.6;
   let bx = x + 4.2;
-  if (a.priority) {
+  if (a.mixed) {
+    badge(L, "pri-neutral", "SEVERAL PRIORITIES — SEE EACH LINE", bx, cy);
+    cy += 5;
+  } else if (a.priority) {
     badge(L, PRIORITY_BADGE[a.priority], WARNING_PRIORITY_LABEL[a.priority], bx, cy);
     cy += 5;
     if (clinicalRow) {
@@ -329,6 +351,7 @@ function pageOne(L: P, r: PremiumReport) {
         ["green", "GREEN", "Within applicable reference criteria"],
         ["neutral", "NEUTRAL", "Insufficient classification evidence"],
         ...(r.options.provisionalActive ? ([["amber", "(PROVISIONAL)", "Literature-based class; not clinically validated"]] as [BadgeKind, string, string][]) : []),
+        ...(r.rows.some((x) => x.axes.review.value === "HIGH") ? ([["trend", TREND_REVIEW_LABEL, "Significant change between examinations; not a priority"]] as [BadgeKind, string, string][]) : []),
       ]
     : [
         ["red", "RED", "Important medical concern — criterion met"],
@@ -337,10 +360,12 @@ function pageOne(L: P, r: PremiumReport) {
         ["neutral", "NEUTRAL", "Insufficient evidence to classify"],
         ["check", "DATA CHECK", "Verify the measurement before interpretation"],
         ["flag", "HIGH-PRIORITY REVIEW", "Urgency only — not a classification"],
+        ...(r.rows.some((x) => x.axes.review.value === "HIGH") ? ([["trend", TREND_REVIEW_LABEL, "Significant change between examinations; not a priority"]] as [BadgeKind, string, string][]) : []),
       ];
   if (legendProblems(REPORT_LEGEND).length) throw new Error("Report legend failed validation; PDF not created.");
   const note = usesPriority ? L.wrap(r.basisText, 6.8, CW - 6) : [];
-  const lgH = 2 * 9 + 3 + (note.length ? note.length * lh(6.8) + 1 : 0);
+  const legendRows = Math.ceil(items.length / 3);
+  const lgH = legendRows * 9 + 3 + (note.length ? note.length * lh(6.8) + 1 : 0);
   L.ensure(lgH);
   L.box(MX, L.y, CW, lgH, COLOR.panel, COLOR.rule);
   items.forEach(([k, label, text], i) => {
@@ -348,7 +373,7 @@ function pageOne(L: P, r: PremiumReport) {
     const bw = badge(L, k, label, cx, cy);
     L.lines(L.capped(text, 7, CW / 3 - bw - 6, 2), cx + bw + 1.5, cy - 0.3, 7, false, COLOR.ink, 1.25);
   });
-  if (note.length) L.lines(note, MX + 3, L.y + 2 + 2 * 9 - 0.6, 6.8, false, COLOR.muted, 1.25);
+  if (note.length) L.lines(note, MX + 3, L.y + 2 + legendRows * 9 - 0.6, 6.8, false, COLOR.muted, 1.25);
   L.y += lgH + 3;
   if (r.nextSteps.length) {
     // Steps repeat the cards' "Next" lines; on page 1 show those that fit (at least one) to avoid a near-empty page 2.
@@ -382,7 +407,7 @@ function overview(L: P, r: PremiumReport) {
   L.h2("Executive health overview");
   L.para(r.lead, 9);
   for (let i = 0; i < r.overview.length; i += 2) {
-    const pair = r.overview.slice(i, i + 2).map((q, j) => ({ q: L.wrap(`${i + j + 1} · ${q.question}`, 8.6, COL2, true), a: L.capped(q.answer, 8.1, COL2, 7) }));
+    const pair = r.overview.slice(i, i + 2).map((q, j) => ({ q: L.wrap(`${i + j + 1} · ${q.question}`, 8.6, COL2, true), a: L.capped(q.answer, 8.1, COL2, 16) }));
     const h = Math.max(...pair.map((p) => p.q.length * lh(8.6) + p.a.length * lh(8.1))) + 3;
     L.ensure(h);
     pair.forEach((p, j) => {
@@ -396,12 +421,24 @@ function overview(L: P, r: PremiumReport) {
     L.pdf.setLineWidth(0.25);
     L.pdf.line(MX, L.y - 0.8, MX + CW, L.y - 0.8);
   }
-  L.h3("Body systems at a glance", 30);
   const tiles = r.systems;
-  for (let i = 0; i < tiles.length; i += 3) {
-    const row = tiles.slice(i, i + 3);
-    const bodies = row.map((t) => L.capped(t.lines.join("; "), 7.6, COL3 - 6, r.patterns?.patterns.length ? 3 : 5));
-    const h = Math.max(...row.map((t, j) => bodies[j]!.length * lh(7.8) + flowBadges(L, tileBadges(t), 0, 0, COL3 - 6, true) * 4.6)) + 9;
+  // P60.1: the tile grid is kept together with its heading (no tile row orphaned onto the next page); when it
+  // does not fit, the body text is first shortened (5 → 3 lines) before the whole grid moves on.
+  const layoutTiles = (cap: number) => {
+    const rows: { row: SystemTile[]; bodies: string[][]; h: number }[] = [];
+    for (let i = 0; i < tiles.length; i += 3) {
+      const row = tiles.slice(i, i + 3);
+      const bodies = row.map((t) => L.capped(t.lines.join("; "), 7.6, COL3 - 6, cap));
+      rows.push({ row, bodies, h: Math.max(...row.map((t, j) => bodies[j]!.length * lh(7.8) + flowBadges(L, tileBadges(t), 0, 0, COL3 - 6, true) * 4.6)) + 9 });
+    }
+    return { rows, total: rows.reduce((s2, x) => s2 + x.h + GUT, 0) };
+  };
+  const headH = 8 + lh(11) + 2.5;
+  let grid = layoutTiles(5);
+  if (headH + grid.total > L.room()) { const tight = layoutTiles(3); if (headH + tight.total <= L.room()) grid = tight; }
+  if (headH + grid.total > L.room() && headH + grid.total <= BOTTOM - TOP && L.pageHasBody) L.newPage();
+  L.h3("Body systems at a glance", grid.rows[0]?.h ?? 30);
+  for (const { row, bodies, h } of grid.rows) {
     L.ensure(h);
     row.forEach((t, j) => systemTile(L, t, bodies[j]!, MX + j * (COL3 + GUT), L.y, COL3, h));
     L.y += h + GUT;
@@ -410,7 +447,7 @@ function overview(L: P, r: PremiumReport) {
 function tileBadges(t: SystemTile): [BadgeKind, string][] {
   const out: [BadgeKind, string][] = [];
   if (t.measured && t.worst !== "NEUTRAL") out.push([badgeOf(t.worst), badgeLabel(t.worst, t.basis)]);
-  if (t.high) out.push(["flag", "REVIEW"]);
+  if (t.high) out.push(["trend", TREND_REVIEW_LABEL]);
   if (t.dataCheck) out.push(["check", "DATA CHECK"]);
   return out;
 }
@@ -419,7 +456,7 @@ function flowBadges(L: P, bs: [BadgeKind, string][], x: number, y: number, w: nu
   if (!bs.length) return 0;
   let bx = x, row = 0;
   for (const [k, label] of bs) {
-    const bw = L.width(label, 6.6, true) + 3 + (k === "flag" ? 2.6 : 0);
+    const bw = badgeWidth(L, k, label);
     if (bx > x && bx + bw > x + w) { row++; bx = x; }
     if (!measureOnly) badge(L, k, label, bx, y + row * 4.6);
     bx += bw + 1.2;
@@ -455,7 +492,7 @@ function diagram(L: P, r: PremiumReport) {
   const kickerOf = (rs: ResultRow[]) => {
     const worst = rs.reduce<DisplayClass>((m, x) => (rankOf(x.displayClass) > rankOf(m) ? x.displayClass : m), "NEUTRAL");
     const basis = rs.find((x) => x.displayClass === worst)?.basis ?? "none";
-    return `${worst === "NEUTRAL" ? "NEUTRAL" : badgeLabel(worst, basis)}${rs.some((x) => x.axes.review.value === "HIGH") ? " · REVIEW" : ""}${rs.some((x) => x.axes.dataQuality.value === "DATA_QUALITY_WARNING") ? " · DATA CHECK" : ""}`;
+    return `${worst === "NEUTRAL" ? "NEUTRAL" : badgeLabel(worst, basis)}${rs.some((x) => x.axes.review.value === "HIGH") ? ` · ${TREND_REVIEW_LABEL}` : ""}${rs.some((x) => x.axes.dataQuality.value === "DATA_QUALITY_WARNING") ? " · DATA CHECK" : ""}`;
   };
   const kindOf = (cls: string): "established" | "co-occurrence" | "hypothesis" => (cls === "ESTABLISHED_MECHANISM" ? "established" : cls === "HYPOTHESIS" ? "hypothesis" : "co-occurrence");
   patternMap(L, {
