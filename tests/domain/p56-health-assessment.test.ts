@@ -181,11 +181,10 @@ describe("P56 Alex Morgan synthetic examination", () => {
     pdf.addFont("R.ttf", "LiberationSans", "normal");
     pdf.addFileToVFS("B.ttf", fonts.bold);
     pdf.addFont("B.ttf", "LiberationSans", "bold");
-    const { pages } = renderReportDocument(doc, pdf as unknown as PdfWriter, { family: "LiberationSans", unicode: true, redact: true });
-    expect(pages).toBeLessThanOrEqual(4);
-
     const out = await createHealthAssessmentPdf(a, { jsPDF: jsPDF as unknown as PdfFactory, fonts });
     expect(out.fontMode).toBe("unicode");
     if (process.env.P56_WRITE_PDF) writeFileSync(process.env.P56_WRITE_PDF, Buffer.from(await out.blob.arrayBuffer()));
+    const { pages } = renderReportDocument(doc, pdf as unknown as PdfWriter, { family: "LiberationSans", unicode: true, redact: true });
+    expect(pages).toBeLessThanOrEqual(4);
   }, 60_000);
 });

@@ -333,7 +333,7 @@ export function buildHealthAssessment(input: HealthAssessmentInput): HealthAsses
   const header = {
     astronaut: reportAstronautName(input.identity.crewDisplayName),
     mission: R(input.identity.missionName?.trim() || unified.scope.missionId),
-    period: `${unified.filters.from ?? allDates[0] ?? "no records"} to ${unified.filters.to ?? allDates.at(-1) ?? "no records"}`,
+    period: `${unified.filters.from ? day(unified.filters.from) : (allDates[0] ?? "no records")} to ${unified.filters.to ? day(unified.filters.to) : (allDates.at(-1) ?? "no records")}`,
     examinationDates: allDates,
     generatedAt: unified.generatedAt,
     provenance: unified.scope.provenance,
