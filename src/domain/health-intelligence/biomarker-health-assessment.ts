@@ -523,9 +523,13 @@ function buildEntry(
     statusLabel: MEASUREMENT_STATUS_LABELS[finalClass.status],
     severityLabel: SEVERITY_LABELS[finalClass.severity],
     marker: SEVERITY_MARKERS[finalClass.severity],
-    referenceText: ref ? `${referenceRangeText(ref)}${ref.environment === "synthetic_demo" ? " (SYNTHETIC DEMO reference)" : ""}` : null,
-    applicabilityText: ref ? referenceApplicabilityText(ref) : null,
-    referenceCitation: ref ? `${ref.citation.title} - ${ref.citation.locator}${ref.citation.url ? ` ${ref.citation.url}` : ""}; verified by ${ref.verification.verifiedBy} on ${ref.verification.verifiedAt} (${ref.verification.verificationRef})` : null,
+    referenceText: ref ? `${referenceRangeText(ref)}${ref.environment === "synthetic_demo" ? " (SYNTHETIC DEMO reference)" : ""}` : criteriaUsed?.referenceText ?? null,
+    applicabilityText: ref ? referenceApplicabilityText(ref) : criteriaUsed ? "Approved P57 criterion; every applicability requirement recorded for this mission. Terrestrial source applied with its stated limitations." : null,
+    referenceCitation: ref
+      ? `${ref.citation.title} - ${ref.citation.locator}${ref.citation.url ? ` ${ref.citation.url}` : ""}; verified by ${ref.verification.verifiedBy} on ${ref.verification.verifiedAt} (${ref.verification.verificationRef})`
+      : criteriaUsed
+        ? criteriaUsed.used.map((u) => `${u.source}, ${u.locator}${u.url ? ` ${u.url}` : ""}; Researcher approval ${u.approvalRef}`).join("; ")
+        : null,
     explanation,
     higherValues,
     lowerValues,
@@ -545,11 +549,11 @@ export function buildBiomarkerAssessment(
   report: UnifiedHealthReport,
   model: ResearcherInterpretationModel,
   snapshot: InterpretationSnapshot = registryInterpretationSnapshot(),
-  options: { registry?: ReferenceRegistry; adverse?: AdverseResolution | null } = {},
+  options: { registry?: ReferenceRegistry; adverse?: AdverseResolution | null; criteria?: readonly ApprovedCriterion[] } = {},
 ): BiomarkerAssessmentReport {
   const registry = options.registry ?? bundledReferenceRegistry();
   const entries = model.domains.flatMap((d) =>
-    d.series.filter((s) => s.longitudinal.points.length > 0).map((s) => buildEntry(s, d.domain, report.scope, report.rows, snapshot, registry, options.adverse ?? null)),
+    d.series.filter((s) => s.longitudinal.points.length > 0).map((s) => buildEntry(s, d.domain, report.scope, report.rows, snapshot, registry, options.adverse ?? null, options.criteria ?? [])),
   );
   entries.sort(
     (a, b) =>
