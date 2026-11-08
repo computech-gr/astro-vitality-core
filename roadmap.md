@@ -551,3 +551,10 @@
 
 - [x] Anchored "Bulk Synthetic Demo Researcher Decisions" section and jump link on /mission/scientific-review, wrapping the existing P38 component for the selected authorized synthetic mission; full interface only with the Researcher capability and demo scope.
 - [x] Reachability/visibility regression test; Researcher browser check (no decisions recorded).
+
+## P55 Unified Researcher & Ground Medical bulk selection
+
+- [x] Shared pure selection engine (stable IDs, Select All Filtered across pages, page, deselect, hidden-selection scope, counts, preflight, per-record outcomes, retry failed only).
+- [x] Researcher: any-category selection in Global Scientific Review and P38; bulk accept for review, bulk evidence/unit clarification (existing triage RPC, server-side deterministic idempotency), synthetic demo decisions, session-only existing-match acknowledgement.
+- [x] Ground Medical: domain + status filters, any-category selection, preflight, activation of eligible only, clarification note, already-active view, Researcher decision identity.
+- [x] Tests, full checks, browser check of both roles without writes.

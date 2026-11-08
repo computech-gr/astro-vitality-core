@@ -9,17 +9,32 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { FileSearch, FlaskConical, ListChecks, RotateCcw } from "lucide-react";
+import { FileSearch, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
-import { latestTriageByTerm, type TriageEvent } from "@/lib/p36-global-triage-rules";
+import {
+  EVIDENCE_REQUIREMENTS,
+  latestTriageByTerm,
+  triageInputProblem,
+  type EvidenceRequirement,
+  type TriageEvent,
+} from "@/lib/p36-global-triage-rules";
 import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
 import { getSyntheticDemoLifecycle } from "@/lib/p37-synthetic-demo.functions";
 import type { DemoLifecycleRow, DemoScopeTerm } from "@/lib/p37-synthetic-demo.server";
-import { bulkDemoDecideFn, bulkTriageAcceptFn } from "@/lib/p38-bulk-demo.functions";
+import { bulkDemoDecideFn } from "@/lib/p38-bulk-demo.functions";
+import { bulkGlobalTriageFn } from "@/lib/p55-bulk-triage.functions";
+import {
+  BulkActionTable,
+  BulkOutcomePanel,
+  BulkPreflightDialog,
+  BulkSelectionToolbar,
+} from "@/components/p55-bulk-controls";
 import type { GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import {
   PREFLIGHT_CATEGORIES,
@@ -34,12 +49,28 @@ import {
   type PreflightOverride,
   type PreflightRow,
 } from "@/domain/health-intelligence/p38-bulk-demo-preflight";
+import type { BulkProgress } from "@/domain/health-intelligence/p38-bulk-demo-batches";
 import {
-  runBulkBatches,
-  summarizeBulk,
-  type BulkItemResult,
-  type BulkProgress,
-} from "@/domain/health-intelligence/p38-bulk-demo-batches";
+  buildBulkPreflight,
+  deselectAll,
+  executeBulk,
+  pruneSelection,
+  selectAllFiltered,
+  selectIds,
+  selectionScope,
+  toggleId,
+  type BulkPreflight,
+  type RecordOutcome,
+} from "@/domain/health-intelligence/p55-bulk-selection-engine";
+import {
+  RESEARCHER_ACTION_LABEL,
+  acceptReviewFit,
+  acknowledgeMatchFit,
+  demoDecideFit,
+  requestClarificationFit,
+  suggestedRequirements,
+  type ResearcherBulkAction,
+} from "@/domain/health-intelligence/p55-bulk-actions";
 import {
   SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
   SYNTHETIC_DEMO_LABEL,
@@ -57,7 +88,6 @@ import {
   bulkResearcherVisibility,
   bulkSelectionCounts,
   isDecidable,
-  retrySelection,
 } from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
 import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
@@ -91,11 +121,49 @@ type Loaded = {
   events: DemoLifecycleRow[];
 };
 type Run = {
-  kind: "triage" | "decide";
-  progress: BulkProgress;
-  results: BulkItemResult[];
+  action: ResearcherBulkAction;
+  progress: BulkProgress | null;
+  outcomes: RecordOutcome[];
   failure: string | null;
-  retry: (() => Promise<void>) | null;
+};
+type TriageFilter = "all" | "awaiting_triage" | "accepted" | "more_evidence" | "rejected";
+const TRIAGE_FILTER_LABEL: Record<TriageFilter, string> = {
+  all: "All review states",
+  awaiting_triage: "Awaiting triage",
+  accepted: "Accepted for scientific review",
+  more_evidence: "More evidence requested",
+  rejected: "Review request rejected",
+};
+const triageStateOf = (a: string | null): Exclude<TriageFilter, "all"> =>
+  a === "ACCEPT_FOR_REVIEW"
+    ? "accepted"
+    : a === "REQUEST_MORE_EVIDENCE"
+      ? "more_evidence"
+      : a === "REJECT_REVIEW_REQUEST"
+        ? "rejected"
+        : "awaiting_triage";
+const REQUIREMENT_LABEL: Record<EvidenceRequirement, string> = {
+  identity: "Biomarker identity",
+  unit: "Unit",
+  method: "Measurement method",
+  specimen: "Specimen",
+  protocol: "Protocol",
+  source_validation: "Source validation",
+  other: "Other",
+};
+const ACTION_ORDER: ResearcherBulkAction[] = [
+  "accept_review",
+  "demo_decide",
+  "request_clarification",
+  "acknowledge_match",
+];
+const ACTION_DESCRIPTION: Record<ResearcherBulkAction, string> = {
+  accept_review: "Triage only: not scientific approval and never activation.",
+  demo_decide:
+    "SYNTHETIC DEMO decisions for accepted, eligible terms; Ground Medical activates separately.",
+  request_clarification: "Records a REQUEST_MORE_EVIDENCE triage event with the evidence you name.",
+  acknowledge_match:
+    "Shows the existing catalog identity; creates no entry and is not saved (this session only).",
 };
 
 /** Ready for a decision request now (selection eligibility; shared pure rule). */
@@ -103,11 +171,17 @@ const decidable = (r: PreflightRow, scope: Map<string, DemoScopeTerm>) => isDeci
 
 const LOADING_NOTE = "Reading every submitted term of this mission…";
 
-export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
+export function P38BulkDemoResearcher({
+  missionId,
+  missionLabel,
+}: {
+  missionId: string;
+  missionLabel?: string;
+}) {
   const listSubs = useServerFn(listGlobalReviewSubmissions);
   const listTriage = useServerFn(listGlobalTriage);
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
-  const triageFn = useServerFn(bulkTriageAcceptFn);
+  const triageFn = useServerFn(bulkGlobalTriageFn);
   const decideFn = useServerFn(bulkDemoDecideFn);
   const [data, setData] = useState<Loaded | null>(null);
   const [note, setNote] = useState(LOADING_NOTE);
@@ -126,6 +200,20 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
   const [ack, setAck] = useState(false);
   const [run, setRun] = useState<Run | null>(null);
   const [busy, setBusy] = useState(false);
+  const [triageFilter, setTriageFilter] = useState<TriageFilter>("all");
+  const [crewFilter, setCrewFilter] = useState("all");
+  const [unitFilter, setUnitFilter] = useState("all");
+  const [identityFilter, setIdentityFilter] = useState<"all" | "with_reference" | "no_reference">(
+    "all",
+  );
+  const [pending, setPending] = useState<{
+    action: ResearcherBulkAction;
+    preflight: BulkPreflight<PreflightRow>;
+  } | null>(null);
+  const [reason, setReason] = useState("");
+  const [reqs, setReqs] = useState<EvidenceRequirement[]>([]);
+  /** Session-only acknowledgements of existing catalog matches (never saved, no catalog entry). */
+  const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     const [s, t, l] = await Promise.all([
@@ -181,6 +269,12 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
     });
   }, [data, overrides, existingMatch, extraDocs, acceptedSection]);
   const counts = preflightCounts(rows);
+  const crewOf = useMemo(
+    () => new Map((data?.subs ?? []).map((s) => [s.submissionId, s.crewPseudonym])),
+    [data],
+  );
+  const crews = [...new Set(crewOf.values())].sort();
+  const units = useMemo(() => [...new Set(rows.map((r) => r.unit))].sort(), [rows]);
   const domainChoice = rows.filter(needsDomainChoice).length;
   const awaiting = rows.filter(awaitsSectionAcceptance);
   const acceptedRows = rows.filter((r) => r.sectionAccepted);
@@ -263,97 +357,192 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
         : domainFilter !== "all" && r.domain !== domainFilter
     )
       return false;
+    if (triageFilter !== "all" && triageStateOf(r.triageAction) !== triageFilter) return false;
+    if (crewFilter !== "all" && crewOf.get(r.submissionId) !== crewFilter) return false;
+    if (unitFilter !== "all" && r.unit !== unitFilter) return false;
+    if (identityFilter === "with_reference" && !r.references.length) return false;
+    if (identityFilter === "no_reference" && r.references.length) return false;
     const q = query.trim().toLowerCase();
     return (
       !q ||
       r.termId.includes(q) ||
       r.labels.some((l) => l.toLowerCase().includes(q)) ||
       r.displayName.toLowerCase().includes(q) ||
-      r.unit.toLowerCase().includes(q)
+      r.unit.toLowerCase().includes(q) ||
+      r.references.some((x) => x.id.toLowerCase().includes(q) || x.name.toLowerCase().includes(q))
     );
   });
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE);
-  useEffect(() => setPage(0), [query, category, domainFilter]);
+  useEffect(
+    () => setPage(0),
+    [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter],
+  );
 
   const scope = data?.scope ?? new Map<string, DemoScopeTerm>();
-  const selectedRows = rows.filter((r) => selected.has(r.key));
-  const ready = selectedRows.filter((r) => decidable(r, scope));
-  const needTriage = ready.filter((r) => r.triageAction !== "ACCEPT_FOR_REVIEW");
-  const toDecide = ready.filter((r) => r.triageAction === "ACCEPT_FOR_REVIEW");
-  const excludedSelected = selectedRows.filter((r) => !decidable(r, scope));
   const allEligible = rows.filter((r) => decidable(r, scope));
+  const filteredIds = filtered.map((r) => r.key);
+  const selScope = selectionScope(selected, filteredIds);
+  const rowByKey = useMemo(() => new Map(rows.map((r) => [r.key, r])), [rows]);
+  const labelOf = (key: string) => {
+    const r = rowByKey.get(key);
+    return r ? `${r.labels[0] ?? r.termId} · ${r.unit || "no unit"} (${r.termId})` : key;
+  };
+  const rowLabel = (r: PreflightRow) => labelOf(r.key);
+  // Drop selections that no longer exist after a reload; never adds any.
+  useEffect(() => {
+    if (data)
+      setSelected((s) =>
+        pruneSelection(
+          s,
+          rows.map((r) => r.key),
+        ),
+      );
+  }, [data, rows]);
 
   const setOverride = (key: string, patch: PreflightOverride) =>
     setOverrides((m) => new Map(m).set(key, { ...m.get(key), ...patch }));
-  const toggle = (key: string, on: boolean) =>
-    setSelected((s) => {
-      const n = new Set(s);
-      if (on) n.add(key);
-      else n.delete(key);
-      return n;
-    });
+  const toggle = (key: string, on: boolean) => setSelected((s) => toggleId(s, key, on));
 
-  const triageEventOf = (r: PreflightRow) => data?.triage.get(r.key)?.eventId ?? null;
-  const startTriage = async (items: PreflightRow[]) => {
-    setBusy(true);
-    const send = (batch: PreflightRow[]) =>
-      triageFn({
-        data: {
-          missionId,
-          items: batch.map((r) => ({
-            submissionId: r.submissionId,
-            termId: r.termId,
-            expectedPreviousEventId: triageEventOf(r),
-          })),
-        },
-      });
-    const res = await runBulkBatches(items, send, (progress) =>
-      setRun({ kind: "triage", progress, results: [], failure: null, retry: null }),
-    );
-    setRun({
-      kind: "triage",
-      progress: res.progress,
-      results: res.results,
-      failure: res.failure,
-      retry: res.remaining.length ? () => startTriage(res.remaining) : null,
+  const fitFor = (action: ResearcherBulkAction) => (r: PreflightRow) => {
+    if (action === "accept_review") return acceptReviewFit(r, !!data?.canTriage);
+    if (action === "request_clarification") return requestClarificationFit(r, !!data?.canTriage);
+    if (action === "acknowledge_match") return acknowledgeMatchFit(r, acknowledged.has(r.key));
+    return demoDecideFit(r, {
+      submittedByCaller: !!scope.get(r.key)?.submittedByCaller,
+      canDecide: !!data?.canDecide,
     });
-    await load();
-    setBusy(false);
   };
-  const startDecide = async (items: PreflightRow[]) => {
-    setBusy(true);
-    const send = (batch: PreflightRow[]) =>
-      decideFn({
-        data: {
-          missionId,
-          acknowledgement: SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
-          items: batch.map((r) => ({
-            submissionId: r.submissionId,
-            termId: r.termId,
-            displayName: r.displayName,
-            domain: r.domain!,
-          })),
-        },
-      });
-    const res = await runBulkBatches(items, send, (progress) =>
-      setRun({ kind: "decide", progress, results: [], failure: null, retry: null }),
-    );
-    setRun({
-      kind: "decide",
-      progress: res.progress,
-      results: res.results,
-      failure: res.failure,
-      retry: res.remaining.length ? () => startDecide(res.remaining) : null,
+  const preflightFor = (action: ResearcherBulkAction, sel: ReadonlySet<string> = selected) =>
+    buildBulkPreflight({
+      records: rows,
+      idOf: (r) => r.key,
+      selected: sel,
+      filteredIds,
+      fit: fitFor(action),
+      missionLabel: missionLabel ?? missionId,
+      roleLabel: "Researcher",
+      actionLabel: RESEARCHER_ACTION_LABEL[action],
     });
+  const openPreflight = (action: ResearcherBulkAction, sel: ReadonlySet<string> = selected) => {
+    const preflight = preflightFor(action, sel);
+    if (action === "request_clarification") {
+      setReqs(suggestedRequirements(preflight.actionable.map((r) => r.category)));
+      setReason("");
+    }
+    if (action === "demo_decide") setAck(false);
+    setPending({ action, preflight });
+  };
+  const triageEventOf = (r: PreflightRow) => data?.triage.get(r.key)?.eventId ?? null;
+  const triageItems = (batch: PreflightRow[]) =>
+    batch.map((r) => ({
+      submissionId: r.submissionId,
+      termId: r.termId,
+      expectedPreviousEventId: triageEventOf(r),
+    }));
+  const clarificationProblem = triageInputProblem({
+    action: "REQUEST_MORE_EVIDENCE",
+    reason,
+    evidenceRequirements: reqs,
+  });
+  const confirmPending = async () => {
+    if (!pending) return;
+    const { action, preflight } = pending;
+    setPending(null);
+    if (action === "acknowledge_match") {
+      setAcknowledged((s) =>
+        selectIds(
+          s,
+          preflight.actionable.map((r) => r.key),
+        ),
+      );
+      setRun({
+        action,
+        progress: null,
+        failure: null,
+        outcomes: [
+          ...preflight.actionable.map((r) => ({
+            id: r.key,
+            label: rowLabel(r),
+            outcome: "success" as const,
+            detail: `${r.reasons[0] ?? "Existing catalog match"} Acknowledged in this session only; nothing was saved and no catalog entry was created.`,
+            retryAvailable: false,
+          })),
+          ...preflight.already.map((x) => ({
+            id: x.record.key,
+            label: rowLabel(x.record),
+            outcome: "already_completed" as const,
+            detail: x.reason,
+            retryAvailable: false,
+          })),
+          ...preflight.blocked.map((x) => ({
+            id: x.record.key,
+            label: rowLabel(x.record),
+            outcome: "blocked" as const,
+            detail: x.reason,
+            retryAvailable: false,
+          })),
+        ],
+      });
+      return;
+    }
+    setBusy(true);
+    setRun({ action, progress: null, outcomes: [], failure: null });
+    const send =
+      action === "demo_decide"
+        ? (batch: PreflightRow[]) =>
+            decideFn({
+              data: {
+                missionId,
+                acknowledgement: SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
+                items: batch.map((r) => ({
+                  submissionId: r.submissionId,
+                  termId: r.termId,
+                  displayName: r.displayName,
+                  domain: r.domain!,
+                })),
+              },
+            })
+        : (batch: PreflightRow[]) =>
+            triageFn({
+              data: {
+                missionId,
+                action: action === "accept_review" ? "ACCEPT_FOR_REVIEW" : "REQUEST_MORE_EVIDENCE",
+                reason: action === "accept_review" ? null : reason.trim(),
+                evidenceRequirements: action === "accept_review" ? [] : reqs,
+                items: triageItems(batch),
+              },
+            });
+    const res = await executeBulk({
+      preflight,
+      idOf: (r) => r.key,
+      labelOf,
+      send,
+      onProgress: (progress) => setRun({ action, progress, outcomes: [], failure: null }),
+    });
+    setRun({ action, ...res });
     setAck(false);
     await load();
     setBusy(false);
   };
-
-  const summary = run ? summarizeBulk(run.results) : null;
   const workflow = bulkSelectionCounts(rows, scope);
-  const retry = run ? retrySelection(run.results, rows, scope) : { keys: [], notRetryable: 0 };
+  const actionOptions = ACTION_ORDER.map((id) => {
+    const p = preflightFor(id);
+    return {
+      id,
+      label: RESEARCHER_ACTION_LABEL[id],
+      description: ACTION_DESCRIPTION[id],
+      actionable: p.actionable.length,
+      already: p.already.length,
+      blocked: p.blocked.length,
+      unavailable:
+        (id === "accept_review" || id === "request_clarification") && data && !data.canTriage
+          ? "This account has no triage grant; triage actions are unavailable."
+          : id === "demo_decide" && data && !data.canDecide
+            ? "This account has no scientific approver grant."
+            : null,
+    };
+  });
   const visibility = bulkResearcherVisibility({
     authorizedMissions: 1,
     missionSelected: true,
@@ -561,33 +750,107 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
             </div>
           </div>
 
+          <div className="grid gap-2 sm:grid-cols-4" data-testid="p55-researcher-filters">
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-triage" className="text-xs">
+                Review (triage) state
+              </Label>
+              <select
+                id="p55-r-triage"
+                value={triageFilter}
+                onChange={(e) => setTriageFilter(e.target.value as TriageFilter)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                {(Object.keys(TRIAGE_FILTER_LABEL) as TriageFilter[]).map((k) => (
+                  <option key={k} value={k}>
+                    {TRIAGE_FILTER_LABEL[k]}
+                    {k === "all"
+                      ? ""
+                      : ` (${rows.filter((r) => triageStateOf(r.triageAction) === k).length})`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-unit" className="text-xs">
+                Exact unit
+              </Label>
+              <select
+                id="p55-r-unit"
+                value={unitFilter}
+                onChange={(e) => setUnitFilter(e.target.value)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">All units</option>
+                {units.map((u) => (
+                  <option key={u || "none"} value={u}>
+                    {u || "(no unit)"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-identity" className="text-xs">
+                Catalog identity
+              </Label>
+              <select
+                id="p55-r-identity"
+                value={identityFilter}
+                onChange={(e) => setIdentityFilter(e.target.value as typeof identityFilter)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">All</option>
+                <option value="with_reference">Has an existing catalog reference</option>
+                <option value="no_reference">No catalog reference</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="p55-r-crew" className="text-xs">
+                Crew (pseudonym)
+              </Label>
+              <select
+                id="p55-r-crew"
+                value={crewFilter}
+                onChange={(e) => setCrewFilter(e.target.value)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">All permitted crew</option>
+                {crews.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <BulkSelectionToolbar
+            idPrefix="p55-researcher"
+            scope={selScope}
+            pageCount={pageRows.length}
+            onSelectAllFiltered={() => setSelected((s) => selectAllFiltered(s, filteredIds))}
+            onSelectPage={() =>
+              setSelected((s) =>
+                selectIds(
+                  s,
+                  pageRows.map((r) => r.key),
+                ),
+              )
+            }
+            onDeselectAll={() => setSelected(deselectAll())}
+            onKeepOnlyFiltered={() => setSelected((s) => pruneSelection(s, filteredIds))}
+            extra={
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelected(new Set(allEligible.map((r) => r.key)))}
+              >
+                <ListChecks className="mr-1 h-4 w-4" aria-hidden />
+                Select All Eligible for a demo decision ({allEligible.length})
+              </Button>
+            }
+          />
           <div className="flex flex-wrap items-end gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setSelected(new Set(allEligible.map((r) => r.key)))}
-            >
-              <ListChecks className="mr-1 h-4 w-4" aria-hidden />
-              Select All Eligible ({allEligible.length})
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                setSelected(
-                  (s) =>
-                    new Set([
-                      ...s,
-                      ...pageRows.filter((r) => decidable(r, scope)).map((r) => r.key),
-                    ]),
-                )
-              }
-            >
-              Select Page
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setSelected(new Set())}>
-              Deselect All
-            </Button>
             <div className="flex items-end gap-1">
               <div className="space-y-1">
                 <Label htmlFor="p38-bulk-domain" className="text-xs">
@@ -660,7 +923,6 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                         <input
                           type="checkbox"
                           aria-label={`Select ${r.labels[0] ?? r.termId}`}
-                          disabled={!decidable(r, scope)}
                           checked={selected.has(r.key)}
                           onChange={(e) => toggle(r.key, e.target.checked)}
                         />
@@ -682,7 +944,11 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
                             ? "Accepted for review"
                             : "Not yet accepted for review"}
                           {r.inScope ? "" : " · outside owner demo scope"}
+                          {crewOf.get(r.submissionId) ? ` · ${crewOf.get(r.submissionId)}` : ""}
                         </div>
+                        {acknowledged.has(r.key) ? (
+                          <Badge variant="secondary">Match acknowledged (this session)</Badge>
+                        ) : null}
                       </td>
                       <td className="p-1">
                         {editable ? (
@@ -765,148 +1031,108 @@ export function P38BulkDemoResearcher({ missionId }: { missionId: string }) {
             </Button>
           </div>
 
-          <div
-            className="space-y-2 rounded-md border border-border p-3"
-            data-testid="p38-bulk-preview"
+          <BulkActionTable
+            idPrefix="p55-researcher"
+            actions={actionOptions}
+            selected={selected.size}
+            busy={busy}
+            onReview={(id) => openPreflight(id as ResearcherBulkAction)}
+            onClear={() => setSelected(deselectAll())}
+          />
+          <BulkPreflightDialog
+            preflight={pending?.preflight ?? null}
+            labelOf={rowLabel}
+            confirmLabel={
+              pending ? `Confirm: ${RESEARCHER_ACTION_LABEL[pending.action]}` : "Confirm"
+            }
+            confirmDisabled={
+              busy ||
+              (pending?.action === "demo_decide" && !ack) ||
+              (pending?.action === "request_clarification" && !!clarificationProblem)
+            }
+            safeguard={
+              pending?.action === "accept_review"
+                ? "Accepting for scientific review is triage only. It is not scientific approval and never activates anything."
+                : pending?.action === "demo_decide"
+                  ? `${SYNTHETIC_DEMO_LABEL}. Decisions are not scientific approvals and activate nothing; Ground Medical activates separately.`
+                  : pending?.action === "request_clarification"
+                    ? "Records a REQUEST_MORE_EVIDENCE triage event for each actionable term. Units are never chosen or converted."
+                    : "Only shows the existing catalog identity. Nothing is saved and no catalog entry is created."
+            }
+            onCancel={() => setPending(null)}
+            onConfirm={() => void confirmPending()}
           >
-            <p className="text-sm font-medium">Bulk preview</p>
-            <p className="text-xs">
-              Selected {selectedRows.length}: {needTriage.length} need review acceptance first,{" "}
-              {toDecide.length} ready for a synthetic demo decision, {excludedSelected.length}{" "}
-              excluded.
-            </p>
-            {excludedSelected.length ? (
-              <ul className="list-disc pl-5 text-xs text-muted-foreground">
-                {excludedSelected.slice(0, 20).map((r) => (
-                  <li key={r.key}>
-                    {r.labels[0]} ({r.termId}):{" "}
-                    {!r.inScope
-                      ? "outside the owner-authorized demo scope"
-                      : scope.get(r.key)?.submittedByCaller
-                        ? "you submitted this term"
-                        : (r.reasons[0] ?? PREFLIGHT_CATEGORY_LABEL[r.category])}
-                  </li>
-                ))}
-              </ul>
+            {pending?.action === "demo_decide" ? (
+              <label className="flex items-start gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={ack}
+                  onChange={(e) => setAck(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  I understand these are SYNTHETIC DEMO decisions, labelled NOT SCIENTIFICALLY
+                  VALIDATED. They are not scientific approvals, cite no source validation, assay
+                  method, specimen or protocol, activate nothing and never enter the production
+                  catalog.
+                </span>
+              </label>
             ) : null}
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={busy || !data.canTriage || !needTriage.length}
-              onClick={() => void startTriage(needTriage)}
-            >
-              Accept {needTriage.length} selected for scientific review
-            </Button>
-            <label className="flex items-start gap-2 text-xs">
-              <input
-                type="checkbox"
-                checked={ack}
-                onChange={(e) => setAck(e.target.checked)}
-                className="mt-0.5"
-              />
-              <span>
-                I understand these are SYNTHETIC DEMO decisions, labelled NOT SCIENTIFICALLY
-                VALIDATED. They are not scientific approvals, cite no source validation, assay
-                method, specimen or protocol, activate nothing and never enter the production
-                catalog.
-              </span>
-            </label>
-            <Button
-              size="sm"
-              disabled={busy || !ack || !data.canDecide || !toDecide.length}
-              onClick={() => void startDecide(toDecide)}
-            >
-              <FlaskConical className="mr-1 h-4 w-4" aria-hidden />
-              Record Bulk SYNTHETIC DEMO Decisions ({toDecide.length})
-            </Button>
-          </div>
-
-          {run ? (
-            <div
-              role="status"
-              className="space-y-1 rounded-md border border-border p-3 text-xs"
-              data-testid="p38-bulk-run"
-            >
-              <p className="font-medium">
-                {run.kind === "triage" ? "Review acceptance" : "Synthetic demo decisions"}: batch{" "}
-                {run.progress.batchesDone} of {run.progress.batchesTotal} · {run.progress.itemsDone}{" "}
-                of {run.progress.itemsTotal} terms processed
-              </p>
-              {summary ? (
-                <p>
-                  Recorded {summary.recorded} · already recorded (retry) {summary.duplicate} ·
-                  skipped {summary.skipped} · rejected {summary.rejected} · changed meanwhile{" "}
-                  {summary.stale}
-                </p>
-              ) : null}
-              {run.results
-                .filter((r) => r.status === "rejected" || r.status === "stale")
-                .slice(0, 20)
-                .map((r) => (
-                  <p key={r.ref} className="text-destructive">
-                    {r.termId}: {r.detail ?? r.status}
-                  </p>
-                ))}
-              {run.results.length ? (
-                <details data-testid="p54-bulk-item-results">
-                  <summary className="cursor-pointer">
-                    Per-item results ({run.results.length})
-                  </summary>
-                  <ul className="mt-1 max-h-64 space-y-0.5 overflow-auto">
-                    {run.results.map((r) => (
-                      <li
-                        key={r.ref}
-                        className={
-                          r.status === "rejected" || r.status === "stale" ? "text-destructive" : ""
+            {pending?.action === "request_clarification" ? (
+              <div className="space-y-2">
+                <fieldset className="grid grid-cols-2 gap-2">
+                  <legend className="mb-1 text-xs text-muted-foreground">
+                    Missing evidence (at least one; suggested from the blocking reasons)
+                  </legend>
+                  {EVIDENCE_REQUIREMENTS.map((q) => (
+                    <div key={q} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`p55-req-${q}`}
+                        checked={reqs.includes(q)}
+                        onCheckedChange={(c) =>
+                          setReqs((cur) =>
+                            c ? [...new Set([...cur, q])] : cur.filter((x) => x !== q),
+                          )
                         }
-                      >
-                        {r.termId}:{" "}
-                        {r.status === "recorded"
-                          ? "recorded"
-                          : r.status === "duplicate"
-                            ? "already recorded"
-                            : r.status === "stale"
-                              ? "changed meanwhile"
-                              : r.status}
-                        {r.detail ? ` — ${r.detail}` : ""}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              ) : null}
-              {retry.keys.length ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => setSelected(new Set(retry.keys))}
-                >
-                  <RotateCcw className="mr-1 h-4 w-4" aria-hidden />
-                  Select {retry.keys.length} failed item(s) again for retry
-                </Button>
-              ) : null}
-              {retry.notRetryable ? (
-                <p className="text-muted-foreground">
-                  {retry.notRetryable} failed item(s) are no longer eligible and cannot be retried.
-                </p>
-              ) : null}
-              {run.failure ? (
-                <p role="alert" className="text-destructive">
-                  {run.failure}
-                </p>
-              ) : null}
-              {run.retry ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => void run.retry?.()}
-                >
-                  <RotateCcw className="mr-1 h-4 w-4" aria-hidden />
-                  Retry remaining batches
-                </Button>
-              ) : null}
-            </div>
+                      />
+                      <Label htmlFor={`p55-req-${q}`} className="text-xs font-normal">
+                        {REQUIREMENT_LABEL[q]}
+                      </Label>
+                    </div>
+                  ))}
+                </fieldset>
+                <div className="space-y-1">
+                  <Label htmlFor="p55-req-reason" className="text-xs">
+                    Reason (required, 8–2000 characters; recorded for every actionable term)
+                  </Label>
+                  <Textarea
+                    id="p55-req-reason"
+                    value={reason}
+                    maxLength={2000}
+                    rows={3}
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                </div>
+                {clarificationProblem ? (
+                  <p className="text-xs text-muted-foreground">{clarificationProblem}</p>
+                ) : null}
+              </div>
+            ) : null}
+          </BulkPreflightDialog>
+          {run ? (
+            <BulkOutcomePanel
+              idPrefix="p55-researcher"
+              title={RESEARCHER_ACTION_LABEL[run.action]}
+              progress={run.progress}
+              outcomes={run.outcomes}
+              failure={run.failure}
+              busy={busy}
+              onRetryFailed={(ids) => {
+                const sel = new Set(ids);
+                setSelected(sel);
+                openPreflight(run.action, sel);
+              }}
+            />
           ) : null}
         </div>
       )}

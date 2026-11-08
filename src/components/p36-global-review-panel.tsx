@@ -13,34 +13,121 @@ import { useServerFn } from "@tanstack/react-start";
 import { Check, ChevronsUpDown, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { appendGlobalTriage, listGlobalReviewMissions, listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
-import { EVIDENCE_REQUIREMENTS, latestTriageByTerm, triageInputProblem, type EvidenceRequirement, type TriageAction, type TriageEvent } from "@/lib/p36-global-triage-rules";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  appendGlobalTriage,
+  listGlobalReviewMissions,
+  listGlobalReviewSubmissions,
+  listGlobalTriage,
+} from "@/lib/p36-global-review.functions";
+import {
+  EVIDENCE_REQUIREMENTS,
+  latestTriageByTerm,
+  triageInputProblem,
+  type EvidenceRequirement,
+  type TriageAction,
+  type TriageEvent,
+} from "@/lib/p36-global-triage-rules";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import { openBulkDemoDecisions } from "@/components/p38-bulk-navigation";
+import { bulkGlobalTriageFn } from "@/lib/p55-bulk-triage.functions";
 import {
-  ALL_CREWS, ALL_MISSIONS, REVIEW_STATE_LABEL, SCIENTIFIC_STATE_LABEL, canChooseAllMissions, crewOptions, dashboardCounts, filterTerms,
-  flattenTerms, missionsForSelection, paginate, sortTerms, type ReviewState, type TermRow, type TermSort,
+  BulkActionTable,
+  BulkOutcomePanel,
+  BulkPreflightDialog,
+  BulkSelectionToolbar,
+} from "@/components/p55-bulk-controls";
+import {
+  buildBulkPreflight,
+  deselectAll,
+  executeBulk,
+  pruneSelection,
+  selectAllFiltered,
+  selectIds,
+  selectionScope,
+  toggleId,
+  type BulkPreflight,
+  type RecordOutcome,
+} from "@/domain/health-intelligence/p55-bulk-selection-engine";
+import {
+  RESEARCHER_ACTION_LABEL,
+  acceptReviewFit,
+  requestClarificationFit,
+} from "@/domain/health-intelligence/p55-bulk-actions";
+import type { BulkProgress } from "@/domain/health-intelligence/p38-bulk-demo-batches";
+
+type GlobalBulkAction = "accept_review" | "request_clarification";
+const GLOBAL_ACTIONS: GlobalBulkAction[] = ["accept_review", "request_clarification"];
+const GLOBAL_ACTION_DESCRIPTION: Record<GlobalBulkAction, string> = {
+  accept_review:
+    "Triage only for terms awaiting triage: not scientific approval and never activation.",
+  request_clarification:
+    "Records REQUEST_MORE_EVIDENCE with the evidence you name (e.g. unit, identity).",
+};
+import {
+  ALL_CREWS,
+  ALL_MISSIONS,
+  REVIEW_STATE_LABEL,
+  SCIENTIFIC_STATE_LABEL,
+  canChooseAllMissions,
+  crewOptions,
+  dashboardCounts,
+  filterTerms,
+  flattenTerms,
+  missionsForSelection,
+  paginate,
+  sortTerms,
+  type ReviewState,
+  type TermRow,
+  type TermSort,
 } from "@/lib/p36-global-review-view";
 
-const BASIS_LABEL = { mission_researcher: "Mission Researcher", global_scientific_review: "Global scientific review" } as const;
+const BASIS_LABEL = {
+  mission_researcher: "Mission Researcher",
+  global_scientific_review: "Global scientific review",
+} as const;
 const PAGE_SIZE = 25;
-const NO_GRANT_REASON = "This account can read but not record triage: triage needs a separate owner-provisioned grant.";
+const NO_GRANT_REASON =
+  "This account can read but not record triage: triage needs a separate owner-provisioned grant.";
 const ACTION_LABEL: Record<TriageAction, string> = {
   ACCEPT_FOR_REVIEW: "Accept for scientific review",
   REQUEST_MORE_EVIDENCE: "Request more evidence",
   REJECT_REVIEW_REQUEST: "Reject review request",
 };
 const REQUIREMENT_LABEL: Record<EvidenceRequirement, string> = {
-  identity: "Biomarker identity", unit: "Unit", method: "Measurement method", specimen: "Specimen",
-  protocol: "Protocol", source_validation: "Source validation", other: "Other",
+  identity: "Biomarker identity",
+  unit: "Unit",
+  method: "Measurement method",
+  specimen: "Specimen",
+  protocol: "Protocol",
+  source_validation: "Source validation",
+  other: "Other",
 };
 
 function TriageForm({ row, onRecorded }: { row: TermRow; onRecorded: () => Promise<void> }) {
@@ -52,20 +139,52 @@ function TriageForm({ row, onRecorded }: { row: TermRow; onRecorded: () => Promi
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const latest = row.triage;
-  const allowed = (a: TriageAction) => latest?.action !== "REJECT_REVIEW_REQUEST" && !(a === "ACCEPT_FOR_REVIEW" && latest?.action === "ACCEPT_FOR_REVIEW");
-  const open = (a: TriageAction) => { setAction(a); setReason(""); setReqs([]); setKey(crypto.randomUUID()); setMessage(null); };
-  const problem = action ? triageInputProblem({ action, reason, evidenceRequirements: action === "REQUEST_MORE_EVIDENCE" ? reqs : [] }) : null;
+  const allowed = (a: TriageAction) =>
+    latest?.action !== "REJECT_REVIEW_REQUEST" &&
+    !(a === "ACCEPT_FOR_REVIEW" && latest?.action === "ACCEPT_FOR_REVIEW");
+  const open = (a: TriageAction) => {
+    setAction(a);
+    setReason("");
+    setReqs([]);
+    setKey(crypto.randomUUID());
+    setMessage(null);
+  };
+  const problem = action
+    ? triageInputProblem({
+        action,
+        reason,
+        evidenceRequirements: action === "REQUEST_MORE_EVIDENCE" ? reqs : [],
+      })
+    : null;
   const submit = async () => {
     if (!action || problem) return;
     setBusy(true);
-    const r = await append({ data: {
-      missionId: row.submission.missionId, provenance: row.submission.provenance, submissionId: row.submission.submissionId, termId: row.term.termId,
-      action, reason: reason.trim() || null, evidenceRequirements: action === "REQUEST_MORE_EVIDENCE" ? reqs : [],
-      expectedPreviousEventId: latest?.eventId ?? null, idempotencyKey: key,
-    } }).catch(() => null);
+    const r = await append({
+      data: {
+        missionId: row.submission.missionId,
+        provenance: row.submission.provenance,
+        submissionId: row.submission.submissionId,
+        termId: row.term.termId,
+        action,
+        reason: reason.trim() || null,
+        evidenceRequirements: action === "REQUEST_MORE_EVIDENCE" ? reqs : [],
+        expectedPreviousEventId: latest?.eventId ?? null,
+        idempotencyKey: key,
+      },
+    }).catch(() => null);
     setBusy(false);
-    if (!r || !r.ok) { setMessage({ ok: false, text: r?.message ?? "Nothing was recorded. Try again; the same request will not be duplicated." }); return; }
-    setMessage({ ok: true, text: `${ACTION_LABEL[action]} recorded. This is triage, not scientific approval.` });
+    if (!r || !r.ok) {
+      setMessage({
+        ok: false,
+        text:
+          r?.message ?? "Nothing was recorded. Try again; the same request will not be duplicated.",
+      });
+      return;
+    }
+    setMessage({
+      ok: true,
+      text: `${ACTION_LABEL[action]} recorded. This is triage, not scientific approval.`,
+    });
     setAction(null);
     await onRecorded();
   };
@@ -73,50 +192,117 @@ function TriageForm({ row, onRecorded }: { row: TermRow; onRecorded: () => Promi
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         {(Object.keys(ACTION_LABEL) as TriageAction[]).map((a) => (
-          <Button key={a} variant={a === "ACCEPT_FOR_REVIEW" ? "default" : "outline"} disabled={busy || !allowed(a)} aria-pressed={action === a} onClick={() => open(a)}>{ACTION_LABEL[a]}</Button>
+          <Button
+            key={a}
+            variant={a === "ACCEPT_FOR_REVIEW" ? "default" : "outline"}
+            disabled={busy || !allowed(a)}
+            aria-pressed={action === a}
+            onClick={() => open(a)}
+          >
+            {ACTION_LABEL[a]}
+          </Button>
         ))}
       </div>
-      {latest?.action === "REJECT_REVIEW_REQUEST" ? <p className="text-xs text-muted-foreground">This review request was rejected; a new submission is required for further triage.</p> : null}
+      {latest?.action === "REJECT_REVIEW_REQUEST" ? (
+        <p className="text-xs text-muted-foreground">
+          This review request was rejected; a new submission is required for further triage.
+        </p>
+      ) : null}
       {action ? (
         <div className="space-y-3 rounded-md border border-border p-3">
           <p className="font-medium">{ACTION_LABEL[action]}</p>
           {action === "REQUEST_MORE_EVIDENCE" ? (
             <fieldset className="grid grid-cols-2 gap-2">
-              <legend className="mb-1 text-xs text-muted-foreground">Missing evidence (at least one)</legend>
+              <legend className="mb-1 text-xs text-muted-foreground">
+                Missing evidence (at least one)
+              </legend>
               {EVIDENCE_REQUIREMENTS.map((q) => (
                 <div key={q} className="flex items-center gap-2">
-                  <Checkbox id={`req-${q}`} checked={reqs.includes(q)} onCheckedChange={(c) => setReqs((cur) => (c ? [...cur, q] : cur.filter((x) => x !== q)))} />
-                  <Label htmlFor={`req-${q}`} className="text-xs font-normal">{REQUIREMENT_LABEL[q]}</Label>
+                  <Checkbox
+                    id={`req-${q}`}
+                    checked={reqs.includes(q)}
+                    onCheckedChange={(c) =>
+                      setReqs((cur) => (c ? [...cur, q] : cur.filter((x) => x !== q)))
+                    }
+                  />
+                  <Label htmlFor={`req-${q}`} className="text-xs font-normal">
+                    {REQUIREMENT_LABEL[q]}
+                  </Label>
                 </div>
               ))}
             </fieldset>
           ) : null}
           <div className="space-y-1">
-            <Label htmlFor="triage-reason">{action === "ACCEPT_FOR_REVIEW" ? "Note (optional)" : "Reason (required)"}</Label>
-            <Textarea id="triage-reason" value={reason} maxLength={2000} onChange={(e) => setReason(e.target.value)} rows={3} />
+            <Label htmlFor="triage-reason">
+              {action === "ACCEPT_FOR_REVIEW" ? "Note (optional)" : "Reason (required)"}
+            </Label>
+            <Textarea
+              id="triage-reason"
+              value={reason}
+              maxLength={2000}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+            />
           </div>
           {problem ? <p className="text-xs text-muted-foreground">{problem}</p> : null}
           <div className="flex gap-2">
-            <Button disabled={busy || !!problem} onClick={() => void submit()}>{busy ? "Recording…" : "Confirm and record"}</Button>
-            <Button variant="ghost" disabled={busy} onClick={() => setAction(null)}>Cancel</Button>
+            <Button disabled={busy || !!problem} onClick={() => void submit()}>
+              {busy ? "Recording…" : "Confirm and record"}
+            </Button>
+            <Button variant="ghost" disabled={busy} onClick={() => setAction(null)}>
+              Cancel
+            </Button>
           </div>
         </div>
       ) : null}
-      {message ? <p role={message.ok ? "status" : "alert"} className={message.ok ? "text-xs" : "text-xs text-destructive"}>{message.text}</p> : null}
+      {message ? (
+        <p
+          role={message.ok ? "status" : "alert"}
+          className={message.ok ? "text-xs" : "text-xs text-destructive"}
+        >
+          {message.text}
+        </p>
+      ) : null}
     </div>
   );
 }
 
-interface ComboOption { value: string; search: string; title: string; subtitle?: string; badge?: string }
+interface ComboOption {
+  value: string;
+  search: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+}
 
-function ComboBox({ label, placeholder, empty, options, value, onChange, triggerText }: {
-  label: string; placeholder: string; empty: string; options: ComboOption[]; value: string; onChange: (v: string) => void; triggerText: string;
+function ComboBox({
+  label,
+  placeholder,
+  empty,
+  options,
+  value,
+  onChange,
+  triggerText,
+}: {
+  label: string;
+  placeholder: string;
+  empty: string;
+  options: ComboOption[];
+  value: string;
+  onChange: (v: string) => void;
+  triggerText: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} aria-label={label} className="w-full justify-between sm:w-[24rem]">
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          aria-label={label}
+          className="w-full justify-between sm:w-[24rem]"
+        >
           <span className="truncate">{triggerText}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-60" aria-hidden />
         </Button>
@@ -128,11 +314,23 @@ function ComboBox({ label, placeholder, empty, options, value, onChange, trigger
             <CommandEmpty>{empty}</CommandEmpty>
             <CommandGroup>
               {options.map((o) => (
-                <CommandItem key={o.value} value={o.search} onSelect={() => { onChange(o.value); setOpen(false); }}>
-                  <Check className={`mr-2 h-4 w-4 ${value === o.value ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <CommandItem
+                  key={o.value}
+                  value={o.search}
+                  onSelect={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={`mr-2 h-4 w-4 ${value === o.value ? "opacity-100" : "opacity-0"}`}
+                    aria-hidden
+                  />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate">{o.title}</span>
-                    {o.subtitle ? <span className="text-xs text-muted-foreground">{o.subtitle}</span> : null}
+                    {o.subtitle ? (
+                      <span className="text-xs text-muted-foreground">{o.subtitle}</span>
+                    ) : null}
                   </span>
                   {o.badge ? <Badge variant="secondary">{o.badge}</Badge> : null}
                 </CommandItem>
@@ -157,78 +355,178 @@ function Stat({ label, value, note }: { label: string; value: number | string; n
 
 function HashList({ values }: { values: string[] }) {
   if (!values.length) return <span className="text-muted-foreground">None supplied</span>;
-  return <ul className="space-y-1">{values.map((v) => <li key={v} className="break-all font-mono text-xs">{v}</li>)}</ul>;
+  return (
+    <ul className="space-y-1">
+      {values.map((v) => (
+        <li key={v} className="break-all font-mono text-xs">
+          {v}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
-function TermDetail({ row, onClose, canTriage, triageNote, history, onRecorded }: {
-  row: TermRow | null; onClose: () => void; canTriage: boolean; triageNote: string; history: TriageEvent[]; onRecorded: () => Promise<void>;
+function TermDetail({
+  row,
+  onClose,
+  canTriage,
+  triageNote,
+  history,
+  onRecorded,
+}: {
+  row: TermRow | null;
+  onClose: () => void;
+  canTriage: boolean;
+  triageNote: string;
+  history: TriageEvent[];
+  onRecorded: () => Promise<void>;
 }) {
-  const t = row?.term; const s = row?.submission;
+  const t = row?.term;
+  const s = row?.submission;
   return (
-    <Sheet open={!!row} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Sheet
+      open={!!row}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         {t && s && row ? (
           <>
             <SheetHeader>
               <SheetTitle>{t.originalLabels.join(" · ") || t.termId}</SheetTitle>
-              <SheetDescription>Submitted unknown biomarker metadata. Read-only; no measurement values or source documents are shown.</SheetDescription>
+              <SheetDescription>
+                Submitted unknown biomarker metadata. Read-only; no measurement values or source
+                documents are shown.
+              </SheetDescription>
             </SheetHeader>
             <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-[10rem_1fr]">
-              <dt className="text-muted-foreground">Exact reported unit</dt><dd>{t.exactUnit}</dd>
-              <dt className="text-muted-foreground">Candidate catalog identity</dt><dd className="font-mono text-xs">{t.candidateMetricIds.join(", ") || "No candidate proposed"}</dd>
-              <dt className="text-muted-foreground">Proposed scientific domain</dt><dd className="text-muted-foreground">Not included in submitted metadata</dd>
-              <dt className="text-muted-foreground">Classification status</dt><dd>{t.classification}</dd>
-              <dt className="text-muted-foreground">Method / specimen</dt><dd>{t.method ?? "Not supplied"} / {t.specimen ?? "Not supplied"}</dd>
-              <dt className="text-muted-foreground">Provenance</dt><dd><Badge variant="outline">{s.provenance}</Badge></dd>
-              <dt className="text-muted-foreground">Mission</dt><dd>{s.missionName} ({s.missionCode})</dd>
-              <dt className="text-muted-foreground">Crew</dt><dd className="font-mono text-xs">{s.crewPseudonym}</dd>
-              <dt className="text-muted-foreground">Submission receipt</dt><dd>{s.requestId} · received {s.receivedAt.slice(0, 16).replace("T", " ")} UTC by {s.submittedRole.replace("_", " ")}</dd>
-              <dt className="text-muted-foreground">Triage state</dt><dd><Badge variant="secondary">{REVIEW_STATE_LABEL[row.state]}</Badge></dd>
-              <dt className="text-muted-foreground">Scientific decision</dt><dd>{SCIENTIFIC_STATE_LABEL[row.scientific]}</dd>
+              <dt className="text-muted-foreground">Exact reported unit</dt>
+              <dd>{t.exactUnit}</dd>
+              <dt className="text-muted-foreground">Candidate catalog identity</dt>
+              <dd className="font-mono text-xs">
+                {t.candidateMetricIds.join(", ") || "No candidate proposed"}
+              </dd>
+              <dt className="text-muted-foreground">Proposed scientific domain</dt>
+              <dd className="text-muted-foreground">Not included in submitted metadata</dd>
+              <dt className="text-muted-foreground">Classification status</dt>
+              <dd>{t.classification}</dd>
+              <dt className="text-muted-foreground">Method / specimen</dt>
+              <dd>
+                {t.method ?? "Not supplied"} / {t.specimen ?? "Not supplied"}
+              </dd>
+              <dt className="text-muted-foreground">Provenance</dt>
+              <dd>
+                <Badge variant="outline">{s.provenance}</Badge>
+              </dd>
+              <dt className="text-muted-foreground">Mission</dt>
+              <dd>
+                {s.missionName} ({s.missionCode})
+              </dd>
+              <dt className="text-muted-foreground">Crew</dt>
+              <dd className="font-mono text-xs">{s.crewPseudonym}</dd>
+              <dt className="text-muted-foreground">Submission receipt</dt>
+              <dd>
+                {s.requestId} · received {s.receivedAt.slice(0, 16).replace("T", " ")} UTC by{" "}
+                {s.submittedRole.replace("_", " ")}
+              </dd>
+              <dt className="text-muted-foreground">Triage state</dt>
+              <dd>
+                <Badge variant="secondary">{REVIEW_STATE_LABEL[row.state]}</Badge>
+              </dd>
+              <dt className="text-muted-foreground">Scientific decision</dt>
+              <dd>{SCIENTIFIC_STATE_LABEL[row.scientific]}</dd>
               <dt className="text-muted-foreground">Triage history</dt>
               <dd>
                 {history.length ? (
                   <ol className="space-y-2">
                     {history.map((e) => (
                       <li key={e.eventId} className="rounded border border-border p-2 text-xs">
-                        <span className="font-medium">{ACTION_LABEL[e.action]}</span> · {e.recordedAt.slice(0, 16).replace("T", " ")} UTC · {e.recordedByCaller ? "you" : "authorized reviewer"}
-                        {e.evidenceRequirements.length ? <span className="block">Missing: {e.evidenceRequirements.map((q) => REQUIREMENT_LABEL[q]).join(", ")}</span> : null}
-                        {e.reason ? <span className="block text-muted-foreground">{e.reason}</span> : null}
+                        <span className="font-medium">{ACTION_LABEL[e.action]}</span> ·{" "}
+                        {e.recordedAt.slice(0, 16).replace("T", " ")} UTC ·{" "}
+                        {e.recordedByCaller ? "you" : "authorized reviewer"}
+                        {e.evidenceRequirements.length ? (
+                          <span className="block">
+                            Missing:{" "}
+                            {e.evidenceRequirements.map((q) => REQUIREMENT_LABEL[q]).join(", ")}
+                          </span>
+                        ) : null}
+                        {e.reason ? (
+                          <span className="block text-muted-foreground">{e.reason}</span>
+                        ) : null}
                       </li>
                     ))}
                   </ol>
-                ) : "No triage recorded"}
+                ) : (
+                  "No triage recorded"
+                )}
               </dd>
-              <dt className="text-muted-foreground">Document hashes</dt><dd><HashList values={t.sourceDocumentSha256} /></dd>
-              <dt className="text-muted-foreground">Evidence references</dt><dd><HashList values={t.evidencePointers} /></dd>
+              <dt className="text-muted-foreground">Document hashes</dt>
+              <dd>
+                <HashList values={t.sourceDocumentSha256} />
+              </dd>
+              <dt className="text-muted-foreground">Evidence references</dt>
+              <dd>
+                <HashList values={t.evidencePointers} />
+              </dd>
             </dl>
 
             <section aria-labelledby="gsr-actions" className="mt-6 space-y-3">
-              <h3 id="gsr-actions" className="font-semibold">Review actions</h3>
-              {canTriage ? <TriageForm key={row.key} row={row} onRecorded={onRecorded} /> : (
+              <h3 id="gsr-actions" className="font-semibold">
+                Review actions
+              </h3>
+              {canTriage ? (
+                <TriageForm key={row.key} row={row} onRecorded={onRecorded} />
+              ) : (
                 <>
                   <div className="flex flex-wrap gap-2">
-                    {(Object.keys(ACTION_LABEL) as TriageAction[]).map((a) => <Button key={a} variant="outline" disabled aria-describedby="gsr-actions-reason">{ACTION_LABEL[a]}</Button>)}
+                    {(Object.keys(ACTION_LABEL) as TriageAction[]).map((a) => (
+                      <Button
+                        key={a}
+                        variant="outline"
+                        disabled
+                        aria-describedby="gsr-actions-reason"
+                      >
+                        {ACTION_LABEL[a]}
+                      </Button>
+                    ))}
                   </div>
-                  <p id="gsr-actions-reason" className="text-xs text-muted-foreground">{triageNote || NO_GRANT_REASON}</p>
+                  <p id="gsr-actions-reason" className="text-xs text-muted-foreground">
+                    {triageNote || NO_GRANT_REASON}
+                  </p>
                 </>
               )}
               <div className="space-y-2 rounded-md border border-border p-3">
-                <p className="flex items-center gap-2 font-medium"><Lock className="h-4 w-4" aria-hidden /> Scientific approval: blocked</p>
-                <p className="text-xs text-muted-foreground">Requires independent scientific authorization, verified source validation and reviewer qualification. Triage acceptance is not scientific approval.</p>
-                <p className="flex items-center gap-2 font-medium"><Lock className="h-4 w-4" aria-hidden /> Catalog activation: blocked</p>
-                <p className="text-xs text-muted-foreground">Catalog promotion and metric activation follow a separate governed process; nothing here changes the catalog.</p>
+                <p className="flex items-center gap-2 font-medium">
+                  <Lock className="h-4 w-4" aria-hidden /> Scientific approval: blocked
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Requires independent scientific authorization, verified source validation and
+                  reviewer qualification. Triage acceptance is not scientific approval.
+                </p>
+                <p className="flex items-center gap-2 font-medium">
+                  <Lock className="h-4 w-4" aria-hidden /> Catalog activation: blocked
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Catalog promotion and metric activation follow a separate governed process;
+                  nothing here changes the catalog.
+                </p>
               </div>
             </section>
 
             <details className="mt-6 rounded-md border border-border p-3 text-xs">
               <summary className="cursor-pointer font-medium">Technical identifiers</summary>
               <dl className="mt-2 grid grid-cols-[8rem_1fr] gap-1">
-                <dt className="text-muted-foreground">Term ID</dt><dd className="break-all font-mono">{t.termId}</dd>
-                <dt className="text-muted-foreground">Submission ID</dt><dd className="break-all font-mono">{s.submissionId}</dd>
-                <dt className="text-muted-foreground">Mission ID</dt><dd className="break-all font-mono">{s.missionId}</dd>
-                <dt className="text-muted-foreground">Receipt SHA-256</dt><dd className="break-all font-mono">{s.payloadSha256}</dd>
-                <dt className="text-muted-foreground">Access basis</dt><dd>{BASIS_LABEL[s.accessBasis]}</dd>
+                <dt className="text-muted-foreground">Term ID</dt>
+                <dd className="break-all font-mono">{t.termId}</dd>
+                <dt className="text-muted-foreground">Submission ID</dt>
+                <dd className="break-all font-mono">{s.submissionId}</dd>
+                <dt className="text-muted-foreground">Mission ID</dt>
+                <dd className="break-all font-mono">{s.missionId}</dd>
+                <dt className="text-muted-foreground">Receipt SHA-256</dt>
+                <dd className="break-all font-mono">{s.payloadSha256}</dd>
+                <dt className="text-muted-foreground">Access basis</dt>
+                <dd>{BASIS_LABEL[s.accessBasis]}</dd>
               </dl>
             </details>
           </>
@@ -259,150 +557,445 @@ export function P36GlobalReviewPanel() {
   const [canTriage, setCanTriage] = useState(false);
   const [triageNote, setTriageNote] = useState("");
   const listTriage = useServerFn(listGlobalTriage);
+  const bulkTriage = useServerFn(bulkGlobalTriageFn);
   const epoch = useRef(0);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [pending, setPending] = useState<{
+    action: GlobalBulkAction;
+    preflight: BulkPreflight<TermRow>;
+  } | null>(null);
+  const [run, setRun] = useState<{
+    action: GlobalBulkAction;
+    progress: BulkProgress | null;
+    outcomes: RecordOutcome[];
+    failure: string | null;
+  } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [bulkReason, setBulkReason] = useState("");
+  const [bulkReqs, setBulkReqs] = useState<EvidenceRequirement[]>([]);
 
   useEffect(() => {
     let live = true;
     listMissions({ data: { provenance: "synthetic" } })
       .then((r) => {
         if (!live) return;
-        if (!r.ok) { setMissionState("error"); setMissionMessage(r.message); return; }
+        if (!r.ok) {
+          setMissionState("error");
+          setMissionMessage(r.message);
+          return;
+        }
         setMissions(r.missions);
         setMissionState("ready");
         if (r.missions.length === 1 && r.missions[0]) setSelection(r.missions[0].missionId);
       })
-      .catch(() => { if (live) { setMissionState("error"); setMissionMessage("Sign in with an authorized Researcher account to view submitted metadata."); } });
-    return () => { live = false; };
+      .catch(() => {
+        if (live) {
+          setMissionState("error");
+          setMissionMessage(
+            "Sign in with an authorized Researcher account to view submitted metadata.",
+          );
+        }
+      });
+    return () => {
+      live = false;
+    };
   }, [listMissions]);
 
-  const loadTriage = useCallback(async (targets: GlobalReviewMission[], mine: number) => {
-    const events: TriageEvent[] = []; let can = targets.length > 0; let note = "";
-    for (const m of targets) {
-      const r = await listTriage({ data: { missionId: m.missionId, provenance: "synthetic" } }).catch(() => null);
+  const loadTriage = useCallback(
+    async (targets: GlobalReviewMission[], mine: number) => {
+      const events: TriageEvent[] = [];
+      let can = targets.length > 0;
+      let note = "";
+      for (const m of targets) {
+        const r = await listTriage({
+          data: { missionId: m.missionId, provenance: "synthetic" },
+        }).catch(() => null);
+        if (mine !== epoch.current) return;
+        if (!r || !r.ok) {
+          can = false;
+          note = r?.message ?? "Triage history could not be read. Nothing was recorded.";
+          continue;
+        }
+        events.push(...r.events);
+        can = can && r.canTriage;
+      }
+      setTriageEvents(events);
+      setCanTriage(can);
+      setTriageNote(note);
+    },
+    [listTriage],
+  );
+
+  const load = useCallback(
+    async (value: string) => {
+      const mine = ++epoch.current;
+      setSubmissions([]);
+      setCrew(ALL_CREWS);
+      setPage(1);
+      setDetailKey(null);
+      setTriageEvents([]);
+      setCanTriage(false);
+      setTriageNote("");
+      setSelected(new Set());
+      setRun(null);
+      setPending(null);
+      const targets = missionsForSelection(missions, value);
+      if (!targets.length) {
+        setSubState("idle");
+        return;
+      }
+      setSubState("loading");
+      const all: GlobalReviewSubmission[] = [];
+      for (const m of targets) {
+        const r = await listSubmissions({
+          data: { missionId: m.missionId, provenance: "synthetic" },
+        }).catch(() => null);
+        if (mine !== epoch.current) return;
+        if (!r || !r.ok) {
+          setSubState("error");
+          setSubMessage(r?.message ?? "Submitted metadata could not be read. Nothing is shown.");
+          return;
+        }
+        all.push(...r.submissions);
+      }
+      await loadTriage(targets, mine);
       if (mine !== epoch.current) return;
-      if (!r || !r.ok) { can = false; note = r?.message ?? "Triage history could not be read. Nothing was recorded."; continue; }
-      events.push(...r.events); can = can && r.canTriage;
-    }
-    setTriageEvents(events); setCanTriage(can); setTriageNote(note);
-  }, [listTriage]);
+      setSubmissions(all);
+      setSubState("ready");
+    },
+    [missions, listSubmissions, loadTriage],
+  );
+  const refreshTriage = useCallback(async () => {
+    await loadTriage(missionsForSelection(missions, selection), epoch.current);
+  }, [loadTriage, missions, selection]);
 
-  const load = useCallback(async (value: string) => {
-    const mine = ++epoch.current;
-    setSubmissions([]); setCrew(ALL_CREWS); setPage(1); setDetailKey(null); setTriageEvents([]); setCanTriage(false); setTriageNote("");
-    const targets = missionsForSelection(missions, value);
-    if (!targets.length) { setSubState("idle"); return; }
-    setSubState("loading");
-    const all: GlobalReviewSubmission[] = [];
-    for (const m of targets) {
-      const r = await listSubmissions({ data: { missionId: m.missionId, provenance: "synthetic" } }).catch(() => null);
-      if (mine !== epoch.current) return;
-      if (!r || !r.ok) { setSubState("error"); setSubMessage(r?.message ?? "Submitted metadata could not be read. Nothing is shown."); return; }
-      all.push(...r.submissions);
-    }
-    await loadTriage(targets, mine);
-    if (mine !== epoch.current) return;
-    setSubmissions(all);
-    setSubState("ready");
-  }, [missions, listSubmissions, loadTriage]);
-  const refreshTriage = useCallback(async () => { await loadTriage(missionsForSelection(missions, selection), epoch.current); }, [loadTriage, missions, selection]);
+  useEffect(() => {
+    if (selection) void load(selection);
+  }, [selection, load]);
+  useEffect(() => {
+    setPage(1);
+  }, [crew, query, state, classification, sort]);
 
-  useEffect(() => { if (selection) void load(selection); }, [selection, load]);
-  useEffect(() => { setPage(1); }, [crew, query, state, classification, sort]);
-
-  const rows = useMemo(() => flattenTerms(submissions, latestTriageByTerm(triageEvents)), [submissions, triageEvents]);
+  const rows = useMemo(
+    () => flattenTerms(submissions, latestTriageByTerm(triageEvents)),
+    [submissions, triageEvents],
+  );
   const detail = useMemo(() => rows.find((r) => r.key === detailKey) ?? null, [rows, detailKey]);
-  const detailHistory = useMemo(() => (detail ? triageEvents.filter((e) => `${e.submissionId}:${e.termId}` === detail.key) : []), [detail, triageEvents]);
+  const detailHistory = useMemo(
+    () =>
+      detail ? triageEvents.filter((e) => `${e.submissionId}:${e.termId}` === detail.key) : [],
+    [detail, triageEvents],
+  );
   const crews = useMemo(() => crewOptions(submissions), [submissions]);
-  const classifications = useMemo(() => [...new Set(rows.map((r) => r.term.classification))].sort(), [rows]);
-  const scoped = useMemo(() => filterTerms(rows, { query: "", crew, state: "all", classification: "all" }), [rows, crew]);
+  const classifications = useMemo(
+    () => [...new Set(rows.map((r) => r.term.classification))].sort(),
+    [rows],
+  );
+  const scoped = useMemo(
+    () => filterTerms(rows, { query: "", crew, state: "all", classification: "all" }),
+    [rows, crew],
+  );
   const counts = useMemo(() => dashboardCounts(scoped), [scoped]);
-  const visible = useMemo(() => sortTerms(filterTerms(rows, { query, crew, state, classification }), sort), [rows, query, crew, state, classification, sort]);
+  const visible = useMemo(
+    () => sortTerms(filterTerms(rows, { query, crew, state, classification }), sort),
+    [rows, query, crew, state, classification, sort],
+  );
   const paged = paginate(visible, page, PAGE_SIZE);
-  const receipts = useMemo(() => new Set(scoped.map((r) => r.submission.submissionId)).size, [scoped]);
+  const receipts = useMemo(
+    () => new Set(scoped.map((r) => r.submission.submissionId)).size,
+    [scoped],
+  );
+
+  // P55 bulk triage: stable submission:term keys across every page of the filtered list.
+  const bulkMission = missions.find((m) => m.missionId === selection);
+  const visibleIds = useMemo(() => visible.map((r) => r.key), [visible]);
+  const selScope = selectionScope(selected, visibleIds);
+  useEffect(() => {
+    setSelected((s) =>
+      pruneSelection(
+        s,
+        rows.map((r) => r.key),
+      ),
+    );
+  }, [rows]);
+  const rowByKey = useMemo(() => new Map(rows.map((r) => [r.key, r])), [rows]);
+  const termLabel = (key: string) => {
+    const r = rowByKey.get(key);
+    return r
+      ? `${r.term.originalLabels[0] ?? r.term.termId} · ${r.term.exactUnit || "no unit"} (${r.term.termId}, ${r.submission.crewPseudonym})`
+      : key;
+  };
+  const singleMission = selection !== ALL_MISSIONS && !!bulkMission;
+  const fitFor = (a: GlobalBulkAction) => (r: TermRow) => {
+    const t = { triageAction: r.triage?.action ?? null };
+    return a === "accept_review"
+      ? acceptReviewFit(t, canTriage)
+      : requestClarificationFit(t, canTriage);
+  };
+  const preflightFor = (a: GlobalBulkAction, sel: ReadonlySet<string> = selected) =>
+    buildBulkPreflight({
+      records: rows,
+      idOf: (r) => r.key,
+      selected: sel,
+      filteredIds: visibleIds,
+      fit: fitFor(a),
+      missionLabel: bulkMission
+        ? `${bulkMission.missionName} (${bulkMission.missionCode})`
+        : "All authorized missions",
+      roleLabel: "Researcher (global scientific review)",
+      actionLabel: RESEARCHER_ACTION_LABEL[a],
+    });
+  const openPreflight = (a: GlobalBulkAction, sel: ReadonlySet<string> = selected) => {
+    if (a === "request_clarification") {
+      setBulkReason("");
+      setBulkReqs([]);
+    }
+    setPending({ action: a, preflight: preflightFor(a, sel) });
+  };
+  const bulkProblem = triageInputProblem({
+    action: "REQUEST_MORE_EVIDENCE",
+    reason: bulkReason,
+    evidenceRequirements: bulkReqs,
+  });
+  const actionOptions = GLOBAL_ACTIONS.map((id) => {
+    const p = preflightFor(id);
+    return {
+      id,
+      label: RESEARCHER_ACTION_LABEL[id],
+      description: GLOBAL_ACTION_DESCRIPTION[id],
+      actionable: p.actionable.length,
+      already: p.already.length,
+      blocked: p.blocked.length,
+      unavailable: !singleMission
+        ? "Choose one mission: bulk actions never span missions."
+        : !canTriage
+          ? triageNote || NO_GRANT_REASON
+          : null,
+    };
+  });
+  const confirmBulk = async () => {
+    if (!pending || !bulkMission) return;
+    const { action, preflight } = pending;
+    setPending(null);
+    setBusy(true);
+    setRun({ action, progress: null, outcomes: [], failure: null });
+    const res = await executeBulk({
+      preflight,
+      idOf: (r) => r.key,
+      labelOf: termLabel,
+      send: (batch) =>
+        bulkTriage({
+          data: {
+            missionId: bulkMission.missionId,
+            action: action === "accept_review" ? "ACCEPT_FOR_REVIEW" : "REQUEST_MORE_EVIDENCE",
+            reason: action === "accept_review" ? null : bulkReason.trim(),
+            evidenceRequirements: action === "accept_review" ? [] : bulkReqs,
+            items: batch.map((r) => ({
+              submissionId: r.submission.submissionId,
+              termId: r.term.termId,
+              expectedPreviousEventId: r.triage?.eventId ?? null,
+            })),
+          },
+        }),
+      onProgress: (progress) => setRun({ action, progress, outcomes: [], failure: null }),
+    });
+    setRun({ action, ...res });
+    await refreshTriage();
+    setBusy(false);
+  };
 
   const allowAll = canChooseAllMissions(missions);
   const missionOptions: ComboOption[] = [
-    ...(allowAll ? [{ value: ALL_MISSIONS, search: "all authorized missions", title: "All authorized missions", badge: `${missions.reduce((n, m) => n + m.pendingTermCount, 0)} pending` }] : []),
-    ...missions.map((m) => ({ value: m.missionId, search: `${m.missionName} ${m.missionCode}`, title: m.missionName, subtitle: `${m.missionCode} · ${BASIS_LABEL[m.accessBasis]}`, badge: `${m.pendingTermCount} pending` })),
+    ...(allowAll
+      ? [
+          {
+            value: ALL_MISSIONS,
+            search: "all authorized missions",
+            title: "All authorized missions",
+            badge: `${missions.reduce((n, m) => n + m.pendingTermCount, 0)} pending`,
+          },
+        ]
+      : []),
+    ...missions.map((m) => ({
+      value: m.missionId,
+      search: `${m.missionName} ${m.missionCode}`,
+      title: m.missionName,
+      subtitle: `${m.missionCode} · ${BASIS_LABEL[m.accessBasis]}`,
+      badge: `${m.pendingTermCount} pending`,
+    })),
   ];
   const selectedMission = missions.find((m) => m.missionId === selection);
-  const missionText = selection === ALL_MISSIONS ? "All authorized missions" : selectedMission ? `${selectedMission.missionName} (${selectedMission.missionCode})` : "Choose a mission";
+  const missionText =
+    selection === ALL_MISSIONS
+      ? "All authorized missions"
+      : selectedMission
+        ? `${selectedMission.missionName} (${selectedMission.missionCode})`
+        : "Choose a mission";
   const crewOptionList: ComboOption[] = [
-    { value: ALL_CREWS, search: "all permitted crew", title: "All permitted crew", badge: `${rows.length} terms` },
-    ...crews.map((c) => ({ value: c.crewPseudonym, search: c.crewPseudonym, title: c.crewPseudonym, subtitle: "Mission-specific pseudonym", badge: `${c.termCount} terms` })),
+    {
+      value: ALL_CREWS,
+      search: "all permitted crew",
+      title: "All permitted crew",
+      badge: `${rows.length} terms`,
+    },
+    ...crews.map((c) => ({
+      value: c.crewPseudonym,
+      search: c.crewPseudonym,
+      title: c.crewPseudonym,
+      subtitle: "Mission-specific pseudonym",
+      badge: `${c.termCount} terms`,
+    })),
   ];
 
   return (
-    <section aria-labelledby="p36-global-review-heading" className="space-y-4 rounded-lg border border-border bg-card p-4 text-sm">
+    <section
+      aria-labelledby="p36-global-review-heading"
+      className="space-y-4 rounded-lg border border-border bg-card p-4 text-sm"
+    >
       <div className="space-y-1">
-        <h2 id="p36-global-review-heading" className="text-lg font-semibold">Global scientific review — cloud-submitted metadata</h2>
+        <h2 id="p36-global-review-heading" className="text-lg font-semibold">
+          Global scientific review — cloud-submitted metadata
+        </h2>
         <p className="text-muted-foreground">
-          Read-only. Synthetic submissions only; crew appear as mission-specific pseudonyms. No measurements, documents or encrypted local evidence are shown.
-          Device-local requests, documentary dossiers and governed decisions are listed separately on this page and are not part of these totals.
+          Read-only. Synthetic submissions only; crew appear as mission-specific pseudonyms. No
+          measurements, documents or encrypted local evidence are shown. Device-local requests,
+          documentary dossiers and governed decisions are listed separately on this page and are not
+          part of these totals.
         </p>
       </div>
 
-      {missionState === "loading" ? <p role="status" className="text-muted-foreground">Checking which missions this account may review…</p> : null}
-      {missionState === "error" ? <p role="status" className="text-muted-foreground">{missionMessage}</p> : null}
+      {missionState === "loading" ? (
+        <p role="status" className="text-muted-foreground">
+          Checking which missions this account may review…
+        </p>
+      ) : null}
+      {missionState === "error" ? (
+        <p role="status" className="text-muted-foreground">
+          {missionMessage}
+        </p>
+      ) : null}
       {missionState === "ready" && !missions.length ? (
-        <p role="status" className="text-muted-foreground">This account has no mission available for scientific review. No access was broadened.</p>
+        <p role="status" className="text-muted-foreground">
+          This account has no mission available for scientific review. No access was broadened.
+        </p>
       ) : null}
       {missionState === "ready" && missions.length ? (
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <ComboBox label="Mission for scientific review" placeholder="Search mission name or code…" empty="No authorized mission matches."
-            options={missionOptions} value={selection} onChange={setSelection} triggerText={missionText} />
+          <ComboBox
+            label="Mission for scientific review"
+            placeholder="Search mission name or code…"
+            empty="No authorized mission matches."
+            options={missionOptions}
+            value={selection}
+            onChange={setSelection}
+            triggerText={missionText}
+          />
           {subState === "ready" && crews.length ? (
-            <ComboBox label="Crew scope" placeholder="Search crew pseudonym…" empty="No permitted crew matches."
-              options={crewOptionList} value={crew} onChange={setCrew} triggerText={crew === ALL_CREWS ? "All permitted crew" : crew} />
+            <ComboBox
+              label="Crew scope"
+              placeholder="Search crew pseudonym…"
+              empty="No permitted crew matches."
+              options={crewOptionList}
+              value={crew}
+              onChange={setCrew}
+              triggerText={crew === ALL_CREWS ? "All permitted crew" : crew}
+            />
           ) : null}
         </div>
       ) : null}
 
-      {subState === "loading" ? <p role="status" className="text-muted-foreground">Reading submitted metadata…</p> : null}
-      {subState === "error" ? <p role="alert" className="text-destructive">{subMessage}</p> : null}
+      {subState === "loading" ? (
+        <p role="status" className="text-muted-foreground">
+          Reading submitted metadata…
+        </p>
+      ) : null}
+      {subState === "error" ? (
+        <p role="alert" className="text-destructive">
+          {subMessage}
+        </p>
+      ) : null}
       {subState === "ready" ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5" aria-label="Cloud-submitted metadata summary">
+          <div
+            className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5"
+            aria-label="Cloud-submitted metadata summary"
+          >
             <Stat label="Submission receipts" value={receipts} />
             <Stat label="Submitted metadata terms" value={counts.submittedTerms} />
             <Stat label="Pending scientific decision" value={counts.pending} />
             <Stat label="Awaiting triage" value={counts.awaitingTriage} />
-            <Stat label="Accepted for review" value={counts.accepted} note="Triage only — not approval" />
+            <Stat
+              label="Accepted for review"
+              value={counts.accepted}
+              note="Triage only — not approval"
+            />
             <Stat label="More evidence requested" value={counts.moreEvidence} />
             <Stat label="Review requests rejected" value={counts.rejected} />
-            <Stat label="Scientifically approved" value={counts.approved} note="Only through independent authorization" />
-            <Stat label="Activation-blocked" value={counts.activationBlocked} note="Catalog activation is separately governed" />
+            <Stat
+              label="Scientifically approved"
+              value={counts.approved}
+              note="Only through independent authorization"
+            />
+            <Stat
+              label="Activation-blocked"
+              value={counts.activationBlocked}
+              note="Catalog activation is separately governed"
+            />
           </div>
           {selectedMission ? (
             <div className="flex flex-col gap-1 rounded-md border border-dashed border-border p-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-muted-foreground">
-                Eligible terms of this mission can be accepted for review and given SYNTHETIC DEMO decisions in bulk (not scientific approval; Ground Medical activates separately).
+                Eligible terms of this mission can be accepted for review and given SYNTHETIC DEMO
+                decisions in bulk (not scientific approval; Ground Medical activates separately).
               </p>
-              <Button size="sm" variant="secondary" onClick={() => openBulkDemoDecisions(selectedMission.missionId)}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => openBulkDemoDecisions(selectedMission.missionId)}
+              >
                 Open bulk synthetic demo decisions
               </Button>
             </div>
           ) : null}
 
           <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
-            <Input aria-label="Search submitted terms" placeholder="Search label, unit, candidate, term or request…" value={query}
-              onChange={(e) => setQuery(e.target.value)} className="md:w-80" />
+            <Input
+              aria-label="Search submitted terms"
+              placeholder="Search label, unit, candidate, term or request…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="md:w-80"
+            />
             <Select value={state} onValueChange={(v) => setState(v as ReviewState | "all")}>
-              <SelectTrigger aria-label="Review state" className="md:w-56"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Review state" className="md:w-56">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All review states</SelectItem>
-                {(Object.keys(REVIEW_STATE_LABEL) as ReviewState[]).map((k) => <SelectItem key={k} value={k}>{REVIEW_STATE_LABEL[k]}</SelectItem>)}
+                {(Object.keys(REVIEW_STATE_LABEL) as ReviewState[]).map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {REVIEW_STATE_LABEL[k]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={classification} onValueChange={setClassification}>
-              <SelectTrigger aria-label="Classification" className="md:w-56"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Classification" className="md:w-56">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All classifications</SelectItem>
-                {classifications.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {classifications.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={sort} onValueChange={(v) => setSort(v as TermSort)}>
-              <SelectTrigger aria-label="Sort by" className="md:w-44"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Sort by" className="md:w-44">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="label">Sort: label</SelectItem>
                 <SelectItem value="unit">Sort: unit</SelectItem>
@@ -412,26 +1005,75 @@ export function P36GlobalReviewPanel() {
             </Select>
           </div>
 
-          <p role="status" className="font-medium">{visible.length} of {scoped.length} terms shown</p>
-          {!visible.length ? <p className="text-muted-foreground">No submitted terms match these filters.</p> : (
+          <p role="status" className="font-medium">
+            {visible.length} of {scoped.length} terms shown
+          </p>
+          <BulkSelectionToolbar
+            idPrefix="p55-global"
+            scope={selScope}
+            pageCount={paged.items.length}
+            onSelectAllFiltered={() => setSelected((s) => selectAllFiltered(s, visibleIds))}
+            onSelectPage={() =>
+              setSelected((s) =>
+                selectIds(
+                  s,
+                  paged.items.map((r) => r.key),
+                ),
+              )
+            }
+            onDeselectAll={() => setSelected(deselectAll())}
+            onKeepOnlyFiltered={() => setSelected((s) => pruneSelection(s, visibleIds))}
+          />
+          {!visible.length ? (
+            <p className="text-muted-foreground">No submitted terms match these filters.</p>
+          ) : (
             <div className="overflow-x-auto rounded-md border border-border">
               <table className="w-full min-w-[44rem] text-left text-xs">
                 <thead className="bg-muted/50 text-muted-foreground">
                   <tr>
-                    <th className="p-2">Biomarker label</th><th className="p-2">Exact unit</th><th className="p-2">Classification</th>
-                    <th className="p-2">Mission · crew</th><th className="p-2">Receipt</th><th className="p-2">Triage</th><th className="p-2"><span className="sr-only">Open</span></th>
+                    <th className="p-2">
+                      <span className="sr-only">Select</span>
+                    </th>
+                    <th className="p-2">Biomarker label</th>
+                    <th className="p-2">Exact unit</th>
+                    <th className="p-2">Classification</th>
+                    <th className="p-2">Mission · crew</th>
+                    <th className="p-2">Receipt</th>
+                    <th className="p-2">Triage</th>
+                    <th className="p-2">
+                      <span className="sr-only">Open</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {paged.items.map((r) => (
                     <tr key={r.key} className="border-t border-border">
+                      <td className="p-2">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${r.term.originalLabels[0] ?? r.term.termId}`}
+                          checked={selected.has(r.key)}
+                          onChange={(e) => setSelected((s) => toggleId(s, r.key, e.target.checked))}
+                        />
+                      </td>
                       <td className="p-2">{r.term.originalLabels.join(" · ")}</td>
                       <td className="p-2">{r.term.exactUnit}</td>
                       <td className="p-2">{r.term.classification}</td>
-                      <td className="p-2">{r.submission.missionCode}<span className="block font-mono text-muted-foreground">{r.submission.crewPseudonym}</span></td>
+                      <td className="p-2">
+                        {r.submission.missionCode}
+                        <span className="block font-mono text-muted-foreground">
+                          {r.submission.crewPseudonym}
+                        </span>
+                      </td>
                       <td className="p-2 font-mono">{r.submission.requestId}</td>
-                      <td className="p-2"><Badge variant="secondary">{REVIEW_STATE_LABEL[r.state]}</Badge></td>
-                      <td className="p-2"><Button size="sm" variant="ghost" onClick={() => setDetailKey(r.key)}>Review</Button></td>
+                      <td className="p-2">
+                        <Badge variant="secondary">{REVIEW_STATE_LABEL[r.state]}</Badge>
+                      </td>
+                      <td className="p-2">
+                        <Button size="sm" variant="ghost" onClick={() => setDetailKey(r.key)}>
+                          Review
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -439,15 +1081,120 @@ export function P36GlobalReviewPanel() {
             </div>
           )}
           {paged.pages > 1 ? (
-            <nav aria-label="Submitted terms pages" className="flex items-center justify-between gap-2">
-              <Button variant="outline" size="sm" disabled={paged.page <= 1} onClick={() => setPage(paged.page - 1)}>Previous</Button>
-              <span className="tabular-nums">Page {paged.page} of {paged.pages}</span>
-              <Button variant="outline" size="sm" disabled={paged.page >= paged.pages} onClick={() => setPage(paged.page + 1)}>Next</Button>
+            <nav
+              aria-label="Submitted terms pages"
+              className="flex items-center justify-between gap-2"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={paged.page <= 1}
+                onClick={() => setPage(paged.page - 1)}
+              >
+                Previous
+              </Button>
+              <span className="tabular-nums">
+                Page {paged.page} of {paged.pages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={paged.page >= paged.pages}
+                onClick={() => setPage(paged.page + 1)}
+              >
+                Next
+              </Button>
             </nav>
+          ) : null}
+          <BulkActionTable
+            idPrefix="p55-global"
+            actions={actionOptions}
+            selected={selected.size}
+            busy={busy}
+            onReview={(id) => openPreflight(id as GlobalBulkAction)}
+            onClear={() => setSelected(deselectAll())}
+          />
+          <BulkPreflightDialog
+            preflight={pending?.preflight ?? null}
+            labelOf={(r) => termLabel(r.key)}
+            confirmLabel={
+              pending ? `Confirm: ${RESEARCHER_ACTION_LABEL[pending.action]}` : "Confirm"
+            }
+            confirmDisabled={busy || (pending?.action === "request_clarification" && !!bulkProblem)}
+            safeguard={
+              pending?.action === "accept_review"
+                ? "Accepting for scientific review is triage only. It is not scientific approval and never activates anything."
+                : "Records a REQUEST_MORE_EVIDENCE triage event for each actionable term. Units are never chosen or converted."
+            }
+            onCancel={() => setPending(null)}
+            onConfirm={() => void confirmBulk()}
+          >
+            {pending?.action === "request_clarification" ? (
+              <div className="space-y-2">
+                <fieldset className="grid grid-cols-2 gap-2">
+                  <legend className="mb-1 text-xs text-muted-foreground">
+                    Missing evidence (at least one)
+                  </legend>
+                  {EVIDENCE_REQUIREMENTS.map((q) => (
+                    <div key={q} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`p55-g-req-${q}`}
+                        checked={bulkReqs.includes(q)}
+                        onCheckedChange={(c) =>
+                          setBulkReqs((cur) =>
+                            c ? [...new Set([...cur, q])] : cur.filter((x) => x !== q),
+                          )
+                        }
+                      />
+                      <Label htmlFor={`p55-g-req-${q}`} className="text-xs font-normal">
+                        {REQUIREMENT_LABEL[q]}
+                      </Label>
+                    </div>
+                  ))}
+                </fieldset>
+                <div className="space-y-1">
+                  <Label htmlFor="p55-g-reason" className="text-xs">
+                    Reason (required, 8–2000 characters)
+                  </Label>
+                  <Textarea
+                    id="p55-g-reason"
+                    value={bulkReason}
+                    maxLength={2000}
+                    rows={3}
+                    onChange={(e) => setBulkReason(e.target.value)}
+                  />
+                </div>
+                {bulkProblem ? (
+                  <p className="text-xs text-muted-foreground">{bulkProblem}</p>
+                ) : null}
+              </div>
+            ) : null}
+          </BulkPreflightDialog>
+          {run ? (
+            <BulkOutcomePanel
+              idPrefix="p55-global"
+              title={RESEARCHER_ACTION_LABEL[run.action]}
+              progress={run.progress}
+              outcomes={run.outcomes}
+              failure={run.failure}
+              busy={busy}
+              onRetryFailed={(ids) => {
+                const sel = new Set(ids);
+                setSelected(sel);
+                openPreflight(run.action, sel);
+              }}
+            />
           ) : null}
         </div>
       ) : null}
-      <TermDetail row={detail} onClose={() => setDetailKey(null)} canTriage={canTriage} triageNote={triageNote} history={detailHistory} onRecorded={refreshTriage} />
+      <TermDetail
+        row={detail}
+        onClose={() => setDetailKey(null)}
+        canTriage={canTriage}
+        triageNote={triageNote}
+        history={detailHistory}
+        onRecorded={refreshTriage}
+      />
     </section>
   );
 }
