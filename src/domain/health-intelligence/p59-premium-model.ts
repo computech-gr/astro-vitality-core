@@ -18,7 +18,7 @@ import { bundledCriteriaRegistry, classifyWithCriteria, type ApprovedCriterion, 
 import { deriveWarningAxes, type WarningAxes } from "./p571-warning-axes";
 import { chartReferenceBands } from "./p571-report-legend";
 import { provisionalInterpretation, provisionalBandsFor, provisionalRegistry, type IdentityRoute, type ProvisionalResult } from "./p59-provisional-interpretation";
-import { concernWarningPriority, type PriorityDecision } from "./p59-warning-priority";
+import { concernWarningPriority, type PriorityDecision, type WarningPriority } from "./p59-warning-priority";
 
 /** Visible label for every report that uses provisional literature interpretation. */
 export const DEMONSTRATION_LABEL = "LITERATURE-BASED SYNTHETIC DEMONSTRATION — NOT CLINICALLY VALIDATED";
@@ -92,8 +92,15 @@ export interface ResultRow {
   unrecordedConditions: string[];
   /** P60: compact criterion text for the results table ("" = no applicable criterion); details move to table notes. */
   criterionShort: string;
-  /** P60: table note markers that apply to this row ("‡" unrecorded conditions, "§" demonstration mapping, "◊" demo identity). */
+  /** P60: table note markers that apply to this row ("‡" unrecorded conditions, "§" demonstration mapping, "◊" demo identity, "†" pattern-level data check). */
   notes: string[];
+  /**
+   * P60.1: medical-review priority of the finding this result belongs to (P60 pattern, else its P59 concern);
+   * null when the result contributes to no finding. Separate from the clinical class and from trend review.
+   */
+  priority: WarningPriority | null;
+  /** P60.1: a pattern-level DATA CHECK names this result's series; it is NOT an observation-level data-quality flag. */
+  patternDataCheck: boolean;
 }
 export interface PremiumChart {
   base: ReportChart;
@@ -101,7 +108,12 @@ export interface PremiumChart {
   bandSource: "approved" | "provisional" | "none";
   pointClasses: { cls: DisplayClass | "CHECK"; basis: ClassBasis }[];
   dataCheck: boolean;
+  /** Significant longitudinal change (P56 trend review) — never a medical-review priority by itself. */
   highReview: boolean;
+  /** P60.1: highest medical-review priority among the series' results (same value as the results table). */
+  priority: WarningPriority | null;
+  /** P60.1: a pattern-level DATA CHECK names this series (not an observation-level flag). */
+  patternDataCheck: boolean;
 }
 export interface SystemTile { group: GroupId; label: string; worst: DisplayClass; basis: ClassBasis; high: boolean; dataCheck: boolean; lines: string[]; measured: boolean }
 export interface OverviewAnswer { question: string; answer: string; evidenceKeys: string[] }
@@ -298,7 +310,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       : approvedCls?.outcome === "pending_approval" ? "Candidate criterion pending approval"
       : provisional && provisional.status === "PROVISIONAL" && provisional.severity === "neutral" ? "Outside the provisional bands"
       : "";
-    return { criterionShort, notes, recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: unrec };
+    return { criterionShort, notes, recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: unrec, priority: null as WarningPriority | null, patternDataCheck: false };
   });
 
   rows.sort((a, b) => GROUPS.findIndex((g) => g.id === a.group) - GROUPS.findIndex((g) => g.id === b.group) || a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit) || a.date.localeCompare(b.date) || a.recordId.localeCompare(b.recordId));
@@ -409,7 +421,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       const r = rs.find((x) => x.date === p.day && x.valueText === p.valueText) ?? rs.find((x) => x.date === p.day);
       return dataCheck ? { cls: "CHECK" as const, basis: "none" as ClassBasis } : { cls: r?.displayClass ?? "NEUTRAL", basis: r?.basis ?? "none" };
     });
-    return { base: ch, bands, bandSource, pointClasses, dataCheck, highReview: rs.some((r) => r.axes.review.value === "HIGH") };
+    return { base: ch, bands, bandSource, pointClasses, dataCheck, highReview: rs.some((r) => r.axes.review.value === "HIGH"), priority: null as WarningPriority | null, patternDataCheck: false };
   });
 
   // ---------- recommendations by report column
@@ -448,7 +460,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const electrolyte = concerns.some((c) => c.concernId === "electrolyte_disturbance");
   const overview: OverviewAnswer[] = [
     { question: "What is happening?", answer: concerns.length ? `${concerns.length} possible concern area(s) for Ground Medical review: ${concerns.map((c) => c.title.replace(/\s*\(.*\)$/, "").toLowerCase()).join("; ")}.${report.clinical.crossDomain[0] ? ` ${report.clinical.crossDomain[0].text}` : ""}` : "No concern pattern was identified in this period.", evidenceKeys: concerns.flatMap((c) => c.contributorKeys) },
-    { question: "Which results are abnormal or concerning?", answer: `${classified.length ? `Classified: ${classified.slice(0, 10).join("; ")}.` : "No result is clinically classified (no applicable criterion)."} ${highKeys.length ? `High-priority review (not a classification): ${highKeys.map((k) => series(k)[0]!.name).join(", ")}.` : ""}`.trim(), evidenceKeys: notableRows.map((r) => r.recordId) },
+    { question: "Which results are abnormal or concerning?", answer: `${classified.length ? `Classified: ${classified.slice(0, 10).join("; ")}.` : "No result is clinically classified (no applicable criterion)."} ${highKeys.length ? `Trend review — significant change between examinations (not a medical-review priority or a classification): ${highKeys.map((k) => series(k)[0]!.name).join(", ")}.` : ""}`.trim(), evidenceKeys: notableRows.map((r) => r.recordId) },
     { question: "What increased or decreased?", answer: `${up.length ? `Increased: ${up.map(trendText).join("; ")}.` : "No series increased."} ${down.length ? `Decreased: ${down.map(trendText).join("; ")}.` : "No series decreased."}`, evidenceKeys: compared },
     { question: "Which changes are biologically meaningful?", answer: `${highKeys.filter((k) => !checkKeys.includes(k)).length ? `Plausible and important if confirmed: ${highKeys.filter((k) => !checkKeys.includes(k)).map((k) => series(k)[0]!.name).join(", ")}.` : ""} ${checkKeys.length ? `Verify the measurement first: ${checkKeys.map((k) => series(k)[0]!.name).join(", ")}.` : ""}`.trim() || "No change met the review rules.", evidenceKeys: [...highKeys, ...checkKeys] },
     { question: "Which body systems are affected?", answer: join(affected.map((s) => s.label), "No body system shows a flagged or classified result."), evidenceKeys: affected.map((s) => s.group) },
@@ -458,7 +470,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     { question: "What should the astronaut do?", answer: `${electrolyte ? "Do not change fluid, salt or potassium intake before Ground Medical review. " : ""}Report any symptoms. ${wellness.slice(0, 2).map((r) => r.text).join(" ")}`.trim(), evidenceKeys: wellness.map((r) => r.id) },
     { question: "What should Ground Medical confirm?", answer: join(gm.map((r) => r.text.trim()).filter(Boolean).slice(0, 4), "Routine review only."), evidenceKeys: gm.map((r) => r.id) },
   ];
-  const lead = `${counts.examinationDates} examination date(s) with ${counts.observations} observation(s) in ${counts.series} biomarker series. ${affected.length} body system(s) show flagged or classified results; ${highKeys.length} series require high-priority review and ${checkKeys.length} require measurement verification first.`;
+  let lead = `${counts.examinationDates} examination date(s) with ${counts.observations} observation(s) in ${counts.series} biomarker series. ${affected.length} body system(s) show flagged or classified results; ${highKeys.length} series show a significant change between examinations (trend review) and ${checkKeys.length} require measurement verification first.`;
 
   // ---------- integrated paragraphs from concern narratives (deterministic)
   const integrated = concerns.map((c) => ({
@@ -493,8 +505,33 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       }), 4)
     : null;
   // Overflow card: one short line per further pattern (never cut mid-list).
+  // P60.1: medical-review findings first, then data-quality findings; each line names its own priority.
   const over = patternAlerts?.find((a) => a.findingIds.length > 1);
-  if (over) over.evidence = over.findingIds.map((id) => P.find((p) => p.id === id)!).map((p) => `• ${p.title} — ${p.priorityLabel.toLowerCase()}${p.dataCheck && p.priority !== "DATA_CHECK" ? " + data check" : ""}`).join("\n");
+  if (over) {
+    const ps = over.findingIds.map((id) => P.find((p) => p.id === id)!);
+    const ordered = [...ps.filter((p) => p.priority !== "DATA_CHECK"), ...ps.filter((p) => p.priority === "DATA_CHECK")];
+    over.findingIds = ordered.map((p) => p.id);
+    over.evidence = ordered.map((p) => `• ${p.title} — ${p.priority === "DATA_CHECK" ? "data check (measurement quality)" : p.priority === "MONITORING" ? "monitoring" : p.priorityLabel.toLowerCase()}${p.dataCheck && p.priority !== "DATA_CHECK" ? " + pattern data check" : ""}`).join("\n");
+  }
+  // P60.1: one medical-review priority per result (pattern first, else its own P59 concern), shared by the
+  // results table, charts and assessments. Trend review and data quality stay separate axes.
+  const PRI_RANK: Record<WarningPriority, number> = { HIGH_PRIORITY_MEDICAL_REVIEW: 4, MONITORING: 3, DATA_CHECK: 2, WITHIN_CRITERIA: 1, INSUFFICIENT_EVIDENCE: 0 };
+  const raise = (r: ResultRow, p: WarningPriority) => { if (!r.priority || PRI_RANK[p] > PRI_RANK[r.priority]) r.priority = p; };
+  for (const p of P) {
+    for (const id of p.recordIds) { const r = rowById.get(id); if (r) raise(r, p.priority); }
+    if (p.priority !== "DATA_CHECK")
+      for (const id of p.dataCheckRecordIds ?? []) { const r = rowById.get(id); if (r && r.axes.dataQuality.value !== "DATA_QUALITY_WARNING") r.patternDataCheck = true; }
+  }
+  for (const c of concerns) if (!P.length || !coveredConcerns.includes(c.concernId)) for (const r of rowsOfConcern(c)) raise(r, priorities[c.concernId]!.priority);
+  for (const r of rows) if (r.patternDataCheck && !r.notes.includes("†")) r.notes.push("†");
+  for (const ch of charts) {
+    const rs = rows.filter((r) => r.metricId === ch.base.metricId && r.unit === ch.base.unit);
+    ch.priority = rs.reduce<WarningPriority | null>((m, r) => (r.priority && (!m || PRI_RANK[r.priority] > PRI_RANK[m]) ? r.priority : m), null);
+    ch.patternDataCheck = rs.some((r) => r.patternDataCheck);
+  }
+  const prioritised = (pr: WarningPriority) => (P.length ? P.filter((p) => p.priority === pr).length : Object.values(priorities).filter((d) => d.priority === pr).length);
+  const nHigh = prioritised("HIGH_PRIORITY_MEDICAL_REVIEW"), nMon = prioritised("MONITORING"), nCheck = prioritised("DATA_CHECK");
+  if (nHigh + nMon + nCheck) lead += ` Medical-review priority: ${nHigh} finding(s) high priority, ${nMon} monitoring, ${nCheck} data check.`;
   if (patternAlerts) {
     nextSteps.length = 0;
     nextSteps.push(...[...new Set(P.filter((p) => p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" || p.priority === "DATA_CHECK").map((p) => p.nextStep))].slice(0, 4));
@@ -570,6 +607,8 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     ...(unrecAll.length ? [`‡ Per-measurement conditions of the provisional criterion that are not recorded: ${unrecAll.map((x) => x.replace(/\.$/, "")).join("; ")}.`] : []),
     ...(rows.some((r) => r.notes.includes("§")) ? ["§ Identity bound through an owner-directed synthetic demonstration mapping (not Researcher-approved)."] : []),
     ...(rows.some((r) => r.notes.includes("◊")) ? ["◊ Synthetic demonstration catalog identity (not scientifically validated)."] : []),
+    ...(rows.some((r) => r.patternDataCheck) ? [`† Pattern-level DATA CHECK (${P.filter((p) => p.dataCheck && p.priority !== "DATA_CHECK").map((p) => p.title).join("; ")}): verify this series before interpretation. It is not an observation-level measurement error and does not lower the medical-review priority.`] : []),
+    "Priority = medical-review priority of the finding the result belongs to. TREND REVIEW = significant change between examinations; it does not by itself establish a medical-review priority. CHECK = observation-level data-quality rule.",
   ];
   const census = observationCensus(included.map((r) => ({ metricId: r.metricId, unit: r.unit, date: day(r.observedAt), valueText: r.value, provenance: r.provenance })));
 
