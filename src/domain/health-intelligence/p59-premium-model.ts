@@ -598,7 +598,9 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     set("What supports or contradicts them?", P.map((p) => `${p.title}: ${p.observed.length + p.supporting.filter((x) => !p.observed.includes(x)).length} supporting, ${p.contradicting.length} contradicting/limiting`).join("; ") + ".", P.map((p) => p.id));
     if (P.some((p) => p.id === "p60-acute-physiology" && p.priority === "HIGH_PRIORITY_MEDICAL_REVIEW"))
       set("What should the astronaut do?", `Report any symptoms to Ground Medical now (for example fever, breathlessness, chest pain, palpitations or dizziness).${P.some((p) => p.id === "p60-electrolytes") ? " Do not change fluid, salt or potassium intake before Ground Medical review." : ""} Do not start or change supplements or exercise until Ground Medical has reviewed these findings.`, P.map((p) => p.id));
-    set("What should Ground Medical confirm?", [...new Set(P.filter((p) => p.priority !== "MONITORING").map((p) => p.confirm[0]!))].slice(0, 4).join(" "), P.map((p) => p.id));
+    const toConfirm = [...new Set(P.filter((p) => p.priority !== "MONITORING").map((p) => p.confirm[0]!))];
+    // P60.1: when every pattern is MONITORING the answer is never left empty.
+    set("What should Ground Medical confirm?", (toConfirm.length ? toConfirm : [...new Set(P.map((p) => p.confirm[0]!).filter(Boolean))]).slice(0, 4).join(" ") || "Routine review only.", P.map((p) => p.id));
   }
   // Results-table notes: explained once.
   const unrecAll = [...new Set(rows.flatMap((r) => (r.notes.includes("‡") ? r.unrecordedConditions : [])))];
@@ -608,7 +610,6 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     ...(rows.some((r) => r.notes.includes("§")) ? ["§ Identity bound through an owner-directed synthetic demonstration mapping (not Researcher-approved)."] : []),
     ...(rows.some((r) => r.notes.includes("◊")) ? ["◊ Synthetic demonstration catalog identity (not scientifically validated)."] : []),
     ...(rows.some((r) => r.patternDataCheck) ? [`† Pattern-level DATA CHECK (${P.filter((p) => p.dataCheck && p.priority !== "DATA_CHECK").map((p) => p.title).join("; ")}): verify this series before interpretation. It is not an observation-level measurement error and does not lower the medical-review priority.`] : []),
-    "Priority = medical-review priority of the finding the result belongs to. TREND REVIEW = significant change between examinations; it does not by itself establish a medical-review priority. CHECK = observation-level data-quality rule.",
   ];
   const census = observationCensus(included.map((r) => ({ metricId: r.metricId, unit: r.unit, date: day(r.observedAt), valueText: r.value, provenance: r.provenance })));
 
