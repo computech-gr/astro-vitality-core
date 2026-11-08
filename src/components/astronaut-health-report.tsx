@@ -565,7 +565,7 @@ export function AstronautHealthReport() {
                 {healthSummary.implicationGaps.length ? <ul className="list-disc pl-5 text-xs text-muted-foreground">{healthSummary.implicationGaps.map((g) => <li key={g} className="report-avoid-break">{g}</li>)}</ul> : null}
               </div>
               <div className="report-avoid-break space-y-1">
-                <h4 className="font-semibold">4. Nikolas-governed cross-domain context</h4>
+                <h4 className="font-semibold">4. Governed cross-domain context</h4>
                 <ul className="list-disc pl-5 text-sm">{healthSummary.crossDomain.map((c) => <li key={c}>{c}</li>)}</ul>
               </div>
               <div className="space-y-1">

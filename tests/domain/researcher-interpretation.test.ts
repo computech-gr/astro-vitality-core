@@ -113,11 +113,11 @@ describe("v9.5 researcher interpretation: four modules", () => {
     expect(bone.kind).toBe("quoted_pending_hypothesis");
     if (bone.kind === "quoted_pending_hypothesis") {
       expect(bone.statement).toContain("Possibly more intense osteoclastic resorption.");
-      expect(bone.source).toBe("Astronaut Bone Health Handbook v7 (Nikolas)");
+      expect(bone.source).toBe("Astronaut Bone Health Handbook v7");
       expect(bone.reviewStatus).toBe("pending_independent_review");
     }
     const hrv = domainInterpretation(m, "cardiovascular").series.find((x) => x.metricId === "cv-027")!.handbook;
-    expect(hrv.kind === "quoted_pending_hypothesis" && hrv.source).toBe("NASA Cardiovascular Handbook (Nikolas)");
+    expect(hrv.kind === "quoted_pending_hypothesis" && hrv.source).toBe("NASA Cardiovascular Handbook");
   });
 
   it("fabricates no Immune/Behavioral mapping and treats unknown or cross-domain IDs as unmapped", () => {

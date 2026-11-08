@@ -64,7 +64,7 @@ describe("scientific health summary", () => {
 
   it("produces no diagnostic or risk language and keeps TXT consistent with screen sections", () => {
     const text = scientificHealthSummaryPlainText(s);
-    for (const h of ["1. What was measured", "2. Supported versus insufficient", "3. Possible biological implications", "4. Nikolas-governed", "5. Missing data", "6. Qualified Ground Medical"]) expect(text).toContain(h);
+    for (const h of ["1. What was measured", "2. Supported versus insufficient", "3. Possible biological implications", "4. Governed cross-domain", "5. Missing data", "6. Qualified Ground Medical"]) expect(text).toContain(h);
     expect(text).not.toMatch(/\bdiagnosed\b|risk score:|fit for duty|abnormal|normal range/i);
   });
 

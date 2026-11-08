@@ -135,8 +135,8 @@ export interface ResearcherInterpretationModel {
 }
 
 const GOVERNED: Record<ResearcherDomain, string | null> = {
-  bone: "Astronaut Bone Health Handbook v7 (Nikolas)",
-  cardiovascular: "NASA Cardiovascular Handbook (Nikolas)",
+  bone: "Astronaut Bone Health Handbook v7",
+  cardiovascular: "NASA Cardiovascular Handbook",
   immune: null,
   behavioral: null,
 };
