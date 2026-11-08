@@ -568,9 +568,11 @@
 
 ## P56.1 Clinical interpretation, review prioritization and compact PDF
 
-- [ ] Root-cause audit of missing verified reference criteria (registry, handbooks, matrix, demo catalog, P41 records, source PDF).
-- [ ] Full longitudinal profile per series (first/last/min/max, peaks, troughs, reversals, intervals) and HbA1c plausibility.
-- [ ] Auditable review-priority rules (pending scientific review), separate from RED/AMBER/NORMAL/NEUTRAL; red text for validated adverse findings.
-- [ ] Cross-marker reasoning, finding-specific recommendations, single methodology note, missing-evidence provenance.
-- [ ] Compact PDF (≤4 pages, single-day without charts); screen and TXT parity.
-- [ ] Regression tests (Scenario A single-day, Scenario B multi-day), full checks, PDF visual and browser verification.
+- [x] Root-cause audit of missing verified reference criteria (registry, handbooks, matrix, demo catalog, P41 records, source PDF).
+- [x] Full longitudinal profile per series (first/last/min/max, peaks, troughs, reversals, intervals) and HbA1c plausibility.
+- [x] Auditable review-priority rules (pending scientific review), separate from RED/AMBER/NORMAL/NEUTRAL; red text for validated adverse findings.
+- [x] Cross-marker reasoning, finding-specific recommendations, single methodology note, missing-evidence provenance.
+- [x] Compact PDF (≤4 pages, single-day without charts); screen and TXT parity.
+- [x] Regression tests (Scenario A single-day, Scenario B multi-day), full checks, PDF visual and browser verification.
+- [ ] Owner/scientific review of the review-triage rule values (50% change, 10% electrolyte change, 50% intermediate extreme, HbA1c 28-day interval) — waits on the owner.
+- [ ] Verified reference intervals (registry still empty) — waits on independently verified sources.
