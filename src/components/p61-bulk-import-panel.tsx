@@ -173,14 +173,14 @@ export function P61BulkImportPanel(props: {
           ))}
         </dl>
         {r.perDate.length ? (
-          <p className="text-xs text-muted-foreground" data-testid="p61-per-date">
+          <div className="text-xs text-muted-foreground" data-testid="p61-per-date">
             Per examination date:{" "}
             {r.perDate.map((d) => (
               <Badge key={d.date} variant="outline" className="mr-1 mt-1 tabular-nums">
                 {d.date} · {d.observations}
               </Badge>
             ))}
-          </p>
+          </div>
         ) : null}
         <p
           role="status"
