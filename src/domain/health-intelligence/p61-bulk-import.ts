@@ -203,12 +203,8 @@ export interface DateHeading {
   parse: DateParse;
 }
 
-/** A line that states an examination (or sample collection) date for the rows that follow. */
-export function classifyDateHeading(text: string, cells: readonly string[]): Omit<DateHeading, "line" | "page"> | null {
+function classifyDateCell(text: string): Omit<DateHeading, "line" | "page"> | null {
   const t = text.trim();
-  if (t.length < 4 || t.length > 160 || isPageMarkLine(t) || cells.length > 4) return null;
-  // A cell holding only a number is a measurement value: the line is a table row, not a heading.
-  if (cells.some((c) => /^[-+\u2212]?\d+(?:[.,]\d+)?$/.test(c.trim()))) return null;
   const tokens = scanDates(t);
   if (!tokens.length) return null;
   let residual = t;
@@ -221,6 +217,39 @@ export function classifyDateHeading(text: string, cells: readonly string[]): Omi
   if (COLLECTION_CONTEXT.test(words)) return { text: t, kind: "collection", parse };
   if (EXAM_CONTEXT.test(words) || !/[\p{L}\d]/u.test(words)) return { text: t, kind: "examination", parse };
   return null;
+}
+
+/**
+ * A line that states an examination (or sample collection) date for the rows
+ * that follow. Metadata lines are read cell by cell, so a birth or report date
+ * beside the examination date is ignored rather than mixed in.
+ */
+export function classifyDateHeading(text: string, cells: readonly string[]): Omit<DateHeading, "line" | "page"> | null {
+  const t = text.trim();
+  if (t.length < 4 || t.length > 160 || isPageMarkLine(t) || cells.length > 4) return null;
+  // A cell holding only a number is a measurement value: the line is a table row, not a heading.
+  if (cells.some((c) => /^[-+\u2212]?\d+(?:[.,]\d+)?$/.test(c.trim()))) return null;
+  const results = (cells.length > 1 ? cells : [t]).map(classifyDateCell).filter((r): r is NonNullable<typeof r> => r !== null);
+  if (!results.length) return null;
+  const usable = results.filter((r) => r.kind !== "excluded");
+  if (!usable.length) return { ...results[0]!, text: t };
+  if (usable.length === 1) return { ...usable[0]!, text: t };
+  const kind: DateHeadingKind = usable.some((r) => r.kind === "collection") ? "collection" : "examination";
+  const values = new Map<string, DateReading>();
+  let unresolved = false;
+  for (const r of usable) {
+    if (r.parse.status === "resolved") values.set(r.parse.value, { iso: r.parse.value, precision: r.parse.precision, how: r.parse.how });
+    else {
+      unresolved = true;
+      if (r.parse.status === "ambiguous") for (const o of r.parse.options) values.set(o.iso, o);
+    }
+  }
+  const only = [...values.values()];
+  const parse: DateParse =
+    !unresolved && only.length === 1
+      ? { status: "resolved", value: only[0]!.iso, precision: only[0]!.precision, how: only[0]!.how }
+      : { status: "ambiguous", options: only, note: `More than one examination date is stated (${usable.map((r) => `"${r.text}"`).join(", ")}); choose explicitly.` };
+  return { text: t, kind, parse };
 }
 
 // --- Date-column tables -------------------------------------------------------------
