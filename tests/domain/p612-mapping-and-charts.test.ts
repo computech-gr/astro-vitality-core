@@ -15,7 +15,7 @@ import {
 import { recognizeSyntheticDemo } from "../../src/domain/health-intelligence/synthetic-demo-catalog";
 import { getSyntheticDemoCatalogs, loadInstalledDemoCatalogs, resetSyntheticDemoCatalogsForTests, SYNTHETIC_DEMO_STORAGE_KEY } from "../../src/domain/health-intelligence/synthetic-demo-catalog-runtime";
 import { classifyWithGovernedExtensions } from "../../src/domain/health-intelligence/unknown-biomarker-review";
-import { chartDateAxisPlan, orientationLabelGroups, renderPremiumReport } from "../../src/domain/health-intelligence/p59-premium-pdf";
+import { chartDateAxisPlan, renderPremiumReport } from "../../src/domain/health-intelligence/p59-premium-pdf";
 import { SvgPdfWriter, type TextItem } from "../support/svg-pdf-writer";
 import { premiumFrom, MITO_DEMO_MISSION_ID, o } from "../support/p59-fixtures";
 import { repoPath } from "../documents/p42-pdf-helpers";
@@ -99,11 +99,6 @@ describe("P61.2 chart date axis and orientation labels", () => {
     expect(p.omitted.length + p.labels.length).toBe(20);
     for (let i = 1; i < p.labels.length; i++) expect(p.labels[i]!.x - p.labels[i - 1]!.x).toBeGreaterThanOrEqual((W(p.labels[i]!.text) + W(p.labels[i - 1]!.text)) / 2 + 1.2 - 1e-9);
   });
-  it("close orientation lines share one label", () => {
-    const Y = (v: number) => 100 - v * 4;
-    expect(orientationLabelGroups([5.7, 6.5, 5.7], Y)).toEqual([[6.5], [5.7]]);
-    expect(orientationLabelGroups([6.4, 6.5], Y)).toEqual([[6.5, 6.4]]);
-  });
   it("the rendered HbA1c / multi-date report has no overlapping chart labels", () => {
     const D = ["2026-11-03", "2026-11-06", "2026-11-09", "2026-11-12", "2026-11-16", "2026-11-20", "2026-11-24", "2026-11-28"];
     const hist = [
@@ -120,8 +115,12 @@ describe("P61.2 chart date axis and orientation labels", () => {
       const A = box(a), B = box(b);
       return Math.min(A.x1, B.x1) - Math.max(A.x0, B.x0) > 0.3 && Math.min(A.y1, B.y1) - Math.max(A.y0, B.y0) > 0.3;
     };
-    const axis = w.texts.filter((t) => !t.bold && (t.size === 7 || t.size === 6 || t.size === 6.4) && (/^\d{2}$/.test(t.text) || /orientation only/.test(t.text) || /^Nov 2026$/.test(t.text)));
-    expect(axis.filter((t) => /^\d{2}$/.test(t.text)).length).toBeGreaterThanOrEqual(8 * 3);
-    for (let i = 0; i < axis.length; i++) for (let j = i + 1; j < axis.length; j++) if (axis[i]!.page === axis[j]!.page) expect(over(axis[i]!, axis[j]!) ? `${axis[i]!.text} × ${axis[j]!.text}` : "").toBe("");
+    expect(w.texts.filter((t) => /^\d{2}$/.test(t.text) && t.size === 7).length).toBeGreaterThanOrEqual(8 * 3);
+    // HbA1c guide lines are listed once below the axis, never as labels inside the plot.
+    expect(w.texts.some((t) => t.text.startsWith("Dashed lines at 5.7 / 6.4 / 6.5 % — orientation only"))).toBe(true);
+    expect(w.texts.some((t) => /\(orientation only\)/.test(t.text))).toBe(false);
+    const pages = new Set(w.texts.filter((t) => t.text === "HbA1c (3-month average blood sugar)" || /^IL-6/.test(t.text) || t.text === "Triglycerides").map((t) => t.page));
+    const all = w.texts.filter((t) => pages.has(t.page));
+    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) if (all[i]!.page === all[j]!.page) expect(over(all[i]!, all[j]!) ? `${all[i]!.text} × ${all[j]!.text}` : "").toBe("");
   });
 });
