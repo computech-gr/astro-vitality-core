@@ -72,8 +72,9 @@ describe("P61.2 synthetic intake alias register", () => {
     expect(syntheticIntakeAliasFor({ label: "Glucose, fasting", unit: "mg/dL", metricId: "demo:ubt-7f47ee7c" })?.basis).toBe("word-order");
     expect(syntheticIntakeAliasFor({ label: "Fasting glucose", unit: "mg/dL", metricId: "demo:ubt-7f47ee7c" })).toBeNull();
   });
-  it("unresolved series stay unresolved (unit notation, specimen or definition needs Researcher review)", () => {
-    for (const [l, u] of [["Body temperature", "deg C"], ["Platelets", "10^9/L"], ["Creatinine", "mg/dL"], ["Sleep duration", "h"], ["HRV SDNN", "ms"], ["Bicarbonate", "mmol/L"], ["Chloride", "mmol/L"], ["Urea nitrogen (BUN)", "mg/dL"]] as const)
+  // P61.3: Body temperature "deg C" is now recognized through the closed UN-1 notation rule (tests/domain/p613-final-mapping.test.ts).
+  it("unresolved series stay unresolved (unit scale, specimen or definition needs Researcher review)", () => {
+    for (const [l, u] of [["Platelets", "10^9/L"], ["Creatinine", "mg/dL"], ["Sleep duration", "h"], ["HRV SDNN", "ms"], ["Bicarbonate", "mmol/L"], ["Chloride", "mmol/L"], ["Urea nitrogen (BUN)", "mg/dL"]] as const)
       expect(`${l}:${cls(l, u).status}`).not.toBe(`${l}:matched`);
   });
 });
