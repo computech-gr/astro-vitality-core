@@ -45,7 +45,9 @@ export type ColumnRole =
   | "date"
   | "specimen"
   | "method"
-  | "flag";
+  | "flag"
+  /** P61: reported grouping column ("Domain", "Category", "Panel"); read for traceability only, never a domain assignment. */
+  | "category";
 
 export interface DocumentLineInput {
   text: string;
@@ -269,6 +271,7 @@ const ROLE_VOCABULARY: Readonly<Record<ColumnRole, readonly string[]>> = {
   specimen: ["specimen", "sample", "sample type", "matrix", "δειγμα"],
   method: ["method", "assay", "technique", "μεθοδος"],
   flag: ["flag", "status", "comment", "remark", "ενδειξη", "σχολιο"],
+  category: ["domain", "category", "panel", "body system", "system", "group", "κατηγορια", "συστημα"],
 };
 const VOCABULARY = new Map<string, ColumnRole>(
   (Object.entries(ROLE_VOCABULARY) as [ColumnRole, readonly string[]][]).flatMap(([role, words]) =>
