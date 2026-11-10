@@ -784,8 +784,63 @@ function chartBadges(c: PremiumChart): [BadgeKind, string][] {
     ...(c.dataCheck && c.priority !== "DATA_CHECK" ? ([["check", "DATA CHECK"]] as [BadgeKind, string][]) : []),
   ];
 }
+/**
+ * P61.2: date-axis plan. Labels never overlap: when "DD Mon" labels would touch and every point lies in one
+ * month, day numbers are used with the month named once; if labels still clash, the first, last, annotated
+ * (peak/trough) and extreme dates are kept first and any omitted date is listed in the caption.
+ */
+export function chartDateAxisPlan(
+  points: readonly { day: string; value: number; annotation?: string | undefined }[],
+  plotWidth: number,
+  widthOf: (text: string) => number,
+): { labels: { index: number; x: number; text: string }[]; month: string | null; omitted: string[] } {
+  const days = points.map((p) => Date.parse(`${p.day}T00:00:00Z`));
+  const d0 = Math.min(...days), d1 = Math.max(...days);
+  const X = (d: number) => (d1 === d0 ? plotWidth / 2 : 8 + ((d - d0) / (d1 - d0)) * (plotWidth - 16));
+  const gap = 1.2;
+  const uniqueIdx = points.map((_, i) => i).filter((i) => days.indexOf(days[i]!) === i);
+  const build = (text: (d: string) => string) => uniqueIdx.map((i) => ({ index: i, x: X(days[i]!), text: text(points[i]!.day), w: widthOf(text(points[i]!.day)) }));
+  const clash = (a: { x: number; w: number }, b: { x: number; w: number }) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap;
+  const anyClash = (ls: { x: number; w: number }[]) => ls.some((l, i) => i > 0 && clash(ls[i - 1]!, l));
+  let labels = build(dayLabel);
+  let month: string | null = null;
+  const months = new Set(points.map((p) => p.day.slice(0, 7)));
+  if (anyClash(labels) && months.size === 1) {
+    labels = build((d) => d.slice(8, 10));
+    const d = points[0]!.day;
+    month = `${dayLabel(d).slice(3)} ${d.slice(0, 4)}`;
+  }
+  if (!anyClash(labels)) return { labels: labels.map(({ index, x, text }) => ({ index, x, text })), month, omitted: [] };
+  const vals = points.map((p) => p.value);
+  const hi = Math.max(...vals), lo = Math.min(...vals);
+  const priority = (l: { index: number }) => {
+    const p = points[l.index]!;
+    if (l.index === uniqueIdx[0] || l.index === uniqueIdx.at(-1)) return 0;
+    if (p.annotation) return 1;
+    if (p.value === hi || p.value === lo) return 2;
+    return 3;
+  };
+  const keep: typeof labels = [];
+  for (const l of [...labels].sort((a, b) => priority(a) - priority(b) || a.x - b.x)) if (!keep.some((k) => clash(k, l))) keep.push(l);
+  keep.sort((a, b) => a.x - b.x);
+  const omitted = labels.filter((l) => !keep.includes(l)).map((l) => dayLabel(points[l.index]!.day));
+  return { labels: keep.map(({ index, x, text }) => ({ index, x, text })), month, omitted };
+}
+/** P61.2: data-check orientation lines closer than one label height share a single label. */
+export function orientationLabelGroups(values: readonly number[], yOf: (v: number) => number, minGap = 2.8): number[][] {
+  const sorted = [...new Set(values)].sort((a, b) => yOf(a) - yOf(b));
+  const groups: number[][] = [];
+  for (const v of sorted) {
+    const g = groups.at(-1);
+    if (g && Math.abs(yOf(v) - yOf(g.at(-1)!)) < minGap) g.push(v);
+    else groups.push([v]);
+  }
+  return groups;
+}
 function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, measureOnly: boolean): number {
-  const caption = L.capped(chartCaption(c), 7.6, w - 6, 7);
+  const axis = chartDateAxisPlan(c.base.points, w - 17, (t) => L.width(t, 7));
+  const axisNote = axis.omitted.length ? ` Dates not labelled on the axis (crowded): ${axis.omitted.join(", ")}.` : "";
+  const caption = L.capped(`${chartCaption(c)}${axisNote}`, 7.6, w - 6, 7);
   const plotH = 46;
   const legendRows = c.bands.length && !c.dataCheck ? c.bands.length : 0;
   const title = L.capped(c.base.name, 9.6, w - 22, 2, true);
@@ -830,15 +885,17 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
   }
   // orientation lines for data-check series
   if (c.dataCheck) {
-    const seen = new Set<number>();
-    for (const b of c.bands) for (const v of [b.lower, b.upper]) if (v !== null && v > ymin && v < ymax && !seen.has(v)) {
-      seen.add(v);
-      L.draw(COLOR.neutral);
-      L.dash(true, [1, 0.8]);
-      L.pdf.line(px0, Y(v), px1, Y(v));
-      L.dash(false);
+    const vs = c.bands.flatMap((b) => [b.lower, b.upper]).filter((v): v is number => v !== null && v > ymin && v < ymax);
+    for (const group of orientationLabelGroups(vs, Y)) {
+      for (const v of group) {
+        L.draw(COLOR.neutral);
+        L.dash(true, [1, 0.8]);
+        L.pdf.line(px0, Y(v), px1, Y(v));
+        L.dash(false);
+      }
+      // One label per group, above its top line, so close limits never print on top of each other.
       L.font(6, false, COLOR.muted);
-      L.pdf.text(L.t(`${fmt(v)} (orientation only)`), px0 + 1, Y(v) - 0.7);
+      L.pdf.text(L.t(`${[...group].sort((a, b) => a - b).map(fmt).join(" / ")} (orientation only)`), px0 + 1, Y(group[0]!) - 0.7);
     }
   }
   // x positions by day
@@ -848,24 +905,15 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
   L.draw([148, 163, 184]);
   L.pdf.setLineWidth(0.3);
   L.pdf.line(px0, py1, px1, py1);
-  // Date labels never overlap: a label that would touch its drawn neighbour is omitted (the first date is
-  // always kept; the last replaces a clashing neighbour). Every point keeps its marker and value label.
-  const xLabels: { x: number; text: string; w: number }[] = [];
-  for (let i = 0; i < pts.length; i++) {
-    const text = dayLabel(pts[i]!.day);
-    if (xLabels.some((l) => l.text === text && l.x === X(days[i]!))) continue;
-    xLabels.push({ x: X(days[i]!), text, w: L.width(text, 7) });
-  }
-  const gap = 1.2;
-  const clash = (a: { x: number; w: number }, b: { x: number; w: number }) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap;
-  const keep: typeof xLabels = [];
-  xLabels.forEach((l, i) => {
-    if (i === xLabels.length - 1 && keep.length > 1 && clash(keep.at(-1)!, l)) keep.pop();
-    if (!keep.length || !clash(keep.at(-1)!, l)) keep.push(l);
-  });
-  for (const l of keep) {
+  // P61.2: date labels from the shared axis plan (never overlapping; omitted dates are named in the caption).
+  for (const l of axis.labels) {
     L.font(7, false, COLOR.ink);
-    L.pdf.text(L.t(l.text), l.x, py1 + 3.6, { align: "center" });
+    L.pdf.text(L.t(l.text), px0 + l.x, py1 + 3.6, { align: "center" });
+  }
+  if (axis.month) {
+    L.font(6.4, false, COLOR.muted);
+    const first = axis.labels[0];
+    L.pdf.text(L.t(axis.month), px0 + (first ? first.x - L.width(first.text, 7) / 2 - 1.2 : 0), py1 + 3.6, { align: "right" });
   }
   // series
   if (pts.length > 1) {
