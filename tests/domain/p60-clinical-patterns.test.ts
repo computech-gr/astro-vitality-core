@@ -185,8 +185,8 @@ describe("P60 engine — convergence rules", () => {
   });
   it("missing clinical context is listed rather than assumed", () => {
     const p = run([row("demo:ubt-f4b8be7b", "breaths/min", "26", d)])[0]!;
-    expect(p.missing.join(" ")).toContain("Lactate — not recorded");
-    expect(p.missing.join(" ")).toContain("White-cell count and differential — not recorded");
+    expect(p.missing.join(" ")).toContain("Lactate — no accepted observation in this period");
+    expect(p.missing.join(" ")).toContain("White-cell count and differential — no accepted observation in this period");
   });
   it("a small normal dataset produces no pattern", () => {
     expect(premiumFrom(smallNormal(), demo).patterns.patterns).toEqual([]);

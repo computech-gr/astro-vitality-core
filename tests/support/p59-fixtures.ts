@@ -58,13 +58,13 @@ export function complexAbnormal(): UnifiedObservation[] {
   return out;
 }
 
-export function premiumFrom(history: UnifiedObservation[], opts: { provisional?: boolean; mappings?: boolean; missionId?: string; approved?: ApprovedCriterion[]; registry?: unknown; provenance?: "synthetic" | "real"; scope?: typeof V9_SCOPE; range?: { from: string; to: string } } = {}) {
+export function premiumFrom(history: UnifiedObservation[], opts: { provisional?: boolean; mappings?: boolean; missionId?: string; approved?: ApprovedCriterion[]; registry?: unknown; provenance?: "synthetic" | "real"; scope?: typeof V9_SCOPE; range?: { from: string; to: string }; crew?: string; mission?: string } = {}) {
   const inputs = { domainEntries: {}, unifiedObservations: history, deviceRecords: [] };
   const range = opts.range ?? { from: "2026-11-01", to: "2026-11-08" };
   const unified = buildUnifiedHealthReport(inputs as never, opts.scope ?? V9_SCOPE, range, `${range.to}T12:00:00.000Z`);
   const model = buildResearcherInterpretation(unified, buildScientificFindings(unified), []);
   const biomarkers = buildBiomarkerAssessment(unified, model, undefined, { criteria: opts.approved ?? [] });
-  const assessment = buildHealthAssessment({ unified, model, biomarkers, identity: { missionName: "MITO_DEMO_2026", crewDisplayName: "Alex Morgan" }, scopeHistory: unified.rows });
+  const assessment = buildHealthAssessment({ unified, model, biomarkers, identity: { missionName: opts.mission ?? "MITO_DEMO_2026", crewDisplayName: opts.crew ?? "Alex Morgan" }, scopeHistory: unified.rows });
   if (opts.provenance === "real") (assessment.header as { provenance: string }).provenance = "real";
   const report = buildProfessionalReport({ assessment, biomarkers });
   return buildPremiumReport({ report, unified, biomarkers, approved: opts.approved ?? [], missionId: opts.missionId ?? V9_SCOPE.missionId, options: { provisionalLiterature: Boolean(opts.provisional), demonstrationMappings: Boolean(opts.mappings) }, provisionalRegistry: opts.registry });

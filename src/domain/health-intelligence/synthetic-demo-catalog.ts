@@ -13,11 +13,14 @@
  *   read models. It only marks the row as already covered so no duplicate
  *   unknown-biomarker request is generated.
  * - matching is label + exact unit (no conversion); specimen and method are not
- *   invented, so the demo can never be mistaken for validated recognition.
+ *   invented, so the demo can never be mistaken for validated recognition. P61.3:
+ *   a unit written in another notation (closed typographic list, p613-unit-notation)
+ *   is recognized as the entry's unit and reported as such; never a conversion.
  */
 import { canonicalJson } from "./observation-envelope";
 import { normalizeCatalogText, sha256Hex } from "./catalog-lifecycle";
 import { syntheticIntakeAliasEntry } from "./p612-synthetic-intake-aliases";
+import { unitNotationMatch, type UnitNotationMatch } from "./p613-unit-notation";
 import type { HealthDomainId } from "@/domain/health-domains/registry";
 import {
   deriveSigningKeyFromSecret,
@@ -250,6 +253,11 @@ export type SyntheticDemoRecognition = {
   termId: string;
   /** P61.2: set when an owner-directed synthetic intake alias (pending Researcher review) named the entry. */
   intakeAlias?: { alias: string; basis: string } | undefined;
+  /**
+   * P61.3: set when the reported unit is the entry's unit written in another notation (closed rule list,
+   * synthetic only, pending Researcher confirmation). `unit` is the entry's notation; nothing is converted.
+   */
+  unitNotation?: UnitNotationMatch | undefined;
 };
 export type DemoRecognitionResult =
   SyntheticDemoRecognition | { status: "UNKNOWN"; reason: string };
@@ -348,11 +356,31 @@ export function recognizeSyntheticDemo(
     return { status: "UNKNOWN", reason: "No active synthetic demo entry for this label." };
   }
   const exact = named.filter((e) => e.unit.trim() === unit);
-  if (!exact.length)
+  if (!exact.length) {
+    // P61.3: the same unit written in another notation (closed typographic rules, never a conversion).
+    const notation = named.flatMap((e) => {
+      const m = unitNotationMatch(unit, e.unit);
+      return m ? [{ e, m }] : [];
+    });
+    if (notation.length === 1) {
+      const { e, m } = notation[0]!;
+      return {
+        status: "SYNTHETIC_DEMO_RECOGNIZED",
+        demoId: e.demoId,
+        displayName: e.displayName,
+        unit: e.unit,
+        domain: e.domain,
+        missionId: e.missionId,
+        demoCatalogVersion: catalog.demoCatalogVersion,
+        termId: e.termId,
+        unitNotation: m,
+      };
+    }
     return {
       status: "UNKNOWN",
-      reason: "Unit differs from the demo entry; units are never converted.",
+      reason: notation.length > 1 ? "Ambiguous synthetic demo match." : "Unit differs from the demo entry; units are never converted.",
     };
+  }
   if (exact.length > 1) return { status: "UNKNOWN", reason: "Ambiguous synthetic demo match." };
   const e = exact[0]!;
   return {

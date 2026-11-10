@@ -66,6 +66,7 @@ const ALLOWED_TOP = new Set([
   "domain",
   "value",
   "originalUnit",
+  "reportedUnit",
   "observedAt",
   "datePrecision",
   "collectionDate",

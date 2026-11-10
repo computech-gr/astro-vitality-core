@@ -11,7 +11,7 @@ import type { ProfessionalReport, MergedRecommendation } from "./p58-professiona
 import type { UnifiedHealthReport, ReportRow } from "./unified-health-report";
 import type { BiomarkerAssessmentReport, BiomarkerAssessment } from "./biomarker-health-assessment";
 import type { Contributor } from "./p56-health-assessment";
-import type { ReportChart } from "./p58-report-charts";
+import { buildReportCharts, type ReportChart } from "./p58-report-charts";
 import type { ClinicalConcern } from "./p58-clinical-reasoning";
 import type { ReviewFlag } from "./p56-longitudinal-profile";
 import { bundledCriteriaRegistry, classifyWithCriteria, type ApprovedCriterion, type CriteriaClassification } from "./p57-reference-criteria";
@@ -99,9 +99,16 @@ export interface ResultRow {
    * null when the result contributes to no finding. Separate from the clinical class and from trend review.
    */
   priority: WarningPriority | null;
+  /**
+   * P61.3: the HIGH priority comes from the finding/pattern while this result's own clinical class is not RED;
+   * printed as "Associated with HIGH PRIORITY pattern" so it never reads as an individual HIGH classification.
+   */
+  priorityAssociated: boolean;
   /** P60.1: a pattern-level DATA CHECK names this result's series; it is NOT an observation-level data-quality flag. */
   patternDataCheck: boolean;
 }
+/** P61.3: label for a result (or series) that belongs to a HIGH PRIORITY pattern without a RED class of its own. */
+export const ASSOCIATED_HIGH_PRIORITY_LABEL = "Associated with HIGH PRIORITY pattern";
 export interface PremiumChart {
   base: ReportChart;
   bands: { lower: number | null; upper: number | null; severity: string; label: string; criterionId: string }[];
@@ -112,6 +119,8 @@ export interface PremiumChart {
   highReview: boolean;
   /** P60.1: highest medical-review priority among the series' results (same value as the results table). */
   priority: WarningPriority | null;
+  /** P61.3: HIGH priority from a pattern while no result of the series has a RED class of its own. */
+  priorityAssociated: boolean;
   /** P60.1: a pattern-level DATA CHECK names this series (not an observation-level flag). */
   patternDataCheck: boolean;
 }
@@ -140,6 +149,8 @@ export interface PremiumReport {
   graph: ReturnType<typeof relationshipGraph>;
   integrated: { heading: string; paragraphs: string[]; evidenceKeys: string[] }[];
   charts: PremiumChart[];
+  /** P61.3: series still not charted (no class, priority or review flag), named in the report. */
+  chartsOmitted: { name: string; reason: string }[];
   concerns: ClinicalConcern[];
   recommendations: { column: RecColumn; items: MergedRecommendation[] }[];
   basisText: string;
@@ -249,6 +260,9 @@ function shortOutcome(c: CriteriaClassification | null): string {
 
 export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const { report, unified, biomarkers } = input;
+  // P61.3: every chartable series (P58 caps its own selection); used to name rows and to re-include series this
+  // report classifies or prioritises, so a classified or prioritised series is never left without a chart.
+  const fullCharts = buildReportCharts(report.assessment, biomarkers, undefined, { uncapped: true }).charts;
   const header = { ...report.assessment.header, evidenceId: report.evidenceId };
   const synthetic = header.provenance === "synthetic";
   const provisionalActive = input.options.provisionalLiterature && synthetic;
@@ -269,7 +283,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const rows: ResultRow[] = included.map((r) => {
     const c = contribOf(r.metricId, r.unit);
     const e = entryOf(r.metricId, r.unit);
-    const chartName = report.charts.charts.find((x) => x.metricId === r.metricId && x.unit === r.unit)?.name;
+    const chartName = (report.charts.charts.find((x) => x.metricId === r.metricId && x.unit === r.unit) ?? fullCharts.find((x) => x.metricId === r.metricId && x.unit === r.unit))?.name;
     const usable = (n: string | undefined | null) => (n && n !== r.metricId ? n : null);
     const name = usable(c?.name) ?? usable(chartName) ?? usable(e?.name) ?? DISPLAY_NAMES.get(`${r.metricId}|${r.unit}`) ?? usable(r.metricLabel) ?? r.metricId;
     const flags: readonly ReviewFlag[] = c?.review.flags ?? [];
@@ -310,7 +324,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       : approvedCls?.outcome === "pending_approval" ? "Candidate criterion pending approval"
       : provisional && provisional.status === "PROVISIONAL" && provisional.severity === "neutral" ? "Outside the provisional bands"
       : "";
-    return { criterionShort, notes, recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: unrec, priority: null as WarningPriority | null, patternDataCheck: false };
+    return { criterionShort, notes, recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: unrec, priority: null as WarningPriority | null, priorityAssociated: false, patternDataCheck: false };
   });
 
   rows.sort((a, b) => GROUPS.findIndex((g) => g.id === a.group) - GROUPS.findIndex((g) => g.id === b.group) || a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit) || a.date.localeCompare(b.date) || a.recordId.localeCompare(b.recordId));
@@ -406,7 +420,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   });
 
   // ---------- charts (P58 selection + bands from approved or provisional criteria)
-  const charts: PremiumChart[] = report.charts.charts.map((ch) => {
+  const toPremiumChart = (ch: ReportChart): PremiumChart => {
     const rs = rows.filter((r) => r.metricId === ch.metricId && r.unit === ch.unit);
     const latestCls = entryOf(ch.metricId, ch.unit)?.classification.criteria ?? null;
     const approvedBands = chartReferenceBands(latestCls);
@@ -421,8 +435,9 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       const r = rs.find((x) => x.date === p.day && x.valueText === p.valueText) ?? rs.find((x) => x.date === p.day);
       return dataCheck ? { cls: "CHECK" as const, basis: "none" as ClassBasis } : { cls: r?.displayClass ?? "NEUTRAL", basis: r?.basis ?? "none" };
     });
-    return { base: ch, bands, bandSource, pointClasses, dataCheck, highReview: rs.some((r) => r.axes.review.value === "HIGH"), priority: null as WarningPriority | null, patternDataCheck: false };
-  });
+    return { base: ch, bands, bandSource, pointClasses, dataCheck, highReview: rs.some((r) => r.axes.review.value === "HIGH"), priority: null as WarningPriority | null, priorityAssociated: false, patternDataCheck: false };
+  };
+  const charts: PremiumChart[] = report.charts.charts.map(toPremiumChart);
 
   // ---------- recommendations by report column
   const recCols: RecColumn[] = ["Nutrition", "Exercise", "Sleep and recovery", "Medical follow-up"];
@@ -524,10 +539,24 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   }
   for (const c of concerns) if (!P.length || !coveredConcerns.includes(c.concernId)) for (const r of rowsOfConcern(c)) raise(r, priorities[c.concernId]!.priority);
   for (const r of rows) if (r.patternDataCheck && !r.notes.includes("†")) r.notes.push("†");
+  // P61.3: a HIGH priority inherited from a pattern never reads as the result's own HIGH classification.
+  for (const r of rows) r.priorityAssociated = r.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" && r.displayClass !== "RED";
+  const charted = new Set(charts.map((c) => c.base.key));
+  const reincluded = new Set<string>();
+  for (const ch of fullCharts) {
+    if (charted.has(ch.key)) continue;
+    const rs = rows.filter((r) => r.metricId === ch.metricId && r.unit === ch.unit);
+    if (rs.some((r) => r.displayClass !== "NEUTRAL" || r.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" || r.priority === "MONITORING" || r.priority === "DATA_CHECK")) {
+      charts.push(toPremiumChart(ch));
+      reincluded.add(ch.name);
+    }
+  }
+  const chartsOmitted = report.charts.omitted.filter((o) => !reincluded.has(o.name));
   for (const ch of charts) {
     const rs = rows.filter((r) => r.metricId === ch.base.metricId && r.unit === ch.base.unit);
     ch.priority = rs.reduce<WarningPriority | null>((m, r) => (r.priority && (!m || PRI_RANK[r.priority] > PRI_RANK[m]) ? r.priority : m), null);
     ch.patternDataCheck = rs.some((r) => r.patternDataCheck);
+    ch.priorityAssociated = ch.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" && !rs.some((r) => r.displayClass === "RED");
   }
   const prioritised = (pr: WarningPriority) => (P.length ? P.filter((p) => p.priority === pr).length : Object.values(priorities).filter((d) => d.priority === pr).length);
   const nHigh = prioritised("HIGH_PRIORITY_MEDICAL_REVIEW"), nMon = prioritised("MONITORING"), nCheck = prioritised("DATA_CHECK");
@@ -622,7 +651,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     demonstrationLabel: provisionalActive ? DEMONSTRATION_LABEL : null,
     priorities,
     concernClasses,
-    counts, rows, alerts, nextSteps, overview, lead, systems, graph, integrated, charts, concerns, recommendations, basisText,
+    counts, rows, alerts, nextSteps, overview, lead, systems, graph, integrated, charts, chartsOmitted, concerns, recommendations, basisText,
     generator: P60_GENERATOR_VERSION, patterns, patternAlerts, patternGraph, synthesis, patternClasses, coveredConcerns, patternConcerns, tableNotes, census,
     coverage: input.coverage ?? null,
   };

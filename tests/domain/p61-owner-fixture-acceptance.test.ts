@@ -37,11 +37,12 @@ const DATES = ["2026-11-03", "2026-11-06", "2026-11-09", "2026-11-12", "2026-11-
 const SCOPE = { missionId: MITO_DEMO_MISSION_ID, crewMemberId: "crew-alex", provenance: "synthetic" as const };
 
 /**
- * P61.2: the 8 series that stay unresolved after the five owner-directed synthetic aliases (no catalog
- * entry, unit-notation difference, or identity needing Researcher review — never fuzzy matching or conversion).
+ * P61.3: the 7 series that stay unresolved after the five owner-directed synthetic aliases and the closed
+ * typographic unit-notation rules (no catalog entry, specimen/definition/method needing a Researcher decision,
+ * or an alias needing approval — never fuzzy matching or conversion).
  */
 const UNRESOLVED = [
-  "Bicarbonate|mmol/L", "Body temperature|deg C", "Chloride|mmol/L", "Creatinine|mg/dL",
+  "Bicarbonate|mmol/L", "Chloride|mmol/L", "Creatinine|mg/dL",
   "HRV SDNN|ms", "Platelets|10^9/L", "Sleep duration|h", "Urea nitrogen (BUN)|mg/dL",
 ];
 /** P61.2 owner-directed synthetic aliases (pending Researcher review), exact unit only. */
@@ -58,6 +59,8 @@ const MATCHED: Record<string, string> = {
   "Respiratory rate|breaths/min": "demo:ubt-f4b8be7b", "Resting heart rate|bpm": "demo:ubt-625f8d98", "SpO2|%": "demo:ubt-12f6e490",
   "IL-10|pg/mL": "demo:ubt-e151a9b1", "TNF-alpha|pg/mL": "demo:ubt-516090ed",
   ...ALIASED,
+  // P61.3: identical name; "deg C" is the entry's °C written in plain text (rule UN-1, synthetic only).
+  "Body temperature|deg C": "demo:ubt-323050f4",
 };
 
 type Row = P61ReviewRow & { sourceKind: "pdf_text" | "csv"; sourceLabel: string; documentName: string; excerpt: string; importedAt: string };
@@ -131,7 +134,7 @@ describe("P61 owner fixtures — CSV schema compatibility", () => {
 
 describe("P61 owner fixtures — catalog matching and domain assignment", () => {
   for (const [name, get] of [["PDF", () => pdf.rows], ["CSV", () => csvRows]] as const)
-    it(`${name}: 30 series matched (25 exact + 5 synthetic aliases), 8 listed as unresolved, none forced into a domain`, () => {
+    it(`${name}: 31 series matched (25 exact + 5 synthetic aliases + 1 unit notation), 7 listed as unresolved, none forced into a domain`, () => {
       const rows = get();
       const bySeries = new Map<string, string | null>();
       for (const r of rows) bySeries.set(key(r), r.classification.status === "matched" ? r.classification.metricId : null);
@@ -144,17 +147,17 @@ describe("P61 owner fixtures — catalog matching and domain assignment", () => 
         if (id.startsWith("cv-")) expect(domainForMetric(id)).toBe(d);
         domains[d!] = (domains[d!] ?? 0) + 1;
       }
-      expect(domains).toEqual({ cardiovascular: 22, bone: 4, immune: 3, behavioral: 1 });
+      expect(domains).toEqual({ cardiovascular: 22, bone: 4, immune: 4, behavioral: 1 });
       // No conversion: every matched row keeps its original unit and value text.
       for (const r of rows) if (r.classification.status === "matched") expect(r.classification.originalUnit).toBe(r.unit);
     });
   it("bulk validation saves only matched rows; every unresolved row stays in the exception queue", () => {
     const { statuses, validatedKeys } = evaluateBulkImport(pdf.rows, [], SCOPE);
-    expect(validatedKeys.length).toBe(240);
+    expect(validatedKeys.length).toBe(248);
     const r = reconcileBulkImport(pdf.rows, statuses);
-    expect(r).toMatchObject({ validated: 240, unresolved: 64, duplicates: 0 });
-    expect(r.exceptions.map((e) => [e.code, e.rows])).toEqual([["unknown_biomarker", 64]]);
-    expect(r.summary).toMatch(/^Not complete: 64 of 304 observation\(s\) are unresolved/);
+    expect(r).toMatchObject({ validated: 248, unresolved: 56, duplicates: 0 });
+    expect(r.exceptions.map((e) => [e.code, e.rows])).toEqual([["unknown_biomarker", 56]]);
+    expect(r.summary).toMatch(/^Not complete: 56 of 304 observation\(s\) are unresolved/);
   });
 });
 
@@ -172,32 +175,37 @@ describe("P61 owner fixtures — encrypted offline storage, duplicates and repor
   beforeAll(() => { g.window = g.window ?? {}; });
   afterAll(() => { if (had) g.window = previous; else delete g.window; });
 
-  it("stores the 240 validated rows encrypted and date-only; re-import finds all 240 as duplicates", async () => {
+  it("stores the 248 validated rows encrypted and date-only; re-import finds all 248 as duplicates", async () => {
     const store = new InMemoryOfflineMissionStore();
     const saved = toObservations(validated(pdf.rows));
     for (const o of saved) await saveUnifiedObservation(o, store);
     const back = await listUnifiedObservations(SCOPE.missionId, SCOPE.crewMemberId, store);
-    expect(back.length).toBe(240);
+    expect(back.length).toBe(248);
     expect(back.every((o) => o.datePrecision === "date")).toBe(true);
     expect([...new Set(back.map((o) => o.observedAt))].sort()).toEqual(DATES);
     const cipher = store.encryptedSnapshot().map((r) => new TextDecoder().decode(Uint8Array.from(atob(r.ciphertext), (c) => c.charCodeAt(0)))).join("");
     expect(cipher).not.toContain("Sodium");
     expect((await store.listQueueItems()).length).toBe(0);
     const again = reconcileBulkImport(pdf.rows, evaluateBulkImport(pdf.rows, back, SCOPE).statuses);
-    expect(again).toMatchObject({ duplicates: 240, validated: 0, unresolved: 64 });
+    expect(again).toMatchObject({ duplicates: 248, validated: 0, unresolved: 56 });
   });
 
   it("the report receives 8 dates in order and never names data that were not imported", () => {
     const report = premiumFrom(toObservations(validated(pdf.rows)), { provisional: true, mappings: true, missionId: SCOPE.missionId, scope: SCOPE, range: { from: "2026-11-01", to: "2026-11-30" } });
-    expect(report.census.observations).toBe(240);
+    expect(report.census.observations).toBe(248);
     expect(report.census.dates).toEqual(DATES);
     for (const c of report.charts) {
       const days = c.base.points.map((p) => p.day);
       expect([...days].sort()).toEqual(days);
     }
     const titles = report.patterns.patterns.map((p) => p.title);
-    // body temperature is unresolved (not imported): no title may name fever
-    expect(titles.some((t) => /fever/i.test(t))).toBe(false);
+    // P61.3: body temperature is imported (unit notation UN-1), so "fever" may be named only from an imported
+    // temperature at or above the cited 38 °C threshold — never from the source document's narrative.
+    const acute = report.patterns.patterns.find((p) => /fever/i.test(p.title));
+    expect(acute?.id).toBe("p60-acute-physiology");
+    expect(report.rows.filter((x) => x.metricId === "demo:ubt-323050f4").map((x) => x.valueText)).toEqual(["36.7", "37.0", "37.5", "38.8", "38.2", "37.6", "37.1", "36.8"]);
+    expect(acute!.headline).toContain("temperature 38.8 °C");
+    expect(titles.filter((t) => /fever/i.test(t)).length).toBe(1);
     const by = (id: string) => report.patterns.patterns.find((p) => p.id === id);
     expect(by("p60-hba1c-check")?.priority).toBe("DATA_CHECK");
     expect(by("p60-lipids")?.priority).toBe("MONITORING");

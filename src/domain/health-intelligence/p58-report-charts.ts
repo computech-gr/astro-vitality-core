@@ -65,7 +65,13 @@ const flagOf = (c: Contributor): ReviewPriority =>
   c.review.flags.some((f) => f.kind === "priority_review") ? "priority_review" : c.review.flags.length ? "data_quality_review" : "none";
 const important = (c: Contributor) => c.severity === "red" || c.severity === "amber" || flagOf(c) !== "none" || rankOf(c.metricId) < CHART_PRIORITY.length;
 
-export function buildReportCharts(a: HealthAssessment, biomarkers: BiomarkerAssessmentReport, registry: CriteriaRegistry = bundledCriteriaRegistry()): ChartSection {
+export function buildReportCharts(
+  a: HealthAssessment,
+  biomarkers: BiomarkerAssessmentReport,
+  registry: CriteriaRegistry = bundledCriteriaRegistry(),
+  /** P61.3: uncapped = every chartable series (the premium report re-includes series it classifies or prioritises). */
+  opts: { uncapped?: boolean } = {},
+): ChartSection {
   const all = a.findings.flatMap((f) => f.contributors.map((c) => ({ c, finding: f.title })));
   const seen = new Set<string>();
   const unique = all.filter(({ c }) => (seen.has(c.key) ? false : (seen.add(c.key), true)));
@@ -140,9 +146,9 @@ export function buildReportCharts(a: HealthAssessment, biomarkers: BiomarkerAsse
     (x.severity === "red" ? 0 : x.severity === "amber" ? 1 : 2) * 10_000 + (x.flagged === "priority_review" ? 0 : x.flagged === "data_quality_review" ? 1 : 2) * 1_000 + rankOf(x.metricId);
   line.sort((x, y) => score(x) - score(y) || x.name.localeCompare(y.name));
   single.sort((x, y) => score(x) - score(y) || x.name.localeCompare(y.name));
-  const keptLine = line.filter((x, i) => i < MAX_LINE_CHARTS || x.severity !== "neutral" || x.flagged === "priority_review");
+  const keptLine = line.filter((x, i) => opts.uncapped || i < MAX_LINE_CHARTS || x.severity !== "neutral" || x.flagged === "priority_review");
   for (const x of line.filter((y) => !keptLine.includes(y))) omitted.push({ name: x.name, reason: "lower clinical priority; full series in the technical appendix" });
-  const keptSingle = single.filter((x, i) => i < MAX_SINGLE_VISUALS || x.severity !== "neutral");
+  const keptSingle = single.filter((x, i) => opts.uncapped || i < MAX_SINGLE_VISUALS || x.severity !== "neutral");
   for (const x of single.filter((y) => !keptSingle.includes(y))) omitted.push({ name: x.name, reason: "single lower-priority value; listed in the findings" });
   const charts = [...keptLine, ...keptSingle];
   return {

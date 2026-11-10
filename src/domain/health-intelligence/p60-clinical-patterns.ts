@@ -229,7 +229,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
 
   const patterns: ClinicalPattern[] = [];
   const make = (p: Omit<ClinicalPattern, "priorityLabel">): ClinicalPattern => ({ ...p, priorityLabel: WARNING_PRIORITY_LABEL[p.priority], recordIds: uniq(p.recordIds), sources: uniq(p.sources), missing: uniq(p.missing), confirm: uniq(p.confirm), dataCheckRecordIds: p.dataCheck ? uniq(p.dataCheckRecordIds ?? p.recordIds) : [] });
-  const notRecorded = (k: string, text: string) => (present(k) ? [] : [`${text} — not recorded in this period.`]);
+  const notRecorded = (k: string, text: string) => (present(k) ? [] : [`${text} — no accepted observation in this period.`]);
 
   // ---------------------------------------------------------------- 1. acute physiology + inflammation
   {

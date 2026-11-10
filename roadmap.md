@@ -630,3 +630,13 @@
 - [x] P61.2: five exact-unit synthetic aliases (pending Researcher review), CSV context kept as unverified provenance, P60 wording/date/chart-label corrections, deterministic PDF/CSV ordering; owner fixtures now 240 accepted / 64 unresolved (8 series).
 - [ ] Researcher decision on the 8 still-unresolved series (Bicarbonate, Chloride, BUN: no catalog entry; Body temperature "deg C" vs "°C" and Platelets "10^9/L" vs catalog "10⁹/L" / demo "10^3/μL": unit notation; Creatinine: specimen; Sleep duration: definition; HRV SDNN: governed alias needed) and review of the five P61.2 aliases.
 - [ ] Owner approval of P61/P61.2 before publishing.
+
+## P61.3 Final scientific mapping and report quality (Preview only)
+
+- [x] Typographic unit-notation rules (synthetic only, closed list) with original unit preserved; decision register for the 8 unresolved series + 5 provisional aliases, shown in the import queue and Scientific Review.
+- [x] "Associated with HIGH PRIORITY pattern" for results whose own class is not RED.
+- [x] Full crew name in the running page header for short and long names.
+- [x] P61.3 regression tests; full suite, typecheck, lint, format, security, build.
+- [x] Owner-file acceptance (PDF + CSV) in tests and signed-in browser; P60 report rendered and every page inspected.
+- [ ] Researcher decisions on the 7 held names, the 5 aliases and the UN-1 notation rule (blocked: Researcher).
+- [ ] Owner production-release authorization (blocked: owner decision).
