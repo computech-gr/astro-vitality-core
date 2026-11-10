@@ -277,6 +277,11 @@ const VOCABULARY = new Map<string, ColumnRole>(
 );
 const MAX_HEADER_PHRASE = 4;
 
+/** P61: vocabulary role of one header cell (exact vocabulary phrase only), else null. */
+export function headerCellRole(cell: string): ColumnRole | null {
+  return VOCABULARY.get(normalizeHeaderText(cell)) ?? null;
+}
+
 /** Column roles of one header row; null unless every cell is vocabulary and label+result exist. */
 export function mapHeaderCells(cells: readonly string[]): ColumnRole[] | null {
   if (cells.length < 2 || cells.length > 12) return null;
@@ -842,7 +847,11 @@ function splitTokens(rest: string): {
  */
 export function reconstructDocumentTables(
   lines: readonly DocumentLineInput[],
-  options: { ocr?: boolean } = {},
+  options: {
+    ocr?: boolean;
+    /** P61: 1-based lines owned by a date-column table; they end any active table and are not parsed here. */
+    skipLines?: ReadonlySet<number>;
+  } = {},
 ): DocumentReconstruction {
   const inspected = lines.slice(0, 5000);
   const identity = extractIdentity(inspected);
@@ -893,6 +902,10 @@ export function reconstructDocumentTables(
 
   inspected.forEach((l, index) => {
     const lineNo = index + 1;
+    if (options.skipLines?.has(lineNo)) {
+      header = null;
+      return;
+    }
     const text = l.text.trim();
     if (!text || text.length > 600) return;
     const delimited = l.cells?.length
