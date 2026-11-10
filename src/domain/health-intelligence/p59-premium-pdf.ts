@@ -145,7 +145,7 @@ class P {
 
 // ------------------------------------------------------------------ badges
 
-type BadgeKind = "red" | "amber" | "green" | "neutral" | "check" | "flag" | "gm" | "trend" | "pri-red" | "pri-amber" | "pri-purple" | "pri-green" | "pri-neutral";
+type BadgeKind = "red" | "amber" | "green" | "neutral" | "check" | "flag" | "gm" | "trend" | "pri-red" | "pri-amber" | "pri-purple" | "pri-green" | "pri-neutral" | "assoc";
 /**
  * P60.1 terminology (one meaning per label across page 1, charts, assessments and the results table):
  * HIGH PRIORITY / MONITORING / DATA CHECK = the finding's medical-review (warning) priority;
@@ -205,6 +205,10 @@ function badge(L: P, kind: BadgeKind, label: string, x: number, y: number, size 
     // Trend review: teal outline with a small rising/falling glyph — deliberately unlike the red priority pill.
     L.box(x, y, w, h, COLOR.white, COLOR.teal, 0.9, 0.4);
     L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, COLOR.teal, 1.2);
+  } else if (kind === "assoc") {
+    // P61.3: priority inherited from a HIGH PRIORITY pattern — outlined, never the filled HIGH PRIORITY pill.
+    L.box(x, y, w, h, COLOR.white, COLOR.redDeep, 0.9, 0.35);
+    L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, COLOR.redDeep, 1.2);
   } else if (kind === "gm") {
     L.box(x, y, w, h, COLOR.rule, undefined, 0.9);
     L.lines([L.t(label)], x + 1.5, y + 0.2, size, true, COLOR.navy, 1.2);
@@ -779,7 +783,9 @@ export function chartAxisFloor(values: readonly number[], limits: readonly numbe
 }
 function chartBadges(c: PremiumChart): [BadgeKind, string][] {
   return [
-    ...(showsPriority(c.priority) ? ([[PRIORITY_BADGE[c.priority], COMPACT_PRIORITY[c.priority]]] as [BadgeKind, string][]) : []),
+    ...(c.priorityAssociated
+      ? ([["assoc", ASSOCIATED_HIGH_PRIORITY_LABEL]] as [BadgeKind, string][])
+      : showsPriority(c.priority) ? ([[PRIORITY_BADGE[c.priority], COMPACT_PRIORITY[c.priority]]] as [BadgeKind, string][]) : []),
     ...(c.highReview ? ([["trend", TREND_REVIEW_LABEL]] as [BadgeKind, string][]) : []),
     ...(c.dataCheck && c.priority !== "DATA_CHECK" ? ([["check", "DATA CHECK"]] as [BadgeKind, string][]) : []),
   ];
@@ -1001,7 +1007,7 @@ function singlePanel(L: P, title: string, cs: PremiumChart[], x: number, y: numb
     const col: RGB = pc.cls === "RED" ? COLOR.red : pc.cls === "AMBER" ? COLOR.amber : pc.cls === "NORMAL" ? COLOR.green : pc.cls === "CHECK" ? COLOR.violet : COLOR.neutral;
     const ry = y + 9 + i * rowH;
     L.lines(L.capped(c.base.name, 7.8, 38, 1, true), x + 3, ry, 7.8, true, COLOR.ink);
-    L.lines([L.t(`${p.day}${showsPriority(c.priority) ? ` · ${COMPACT_PRIORITY[c.priority].toLowerCase()}` : ""}${c.highReview ? " · trend review" : ""}`)], x + 3, ry + 3.6, 6.4, false, COLOR.muted);
+    L.lines([L.t(`${p.day}${c.priorityAssociated ? " · associated with high priority pattern" : showsPriority(c.priority) ? ` · ${COMPACT_PRIORITY[c.priority].toLowerCase()}` : ""}${c.highReview ? " · trend review" : ""}`)], x + 3, ry + 3.6, 6.4, false, COLOR.muted);
     const tx = x + 44, tw = w - 44 - 28;
     const bandMax = Math.max(...c.bands.flatMap((b) => [b.lower ?? 0, b.upper ?? 0]).filter((v) => v < p.value * 4), 0);
     const scale = Math.max(p.value, bandMax) * 1.15 || 1;
@@ -1172,7 +1178,7 @@ function results(L: P, r: PremiumReport) {
   L.y += 3;
   L.h2("Complete results — all observations", 30);
   const c = r.counts;
-  L.para(`${c.observations} observations in ${c.series} biomarker series from ${c.examinationDates} examination date(s), exactly as recorded (no unit conversion). Classes use approved criteria${r.options.provisionalActive ? " or, where marked PROVISIONAL, literature criteria for this synthetic demonstration" : ""}. Priority is the medical-review priority of the finding the result belongs to (the same label as on page 1, in the charts and in the assessment); Trend / data shows a significant change between examinations (TREND REVIEW) and observation-level data-quality checks (CHECK) separately.`, 7.8, [51, 65, 85]);
+  L.para(`${c.observations} observations in ${c.series} biomarker series from ${c.examinationDates} examination date(s), exactly as recorded (no unit conversion). Classes use approved criteria${r.options.provisionalActive ? " or, where marked PROVISIONAL, literature criteria for this synthetic demonstration" : ""}. Priority is the medical-review priority of the finding the result belongs to (the same label as on page 1, in the charts and in the assessment); "${ASSOCIATED_HIGH_PRIORITY_LABEL}" marks a result whose own class is not high but which belongs to a high-priority pattern; Trend / data shows a significant change between examinations (TREND REVIEW) and observation-level data-quality checks (CHECK) separately.`, 7.8, [51, 65, 85]);
   const cols = [
     { k: "Measurement", w: 0.245 }, { k: "Value", w: 0.12 }, { k: "Date", w: 0.06 }, { k: "Class", w: 0.125 }, { k: "Priority", w: 0.12 }, { k: "Trend / data", w: 0.125 }, { k: "Criterion", w: 0.205 },
   ].map((x) => ({ ...x, w: x.w * CW }));
@@ -1189,7 +1195,11 @@ function results(L: P, r: PremiumReport) {
     ...(x.axes.review.value === "HIGH" ? ([["trend", TREND_REVIEW_LABEL]] as [BadgeKind, string][]) : []),
     ...(x.axes.dataQuality.value === "DATA_QUALITY_WARNING" ? ([["check", "CHECK"]] as [BadgeKind, string][]) : []),
   ];
-  const priH = (x: ResultRow) => (showsPriority(x.priority) ? 4.4 : 0) + (x.patternDataCheck ? 2.9 : 0);
+  // P61.3: "Associated with / HIGH PRIORITY / pattern" stacked in the priority column (outlined, never the filled pill).
+  const ASSOC_SIZE = 5.8;
+  const assocLines = (x: ResultRow) => (x.priorityAssociated ? L.wrap(ASSOCIATED_HIGH_PRIORITY_LABEL, ASSOC_SIZE, cols[4]!.w - 2.6, true) : []);
+  const priTop = (x: ResultRow) => (x.priorityAssociated ? assocLines(x).length * lh(ASSOC_SIZE, 1.2) + 1.2 : showsPriority(x.priority) ? 4.4 : 0);
+  const priH = (x: ResultRow) => priTop(x) + (x.patternDataCheck ? 2.9 : 0);
   const rowH = (x: ResultRow) => {
     const a = L.wrap(x.name, 7.7, cols[0]!.w - 2.5).length, b = L.wrap(crit(x), 6.9, cols[6]!.w - 2.5).length;
     const v = L.capped(`${x.valueText} ${x.unit}`, 7.7, cols[1]!.w - 2.5, 2, true).length;
@@ -1214,9 +1224,14 @@ function results(L: P, r: PremiumReport) {
       L.lines([L.t(x.date.slice(5).replace("-", "/"))], xs[2]! + 1.2, L.y + 0.5, 7.4);
       badge(L, badgeOf(x.displayClass), x.basis === "provisional" ? `${badgeLabel(x.displayClass, "approved")} PROV.` : badgeLabel(x.displayClass, x.basis), xs[3]! + 1.2, L.y + 0.8);
       // Priority: the finding's medical-review priority (never derived from the size of a change).
-      if (showsPriority(x.priority)) badge(L, PRIORITY_BADGE[x.priority], COMPACT_PRIORITY[x.priority], xs[4]! + 1.2, L.y + 0.8, TB, false);
+      if (x.priorityAssociated) {
+        const al = assocLines(x);
+        const ah = al.length * lh(ASSOC_SIZE, 1.2) + 0.6;
+        L.box(xs[4]! + 1.0, L.y + 0.5, cols[4]!.w - 1.8, ah, COLOR.white, COLOR.redDeep, 0.8, 0.3);
+        L.lines(al, xs[4]! + 1.8, L.y + 0.75, ASSOC_SIZE, true, COLOR.redDeep, 1.2);
+      } else if (showsPriority(x.priority)) badge(L, PRIORITY_BADGE[x.priority], COMPACT_PRIORITY[x.priority], xs[4]! + 1.2, L.y + 0.8, TB, false);
       else L.lines(["—"], xs[4]! + 1.2, L.y + 0.5, 7.4, false, COLOR.muted);
-      if (x.patternDataCheck) L.lines([L.t("+ pattern check †")], xs[4]! + 1.2, L.y + 0.6 + (showsPriority(x.priority) ? 4.4 : 0), 5.8, false, COLOR.violet, 1.2);
+      if (x.patternDataCheck) L.lines([L.t("+ pattern check †")], xs[4]! + 1.2, L.y + 0.6 + priTop(x), 5.8, false, COLOR.violet, 1.2);
       // Trend / data: significant change and observation-level data-quality checks, stacked (never side by side).
       const td = trendData(x);
       td.forEach(([k, label], i) => badge(L, k, label, xs[5]! + 1.2, L.y + 0.8 + i * 4.4, TB));

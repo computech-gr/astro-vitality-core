@@ -99,9 +99,16 @@ export interface ResultRow {
    * null when the result contributes to no finding. Separate from the clinical class and from trend review.
    */
   priority: WarningPriority | null;
+  /**
+   * P61.3: the HIGH priority comes from the finding/pattern while this result's own clinical class is not RED;
+   * printed as "Associated with HIGH PRIORITY pattern" so it never reads as an individual HIGH classification.
+   */
+  priorityAssociated: boolean;
   /** P60.1: a pattern-level DATA CHECK names this result's series; it is NOT an observation-level data-quality flag. */
   patternDataCheck: boolean;
 }
+/** P61.3: label for a result (or series) that belongs to a HIGH PRIORITY pattern without a RED class of its own. */
+export const ASSOCIATED_HIGH_PRIORITY_LABEL = "Associated with HIGH PRIORITY pattern";
 export interface PremiumChart {
   base: ReportChart;
   bands: { lower: number | null; upper: number | null; severity: string; label: string; criterionId: string }[];
@@ -112,6 +119,8 @@ export interface PremiumChart {
   highReview: boolean;
   /** P60.1: highest medical-review priority among the series' results (same value as the results table). */
   priority: WarningPriority | null;
+  /** P61.3: HIGH priority from a pattern while no result of the series has a RED class of its own. */
+  priorityAssociated: boolean;
   /** P60.1: a pattern-level DATA CHECK names this series (not an observation-level flag). */
   patternDataCheck: boolean;
 }
@@ -310,7 +319,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       : approvedCls?.outcome === "pending_approval" ? "Candidate criterion pending approval"
       : provisional && provisional.status === "PROVISIONAL" && provisional.severity === "neutral" ? "Outside the provisional bands"
       : "";
-    return { criterionShort, notes, recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: unrec, priority: null as WarningPriority | null, patternDataCheck: false };
+    return { criterionShort, notes, recordId: r.recordId, group: groupOf(r.metricId, name), metricId: r.metricId, name, valueText: r.value, unit: r.unit, date: day(r.observedAt), displayClass, basis, bandLabel, axes, provisional, criterionText, limitation, syntheticDemoIdentity: r.metricId.startsWith("demo:"), criterionKind, identityRoute: basis === "provisional" ? route : null, unrecordedConditions: unrec, priority: null as WarningPriority | null, priorityAssociated: false, patternDataCheck: false };
   });
 
   rows.sort((a, b) => GROUPS.findIndex((g) => g.id === a.group) - GROUPS.findIndex((g) => g.id === b.group) || a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit) || a.date.localeCompare(b.date) || a.recordId.localeCompare(b.recordId));
@@ -421,7 +430,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       const r = rs.find((x) => x.date === p.day && x.valueText === p.valueText) ?? rs.find((x) => x.date === p.day);
       return dataCheck ? { cls: "CHECK" as const, basis: "none" as ClassBasis } : { cls: r?.displayClass ?? "NEUTRAL", basis: r?.basis ?? "none" };
     });
-    return { base: ch, bands, bandSource, pointClasses, dataCheck, highReview: rs.some((r) => r.axes.review.value === "HIGH"), priority: null as WarningPriority | null, patternDataCheck: false };
+    return { base: ch, bands, bandSource, pointClasses, dataCheck, highReview: rs.some((r) => r.axes.review.value === "HIGH"), priority: null as WarningPriority | null, priorityAssociated: false, patternDataCheck: false };
   });
 
   // ---------- recommendations by report column
@@ -524,10 +533,13 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   }
   for (const c of concerns) if (!P.length || !coveredConcerns.includes(c.concernId)) for (const r of rowsOfConcern(c)) raise(r, priorities[c.concernId]!.priority);
   for (const r of rows) if (r.patternDataCheck && !r.notes.includes("†")) r.notes.push("†");
+  // P61.3: a HIGH priority inherited from a pattern never reads as the result's own HIGH classification.
+  for (const r of rows) r.priorityAssociated = r.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" && r.displayClass !== "RED";
   for (const ch of charts) {
     const rs = rows.filter((r) => r.metricId === ch.base.metricId && r.unit === ch.base.unit);
     ch.priority = rs.reduce<WarningPriority | null>((m, r) => (r.priority && (!m || PRI_RANK[r.priority] > PRI_RANK[m]) ? r.priority : m), null);
     ch.patternDataCheck = rs.some((r) => r.patternDataCheck);
+    ch.priorityAssociated = ch.priority === "HIGH_PRIORITY_MEDICAL_REVIEW" && !rs.some((r) => r.displayClass === "RED");
   }
   const prioritised = (pr: WarningPriority) => (P.length ? P.filter((p) => p.priority === pr).length : Object.values(priorities).filter((d) => d.priority === pr).length);
   const nHigh = prioritised("HIGH_PRIORITY_MEDICAL_REVIEW"), nMon = prioritised("MONITORING"), nCheck = prioritised("DATA_CHECK");
