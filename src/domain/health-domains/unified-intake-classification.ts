@@ -36,6 +36,19 @@ export type IntakeClassification =
 
 const normalized = (value: string) => value.trim().toLocaleLowerCase("en-US").replace(/\s+/g, " ");
 
+type RegistryMetric = (typeof registry.metrics)[number];
+// Lookup indexes built once (same first-match / registry-order semantics as a linear scan).
+const metricsById = new Map<string, RegistryMetric>();
+const metricsByName = new Map<string, RegistryMetric[]>();
+for (const metric of registry.metrics) {
+  const id = normalized(metric.id);
+  if (!metricsById.has(id)) metricsById.set(id, metric);
+  const name = normalized(metric.name);
+  const list = metricsByName.get(name) ?? [];
+  list.push(metric);
+  metricsByName.set(name, list);
+}
+
 /** Explicit reviewed aliases to existing P36 source-registry entries only.
  * Never infer a metric from a unit alone or convert values/units.
  * The P36 registry currently has no behavioral-domain entries.
@@ -53,7 +66,7 @@ export function classifyIntakeObservation(input: {
   const originalLabel = input.label.trim();
   const originalUnit = input.unit.trim();
   // Canonical IDs are unambiguous identifiers, but only a reviewed P36 unit may be saved.
-  const byId = registry.metrics.find((metric) => normalized(metric.id) === normalized(originalLabel));
+  const byId = metricsById.get(normalized(originalLabel));
   if (byId) {
     const base = { originalLabel, originalUnit, reviewRequired: true as const };
     if (!byId.originalUnit?.trim() || byId.originalUnit.trim() !== originalUnit)
@@ -64,9 +77,7 @@ export function classifyIntakeObservation(input: {
   }
   const alias = reviewedAliases[normalized(originalLabel)];
   const aliasMetric = alias && registry.metrics.find((metric) => metric.id === alias.metricId);
-  const sameName = registry.metrics.filter(
-    (metric) => normalized(metric.name) === normalized(originalLabel),
-  );
+  const sameName = metricsByName.get(normalized(originalLabel)) ?? [];
   const exact = sameName.filter(
     (metric) => metric.originalUnit?.trim() && metric.originalUnit.trim() === originalUnit,
   );
