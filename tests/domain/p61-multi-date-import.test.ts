@@ -322,3 +322,21 @@ describe("P61 — P60 report integration", () => {
     }
   });
 });
+
+describe("P61 — real PDF text geometry (synthetic PDF rendered by Chromium)", () => {
+  it("'Examination N — date' headings split into cells by geometry are headings, not measurement rows", async () => {
+    const { extractPdfGeometry, repoPath } = await import("../documents/p42-pdf-helpers");
+    const g = await extractPdfGeometry(repoPath("fixtures", "synthetic", "p61", "alex-series-sections.synthetic.pdf"));
+    const m = reconstructMultiDateDocument(documentLinesFromText(g.text, g.linePages, g.geometry));
+    expect(m.reconstruction.observations.length).toBe(304);
+    expect(m.reconstruction.observations.some((o) => /^examination$/i.test(o.label))).toBe(false);
+    expect(m.distinctDates).toEqual([...P61_DATES]);
+    expect(m.dates.every((d) => d.status === "resolved" && d.source === "section")).toBe(true);
+    expect(m.ignoredDates.map((d) => d.text)).toEqual(["Report generated: 2026-11-09"]);
+  });
+  it("a measurement row with a test-like label and a date stays a measurement row", () => {
+    expect(classifyDateHeading("Stress test duration | 12 | min | 2026-11-03", ["Stress test duration", "12", "min", "2026-11-03"])).toBeNull();
+    expect(classifyDateHeading("Examination 3 — 2026-11-03", ["Examination", "3", "— 2026-11-03"])).toMatchObject({ kind: "examination", parse: { status: "resolved", value: "2026-11-03" } });
+    expect(classifyDateHeading("Visit 2 | 04/11/2026", ["Visit", "2", "04/11/2026"])).toMatchObject({ kind: "examination", parse: { status: "ambiguous" } });
+  });
+});
