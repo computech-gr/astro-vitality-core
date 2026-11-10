@@ -1297,7 +1297,8 @@ function methodology(L: P, r: PremiumReport) {
   // Keep the methodology together when it fits on one page (no near-empty trailing page).
   const size = 7.4, refSize = 6.8;
   const total = 12 + items.reduce((s, it) => s + L.wrap(`• ${it}`, size, CW).length * lh(size) + 1.6, 0) + (refs.length ? 9 + refs.reduce((s, x) => s + L.wrap(x, refSize, CW).length * lh(refSize) + 1.6, 0) : 0);
-  if (total > L.room() - 3 && total <= BOTTOM - TOP) L.newPage();
+  // P61.3: …but never leave a mostly empty page behind (flow instead when over half of this page is still free).
+  if (total > L.room() - 3 && total <= BOTTOM - TOP && L.room() < (BOTTOM - TOP) * 0.5) L.newPage();
   else L.y += 3;
   L.h2("Methodology note", 30);
   for (const it of items) L.para(`• ${it}`, size, [51, 65, 85]);
