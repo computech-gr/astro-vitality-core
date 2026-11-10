@@ -35,6 +35,7 @@ const observationSchema = z
     domain: z.string().min(1).max(64),
     value: z.string().min(1).max(64),
     originalUnit: z.string().min(1).max(64),
+    reportedUnit: z.string().min(1).max(64).optional(),
     observedAt: z.string().min(10).max(40),
     datePrecision: z.enum(["date", "instant"]).optional(),
     collectionDate: z.string().max(10).optional(),
