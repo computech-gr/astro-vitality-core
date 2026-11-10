@@ -140,6 +140,20 @@ const near = (a: string, b: string, days = 1) => Math.abs(dayNum(a) - dayNum(b))
 const uniq = <T,>(xs: T[]) => xs.filter((x, i) => xs.indexOf(x) === i);
 const val = (o: Obs) => `${o.row.valueText} ${o.row.unit}`;
 const at = (o: Obs) => `${val(o)} on ${dayText(o.row.date)}`;
+const fmtNum = (v: number) => String(Number(v.toFixed(3)));
+/** P61.2: stable observation order — date, then biomarker identity and value; record IDs only as the last tie-breaker. */
+const byStableObservationOrder = (a: Obs, b: Obs) =>
+  a.row.date.localeCompare(b.row.date) || a.row.name.localeCompare(b.row.name) || a.row.metricId.localeCompare(b.row.metricId) ||
+  a.row.unit.localeCompare(b.row.unit) || a.v - b.v || a.row.recordId.localeCompare(b.row.recordId);
+/** P61.2: one chronological series per biomarker + unit, ordered by name. */
+const seriesOf = (xs: readonly Obs[]): Obs[][] => {
+  const m = new Map<string, Obs[]>();
+  for (const o of xs) m.set(`${o.row.name}|${o.row.metricId}|${o.row.unit}`, [...(m.get(`${o.row.name}|${o.row.metricId}|${o.row.unit}`) ?? []), o]);
+  return [...m.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
+};
+/** P61.2: an applied (approved or provisional) criterion classifies the value above its limit. */
+const classifiedHigh = (o: Obs) =>
+  (o.row.displayClass === "AMBER" || o.row.displayClass === "RED") && /\b(above|high|raised|elevated)\b/i.test(o.row.bandLabel ?? "") && !/\b(below|low)\b/i.test(o.row.bandLabel ?? "");
 const rank: Record<WarningPriority, number> = { HIGH_PRIORITY_MEDICAL_REVIEW: 0, DATA_CHECK: 1, MONITORING: 2, WITHIN_CRITERIA: 3, INSUFFICIENT_EVIDENCE: 4 };
 
 function bandPoints(bands: Band[], v: number): number {
