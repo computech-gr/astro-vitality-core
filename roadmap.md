@@ -633,9 +633,10 @@
 
 ## P61.3 Final scientific mapping and report quality (Preview only)
 
-- [ ] Typographic unit-notation rules (synthetic only, closed list) with original unit preserved; decision register for the 8 unresolved series + 5 provisional aliases, shown in the import queue and Scientific Review.
-- [ ] "Associated with HIGH PRIORITY pattern" for results whose own class is not RED.
-- [ ] Full crew name in the running page header for short and long names.
-- [ ] P61.3 regression tests; full suite, typecheck, lint, format, security, build.
-- [ ] Owner-file acceptance (PDF + CSV) in tests and signed-in browser; P60 report rendered and every page inspected.
+- [x] Typographic unit-notation rules (synthetic only, closed list) with original unit preserved; decision register for the 8 unresolved series + 5 provisional aliases, shown in the import queue and Scientific Review.
+- [x] "Associated with HIGH PRIORITY pattern" for results whose own class is not RED.
+- [x] Full crew name in the running page header for short and long names.
+- [x] P61.3 regression tests; full suite, typecheck, lint, format, security, build.
+- [x] Owner-file acceptance (PDF + CSV) in tests and signed-in browser; P60 report rendered and every page inspected.
+- [ ] Researcher decisions on the 7 held names, the 5 aliases and the UN-1 notation rule (blocked: Researcher).
 - [ ] Owner production-release authorization (blocked: owner decision).
