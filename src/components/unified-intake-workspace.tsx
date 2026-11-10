@@ -562,6 +562,19 @@ export function UnifiedIntakeWorkspace() {
   };
 
   const editRow = (key: string, patch: Partial<IntakeRow>) => {
+    // P61: a date typed by the reviewer replaces the extracted date evidence (kept traceable as manual).
+    if ("observedAt" in patch || "datePrecision" in patch) {
+      const row = rows.find((r) => r.key === key);
+      const observedAt = patch.observedAt ?? row?.observedAt ?? "";
+      const precision = patch.datePrecision ?? row?.datePrecision;
+      patch = {
+        ...patch,
+        examDate:
+          observedAt || row?.examDate?.status === "resolved"
+            ? manualDateEvidence(observedAt, precision)
+            : row?.examDate,
+      };
+    }
     const next = editIntakeReviewRow(rows, key, patch);
     setRows(next.rows);
     setReviewerConfirmed(next.reviewerConfirmed);
@@ -627,13 +640,38 @@ export function UnifiedIntakeWorkspace() {
   ) => {
     const result = applyDocumentTimestamp(rows, sha256, { value, precision, interpretation });
     setRows(
-      result.rows.map((row) =>
-        row.documentSha256 === sha256 ? { ...row, classification: classify(row) } : row,
+      result.rows.map((row, index) =>
+        row.documentSha256 === sha256
+          ? {
+              ...row,
+              ...(row.observedAt && !rows[index]?.observedAt
+                ? {
+                    examDate: {
+                      ...manualDateEvidence(row.observedAt, row.datePrecision),
+                      source: "document" as const,
+                      sourceText: interpretation,
+                      note: `Document date applied by the reviewer: ${interpretation}.`,
+                    },
+                  }
+                : {}),
+              classification: classify(row),
+            }
+          : row,
       ),
     );
     resetReview();
     setStatus(
       `Applied ${value} (${interpretation}) to ${result.applied} unsaved row(s) of this document that had no observation time. Rows stay unchecked; verify each before saving.`,
+    );
+  };
+
+  /** P61: apply the reviewer's reading to one ambiguous date group (heading, date column or raw date). */
+  const resolveGroup = (sha256: string, groupKey: string, iso: string) => {
+    const result = resolveDateGroup(rows, sha256, groupKey, iso);
+    setRows(result.rows);
+    resetReview();
+    setStatus(
+      `Examination date ${iso} applied to ${result.applied} unsaved row(s) of that date group. They remain subject to bulk or individual confirmation.`,
     );
   };
 
