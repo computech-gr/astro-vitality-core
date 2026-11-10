@@ -1284,22 +1284,63 @@ function methodology(L: P, r: PremiumReport) {
 
 // ------------------------------------------------------------------ header / footer pass and entry points
 
+/**
+ * P61.3: running header for pages 2+. The crew name is printed in full (never cut): brand and crew name on the
+ * first line, the demonstration label (when present) and mission on the second. Long names first shrink to a
+ * smaller size and only then wrap onto the mission line; nothing is hard-coded for a particular crew member.
+ */
+export function runningHeaderLayout(
+  r: Pick<PremiumReport, "demonstrationLabel"> & { header: Pick<PremiumReport["header"], "astronaut" | "mission"> },
+  widthOf: (text: string, size: number, bold: boolean) => number,
+): { lines: { text: string; x: "left" | "right"; y: number; size: number; bold: boolean; tone: "brand" | "demo" | "muted" }[] } {
+  const brand = r.demonstrationLabel ? "MITOCHONDRIA" : "MITOCHONDRIA · Astronaut Health Intelligence";
+  const gap = 4;
+  const brandW = widthOf(brand, 6.8, false);
+  const who = r.header.astronaut.trim(), mission = r.header.mission.trim();
+  const one = `${who} · ${mission}`;
+  // Single line when everything fits and there is no demonstration label.
+  if (!r.demonstrationLabel && brandW + gap + widthOf(one, 6.8, false) <= CW)
+    return { lines: [{ text: brand, x: "left", y: 9.5, size: 6.8, bold: false, tone: "brand" }, { text: one, x: "right", y: 9.5, size: 6.8, bold: false, tone: "muted" }] };
+  const out: ReturnType<typeof runningHeaderLayout>["lines"] = [{ text: brand, x: "left", y: 6.4, size: 6.8, bold: false, tone: "brand" }];
+  const room1 = CW - brandW - gap;
+  let size = 6.8;
+  while (size > 5.6 && widthOf(who, size, true) > room1) size = Math.round((size - 0.2) * 10) / 10;
+  if (widthOf(who, size, true) <= room1) out.push({ text: who, x: "right", y: 6.4, size, bold: true, tone: "muted" });
+  else {
+    // Extremely long names: wrap at word boundaries across the two header lines (still complete).
+    const words = who.split(/\s+/);
+    let first = "";
+    while (words.length && widthOf(`${first} ${words[0]}`.trim(), size, true) <= room1) first = `${first} ${words.shift()}`.trim();
+    out.push({ text: first || who, x: "right", y: 6.4, size, bold: true, tone: "muted" });
+    if (first && words.length) out.push({ text: words.join(" "), x: "right", y: 9.6, size, bold: true, tone: "muted" });
+  }
+  const line2Taken = out.some((l) => l.y === 9.6);
+  const demo = r.demonstrationLabel ?? "";
+  const demoW = demo ? widthOf(demo, 6.2, true) : 0;
+  if (demo) out.push({ text: demo, x: "left", y: 9.6, size: 6.2, bold: true, tone: "demo" });
+  if (!line2Taken) {
+    const room2 = CW - (demo ? demoW + gap : 0);
+    let ms = 6.4;
+    while (ms > 5.4 && widthOf(mission, ms, false) > room2) ms = Math.round((ms - 0.2) * 10) / 10;
+    if (widthOf(mission, ms, false) <= room2) out.push({ text: mission, x: "right", y: 9.6, size: ms, bold: false, tone: "muted" });
+  }
+  return { lines: out };
+}
+
+function runningHeader(L: P, r: PremiumReport) {
+  const { lines } = runningHeaderLayout(r, (t, size, bold) => L.width(t, size, bold));
+  for (const l of lines) {
+    L.font(l.size, l.bold, l.tone === "demo" ? COLOR.amberDeep : COLOR.muted);
+    L.pdf.text(L.t(l.text), l.x === "left" ? MX : W - MX, l.y, l.x === "right" ? { align: "right" } : undefined);
+  }
+}
+
 function frame(L: P, r: PremiumReport) {
   const pages = L.pdf.getNumberOfPages();
   for (let p = 1; p <= pages; p++) {
     L.pdf.setPage(p);
+    if (p > 1) runningHeader(L, r);
     if (p > 1) {
-      L.font(6.8, false, COLOR.muted);
-      L.pdf.text(L.t(r.demonstrationLabel ? "MITOCHONDRIA" : "MITOCHONDRIA · Astronaut Health Intelligence"), MX, 9.5);
-      let sideW = CW * 0.45;
-      if (r.demonstrationLabel) {
-        L.font(6.6, true, COLOR.amberDeep);
-        L.pdf.text(L.t(r.demonstrationLabel), W / 2, 9.5, { align: "center" });
-        sideW = (CW - L.pdf.getTextWidth(L.t(r.demonstrationLabel))) / 2 - 3;
-        L.font(6.8, false, COLOR.muted);
-      }
-      // Long astronaut/mission names are shortened so they never overlap the centred label.
-      L.pdf.text(L.capped(`${r.header.astronaut} · ${r.header.mission}`, 6.8, sideW, 1)[0] ?? "", W - MX, 9.5, { align: "right" });
       L.draw(COLOR.rule);
       L.pdf.setLineWidth(0.2);
       L.pdf.line(MX, 11.3, W - MX, 11.3);
