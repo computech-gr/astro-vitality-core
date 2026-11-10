@@ -684,6 +684,50 @@ export function UnifiedIntakeWorkspace() {
     );
   };
 
+  // P61: bulk status of every row (existing save prerequisites + source-aware duplicates).
+  const p61Scope = useMemo(
+    () =>
+      membership && provenance
+        ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance }
+        : null,
+    [membership, provenance],
+  );
+  const bulk = useMemo(() => evaluateBulkImport(rows, history, p61Scope), [rows, history, p61Scope]);
+  const [savedLedger, setSavedLedger] = useState<SavedImportEntry[]>([]);
+  const reconciliation = useMemo(
+    () => reconcileBulkImport(rows, bulk.statuses, savedLedger),
+    [rows, bulk, savedLedger],
+  );
+  const validatedSignature = bulk.validatedKeys.join("|");
+  const [bulkConfirmedFor, setBulkConfirmedFor] = useState<string | null>(null);
+  const bulkConfirmed = bulkConfirmedFor !== null && bulkConfirmedFor === validatedSignature;
+  const reviewTableRef = useRef<HTMLDivElement>(null);
+  /** Date groups that need the reviewer's explicit reading (ambiguous heading / column / raw date). */
+  const pendingDateGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      { sha256: string; groupKey: string; text: string; note: string; options: { iso: string; how: string }[]; rows: number; file: string }
+    >();
+    for (const row of rows) {
+      const e = row.examDate;
+      if (!row.documentSha256 || !e?.groupKey || row.observedAt || !e.options.length) continue;
+      if (e.status !== "ambiguous" && e.status !== "invalid") continue;
+      const k = `${row.documentSha256}|${e.groupKey}`;
+      const g = groups.get(k) ?? {
+        sha256: row.documentSha256,
+        groupKey: e.groupKey,
+        text: e.sourceText ?? e.groupKey,
+        note: e.note,
+        options: e.options.map((o) => ({ iso: o.iso, how: o.how })),
+        rows: 0,
+        file: row.documentName ?? "",
+      };
+      g.rows++;
+      groups.set(k, g);
+    }
+    return [...groups.values()];
+  }, [rows]);
+
   // P42: review filters (display only; eligibility and saving are unchanged).
   const [filterDomain, setFilterDomain] = useState("");
   const [filterPage, setFilterPage] = useState("");
@@ -712,7 +756,17 @@ export function UnifiedIntakeWorkspace() {
       (!filterPage ||
         String(row.extraction?.page ?? row.sourceSection?.page ?? "") === filterPage) &&
       (!filterStatus ||
-        (filterStatus === "ambiguity"
+        (filterStatus.startsWith("p61:")
+          ? (() => {
+              const st = bulk.statuses.get(row.key);
+              const code = filterStatus.slice(4);
+              return code === "all"
+                ? st?.kind === "exception"
+                : code === "duplicate"
+                  ? st?.kind === "duplicate"
+                  : st?.kind === "exception" && st.code === code;
+            })()
+          : filterStatus === "ambiguity"
           ? row.classification.status === "ambiguous" ||
             row.classification.status === "unit_review_required" ||
             Boolean(row.extraction && extractionBlockingReason(row)) ||
@@ -942,7 +996,11 @@ export function UnifiedIntakeWorkspace() {
 
   const selection = intakeSelectionCounts(rows);
   const visibleSelection = intakeSelectionCounts(visibleRows);
-  const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
+  // P61: a reading already stored from the same document is never saveable again.
+  const saveableRows = rows.filter(
+    (row) =>
+      row.selected && isIntakeRowEligible(row) && bulk.statuses.get(row.key)?.kind !== "duplicate",
+  );
   const reviewOnlyRows = rows.filter(
     (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
   );
