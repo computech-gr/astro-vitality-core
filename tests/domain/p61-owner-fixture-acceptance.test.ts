@@ -199,8 +199,13 @@ describe("P61 owner fixtures — encrypted offline storage, duplicates and repor
       expect([...days].sort()).toEqual(days);
     }
     const titles = report.patterns.patterns.map((p) => p.title);
-    // body temperature is unresolved (not imported): no title may name fever
-    expect(titles.some((t) => /fever/i.test(t))).toBe(false);
+    // P61.3: body temperature is imported (unit notation UN-1), so "fever" may be named only from an imported
+    // temperature at or above the cited 38 °C threshold — never from the source document's narrative.
+    const acute = report.patterns.patterns.find((p) => /fever/i.test(p.title));
+    expect(acute?.id).toBe("p60-acute-physiology");
+    expect(report.rows.filter((x) => x.metricId === "demo:ubt-323050f4").map((x) => x.valueText)).toEqual(["36.7", "37.0", "37.5", "38.8", "38.2", "37.6", "37.1", "36.8"]);
+    expect(acute!.headline).toContain("temperature 38.8 °C");
+    expect(titles.filter((t) => /fever/i.test(t)).length).toBe(1);
     const by = (id: string) => report.patterns.patterns.find((p) => p.id === id);
     expect(by("p60-hba1c-check")?.priority).toBe("DATA_CHECK");
     expect(by("p60-lipids")?.priority).toBe("MONITORING");
