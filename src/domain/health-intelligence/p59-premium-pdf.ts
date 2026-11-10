@@ -1295,10 +1295,16 @@ function methodology(L: P, r: PremiumReport) {
   const used = [...new Set((r.patterns?.patterns ?? []).flatMap((p) => p.sources))];
   const refs = used.map((id) => `${shortSource(id)} — ${sourceCitation(id) ?? id}`);
   // Keep the methodology together when it fits on one page (no near-empty trailing page).
-  const size = 7.4, refSize = 6.8;
-  const total = 12 + items.reduce((s, it) => s + L.wrap(`• ${it}`, size, CW).length * lh(size) + 1.6, 0) + (refs.length ? 9 + refs.reduce((s, x) => s + L.wrap(x, refSize, CW).length * lh(refSize) + 1.6, 0) : 0);
-  // P61.3: …but never leave a mostly empty page behind (flow instead when over half of this page is still free).
-  if (total > L.room() - 3 && total <= BOTTOM - TOP && L.room() < (BOTTOM - TOP) * 0.5) L.newPage();
+  const totalAt = (size: number, refSize: number) => 12 + items.reduce((s, it) => s + L.wrap(`• ${it}`, size, CW).length * lh(size) + 1.6, 0) + (refs.length ? 9 + refs.reduce((s, x) => s + L.wrap(x, refSize, CW).length * lh(refSize) + 1.6, 0) : 0);
+  let size = 7.4, refSize = 6.8;
+  const total = totalAt(size, refSize);
+  // P61.3: when it only just overflows a page that is still mostly free, set it slightly tighter (never below
+  // 6.9 / 6.2 pt) instead of leaving a trailing page with a few reference lines.
+  if (total > L.room() - 3 && L.room() >= (BOTTOM - TOP) * 0.5)
+    for (const [a, b] of [[7.2, 6.5], [7.0, 6.3], [6.9, 6.2]] as const) if (totalAt(a, b) <= L.room() - 3) { size = a; refSize = b; break; }
+  const fitsNow = totalAt(size, refSize) <= L.room() - 3;
+  // P61.3: …and never leave a mostly empty page behind (flow instead when over half of this page is still free).
+  if (!fitsNow && total <= BOTTOM - TOP && L.room() < (BOTTOM - TOP) * 0.5) L.newPage();
   else L.y += 3;
   L.h2("Methodology note", 30);
   for (const it of items) L.para(`• ${it}`, size, [51, 65, 85]);
