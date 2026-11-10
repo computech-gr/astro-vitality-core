@@ -928,13 +928,19 @@ export function reconstructDocumentTables(
       headers.push({ line: lineNo, page: l.page, text: header.text, roles: r });
       return;
     }
-    if (isFurniture(text, l.page)) return;
-
     const first = delimited[0] ?? "";
     const tokenNumber = /^(\d{1,4})[.)]?\s+(\S.*)$/.exec(text);
     const active: ActiveHeader | null = header;
     const hasRowNumberRole = active?.roles.includes("row_number") ?? false;
     const looksNumbered = ROW_NUMBER.test(first) || (delimited.length <= 1 && !!tokenNumber);
+    // Running headers/footers repeat on several pages. A numbered table row or a domain heading that
+    // happens to repeat (the same reading in two examinations, a section per examination) is content.
+    const repeatedContent =
+      (active !== null &&
+        looksNumbered &&
+        (delimited.length >= 2 || (delimited.length <= 1 && !!tokenNumber))) ||
+      Boolean(documentLineHeading(text)?.domain);
+    if (!repeatedContent && isFurniture(text, l.page)) return;
 
     // Continuation of a wrapped label: an un-numbered line inside a numbered table whose
     // cells sit only in the label column (geometry) or that starts in lower case (text).
