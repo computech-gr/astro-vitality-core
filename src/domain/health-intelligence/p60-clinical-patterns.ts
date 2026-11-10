@@ -168,7 +168,8 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
     if (!NUMERIC.test(r.valueText.trim())) continue;
     byConcept.set(k, [...(byConcept.get(k) ?? []), { row: r, v: Number(r.valueText) }]);
   }
-  for (const xs of byConcept.values()) xs.sort((a, b) => a.row.date.localeCompare(b.row.date) || a.row.recordId.localeCompare(b.row.recordId));
+  // P61.2: same-day members of one concept (e.g. P1NP and CTX) order by stable identity, never by random record IDs.
+  for (const xs of byConcept.values()) xs.sort(byStableObservationOrder);
   const obs = (k: string) => byConcept.get(k) ?? [];
   const usable = (k: string) => obs(k).filter((o) => !o.row.held);
   const present = (k: string) => (rowsByConcept.get(k) ?? []).length > 0;
@@ -365,16 +366,18 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
     const dd = usable("ddimer").filter((o) => o.v > cut);
     if (dd.length) {
       const fib = usable("fibrinogen");
+      // P61.2: fibrinogen is called "raised" only when an applied criterion classifies it above its limit.
+      const fibRaised = fib.filter(classifiedHigh);
       const resp = [...usable("spo2").filter((o) => newsPts("spo2", o) >= 2), ...usable("rr").filter((o) => newsPts("rr", o) >= 2)].filter((o) => dd.some((d) => near(d.row.date, o.row.date)));
       const inflam = [...usable("hscrp").filter((o) => o.v > num("crpInflammation", "above")), ...usable("temp").filter((o) => o.v >= num("fever", "min"))];
       const priority: WarningPriority = resp.length ? "HIGH_PRIORITY_MEDICAL_REVIEW" : "MONITORING";
       const observed = [
         ...dd.map((o) => `D-dimer ${at(o)} — above the conventional ${cut} mg/L FEU cut-off; cut-offs are assay-specific and age-adjusted above 50 years (${shortSource("esc-2019-pe")}); age is not recorded.`),
-        ...fib.map((o) => `Fibrinogen ${at(o)} — no criterion is applied; interpret against the performing laboratory's reference interval (not recorded).`),
+        ...fib.map((o) => fibRaised.includes(o) ? `Fibrinogen ${at(o)} — above the applied criterion (${o.row.bandLabel}).` : `Fibrinogen ${at(o)} — no criterion is applied; interpret against the performing laboratory's reference interval (not recorded).`),
         ...resp.map((o) => `${o.row.name} ${at(o)} (NEWS2 ${o.row.metricId && newsPts(conceptOf.get(`${o.row.metricId}|${o.row.unit}`) as "spo2" | "rr", o)}-point band).`),
       ];
       patterns.push(make({
-        id: "p60-coagulation", title: "Raised D-dimer with raised acute-phase clotting protein", domains: ["coagulation"], priority, rules: [priority === "HIGH_PRIORITY_MEDICAL_REVIEW" ? "PP-2" : "PP-4"], dataCheck: false,
+        id: "p60-coagulation", title: fibRaised.length ? "Raised D-dimer with raised fibrinogen" : fib.length ? "Raised D-dimer; fibrinogen without an applicable criterion" : "Raised D-dimer", domains: ["coagulation"], priority, rules: [priority === "HIGH_PRIORITY_MEDICAL_REVIEW" ? "PP-2" : "PP-4"], dataCheck: false,
         headline: `${dd.map((o) => `D-dimer ${val(o)}`).concat(fib.map((o) => `fibrinogen ${val(o)}`)).join("; ")}${resp.length ? `, with ${uniq(resp.map((o) => `${o.row.name.replace(/\s*\(.*\)$/, "")} ${val(o)}`)).join(" and ")}` : ""} (${uniq([...dd, ...fib, ...resp].map((o) => o.row.date)).sort().map(dayText).join(", ")}).`,
         rationale: resp.length ? "PP-2: D-dimer above the cut-off converges with SpO2 or respiratory rate in a NEWS2 ≥2-point band within one day." : "PP-4: D-dimer above the cut-off without a converging respiratory finding.",
         observed,
@@ -385,7 +388,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
           "Hypothesis: venous thromboembolism — to be assessed clinically; not indicated by the measurements alone.",
         ],
         supporting: observed,
-        contradicting: inflam.length ? [`Concurrent inflammation (${uniq(inflam.map((o) => `${o.row.name.replace(/\s*\(.*\)$/, "")} ${val(o)}`)).join("; ")}) is an alternative reason for raised D-dimer and fibrinogen.`] : ["No recorded result contradicts the finding; D-dimer specificity is low."],
+        contradicting: inflam.length ? [`Concurrent inflammation (${uniq(inflam.map((o) => `${o.row.name.replace(/\s*\(.*\)$/, "")} ${val(o)}`)).join("; ")}) is an alternative reason for the raised D-dimer${fib.length ? (fibRaised.length ? " and the raised fibrinogen" : " and for the fibrinogen values") : ""}.`] : ["No recorded result contradicts the finding; D-dimer specificity is low."],
         missing: ["Clinical probability assessment with a validated score (symptoms, signs, risk factors).", "Age (for the age-adjusted D-dimer cut-off) and the assay's own cut-off.", ...notRecorded("platelets", "Platelet count")],
         confirm: ["Ground Medical to estimate the clinical probability of venous thromboembolism with a validated score before deciding on further testing; imaging only if the clinician judges it indicated."],
         nextStep: "Ground Medical to assess the clinical probability of venous thromboembolism before any further testing.",
@@ -501,6 +504,9 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
       const ratio = ocChange ? oc.at(-1)!.v / oc[0]!.v : 1;
       const days = ocChange ? dayNum(oc.at(-1)!.row.date) - dayNum(oc[0]!.row.date) : 0;
       const ref = obs("p1np_ctx");
+      // P61.2: describe each reference marker as the series it is (one line per biomarker + unit), never "single measurement" for a series.
+      const refSeries = seriesOf(ref);
+      const refMulti = refSeries.some((x) => x.length >= 2);
       patterns.push(make({
         // The title names low vitamin D only when a classified low vitamin D result is recorded.
         id: "p60-bone", title: vdLow.length ? (ocChange ? "Bone-turnover change and low vitamin D" : "Low vitamin D") : "Bone-turnover change", domains: ["bone"], priority: "MONITORING", rules: ["PP-4"], dataCheck: ocChange && days <= 2 && (ratio >= 2 || ratio <= 0.5),
@@ -510,12 +516,14 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         observed: [
           ...(ocChange ? [`Osteocalcin ${oc.map(at).join(" → ")} (${ratio >= 1 ? `${ratio.toFixed(1)}-fold rise` : `${(1 / ratio).toFixed(1)}-fold fall`}).`] : []),
           ...vdLow.map((o) => `25-hydroxyvitamin D ${at(o)} — ${o.row.bandLabel ?? "AMBER"} (provisional; ${shortSource("nih-ods-vitd")}).`),
-          ...ref.map((o) => `${o.row.name} ${at(o)} — single measurement; no criterion applied.`),
+          ...refSeries.map((xs) => xs.length === 1
+            ? `${xs[0]!.row.name} ${at(xs[0]!)} — single measurement; no criterion applied.`
+            : `${xs[0]!.row.name} ${xs.map((o) => o.row.valueText).join(" → ")} ${xs[0]!.row.unit} (${xs.length} measurements, ${dayText(xs[0]!.row.date)}–${dayText(xs.at(-1)!.row.date)}; range ${fmtNum(Math.min(...xs.map((o) => o.v)))}–${fmtNum(Math.max(...xs.map((o) => o.v)))}) — no criterion applied.`),
         ],
         measurement: ocChange ? [`Osteocalcin is unstable after sampling and varies through the day; the IOF-IFCC recommend P1NP and CTX as the reference bone-turnover markers (${shortSource("vasikaran-2011-iof")}). A change of this size within ${days} ${days === 1 ? "day" : "days"} should be verified before biological interpretation.`] : [],
-        pattern: `${ocChange ? "A large, rapid osteocalcin change with single measurements of the reference markers cannot yet be read as a change in bone formation. " : ""}${vdLow.length ? "Vitamin D in the range generally considered inadequate is relevant to bone health in long-duration spaceflight and should be reviewed by Ground Medical." : ""}`.trim(),
+        pattern: `${ocChange ? (refMulti ? "A large, rapid osteocalcin change cannot yet be read as a change in bone formation; the reference markers (P1NP, CTX) were measured repeatedly but have no applicable criterion, so their series are listed for Ground Medical comparison rather than interpreted. " : "A large, rapid osteocalcin change with single measurements of the reference markers cannot yet be read as a change in bone formation. ") : ""}${vdLow.length ? "Vitamin D in the range generally considered inadequate is relevant to bone health in long-duration spaceflight and should be reviewed by Ground Medical." : ""}`.trim(),
         hypotheses: [...(ocChange ? ["Hypothesis: pre-analytical variation (sample handling, time of day, assay)."] : []), ...(vdLow.length ? ["Hypothesis: limited sunlight exposure or intake (intake not recorded)."] : [])],
-        supporting: [], contradicting: ocChange && ref.length ? ["The reference markers (P1NP, CTX) were measured only once, so they cannot confirm or refute the osteocalcin change."] : [],
+        supporting: [], contradicting: ocChange && ref.length ? [refMulti ? "The reference markers (P1NP, CTX) have no applicable criterion, so their repeated measurements cannot yet confirm or refute the osteocalcin change." : "The reference markers (P1NP, CTX) were measured only once, so they cannot confirm or refute the osteocalcin change."] : [],
         missing: ["Calcium, phosphate and parathyroid hormone measured together with the bone markers.", "Sampling time (fasting morning samples are recommended for CTX)."],
         confirm: ["Repeat bone-turnover markers (P1NP, CTX, osteocalcin) on fasting morning samples together with calcium, phosphate and PTH, if Ground Medical agrees; Ground Medical to review vitamin D adequacy."],
         nextStep: "Repeat bone markers on fasting morning samples with calcium, phosphate and PTH, if Ground Medical agrees.",
