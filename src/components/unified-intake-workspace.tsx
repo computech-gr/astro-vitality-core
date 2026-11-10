@@ -48,8 +48,6 @@ import { Link } from "@tanstack/react-router";
 import { type IntakeClassification } from "@/domain/health-domains/unified-intake-classification";
 import { DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import {
-  UNIFIED_OBSERVATION_SCHEMA,
-  DATED_OBSERVATION_SCHEMA,
   type ObservationSourceKind,
   type UnifiedObservation,
 } from "@/domain/health-intelligence/observation-envelope";
@@ -81,7 +79,6 @@ import { type ObservationDatePrecision } from "@/domain/health-intelligence/obse
 import {
   DOCUMENT_TABLE_RULES_VERSION,
   documentLinesFromText,
-  reconstructDocumentTables,
   valueKindText,
   type DocumentReconstruction,
 } from "@/domain/health-intelligence/document-table-reconstruction";
@@ -98,6 +95,27 @@ import {
   type RowExtractionEvidence,
 } from "@/domain/health-intelligence/document-intake-review";
 import type { GeometryLine } from "@/domain/bone-health/pdf-geometry";
+import {
+  buildReviewedObservation,
+  evaluateBulkImport,
+  extractWideGridCandidates,
+  manualDateEvidence,
+  reconcileBulkImport,
+  reconstructMultiDateDocument,
+  resolveDateGroup,
+  reviewDateFields,
+  rowDateEvidence,
+  seriesKeyOf,
+  sourceDuplicateKey,
+  storedSourceKeys,
+  EXAM_DATE_SOURCE_TEXT,
+  type ExamDateEvidence,
+  type GridCandidate,
+  type MultiDateDocument,
+  type P61ExceptionCode,
+  type SavedImportEntry,
+} from "@/domain/health-intelligence/p61-bulk-import";
+import { P61BulkImportPanel } from "@/components/p61-bulk-import-panel";
 
 type IntakeRow = {
   key: string;
@@ -129,6 +147,10 @@ type IntakeRow = {
   rejected?: boolean | undefined;
   /** P42: unresolved document identity conflict for the selected scope. */
   identityHold?: string | null | undefined;
+  /** P61: where the examination date came from (row, date column, heading, reviewer). */
+  examDate?: ExamDateEvidence | undefined;
+  /** P61: when the source file was read for review (the upload date; not the examination date). */
+  importedAt?: string | undefined;
 };
 
 /** P42: one processed document (summary, identity, diagnostics); memory only, never stored. */
@@ -139,6 +161,8 @@ type ProcessedDocument = {
   method: string;
   textLength: number;
   reconstruction: DocumentReconstruction | null;
+  /** P61: examination-date groups of the document (memory only). */
+  multiDate: MultiDateDocument | null;
   saved: number;
 };
 
@@ -213,20 +237,70 @@ function parseIntakeCsv(
   text: string,
   fileName = "",
   sha256 = "",
-): { rows: IntakeRow[]; skipped: number } {
-  const parsed = extractCsvCandidates(text, MAX_ROWS);
+): { rows: IntakeRow[]; skipped: number; wide: boolean } {
   let evidence: SourceDocumentEvidence | null = null;
+  let cells: string[][] = [];
   try {
-    evidence = extractGridSourceEvidence(csvCells(text), { sha256, fileName, kind: "csv" });
+    cells = csvCells(text);
+    evidence = extractGridSourceEvidence(cells, { sha256, fileName, kind: "csv" });
   } catch {
     evidence = null;
   }
+  // P61: a wide grid (one column per examination date) yields one row per dated cell.
+  const wide = cells.length ? extractWideGridCandidates(cells) : null;
+  if (wide)
+    return {
+      rows: gridRows(wide.rows, evidence, "csv", "CSV import"),
+      skipped: wide.skipped,
+      wide: true,
+    };
+  const parsed = extractCsvCandidates(text, MAX_ROWS, { keepUnparsedDates: true });
   return {
-    rows: withSections(parsed.rows, evidence).map((item) =>
-      newRow({ ...item, sourceKind: "csv", sourceLabel: "CSV import" }),
-    ),
+    rows: withSections(parsed.rows, evidence).map((item) => datedRow(item, "csv", "CSV import")),
     skipped: parsed.skipped,
+    wide: false,
   };
+}
+
+/** P61: long-format grid row with its row-level examination date evidence. */
+function datedRow(
+  item: Parameters<typeof newRow>[0] & { rawDate?: string; sourceRow?: number },
+  sourceKind: ObservationSourceKind,
+  sourceLabel: string,
+): IntakeRow {
+  const { rawDate, sourceRow, ...rest } = item;
+  const examDate = rowDateEvidence({
+    observedAt: rest.observedAt ?? "",
+    ...(rest.datePrecision ? { datePrecision: rest.datePrecision } : {}),
+    ...(rawDate ? { rawDate } : {}),
+    ...(sourceRow ? { sourceRow } : {}),
+  });
+  const fill = !rest.observedAt && examDate.status === "resolved" ? reviewDateFields(examDate) : {};
+  return newRow({ ...rest, ...fill, sourceKind, sourceLabel, examDate });
+}
+
+/** P61: wide-grid candidates (date-column header) as review rows. */
+function gridRows(
+  items: readonly GridCandidate[],
+  evidence: SourceDocumentEvidence | null,
+  sourceKind: ObservationSourceKind,
+  sourceLabel: string,
+): IntakeRow[] {
+  return items.slice(0, MAX_ROWS).map((item) => {
+    const section = evidence ? sectionForExcerpt(evidence, item.excerpt.replace(/ \[column [^\]]*\]$/, "")) : undefined;
+    return newRow({
+      label: item.label,
+      value: item.value,
+      unit: item.unit,
+      observedAt: item.observedAt,
+      ...(item.datePrecision ? { datePrecision: item.datePrecision } : {}),
+      excerpt: item.excerpt,
+      sourceKind,
+      sourceLabel,
+      examDate: item.examDate,
+      ...(section ? { sourceSection: section } : {}),
+    });
+  });
 }
 
 /** Conservative text/OCR lines: "Label: 12.3 unit". Reference ranges are never extracted. */
@@ -241,16 +315,24 @@ function parseIntakeText(
   documentSha256?: string,
   linePages?: readonly number[],
   geometry?: readonly GeometryLine[],
-): { rows: IntakeRow[]; reconstruction: DocumentReconstruction } {
+): { rows: IntakeRow[]; reconstruction: DocumentReconstruction; multiDate: MultiDateDocument } {
   // P42 stages A–D: header-role table reconstruction (any column order, multi-page,
   // repeated headers, numbered rows, OCR token fallback). Legacy parsers still run
-  // for lines that are not part of a reconstructed table.
-  const reconstruction = reconstructDocumentTables(
-    documentLinesFromText(text, linePages, geometry),
-    { ocr: sourceKind === "ocr" },
+  // for lines that are not part of a reconstructed table. P61 adds date-column tables
+  // and the examination date of every row (row date, date column or date heading).
+  const lines = documentLinesFromText(text, linePages, geometry);
+  const multiDate = reconstructMultiDateDocument(lines, { ocr: sourceKind === "ocr" });
+  const reconstruction = multiDate.reconstruction;
+  const tableExcerpts = new Set(
+    reconstruction.observations.map((o) => o.excerpt.replace(/ \[column [^\]]*\]$/, "").trim()),
   );
-  const tableExcerpts = new Set(reconstruction.observations.map((o) => o.excerpt.trim()));
-  const tableRows: IntakeRow[] = reconstruction.observations.map((o) => {
+  // P61: examination-date headings and ignored report dates are never measurement rows.
+  const dateLines = new Set([
+    ...multiDate.groups.filter((g) => g.kind === "heading").map((g) => g.text.trim()),
+    ...multiDate.ignoredDates.map((d) => d.text.trim()),
+  ]);
+  const tableRows: IntakeRow[] = reconstruction.observations.map((o, index) => {
+    const examDate = multiDate.dates[index]!;
     const section: CandidateSourceSection = {
       status: o.section.domain
         ? "recognized"
@@ -270,7 +352,8 @@ function parseIntakeText(
       label: o.label,
       value: o.value || (o.valueKind === "ambiguous_number" ? "" : o.rawValue),
       unit: o.unit,
-      observedAt: "",
+      ...reviewDateFields(examDate),
+      examDate,
       excerpt: o.excerpt,
       sourceKind,
       sourceLabel,
@@ -292,8 +375,8 @@ function parseIntakeText(
     documentName,
     documentSha256,
     linePages,
-  ).filter((row) => !tableExcerpts.has(row.excerpt.trim()));
-  return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction };
+  ).filter((row) => !tableExcerpts.has(row.excerpt.trim()) && !dateLines.has(row.excerpt.trim()));
+  return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction, multiDate };
 }
 
 function parseLegacyText(
@@ -319,7 +402,10 @@ function parseLegacyText(
       ...extractFiveColumnLabCandidates(text, MAX_ROWS),
     ].slice(0, MAX_ROWS),
     evidence,
-  ).map((item) => newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }));
+  ).map((item) => {
+    const row = newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 });
+    return { ...row, examDate: rowDateEvidence(row) };
+  });
   for (const line of text.split(/\r?\n/).slice(0, 1000)) {
     if (line.length > 350 || BLOCKED_LINE.test(line)) continue;
     const match = /^\s*(.+?)\s*[:=]\s*([-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;,|]+)\s*$/.exec(
@@ -479,6 +565,19 @@ export function UnifiedIntakeWorkspace() {
   };
 
   const editRow = (key: string, patch: Partial<IntakeRow>) => {
+    // P61: a date typed by the reviewer replaces the extracted date evidence (kept traceable as manual).
+    if ("observedAt" in patch || "datePrecision" in patch) {
+      const row = rows.find((r) => r.key === key);
+      const observedAt = patch.observedAt ?? row?.observedAt ?? "";
+      const precision = patch.datePrecision ?? row?.datePrecision;
+      patch = {
+        ...patch,
+        examDate:
+          observedAt || row?.examDate?.status === "resolved"
+            ? manualDateEvidence(observedAt, precision)
+            : row?.examDate,
+      };
+    }
     const next = editIntakeReviewRow(rows, key, patch);
     setRows(next.rows);
     setReviewerConfirmed(next.reviewerConfirmed);
@@ -544,13 +643,38 @@ export function UnifiedIntakeWorkspace() {
   ) => {
     const result = applyDocumentTimestamp(rows, sha256, { value, precision, interpretation });
     setRows(
-      result.rows.map((row) =>
-        row.documentSha256 === sha256 ? { ...row, classification: classify(row) } : row,
+      result.rows.map((row, index) =>
+        row.documentSha256 === sha256
+          ? {
+              ...row,
+              ...(row.observedAt && !rows[index]?.observedAt
+                ? {
+                    examDate: {
+                      ...manualDateEvidence(row.observedAt, row.datePrecision),
+                      source: "document" as const,
+                      sourceText: interpretation,
+                      note: `Document date applied by the reviewer: ${interpretation}.`,
+                    },
+                  }
+                : {}),
+              classification: classify(row),
+            }
+          : row,
       ),
     );
     resetReview();
     setStatus(
       `Applied ${value} (${interpretation}) to ${result.applied} unsaved row(s) of this document that had no observation time. Rows stay unchecked; verify each before saving.`,
+    );
+  };
+
+  /** P61: apply the reviewer's reading to one ambiguous date group (heading, date column or raw date). */
+  const resolveGroup = (sha256: string, groupKey: string, iso: string) => {
+    const result = resolveDateGroup(rows, sha256, groupKey, iso);
+    setRows(result.rows);
+    resetReview();
+    setStatus(
+      `Examination date ${iso} applied to ${result.applied} unsaved row(s) of that date group. They remain subject to bulk or individual confirmation.`,
     );
   };
 
@@ -562,6 +686,50 @@ export function UnifiedIntakeWorkspace() {
       "Unsaved rows of that document were removed from review. It can be processed again; saved observations are unchanged.",
     );
   };
+
+  // P61: bulk status of every row (existing save prerequisites + source-aware duplicates).
+  const p61Scope = useMemo(
+    () =>
+      membership && provenance
+        ? { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance }
+        : null,
+    [membership, provenance],
+  );
+  const bulk = useMemo(() => evaluateBulkImport(rows, history, p61Scope), [rows, history, p61Scope]);
+  const [savedLedger, setSavedLedger] = useState<SavedImportEntry[]>([]);
+  const reconciliation = useMemo(
+    () => reconcileBulkImport(rows, bulk.statuses, savedLedger),
+    [rows, bulk, savedLedger],
+  );
+  const validatedSignature = bulk.validatedKeys.join("|");
+  const [bulkConfirmedFor, setBulkConfirmedFor] = useState<string | null>(null);
+  const bulkConfirmed = bulkConfirmedFor !== null && bulkConfirmedFor === validatedSignature;
+  const reviewTableRef = useRef<HTMLDivElement>(null);
+  /** Date groups that need the reviewer's explicit reading (ambiguous heading / column / raw date). */
+  const pendingDateGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      { sha256: string; groupKey: string; text: string; note: string; options: { iso: string; how: string }[]; rows: number; file: string }
+    >();
+    for (const row of rows) {
+      const e = row.examDate;
+      if (!row.documentSha256 || !e?.groupKey || row.observedAt || !e.options.length) continue;
+      if (e.status !== "ambiguous" && e.status !== "invalid") continue;
+      const k = `${row.documentSha256}|${e.groupKey}`;
+      const g = groups.get(k) ?? {
+        sha256: row.documentSha256,
+        groupKey: e.groupKey,
+        text: e.sourceText ?? e.groupKey,
+        note: e.note,
+        options: e.options.map((o) => ({ iso: o.iso, how: o.how })),
+        rows: 0,
+        file: row.documentName ?? "",
+      };
+      g.rows++;
+      groups.set(k, g);
+    }
+    return [...groups.values()];
+  }, [rows]);
 
   // P42: review filters (display only; eligibility and saving are unchanged).
   const [filterDomain, setFilterDomain] = useState("");
@@ -591,7 +759,17 @@ export function UnifiedIntakeWorkspace() {
       (!filterPage ||
         String(row.extraction?.page ?? row.sourceSection?.page ?? "") === filterPage) &&
       (!filterStatus ||
-        (filterStatus === "ambiguity"
+        (filterStatus.startsWith("p61:")
+          ? (() => {
+              const st = bulk.statuses.get(row.key);
+              const code = filterStatus.slice(4);
+              return code === "all"
+                ? st?.kind === "exception"
+                : code === "duplicate"
+                  ? st?.kind === "duplicate"
+                  : st?.kind === "exception" && st.code === code;
+            })()
+          : filterStatus === "ambiguity"
           ? row.classification.status === "ambiguous" ||
             row.classification.status === "unit_review_required" ||
             Boolean(row.extraction && extractionBlockingReason(row)) ||
@@ -627,6 +805,8 @@ export function UnifiedIntakeWorkspace() {
     // Retry safety: a document already in review is never added twice; saved rows are
     // additionally caught by the stored-duplicate check before saving.
     const loaded = new Set(rows.map((row) => row.documentSha256).filter(Boolean));
+    // P61: the upload (import) time is kept apart from the examination date and the save time.
+    const importedAt = new Date().toISOString();
     try {
       for (const file of files) {
         let state = "complete";
@@ -655,11 +835,15 @@ export function UnifiedIntakeWorkspace() {
           hashes.add(hash);
           if (format === "xlsx" || format === "json") {
             const bytes = format === "xlsx" ? new Uint8Array(await file.arrayBuffer()) : null;
-            const parsed = bytes
-              ? extractXlsxCandidates(bytes, MAX_ROWS)
-              : extractJsonCandidates(await file.text(), MAX_ROWS);
-            const evidence = bytes
-              ? extractGridSourceEvidence(xlsxCells(bytes), {
+            const grid = bytes ? xlsxCells(bytes).filter((row) => row.some(Boolean)) : null;
+            const wide = grid ? extractWideGridCandidates(grid) : null;
+            const parsed = wide
+              ? { rows: [], skipped: wide.skipped, notes: [] }
+              : bytes
+                ? extractXlsxCandidates(bytes, MAX_ROWS, { keepUnparsedDates: true })
+                : extractJsonCandidates(await file.text(), MAX_ROWS);
+            const evidence = grid
+              ? extractGridSourceEvidence(grid, {
                   sha256: hash,
                   fileName: file.name,
                   kind: "xlsx",
@@ -671,18 +855,23 @@ export function UnifiedIntakeWorkspace() {
               format === "xlsx" ? "xlsx" : isFhir ? "fhir" : "json";
             const label = format === "xlsx" ? "XLSX" : isFhir ? "FHIR" : "JSON";
             const space = Math.max(0, MAX_ROWS - incoming.length);
-            const batch = withSections(parsed.rows.slice(0, space), evidence).map((item) =>
-              newRow({
-                ...item,
-                sourceKind: kind,
-                sourceLabel: `${label}: ${file.name}`,
-                documentName: file.name,
-                documentSha256: hash,
-              }),
-            );
+            const built = wide
+              ? gridRows(wide.rows, evidence, kind, `${label}: ${file.name}`)
+              : withSections(parsed.rows, evidence).map((item) =>
+                  datedRow(item, kind, `${label}: ${file.name}`),
+                );
+            const batch = built.slice(0, space).map((row) => ({
+              ...row,
+              documentName: file.name,
+              documentSha256: hash,
+            }));
             incoming.push(...batch);
             count = batch.length;
             if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
+            if (wide)
+              flags.push(
+                `Date-column grid: ${wide.rows.length} dated value(s) read, one per examination date column${wide.blankCells ? `; ${wide.blankCells} blank cell(s) skipped` : ""}.`,
+              );
           } else if (format === "csv") {
             const parsed = parseIntakeCsv(await file.text(), file.name, hash);
             const space = Math.max(0, MAX_ROWS - incoming.length);
@@ -695,6 +884,8 @@ export function UnifiedIntakeWorkspace() {
             incoming.push(...batch);
             count = batch.length;
             if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
+            if (parsed.wide)
+              flags.push("Date-column grid: one observation per examination date column.");
           } else {
             const extracted = await extractBoneDocument(file);
             const kind: ObservationSourceKind = /ocr/i.test(extracted.method) ? "ocr" : "pdf_text";
@@ -718,6 +909,7 @@ export function UnifiedIntakeWorkspace() {
               method: extracted.method,
               textLength: extracted.text.trim().length,
               reconstruction: parsed.reconstruction,
+              multiDate: parsed.multiDate,
               saved: 0,
             };
             processed.push(doc);
@@ -742,6 +934,13 @@ export function UnifiedIntakeWorkspace() {
                 `${parsed.rows.length - batch.length} row(s) not loaded: the review table holds at most ${MAX_ROWS} rows. Save or clear rows, then re-process.`,
               );
             if (extracted.warnings.length) flags.push(...extracted.warnings);
+            const md = parsed.multiDate;
+            if (md.multipleDates)
+              flags.push(
+                `${md.distinctDates.length} examination date(s) detected (${md.distinctDates.join(", ") || "none resolved"}); every row keeps its own date — one document date is never applied to all rows.`,
+              );
+            for (const ignored of md.ignoredDates.slice(0, 5))
+              flags.push(`Line ${ignored.line}: "${ignored.text}" — ${ignored.reason}`);
           }
           if (!count && state === "complete")
             state =
@@ -758,7 +957,7 @@ export function UnifiedIntakeWorkspace() {
       if (processed.length) setDocuments((previous) => [...previous, ...processed]);
       if (incoming.length)
         addRows(
-          incoming,
+          incoming.map((row) => ({ ...row, importedAt })),
           `Batch processed ${results.length} file(s); ${incoming.length} candidate row(s), all unchecked. Review each row before saving.`,
         );
       else
@@ -800,7 +999,11 @@ export function UnifiedIntakeWorkspace() {
 
   const selection = intakeSelectionCounts(rows);
   const visibleSelection = intakeSelectionCounts(visibleRows);
-  const saveableRows = rows.filter((row) => row.selected && isIntakeRowEligible(row));
+  // P61: a reading already stored from the same document is never saveable again.
+  const saveableRows = rows.filter(
+    (row) =>
+      row.selected && isIntakeRowEligible(row) && bulk.statuses.get(row.key)?.kind !== "duplicate",
+  );
   const reviewOnlyRows = rows.filter(
     (row) => row.classification.status !== "matched" || row.sourceValidation === "unvalidated",
   );
@@ -859,12 +1062,24 @@ export function UnifiedIntakeWorkspace() {
     return Object.entries(counts);
   }, [saveableRows]);
 
-  const saveAccepted = async () => {
-    if (!canSave || !membership || !provenance) return;
+  /**
+   * Shared save path for per-row selection and P61 bulk confirmation: fresh
+   * authorization, fresh stored-history duplicate check (a reading already stored
+   * from the same document is skipped, never re-saved or overwritten), then one
+   * append-only encrypted event per observation.
+   */
+  const saveRows = async (
+    toSave: readonly IntakeRow[],
+    duplicateWarningAcknowledged: boolean,
+    mode: "selected" | "bulk",
+  ) => {
+    if (!membership || !provenance || !toSave.length) return;
+    const scope = { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance };
     setBusy(true);
     // P42 recovery: rows already appended leave review immediately, so an interrupted
     // batch can be retried without re-saving them (storage itself is append-only).
     const savedNow: IntakeRow[] = [];
+    let skippedDuplicates = 0;
     const settleSaved = () => {
       if (!savedNow.length) return;
       const savedKeys = new Set(savedNow.map((row) => row.key));
@@ -878,6 +1093,10 @@ export function UnifiedIntakeWorkspace() {
       setDocuments((previous) =>
         previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
       );
+      setSavedLedger((previous) => [
+        ...previous,
+        ...savedNow.map((row) => ({ seriesKey: seriesKeyOf(row), date: row.observedAt.slice(0, 10) })),
+      ]);
       setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
     };
     try {
@@ -896,72 +1115,51 @@ export function UnifiedIntakeWorkspace() {
         throw new Error(
           "Your authorization for this mission and crew is no longer valid. Nothing saved.",
         );
-      for (const row of saveableRows) {
-        if (row.classification.status !== "matched") continue;
-        // Re-derive the demo basis at save time from the verified mission demo catalog.
-        const demoBasis = classifyWithGovernedExtensions({
-          ...row,
-          missionId: membership.missionId,
-          provenance,
-          sourceDomain: sectionDomain(row),
-        }).syntheticDemo;
-        if (row.classification.metricId.startsWith("demo:")) {
-          if (provenance !== "synthetic" || demoBasis?.demoId !== row.classification.metricId)
-            throw new Error(
-              "A synthetic demo parameter is no longer active for this mission, or the scope is not synthetic. Nothing further was saved.",
-            );
+      const storedKeys = storedSourceKeys(
+        await listUnifiedObservations(membership.missionId, membership.crewMemberId),
+        scope,
+      );
+      for (const row of toSave) {
+        if (row.classification.status !== "matched" || !isIntakeRowEligible(row)) continue;
+        const key = sourceDuplicateKey(
+          { ...row, metricId: row.classification.metricId },
+          scope,
+        );
+        if (key && storedKeys.has(key)) {
+          skippedDuplicates++;
+          continue;
         }
-        const observation: UnifiedObservation = {
-          schema:
-            row.datePrecision === "date" ? DATED_OBSERVATION_SCHEMA : UNIFIED_OBSERVATION_SCHEMA,
+        // Re-derives the demo basis at save time from the verified mission demo catalog.
+        const observation: UnifiedObservation = buildReviewedObservation(row, {
           id: crypto.randomUUID(),
-          missionId: membership.missionId,
-          crewMemberId: membership.crewMemberId,
-          metricId: row.classification.metricId,
-          domain: row.classification.domain,
-          value: row.value.trim(),
-          originalUnit: row.unit.trim(),
-          observedAt: row.observedAt,
-          ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
-          ...(row.collectionDate ? { collectionDate: row.collectionDate } : {}),
-          source: {
-            kind: row.sourceKind,
-            label: row.sourceLabel,
-            ...(row.documentName ? { documentName: row.documentName } : {}),
-            ...(row.documentSha256 ? { documentSha256: row.documentSha256 } : {}),
-            ...(row.excerpt ? { excerpt: row.excerpt } : {}),
-          },
-          provenance,
-          quality: {
-            reviewerConfirmed: true,
-            ...(duplicateWarnings > 0 ? { duplicateWarningAcknowledged: true } : {}),
-          },
-          reviewState: "accepted",
-          status: "active",
-          ...(demoBasis && row.classification.metricId === demoBasis.demoId
-            ? { catalogBasis: demoBasis }
-            : {}),
           recordedAt: new Date().toISOString(),
-        };
+          scope,
+          duplicateWarningAcknowledged,
+          sourceDomain: sectionDomain(row),
+        });
         await saveUnifiedObservation(observation);
+        if (key) storedKeys.set(key, observation.id);
         savedNow.push(row);
       }
+      const savedCount = savedNow.length;
       settleSaved();
       savedNow.length = 0;
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
+      setBulkConfirmedFor(null);
       setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
       notifyReviewDataChanged({
         missionId: membership.missionId,
         crewMemberId: membership.crewMemberId,
       });
       setStatus(
-        `${saveableRows.length} observation(s) saved encrypted on this device. Research reference only — not a scientific approval; no cloud records written.`,
+        `${savedCount} observation(s) saved encrypted on this device${mode === "bulk" ? " by bulk confirmation" : ""}.${skippedDuplicates ? ` ${skippedDuplicates} already stored from the same document and not saved again.` : ""} Research reference only — not a scientific approval; no cloud records written.`,
       );
     } catch (error) {
       const partial = savedNow.length;
       settleSaved();
       setReviewerConfirmed(false);
+      setBulkConfirmedFor(null);
       setStatus(
         `${error instanceof Error ? error.message : "Saving failed."}${partial ? ` ${partial} observation(s) were saved before the interruption and were removed from review; the rest stay unsaved and can be retried.` : ""}`,
       );
@@ -972,6 +1170,28 @@ export function UnifiedIntakeWorkspace() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const saveAccepted = async () => {
+    if (!canSave) return;
+    await saveRows(saveableRows, duplicateWarnings > 0, "selected");
+  };
+
+  const validatedRows = rows.filter((row) => bulk.statuses.get(row.key)?.kind === "validated");
+  const bulkSaveBlockedReason = !membership
+    ? "Select the authorized mission and crew first."
+    : !provenance
+      ? "Select the data provenance first."
+      : null;
+  const confirmAndSaveValidated = async () => {
+    if (!bulkConfirmed || bulkSaveBlockedReason || busy) return;
+    await saveRows(validatedRows, false, "bulk");
+  };
+  const reviewExceptions = (code: P61ExceptionCode | "all") => {
+    setFilterDomain("");
+    setFilterPage("");
+    setFilterStatus(`p61:${code}`);
+    reviewTableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const reloadHistory = async () => {
@@ -1370,7 +1590,40 @@ export function UnifiedIntakeWorkspace() {
                         ) : null}
                       </div>
                     ) : null}
-                    {recon.identity.timestampCandidates.length ? (
+                    {doc.multiDate && (doc.multiDate.groups.length || doc.multiDate.ignoredDates.length) ? (
+                      <div className="space-y-1 text-xs" data-testid="p61-date-groups">
+                        <p className="font-medium">
+                          Examination dates found in this document ({doc.multiDate.distinctDates.length}{" "}
+                          resolved)
+                        </p>
+                        <ul className="ml-4 list-disc space-y-0.5">
+                          {doc.multiDate.groups.slice(0, 40).map((g) => (
+                            <li key={g.key}>
+                              {g.kind === "heading" ? "Heading" : "Date column"} “{g.text}”
+                              {g.kind === "heading" ? ` (line ${g.line}${g.page ? `, page ${g.page}` : ""})` : ""}:{" "}
+                              {g.parse.status === "resolved"
+                                ? `${g.parse.value} (${g.parse.how})`
+                                : g.parse.status === "ambiguous"
+                                  ? `ambiguous — ${g.parse.options.map((o) => o.iso).join(" or ")}`
+                                  : "not a valid date"}{" "}
+                              · {g.rows} row(s)
+                              {g.headingKind === "collection" ? " · labelled a sample collection date" : ""}
+                            </li>
+                          ))}
+                          {doc.multiDate.ignoredDates.map((d) => (
+                            <li key={`ignored-${d.line}`} className="text-muted-foreground">
+                              Ignored “{d.text}” (line {d.line}): {d.reason}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                    {doc.multiDate?.multipleDates ? (
+                      <p className="text-xs" data-testid="p61-multi-date-guard">
+                        This document states several examination dates, so no single document date
+                        is offered for all rows; each row keeps the date of its own examination.
+                      </p>
+                    ) : recon.identity.timestampCandidates.length ? (
                       <div className="space-y-1">
                         <p className="text-xs">
                           Examination time stated in the document — apply it explicitly to the{" "}
@@ -1414,8 +1667,66 @@ export function UnifiedIntakeWorkspace() {
         </section>
       ) : null}
 
+      {pendingDateGroups.length ? (
+        <section
+          className="space-y-3 rounded-lg border border-border bg-card p-5"
+          aria-labelledby="p61-date-choices"
+          data-testid="p61-date-choices"
+        >
+          <h2 id="p61-date-choices" className="text-lg font-semibold">
+            Examination dates that need your choice
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            These dates can be read more than one way. Nothing was guessed; choose the reading
+            printed in the original, and it is applied to that group&apos;s rows only.
+          </p>
+          <ul className="space-y-2">
+            {pendingDateGroups.map((g) => (
+              <li key={`${g.sha256}|${g.groupKey}`} className="space-y-1 rounded-md border border-border p-3 text-sm">
+                <p>
+                  <span className="font-medium">“{g.text}”</span>
+                  {g.file ? ` in ${g.file}` : ""} · {g.rows} row(s)
+                </p>
+                <p className="text-xs text-muted-foreground">{g.note}</p>
+                <div className="flex flex-wrap gap-2">
+                  {g.options.map((o) => (
+                    <Button
+                      key={o.iso}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-auto whitespace-normal py-1 text-left"
+                      disabled={busy}
+                      onClick={() => resolveGroup(g.sha256, g.groupKey, o.iso)}
+                    >
+                      Use {o.iso} ({o.how})
+                    </Button>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {rows.length ? (
+        <P61BulkImportPanel
+          rows={rows}
+          statuses={bulk.statuses}
+          reconciliation={reconciliation}
+          validatedCount={validatedRows.length}
+          saveBlockedReason={bulkSaveBlockedReason}
+          busy={busy}
+          confirmed={bulkConfirmed}
+          onConfirmedChange={(checked) => setBulkConfirmedFor(checked ? validatedSignature : null)}
+          onConfirmAndSave={() => void confirmAndSaveValidated()}
+          onReviewExceptions={reviewExceptions}
+        />
+      ) : null}
+
       {rows.length ? (
         <section className="space-y-4 rounded-lg border border-border bg-card p-5">
+          <div ref={reviewTableRef} className="scroll-mt-20" />
           <h2 className="text-lg font-semibold">Review each measurement</h2>
           <p className="text-sm text-muted-foreground">
             Classification is per measurement, not per document — one document can route to several
@@ -1481,6 +1792,13 @@ export function UnifiedIntakeWorkspace() {
                 onChange={(event) => setFilterStatus(event.target.value)}
               >
                 <option value="">All statuses</option>
+                <option value="p61:all">Exceptions only (unresolved / ambiguous)</option>
+                {reconciliation.exceptions.map((e) => (
+                  <option key={e.code} value={`p61:${e.code}`}>
+                    Exception — {e.label} ({e.rows})
+                  </option>
+                ))}
+                <option value="p61:duplicate">Duplicates — already stored</option>
                 <option value="matched">Safely matched</option>
                 <option value="repeat">Matched — repeated in document</option>
                 <option value="ambiguity">Any ambiguity / low confidence</option>
@@ -1647,6 +1965,18 @@ export function UnifiedIntakeWorkspace() {
                           Time / timezone not supplied
                         </p>
                       )}
+                      {row.examDate ? (
+                        <p className="max-w-52 text-xs text-muted-foreground" data-testid="p61-date-evidence">
+                          {row.examDate.status === "resolved" && row.examDate.source
+                            ? `Examination date: ${EXAM_DATE_SOURCE_TEXT[row.examDate.source]}${row.examDate.line ? ` (line ${row.examDate.line})` : ""}`
+                            : row.examDate.note}
+                        </p>
+                      ) : null}
+                      {bulk.statuses.get(row.key)?.kind === "duplicate" ? (
+                        <p className="max-w-52 text-xs text-destructive">
+                          {bulk.statuses.get(row.key)?.reason}
+                        </p>
+                      ) : null}
                       {intakeRowExclusionReason(row) && (
                         <p className="max-w-52 text-xs text-destructive">
                           {intakeRowExclusionReason(row)}

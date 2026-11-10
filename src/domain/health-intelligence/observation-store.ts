@@ -58,10 +58,15 @@ export function collapseUnifiedObservationVersions(
   return [...latest.values()].map((version) => version.observation);
 }
 
-export async function saveUnifiedObservation(observation: UnifiedObservation): Promise<void> {
+export async function saveUnifiedObservation(
+  observation: UnifiedObservation,
+  /** Injected encrypted store (tests); defaults to the device's offline mission store. */
+  store?: OfflineMissionStore,
+): Promise<void> {
   const issue = validateUnifiedObservation(observation);
   if (issue) throw new Error(issue);
   await persistOfflineMissionEvent({
+    ...(store ? { store } : {}),
     id: `unified-observation:${observation.id}:${observation.status === "erroneous" ? "status" : "entry"}`,
     kind: "observation",
     mission: { missionId: observation.missionId, crewMemberId: observation.crewMemberId },

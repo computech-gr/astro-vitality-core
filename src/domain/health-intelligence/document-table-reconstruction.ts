@@ -277,6 +277,11 @@ const VOCABULARY = new Map<string, ColumnRole>(
 );
 const MAX_HEADER_PHRASE = 4;
 
+/** P61: vocabulary role of one header cell (exact vocabulary phrase only), else null. */
+export function headerCellRole(cell: string): ColumnRole | null {
+  return VOCABULARY.get(normalizeHeaderText(cell)) ?? null;
+}
+
 /** Column roles of one header row; null unless every cell is vocabulary and label+result exist. */
 export function mapHeaderCells(cells: readonly string[]): ColumnRole[] | null {
   if (cells.length < 2 || cells.length > 12) return null;
@@ -842,7 +847,11 @@ function splitTokens(rest: string): {
  */
 export function reconstructDocumentTables(
   lines: readonly DocumentLineInput[],
-  options: { ocr?: boolean } = {},
+  options: {
+    ocr?: boolean;
+    /** P61: 1-based lines owned by a date-column table; they end any active table and are not parsed here. */
+    skipLines?: ReadonlySet<number>;
+  } = {},
 ): DocumentReconstruction {
   const inspected = lines.slice(0, 5000);
   const identity = extractIdentity(inspected);
@@ -893,6 +902,10 @@ export function reconstructDocumentTables(
 
   inspected.forEach((l, index) => {
     const lineNo = index + 1;
+    if (options.skipLines?.has(lineNo)) {
+      header = null;
+      return;
+    }
     const text = l.text.trim();
     if (!text || text.length > 600) return;
     const delimited = l.cells?.length
@@ -915,13 +928,19 @@ export function reconstructDocumentTables(
       headers.push({ line: lineNo, page: l.page, text: header.text, roles: r });
       return;
     }
-    if (isFurniture(text, l.page)) return;
-
     const first = delimited[0] ?? "";
     const tokenNumber = /^(\d{1,4})[.)]?\s+(\S.*)$/.exec(text);
     const active: ActiveHeader | null = header;
     const hasRowNumberRole = active?.roles.includes("row_number") ?? false;
     const looksNumbered = ROW_NUMBER.test(first) || (delimited.length <= 1 && !!tokenNumber);
+    // Running headers/footers repeat on several pages. A numbered table row or a domain heading that
+    // happens to repeat (the same reading in two examinations, a section per examination) is content.
+    const repeatedContent =
+      (active !== null &&
+        looksNumbered &&
+        (delimited.length >= 2 || (delimited.length <= 1 && !!tokenNumber))) ||
+      Boolean(documentLineHeading(text)?.domain);
+    if (!repeatedContent && isFurniture(text, l.page)) return;
 
     // Continuation of a wrapped label: an un-numbered line inside a numbered table whose
     // cells sit only in the label column (geometry) or that starts in lower case (text).

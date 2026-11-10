@@ -622,3 +622,9 @@
 - [x] Signed-in Ground Medical browser export (demonstration on/off, real) — empty test-browser store only.
 - [ ] Publish verified build and check the live site.
 - [ ] Static public sample PDF still shows the earlier P60 labels; replacement needs owner approval.
+
+## P61 Automated multi-date bulk import (Preview only)
+
+- [x] Per-row examination dates from row dates, date columns and examination headings; ambiguity/conflict exception queue; consolidated preview, reconciliation and bulk confirmation; source-aware duplicate blocking; P60 report integration (synthetic reconstructed fixture: 304 observations, 38 series, 8 dates).
+- [ ] Owner-supplied 304-observation Alex Morgan acceptance dataset was not attached; run it through the import when provided.
+- [ ] Owner approval of P61 before publishing.

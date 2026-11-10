@@ -315,10 +315,14 @@ function csvField(value: string): string {
  * locale-formatted dates are not converted: such rows are skipped so an
  * observation time is never guessed. Store dates or zoned timestamps as ISO text cells.
  */
-export function extractXlsxCandidates(bytes: Uint8Array, max = 200): AdapterResult {
+export function extractXlsxCandidates(
+  bytes: Uint8Array,
+  max = 200,
+  options: { keepUnparsedDates?: boolean } = {},
+): AdapterResult {
   const grid = xlsxCells(bytes).filter((row) => row.some(Boolean));
   const csv = grid.map((row) => row.map(csvField).join(",")).join("\n");
-  const parsed = extractCsvCandidates(csv, max);
+  const parsed = extractCsvCandidates(csv, max, options);
   return {
     rows: parsed.rows,
     skipped: parsed.skipped,
