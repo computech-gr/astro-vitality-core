@@ -7,6 +7,7 @@
  */
 import type { HealthDomainId } from "@/domain/health-domains/registry";
 import { isCalendarDate, isExplicitInstant, validObservationDate, type ObservationDatePrecision } from "./observation-date";
+import { unitNotationMatch } from "./p613-unit-notation";
 
 export const UNIFIED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v1";
 export const DATED_OBSERVATION_SCHEMA = "mitochondria.unified-observation.v2";
@@ -37,9 +38,14 @@ export interface UnifiedObservation {
   /** Canonical P36 catalog metric ID; never a free-typed or invented biomarker. */
   metricId: string;
   domain: HealthDomainId;
-  /** Value and unit are stored exactly as reported; no unit conversion. */
+  /**
+   * Value and unit are stored exactly as reported; no unit conversion. P61.3: when the reported unit is the
+   * catalog unit written in another notation (closed typographic rules, synthetic demo only), originalUnit is
+   * the catalog's notation and reportedUnit keeps the verbatim text.
+   */
   value: string;
   originalUnit: string;
+  reportedUnit?: string;
   /** Explicit zoned ISO instant, or ISO calendar date when precision is date. */
   observedAt: string;
   datePrecision?: ObservationDatePrecision;
@@ -127,6 +133,12 @@ export function validateUnifiedObservation(observation: UnifiedObservation): str
   if (!observation.metricId.trim()) return "A canonical catalog metric ID is required.";
   if (!SAFE_DECIMAL.test(observation.value.trim())) return "Value must be a plain decimal number.";
   if (!observation.originalUnit.trim()) return "The original reported unit is required.";
+  if (observation.reportedUnit !== undefined) {
+    if (observation.provenance !== "synthetic" || !observation.metricId.startsWith("demo:"))
+      return "A reported-unit notation is allowed only on synthetic demo observations.";
+    if (!unitNotationMatch(observation.reportedUnit, observation.originalUnit))
+      return "The reported unit must be the stored unit written in a listed notation (never a conversion).";
+  }
   if (!validObservationDate(observation))
     return "Observation date must be a valid calendar date or explicit zoned instant at its declared precision.";
   if (!isExplicitInstant(observation.recordedAt))
