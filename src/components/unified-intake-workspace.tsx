@@ -97,6 +97,7 @@ import {
 import type { GeometryLine } from "@/domain/bone-health/pdf-geometry";
 import {
   buildReviewedObservation,
+  storedUnitOf,
   evaluateBulkImport,
   extractWideGridCandidates,
   manualDateEvidence,
@@ -1028,7 +1029,7 @@ export function UnifiedIntakeWorkspace() {
           metricId: row.classification.status === "matched" ? row.classification.metricId : "",
           observedAt: row.observedAt,
           ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
-          originalUnit: row.unit,
+          originalUnit: storedUnitOf(row),
           missionId: membership.missionId,
           crewMemberId: membership.crewMemberId,
           ...(provenance ? { provenance } : {}),
@@ -1042,7 +1043,7 @@ export function UnifiedIntakeWorkspace() {
       metricId: row.classification.status === "matched" ? row.classification.metricId : "",
       observedAt: row.observedAt,
       ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
-      unit: row.unit,
+      unit: storedUnitOf(row),
       value: row.value,
     })),
   );
@@ -1124,7 +1125,7 @@ export function UnifiedIntakeWorkspace() {
       for (const row of toSave) {
         if (row.classification.status !== "matched" || !isIntakeRowEligible(row)) continue;
         const key = sourceDuplicateKey(
-          { ...row, metricId: row.classification.metricId },
+          { ...row, metricId: row.classification.metricId, unit: storedUnitOf(row) },
           scope,
         );
         if (key && storedKeys.has(key)) {
