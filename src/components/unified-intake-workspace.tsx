@@ -48,8 +48,6 @@ import { Link } from "@tanstack/react-router";
 import { type IntakeClassification } from "@/domain/health-domains/unified-intake-classification";
 import { DOMAIN_LABELS } from "@/domain/health-domains/document-domain-projection";
 import {
-  UNIFIED_OBSERVATION_SCHEMA,
-  DATED_OBSERVATION_SCHEMA,
   type ObservationSourceKind,
   type UnifiedObservation,
 } from "@/domain/health-intelligence/observation-envelope";
@@ -1587,7 +1585,40 @@ export function UnifiedIntakeWorkspace() {
                         ) : null}
                       </div>
                     ) : null}
-                    {recon.identity.timestampCandidates.length ? (
+                    {doc.multiDate && (doc.multiDate.groups.length || doc.multiDate.ignoredDates.length) ? (
+                      <div className="space-y-1 text-xs" data-testid="p61-date-groups">
+                        <p className="font-medium">
+                          Examination dates found in this document ({doc.multiDate.distinctDates.length}{" "}
+                          resolved)
+                        </p>
+                        <ul className="ml-4 list-disc space-y-0.5">
+                          {doc.multiDate.groups.slice(0, 40).map((g) => (
+                            <li key={g.key}>
+                              {g.kind === "heading" ? "Heading" : "Date column"} “{g.text}”
+                              {g.kind === "heading" ? ` (line ${g.line}${g.page ? `, page ${g.page}` : ""})` : ""}:{" "}
+                              {g.parse.status === "resolved"
+                                ? `${g.parse.value} (${g.parse.how})`
+                                : g.parse.status === "ambiguous"
+                                  ? `ambiguous — ${g.parse.options.map((o) => o.iso).join(" or ")}`
+                                  : "not a valid date"}{" "}
+                              · {g.rows} row(s)
+                              {g.headingKind === "collection" ? " · labelled a sample collection date" : ""}
+                            </li>
+                          ))}
+                          {doc.multiDate.ignoredDates.map((d) => (
+                            <li key={`ignored-${d.line}`} className="text-muted-foreground">
+                              Ignored “{d.text}” (line {d.line}): {d.reason}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                    {doc.multiDate?.multipleDates ? (
+                      <p className="text-xs" data-testid="p61-multi-date-guard">
+                        This document states several examination dates, so no single document date
+                        is offered for all rows; each row keeps the date of its own examination.
+                      </p>
+                    ) : recon.identity.timestampCandidates.length ? (
                       <div className="space-y-1">
                         <p className="text-xs">
                           Examination time stated in the document — apply it explicitly to the{" "}
@@ -1631,8 +1662,66 @@ export function UnifiedIntakeWorkspace() {
         </section>
       ) : null}
 
+      {pendingDateGroups.length ? (
+        <section
+          className="space-y-3 rounded-lg border border-border bg-card p-5"
+          aria-labelledby="p61-date-choices"
+          data-testid="p61-date-choices"
+        >
+          <h2 id="p61-date-choices" className="text-lg font-semibold">
+            Examination dates that need your choice
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            These dates can be read more than one way. Nothing was guessed; choose the reading
+            printed in the original, and it is applied to that group&apos;s rows only.
+          </p>
+          <ul className="space-y-2">
+            {pendingDateGroups.map((g) => (
+              <li key={`${g.sha256}|${g.groupKey}`} className="space-y-1 rounded-md border border-border p-3 text-sm">
+                <p>
+                  <span className="font-medium">“{g.text}”</span>
+                  {g.file ? ` in ${g.file}` : ""} · {g.rows} row(s)
+                </p>
+                <p className="text-xs text-muted-foreground">{g.note}</p>
+                <div className="flex flex-wrap gap-2">
+                  {g.options.map((o) => (
+                    <Button
+                      key={o.iso}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-auto whitespace-normal py-1 text-left"
+                      disabled={busy}
+                      onClick={() => resolveGroup(g.sha256, g.groupKey, o.iso)}
+                    >
+                      Use {o.iso} ({o.how})
+                    </Button>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {rows.length ? (
+        <P61BulkImportPanel
+          rows={rows}
+          statuses={bulk.statuses}
+          reconciliation={reconciliation}
+          validatedCount={validatedRows.length}
+          saveBlockedReason={bulkSaveBlockedReason}
+          busy={busy}
+          confirmed={bulkConfirmed}
+          onConfirmedChange={(checked) => setBulkConfirmedFor(checked ? validatedSignature : null)}
+          onConfirmAndSave={() => void confirmAndSaveValidated()}
+          onReviewExceptions={reviewExceptions}
+        />
+      ) : null}
+
       {rows.length ? (
         <section className="space-y-4 rounded-lg border border-border bg-card p-5">
+          <div ref={reviewTableRef} className="scroll-mt-20" />
           <h2 className="text-lg font-semibold">Review each measurement</h2>
           <p className="text-sm text-muted-foreground">
             Classification is per measurement, not per document — one document can route to several
@@ -1698,6 +1787,13 @@ export function UnifiedIntakeWorkspace() {
                 onChange={(event) => setFilterStatus(event.target.value)}
               >
                 <option value="">All statuses</option>
+                <option value="p61:all">Exceptions only (unresolved / ambiguous)</option>
+                {reconciliation.exceptions.map((e) => (
+                  <option key={e.code} value={`p61:${e.code}`}>
+                    Exception — {e.label} ({e.rows})
+                  </option>
+                ))}
+                <option value="p61:duplicate">Duplicates — already stored</option>
                 <option value="matched">Safely matched</option>
                 <option value="repeat">Matched — repeated in document</option>
                 <option value="ambiguity">Any ambiguity / low confidence</option>
@@ -1864,6 +1960,18 @@ export function UnifiedIntakeWorkspace() {
                           Time / timezone not supplied
                         </p>
                       )}
+                      {row.examDate ? (
+                        <p className="max-w-52 text-xs text-muted-foreground" data-testid="p61-date-evidence">
+                          {row.examDate.status === "resolved" && row.examDate.source
+                            ? `Examination date: ${EXAM_DATE_SOURCE_TEXT[row.examDate.source]}${row.examDate.line ? ` (line ${row.examDate.line})` : ""}`
+                            : row.examDate.note}
+                        </p>
+                      ) : null}
+                      {bulk.statuses.get(row.key)?.kind === "duplicate" ? (
+                        <p className="max-w-52 text-xs text-destructive">
+                          {bulk.statuses.get(row.key)?.reason}
+                        </p>
+                      ) : null}
                       {intakeRowExclusionReason(row) && (
                         <p className="max-w-52 text-xs text-destructive">
                           {intakeRowExclusionReason(row)}
