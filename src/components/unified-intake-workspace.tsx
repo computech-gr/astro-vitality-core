@@ -1059,12 +1059,24 @@ export function UnifiedIntakeWorkspace() {
     return Object.entries(counts);
   }, [saveableRows]);
 
-  const saveAccepted = async () => {
-    if (!canSave || !membership || !provenance) return;
+  /**
+   * Shared save path for per-row selection and P61 bulk confirmation: fresh
+   * authorization, fresh stored-history duplicate check (a reading already stored
+   * from the same document is skipped, never re-saved or overwritten), then one
+   * append-only encrypted event per observation.
+   */
+  const saveRows = async (
+    toSave: readonly IntakeRow[],
+    duplicateWarningAcknowledged: boolean,
+    mode: "selected" | "bulk",
+  ) => {
+    if (!membership || !provenance || !toSave.length) return;
+    const scope = { missionId: membership.missionId, crewMemberId: membership.crewMemberId, provenance };
     setBusy(true);
     // P42 recovery: rows already appended leave review immediately, so an interrupted
     // batch can be retried without re-saving them (storage itself is append-only).
     const savedNow: IntakeRow[] = [];
+    let skippedDuplicates = 0;
     const settleSaved = () => {
       if (!savedNow.length) return;
       const savedKeys = new Set(savedNow.map((row) => row.key));
@@ -1078,6 +1090,10 @@ export function UnifiedIntakeWorkspace() {
       setDocuments((previous) =>
         previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
       );
+      setSavedLedger((previous) => [
+        ...previous,
+        ...savedNow.map((row) => ({ seriesKey: seriesKeyOf(row), date: row.observedAt.slice(0, 10) })),
+      ]);
       setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
     };
     try {
@@ -1096,72 +1112,51 @@ export function UnifiedIntakeWorkspace() {
         throw new Error(
           "Your authorization for this mission and crew is no longer valid. Nothing saved.",
         );
-      for (const row of saveableRows) {
-        if (row.classification.status !== "matched") continue;
-        // Re-derive the demo basis at save time from the verified mission demo catalog.
-        const demoBasis = classifyWithGovernedExtensions({
-          ...row,
-          missionId: membership.missionId,
-          provenance,
-          sourceDomain: sectionDomain(row),
-        }).syntheticDemo;
-        if (row.classification.metricId.startsWith("demo:")) {
-          if (provenance !== "synthetic" || demoBasis?.demoId !== row.classification.metricId)
-            throw new Error(
-              "A synthetic demo parameter is no longer active for this mission, or the scope is not synthetic. Nothing further was saved.",
-            );
+      const storedKeys = storedSourceKeys(
+        await listUnifiedObservations(membership.missionId, membership.crewMemberId),
+        scope,
+      );
+      for (const row of toSave) {
+        if (row.classification.status !== "matched" || !isIntakeRowEligible(row)) continue;
+        const key = sourceDuplicateKey(
+          { ...row, metricId: row.classification.metricId },
+          scope,
+        );
+        if (key && storedKeys.has(key)) {
+          skippedDuplicates++;
+          continue;
         }
-        const observation: UnifiedObservation = {
-          schema:
-            row.datePrecision === "date" ? DATED_OBSERVATION_SCHEMA : UNIFIED_OBSERVATION_SCHEMA,
+        // Re-derives the demo basis at save time from the verified mission demo catalog.
+        const observation: UnifiedObservation = buildReviewedObservation(row, {
           id: crypto.randomUUID(),
-          missionId: membership.missionId,
-          crewMemberId: membership.crewMemberId,
-          metricId: row.classification.metricId,
-          domain: row.classification.domain,
-          value: row.value.trim(),
-          originalUnit: row.unit.trim(),
-          observedAt: row.observedAt,
-          ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
-          ...(row.collectionDate ? { collectionDate: row.collectionDate } : {}),
-          source: {
-            kind: row.sourceKind,
-            label: row.sourceLabel,
-            ...(row.documentName ? { documentName: row.documentName } : {}),
-            ...(row.documentSha256 ? { documentSha256: row.documentSha256 } : {}),
-            ...(row.excerpt ? { excerpt: row.excerpt } : {}),
-          },
-          provenance,
-          quality: {
-            reviewerConfirmed: true,
-            ...(duplicateWarnings > 0 ? { duplicateWarningAcknowledged: true } : {}),
-          },
-          reviewState: "accepted",
-          status: "active",
-          ...(demoBasis && row.classification.metricId === demoBasis.demoId
-            ? { catalogBasis: demoBasis }
-            : {}),
           recordedAt: new Date().toISOString(),
-        };
+          scope,
+          duplicateWarningAcknowledged,
+          sourceDomain: sectionDomain(row),
+        });
         await saveUnifiedObservation(observation);
+        if (key) storedKeys.set(key, observation.id);
         savedNow.push(row);
       }
+      const savedCount = savedNow.length;
       settleSaved();
       savedNow.length = 0;
       setReviewerConfirmed(false);
       setDuplicateAcknowledged(false);
+      setBulkConfirmedFor(null);
       setHistory(await listUnifiedObservations(membership.missionId, membership.crewMemberId));
       notifyReviewDataChanged({
         missionId: membership.missionId,
         crewMemberId: membership.crewMemberId,
       });
       setStatus(
-        `${saveableRows.length} observation(s) saved encrypted on this device. Research reference only — not a scientific approval; no cloud records written.`,
+        `${savedCount} observation(s) saved encrypted on this device${mode === "bulk" ? " by bulk confirmation" : ""}.${skippedDuplicates ? ` ${skippedDuplicates} already stored from the same document and not saved again.` : ""} Research reference only — not a scientific approval; no cloud records written.`,
       );
     } catch (error) {
       const partial = savedNow.length;
       settleSaved();
       setReviewerConfirmed(false);
+      setBulkConfirmedFor(null);
       setStatus(
         `${error instanceof Error ? error.message : "Saving failed."}${partial ? ` ${partial} observation(s) were saved before the interruption and were removed from review; the rest stay unsaved and can be retried.` : ""}`,
       );
@@ -1172,6 +1167,28 @@ export function UnifiedIntakeWorkspace() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const saveAccepted = async () => {
+    if (!canSave) return;
+    await saveRows(saveableRows, duplicateWarnings > 0, "selected");
+  };
+
+  const validatedRows = rows.filter((row) => bulk.statuses.get(row.key)?.kind === "validated");
+  const bulkSaveBlockedReason = !membership
+    ? "Select the authorized mission and crew first."
+    : !provenance
+      ? "Select the data provenance first."
+      : null;
+  const confirmAndSaveValidated = async () => {
+    if (!bulkConfirmed || bulkSaveBlockedReason || busy) return;
+    await saveRows(validatedRows, false, "bulk");
+  };
+  const reviewExceptions = (code: P61ExceptionCode | "all") => {
+    setFilterDomain("");
+    setFilterPage("");
+    setFilterStatus(`p61:${code}`);
+    reviewTableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const reloadHistory = async () => {
