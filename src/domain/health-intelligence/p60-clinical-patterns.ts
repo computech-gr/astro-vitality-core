@@ -145,6 +145,40 @@ const fmtNum = (v: number) => String(Number(v.toFixed(3)));
 const byStableObservationOrder = (a: Obs, b: Obs) =>
   a.row.date.localeCompare(b.row.date) || a.row.name.localeCompare(b.row.name) || a.row.metricId.localeCompare(b.row.metricId) ||
   a.row.unit.localeCompare(b.row.unit) || a.v - b.v || a.row.recordId.localeCompare(b.row.recordId);
+/** P61.2: whole days between the earliest and latest observation. */
+const spanDays = (xs: readonly Obs[]) => (xs.length ? Math.max(...xs.map((o) => dayNum(o.row.date))) - Math.min(...xs.map((o) => dayNum(o.row.date))) : 0);
+/** P61.2: shortest gap (days) from a high potassium (>= 5.5) to a later low one. */
+const kSwingGap = (k: readonly Obs[], lowCut: number) => {
+  let best = Infinity;
+  for (const h of k) if (h.v >= 5.5) for (const l of k) if (l.v < lowCut && dayNum(l.row.date) >= dayNum(h.row.date)) best = Math.min(best, dayNum(l.row.date) - dayNum(h.row.date));
+  return best;
+};
+/** P61.2: "16 Nov, 4 days later" for the observation following `o` in its chronological series. */
+const nextAfter = (xs: readonly Obs[], o: Obs) => {
+  const n = xs[xs.indexOf(o) + 1];
+  if (!n) return "no later value";
+  const d = dayNum(n.row.date) - dayNum(o.row.date);
+  return `${n.row.valueText} ${n.row.unit} on ${dayText(n.row.date)}, ${d === 1 ? "the next day" : `${d} days later`}`;
+};
+/** P61.2: largest absolute change between consecutive results. */
+const largestStep = (xs: readonly Obs[]) => {
+  let best: { a: Obs; b: Obs } | null = null;
+  for (let i = 1; i < xs.length; i++) if (!best || Math.abs(xs[i]!.v - xs[i - 1]!.v) > Math.abs(best.b.v - best.a.v)) best = { a: xs[i - 1]!, b: xs[i]! };
+  return best;
+};
+/** P61.2: fold change described against the first value — peak/trough for 3+ results, first-to-last for two. */
+const foldText = (xs: readonly Obs[]) => {
+  const first = xs[0]!, last = xs.at(-1)!;
+  if (xs.length <= 2 || first.v <= 0) {
+    const r = last.v / first.v;
+    return r >= 1 ? `${r.toFixed(1)}-fold rise` : `${(1 / r).toFixed(1)}-fold fall`;
+  }
+  const peak = xs.reduce((m, o) => (o.v > m.v ? o : m), first);
+  const trough = xs.reduce((m, o) => (o.v < m.v ? o : m), first);
+  const ext = peak.v / first.v >= first.v / trough.v ? peak : trough;
+  const r = ext.v / first.v;
+  return `${r >= 1 ? `${r.toFixed(1)}-fold rise to a peak` : `${(1 / r).toFixed(1)}-fold fall to a low`} on ${dayText(ext.row.date)}; last value ${last.row.valueText} ${last.row.unit} on ${dayText(last.row.date)}, ${fmtNum(last.v / first.v)}× the first`;
+};
 /** P61.2: one chronological series per biomarker + unit, ordered by name. */
 const seriesOf = (xs: readonly Obs[]): Obs[][] => {
   const m = new Map<string, Obs[]>();
@@ -335,12 +369,15 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         ].filter(Boolean).join(" "),
         observed,
         measurement: [
-          ...(kSwing ? [`A high potassium followed by a low value within one day is typical of in-vitro haemolysis or delayed processing of the first sample (pseudohyperkalaemia) (${shortSource("statpearls-hyperkalemia")}); the haemolysis index is not recorded.`] : []),
+          ...(kSwing ? [kSwingGap(k, kLowCut) <= 1
+            ? `A high potassium followed by a low value within one day is typical of in-vitro haemolysis or delayed processing of the first sample (pseudohyperkalaemia) (${shortSource("statpearls-hyperkalemia")}); the haemolysis index is not recorded.`
+            : `High (${k.filter((o) => o.v >= 5.5).map(at).join(", ")}) and low (${k.filter((o) => o.v < kLowCut).map(at).join(", ")}) potassium results were recorded on different examinations; in-vitro haemolysis or delayed processing can falsely raise an individual result (pseudohyperkalaemia) (${shortSource("statpearls-hyperkalemia")}), and the haemolysis index is not recorded.`] : []),
           ...(naJumps.length ? ["A sodium change of this size without documented treatment first requires checking sample identity, intravenous-line contamination and the analyser method (direct or indirect ion-selective electrode)."] : []),
           ...(qtc.length ? ["The QT correction formula and the heart rate at the time of the ECG are not recorded; Bazett's formula overestimates QTc at faster heart rates, so manual re-measurement matters."] : []),
         ],
         pattern: [
-          naAbn.length && kAbn.length ? "Sodium and potassium moved in opposite directions across the abnormal range within about one day." : naAbn.length ? "Sodium is outside the provisional reference range." : kAbn.length ? "Potassium is outside the provisional reference range." : "",
+          // P61.2: timing words follow the recorded dates ("within about one day" only when that is what the dates show).
+          naAbn.length && kAbn.length ? (spanDays([...naAbn, ...kAbn]) <= 1 ? "Sodium and potassium moved in opposite directions across the abnormal range within about one day." : `Sodium and potassium were both outside the provisional reference range on more than one examination (sodium ${naAbn.map((o) => dayText(o.row.date)).join(", ")}; potassium ${kAbn.map((o) => dayText(o.row.date)).join(", ")}), over ${spanDays([...naAbn, ...kAbn])} days.`) : naAbn.length ? "Sodium is outside the provisional reference range." : kAbn.length ? "Potassium is outside the provisional reference range." : "",
           qtc.length && kLow.length ? `Low potassium (${kLow.map(at).join(", ")}) and a QTc of ${qtc.map((o) => o.row.valueText).join("/")} ms are both recognised risk factors for torsade de pointes${qtc.some((q) => kLow.some((x) => x.row.date === q.row.date)) ? "" : "; they were recorded on different days, so their co-existence is not established"}.` : qtc.length ? "A prolonged QTc is recorded without a simultaneous potassium result." : "",
           "If confirmed, these changes matter for heart rhythm and neurological safety; the measurements alone do not establish a cause.",
         ].filter(Boolean).join(" "),
@@ -469,7 +506,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         observed,
         measurement: ["Fasting status and time since the last meal are not recorded; triglycerides rise for several hours after eating."],
         pattern: peak
-          ? `Triglycerides peaked on ${dayText(peak.row.date)} and fell the next day. A transient peak of this shape fits an acute effect — a recent meal${peakWithInfl ? ", or the inflammatory response recorded on the same day, which raises plasma triglycerides (" + shortSource("khovidhunkit-2004") + ")" : ""} — better than a stable lipid disorder. Low HDL and raised LDL, if confirmed when fasting and well, are long-term cardiovascular risk factors.`
+          ? `Triglycerides peaked on ${dayText(peak.row.date)} and fell at the next measurement (${nextAfter(tg, peak)}). A transient peak of this shape fits an acute effect — a recent meal${peakWithInfl ? ", or the inflammatory response recorded on the same day, which raises plasma triglycerides (" + shortSource("khovidhunkit-2004") + ")" : ""} — better than a stable lipid disorder. Low HDL and raised LDL, if confirmed when fasting and well, are long-term cardiovascular risk factors.`
           : "Lipid values are in provisional risk bands. If confirmed when fasting and well, they are long-term cardiovascular risk factors.",
         hypotheses: [...(peakWithInfl ? ["Hypothesis: inflammation-related rise in triglycerides (acute-phase lipid changes)."] : []), "Hypothesis: non-fasting samples."],
         supporting: observed,
@@ -495,8 +532,16 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         headline: `HbA1c ${a.map((o) => o.row.valueText).join(" → ")} % (${a.map((o) => dayText(o.row.date)).join(", ")}) — held for measurement verification.`,
         rationale: "PP-5: every HbA1c result is held by the existing measurement-consistency rule; no clinical statement is made until it is repeated.",
         observed: [`HbA1c ${a.map(at).join(" → ")}.`],
-        measurement: [`HbA1c reflects average glucose over about 2–3 months (${shortSource("ada-standards-glycemic")}), so a change of ${Math.abs(a.at(-1)!.v - a[0]!.v).toFixed(1)} percentage points within ${days} ${days === 1 ? "day" : "days"} cannot be physiological.`],
-        pattern: "The two HbA1c results cannot both be correct; until one is confirmed, neither supports or excludes a disorder of blood-sugar regulation.",
+        // P61.2: describe the largest change between consecutive results (first-to-last can be zero in a long series).
+        measurement: [(() => {
+          const j = largestStep(a);
+          return j && a.length > 2
+            ? `HbA1c reflects average glucose over about 2–3 months (${shortSource("ada-standards-glycemic")}), so the change of ${Math.abs(j.b.v - j.a.v).toFixed(1)} percentage points between ${dayText(j.a.row.date)} and ${dayText(j.b.row.date)} (${dayNum(j.b.row.date) - dayNum(j.a.row.date)} ${dayNum(j.b.row.date) - dayNum(j.a.row.date) === 1 ? "day" : "days"}) cannot be physiological.`
+            : `HbA1c reflects average glucose over about 2–3 months (${shortSource("ada-standards-glycemic")}), so a change of ${Math.abs(a.at(-1)!.v - a[0]!.v).toFixed(1)} percentage points within ${days} ${days === 1 ? "day" : "days"} cannot be physiological.`;
+        })()],
+        pattern: a.length > 2
+          ? `These ${a.length} HbA1c results are not mutually consistent; until they are verified, none of them supports or excludes a disorder of blood-sugar regulation.`
+          : "The two HbA1c results cannot both be correct; until one is confirmed, neither supports or excludes a disorder of blood-sugar regulation.",
         hypotheses: ["Hypothesis: sample mix-up or transcription error.", "Hypothesis: different analytical methods.", ...(hb.length ? [`Hypothesis: altered red-cell turnover affecting HbA1c (haemoglobin ${hb.map(val).join(" → ")} recorded).`] : [])],
         supporting: [], contradicting: [],
         missing: [...notRecorded("glucose", "Fasting plasma glucose"), "HbA1c method and laboratory."],
@@ -528,7 +573,7 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         headline: [ocChange ? `Osteocalcin ${oc.map((o) => o.row.valueText).join(" → ")} ng/mL within ${days} ${days === 1 ? "day" : "days"}` : "", ...[...new Set(vdLow.map((o) => val(o)))].map((v) => `vitamin D ${v} (${vdLow.filter((o) => val(o) === v).map((o) => dayText(o.row.date)).join(", ")})`)].filter(Boolean).join("; ").replace(/^./, (c) => c.toUpperCase()) + ".",
         rationale: "PP-4: a significant change (trend review) and/or a provisional AMBER vitamin D value; no threshold supports high priority.",
         observed: [
-          ...(ocChange ? [`Osteocalcin ${oc.map(at).join(" → ")} (${ratio >= 1 ? `${ratio.toFixed(1)}-fold rise` : `${(1 / ratio).toFixed(1)}-fold fall`}).`] : []),
+          ...(ocChange ? [`Osteocalcin ${oc.map(at).join(" → ")} (${foldText(oc)}).`] : []),
           ...vdLow.map((o) => `25-hydroxyvitamin D ${at(o)} — ${o.row.bandLabel ?? "AMBER"} (provisional; ${shortSource("nih-ods-vitd")}).`),
           ...refSeries.map((xs) => xs.length === 1
             ? `${xs[0]!.row.name} ${at(xs[0]!)} — single measurement; no criterion applied.`
