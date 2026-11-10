@@ -66,6 +66,7 @@ function classifySyntheticDemo(
   const matched = (
     e: { demoId: string; domain: HealthDomainId },
     basis: SyntheticDemoCatalogBasis,
+    unitNotation?: SyntheticDemoRecognition["unitNotation"],
   ) => ({
     classification: {
       status: "matched" as const,
@@ -74,6 +75,7 @@ function classifySyntheticDemo(
       originalLabel: input.label.trim(),
       originalUnit: input.unit.trim(),
       reviewRequired: true as const,
+      ...(unitNotation ? { unitNotation: { reportedUnit: unitNotation.reportedUnit, catalogUnit: unitNotation.catalogUnit, ruleIds: [...unitNotation.ruleIds] } } : {}),
     },
     extension: null,
     syntheticDemo: basis,
@@ -97,7 +99,7 @@ function classifySyntheticDemo(
   // P39: an explicit source section naming another domain is incompatible; the row
   // stays review-only instead of being attributed to the activated entry's domain.
   if (e && input.sourceDomain && input.sourceDomain !== e.domain) return null;
-  return e ? matched(e, syntheticDemoBasisFor(e, r.demoCatalogVersion)) : null;
+  return e ? matched(e, syntheticDemoBasisFor(e, r.demoCatalogVersion), r.unitNotation) : null;
 }
 
 /**

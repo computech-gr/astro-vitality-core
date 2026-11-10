@@ -11,6 +11,11 @@ export type IntakeClassification =
       originalLabel: string;
       originalUnit: string;
       reviewRequired: true;
+      /**
+       * P61.3: the reported unit (originalUnit, verbatim) is the catalog unit written in another notation
+       * (closed typographic rules, synthetic demo only); saved records use catalogUnit. Never a conversion.
+       */
+      unitNotation?: { reportedUnit: string; catalogUnit: string; ruleIds: string[] } | undefined;
     }
   | {
       status: "unit_review_required";

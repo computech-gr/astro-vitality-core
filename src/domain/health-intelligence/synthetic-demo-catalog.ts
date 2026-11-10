@@ -13,7 +13,9 @@
  *   read models. It only marks the row as already covered so no duplicate
  *   unknown-biomarker request is generated.
  * - matching is label + exact unit (no conversion); specimen and method are not
- *   invented, so the demo can never be mistaken for validated recognition.
+ *   invented, so the demo can never be mistaken for validated recognition. P61.3:
+ *   a unit written in another notation (closed typographic list, p613-unit-notation)
+ *   is recognized as the entry's unit and reported as such; never a conversion.
  */
 import { canonicalJson } from "./observation-envelope";
 import { normalizeCatalogText, sha256Hex } from "./catalog-lifecycle";
