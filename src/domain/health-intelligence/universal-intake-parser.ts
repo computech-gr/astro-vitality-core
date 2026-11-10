@@ -1,6 +1,10 @@
 /** Local, deterministic candidate extraction; never authorizes storage or infers dates. */
 import { isCalendarDate, isExplicitInstant, type ObservationDatePrecision } from "./observation-date";
-export type Candidate = {label:string;value:string;unit:string;observedAt:string;datePrecision?:ObservationDatePrecision;collectionDate?:string;sourceValidation?:"unvalidated";excerpt:string};
+export type Candidate = {label:string;value:string;unit:string;observedAt:string;datePrecision?:ObservationDatePrecision;collectionDate?:string;sourceValidation?:"unvalidated";excerpt:string;
+ /** P61: verbatim date cell that is not an ISO date/zoned timestamp (kept for review, never parsed into observedAt). */
+ rawDate?:string;
+ /** P61: 1-based source row (CSV/XLSX grid row) for date-evidence traceability. */
+ sourceRow?:number};
 export function candidateDate(value:string): Pick<Candidate,"observedAt"|"datePrecision"|"collectionDate"> | null {
  if(!value)return {observedAt:""};
  if(isCalendarDate(value))return {observedAt:value,datePrecision:"date",collectionDate:value};
@@ -21,24 +25,36 @@ export function csvCells(text:string):string[][] {
   row.push(field.trim());if(row.some(Boolean))rows.push(row);
   return rows;
 }
-export function extractCsvCandidates(text:string,max=200):{rows:Candidate[];skipped:number} {
+/** P61: examination-date column names (the date of the examination, never a collection or upload date). */
+export const EXAMINATION_DATE_COLUMNS=['examination_date','examinationdate','exam_date','examdate','test_date','testdate','measurement_date','measurementdate'];
+export function extractCsvCandidates(text:string,max=200,options:{keepUnparsedDates?:boolean}={}):{rows:Candidate[];skipped:number} {
  const cells=csvCells(text);if(!cells.length)return {rows:[],skipped:0};
- const first=(cells[0] ?? []).map(x=>x.toLowerCase().replace(/^\ufeff/,''));
- const names=['label','variable','metric','metric_id','name'];
+ const first=(cells[0] ?? []).map(x=>x.toLowerCase().replace(/^\ufeff/,'').trim());
+ const names=['label','variable','metric','metric_id','name','biomarker','analyte','test','parameter','measurement'];
  const labelIndex=first.findIndex(x=>names.includes(x));
  const header=labelIndex>=0&&first.includes('value')&&first.includes('unit');
  const collectionIndex=first.findIndex(x=>['collection_date','collectiondate'].includes(x));
  const timeIndex=first.findIndex(x=>['observed_at','observedat'].includes(x));
- const positions=header?[labelIndex,first.indexOf('value'),first.indexOf('unit'),(timeIndex>=0?timeIndex:first.findIndex(x=>['collection_date','collectiondate','date'].includes(x)))]:[0,1,2,3];
+ const examIndex=first.findIndex(x=>EXAMINATION_DATE_COLUMNS.includes(x));
+ const dateIndex=timeIndex>=0?timeIndex:examIndex>=0?examIndex:first.findIndex(x=>['collection_date','collectiondate','date'].includes(x));
+ const positions=header?[labelIndex,first.indexOf('value'),first.indexOf('unit'),dateIndex]:[0,1,2,3];
+ const examColumn=header&&timeIndex<0&&examIndex>=0;
  const rows:Candidate[]=[];let skipped=0;
- for(const cellsRow of cells.slice(header?1:0)){
+ cells.slice(header?1:0).forEach((cellsRow,i)=>{
+  const sourceRow=i+(header?2:1);
   const [li,vi,ui,ti]=positions;const label=cellsRow[li ?? -1]??'',value=cellsRow[vi ?? -1]??'',unit=cellsRow[ui ?? -1]??'',observedAt=(ti ?? -1)<0?'':(cellsRow[ti ?? -1]??'');
   const collectionDate=collectionIndex>=0?cellsRow[collectionIndex]:undefined;
-  const dateFields=candidateDate(observedAt||collectionDate||'');
-  if(!label||!numeric.test(value)||!unit||!dateFields||(collectionDate&&!isCalendarDate(collectionDate))){skipped++;continue;}
-  if(rows.length>=max){skipped++;continue;}
-  rows.push({label,value,unit,...dateFields,...(collectionDate?{collectionDate}:{}),excerpt:cellsRow.join(',').slice(0,350)});
- }
+  let dateFields=candidateDate(observedAt||collectionDate||'');
+  let rawDate:string|undefined;
+  // P61: an unparseable examination date is kept verbatim for review instead of being dropped or guessed.
+  if(!dateFields&&options.keepUnparsedDates&&(observedAt||collectionDate)){rawDate=(observedAt||collectionDate||'').trim();dateFields={observedAt:''};}
+  if(!label||!numeric.test(value)||!unit||!dateFields||(collectionDate&&!isCalendarDate(collectionDate)&&!rawDate)){skipped++;return;}
+  if(rows.length>=max){skipped++;return;}
+  const fields={...dateFields};
+  // An examination-date column is the examination date, not source collection metadata.
+  if(examColumn&&!collectionDate)delete fields.collectionDate;
+  rows.push({label,value,unit,...fields,...(collectionDate&&isCalendarDate(collectionDate)?{collectionDate}:{}),...(rawDate?{rawDate}:{}),sourceRow,excerpt:cellsRow.join(',').slice(0,350)});
+ });
  return {rows,skipped};
 }
 /** Conservative extraction of plain-text table rows with explicit ISO timestamp. */
