@@ -710,6 +710,8 @@ export function UnifiedIntakeWorkspace() {
     // Retry safety: a document already in review is never added twice; saved rows are
     // additionally caught by the stored-duplicate check before saving.
     const loaded = new Set(rows.map((row) => row.documentSha256).filter(Boolean));
+    // P61: the upload (import) time is kept apart from the examination date and the save time.
+    const importedAt = new Date().toISOString();
     try {
       for (const file of files) {
         let state = "complete";
@@ -738,11 +740,15 @@ export function UnifiedIntakeWorkspace() {
           hashes.add(hash);
           if (format === "xlsx" || format === "json") {
             const bytes = format === "xlsx" ? new Uint8Array(await file.arrayBuffer()) : null;
-            const parsed = bytes
-              ? extractXlsxCandidates(bytes, MAX_ROWS)
-              : extractJsonCandidates(await file.text(), MAX_ROWS);
-            const evidence = bytes
-              ? extractGridSourceEvidence(xlsxCells(bytes), {
+            const grid = bytes ? xlsxCells(bytes).filter((row) => row.some(Boolean)) : null;
+            const wide = grid ? extractWideGridCandidates(grid) : null;
+            const parsed = wide
+              ? { rows: [], skipped: wide.skipped, notes: [] }
+              : bytes
+                ? extractXlsxCandidates(bytes, MAX_ROWS, { keepUnparsedDates: true })
+                : extractJsonCandidates(await file.text(), MAX_ROWS);
+            const evidence = grid
+              ? extractGridSourceEvidence(grid, {
                   sha256: hash,
                   fileName: file.name,
                   kind: "xlsx",
@@ -754,18 +760,23 @@ export function UnifiedIntakeWorkspace() {
               format === "xlsx" ? "xlsx" : isFhir ? "fhir" : "json";
             const label = format === "xlsx" ? "XLSX" : isFhir ? "FHIR" : "JSON";
             const space = Math.max(0, MAX_ROWS - incoming.length);
-            const batch = withSections(parsed.rows.slice(0, space), evidence).map((item) =>
-              newRow({
-                ...item,
-                sourceKind: kind,
-                sourceLabel: `${label}: ${file.name}`,
-                documentName: file.name,
-                documentSha256: hash,
-              }),
-            );
+            const built = wide
+              ? gridRows(wide.rows, evidence, kind, `${label}: ${file.name}`)
+              : withSections(parsed.rows, evidence).map((item) =>
+                  datedRow(item, kind, `${label}: ${file.name}`),
+                );
+            const batch = built.slice(0, space).map((row) => ({
+              ...row,
+              documentName: file.name,
+              documentSha256: hash,
+            }));
             incoming.push(...batch);
             count = batch.length;
             if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
+            if (wide)
+              flags.push(
+                `Date-column grid: ${wide.rows.length} dated value(s) read, one per examination date column${wide.blankCells ? `; ${wide.blankCells} blank cell(s) skipped` : ""}.`,
+              );
           } else if (format === "csv") {
             const parsed = parseIntakeCsv(await file.text(), file.name, hash);
             const space = Math.max(0, MAX_ROWS - incoming.length);
@@ -778,6 +789,8 @@ export function UnifiedIntakeWorkspace() {
             incoming.push(...batch);
             count = batch.length;
             if (parsed.skipped) state = `complete; ${parsed.skipped} row(s) skipped`;
+            if (parsed.wide)
+              flags.push("Date-column grid: one observation per examination date column.");
           } else {
             const extracted = await extractBoneDocument(file);
             const kind: ObservationSourceKind = /ocr/i.test(extracted.method) ? "ocr" : "pdf_text";
@@ -801,6 +814,7 @@ export function UnifiedIntakeWorkspace() {
               method: extracted.method,
               textLength: extracted.text.trim().length,
               reconstruction: parsed.reconstruction,
+              multiDate: parsed.multiDate,
               saved: 0,
             };
             processed.push(doc);
@@ -825,6 +839,13 @@ export function UnifiedIntakeWorkspace() {
                 `${parsed.rows.length - batch.length} row(s) not loaded: the review table holds at most ${MAX_ROWS} rows. Save or clear rows, then re-process.`,
               );
             if (extracted.warnings.length) flags.push(...extracted.warnings);
+            const md = parsed.multiDate;
+            if (md.multipleDates)
+              flags.push(
+                `${md.distinctDates.length} examination date(s) detected (${md.distinctDates.join(", ") || "none resolved"}); every row keeps its own date — one document date is never applied to all rows.`,
+              );
+            for (const ignored of md.ignoredDates.slice(0, 5))
+              flags.push(`Line ${ignored.line}: "${ignored.text}" — ${ignored.reason}`);
           }
           if (!count && state === "complete")
             state =
@@ -841,7 +862,7 @@ export function UnifiedIntakeWorkspace() {
       if (processed.length) setDocuments((previous) => [...previous, ...processed]);
       if (incoming.length)
         addRows(
-          incoming,
+          incoming.map((row) => ({ ...row, importedAt })),
           `Batch processed ${results.length} file(s); ${incoming.length} candidate row(s), all unchecked. Review each row before saving.`,
         );
       else
