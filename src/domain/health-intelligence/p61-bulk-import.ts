@@ -738,6 +738,11 @@ export function rowDateEvidence(row: { observedAt: string; datePrecision?: Obser
   return evidence({ ...at, status: "missing", value: null, precision: null, sourceText: null, groupKey: null, options: [], note: "No examination date is stated for this row." });
 }
 
+/** Review-row date fields for an evidence record: only a resolved date fills observedAt. */
+export function reviewDateFields(e: ExamDateEvidence): { observedAt: string; datePrecision?: ObservationDatePrecision } {
+  return e.status === "resolved" && e.value ? { observedAt: e.value, datePrecision: e.precision ?? "date" } : { observedAt: "" };
+}
+
 export const manualDateEvidence = (value: string, precision: ObservationDatePrecision | undefined): ExamDateEvidence =>
   evidence({ status: value ? "resolved" : "missing", value: value || null, precision: value ? (precision ?? "instant") : null, source: "manual", sourceText: value || null, line: null, page: null, groupKey: null, options: [], note: value ? "Examination date entered by the reviewer." : "No examination date entered." });
 
