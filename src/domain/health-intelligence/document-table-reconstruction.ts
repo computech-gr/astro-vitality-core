@@ -45,7 +45,9 @@ export type ColumnRole =
   | "date"
   | "specimen"
   | "method"
-  | "flag";
+  | "flag"
+  /** P61: reported grouping column ("Domain", "Category", "Panel"); read for traceability only, never a domain assignment. */
+  | "category";
 
 export interface DocumentLineInput {
   text: string;
@@ -269,6 +271,7 @@ const ROLE_VOCABULARY: Readonly<Record<ColumnRole, readonly string[]>> = {
   specimen: ["specimen", "sample", "sample type", "matrix", "δειγμα"],
   method: ["method", "assay", "technique", "μεθοδος"],
   flag: ["flag", "status", "comment", "remark", "ενδειξη", "σχολιο"],
+  category: ["domain", "category", "panel", "body system", "system", "group", "κατηγορια", "συστημα"],
 };
 const VOCABULARY = new Map<string, ColumnRole>(
   (Object.entries(ROLE_VOCABULARY) as [ColumnRole, readonly string[]][]).flatMap(([role, words]) =>
@@ -935,10 +938,19 @@ export function reconstructDocumentTables(
     const looksNumbered = ROW_NUMBER.test(first) || (delimited.length <= 1 && !!tokenNumber);
     // Running headers/footers repeat on several pages. A numbered table row or a domain heading that
     // happens to repeat (the same reading in two examinations, a section per examination) is content.
+    // P61: in an un-numbered table, a row whose cells match the header column count with a readable
+    // result and a lettered label is a measurement row (the same reading in several examinations).
+    const alignedTableRow =
+      active !== null &&
+      !hasRowNumberRole &&
+      delimited.length === active.roles.length &&
+      isValueToken(delimited[active.roles.indexOf("result")] ?? "") &&
+      /\p{L}/u.test(delimited[active.roles.indexOf("label")] ?? "");
     const repeatedContent =
       (active !== null &&
         looksNumbered &&
         (delimited.length >= 2 || (delimited.length <= 1 && !!tokenNumber))) ||
+      alignedTableRow ||
       Boolean(documentLineHeading(text)?.domain);
     if (!repeatedContent && isFurniture(text, l.page)) return;
 

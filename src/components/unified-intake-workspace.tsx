@@ -1597,7 +1597,7 @@ export function UnifiedIntakeWorkspace() {
                           resolved)
                         </p>
                         <ul className="ml-4 list-disc space-y-0.5">
-                          {doc.multiDate.groups.slice(0, 40).map((g) => (
+                          {doc.multiDate.groups.filter((g) => g.rows > 0).slice(0, 40).map((g) => (
                             <li key={g.key}>
                               {g.kind === "heading" ? "Heading" : "Date column"} “{g.text}”
                               {g.kind === "heading" ? ` (line ${g.line}${g.page ? `, page ${g.page}` : ""})` : ""}:{" "}
@@ -1608,6 +1608,13 @@ export function UnifiedIntakeWorkspace() {
                                   : "not a valid date"}{" "}
                               · {g.rows} row(s)
                               {g.headingKind === "collection" ? " · labelled a sample collection date" : ""}
+                            </li>
+                          ))}
+                          {doc.multiDate.groups.filter((g) => g.rows === 0).slice(0, 40).map((g) => (
+                            <li key={g.key} className="text-muted-foreground" data-testid="p61-date-line-without-rows">
+                              Date line “{g.text}” (line {g.line}
+                              {g.page ? `, page ${g.page}` : ""}): no measurement rows follow it, so it was not applied
+                              to any row.
                             </li>
                           ))}
                           {doc.multiDate.ignoredDates.map((d) => (

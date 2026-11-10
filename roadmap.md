@@ -626,5 +626,6 @@
 ## P61 Automated multi-date bulk import (Preview only)
 
 - [x] Per-row examination dates from row dates, date columns and examination headings; ambiguity/conflict exception queue; consolidated preview, reconciliation and bulk confirmation; source-aware duplicate blocking; P60 report integration (synthetic reconstructed fixture: 304 observations, 38 series, 8 dates).
-- [ ] Owner-supplied 304-observation Alex Morgan acceptance dataset was not attached; run it through the import when provided.
+- [x] P61 final acceptance with the owner-supplied PDF and CSV (exact bytes pinned by tests): 304/304 rows, 8 dates, identical tuples, 200 matched / 104 unresolved.
+- [ ] Owner/Researcher decision on the 13 unresolved series (no exact catalog label+unit), the CSV context column and the P60 wording items listed in the P61 acceptance report.
 - [ ] Owner approval of P61 before publishing.

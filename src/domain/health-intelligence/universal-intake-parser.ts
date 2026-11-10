@@ -25,13 +25,14 @@ export function csvCells(text:string):string[][] {
   row.push(field.trim());if(row.some(Boolean))rows.push(row);
   return rows;
 }
+/** Measurement-name column headers (lower-case, exact). P61 adds the common "<kind>_name" forms (e.g. metric_name). */
+export const CSV_LABEL_COLUMNS=['label','variable','metric','metric_id','name','biomarker','analyte','test','parameter','measurement','metric_name','biomarker_name','analyte_name','test_name','parameter_name','measurement_name','observation_name'];
 /** P61: examination-date column names (the date of the examination, never a collection or upload date). */
 export const EXAMINATION_DATE_COLUMNS=['examination_date','examinationdate','exam_date','examdate','test_date','testdate','measurement_date','measurementdate'];
 export function extractCsvCandidates(text:string,max=200,options:{keepUnparsedDates?:boolean}={}):{rows:Candidate[];skipped:number} {
  const cells=csvCells(text);if(!cells.length)return {rows:[],skipped:0};
  const first=(cells[0] ?? []).map(x=>x.toLowerCase().replace(/^\ufeff/,'').trim());
- const names=['label','variable','metric','metric_id','name','biomarker','analyte','test','parameter','measurement'];
- const labelIndex=first.findIndex(x=>names.includes(x));
+ const labelIndex=first.findIndex(x=>CSV_LABEL_COLUMNS.includes(x));
  const header=labelIndex>=0&&first.includes('value')&&first.includes('unit');
  const collectionIndex=first.findIndex(x=>['collection_date','collectiondate'].includes(x));
  const timeIndex=first.findIndex(x=>['observed_at','observedat'].includes(x));

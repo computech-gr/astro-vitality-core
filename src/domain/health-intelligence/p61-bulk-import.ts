@@ -301,7 +301,7 @@ export function dateColumnHeader(cells: readonly string[]): DateColumnHeader | n
     roles.push((headerCellRole(cell) ?? "flag_unknown") as GridRole);
   });
   if (dates.length < 2 || !roles.includes("label") || roles.includes("result")) return null;
-  if (roles.some((r) => !["row_number", "label", "unit", "reference", "specimen", "method", "flag", "date_value"].includes(r)))
+  if (roles.some((r) => !["row_number", "label", "unit", "reference", "specimen", "method", "flag", "category", "date_value"].includes(r)))
     return null;
   return { roles, dates };
 }
