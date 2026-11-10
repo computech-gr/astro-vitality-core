@@ -13,7 +13,7 @@ import { DOCUMENT_TABLE_RULES_VERSION, documentLinesFromText } from "../../src/d
 import { rowExtractionEvidence } from "../../src/domain/health-intelligence/document-intake-review";
 import { classifyWithGovernedExtensions } from "../../src/domain/health-intelligence/unknown-biomarker-review";
 import { domainForMetric } from "../../src/domain/health-domains/document-domain-projection";
-import { extractCsvCandidates } from "../../src/domain/health-intelligence/universal-intake-parser";
+import { csvCells, extractCsvCandidates } from "../../src/domain/health-intelligence/universal-intake-parser";
 import { loadInstalledDemoCatalogs, resetSyntheticDemoCatalogsForTests, SYNTHETIC_DEMO_STORAGE_KEY } from "../../src/domain/health-intelligence/synthetic-demo-catalog-runtime";
 import { listUnifiedObservations, saveUnifiedObservation } from "../../src/domain/health-intelligence/observation-store";
 import { InMemoryOfflineMissionStore } from "../../src/infrastructure/offline/store";
@@ -216,12 +216,12 @@ describe("P61.2 owner fixtures — source context, report wording and determinis
     premiumFrom(toObservations(validated(rows)), { provisional: true, mappings: true, missionId: SCOPE.missionId, scope: SCOPE, range: { from: "2026-11-01", to: "2026-11-30" } });
 
   it("CSV context is kept verbatim as unverified source provenance on every row", () => {
-    const csv = readFileSync(CSV, "utf8").trim().split(/\r?\n/);
-    const header = csv[0]!.split(",");
-    const ci = header.indexOf("context");
+    const csv = csvCells(readFileSync(CSV, "utf8"));
+    const ci = csv[0]!.indexOf("context");
     expect(ci).toBeGreaterThan(-1);
+    expect(csvRows.length).toBe(csv.length - 1);
     expect(csvRows.every((r) => typeof r.sourceContext === "string" && r.sourceContext.length > 0)).toBe(true);
-    csvRows.forEach((r, i) => expect(r.sourceContext).toBe(csv[i + 1]!.split(",")[ci]!.trim()));
+    csvRows.forEach((r, i) => expect(r.sourceContext).toBe(csv[i + 1]![ci]!.trim()));
     const k = csvRows.find((r) => r.label === "Potassium")!;
     expect(k.sourceContext).toBe("Serum; hemolysis status unknown");
     // The stored observation carries the context only inside the verbatim source excerpt (no new field, no clinical fact).
@@ -255,7 +255,7 @@ describe("P61.2 owner fixtures — source context, report wording and determinis
 
   it("PDF and CSV imports give the same report rows, charts and findings in the same order", () => {
     const a = reportOf(pdf.rows), b = reportOf(csvRows);
-    const rowsKey = (r: typeof a) => r.rows.map((x) => `${x.observedAt.slice(0, 10)}|${x.metricId}|${x.valueText}|${x.unit}`);
+    const rowsKey = (r: typeof a) => r.rows.map((x) => `${x.date}|${x.metricId}|${x.valueText}|${x.unit}|${x.displayClass}`);
     expect(rowsKey(a)).toEqual(rowsKey(b));
     expect(a.charts.map((c) => `${c.base.metricId}:${c.base.points.map((p) => p.valueText).join(",")}`)).toEqual(b.charts.map((c) => `${c.base.metricId}:${c.base.points.map((p) => p.valueText).join(",")}`));
     const pat = (r: typeof a) => JSON.stringify(r.patterns.patterns.map((p) => [p.id, p.priority, p.title, p.headline, p.observed, p.pattern]));
