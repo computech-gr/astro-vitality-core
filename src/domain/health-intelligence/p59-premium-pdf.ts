@@ -11,7 +11,7 @@ import { openTextPdf, toWinAnsi, type PdfDeps, type PdfWriter, type ReportFonts,
 import { REPORT_LEGEND, legendProblems } from "./p571-report-legend";
 import { COLOR, PAGE, type RGB } from "./p59-report-tokens";
 import type { PremiumChart, PremiumReport, ResultRow, DisplayClass, ClassBasis, SystemTile } from "./p59-premium-model";
-import { GROUPS } from "./p59-premium-model";
+import { ASSOCIATED_HIGH_PRIORITY_LABEL, GROUPS } from "./p59-premium-model";
 import type { AlertCard } from "./p59-executive-alerts";
 import { WARNING_PRIORITY_LABEL, WARNING_PRIORITY_MEANING, WARNING_PRIORITY_RULES, WARNING_PRIORITY_TONE, type WarningPriority } from "./p59-warning-priority";
 import { demonstrationMappings } from "./p59-provisional-interpretation";
