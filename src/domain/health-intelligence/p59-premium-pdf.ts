@@ -925,8 +925,26 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
     } else { L.fill(col); L.pdf.rect(cx - 1.2, cy - 1.2, 2.4, 2.4, "F"); }
     const lab = `${p.valueText}${p.annotation ? ` ${p.annotation}` : ""}`;
     L.font(7.6, true, col);
-    const above = cy - 2.6 > py0 + 1;
-    L.pdf.text(L.t(lab), cx, above ? cy - 2.4 : cy + 4.4, { align: "center" });
+    // P61.2: a value label goes above its point unless the series line through a neighbour would cross it
+    // there (e.g. a steep rise to a peak); then below, when the plot has room.
+    const lw = L.width(lab, 7.6, true) + 0.6, capH = 2.1;
+    const crosses = (baseline: number) => {
+      const bx0 = cx - lw / 2, bx1 = cx + lw / 2, by0 = baseline - capH, by1 = baseline + 0.3;
+      return [i - 1, i + 1].some((j) => {
+        const q = pts[j];
+        if (!q) return false;
+        const qx = X(days[j]!), qy = Y(q.value);
+        for (let k = 1; k <= 24; k++) {
+          const t = k / 24, sx = cx + (qx - cx) * t, sy = cy + (qy - cy) * t;
+          if (sx >= bx0 && sx <= bx1 && sy >= by0 && sy <= by1) return true;
+        }
+        return false;
+      });
+    };
+    const aboveY = cy - 2.4, belowY = cy + 4.4;
+    const roomAbove = cy - 2.6 > py0 + 1, roomBelow = belowY < py1 - 0.6;
+    const useBelow = !roomAbove || (crosses(aboveY) && roomBelow && !crosses(belowY));
+    L.pdf.text(L.t(lab), cx, useBelow ? belowY : aboveY, { align: "center" });
   });
   let cy = py1 + 6.2;
   if (legendRows) {
