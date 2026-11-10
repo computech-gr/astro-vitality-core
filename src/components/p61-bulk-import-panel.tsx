@@ -20,6 +20,8 @@ import {
   type P61RowStatus,
 } from "@/domain/health-intelligence/p61-bulk-import";
 import { syntheticIntakeAliasFor } from "@/domain/health-intelligence/p612-synthetic-intake-aliases";
+import { mappingDecisionFor, MAPPING_CATEGORY_LABELS } from "@/domain/health-intelligence/p613-mapping-decision-register";
+import { P613MappingDecisionRegister } from "@/components/p613-mapping-decision-register";
 
 export interface P61PanelRow {
   key: string;
@@ -127,6 +129,8 @@ export function P61BulkImportPanel(props: {
     if (validation && statusKey(s) !== validation) return false;
     return true;
   });
+  // P61.3: register entries for the names in this import (display only).
+  const registerKeys = useMemo(() => new Set(rows.map((row) => `${row.label.trim().toLowerCase()}|${row.unit.trim()}`)), [rows]);
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const current = Math.min(page, pages - 1);
   const shown = filtered.slice(current * PAGE, current * PAGE + PAGE);
@@ -221,6 +225,8 @@ export function P61BulkImportPanel(props: {
         </div>
       ) : null}
 
+      <P613MappingDecisionRegister only={registerKeys} compact />
+
       <div className="grid gap-3 sm:grid-cols-4" data-testid="p61-preview-filters">
         <div className="space-y-1">
           <Label htmlFor="p61-filter-date">Examination date</Label>
@@ -308,7 +314,14 @@ export function P61BulkImportPanel(props: {
                     ) : null}
                   </td>
                   <td className="py-2 pr-3 tabular-nums">{row.value || "—"}</td>
-                  <td className="py-2 pr-3">{row.unit || "—"}</td>
+                  <td className="py-2 pr-3">
+                    {row.unit || "—"}
+                    {row.classification.status === "matched" && row.classification.unitNotation ? (
+                      <span className="mt-0.5 block max-w-40 text-xs text-muted-foreground">
+                        Same unit as catalog "{row.classification.unitNotation.catalogUnit}" (notation only, no conversion; pending Researcher confirmation)
+                      </span>
+                    ) : null}
+                  </td>
                   <td className="py-2 pr-3">
                     {row.classification.status === "matched" ? DOMAIN_LABELS[row.classification.domain] : "—"}
                   </td>
@@ -332,6 +345,17 @@ export function P61BulkImportPanel(props: {
                     {s && s.kind !== "validated" ? (
                       <span className="mt-1 block max-w-64 text-muted-foreground">{s.reason}</span>
                     ) : null}
+                    {s?.kind === "exception" && row.classification.status !== "matched"
+                      ? (() => {
+                          const d = mappingDecisionFor(row.label, row.unit);
+                          return d && !d.applied ? (
+                            <span className="mt-1 block max-w-64 text-muted-foreground" data-testid="p613-row-decision">
+                              Researcher decision needed: {MAPPING_CATEGORY_LABELS[d.categories[0]!]}
+                              {d.proposal.catalogId ? ` (proposed ${d.proposal.catalogId})` : ""}
+                            </span>
+                          ) : null;
+                        })()
+                      : null}
                   </td>
                 </tr>
               );
