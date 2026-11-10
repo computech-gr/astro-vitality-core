@@ -848,13 +848,25 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
   L.draw([148, 163, 184]);
   L.pdf.setLineWidth(0.3);
   L.pdf.line(px0, py1, px1, py1);
-  const labelled = new Set<string>();
-  pts.forEach((p, i) => {
-    if (labelled.has(p.day)) return;
-    labelled.add(p.day);
-    L.font(7, false, COLOR.ink);
-    L.pdf.text(L.t(dayLabel(p.day)), X(days[i]!), py1 + 3.6, { align: "center" });
+  // Date labels never overlap: a label that would touch its drawn neighbour is omitted (the first and last
+  // dates are always kept). Every point keeps its marker and value; the caption lists the full date range.
+  const xLabels: { x: number; text: string; w: number }[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const text = dayLabel(pts[i]!.day);
+    if (xLabels.some((l) => l.text === text && l.x === X(days[i]!))) continue;
+    xLabels.push({ x: X(days[i]!), text, w: L.width(text, 7) });
+  }
+  const gap = 1.2;
+  const clash = (a: { x: number; w: number }, b: { x: number; w: number }) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap;
+  const keep: typeof xLabels = [];
+  xLabels.forEach((l, i) => {
+    if (i === xLabels.length - 1 && keep.length > 1 && clash(keep.at(-1)!, l)) keep.pop();
+    if (!keep.length || !clash(keep.at(-1)!, l)) keep.push(l);
   });
+  for (const l of keep) {
+    L.font(7, false, COLOR.ink);
+    L.pdf.text(L.t(l.text), l.x, py1 + 3.6, { align: "center" });
+  }
   // series
   if (pts.length > 1) {
     L.draw(COLOR.navy);
