@@ -250,7 +250,11 @@ function hero(L: P, r: PremiumReport) {
     const tx = x + 5 + i * (tw + 2.5);
     L.box(tx, y + 24, tw, 13, [40, 72, 110], undefined, 1.6);
     L.lines([L.t(k!)], tx + 2, y + 25, 6.2, true, COLOR.heroKicker);
-    L.lines(L.capped(v!, 7.8, tw - 4, 2), tx + 2, y + 28.4, 7.8, false, COLOR.white, 1.25);
+    // P61.3: the crew name tile shrinks (then uses a third line) before anything would be cut.
+    let vs = 7.8;
+    if (i === 0) while (vs > 6.4 && L.wrap(v!, vs, tw - 4).length > 2) vs = Math.round((vs - 0.2) * 10) / 10;
+    if (i === 0 && L.wrap(v!, vs, tw - 4).length > 2) vs = 6;
+    L.lines(L.capped(v!, vs, tw - 4, i === 0 && vs === 6 ? 3 : 2), tx + 2, y + 28.4, vs, false, COLOR.white, 1.25);
   });
   if (r.header.provenance === "synthetic" && r.demonstrationLabel) {
     L.lines(L.capped("SYNTHETIC DEMONSTRATION DATA — not real astronaut data. Age, sex, symptoms, medications and history are not recorded or assumed.", 7, CW - 10, 1, true), x + 5, y + 38.2, 7, true, COLOR.synthetic, 1.2);
@@ -1322,7 +1326,13 @@ export function runningHeaderLayout(
     const room2 = CW - (demo ? demoW + gap : 0);
     let ms = 6.4;
     while (ms > 5.4 && widthOf(mission, ms, false) > room2) ms = Math.round((ms - 0.2) * 10) / 10;
-    if (widthOf(mission, ms, false) <= room2) out.push({ text: mission, x: "right", y: 9.6, size: ms, bold: false, tone: "muted" });
+    let m = mission;
+    // Only the mission name may be shortened, and only when it cannot fit beside the demonstration label.
+    if (widthOf(m, ms, false) > room2) {
+      while (m.length > 1 && widthOf(`${m} …`, ms, false) > room2) m = m.slice(0, -1).trimEnd();
+      m = `${m} …`;
+    }
+    out.push({ text: m, x: "right", y: 9.6, size: ms, bold: false, tone: "muted" });
   }
   return { lines: out };
 }
