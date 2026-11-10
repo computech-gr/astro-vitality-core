@@ -1096,10 +1096,9 @@ export function UnifiedIntakeWorkspace() {
       setDocuments((previous) =>
         previous.map((d) => ({ ...d, saved: d.saved + (savedByDocument.get(d.sha256) ?? 0) })),
       );
-      setSavedLedger((previous) => [
-        ...previous,
-        ...savedNow.map((row) => ({ seriesKey: seriesKeyOf(row), date: row.observedAt.slice(0, 10) })),
-      ]);
+      // Computed now: the updater runs later, after savedNow has been cleared for the next batch.
+      const ledgerEntries = savedNow.map((row) => ({ seriesKey: seriesKeyOf(row), date: row.observedAt.slice(0, 10) }));
+      setSavedLedger((previous) => [...previous, ...ledgerEntries]);
       setRows((previous) => previous.filter((row) => !savedKeys.has(row.key)));
     };
     try {
