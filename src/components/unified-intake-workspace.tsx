@@ -81,7 +81,6 @@ import { type ObservationDatePrecision } from "@/domain/health-intelligence/obse
 import {
   DOCUMENT_TABLE_RULES_VERSION,
   documentLinesFromText,
-  reconstructDocumentTables,
   valueKindText,
   type DocumentReconstruction,
 } from "@/domain/health-intelligence/document-table-reconstruction";
@@ -113,6 +112,7 @@ import {
   storedSourceKeys,
   EXAM_DATE_SOURCE_TEXT,
   type ExamDateEvidence,
+  type GridCandidate,
   type MultiDateDocument,
   type P61ExceptionCode,
   type SavedImportEntry,
@@ -283,9 +283,7 @@ function datedRow(
 
 /** P61: wide-grid candidates (date-column header) as review rows. */
 function gridRows(
-  items: ReturnType<typeof extractWideGridCandidates> extends infer R
-    ? R extends { rows: infer I } ? I : never
-    : never,
+  items: readonly GridCandidate[],
   evidence: SourceDocumentEvidence | null,
   sourceKind: ObservationSourceKind,
   sourceLabel: string,
