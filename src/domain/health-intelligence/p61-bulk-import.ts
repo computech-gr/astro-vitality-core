@@ -352,12 +352,13 @@ function readDateColumnTables(
   const groups = new Map<string, DateGroupSummary>();
   let tables = 0;
   let blankCells = 0;
-  let active: { header: DateColumnHeader; line: number; text: string; xs: number[] | null } | null = null;
+  type ActiveTable = { header: DateColumnHeader; line: number; text: string; xs: number[] | null };
+  let active = null as ActiveTable | null;
   let top: { text: string; domain: HealthDomainId | null; rule: string | null } | null = null;
   let sub: string | null = null;
   const section = (): ReconstructedSection =>
     top ? { heading: sub ?? top.text, path: sub ? [top.text, sub] : [top.text], domain: top.domain, rule: top.rule } : { heading: null, path: [], domain: null, rule: null };
-  const raw: { cells: string[]; row: number | null; line: number; page: number | null; text: string; hdr: NonNullable<typeof active>; section: ReconstructedSection; layout: ExtractionLayout }[] = [];
+  const raw: { cells: string[]; row: number | null; line: number; page: number | null; text: string; hdr: ActiveTable; section: ReconstructedSection; layout: ExtractionLayout }[] = [];
 
   lines.slice(0, 5000).forEach((l, i) => {
     const lineNo = i + 1;
@@ -385,7 +386,7 @@ function readDateColumnTables(
       else top = { text: heading.text, domain: null, rule: null };
       return;
     }
-    const a = active as typeof active;
+    const a: ActiveTable | null = active;
     if (!a || isPageMarkLine(text)) return;
     if (mapHeaderCells(cells)) {
       active = null;
