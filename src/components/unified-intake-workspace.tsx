@@ -98,6 +98,26 @@ import {
   type RowExtractionEvidence,
 } from "@/domain/health-intelligence/document-intake-review";
 import type { GeometryLine } from "@/domain/bone-health/pdf-geometry";
+import {
+  buildReviewedObservation,
+  evaluateBulkImport,
+  extractWideGridCandidates,
+  manualDateEvidence,
+  reconcileBulkImport,
+  reconstructMultiDateDocument,
+  resolveDateGroup,
+  reviewDateFields,
+  rowDateEvidence,
+  seriesKeyOf,
+  sourceDuplicateKey,
+  storedSourceKeys,
+  EXAM_DATE_SOURCE_TEXT,
+  type ExamDateEvidence,
+  type MultiDateDocument,
+  type P61ExceptionCode,
+  type SavedImportEntry,
+} from "@/domain/health-intelligence/p61-bulk-import";
+import { P61BulkImportPanel } from "@/components/p61-bulk-import-panel";
 
 type IntakeRow = {
   key: string;
@@ -129,6 +149,10 @@ type IntakeRow = {
   rejected?: boolean | undefined;
   /** P42: unresolved document identity conflict for the selected scope. */
   identityHold?: string | null | undefined;
+  /** P61: where the examination date came from (row, date column, heading, reviewer). */
+  examDate?: ExamDateEvidence | undefined;
+  /** P61: when the source file was read for review (the upload date; not the examination date). */
+  importedAt?: string | undefined;
 };
 
 /** P42: one processed document (summary, identity, diagnostics); memory only, never stored. */
@@ -139,6 +163,8 @@ type ProcessedDocument = {
   method: string;
   textLength: number;
   reconstruction: DocumentReconstruction | null;
+  /** P61: examination-date groups of the document (memory only). */
+  multiDate: MultiDateDocument | null;
   saved: number;
 };
 
@@ -213,20 +239,72 @@ function parseIntakeCsv(
   text: string,
   fileName = "",
   sha256 = "",
-): { rows: IntakeRow[]; skipped: number } {
-  const parsed = extractCsvCandidates(text, MAX_ROWS);
+): { rows: IntakeRow[]; skipped: number; wide: boolean } {
   let evidence: SourceDocumentEvidence | null = null;
+  let cells: string[][] = [];
   try {
-    evidence = extractGridSourceEvidence(csvCells(text), { sha256, fileName, kind: "csv" });
+    cells = csvCells(text);
+    evidence = extractGridSourceEvidence(cells, { sha256, fileName, kind: "csv" });
   } catch {
     evidence = null;
   }
+  // P61: a wide grid (one column per examination date) yields one row per dated cell.
+  const wide = cells.length ? extractWideGridCandidates(cells) : null;
+  if (wide)
+    return {
+      rows: gridRows(wide.rows, evidence, "csv", "CSV import"),
+      skipped: wide.skipped,
+      wide: true,
+    };
+  const parsed = extractCsvCandidates(text, MAX_ROWS, { keepUnparsedDates: true });
   return {
-    rows: withSections(parsed.rows, evidence).map((item) =>
-      newRow({ ...item, sourceKind: "csv", sourceLabel: "CSV import" }),
-    ),
+    rows: withSections(parsed.rows, evidence).map((item) => datedRow(item, "csv", "CSV import")),
     skipped: parsed.skipped,
+    wide: false,
   };
+}
+
+/** P61: long-format grid row with its row-level examination date evidence. */
+function datedRow(
+  item: Parameters<typeof newRow>[0] & { rawDate?: string; sourceRow?: number },
+  sourceKind: ObservationSourceKind,
+  sourceLabel: string,
+): IntakeRow {
+  const { rawDate, sourceRow, ...rest } = item;
+  const examDate = rowDateEvidence({
+    observedAt: rest.observedAt ?? "",
+    ...(rest.datePrecision ? { datePrecision: rest.datePrecision } : {}),
+    ...(rawDate ? { rawDate } : {}),
+    ...(sourceRow ? { sourceRow } : {}),
+  });
+  const fill = !rest.observedAt && examDate.status === "resolved" ? reviewDateFields(examDate) : {};
+  return newRow({ ...rest, ...fill, sourceKind, sourceLabel, examDate });
+}
+
+/** P61: wide-grid candidates (date-column header) as review rows. */
+function gridRows(
+  items: ReturnType<typeof extractWideGridCandidates> extends infer R
+    ? R extends { rows: infer I } ? I : never
+    : never,
+  evidence: SourceDocumentEvidence | null,
+  sourceKind: ObservationSourceKind,
+  sourceLabel: string,
+): IntakeRow[] {
+  return items.slice(0, MAX_ROWS).map((item) => {
+    const section = evidence ? sectionForExcerpt(evidence, item.excerpt.replace(/ \[column [^\]]*\]$/, "")) : undefined;
+    return newRow({
+      label: item.label,
+      value: item.value,
+      unit: item.unit,
+      observedAt: item.observedAt,
+      ...(item.datePrecision ? { datePrecision: item.datePrecision } : {}),
+      excerpt: item.excerpt,
+      sourceKind,
+      sourceLabel,
+      examDate: item.examDate,
+      ...(section ? { sourceSection: section } : {}),
+    });
+  });
 }
 
 /** Conservative text/OCR lines: "Label: 12.3 unit". Reference ranges are never extracted. */
@@ -241,16 +319,19 @@ function parseIntakeText(
   documentSha256?: string,
   linePages?: readonly number[],
   geometry?: readonly GeometryLine[],
-): { rows: IntakeRow[]; reconstruction: DocumentReconstruction } {
+): { rows: IntakeRow[]; reconstruction: DocumentReconstruction; multiDate: MultiDateDocument } {
   // P42 stages A–D: header-role table reconstruction (any column order, multi-page,
   // repeated headers, numbered rows, OCR token fallback). Legacy parsers still run
-  // for lines that are not part of a reconstructed table.
-  const reconstruction = reconstructDocumentTables(
-    documentLinesFromText(text, linePages, geometry),
-    { ocr: sourceKind === "ocr" },
+  // for lines that are not part of a reconstructed table. P61 adds date-column tables
+  // and the examination date of every row (row date, date column or date heading).
+  const lines = documentLinesFromText(text, linePages, geometry);
+  const multiDate = reconstructMultiDateDocument(lines, { ocr: sourceKind === "ocr" });
+  const reconstruction = multiDate.reconstruction;
+  const tableExcerpts = new Set(
+    reconstruction.observations.map((o) => o.excerpt.replace(/ \[column [^\]]*\]$/, "").trim()),
   );
-  const tableExcerpts = new Set(reconstruction.observations.map((o) => o.excerpt.trim()));
-  const tableRows: IntakeRow[] = reconstruction.observations.map((o) => {
+  const tableRows: IntakeRow[] = reconstruction.observations.map((o, index) => {
+    const examDate = multiDate.dates[index]!;
     const section: CandidateSourceSection = {
       status: o.section.domain
         ? "recognized"
@@ -270,7 +351,8 @@ function parseIntakeText(
       label: o.label,
       value: o.value || (o.valueKind === "ambiguous_number" ? "" : o.rawValue),
       unit: o.unit,
-      observedAt: "",
+      ...reviewDateFields(examDate),
+      examDate,
       excerpt: o.excerpt,
       sourceKind,
       sourceLabel,
@@ -293,7 +375,7 @@ function parseIntakeText(
     documentSha256,
     linePages,
   ).filter((row) => !tableExcerpts.has(row.excerpt.trim()));
-  return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction };
+  return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction, multiDate };
 }
 
 function parseLegacyText(
@@ -319,7 +401,10 @@ function parseLegacyText(
       ...extractFiveColumnLabCandidates(text, MAX_ROWS),
     ].slice(0, MAX_ROWS),
     evidence,
-  ).map((item) => newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 }));
+  ).map((item) => {
+    const row = newRow({ ...item, sourceKind, sourceLabel, documentName, documentSha256 });
+    return { ...row, examDate: rowDateEvidence(row) };
+  });
   for (const line of text.split(/\r?\n/).slice(0, 1000)) {
     if (line.length > 350 || BLOCKED_LINE.test(line)) continue;
     const match = /^\s*(.+?)\s*[:=]\s*([-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s+([^\s;,|]+)\s*$/.exec(
