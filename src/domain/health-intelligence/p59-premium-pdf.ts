@@ -925,26 +925,31 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
     } else { L.fill(col); L.pdf.rect(cx - 1.2, cy - 1.2, 2.4, 2.4, "F"); }
     const lab = `${p.valueText}${p.annotation ? ` ${p.annotation}` : ""}`;
     L.font(7.6, true, col);
-    // P61.2: a value label goes above its point unless the series line through a neighbour would cross it
-    // there (e.g. a steep rise to a peak); then below, when the plot has room.
+    // P61.2: a value label goes above its point unless the series line to a neighbour would cross it there
+    // (e.g. a steep rise to a peak); then below, left or right of the point — the first placement clear of
+    // the line that stays inside the plot. Above is kept when no placement is clear.
     const lw = L.width(lab, 7.6, true) + 0.6, capH = 2.1;
-    const crosses = (baseline: number) => {
-      const bx0 = cx - lw / 2, bx1 = cx + lw / 2, by0 = baseline - capH, by1 = baseline + 0.3;
+    const crosses = (bx0: number, baseline: number) => {
+      const bx1 = bx0 + lw, by0 = baseline - capH, by1 = baseline + 0.3;
       return [i - 1, i + 1].some((j) => {
         const q = pts[j];
         if (!q) return false;
         const qx = X(days[j]!), qy = Y(q.value);
-        for (let k = 1; k <= 24; k++) {
-          const t = k / 24, sx = cx + (qx - cx) * t, sy = cy + (qy - cy) * t;
+        for (let k = 1; k <= 32; k++) {
+          const t = k / 32, sx = cx + (qx - cx) * t, sy = cy + (qy - cy) * t;
           if (sx >= bx0 && sx <= bx1 && sy >= by0 && sy <= by1) return true;
         }
         return false;
       });
     };
-    const aboveY = cy - 2.4, belowY = cy + 4.4;
-    const roomAbove = cy - 2.6 > py0 + 1, roomBelow = belowY < py1 - 0.6;
-    const useBelow = !roomAbove || (crosses(aboveY) && roomBelow && !crosses(belowY));
-    L.pdf.text(L.t(lab), cx, useBelow ? belowY : aboveY, { align: "center" });
+    const spots = [
+      { x0: cx - lw / 2, y: cy - 2.4 },
+      { x0: cx - lw / 2, y: cy + 4.4 },
+      { x0: cx - 2 - lw, y: cy + 0.9 },
+      { x0: cx + 2, y: cy + 0.9 },
+    ].filter((p) => p.y - capH > py0 + 0.4 && p.y < py1 - 0.6 && p.x0 > px0 + 0.3 && p.x0 + lw < px1 - 0.3);
+    const spot = spots.find((p) => !crosses(p.x0, p.y)) ?? spots[0] ?? { x0: cx - lw / 2, y: cy - 2.6 > py0 + 1 ? cy - 2.4 : cy + 4.4 };
+    L.pdf.text(L.t(lab), spot.x0 + lw / 2, spot.y, { align: "center" });
   });
   let cy = py1 + 6.2;
   if (legendRows) {
