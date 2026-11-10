@@ -28,7 +28,7 @@ function canonicalNotation(unit: string): { text: string; rules: Set<UnitNotatio
     text = "°C";
     rules.add("UN-1");
   }
-  const caret = text.replace(/10\^(\d{1,2})(?!\d)/g, (_, d: string) => `10${[...d].map((c) => SUPERSCRIPT[c]).join("")}`);
+  const caret = text.replace(/(?<![\d.])10\^(\d{1,2})(?!\d)/g, (_, d: string) => `10${[...d].map((c) => SUPERSCRIPT[c]).join("")}`);
   if (caret !== text) rules.add("UN-2");
   text = caret;
   const micro = text.replace(/\u00B5/g, "\u03BC");
