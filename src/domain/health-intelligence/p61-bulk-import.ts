@@ -873,6 +873,16 @@ export function sourceDuplicateKey(
   return [scope.missionId, scope.crewMemberId, scope.provenance, r.documentSha256, r.metricId, r.unit.trim(), observationDateKey({ observedAt: r.observedAt, ...(r.datePrecision ? { datePrecision: r.datePrecision } : {}) }), r.value.trim()].join("\u0000");
 }
 
+/**
+ * P61.3: the unit a matched row is saved and compared under — the catalog's notation when a closed
+ * typographic notation rule matched (the verbatim reported unit is kept as reportedUnit), else the
+ * reported unit itself. Never a conversion.
+ */
+export function storedUnitOf(row: { unit: string; classification: IntakeReviewRow["classification"] }): string {
+  const c = row.classification;
+  return c.status === "matched" && c.unitNotation && c.unitNotation.reportedUnit === row.unit.trim() ? c.unitNotation.catalogUnit : row.unit.trim();
+}
+
 export function storedSourceKeys(history: readonly UnifiedObservation[], scope: P61Scope): Map<string, string> {
   const keys = new Map<string, string>();
   for (const o of history) {
@@ -914,7 +924,7 @@ export function evaluateBulkImport(rows: readonly P61ReviewRow[], history: reado
     }
     const current = classifyWithGovernedExtensions(row).classification;
     const metricId = current.status === "matched" ? current.metricId : "";
-    const sk = scope && metricId ? sourceDuplicateKey({ ...row, metricId }, scope) : null;
+    const sk = scope && metricId ? sourceDuplicateKey({ ...row, metricId, unit: storedUnitOf({ unit: row.unit, classification: current }) }, scope) : null;
     const storedId = sk ? stored.get(sk) : undefined;
     if (storedId) {
       set({ kind: "duplicate", reason: "Already stored from this same document (same biomarker, unit, examination date and value); it is never saved twice.", storedId });
@@ -951,7 +961,7 @@ export function evaluateBulkImport(rows: readonly P61ReviewRow[], history: reado
       set({ kind: "exception", code: "individual_review", reason: row.extraction?.repeat ? "Repeated within the same examination of this document; tick it individually only if it is a separate measurement." : "Low-confidence extraction (OCR or single-spaced text); verify and tick it individually." });
       continue;
     }
-    if (scope && findUnifiedDuplicates(history, { metricId, observedAt: row.observedAt, ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}), originalUnit: row.unit, missionId: scope.missionId, crewMemberId: scope.crewMemberId, provenance: scope.provenance, value: row.value }).length) {
+    if (scope && findUnifiedDuplicates(history, { metricId, observedAt: row.observedAt, ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}), originalUnit: storedUnitOf({ unit: row.unit, classification: current }), missionId: scope.missionId, crewMemberId: scope.crewMemberId, provenance: scope.provenance, value: row.value }).length) {
       set({ kind: "exception", code: "possible_duplicate", reason: "A stored observation from another source has the same biomarker, unit, date and value; confirm individually that it is a separate measurement." });
       continue;
     }
@@ -961,7 +971,7 @@ export function evaluateBulkImport(rows: readonly P61ReviewRow[], history: reado
     batchDuplicateKeys(
       candidates.map((row) => {
         const c = row.classification.status === "matched" ? row.classification.metricId : "";
-        return { key: row.key, metricId: c, observedAt: row.observedAt, ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}), unit: row.unit, value: row.value };
+        return { key: row.key, metricId: c, observedAt: row.observedAt, ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}), unit: storedUnitOf(row), value: row.value };
       }),
     ),
   );
@@ -987,7 +997,7 @@ export interface SavedImportEntry {
 }
 
 export const seriesKeyOf = (row: { label: string; unit: string; classification: IntakeReviewRow["classification"] }) =>
-  row.classification.status === "matched" ? `${row.classification.metricId}\u0000${row.unit.trim()}` : `label:${labelKey(row.label)}\u0000${row.unit.trim()}`;
+  row.classification.status === "matched" ? `${row.classification.metricId}\u0000${storedUnitOf(row)}` : `label:${labelKey(row.label)}\u0000${row.unit.trim()}`;
 const dayOf = (row: { observedAt: string; datePrecision?: ObservationDatePrecision | undefined }) =>
   validObservationDate({ observedAt: row.observedAt, ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}) }) ? row.observedAt.slice(0, 10) : "";
 
@@ -1093,7 +1103,9 @@ export function buildReviewedObservation(
     metricId: row.classification.metricId,
     domain: row.classification.domain,
     value: row.value.trim(),
-    originalUnit: row.unit.trim(),
+    originalUnit: storedUnitOf(row),
+    // P61.3: verbatim reported unit when a closed typographic notation rule matched (never converted).
+    ...(storedUnitOf(row) !== row.unit.trim() ? { reportedUnit: row.unit.trim() } : {}),
     observedAt: row.observedAt,
     ...(row.datePrecision ? { datePrecision: row.datePrecision } : {}),
     ...(row.collectionDate ? { collectionDate: row.collectionDate } : {}),
