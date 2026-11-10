@@ -826,18 +826,25 @@ export function chartDateAxisPlan(
   const omitted = labels.filter((l) => !keep.includes(l)).map((l) => dayLabel(points[l.index]!.day));
   return { labels: keep.map(({ index, x, text }) => ({ index, x, text })), month, omitted };
 }
-/** P61.2: data-check orientation lines closer than one label height share a single label. */
-export function orientationLabelGroups(values: readonly number[], yOf: (v: number) => number, minGap = 2.8): number[][] {
-  const sorted = [...new Set(values)].sort((a, b) => yOf(a) - yOf(b));
-  const groups: number[][] = [];
-  for (const v of sorted) {
-    const g = groups.at(-1);
-    if (g && Math.abs(yOf(v) - yOf(g.at(-1)!)) < minGap) g.push(v);
-    else groups.push([v]);
-  }
-  return groups;
+/** Value axis of a chart (ticks and limits); pure, shared by measuring and drawing. */
+function chartValueRange(c: PremiumChart): { ticks: number[]; ymin: number; ymax: number } {
+  const vals = c.base.points.map((p) => p.value);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = hi - lo || Math.abs(hi) * 0.2 || 1;
+  for (const b of c.bands) for (const v of [b.lower, b.upper]) if (v !== null && v >= lo - span * 1.2 && v <= hi + span * 1.2) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  const pad = (hi - lo || 1) * 0.15;
+  const limits = c.bands.flatMap((b) => [b.lower, b.upper]).filter((v): v is number => v !== null && v >= lo && v <= hi);
+  const ticks = niceTicks(chartAxisFloor(vals, limits, lo - pad), hi + pad);
+  return { ticks, ymin: ticks[0]!, ymax: ticks.at(-1)! };
 }
 function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, measureOnly: boolean): number {
+  const range = chartValueRange(c);
+  // P61.2: data-check orientation lines are drawn unlabelled inside the plot (labels there collided with
+  // the series and value labels); their values are listed once in a legend line below the axis.
+  const orient = c.dataCheck
+    ? [...new Set(c.bands.flatMap((b) => [b.lower, b.upper]).filter((v): v is number => v !== null && v > range.ymin && v < range.ymax))].sort((a, b) => a - b)
+    : [];
+  const orientText = orient.length ? `Dashed lines at ${orient.map(fmt).join(" / ")} ${c.base.unit} — orientation only, not a criterion` : "";
   const axis = chartDateAxisPlan(c.base.points, w - 17, (t) => L.width(t, 7));
   const axisNote = axis.omitted.length ? ` Dates not labelled on the axis (crowded): ${axis.omitted.join(", ")}.` : "";
   const caption = L.capped(`${chartCaption(c)}${axisNote}`, 7.6, w - 6, 7);
@@ -848,7 +855,7 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
   const bs = chartBadges(c);
   const badgeRows = bs.length ? flowBadges(L, bs, 0, 0, w - 6, true) : 0;
   const top = 1.6 + titleH + badgeRows * 4.6 + (c.patternDataCheck ? 3.4 : 0);
-  const h = top + 3 + plotH + 9 + legendRows * 3.6 + caption.length * lh(7.6) + 3;
+  const h = top + 3 + plotH + 9 + legendRows * 3.6 + (orientText ? 3.6 : 0) + caption.length * lh(7.6) + 3;
   if (measureOnly) return h;
   L.box(x, y, w, h, COLOR.white, COLOR.rule);
   L.lines(title, x + 3, y + 1.6, 9.6, true, COLOR.navy);
@@ -858,14 +865,7 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
   if (c.patternDataCheck) L.lines([L.t("+ pattern data check † — verify this series before interpretation")], x + 3, y + 1.6 + titleH + badgeRows * 4.6 - 0.2, 6.2, false, COLOR.violet, 1.2);
   const px0 = x + 13, px1 = x + w - 4, py0 = y + top + 3, py1 = y + top + plotH;
   const pts = c.base.points;
-  const vals = pts.map((p) => p.value);
-  let lo = Math.min(...vals), hi = Math.max(...vals);
-  const span = hi - lo || Math.abs(hi) * 0.2 || 1;
-  for (const b of c.bands) for (const v of [b.lower, b.upper]) if (v !== null && v >= lo - span * 1.2 && v <= hi + span * 1.2) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
-  const pad = (hi - lo || 1) * 0.15;
-  const limits = c.bands.flatMap((b) => [b.lower, b.upper]).filter((v): v is number => v !== null && v >= lo && v <= hi);
-  const ticks = niceTicks(chartAxisFloor(vals, limits, lo - pad), hi + pad);
-  const ymin = ticks[0]!, ymax = ticks.at(-1)!;
+  const { ticks, ymin, ymax } = range;
   const Y = (v: number) => py1 - ((v - ymin) / (ymax - ymin || 1)) * (py1 - py0);
   // bands
   if (!c.dataCheck)
@@ -884,19 +884,11 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
     L.pdf.text(L.t(fmt(t)), px0 - 1.5, Y(t) + 0.9, { align: "right" });
   }
   // orientation lines for data-check series
-  if (c.dataCheck) {
-    const vs = c.bands.flatMap((b) => [b.lower, b.upper]).filter((v): v is number => v !== null && v > ymin && v < ymax);
-    for (const group of orientationLabelGroups(vs, Y)) {
-      for (const v of group) {
-        L.draw(COLOR.neutral);
-        L.dash(true, [1, 0.8]);
-        L.pdf.line(px0, Y(v), px1, Y(v));
-        L.dash(false);
-      }
-      // One label per group, above its top line, so close limits never print on top of each other.
-      L.font(6, false, COLOR.muted);
-      L.pdf.text(L.t(`${[...group].sort((a, b) => a - b).map(fmt).join(" / ")} (orientation only)`), px0 + 1, Y(group[0]!) - 0.7);
-    }
+  for (const v of orient) {
+    L.draw(COLOR.neutral);
+    L.dash(true, [1, 0.8]);
+    L.pdf.line(px0, Y(v), px1, Y(v));
+    L.dash(false);
   }
   // x positions by day
   const days = pts.map((p) => Date.parse(`${p.day}T00:00:00Z`));
@@ -947,6 +939,14 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
       L.lines(L.capped(b.label, 6.1, w - 10, 1), lx + 3.4, ly - 0.75, 6.1, false, COLOR.ink, 1.2);
     });
     cy += legendRows * 3.6;
+  }
+  if (orientText) {
+    L.draw(COLOR.neutral);
+    L.dash(true, [1, 0.8]);
+    L.pdf.line(x + 3, cy + 1.1, x + 6, cy + 1.1);
+    L.dash(false);
+    L.lines(L.capped(orientText, 6.1, w - 10, 1), x + 6.8, cy - 0.75, 6.1, false, COLOR.ink, 1.2);
+    cy += 3.6;
   }
   L.lines(caption, x + 3, cy, 7.6, false, [51, 65, 85]);
   return h;
