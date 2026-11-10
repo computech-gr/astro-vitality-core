@@ -30,6 +30,8 @@ export interface P61PanelRow {
   classification: IntakeClassification;
   examDate?: ExamDateEvidence | undefined;
   documentName?: string | undefined;
+  /** P61.2: verbatim source context/note; shown as unverified provenance only. */
+  sourceContext?: string | undefined;
 }
 
 const PAGE = 50;
@@ -296,7 +298,14 @@ export function P61BulkImportPanel(props: {
                   <td className="py-2 pr-3">
                     <DateCell row={row} />
                   </td>
-                  <td className="py-2 pr-3 font-medium">{row.label}</td>
+                  <td className="py-2 pr-3 font-medium">
+                    {row.label}
+                    {row.sourceContext ? (
+                      <span className="mt-0.5 block max-w-56 text-xs font-normal text-muted-foreground">
+                        Source note (unverified): {row.sourceContext}
+                      </span>
+                    ) : null}
+                  </td>
                   <td className="py-2 pr-3 tabular-nums">{row.value || "—"}</td>
                   <td className="py-2 pr-3">{row.unit || "—"}</td>
                   <td className="py-2 pr-3">

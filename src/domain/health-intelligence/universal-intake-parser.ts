@@ -4,7 +4,9 @@ export type Candidate = {label:string;value:string;unit:string;observedAt:string
  /** P61: verbatim date cell that is not an ISO date/zoned timestamp (kept for review, never parsed into observedAt). */
  rawDate?:string;
  /** P61: 1-based source row (CSV/XLSX grid row) for date-evidence traceability. */
- sourceRow?:number};
+ sourceRow?:number;
+ /** P61.2: verbatim source context/note cell (e.g. "fasting status unknown"); provenance only, never a verified clinical fact. */
+ sourceContext?:string};
 export function candidateDate(value:string): Pick<Candidate,"observedAt"|"datePrecision"|"collectionDate"> | null {
  if(!value)return {observedAt:""};
  if(isCalendarDate(value))return {observedAt:value,datePrecision:"date",collectionDate:value};
@@ -29,6 +31,8 @@ export function csvCells(text:string):string[][] {
 export const CSV_LABEL_COLUMNS=['label','variable','metric','metric_id','name','biomarker','analyte','test','parameter','measurement','metric_name','biomarker_name','analyte_name','test_name','parameter_name','measurement_name','observation_name'];
 /** P61: examination-date column names (the date of the examination, never a collection or upload date). */
 export const EXAMINATION_DATE_COLUMNS=['examination_date','examinationdate','exam_date','examdate','test_date','testdate','measurement_date','measurementdate'];
+/** P61.2: free-text context/note column names (lower-case, exact); kept verbatim as unverified provenance. */
+export const CSV_CONTEXT_COLUMNS=['context','note','notes','comment','comments','remark','remarks','annotation','source_context','sample_context'];
 export function extractCsvCandidates(text:string,max=200,options:{keepUnparsedDates?:boolean}={}):{rows:Candidate[];skipped:number} {
  const cells=csvCells(text);if(!cells.length)return {rows:[],skipped:0};
  const first=(cells[0] ?? []).map(x=>x.toLowerCase().replace(/^\ufeff/,'').trim());
@@ -37,6 +41,7 @@ export function extractCsvCandidates(text:string,max=200,options:{keepUnparsedDa
  const collectionIndex=first.findIndex(x=>['collection_date','collectiondate'].includes(x));
  const timeIndex=first.findIndex(x=>['observed_at','observedat'].includes(x));
  const examIndex=first.findIndex(x=>EXAMINATION_DATE_COLUMNS.includes(x));
+ const contextIndex=first.findIndex(x=>CSV_CONTEXT_COLUMNS.includes(x));
  const dateIndex=timeIndex>=0?timeIndex:examIndex>=0?examIndex:first.findIndex(x=>['collection_date','collectiondate','date'].includes(x));
  const positions=header?[labelIndex,first.indexOf('value'),first.indexOf('unit'),dateIndex]:[0,1,2,3];
  const examColumn=header&&timeIndex<0&&examIndex>=0;
@@ -54,7 +59,8 @@ export function extractCsvCandidates(text:string,max=200,options:{keepUnparsedDa
   const fields={...dateFields};
   // An examination-date column is the examination date, not source collection metadata.
   if(examColumn&&!collectionDate)delete fields.collectionDate;
-  rows.push({label,value,unit,...fields,...(collectionDate&&isCalendarDate(collectionDate)?{collectionDate}:{}),...(rawDate?{rawDate}:{}),sourceRow,excerpt:cellsRow.join(',').slice(0,350)});
+  const sourceContext=header&&contextIndex>=0?(cellsRow[contextIndex]??'').trim().slice(0,300):'';
+  rows.push({label,value,unit,...fields,...(collectionDate&&isCalendarDate(collectionDate)?{collectionDate}:{}),...(rawDate?{rawDate}:{}),sourceRow,...(sourceContext?{sourceContext}:{}),excerpt:cellsRow.join(',').slice(0,350)});
  });
  return {rows,skipped};
 }
