@@ -1,0 +1,139 @@
+{
+  "schema": "mitochondria.p613-mapping-decision-register.v1",
+  "status": "RESEARCHER_REVIEW_REQUIRED",
+  "authorization": "Owner instruction P61.3 (2026-11-10): resolve the unresolved Alex Morgan synthetic series where scientifically valid, normalize typographic unit differences only where equivalence is unambiguous, and record every other mapping as a Researcher-reviewable proposal. This register never approves anything; the application never writes it.",
+  "missionCode": "MITO_DEMO_2026",
+  "fixture": "fixtures/synthetic/p61/Alex_Morgan_304_Observations.csv (and the companion PDF): 304 observations, 38 series, 8 dates",
+  "categories": {
+    "SAFE_DETERMINISTIC_NORMALIZATION": "Same name as an active entry; the unit differs only by a listed typographic notation rule. Applied to synthetic data only; Researcher confirmation of the rule is still required.",
+    "EXISTING_IDENTITY_REQUIRES_ALIAS_APPROVAL": "An existing catalog identity very probably measures the same quantity, but the incoming name is not a reviewed alias. Held until a Researcher approves the alias.",
+    "MISSING_CANONICAL_DEFINITION": "No catalog entry exists. A new definition must pass the governed P36/P37 submission, Researcher approval and separate activation; it is never added silently.",
+    "AMBIGUOUS_SPECIMEN_OR_METHOD": "The name or source does not establish the specimen, measurement definition or recording method the candidate entry requires.",
+    "INSUFFICIENT_SOURCE_EVIDENCE": "The only supporting detail is an unverified source note; it cannot establish identity on its own.",
+    "PROVISIONAL_SYNTHETIC_ALIAS": "P61.2 owner-directed synthetic-only alias (exact unit), applied but pending Researcher review."
+  },
+  "decisions": [
+    {
+      "id": "P613-M01", "label": "Bicarbonate", "reportedUnit": "mmol/L", "fixtureRows": 8,
+      "categories": ["MISSING_CANONICAL_DEFINITION", "AMBIGUOUS_SPECIMEN_OR_METHOD"],
+      "applied": false,
+      "proposal": { "catalogId": null, "catalogName": "Bicarbonate (serum/plasma; total CO2 or calculated HCO3 — to be defined)", "catalogUnit": "mmol/L", "catalogSource": "none", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not established — source note says \"Serum\" (unverified).", "method": "Not stated: chemistry-panel total CO2 and blood-gas calculated HCO3 are different measurements.", "unit": "mmol/L as reported; no conversion.", "domain": "Proposed cardiovascular, alongside Sodium (cv-070) and Potassium (cv-071); requires Researcher confirmation." },
+      "evidence": ["No production, handbook, governed-extension or demo entry has this name or a reviewed alias.", "The electrolyte panel in the production catalog is held in the cardiovascular domain (cv-070, cv-071)."],
+      "uncertainty": ["Total CO2 vs bicarbonate definition.", "No source-validation receipt."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Unknown-biomarker submission (P36) → Researcher SCIENTIFIC APPROVE citing an independently provisioned source receipt (P37) → separate Ground Medical activation.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-M02", "label": "Chloride", "reportedUnit": "mmol/L", "fixtureRows": 8,
+      "categories": ["MISSING_CANONICAL_DEFINITION", "INSUFFICIENT_SOURCE_EVIDENCE"],
+      "applied": false,
+      "proposal": { "catalogId": null, "catalogName": "Chloride (serum/plasma — to be defined)", "catalogUnit": "mmol/L", "catalogSource": "none", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not established — source note says \"Serum\" (unverified); urine chloride is a different measurement.", "method": "Not stated.", "unit": "mmol/L as reported; no conversion.", "domain": "Proposed cardiovascular, alongside Sodium (cv-070) and Potassium (cv-071); requires Researcher confirmation." },
+      "evidence": ["No catalog entry or reviewed alias exists."],
+      "uncertainty": ["Specimen not stated in the measurement name.", "No source-validation receipt."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Unknown-biomarker submission (P36) → Researcher SCIENTIFIC APPROVE citing an independently provisioned source receipt (P37) → separate Ground Medical activation.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-M03", "label": "Urea nitrogen (BUN)", "reportedUnit": "mg/dL", "fixtureRows": 8,
+      "categories": ["MISSING_CANONICAL_DEFINITION", "INSUFFICIENT_SOURCE_EVIDENCE"],
+      "applied": false,
+      "proposal": { "catalogId": null, "catalogName": "Blood urea nitrogen (serum/plasma — to be defined)", "catalogUnit": "mg/dL", "catalogSource": "none", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not established — source note says \"Serum\" (unverified).", "method": "Not stated.", "unit": "mg/dL as reported. Urea nitrogen (mg/dL) and urea (mmol/L) are different quantities and are never converted or equated.", "domain": "Proposed cardiovascular, alongside the renal entries Serum creatinine (demo:ubt-5630390c) and eGFR; requires Researcher confirmation." },
+      "evidence": ["No catalog entry or reviewed alias exists."],
+      "uncertainty": ["Urea vs urea-nitrogen definition must be fixed in the new entry.", "No source-validation receipt."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Unknown-biomarker submission (P36) → Researcher SCIENTIFIC APPROVE citing an independently provisioned source receipt (P37) → separate Ground Medical activation.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-M04", "label": "Body temperature", "reportedUnit": "deg C", "fixtureRows": 8,
+      "categories": ["SAFE_DETERMINISTIC_NORMALIZATION"],
+      "applied": true,
+      "unitNotationRules": ["UN-1"],
+      "proposal": { "catalogId": "demo:ubt-323050f4", "catalogName": "Body temperature", "catalogUnit": "°C", "catalogSource": "synthetic-demo", "domain": "immune" },
+      "verification": { "specimen": "Not applicable (vital sign).", "method": "Measurement site not recorded (source note \"Method unspecified\"); the catalog entry records no site either, so nothing is invented.", "unit": "\"deg C\" is degree Celsius written in plain text (rule UN-1); stored as °C with the verbatim \"deg C\" kept; no conversion.", "domain": "immune, as recorded on the active signed demo entry." },
+      "evidence": ["Identical name to the ACTIVE signed MITO_DEMO_2026 entry demo:ubt-323050f4.", "Only the unit notation differs."],
+      "uncertainty": ["Oral, tympanic, axillary and core temperatures differ; site-specific interpretation needs the method recorded."],
+      "approval": { "status": "PENDING_RESEARCHER_CONFIRMATION", "requiredRole": "researcher", "path": "Researcher confirmation of the typographic notation rule UN-1; applied meanwhile to synthetic demo data only.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-M05", "label": "Platelets", "reportedUnit": "10^9/L", "fixtureRows": 8,
+      "categories": ["EXISTING_IDENTITY_REQUIRES_ALIAS_APPROVAL"],
+      "applied": false,
+      "unitNotationRules": ["UN-2"],
+      "proposal": { "catalogId": "cv-058", "catalogName": "Platelet count", "catalogUnit": "10⁹/L", "catalogSource": "production-p36", "domain": "cardiovascular" },
+      "verification": { "specimen": "Whole blood (CBC; source note \"CBC\", unverified).", "method": "Automated blood count assumed by the candidate entry; not stated in the source.", "unit": "\"10^9/L\" is \"10⁹/L\" written with a caret (rule UN-2). The demo entry demo:ubt-c4b4d258 uses 10^3/μL — a different unit expression — and is never used.", "domain": "cardiovascular, as recorded on cv-058." },
+      "evidence": ["\"Platelets\" is the usual short form of \"Platelet count\" but is not a reviewed alias.", "cv-058 is a production reference entry pending independent review."],
+      "uncertainty": ["Aliasing a production entry needs a governed decision even for synthetic data."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Governed catalog extension (data/scientific/catalog-extensions.v1.json) with a named Researcher, decision time and handbook evidence, plus confirmation of rule UN-2.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-M06", "label": "Creatinine", "reportedUnit": "mg/dL", "fixtureRows": 8,
+      "categories": ["AMBIGUOUS_SPECIMEN_OR_METHOD", "INSUFFICIENT_SOURCE_EVIDENCE"],
+      "applied": false,
+      "proposal": { "catalogId": "demo:ubt-5630390c", "catalogName": "Serum creatinine", "catalogUnit": "mg/dL", "catalogSource": "synthetic-demo", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not established by the name; only the unverified CSV note says \"Serum\" (the PDF states none). Spot-urine creatinine is also reported in mg/dL.", "method": "Not stated.", "unit": "mg/dL identical to the candidate; the unit does not establish the specimen.", "domain": "cardiovascular, as recorded on the candidate entry." },
+      "evidence": ["Candidate entry is ACTIVE in the signed demo catalog.", "Urinary Creatinine (bone-035) uses mg/day and is not a candidate."],
+      "uncertainty": ["Serum vs urine specimen."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Researcher decision that \"Creatinine\" in this source means serum creatinine (or a source that states the specimen), recorded through the governed alias process.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-M07", "label": "Sleep duration", "reportedUnit": "h", "fixtureRows": 8,
+      "categories": ["AMBIGUOUS_SPECIMEN_OR_METHOD"],
+      "applied": false,
+      "proposal": { "catalogId": "demo:ubt-d900847d", "catalogName": "Total sleep time (main sleep + naps)", "catalogUnit": "h", "catalogSource": "synthetic-demo", "domain": "behavioral" },
+      "verification": { "specimen": "Not applicable.", "method": "Wearable-derived (unverified note); scoring algorithm and whether naps or time in bed are included are not stated.", "unit": "h identical to the candidate.", "domain": "behavioral, as recorded on the candidate entry (BSC-001)." },
+      "evidence": ["Candidate entry is ACTIVE in the signed demo catalog."],
+      "uncertainty": ["\"Sleep duration\" may mean main sleep only, time in bed, or total sleep time including naps."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Researcher decision on the measurement definition, recorded through the governed alias process.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-M08", "label": "HRV SDNN", "reportedUnit": "ms", "fixtureRows": 8,
+      "categories": ["EXISTING_IDENTITY_REQUIRES_ALIAS_APPROVAL", "AMBIGUOUS_SPECIMEN_OR_METHOD"],
+      "applied": false,
+      "proposal": { "catalogId": "cv-026", "catalogName": "SDNN", "catalogUnit": "ms", "catalogSource": "production-p36", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not applicable.", "method": "Device and recording window unspecified (unverified note); the catalog entry states SDNN depends on recording length (5 min vs 24 h).", "unit": "ms identical to the candidate.", "domain": "cardiovascular, as recorded on cv-026." },
+      "evidence": ["\"HRV RMSSD\" → cv-027 is an existing reviewed alias; no equivalent reviewed alias exists for SDNN."],
+      "uncertainty": ["Short-term and 24-hour SDNN are not comparable."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Governed catalog extension (data/scientific/catalog-extensions.v1.json) with a named Researcher and a recorded recording-window condition.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-A01", "label": "25-OH vitamin D", "reportedUnit": "ng/mL", "fixtureRows": 8,
+      "categories": ["PROVISIONAL_SYNTHETIC_ALIAS"], "applied": true,
+      "proposal": { "catalogId": "demo:ubt-7b25ce69", "catalogName": "25-Hydroxyvitamin D", "catalogUnit": "ng/mL", "catalogSource": "synthetic-demo", "domain": "bone" },
+      "verification": { "specimen": "Not stated.", "method": "Not stated.", "unit": "Exact.", "domain": "bone" },
+      "evidence": ["P61.2 register data/scientific/p612-synthetic-intake-aliases.v1.json."], "uncertainty": ["Alias not yet reviewed."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Researcher review of the P61.2 synthetic alias register.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-A02", "label": "Systolic BP", "reportedUnit": "mmHg", "fixtureRows": 8,
+      "categories": ["PROVISIONAL_SYNTHETIC_ALIAS"], "applied": true,
+      "proposal": { "catalogId": "demo:ubt-e1140df3", "catalogName": "Systolic blood pressure", "catalogUnit": "mmHg", "catalogSource": "synthetic-demo", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not applicable.", "method": "Not stated.", "unit": "Exact.", "domain": "cardiovascular" },
+      "evidence": ["P61.2 register data/scientific/p612-synthetic-intake-aliases.v1.json."], "uncertainty": ["Alias not yet reviewed."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Researcher review of the P61.2 synthetic alias register.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-A03", "label": "Diastolic BP", "reportedUnit": "mmHg", "fixtureRows": 8,
+      "categories": ["PROVISIONAL_SYNTHETIC_ALIAS"], "applied": true,
+      "proposal": { "catalogId": "demo:ubt-5d16fcaf", "catalogName": "Diastolic blood pressure", "catalogUnit": "mmHg", "catalogSource": "synthetic-demo", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not applicable.", "method": "Not stated.", "unit": "Exact.", "domain": "cardiovascular" },
+      "evidence": ["P61.2 register data/scientific/p612-synthetic-intake-aliases.v1.json."], "uncertainty": ["Alias not yet reviewed."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Researcher review of the P61.2 synthetic alias register.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-A04", "label": "Glucose, fasting", "reportedUnit": "mg/dL", "fixtureRows": 8,
+      "categories": ["PROVISIONAL_SYNTHETIC_ALIAS"], "applied": true,
+      "proposal": { "catalogId": "demo:ubt-7f47ee7c", "catalogName": "Fasting glucose", "catalogUnit": "mg/dL", "catalogSource": "synthetic-demo", "domain": "cardiovascular" },
+      "verification": { "specimen": "Not stated.", "method": "Not stated.", "unit": "Exact.", "domain": "cardiovascular" },
+      "evidence": ["P61.2 register data/scientific/p612-synthetic-intake-aliases.v1.json."], "uncertainty": ["Alias not yet reviewed; fasting status in the source is unverified."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Researcher review of the P61.2 synthetic alias register.", "approvedBy": null, "approvedAt": null }
+    },
+    {
+      "id": "P613-A05", "label": "White blood cells", "reportedUnit": "10^9/L", "fixtureRows": 8,
+      "categories": ["PROVISIONAL_SYNTHETIC_ALIAS"], "applied": true,
+      "proposal": { "catalogId": "demo:ubt-813d9e97", "catalogName": "White blood cell count (total leukocytes)", "catalogUnit": "10^9/L", "catalogSource": "synthetic-demo", "domain": "immune" },
+      "verification": { "specimen": "Whole blood (not stated).", "method": "Not stated.", "unit": "Exact.", "domain": "immune" },
+      "evidence": ["P61.2 register data/scientific/p612-synthetic-intake-aliases.v1.json."], "uncertainty": ["Alias not yet reviewed."],
+      "approval": { "status": "PENDING_RESEARCHER_REVIEW", "requiredRole": "researcher", "path": "Researcher review of the P61.2 synthetic alias register.", "approvedBy": null, "approvedAt": null }
+    }
+  ]
+}
