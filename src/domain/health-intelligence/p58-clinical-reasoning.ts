@@ -276,7 +276,7 @@ export function buildPreliminaryClinicalAssessment(input: ClinicalInput): Prelim
       ),
     ];
     const missing = [
-      ...p.missingTests.filter((m) => !m.ids.some((id) => presentIds.has(id))).map((m) => `${m.label} — not recorded in this period.`),
+      ...p.missingTests.filter((m) => !m.ids.some((id) => presentIds.has(id))).map((m) => `${m.label} — no accepted observation in this period.`),
       ...p.contextNeeded.map((x) => `${x} — not recorded.`),
       ...perObservationMissing.map((x) => `${x} (required by an approved criterion).`),
     ];
