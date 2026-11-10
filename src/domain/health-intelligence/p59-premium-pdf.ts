@@ -226,6 +226,25 @@ function badge(L: P, kind: BadgeKind, label: string, x: number, y: number, size 
 
 // ------------------------------------------------------------------ page 1
 
+/**
+ * P61.3: every examination date, compactly (day numbers grouped by month: "3, 6, 9 Nov 2026 (3 dates)"), so the
+ * page-1 tile never drops a date behind an ellipsis. Non-ISO values are kept verbatim.
+ */
+export function compactExamDates(dates: readonly string[]): string {
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const groups: { key: string; days: string[] }[] = [];
+  for (const d of dates) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d);
+    const key = m ? `${MON[Number(m[2]) - 1]} ${m[1]}` : d;
+    const day = m ? String(Number(m[3])) : "";
+    const g = groups[groups.length - 1];
+    if (g && g.key === key && day) g.days.push(day);
+    else groups.push({ key, days: day ? [day] : [] });
+  }
+  const text = groups.map((g) => (g.days.length ? `${g.days.join(", ")} ${g.key}` : g.key)).join("; ");
+  return dates.length > 1 ? `${text} (${dates.length} dates)` : text;
+}
+
 function hero(L: P, r: PremiumReport) {
   const x = MX, y = TOP1, h = r.demonstrationLabel && r.header.provenance === "synthetic" ? 48.5 : 47;
   const strips = 24;
@@ -243,7 +262,7 @@ function hero(L: P, r: PremiumReport) {
     ["ASTRONAUT", r.header.astronaut],
     ["MISSION", r.header.mission],
     ["ASSESSMENT PERIOD", r.header.period],
-    ["EXAMINATIONS WITH DATA", `${r.header.examinationDates.join(", ")}`],
+    ["EXAMINATIONS WITH DATA", compactExamDates(r.header.examinationDates)],
   ];
   const tw = (CW - 10 - 3 * 2.5) / 4;
   tiles.forEach(([k, v], i) => {
