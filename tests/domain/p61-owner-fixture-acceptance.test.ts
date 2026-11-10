@@ -109,7 +109,7 @@ describe("P61 owner fixtures — CSV schema compatibility", () => {
     const parsed = extractCsvCandidates(readFileSync(CSV, "utf8"), 1000);
     expect(parsed.rows.length).toBe(304);
     expect(parsed.skipped).toBe(0);
-    expect(parsed.rows.every((r) => r.datePrecision === "instant" && r.observedAt.endsWith("T09:00:00.000Z"))).toBe(true);
+    expect(parsed.rows.every((r) => r.datePrecision === "instant" && r.observedAt.endsWith("T09:00:00Z"))).toBe(true);
     expect([...new Set(parsed.rows.map((r) => r.observedAt.slice(0, 10)))].sort()).toEqual(DATES);
   });
   it("the PDF and CSV carry the same 304 (date, biomarker, value, unit) tuples", () => {
@@ -192,6 +192,5 @@ describe("P61 owner fixtures — encrypted offline storage, duplicates and repor
     expect(by("p60-hba1c-check")?.priority).toBe("DATA_CHECK");
     expect(by("p60-lipids")?.priority).toBe("MONITORING");
     expect(by("p60-bone")?.title).toBe("Bone-turnover change");
-    console.log(JSON.stringify(report.patterns.patterns.map((p) => [p.id, p.title, p.priority, p.dataCheck])));
   });
 });
