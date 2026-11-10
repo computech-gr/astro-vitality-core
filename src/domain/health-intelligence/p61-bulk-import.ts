@@ -204,9 +204,11 @@ export interface DateHeading {
 }
 
 /** A line that states an examination (or sample collection) date for the rows that follow. */
-export function classifyDateHeading(text: string, cellCount: number): Omit<DateHeading, "line" | "page"> | null {
+export function classifyDateHeading(text: string, cells: readonly string[]): Omit<DateHeading, "line" | "page"> | null {
   const t = text.trim();
-  if (t.length < 4 || t.length > 160 || isPageMarkLine(t) || cellCount > 6) return null;
+  if (t.length < 4 || t.length > 160 || isPageMarkLine(t) || cells.length > 4) return null;
+  // A cell holding only a number is a measurement value: the line is a table row, not a heading.
+  if (cells.some((c) => /^[-+\u2212]?\d+(?:[.,]\d+)?$/.test(c.trim()))) return null;
   const tokens = scanDates(t);
   if (!tokens.length) return null;
   let residual = t;
@@ -492,7 +494,7 @@ export function reconstructMultiDateDocument(
     if (tableLines.has(lineNo) || columns.ownedLines.has(lineNo)) return;
     const cells = lineCells(l);
     if (mapHeaderCells(cells)) return;
-    const h = classifyDateHeading(l.text, cells.length);
+    const h = classifyDateHeading(l.text, cells);
     if (!h) return;
     if (h.kind === "excluded") {
       ignoredDates.push({ line: lineNo, page: l.page, text: h.text, reason: "Not an examination date (report, print, upload, birth or similar date)." });
@@ -624,7 +626,7 @@ export function reconstructMultiDateDocument(
     groups,
     ignoredDates,
     distinctDates,
-    multipleDates: distinctDates.length > 1 || groups.length > 1,
+    multipleDates: distinctDates.length > 1 || (groups.length > 1 && groups.some((g) => g.parse.status !== "resolved")),
     dateColumnTables: columns.tables,
     blankCells: columns.blankCells,
   };
@@ -700,7 +702,7 @@ export function rowDateEvidence(row: { observedAt: string; datePrecision?: Obser
     const p = parseDateText(row.rawDate);
     const groupKey = `raw:${row.rawDate}`;
     if (p.status === "resolved")
-      return evidence({ ...at, status: "ambiguous", value: null, precision: null, sourceText: row.rawDate, groupKey, options: [{ iso: p.value, precision: p.precision, how: p.how }], note: `"${row.rawDate}" is not an ISO date; confirm the reading ${p.value} (${p.how}).` });
+      return evidence({ ...at, status: "resolved", value: p.value, precision: p.precision, sourceText: row.rawDate, groupKey, options: [], note: `Examination date from the row's own date "${row.rawDate}" (${p.how}).` });
     if (p.status === "ambiguous") return evidence({ ...at, status: "ambiguous", value: null, precision: null, sourceText: row.rawDate, groupKey, options: p.options, note: p.note });
     return evidence({ ...at, status: "invalid", value: null, precision: null, sourceText: row.rawDate, groupKey, options: [], note: p.status === "invalid" ? p.note : `"${row.rawDate}" is not a date.` });
   }
