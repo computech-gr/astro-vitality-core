@@ -139,6 +139,8 @@ type IntakeRow = {
   documentSha256?: string | undefined;
   /** P39: heading / table / page-line provenance of the source row (review evidence). */
   sourceSection?: CandidateSourceSection | undefined;
+  /** P61.2: verbatim source context/note (unverified provenance; also kept in the stored source excerpt). */
+  sourceContext?: string | undefined;
   classification: IntakeClassification;
   selected: boolean;
   /** P42: document-table evidence (row number, raw value, issues, repeats). */

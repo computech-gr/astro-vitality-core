@@ -1,0 +1,60 @@
+{
+  "schema": "mitochondria.p612-synthetic-intake-aliases.v1",
+  "status": "OWNER_DIRECTED_SYNTHETIC_ONLY_PENDING_RESEARCHER_REVIEW",
+  "authorization": "Owner instruction P61.2 (2026-11-10): implement deterministic, evidence-backed aliases only where the canonical identity and unit are unambiguous. Synthetic intake recognition only; this is not scientific approval, not catalog activation and never applies to real data.",
+  "missionId": "mission-9d8ce8f3e5554509a0885461f9ad2e1c",
+  "missionCode": "MITO_DEMO_2026",
+  "rules": [
+    "The target is an ACTIVE entry of this mission's verified SYNTHETIC DEMO catalog whose display name, unit and domain equal the values recorded here; otherwise the alias is ignored.",
+    "The incoming unit must equal the entry's unit byte-for-byte. No unit or value conversion and no unit-notation equivalence (for example 'deg C' vs '°C') is ever applied.",
+    "An alias is used only when no production, handbook, governed-extension or demo entry already matches the label, and never when it equals the name or alias of another active entry.",
+    "Equivalence must be a curated abbreviation or word-order form of the same analyte; substring or fuzzy similarity is never sufficient."
+  ],
+  "aliases": [
+    {
+      "alias": "25-OH vitamin D",
+      "unit": "ng/mL",
+      "demoId": "demo:ubt-7b25ce69",
+      "targetDisplayName": "25-Hydroxyvitamin D",
+      "domain": "bone",
+      "basis": "abbreviation",
+      "evidence": "'25-OH' is the standard abbreviation of '25-hydroxy'; the entry's own signed alias '25(OH) Vitamin D' uses the same abbreviation. Identical unit ng/mL. Production bone-019 '25(OH) Vitamin D' defines no unit and cannot be matched."
+    },
+    {
+      "alias": "Systolic BP",
+      "unit": "mmHg",
+      "demoId": "demo:ubt-e1140df3",
+      "targetDisplayName": "Systolic blood pressure",
+      "domain": "cardiovascular",
+      "basis": "abbreviation",
+      "evidence": "'BP' abbreviates 'blood pressure'. Identical unit mmHg. The owner-directed P59 synthetic mapping already relates this entry to production cv-005 SBP (mmHg)."
+    },
+    {
+      "alias": "Diastolic BP",
+      "unit": "mmHg",
+      "demoId": "demo:ubt-5d16fcaf",
+      "targetDisplayName": "Diastolic blood pressure",
+      "domain": "cardiovascular",
+      "basis": "abbreviation",
+      "evidence": "'BP' abbreviates 'blood pressure'. Identical unit mmHg. The owner-directed P59 synthetic mapping already relates this entry to production cv-006 DBP (mmHg)."
+    },
+    {
+      "alias": "Glucose, fasting",
+      "unit": "mg/dL",
+      "demoId": "demo:ubt-7f47ee7c",
+      "targetDisplayName": "Fasting glucose",
+      "domain": "cardiovascular",
+      "basis": "word-order",
+      "evidence": "Inverted list form of 'Fasting glucose' (same words, same analyte, same fasting qualifier). Identical unit mg/dL. Its relation to the broader production cv-083 'Glucose' stays AMBIGUOUS_NOT_PROPOSED in the P59 register and is not changed."
+    },
+    {
+      "alias": "White blood cells",
+      "unit": "10^9/L",
+      "demoId": "demo:ubt-813d9e97",
+      "targetDisplayName": "White blood cell count (total leukocytes)",
+      "domain": "immune",
+      "basis": "abbreviation",
+      "evidence": "Plural short form of 'White blood cell count'. Identical unit 10^9/L selects exactly this entry; the other active WBC entry (demo:ubt-cbb5666e) uses 10^3/μL and is not used."
+    }
+  ]
+}
