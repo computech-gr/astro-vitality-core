@@ -326,6 +326,11 @@ function parseIntakeText(
   const tableExcerpts = new Set(
     reconstruction.observations.map((o) => o.excerpt.replace(/ \[column [^\]]*\]$/, "").trim()),
   );
+  // P61: examination-date headings and ignored report dates are never measurement rows.
+  const dateLines = new Set([
+    ...multiDate.groups.filter((g) => g.kind === "heading").map((g) => g.text.trim()),
+    ...multiDate.ignoredDates.map((d) => d.text.trim()),
+  ]);
   const tableRows: IntakeRow[] = reconstruction.observations.map((o, index) => {
     const examDate = multiDate.dates[index]!;
     const section: CandidateSourceSection = {
@@ -370,7 +375,7 @@ function parseIntakeText(
     documentName,
     documentSha256,
     linePages,
-  ).filter((row) => !tableExcerpts.has(row.excerpt.trim()));
+  ).filter((row) => !tableExcerpts.has(row.excerpt.trim()) && !dateLines.has(row.excerpt.trim()));
   return { rows: [...tableRows, ...legacy].slice(0, MAX_ROWS), reconstruction, multiDate };
 }
 
