@@ -848,8 +848,8 @@ function chartPanel(L: P, c: PremiumChart, x: number, y: number, w: number, meas
   L.draw([148, 163, 184]);
   L.pdf.setLineWidth(0.3);
   L.pdf.line(px0, py1, px1, py1);
-  // Date labels never overlap: a label that would touch its drawn neighbour is omitted (the first and last
-  // dates are always kept). Every point keeps its marker and value; the caption lists the full date range.
+  // Date labels never overlap: a label that would touch its drawn neighbour is omitted (the first date is
+  // always kept; the last replaces a clashing neighbour). Every point keeps its marker and value label.
   const xLabels: { x: number; text: string; w: number }[] = [];
   for (let i = 0; i < pts.length; i++) {
     const text = dayLabel(pts[i]!.day);
