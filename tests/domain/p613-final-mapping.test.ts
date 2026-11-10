@@ -91,12 +91,6 @@ describe("P61.3 application path — synthetic demo only", () => {
     for (const [l, u] of [["Bicarbonate", "mmol/L"], ["Chloride", "mmol/L"], ["Urea nitrogen (BUN)", "mg/dL"], ["Platelets", "10^9/L"], ["Creatinine", "mg/dL"], ["Sleep duration", "h"], ["HRV SDNN", "ms"]] as const)
       expect(row(l, u, "synthetic").status).not.toBe("matched");
   });
-  it("a reported-unit notation is rejected on real data and on a non-equivalent unit", () => {
-    const base = { schema: "mitochondria.unified-observation.v2", id: "p613-obs-000001", missionId: "m", crewMemberId: "c", metricId: "demo:ubt-323050f4", domain: "immune", value: "38.8", originalUnit: "°C", reportedUnit: "deg C", observedAt: "2026-11-12", datePrecision: "date", source: { kind: "csv", label: "CSV" }, provenance: "synthetic", quality: { reviewerConfirmed: true }, reviewState: "accepted", recordedAt: "2026-11-12T10:00:00.000Z" } as unknown as UnifiedObservation;
-    expect(validateUnifiedObservation(base)).toBeNull();
-    expect(validateUnifiedObservation({ ...base, provenance: "real" })).toMatch(/only on synthetic demo/);
-    expect(validateUnifiedObservation({ ...base, reportedUnit: "deg F" })).toMatch(/listed notation/);
-  });
 });
 
 type Row = P61ReviewRow & { sourceKind: "csv"; sourceLabel: string; documentName: string; excerpt: string; importedAt: string };
@@ -121,6 +115,13 @@ describe("P61.3 owner CSV — stored unit and report", () => {
     expect(temps.length).toBe(8);
     expect(temps.every((o) => o.originalUnit === "°C" && o.reportedUnit === "deg C" && !validateUnifiedObservation(o))).toBe(true);
     expect(temps.map((o) => o.value)).toEqual(["36.7", "37.0", "37.5", "38.8", "38.2", "37.6", "37.1", "36.8"]);
+  });
+  it("a reported-unit notation is rejected on real data and on a non-equivalent unit", () => {
+    const t = csvObservations().saved.find((o) => o.metricId === "demo:ubt-323050f4")!;
+    expect(validateUnifiedObservation(t)).toBeNull();
+    expect(validateUnifiedObservation({ ...t, provenance: "real" } as UnifiedObservation)).not.toBeNull();
+    expect(validateUnifiedObservation({ ...t, reportedUnit: "deg F" })).toMatch(/listed notation/);
+    expect(validateUnifiedObservation({ ...t, reportedUnit: "°C" })).toMatch(/listed notation/);
   });
   it("a pattern's HIGH priority never reads as the result's own HIGH class", () => {
     const { saved } = csvObservations();
