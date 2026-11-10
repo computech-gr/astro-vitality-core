@@ -369,6 +369,13 @@ const LABEL_COLS = [
   "analyte",
   "biomarker",
   "parameter",
+  "metric_name",
+  "biomarker_name",
+  "analyte_name",
+  "test_name",
+  "parameter_name",
+  "measurement_name",
+  "observation_name",
 ];
 const UNIT_COLS = ["unit", "units", "unit / scale"];
 const SECTION_COLS = [
