@@ -19,6 +19,7 @@ import {
   type P61ExceptionCode,
   type P61RowStatus,
 } from "@/domain/health-intelligence/p61-bulk-import";
+import { syntheticIntakeAliasFor } from "@/domain/health-intelligence/p612-synthetic-intake-aliases";
 
 export interface P61PanelRow {
   key: string;
@@ -311,7 +312,15 @@ export function P61BulkImportPanel(props: {
                   <td className="py-2 pr-3">
                     {row.classification.status === "matched" ? DOMAIN_LABELS[row.classification.domain] : "—"}
                   </td>
-                  <td className="py-2 pr-3 text-xs">{mappingText(row.classification)}</td>
+                  <td className="py-2 pr-3 text-xs">
+                    {mappingText(row.classification)}
+                    {row.classification.status === "matched" &&
+                    syntheticIntakeAliasFor({ label: row.label, unit: row.unit, metricId: row.classification.metricId }) ? (
+                      <span className="mt-0.5 block text-muted-foreground">
+                        Via synthetic alias "{row.label}" → {row.classification.metricId} — pending Researcher review
+                      </span>
+                    ) : null}
+                  </td>
                   <td className="py-2 text-xs">
                     <Badge
                       variant={s?.kind === "validated" ? "secondary" : "outline"}

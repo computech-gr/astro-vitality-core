@@ -72,3 +72,16 @@ export function syntheticIntakeAliasEntry(
   );
   return targets.length === 1 ? { entry: targets[0]!, alias: a } : null;
 }
+
+/**
+ * Display-only: the owner-directed alias that explains why a matched row (label + exact unit) points at
+ * `metricId`, or null. Used to label such rows "synthetic alias — pending Researcher review".
+ */
+export function syntheticIntakeAliasFor(
+  row: { label: string; unit: string; metricId: string },
+  reg: SyntheticIntakeAliasRegister | null = SYNTHETIC_INTAKE_ALIASES,
+): SyntheticIntakeAlias | null {
+  if (!reg) return null;
+  const label = normalizeCatalogText(row.label);
+  return reg.aliases.find((a) => a.demoId === row.metricId && a.unit === row.unit.trim() && normalizeCatalogText(a.alias) === label) ?? null;
+}
