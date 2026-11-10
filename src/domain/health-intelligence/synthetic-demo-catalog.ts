@@ -17,6 +17,7 @@
  */
 import { canonicalJson } from "./observation-envelope";
 import { normalizeCatalogText, sha256Hex } from "./catalog-lifecycle";
+import { syntheticIntakeAliasEntry } from "./p612-synthetic-intake-aliases";
 import type { HealthDomainId } from "@/domain/health-domains/registry";
 import {
   deriveSigningKeyFromSecret,
@@ -247,6 +248,8 @@ export type SyntheticDemoRecognition = {
   missionId: string;
   demoCatalogVersion: number;
   termId: string;
+  /** P61.2: set when an owner-directed synthetic intake alias (pending Researcher review) named the entry. */
+  intakeAlias?: { alias: string; basis: string } | undefined;
 };
 export type DemoRecognitionResult =
   SyntheticDemoRecognition | { status: "UNKNOWN"; reason: string };
@@ -325,8 +328,25 @@ export function recognizeSyntheticDemo(
   const named = catalog.active.filter((e) =>
     [e.displayName, ...e.aliases].some((a) => normalizeCatalogText(a) === label),
   );
-  if (!named.length)
+  if (!named.length) {
+    // P61.2: owner-directed alias to an active entry with the identical unit (never a unit equivalence).
+    const viaAlias = syntheticIntakeAliasEntry({ label: input.label, unit, missionId: catalog.missionId }, catalog);
+    if (viaAlias) {
+      const e = viaAlias.entry;
+      return {
+        status: "SYNTHETIC_DEMO_RECOGNIZED",
+        demoId: e.demoId,
+        displayName: e.displayName,
+        unit: e.unit,
+        domain: e.domain,
+        missionId: e.missionId,
+        demoCatalogVersion: catalog.demoCatalogVersion,
+        termId: e.termId,
+        intakeAlias: { alias: viaAlias.alias.alias, basis: viaAlias.alias.basis },
+      };
+    }
     return { status: "UNKNOWN", reason: "No active synthetic demo entry for this label." };
+  }
   const exact = named.filter((e) => e.unit.trim() === unit);
   if (!exact.length)
     return {
