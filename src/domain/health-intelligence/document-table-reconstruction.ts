@@ -938,10 +938,19 @@ export function reconstructDocumentTables(
     const looksNumbered = ROW_NUMBER.test(first) || (delimited.length <= 1 && !!tokenNumber);
     // Running headers/footers repeat on several pages. A numbered table row or a domain heading that
     // happens to repeat (the same reading in two examinations, a section per examination) is content.
+    // P61: in an un-numbered table, a row whose cells match the header column count with a readable
+    // result and a lettered label is a measurement row (the same reading in several examinations).
+    const alignedTableRow =
+      active !== null &&
+      !hasRowNumberRole &&
+      delimited.length === active.roles.length &&
+      isValueToken(delimited[active.roles.indexOf("result")] ?? "") &&
+      /\p{L}/u.test(delimited[active.roles.indexOf("label")] ?? "");
     const repeatedContent =
       (active !== null &&
         looksNumbered &&
         (delimited.length >= 2 || (delimited.length <= 1 && !!tokenNumber))) ||
+      alignedTableRow ||
       Boolean(documentLineHeading(text)?.domain);
     if (!repeatedContent && isFurniture(text, l.page)) return;
 
