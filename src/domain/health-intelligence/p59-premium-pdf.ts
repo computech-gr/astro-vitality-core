@@ -1085,8 +1085,10 @@ function longitudinal(L: P, r: PremiumReport) {
     pair.forEach(([t, cs], j) => singlePanel(L, t, cs, MX + j * (COL2 + GUT), L.y, COL2, false));
     L.y += h + GUT;
   }
-  const tableOnly = r.base.charts.omitted.length + hiddenSingles;
-  if (tableOnly) L.para(`${tableOnly} further unflagged, unclassified result(s) are shown in the results table only.`, 7.6, COLOR.muted);
+  // P61.3: name every series without a chart (none of them is classified or prioritised in this report).
+  const omittedNames = [...new Set([...r.chartsOmitted.map((o) => o.name), ...r.charts.filter((c) => c.base.kind === "single" && !notableSingle(c)).map((c) => c.base.name)])];
+  if (hiddenSingles + r.chartsOmitted.length)
+    L.para(`Not charted — no classification, review priority or flag in this report; every value is in the complete results table: ${omittedNames.join(", ")}.`, 7.6, COLOR.muted);
 }
 
 // ------------------------------------------------------------------ preliminary medical assessment
