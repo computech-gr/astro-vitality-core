@@ -219,6 +219,27 @@ function classifyDateCell(text: string): Omit<DateHeading, "line" | "page"> | nu
   return null;
 }
 
+const NUMBERED_EXAM =
+  /^(?:examinations?|exams?|visits?|sessions?|assessments?|evaluations?|check ?ups?|days?|εξετασ\p{L}*|επισκεψ\p{L}*)(?: no| nr| #)? ?#?\d{1,3}$/u;
+/**
+ * "Examination 3 — 2026-11-03": a numbered examination title plus exactly one date
+ * and nothing else. PDF text geometry splits it into cells ("Examination" | "3" |
+ * "— 2026-11-03") that would otherwise look like a measurement row.
+ */
+export function isNumberedExamHeading(text: string): boolean {
+  const t = text.trim();
+  if (t.length > 80) return false;
+  const tokens = scanDates(t);
+  if (tokens.length !== 1) return false;
+  const residual = (t.slice(0, tokens[0]!.start) + " " + t.slice(tokens[0]!.end))
+    .toLocaleLowerCase("en-US")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^\p{L}\d#]+/gu, " ")
+    .trim();
+  return NUMBERED_EXAM.test(residual);
+}
+
 /**
  * A line that states an examination (or sample collection) date for the rows
  * that follow. Metadata lines are read cell by cell, so a birth or report date
@@ -227,8 +248,13 @@ function classifyDateCell(text: string): Omit<DateHeading, "line" | "page"> | nu
 export function classifyDateHeading(text: string, cells: readonly string[]): Omit<DateHeading, "line" | "page"> | null {
   const t = text.trim();
   if (t.length < 4 || t.length > 160 || isPageMarkLine(t) || cells.length > 4) return null;
-  // A cell holding only a number is a measurement value: the line is a table row, not a heading.
-  if (cells.some((c) => /^[-+\u2212]?\d+(?:[.,]\d+)?$/.test(c.trim()))) return null;
+  // A cell holding only a number is a measurement value: the line is a table row, not a
+  // heading — unless the whole line is a numbered examination title with one date.
+  if (cells.some((c) => /^[-+\u2212]?\d+(?:[.,]\d+)?$/.test(c.trim()))) {
+    if (!isNumberedExamHeading(t)) return null;
+    const whole = classifyDateCell(t);
+    return whole && whole.kind === "examination" ? { ...whole, text: t } : null;
+  }
   const results = (cells.length > 1 ? cells : [t]).map(classifyDateCell).filter((r): r is NonNullable<typeof r> => r !== null);
   if (!results.length) return null;
   const usable = results.filter((r) => r.kind !== "excluded");
@@ -505,7 +531,12 @@ export function reconstructMultiDateDocument(
 ): MultiDateDocument {
   const inspected = lines.slice(0, 5000);
   const columns = readDateColumnTables(inspected, options);
-  const base = reconstructDocumentTables(inspected, { ...options, skipLines: columns.ownedLines });
+  // Numbered examination headings are dates, never measurement rows.
+  const skip = new Set(columns.ownedLines);
+  inspected.forEach((l, i) => {
+    if (!columns.ownedLines.has(i + 1) && isNumberedExamHeading(l.text) && classifyDateHeading(l.text, lineCells(l))) skip.add(i + 1);
+  });
+  const base = reconstructDocumentTables(inspected, { ...options, skipLines: skip });
   const tableLines = new Set(base.observations.map((o) => o.line));
 
   // Date headings (furniture: an identical multi-date line on several pages is a running header).
