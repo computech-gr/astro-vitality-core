@@ -790,7 +790,7 @@ function chartBadges(c: PremiumChart): [BadgeKind, string][] {
  * (peak/trough) and extreme dates are kept first and any omitted date is listed in the caption.
  */
 export function chartDateAxisPlan(
-  points: readonly { day: string; value: number; annotation?: string | undefined }[],
+  points: readonly { day: string; value: number; annotation?: string | null | undefined }[],
   plotWidth: number,
   widthOf: (text: string) => number,
 ): { labels: { index: number; x: number; text: string }[]; month: string | null; omitted: string[] } {

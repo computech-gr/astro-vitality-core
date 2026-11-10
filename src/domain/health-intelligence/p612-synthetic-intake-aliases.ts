@@ -29,7 +29,7 @@ export interface SyntheticIntakeAliasRegister {
 
 /** Structural validation; any defect disables the whole register. */
 export function validateSyntheticIntakeAliasRegister(raw: unknown): SyntheticIntakeAliasRegister | null {
-  const r = raw as Record<string, unknown> | null;
+  const r = raw as { schema?: unknown; status?: unknown; missionId?: unknown; aliases?: unknown } | null;
   if (!r || r.schema !== P612_ALIAS_SCHEMA || r.status !== P612_ALIAS_STATUS) return null;
   if (typeof r.missionId !== "string" || !r.missionId || !Array.isArray(r.aliases)) return null;
   const seen = new Set<string>();
