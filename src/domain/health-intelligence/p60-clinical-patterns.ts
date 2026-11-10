@@ -225,7 +225,10 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
         ...(v3.length || v2.length ? ["vital signs in NEWS2 warning bands"] : []),
         ...(lact.length ? ["a raised lactate"] : []),
       ]);
-      const title = inflam && (v3.length || v2.length) ? "Fever and inflammation with abnormal vital signs" : inflam ? "Raised inflammatory markers" : "Abnormal vital signs (early-warning parameters)";
+      // The title names fever only when a body temperature at or above the fever criterion is recorded.
+      const title = inflam && (v3.length || v2.length)
+        ? fever.length ? "Fever and inflammation with abnormal vital signs" : "Raised inflammatory markers with abnormal vital signs"
+        : inflam ? "Raised inflammatory markers" : "Abnormal vital signs (early-warning parameters)";
       const later = vitals.filter((x) => [...v3, ...v2].some((y) => y.k === x.k && x.o.row.date > y.o.row.date && x.pts < y.pts));
       const crpIds = uniq(usable("hscrp").map((o) => o.row.metricId));
       const pattern = `${parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}` : parts[0] ?? "abnormal values"}`.replace(/^./, (c) => c.toUpperCase()) +
@@ -499,7 +502,8 @@ export function evaluateClinicalPatterns(rows: readonly PatternRow[], opts: { ac
       const days = ocChange ? dayNum(oc.at(-1)!.row.date) - dayNum(oc[0]!.row.date) : 0;
       const ref = obs("p1np_ctx");
       patterns.push(make({
-        id: "p60-bone", title: "Bone-turnover change and low vitamin D", domains: ["bone"], priority: "MONITORING", rules: ["PP-4"], dataCheck: ocChange && days <= 2 && (ratio >= 2 || ratio <= 0.5),
+        // The title names low vitamin D only when a classified low vitamin D result is recorded.
+        id: "p60-bone", title: vdLow.length ? (ocChange ? "Bone-turnover change and low vitamin D" : "Low vitamin D") : "Bone-turnover change", domains: ["bone"], priority: "MONITORING", rules: ["PP-4"], dataCheck: ocChange && days <= 2 && (ratio >= 2 || ratio <= 0.5),
         dataCheckRecordIds: oc.map((o) => o.row.recordId),
         headline: [ocChange ? `Osteocalcin ${oc.map((o) => o.row.valueText).join(" → ")} ng/mL within ${days} ${days === 1 ? "day" : "days"}` : "", ...[...new Set(vdLow.map((o) => val(o)))].map((v) => `vitamin D ${v} (${vdLow.filter((o) => val(o) === v).map((o) => dayText(o.row.date)).join(", ")})`)].filter(Boolean).join("; ").replace(/^./, (c) => c.toUpperCase()) + ".",
         rationale: "PP-4: a significant change (trend review) and/or a provisional AMBER vitamin D value; no threshold supports high priority.",
