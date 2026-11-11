@@ -119,7 +119,8 @@ describe("P61.4 safeguards — one per held proposal, bound to the P61.3 registe
   it("BUN is urea nitrogen, never urea", () => {
     for (const d of SG("Urea nitrogen (BUN)", "mg/dL").definitions) {
       expect(d.displayName).toMatch(/Urea nitrogen/);
-      expect(d.displayName).not.toMatch(/^Urea(\s|,|$)/);
+      expect(d.displayName).not.toMatch(/^Urea(,|$|\s\()/);
+      expect(d.displayName).not.toMatch(/mmol\/L/);
     }
   });
   it("Creatinine requires specimen and definition; serum is never the only option", () => {
@@ -346,7 +347,7 @@ describe("P61.4 exception recovery — re-import after approval and activation",
   it("only the activated names become eligible; the rest stay held", async () => {
     await installWithActivated(["Chloride|mmol/L", "HRV SDNN|ms"]);
     const rows = csvRows();
-    const st = evaluateBulkImport(rows, save(csvRows(), evaluateBulkImport(rows, [], SCOPE).validatedKeys.length ? [] : [], "x"), SCOPE);
+    const st = evaluateBulkImport(rows, [], SCOPE);
     const validatedHeld = rows.filter((r) => st.statuses.get(r.key)?.kind === "validated" && HELD[heldKey(r)]);
     expect([...new Set(validatedHeld.map(heldKey))].sort()).toEqual(["Chloride|mmol/L", "HRV SDNN|ms"]);
     expect(rows.filter((r) => st.statuses.get(r.key)?.kind === "exception").length).toBe(10);
