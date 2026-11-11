@@ -653,4 +653,4 @@
 - [x] Full checklist and signed-in Preview browser acceptance; no publishing.
 - [x] Owner's original two-day PDF acceptance (SHA-256 27d75069…d02a; automated test + Preview: 76/38/2, 62/14/0, re-import 62 duplicates).
 - [ ] Live mapping chain per name: Ground Medical P36 submission → owner demo-scope authorization → Researcher decision → Ground Medical activation (blocked: owner/Researcher).
-- [ ] Owner approval before publishing.
+- [x] Owner-authorized publication of revision 7f8e666 (2026-11-11 ~21:56 UTC); read-only live smoke checks passed.
