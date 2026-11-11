@@ -379,9 +379,9 @@ export function preflightMappingDecision(sg: MappingSafeguard, status: MappingGo
     };
   }
   // APPROVE
-  if (status.stage !== "AWAITING_TRIAGE" && status.stage !== "ACCEPTED_AWAITING_DECISION") {
-    if (status.term && REVIEWABLE.has(status.stage)) problems.push(`Approval needs an owner-authorized synthetic demonstration term awaiting decision (current: ${status.label}).`);
-  }
+  const approvable = status.stage === "AWAITING_TRIAGE" || status.stage === "ACCEPTED_AWAITING_DECISION" || (status.stage === "MORE_EVIDENCE_REQUESTED" && status.inScope);
+  if (!approvable && status.term && REVIEWABLE.has(status.stage))
+    problems.push(`Approval needs an owner-authorized synthetic demonstration term awaiting decision (current: ${status.label}).`);
   const def = sg.definitions.find((d) => d.id === draft.definitionId) ?? null;
   if (!def) problems.push("Choose one of the listed measurement definitions; names are never typed or inferred.");
   if (!draft.domain || !DOMAINS.includes(draft.domain)) problems.push("Choose the scientific domain.");
@@ -401,7 +401,7 @@ export function preflightMappingDecision(sg: MappingSafeguard, status: MappingGo
   if (record.length > 2000) problems.push("The rationale and citations are too long (2000 characters in total).");
   if (problems.length || !status.term || !def || !draft.domain) return { ok: false, problems };
   const steps: WriteStep[] = [];
-  if (status.stage === "AWAITING_TRIAGE")
+  if (status.stage !== "ACCEPTED_AWAITING_DECISION")
     steps.push({ kind: "triage", ...status.term, action: "ACCEPT_FOR_REVIEW", reason: record, evidenceRequirements: [], expectedPreviousEventId: prev });
   steps.push({ kind: "demo_decide", ...status.term, displayName: def.displayName, domain: draft.domain });
   return {
