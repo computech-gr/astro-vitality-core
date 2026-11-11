@@ -89,7 +89,7 @@ describe("P61.4 owner original two-day PDF", () => {
     const stored = rows.filter((r) => first.validatedKeys.includes(r.key)).map((r, i) =>
       buildReviewedObservation(r, { id: `p614-owner-${String(i).padStart(4, "0")}`, recordedAt: "2026-11-13T18:05:00.000Z", scope: SCOPE, duplicateWarningAcknowledged: false }));
     expect(stored.length).toBe(62);
-    expect(stored.some((o) => HELD_NAMES.test(o.originalLabel ?? "") || Object.keys(HELD).some((k) => k.startsWith(`${o.originalLabel}|`)))).toBe(false);
+    expect(stored.some((o) => HELD_NAMES.test(o.label) || Object.keys(HELD).some((k) => k.startsWith(`${o.label}|`)))).toBe(false);
 
     const again = evaluateBulkImport(rows, stored, SCOPE);
     expect(reconcileBulkImport(rows, again.statuses)).toMatchObject({ duplicates: 62, validated: 0, unresolved: 14, rejected: 0 });
@@ -113,6 +113,6 @@ describe("P61.4 owner original two-day PDF", () => {
   it("the five aliases and the temperature notation rule stay pending and synthetic-only", () => {
     const rules = provisionalRuleViews();
     expect(rules.length).toBe(6);
-    expect(rules.every((r) => /Pending/i.test(r.statusLabel) && r.syntheticOnly)).toBe(true);
+    expect(rules.every((r) => r.status.startsWith("PENDING_RESEARCHER_") && r.syntheticOnly)).toBe(true);
   });
 });
