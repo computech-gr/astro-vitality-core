@@ -651,6 +651,6 @@
 - [x] Import exception queue: why held, missing evidence, status, next role, link to Scientific Review; newly-eligible recovery count.
 - [x] Two-day reconstructed fixture + tests (seven categories, unverified notes, roles, pending/rejected/inactive held, active eligible, real-mode isolation, 62 duplicates, no auto-save, dates, append-only).
 - [x] Full checklist and signed-in Preview browser acceptance; no publishing.
-- [ ] Owner's original two-day PDF acceptance (blocked: file not supplied; reconstructed fixture used).
+- [x] Owner's original two-day PDF acceptance (SHA-256 27d75069…d02a; automated test + Preview: 76/38/2, 62/14/0, re-import 62 duplicates).
 - [ ] Live mapping chain per name: Ground Medical P36 submission → owner demo-scope authorization → Researcher decision → Ground Medical activation (blocked: owner/Researcher).
 - [ ] Owner approval before publishing.
