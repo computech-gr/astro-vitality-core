@@ -11,3 +11,10 @@ fixture is reconstructed for automated tests and Preview acceptance only:
 
 76 observations, 38 series, 2 dates. Synthetic test data only — not clinical, scientific or human acceptance.
 The PDF uses the original document's layout (examination headings, Domain / Measurement / Result / Unit table).
+
+## Owner original (`owner/`)
+
+`owner/MITOCHONDRIA_Alex_Morgan_12-13_Nov_2026_SYNTHETIC.pdf` is the owner-supplied original two-day PDF, copied
+byte-identical (SHA-256 `27d75069cbfb13f45e32772364bbf16dd9c8ee58f97d559b0da2e5c6f0c9d02a`, pinned by
+`tests/domain/p614-owner-file-acceptance.test.ts`). Its 13 November values are the owner's own follow-up values and
+supersede the reconstructed ones above for acceptance; the reconstructed fixture remains only as a regression test.
