@@ -642,3 +642,12 @@
 - [x] Owner production-release authorization received (P61.3 FINAL PRODUCTION RELEASE).
 - [x] Release gates re-run, safety gates, published 2026-11-11, production smoke tests (read-only).
 - [ ] Owner's manual Alex Morgan PDF acceptance on production (blocked: owner).
+
+## P61.4 Scientific mapping governance & exception recovery (Preview only)
+
+- [ ] Architecture/gap assessment of P613 register, P36/P37/P38 lifecycle, P61 import and duplicate detection.
+- [ ] Pure mapping-governance module: per-proposal safeguards, closed definitions, decision preflight (approve/reject/request evidence/defer) and live governance stage over the existing triage + synthetic demo lifecycle.
+- [ ] Scientific Review: actionable Researcher workflow routed only through existing triage and synthetic demo decision RPCs; aliases + UN-1 exposed read-only; history.
+- [ ] Import exception queue: why held, missing evidence, status, next role, link to Scientific Review; newly-eligible recovery count.
+- [ ] Two-day reconstructed fixture + tests (seven categories, unverified notes, roles, pending/rejected/inactive held, active eligible, real-mode isolation, 62 duplicates, no auto-save, dates, append-only).
+- [ ] Full checklist and signed-in Preview browser acceptance; no publishing.
