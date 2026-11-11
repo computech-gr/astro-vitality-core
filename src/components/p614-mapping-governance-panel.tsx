@@ -354,7 +354,11 @@ export function P614MappingGovernancePanel() {
           </select>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Sign in with a scientific review account to see the live governance status and record decisions.</p>
+        <p role="status" className="text-sm text-muted-foreground" data-testid="p614-no-review-access">
+          This account has no scientific review access, so the live governance status is not shown and no decision can be recorded here.
+          Ground Medical submits held names from Medical Intake (Unknown Biomarker Review) and activates approved mappings on the Ground
+          Medical page.
+        </p>
       )}
       {state === "loading" ? <p role="status" className="text-sm text-muted-foreground">Reading governance status…</p> : null}
       {state === "error" ? <p role="status" className="text-sm text-muted-foreground">{note}</p> : null}
