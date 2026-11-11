@@ -640,4 +640,5 @@
 - [x] Owner-file acceptance (PDF + CSV) in tests and signed-in browser; P60 report rendered and every page inspected.
 - [ ] Researcher decisions on the 7 held names, the 5 aliases and the UN-1 notation rule (blocked: Researcher).
 - [x] Owner production-release authorization received (P61.3 FINAL PRODUCTION RELEASE).
-- [ ] Release gates re-run on exact revision, safety gates, publish, production smoke tests, acceptance-ready report.
+- [x] Release gates re-run, safety gates, published 2026-11-11, production smoke tests (read-only).
+- [ ] Owner's manual Alex Morgan PDF acceptance on production (blocked: owner).
