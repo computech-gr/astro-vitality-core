@@ -418,6 +418,7 @@ export interface HeldMappingView {
   rows: number;
   dates: string[];
   whyHeld: string;
+  /** Requirements still needing source-document or receipt evidence (then Researcher approval and Ground Medical activation). */
   missingEvidence: string[];
   status: MappingGovernanceStatus;
 }
@@ -439,10 +440,7 @@ export function heldMappingViews(
       rows: mine.length,
       dates: [...new Set(mine.map((r) => r.observedAt.slice(0, 10)).filter(Boolean))].sort(),
       whyHeld: reg ? reg.categories.map((c) => MAPPING_CATEGORY_LABELS[c]).join(" · ") : "No approved and activated mapping.",
-      missingEvidence: [
-        ...reqs.map((r) => `${REQUIREMENT_LABELS[r]} stated by the source document or a validation receipt (an unverified source note does not count)`),
-        "Researcher approval, then separate Ground Medical activation",
-      ],
+      missingEvidence: reqs.map((r) => REQUIREMENT_LABELS[r]),
       status: mappingGovernanceStatus(sg, inputs),
     });
   }

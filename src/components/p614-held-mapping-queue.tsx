@@ -80,7 +80,10 @@ export function P614HeldMappingQueue(props: {
               <Badge variant="outline" className="border-destructive text-destructive">Held — locked</Badge>
             </div>
             <p><span className="font-medium">Why held:</span> {v.whyHeld}. {v.safeguard.rule}</p>
-            <p><span className="font-medium">Missing evidence:</span> {v.missingEvidence.join("; ")}.</p>
+            <p>
+              <span className="font-medium">Missing evidence:</span> {v.missingEvidence.join("; ")} — each stated by the source document or a
+              validation receipt (an unverified source note does not count); then Researcher approval and separate Ground Medical activation.
+            </p>
             <p><span className="font-medium">Governance status:</span> {v.status.label}.</p>
             <p><span className="font-medium">Who acts next:</span> {NEXT_ROLE_LABELS[v.status.nextRole]} — {v.status.nextStep}</p>
             <p><span className="font-medium">Approved and activated mapping available:</span> {v.status.eligible ? `Yes (${v.status.activeDemoId}) — re-import the original file` : "No"}</p>
