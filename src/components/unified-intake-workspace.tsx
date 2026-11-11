@@ -1730,6 +1730,8 @@ export function UnifiedIntakeWorkspace() {
           onConfirmedChange={(checked) => setBulkConfirmedFor(checked ? validatedSignature : null)}
           onConfirmAndSave={() => void confirmAndSaveValidated()}
           onReviewExceptions={reviewExceptions}
+          missionId={membership?.missionId}
+          provenance={provenance}
         />
       ) : null}
 

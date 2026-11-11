@@ -22,6 +22,7 @@ import {
 import { syntheticIntakeAliasFor } from "@/domain/health-intelligence/p612-synthetic-intake-aliases";
 import { mappingDecisionFor, MAPPING_CATEGORY_LABELS } from "@/domain/health-intelligence/p613-mapping-decision-register";
 import { P613MappingDecisionRegister } from "@/components/p613-mapping-decision-register";
+import { P614HeldMappingQueue } from "@/components/p614-held-mapping-queue";
 
 export interface P61PanelRow {
   key: string;
@@ -99,6 +100,9 @@ export function P61BulkImportPanel(props: {
   onConfirmedChange: (confirmed: boolean) => void;
   onConfirmAndSave: () => void;
   onReviewExceptions: (code: P61ExceptionCode | "all") => void;
+  /** P61.4: selected scope, for the held-mapping governance view (display only). */
+  missionId?: string | undefined;
+  provenance?: "" | "synthetic" | "real" | undefined;
 }) {
   const { rows, statuses, reconciliation: r } = props;
   const [date, setDate] = useState("");
@@ -224,6 +228,8 @@ export function P61BulkImportPanel(props: {
           </div>
         </div>
       ) : null}
+
+      <P614HeldMappingQueue rows={rows} statuses={statuses} missionId={props.missionId} provenance={props.provenance} />
 
       <P613MappingDecisionRegister only={registerKeys} compact />
 
