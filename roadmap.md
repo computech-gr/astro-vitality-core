@@ -639,4 +639,5 @@
 - [x] P61.3 regression tests; full suite, typecheck, lint, format, security, build.
 - [x] Owner-file acceptance (PDF + CSV) in tests and signed-in browser; P60 report rendered and every page inspected.
 - [ ] Researcher decisions on the 7 held names, the 5 aliases and the UN-1 notation rule (blocked: Researcher).
-- [ ] Owner production-release authorization (blocked: owner decision).
+- [x] Owner production-release authorization received (P61.3 FINAL PRODUCTION RELEASE).
+- [ ] Release gates re-run on exact revision, safety gates, publish, production smoke tests, acceptance-ready report.
