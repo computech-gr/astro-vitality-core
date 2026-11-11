@@ -645,9 +645,12 @@
 
 ## P61.4 Scientific mapping governance & exception recovery (Preview only)
 
-- [ ] Architecture/gap assessment of P613 register, P36/P37/P38 lifecycle, P61 import and duplicate detection.
-- [ ] Pure mapping-governance module: per-proposal safeguards, closed definitions, decision preflight (approve/reject/request evidence/defer) and live governance stage over the existing triage + synthetic demo lifecycle.
-- [ ] Scientific Review: actionable Researcher workflow routed only through existing triage and synthetic demo decision RPCs; aliases + UN-1 exposed read-only; history.
-- [ ] Import exception queue: why held, missing evidence, status, next role, link to Scientific Review; newly-eligible recovery count.
-- [ ] Two-day reconstructed fixture + tests (seven categories, unverified notes, roles, pending/rejected/inactive held, active eligible, real-mode isolation, 62 duplicates, no auto-save, dates, append-only).
-- [ ] Full checklist and signed-in Preview browser acceptance; no publishing.
+- [x] Architecture/gap assessment of P613 register, P36/P37/P38 lifecycle, P61 import and duplicate detection.
+- [x] Pure mapping-governance module: per-proposal safeguards, closed definitions, decision preflight (approve/reject/request evidence/defer) and live governance stage over the existing triage + synthetic demo lifecycle.
+- [x] Scientific Review: actionable Researcher workflow routed only through existing triage and synthetic demo decision RPCs; aliases + UN-1 exposed read-only; history.
+- [x] Import exception queue: why held, missing evidence, status, next role, link to Scientific Review; newly-eligible recovery count.
+- [x] Two-day reconstructed fixture + tests (seven categories, unverified notes, roles, pending/rejected/inactive held, active eligible, real-mode isolation, 62 duplicates, no auto-save, dates, append-only).
+- [x] Full checklist and signed-in Preview browser acceptance; no publishing.
+- [ ] Owner's original two-day PDF acceptance (blocked: file not supplied; reconstructed fixture used).
+- [ ] Live mapping chain per name: Ground Medical P36 submission → owner demo-scope authorization → Researcher decision → Ground Medical activation (blocked: owner/Researcher).
+- [ ] Owner approval before publishing.
