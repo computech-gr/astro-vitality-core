@@ -88,7 +88,8 @@ export async function installOfferedDemoCatalog(
         reason: "Offered synthetic demo catalog is older; kept the installed one.",
       };
     if (v.snapshot.demoCatalogVersion === current.snapshot.demoCatalogVersion)
-      return canonicalJson(v.snapshot.entries) === canonicalJson(current.snapshot.entries)
+      return canonicalJson([v.snapshot.entries, v.snapshot.aliasMappings ?? []]) ===
+        canonicalJson([current.snapshot.entries, current.snapshot.aliasMappings ?? []])
         ? { installed: false, reason: "Synthetic demo catalog is already up to date." }
         : {
             installed: false,
