@@ -235,11 +235,11 @@ const grantCount = () => sql("select count(*) from p615_demo_scope_grants;");
 const hb = item(SUB_B, "ubt-6811a69f", "g/dL");
 for (const u of [1, 2, 3, 5, 9, 12]) {
   const r = authorize(u, [hb]);
-  check(!r.ok && r.err.includes("42501") === false ? !r.ok : !r.ok, `non-Researcher ${u} refused`);
+  check(!r.ok && /authorization required|scope denied/.test(r.err), `non-Researcher ${u} refused`);
 }
 check(scopeCount() === "197" && grantCount() === "0", "refused calls wrote nothing");
 check(!authorize(6, [item(SUB_OTHER, "ubt-a0000002", "g/dL")], "M2").ok, "Researcher refused for a mission without a review basis");
-check(sql(`update p36_global_scientific_reviewers set revoked_at = now() where user_id = '${uid(6)}'; select 1;`) === "UPDATE 1\n1" || true, "temporarily revoke reviewer grant");
+sql(`update p36_global_scientific_reviewers set revoked_at = now() where user_id = '${uid(6)}';`);
 check(!authorize(6, [hb]).ok, "revoked reviewer basis refused");
 sql(`update p36_global_scientific_reviewers set revoked_at = null where user_id = '${uid(6)}';`);
 
@@ -282,13 +282,13 @@ check(
   "grant records actor, basis, mission and matching authorization reference",
 );
 const again = authorize(6, [item(SUB_B, "ubt-6811a69f", "g/dL", hbKey)]);
-check(again.ok && again.results[0]!.status === "duplicate" && again.results[0]!.event_id === ok1.ok ? true : false, "same idempotency key returns duplicate");
+check(again.ok && ok1.ok && again.results[0]!.status === "duplicate" && again.results[0]!.event_id === ok1.results[0]!.event_id, "same idempotency key returns duplicate");
 const again2 = authorize(6, [item(SUB_B, "ubt-6811a69f", "g/dL")]);
 check(again2.ok && again2.results[0]!.status === "skipped", "new key for the same term is skipped (no duplicate scope entry)");
 const reuse = authorize(6, [item(SUB_B, "ubt-75f23568", "mmHg"), item(SUB_B, "ubt-6811a69f", "g/L", hbKey)]);
 check(!reuse.ok && scopeCount() === "199", "idempotency key reused with a different request rolls back the whole batch");
 check(sql(scopeFingerprint.replace("from p37_demo_scope", "from p37_demo_scope where authorization_ref like 'owner-authorization:%'")) === fp197, "owner scope rows still byte-identical");
-check(!run(`update p37_demo_scope set authorization_ref = 'x' where term_id = 'ubt-6811a69f';`).status === false || run(`update p37_demo_scope set authorization_ref = 'xxxxxxxxx' where term_id = 'ubt-6811a69f';`).status !== 0, "scope rows immutable");
+check(run(`update p37_demo_scope set authorization_ref = 'xxxxxxxxx' where term_id = 'ubt-6811a69f';`).status !== 0, "scope rows immutable");
 check(run(`delete from p615_demo_scope_grants;`).status !== 0, "grant records immutable");
 
 // --- Continuing workflow: decision then Ground Medical activation -------------------------
@@ -362,8 +362,8 @@ check(recognize("Serum P1NP", "μg/L").status === "SYNTHETIC_DEMO_RECOGNIZED", "
 check(!(await install()).installed, "same version and content not reinstalled");
 
 // --- Revocation stops future recognition; history kept ---------------------------------------
-check(run(as(6) + `select public.p615_demo_alias_revoke_v1('${(json<{ event_id: string }>(JSON.stringify({ event_id: sql("select id from p615_demo_alias_events where event_type='ALIAS_ACTIVATE';") })).event_id)}','Researcher cannot revoke.','${key()}');`).status !== 0, "Researcher cannot revoke an alias");
 const actId = sql("select id from p615_demo_alias_events where event_type='ALIAS_ACTIVATE';");
+check(run(as(6) + `select public.p615_demo_alias_revoke_v1('${actId}','Researcher cannot revoke.','${key()}');`).status !== 0, "Researcher cannot revoke an alias");
 const rv = json<{ status: string }>(sql(as(3) + `select public.p615_demo_alias_revoke_v1('${actId}','Identity re-review requested by the Researcher.','${key()}');`));
 check(rv.status === "recorded", "Ground Medical revokes the alias");
 check((await install()).installed, "newer snapshot after revocation installs");
