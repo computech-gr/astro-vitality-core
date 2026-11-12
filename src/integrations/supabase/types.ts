@@ -2057,6 +2057,168 @@ export type Database = {
         }
         Relationships: []
       }
+      p615_demo_alias_events: {
+        Row: {
+          activation_event_id: string | null
+          actor_user_id: string
+          alias_id: string
+          decision_event_id: string | null
+          entry: Json | null
+          entry_sha256: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          mission_id: string
+          provenance: string
+          reason: string | null
+          recorded_at: string
+          request_sha256: string
+          seq: number
+          submission_id: string
+          target_decision_event_id: string | null
+          target_demo_id: string
+          term_id: string
+        }
+        Insert: {
+          activation_event_id?: string | null
+          actor_user_id: string
+          alias_id: string
+          decision_event_id?: string | null
+          entry?: Json | null
+          entry_sha256?: string | null
+          event_type: string
+          id?: string
+          idempotency_key: string
+          mission_id: string
+          provenance?: string
+          reason?: string | null
+          recorded_at?: string
+          request_sha256: string
+          seq?: number
+          submission_id: string
+          target_decision_event_id?: string | null
+          target_demo_id: string
+          term_id: string
+        }
+        Update: {
+          activation_event_id?: string | null
+          actor_user_id?: string
+          alias_id?: string
+          decision_event_id?: string | null
+          entry?: Json | null
+          entry_sha256?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string
+          mission_id?: string
+          provenance?: string
+          reason?: string | null
+          recorded_at?: string
+          request_sha256?: string
+          seq?: number
+          submission_id?: string
+          target_decision_event_id?: string | null
+          target_demo_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p615_demo_alias_events_activation_event_id_fkey"
+            columns: ["activation_event_id"]
+            isOneToOne: false
+            referencedRelation: "p615_demo_alias_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p615_demo_alias_events_decision_event_id_fkey"
+            columns: ["decision_event_id"]
+            isOneToOne: false
+            referencedRelation: "p615_demo_alias_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p615_demo_alias_events_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p615_demo_alias_events_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "p36_dynamic_handoff_submissions"
+            referencedColumns: ["submission_id"]
+          },
+          {
+            foreignKeyName: "p615_demo_alias_events_target_decision_event_id_fkey"
+            columns: ["target_decision_event_id"]
+            isOneToOne: false
+            referencedRelation: "p37_demo_catalog_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p615_demo_scope_grants: {
+        Row: {
+          access_basis: string
+          actor_user_id: string
+          authorization_ref: string
+          exact_unit: string
+          id: string
+          idempotency_key: string
+          mission_id: string
+          provenance: string
+          recorded_at: string
+          request_sha256: string
+          submission_id: string
+          term_id: string
+        }
+        Insert: {
+          access_basis: string
+          actor_user_id: string
+          authorization_ref: string
+          exact_unit: string
+          id: string
+          idempotency_key: string
+          mission_id: string
+          provenance?: string
+          recorded_at?: string
+          request_sha256: string
+          submission_id: string
+          term_id: string
+        }
+        Update: {
+          access_basis?: string
+          actor_user_id?: string
+          authorization_ref?: string
+          exact_unit?: string
+          id?: string
+          idempotency_key?: string
+          mission_id?: string
+          provenance?: string
+          recorded_at?: string
+          request_sha256?: string
+          submission_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p615_demo_scope_grants_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p615_demo_scope_grants_submission_id_term_id_fkey"
+            columns: ["submission_id", "term_id"]
+            isOneToOne: true
+            referencedRelation: "p37_demo_scope"
+            referencedColumns: ["submission_id", "term_id"]
+          },
+        ]
+      }
       review_sync_attestation_events: {
         Row: {
           action: string
@@ -2712,6 +2874,56 @@ export type Database = {
         Args: { p_items: Json; p_mission_id: string }
         Returns: Json
       }
+      p615_active_keys: {
+        Args: { p_mission_id: string }
+        Returns: {
+          key: string
+          kind: string
+          owner_id: string
+        }[]
+      }
+      p615_demo_alias_activate_v1: {
+        Args: {
+          p_decision_event_id: string
+          p_expected_entry_sha256: string
+          p_idempotency_key: string
+        }
+        Returns: Json
+      }
+      p615_demo_alias_decide_v1: {
+        Args: {
+          p_acknowledgement: string
+          p_idempotency_key: string
+          p_mission_id: string
+          p_rationale: string
+          p_submission_id: string
+          p_target_demo_id: string
+          p_term_id: string
+        }
+        Returns: Json
+      }
+      p615_demo_alias_revoke_v1: {
+        Args: {
+          p_activation_event_id: string
+          p_idempotency_key: string
+          p_reason: string
+        }
+        Returns: Json
+      }
+      p615_demo_alias_snapshot_v1: {
+        Args: { p_mission_id: string }
+        Returns: Json
+      }
+      p615_demo_governance_v1: { Args: { p_mission_id: string }; Returns: Json }
+      p615_demo_scope_authorize_v1: {
+        Args: { p_items: Json; p_mission_id: string }
+        Returns: Json
+      }
+      p615_latest_triage: {
+        Args: { p_submission_id: string; p_term_id: string }
+        Returns: string
+      }
+      p615_unit_problem: { Args: { p_unit: string }; Returns: string }
       review_sync_append_v1: {
         Args: {
           p_attestations: Json
