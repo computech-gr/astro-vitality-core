@@ -17,6 +17,7 @@ import {
   demoSnapshotFromRpc,
   deriveSyntheticDemoSigningKey,
   signSyntheticDemoSnapshot,
+  type DemoAliasSnapshotRpc,
   type DemoSnapshotRpc,
   type SignedSyntheticDemoSnapshot,
   type SyntheticDemoEntryDefinition,
@@ -238,6 +239,23 @@ export async function signedDemoSnapshotCore(
     typeof o.demo_catalog_version !== "number"
   )
     return failure("integrity", "The synthetic demo catalog failed validation.");
+  // P61.5 reviewed alias mappings (optional until the pending change is applied).
+  const aliasRes = await rpc("p615_demo_alias_snapshot_v1", { p_mission_id: missionId });
+  let aliases: DemoAliasSnapshotRpc | null = null;
+  if (aliasRes.error) {
+    if (classifyAuthorizationError(aliasRes.error.code) !== "migration_required")
+      return fail(aliasRes.error.code);
+  } else {
+    const a = aliasRes.data as DemoAliasSnapshotRpc | null;
+    if (
+      !a ||
+      a.mission_id !== missionId ||
+      !Array.isArray(a.aliases) ||
+      typeof a.alias_catalog_version !== "number"
+    )
+      return failure("integrity", "The synthetic demo alias catalog failed validation.");
+    aliases = a;
+  }
   let key: CryptoKey;
   try {
     key = (await deriveSyntheticDemoSigningKey(secret)).privateKey;
@@ -250,7 +268,7 @@ export async function signedDemoSnapshotCore(
   return {
     ok: true,
     signed: await signSyntheticDemoSnapshot(
-      demoSnapshotFromRpc(o, now()),
+      demoSnapshotFromRpc(o, now(), aliases),
       SYNTHETIC_DEMO_KEY_ID,
       key,
     ),
