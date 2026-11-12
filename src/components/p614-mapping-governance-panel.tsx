@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@/components/ui/badge";
-import { CollapsibleReviewCard, CompactScrollRegion } from "@/components/compact-review";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -226,20 +225,14 @@ function ProposalCard(props: { sg: MappingSafeguard; status: MappingGovernanceSt
   const { sg, status } = props;
   const reg = registerEntryFor(sg);
   return (
-    <CollapsibleReviewCard
-      id={`p614-${sg.registerId}`}
-      label={`${sg.label} (${sg.reportedUnit})`}
-      testId="p614-proposal"
-      title={<>{sg.label} <span className="font-normal text-muted-foreground">· {sg.reportedUnit}</span></>}
-      meta={
-        <>
-          <Badge variant={status.eligible ? "secondary" : "outline"} className={status.eligible ? "" : "border-destructive text-destructive"}>
-            {status.eligible ? "Approved and activated" : "Held — not saved"}
-          </Badge>
-          <Badge variant="outline" data-testid="p614-stage">{status.label}</Badge>
-        </>
-      }
-    >
+    <li id={`p614-${sg.registerId}`} className="scroll-mt-24 space-y-3 rounded-md border border-border p-3 text-sm" data-testid="p614-proposal">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-semibold">{sg.label} <span className="font-normal text-muted-foreground">· {sg.reportedUnit}</span></span>
+        <Badge variant={status.eligible ? "secondary" : "outline"} className={status.eligible ? "" : "border-destructive text-destructive"}>
+          {status.eligible ? "Approved and activated" : "Held — not saved"}
+        </Badge>
+        <Badge variant="outline" data-testid="p614-stage">{status.label}</Badge>
+      </div>
       <p className="text-xs"><span className="font-medium">Next:</span> {NEXT_ROLE_LABELS[status.nextRole]} — {status.nextStep}</p>
       <dl className="grid gap-x-3 gap-y-1 text-xs sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)]">
         <dt className="font-medium">Reported</dt>
@@ -273,7 +266,7 @@ function ProposalCard(props: { sg: MappingSafeguard; status: MappingGovernanceSt
         </p>
       ) : null}
       <DecisionForm {...props} />
-    </CollapsibleReviewCard>
+    </li>
   );
 }
 
@@ -372,16 +365,11 @@ export function P614MappingGovernancePanel() {
       {state === "ready" ? (
         <>
           <Badge variant={canDecide ? "secondary" : "outline"}>{canDecide ? "You may record Researcher decisions for this mission" : "Read-only: no Researcher decision grant for this mission"}</Badge>
-          <p className="text-xs text-muted-foreground" data-testid="p614-proposal-count">
-            {statuses.length} held measurement name{statuses.length === 1 ? "" : "s"} · expand a card to read its evidence and record a decision. Collapsing keeps unsaved input.
-          </p>
-          <CompactScrollRegion label="Held measurement proposals; scroll to see all" maxHeight="reviewList" className="p-2" testId="p614-proposal-list">
-            <ul className="space-y-2">
-              {statuses.map(({ sg, status }) => (
-                <ProposalCard key={sg.registerId} sg={sg} status={status} missionId={missionId} canDecide={canDecide} onDone={load} />
-              ))}
-            </ul>
-          </CompactScrollRegion>
+          <ul className="space-y-3">
+            {statuses.map(({ sg, status }) => (
+              <ProposalCard key={sg.registerId} sg={sg} status={status} missionId={missionId} canDecide={canDecide} onDone={load} />
+            ))}
+          </ul>
         </>
       ) : null}
       <div className="space-y-2" data-testid="p614-provisional-rules">
