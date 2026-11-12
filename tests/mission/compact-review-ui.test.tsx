@@ -141,7 +141,7 @@ describe("Ground Medical approvals table", () => {
     expect(html).toContain("0 selected of 2 eligible");
   });
   test("table scrolls internally with a sticky header", () => {
-    expect(html).toMatch(/max-h-\[450px\][^"]*"[^>]*data-testid="stored-observations-scroll"/);
+    expect(html).toMatch(/data-testid="stored-observations-scroll" class="max-h-\[450px\] overflow-y-auto/);
     expect(html).toContain("sticky top-0");
   });
   test("rows keep checkboxes and Attest / Edit / Mark erroneous in table and card layouts", () => {
