@@ -338,14 +338,15 @@ const aliasSnap = (u: number) => json<DemoAliasSnapshotRpc>(sql(as(u) + `select 
 const a1 = aliasSnap(3);
 check(a1.aliases.length === 1 && a1.aliases[0]!.status === "ACTIVE" && a1.alias_catalog_version > snap(3).demo_catalog_version, "alias snapshot: one active alias, version above the entry version");
 check(!JSON.stringify(a1).includes(uid(6)) && !JSON.stringify(a1).includes("rationale"), "alias snapshot carries no identities or rationale");
-const { privateKey, publicKeySpkiBase64 } = await generateTestSigningKey();
-const trustedKeys = [{ keyId: "p615-test", environment: "synthetic_demo" as const, publicKeySpkiBase64 }];
+const k0 = await generateTestSigningKey("p615-test");
+const privateKey = k0.privateKey;
+const trustedKeys = [{ ...k0.trusted, environment: "synthetic_demo" as const }];
 const store = new Map<string, string>();
 const storage: SnapshotStorage = { get: (kk) => store.get(kk) ?? null, set: (kk, v) => void store.set(kk, v) };
 resetSyntheticDemoCatalogsForTests();
 const install = async () =>
   installOfferedDemoCatalog(await signSyntheticDemoSnapshot(demoSnapshotFromRpc(snap(3), new Date().toISOString(), aliasSnap(3)), "p615-test", privateKey), M, { storage, trustedKeys });
-{ const i0 = await install(); if (!i0.installed) console.log("INSTALL", i0.reason); check(i0.installed, "signed snapshot with alias installs"); }
+check((await install()).installed, "signed snapshot with alias installs");
 const recognize = (label: string, unit: string, provenance: "synthetic" | "real" = "synthetic", missionId = M) =>
   recognizeSyntheticDemo({ label, unit, provenance, missionId }, getSyntheticDemoCatalogs());
 const r1 = recognize("Serum P1NP", "μg/L");
