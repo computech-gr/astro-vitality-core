@@ -31,6 +31,7 @@ import {
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
+import { MissionDemoParametersPanel } from "@/components/mission-demo-parameters-panel";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import {
   classifyWithGovernedExtensions,
@@ -1270,35 +1271,7 @@ export function UnifiedIntakeWorkspace() {
         ) : null}
         {missionDemoCatalog &&
         (missionDemoCatalog.active.length || missionDemoCatalog.revoked.length) ? (
-          <div
-            className="space-y-2 rounded-md border border-dashed border-border p-3"
-            data-testid="mission-demo-parameters"
-          >
-            <p className="text-sm font-medium">
-              Mission synthetic demo parameters (verified demo catalog v
-              {missionDemoCatalog.demoCatalogVersion}, available offline)
-            </p>
-            <ul className="space-y-1 text-xs text-muted-foreground">
-              {missionDemoCatalog.active.map((e) => (
-                <li key={`a-${e.demoId}`}>
-                  <span className="font-medium text-foreground">{e.displayName}</span> ({e.demoId})
-                  · label {e.aliases.map((a) => `“${a}”`).join(", ")} · exact unit {e.unit} →{" "}
-                  {DOMAIN_LABELS[e.domain]} · ACTIVE — recognized automatically in synthetic
-                  examinations of this mission
-                </li>
-              ))}
-              {missionDemoCatalog.revoked.map((e) => (
-                <li key={`r-${e.demoId}-${e.activation.activationEventId}`}>
-                  {e.displayName} ({e.demoId}) · {e.unit} · REVOKED — no longer recognized; earlier
-                  records are kept
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs text-muted-foreground">
-              SYNTHETIC DEMO — not a scientific approval, source validation or production catalog
-              entry. Applies to synthetic data of this mission only; units are never converted.
-            </p>
-          </div>
+          <MissionDemoParametersPanel catalog={missionDemoCatalog} />
         ) : null}
       </section>
 
