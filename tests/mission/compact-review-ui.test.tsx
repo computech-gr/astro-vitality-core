@@ -5,6 +5,12 @@ import { fileURLToPath } from "node:url";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
+  createMemoryHistory,
+  createRootRoute,
+  createRouter,
+  RouterContextProvider,
+} from "@tanstack/react-router";
+import {
   CollapsibleReviewCard,
   COMPACT_MAX_HEIGHT,
   CompactScrollRegion,
@@ -112,15 +118,19 @@ describe("collapsible scientific review cards", () => {
 
 describe("Ground Medical approvals table", () => {
   const history = [obs(), obs(), obs({ status: "erroneous", statusReason: "Typo in source" })];
+  const router = createRouter({
+    routeTree: createRootRoute(),
+    history: createMemoryHistory({ initialEntries: ["/mission/intake"] }),
+  });
   const html = renderToStaticMarkup(
-    createElement(StoredObservationsReview, {
+    createElement(RouterContextProvider, { router } as never, createElement(StoredObservationsReview, {
       history,
       membership: { missionId: V9_SCOPE.missionId, crewMemberId: V9_SCOPE.crewMemberId },
       provenance: V9_SCOPE.provenance,
       userId: GM_USER,
       rolesForScope: ["ground_medical"],
       reload: async () => {},
-    }),
+    })),
   );
   test("bulk counter and Save selected approvals sit above the scrolling table", () => {
     const bar = html.indexOf('data-testid="stored-observations-bulk-bar"');
