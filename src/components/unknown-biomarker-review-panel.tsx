@@ -265,7 +265,6 @@ export function UnknownBiomarkerReviewPanel(props: {
                         {handoffRowForTerm(handoff, term.termId) ? (
                           <Badge variant="outline">In P36 reconciliation handoff · {REQUIRED_SCIENTIFIC_GATE}</Badge>
                         ) : null}
-                      </div>
                       </span></summary>
                       {term.candidateMetricIds.length ? <p className="text-xs">Possible catalog IDs: {term.candidateMetricIds.join(", ")}</p> : null}
                       <details className="text-xs">
