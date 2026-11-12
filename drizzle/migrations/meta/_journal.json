@@ -190,6 +190,13 @@
       "when": 1794057135465,
       "tag": "0026_p38_bulk_synthetic_demo",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1794519931713,
+      "tag": "0027_p615_researcher_demo_scope",
+      "breakpoints": true
     }
   ]
 }
