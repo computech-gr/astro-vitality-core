@@ -654,3 +654,12 @@
 - [x] Owner's original two-day PDF acceptance (SHA-256 27d75069…d02a; automated test + Preview: 76/38/2, 62/14/0, re-import 62 duplicates).
 - [ ] Live mapping chain per name: Ground Medical P36 submission → owner demo-scope authorization → Researcher decision → Ground Medical activation (blocked: owner/Researcher).
 - [x] Owner-authorized publication of revision 7f8e666 (2026-11-11 ~21:56 UTC); read-only live smoke checks passed.
+
+## P61.5 Simplified Researcher biomarker authorization (Preview only)
+
+- [x] Pending SQL (supabase/pending/20261112000000_p615_researcher_demo_scope.sql + rollback): Researcher scope authorization, alias decide/activate/revoke, identity guard, governance + alias snapshot reads.
+- [x] Server functions, signed snapshot with aliases, device recognition of activated aliases (exact unit only).
+- [x] Scientific Review: Authorize for Synthetic Demo (row + bulk), possible existing biomarker surfacing, identity review dialog; Ground console alias activation panel.
+- [x] Tests (31 unit, 157 disposable PostgreSQL assertions), full suite, typecheck, lint, format, security, build; signed-in Researcher browser check (read-only).
+- [ ] Apply the pending SQL to the backend (blocked: owner approval of the exact file).
+- [ ] Identity/alias review of the 3 flagged Bone terms, then decisions/activation (blocked: Researcher/Ground Medical, after the SQL is applied).

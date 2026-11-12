@@ -2,6 +2,7 @@ import { GroundMedicalReviewPanel } from "@/components/p368b-ground-medical-revi
 import { P37GroundMedicalActivationPanel } from "@/components/p37-ground-medical-activation";
 import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
 import { P38BulkDemoGround } from "@/components/p38-bulk-demo-ground";
+import { P615AliasActivationPanel } from "@/components/p615-alias-activation-panel";
 import { useEffect, useState } from "react";
 import { Download, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -195,6 +196,9 @@ export function GroundResearchConsolePage() {
             missionId={selected.missionId}
             missionLabel={selected.missionName ?? selected.missionCode ?? selected.missionId}
           />
+        )}
+        {selected?.role === "ground_medical" && (
+          <P615AliasActivationPanel key={`alias-${selected.missionId}`} missionId={selected.missionId} />
         )}
         <div className="mt-8 flex gap-3 text-sm text-muted-foreground">
           <ShieldCheck className="size-5 shrink-0 text-primary" />

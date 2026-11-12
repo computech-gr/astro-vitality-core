@@ -55,7 +55,7 @@ export async function deterministicUuid(...parts: string[]): Promise<string> {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 
-function parseResults(
+export function parseResults(
   data: unknown,
   missionId: string,
   expected: number,
@@ -80,7 +80,7 @@ function parseResults(
     return failure("integrity", "The batch response failed validation; nothing was assumed.");
   return { ok: true, results };
 }
-const termRef = (r: Record<string, unknown>) => {
+export const termRef = (r: Record<string, unknown>) => {
   const s = str(r["submission_id"]),
     t = str(r["term_id"]);
   return s && t ? `${s}:${t}` : null;

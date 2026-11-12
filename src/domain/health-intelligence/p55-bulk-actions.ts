@@ -16,8 +16,13 @@ const blocked = (reason: string): ActionFit => ({ kind: "blocked", reason });
 
 // --- Researcher -----------------------------------------------------------------
 export type ResearcherBulkAction =
-  "accept_review" | "request_clarification" | "demo_decide" | "acknowledge_match";
+  | "accept_review"
+  | "request_clarification"
+  | "authorize_scope"
+  | "demo_decide"
+  | "acknowledge_match";
 export const RESEARCHER_ACTION_LABEL: Record<ResearcherBulkAction, string> = {
+  authorize_scope: "Authorize Selected for Synthetic Demo",
   accept_review: "Accept Selected for Scientific Review",
   request_clarification: "Request Evidence / Unit Clarification",
   demo_decide: "Record Selected Synthetic Demo Decisions",

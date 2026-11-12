@@ -6,6 +6,10 @@
  * triage for selected terms that still need it, (2) one acknowledgement and one
  * "Record Bulk SYNTHETIC DEMO Decisions" action. Decisions never activate
  * anything; Ground Medical activates separately.
+ * P61.5: accepted synthetic terms outside the scope can be authorized for the
+ * synthetic demo scope here (individually or in bulk), and possible existing
+ * demo biomarkers are surfaced for identity review (alias decision or session
+ * confirmation of a distinct measurement) before any independent decision.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,6 +33,28 @@ import { getSyntheticDemoLifecycle } from "@/lib/p37-synthetic-demo.functions";
 import type { DemoLifecycleRow, DemoScopeTerm } from "@/lib/p37-synthetic-demo.server";
 import { bulkDemoDecideFn } from "@/lib/p38-bulk-demo.functions";
 import { bulkGlobalTriageFn } from "@/lib/p55-bulk-triage.functions";
+import {
+  authorizeDemoScopeFn,
+  decideDemoAliasFn,
+  getDemoGovernanceFn,
+} from "@/lib/p615-demo-scope.functions";
+import type { AliasLifecycleRow, ScopeGrant } from "@/lib/p615-demo-scope.server";
+import {
+  aliasDecisionFit,
+  identityReviewBlock,
+  possibleExistingMatches,
+  scopeAuthorizationFit,
+  type DemoIdentity,
+  type PossibleMatch,
+} from "@/domain/health-intelligence/p615-scope-authorization";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   BulkActionTable,
   BulkOutcomePanel,
@@ -73,6 +99,7 @@ import {
 } from "@/domain/health-intelligence/p55-bulk-actions";
 import {
   SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
+  SYNTHETIC_DEMO_ALIAS_ACKNOWLEDGEMENT,
   SYNTHETIC_DEMO_LABEL,
 } from "@/domain/health-intelligence/synthetic-demo-catalog";
 import type { HealthDomainId } from "@/domain/health-domains/registry";
@@ -119,6 +146,9 @@ type Loaded = {
   canDecide: boolean;
   scope: Map<string, DemoScopeTerm>;
   events: DemoLifecycleRow[];
+  /** P61.5 Researcher authorization state; null while the pending change is not installed. */
+  gov: { canAuthorize: boolean; grants: ScopeGrant[]; aliases: AliasLifecycleRow[] } | null;
+  govNote: string;
 };
 type Run = {
   action: ResearcherBulkAction;
@@ -153,12 +183,15 @@ const REQUIREMENT_LABEL: Record<EvidenceRequirement, string> = {
 };
 const ACTION_ORDER: ResearcherBulkAction[] = [
   "accept_review",
+  "authorize_scope",
   "demo_decide",
   "request_clarification",
   "acknowledge_match",
 ];
 const ACTION_DESCRIPTION: Record<ResearcherBulkAction, string> = {
   accept_review: "Triage only: not scientific approval and never activation.",
+  authorize_scope:
+    "Adds accepted synthetic terms with an exact unit to this mission's synthetic demo scope; not a decision, approval or activation.",
   demo_decide:
     "SYNTHETIC DEMO decisions for accepted, eligible terms; Ground Medical activates separately.",
   request_clarification: "Records a REQUEST_MORE_EVIDENCE triage event with the evidence you name.",
@@ -183,6 +216,18 @@ export function P38BulkDemoResearcher({
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
   const triageFn = useServerFn(bulkGlobalTriageFn);
   const decideFn = useServerFn(bulkDemoDecideFn);
+  const governance = useServerFn(getDemoGovernanceFn);
+  const authorizeFn = useServerFn(authorizeDemoScopeFn);
+  const aliasFn = useServerFn(decideDemoAliasFn);
+  /** Session-only confirmations that a possible match is a distinct measurement (never saved). */
+  const [distinct, setDistinct] = useState<Set<string>>(new Set());
+  const [identity, setIdentity] = useState<{
+    key: string;
+    target: string | null;
+    rationale: string;
+    ack: boolean;
+    note: string;
+  } | null>(null);
   const [data, setData] = useState<Loaded | null>(null);
   const [note, setNote] = useState(LOADING_NOTE);
   const [overrides, setOverrides] = useState<Map<string, PreflightOverride>>(new Map());
@@ -216,10 +261,11 @@ export function P38BulkDemoResearcher({
   const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
-    const [s, t, l] = await Promise.all([
+    const [s, t, l, g] = await Promise.all([
       listSubs({ data: { missionId, provenance: "synthetic" } }).catch(() => null),
       listTriage({ data: { missionId, provenance: "synthetic" } }).catch(() => null),
       lifecycle({ data: { missionId } }).catch(() => null),
+      governance({ data: { missionId } }).catch(() => null),
     ]);
     if (!s?.ok || !t?.ok || !l?.ok) {
       setData(null);
@@ -237,8 +283,10 @@ export function P38BulkDemoResearcher({
       canDecide: l.canDecide,
       scope: new Map(l.terms.map((x) => [termKey(x.submissionId, x.termId), x])),
       events: l.events,
+      gov: g?.ok ? { canAuthorize: g.canAuthorize, grants: g.grants, aliases: g.aliases } : null,
+      govNote: g && !g.ok ? g.message : g ? "" : "Researcher authorization state is unavailable.",
     });
-  }, [missionId, listSubs, listTriage, lifecycle]);
+  }, [missionId, listSubs, listTriage, lifecycle, governance]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -269,6 +317,40 @@ export function P38BulkDemoResearcher({
     });
   }, [data, overrides, existingMatch, extraDocs, acceptedSection]);
   const counts = preflightCounts(rows);
+  const activeIdentities = useMemo<DemoIdentity[]>(
+    () =>
+      (data?.events ?? [])
+        .filter((e) => e.activationEventId && !e.revocationEventId)
+        .map((e) => ({
+          demoId: e.demoId,
+          termId: e.termId,
+          displayName: e.entry.displayName,
+          aliases: e.entry.aliases,
+          unit: e.entry.unit,
+        })),
+    [data],
+  );
+  const matchesOf = useMemo(
+    () =>
+      new Map<string, PossibleMatch[]>(
+        rows.map((r) => [
+          r.key,
+          possibleExistingMatches({ termId: r.termId, labels: r.labels, unit: r.unit }, activeIdentities),
+        ]),
+      ),
+    [rows, activeIdentities],
+  );
+  const aliasOf = useMemo(
+    () =>
+      new Map((data?.gov?.aliases ?? []).map((a) => [termKey(a.submissionId, a.termId), a])),
+    [data],
+  );
+  const identityBlock = (r: PreflightRow) =>
+    identityReviewBlock({
+      matches: matchesOf.get(r.key) ?? [],
+      aliasDecided: aliasOf.has(r.key),
+      confirmedDistinct: distinct.has(r.key),
+    });
   const crewOf = useMemo(
     () => new Map((data?.subs ?? []).map((s) => [s.submissionId, s.crewPseudonym])),
     [data],
@@ -380,7 +462,7 @@ export function P38BulkDemoResearcher({
   );
 
   const scope = data?.scope ?? new Map<string, DemoScopeTerm>();
-  const allEligible = rows.filter((r) => decidable(r, scope));
+  const allEligible = rows.filter((r) => decidable(r, scope) && !identityBlock(r));
   const filteredIds = filtered.map((r) => r.key);
   const selScope = selectionScope(selected, filteredIds);
   const rowByKey = useMemo(() => new Map(rows.map((r) => [r.key, r])), [rows]);
@@ -408,10 +490,18 @@ export function P38BulkDemoResearcher({
     if (action === "accept_review") return acceptReviewFit(r, !!data?.canTriage);
     if (action === "request_clarification") return requestClarificationFit(r, !!data?.canTriage);
     if (action === "acknowledge_match") return acknowledgeMatchFit(r, acknowledged.has(r.key));
-    return demoDecideFit(r, {
+    if (action === "authorize_scope")
+      return scopeAuthorizationFit(r, {
+        canAuthorize: !!data?.gov?.canAuthorize,
+        submittedByCaller: !!scope.get(r.key)?.submittedByCaller,
+        installed: !!data?.gov,
+      });
+    const fit = demoDecideFit(r, {
       submittedByCaller: !!scope.get(r.key)?.submittedByCaller,
       canDecide: !!data?.canDecide,
     });
+    const gate = fit.kind === "actionable" ? identityBlock(r) : null;
+    return gate ? { kind: "blocked" as const, reason: gate } : fit;
   };
   const preflightFor = (action: ResearcherBulkAction, sel: ReadonlySet<string> = selected) =>
     buildBulkPreflight({
@@ -489,7 +579,19 @@ export function P38BulkDemoResearcher({
     setBusy(true);
     setRun({ action, progress: null, outcomes: [], failure: null });
     const send =
-      action === "demo_decide"
+      action === "authorize_scope"
+        ? (batch: PreflightRow[]) =>
+            authorizeFn({
+              data: {
+                missionId,
+                items: batch.map((r) => ({
+                  submissionId: r.submissionId,
+                  termId: r.termId,
+                  exactUnit: r.unit,
+                })),
+              },
+            })
+        : action === "demo_decide"
         ? (batch: PreflightRow[]) =>
             decideFn({
               data: {
@@ -540,14 +642,26 @@ export function P38BulkDemoResearcher({
           ? "This account has no triage grant; triage actions are unavailable."
           : id === "demo_decide" && data && !data.canDecide
             ? "This account has no scientific approver grant."
-            : null,
+            : id === "authorize_scope" && data && !data.gov
+              ? data.govNote || "Researcher authorization is unavailable."
+              : id === "authorize_scope" && data?.gov && !data.gov.canAuthorize
+                ? "This account has no Researcher (scientific approver) grant."
+                : null,
     };
   });
   const visibility = bulkResearcherVisibility({
     authorizedMissions: 1,
     missionSelected: true,
     lifecycle: data
-      ? { canDecide: data.canDecide, demoScopeTerms: data.scope.size }
+      ? {
+          canDecide: data.canDecide,
+          // P61.5: a Researcher may also start the scope of a mission from accepted terms.
+          demoScopeTerms:
+            data.scope.size ||
+            (data.gov?.canAuthorize
+              ? rows.filter((r) => r.triageAction === "ACCEPT_FOR_REVIEW").length
+              : 0),
+        }
       : note === LOADING_NOTE
         ? "loading"
         : "unavailable",
@@ -603,8 +717,17 @@ export function P38BulkDemoResearcher({
                 Other blocked {counts.blocked - domainChoice - awaiting.length}
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground">
-              In the owner-authorized demo scope: {[...scope.keys()].length} terms ·{" "}
+            <p className="text-xs text-muted-foreground" data-testid="p615-scope-summary">
+              In the synthetic demo scope: {[...scope.keys()].length} terms
+              {data.gov ? ` (${data.gov.grants.length} added by Researcher authorization)` : ""} ·
+              accepted for review but outside the scope:{" "}
+              {rows.filter((r) => !r.inScope && r.triageAction === "ACCEPT_FOR_REVIEW").length} ·{" "}
+              {data.gov
+                ? data.gov.canAuthorize
+                  ? "you may authorize eligible terms for the synthetic demo"
+                  : "no Researcher authorization grant"
+                : data.govNote || "Researcher authorization unavailable"}{" "}
+              ·{" "}
               {data.canDecide
                 ? "you may record synthetic demo decisions"
                 : "no scientific approver grant"}{" "}
@@ -949,6 +1072,17 @@ export function P38BulkDemoResearcher({
                         {acknowledged.has(r.key) ? (
                           <Badge variant="secondary">Match acknowledged (this session)</Badge>
                         ) : null}
+                        {!r.inScope && r.triageAction === "ACCEPT_FOR_REVIEW" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="mt-1 h-6 px-2 text-xs"
+                            disabled={busy}
+                            onClick={() => openPreflight("authorize_scope", new Set([r.key]))}
+                          >
+                            Authorize for Synthetic Demo
+                          </Button>
+                        ) : null}
                       </td>
                       <td className="p-1">
                         {editable ? (
@@ -1002,6 +1136,54 @@ export function P38BulkDemoResearcher({
                         {[...r.reasons, ...r.warnings].map((x) => (
                           <div key={x}>{x}</div>
                         ))}
+                        {(matchesOf.get(r.key) ?? []).length ? (
+                          <div data-testid="p615-possible-match" className="text-foreground">
+                            Possible existing demo biomarker (review required, never merged
+                            automatically):{" "}
+                            {(matchesOf.get(r.key) ?? [])
+                              .map(
+                                (m) =>
+                                  `${m.displayName} · ${m.unit}${m.sameUnit ? " (same exact unit)" : " (different unit: no alias possible)"}`,
+                              )
+                              .join("; ")}
+                          </div>
+                        ) : null}
+                        {aliasOf.get(r.key) ? (
+                          <div>
+                            Alias decision → {aliasOf.get(r.key)!.entry.targetDisplayName} ·{" "}
+                            {aliasOf.get(r.key)!.revocationEventId
+                              ? "revoked"
+                              : aliasOf.get(r.key)!.activationEventId
+                                ? "active"
+                                : "awaiting Ground Medical activation"}
+                          </div>
+                        ) : distinct.has(r.key) ? (
+                          <div>Confirmed distinct measurement (this session only)</div>
+                        ) : null}
+                        {(matchesOf.get(r.key) ?? []).some((m) => m.sameUnit) &&
+                        !aliasOf.has(r.key) &&
+                        r.category !== "already_active" &&
+                        r.category !== "already_decided" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="mt-1 h-6 px-2 text-xs"
+                            onClick={() =>
+                              setIdentity({
+                                key: r.key,
+                                target:
+                                  (matchesOf.get(r.key) ?? []).filter((m) => m.sameUnit).length === 1
+                                    ? (matchesOf.get(r.key) ?? []).find((m) => m.sameUnit)!.demoId
+                                    : null,
+                                rationale: "",
+                                ack: false,
+                                note: "",
+                              })
+                            }
+                          >
+                            Review identity
+                          </Button>
+                        ) : null}
                       </td>
                     </tr>
                   );
@@ -1051,7 +1233,9 @@ export function P38BulkDemoResearcher({
               (pending?.action === "request_clarification" && !!clarificationProblem)
             }
             safeguard={
-              pending?.action === "accept_review"
+              pending?.action === "authorize_scope"
+                ? "Adds only the listed eligible synthetic terms to this mission's synthetic demo scope. This is not a scientific approval or a demo decision and activates nothing; the server re-checks every term."
+                : pending?.action === "accept_review"
                 ? "Accepting for scientific review is triage only. It is not scientific approval and never activates anything."
                 : pending?.action === "demo_decide"
                   ? `${SYNTHETIC_DEMO_LABEL}. Decisions are not scientific approvals and activate nothing; Ground Medical activates separately.`
@@ -1062,6 +1246,41 @@ export function P38BulkDemoResearcher({
             onCancel={() => setPending(null)}
             onConfirm={() => void confirmPending()}
           >
+            {pending?.action === "authorize_scope" && pending.preflight.actionable.length ? (
+              <div className="max-h-64 overflow-y-auto" data-testid="p615-authorize-list">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-muted-foreground">
+                    <tr>
+                      <th className="p-1">Term</th>
+                      <th className="p-1">Exact unit</th>
+                      <th className="p-1">Mission</th>
+                      <th className="p-1">Proposed domain</th>
+                      <th className="p-1">Possible existing match</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pending.preflight.actionable.map((r) => (
+                      <tr key={r.key} className="border-t border-border align-top">
+                        <td className="p-1">
+                          {r.labels.join(", ") || r.termId}
+                          <div className="font-mono text-muted-foreground">{r.termId}</div>
+                        </td>
+                        <td className="p-1">{r.unit}</td>
+                        <td className="p-1">{missionLabel ?? missionId}</td>
+                        <td className="p-1">
+                          {r.domain ? DOMAIN_WORD[r.domain] : "Chosen at the demo decision"}
+                        </td>
+                        <td className="p-1">
+                          {(matchesOf.get(r.key) ?? [])
+                            .map((m) => `${m.displayName} · ${m.unit}${m.sameUnit ? " (same unit)" : ""}`)
+                            .join("; ") || "None found"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
             {pending?.action === "demo_decide" ? (
               <label className="flex items-start gap-2 text-xs">
                 <input
@@ -1134,6 +1353,130 @@ export function P38BulkDemoResearcher({
               }}
             />
           ) : null}
+          {identity
+            ? (() => {
+                const r = rowByKey.get(identity.key);
+                if (!r) return null;
+                const ms = matchesOf.get(r.key) ?? [];
+                const target = ms.find((m) => m.demoId === identity.target) ?? null;
+                const fit = aliasDecisionFit(r, {
+                  target,
+                  canAuthorize: !!data.gov?.canAuthorize,
+                  submittedByCaller: !!scope.get(r.key)?.submittedByCaller,
+                  aliasDecided: aliasOf.has(r.key),
+                  installed: !!data.gov,
+                });
+                const canRecord =
+                  fit.kind === "actionable" && identity.rationale.trim().length >= 8 && identity.ack;
+                return (
+                  <Dialog open onOpenChange={(o) => (!o ? setIdentity(null) : undefined)}>
+                    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+                      <DialogHeader>
+                        <DialogTitle>Identity review: {r.labels.join(", ") || r.termId}</DialogTitle>
+                        <DialogDescription>
+                          {r.unit} · {missionLabel ?? missionId} · {r.termId}. Names are never
+                          equated by text and units are never converted. Record an alias only when
+                          it is the same measurement with the identical exact unit.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <fieldset className="space-y-1 text-sm">
+                        <legend className="mb-1 text-xs text-muted-foreground">
+                          Possible existing active demo biomarkers
+                        </legend>
+                        {ms.map((m) => (
+                          <label key={m.demoId} className="flex items-start gap-2">
+                            <input
+                              type="radio"
+                              name="p615-target"
+                              disabled={!m.sameUnit}
+                              checked={identity.target === m.demoId}
+                              onChange={() => setIdentity({ ...identity, target: m.demoId })}
+                              className="mt-1"
+                            />
+                            <span>
+                              {m.displayName} · {m.unit}{" "}
+                              <span className="font-mono text-xs text-muted-foreground">{m.demoId}</span>
+                              {m.sameUnit ? "" : " — different unit, no alias possible"}
+                            </span>
+                          </label>
+                        ))}
+                      </fieldset>
+                      <div className="space-y-1">
+                        <Label htmlFor="p615-rationale" className="text-xs">
+                          Identity rationale (required for an alias, 8–2000 characters)
+                        </Label>
+                        <Textarea
+                          id="p615-rationale"
+                          rows={3}
+                          maxLength={2000}
+                          value={identity.rationale}
+                          onChange={(e) => setIdentity({ ...identity, rationale: e.target.value })}
+                        />
+                      </div>
+                      <label className="flex items-start gap-2 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={identity.ack}
+                          onChange={(e) => setIdentity({ ...identity, ack: e.target.checked })}
+                          className="mt-0.5"
+                        />
+                        <span>
+                          I confirm this is the same measurement with the identical exact unit. This
+                          SYNTHETIC DEMO alias is not a scientific approval; Ground Medical activates
+                          it separately and no observation is rewritten.
+                        </span>
+                      </label>
+                      {fit.kind !== "actionable" ? (
+                        <p className="text-xs text-muted-foreground">{fit.reason}</p>
+                      ) : null}
+                      {identity.note ? (
+                        <p role="status" className="text-xs">
+                          {identity.note}
+                        </p>
+                      ) : null}
+                      <DialogFooter className="flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setDistinct((s) => new Set([...s, r.key]));
+                            setIdentity(null);
+                          }}
+                        >
+                          Different measurement — keep separate (this session)
+                        </Button>
+                        <Button
+                          disabled={!canRecord || busy}
+                          onClick={async () => {
+                            setBusy(true);
+                            const res = await aliasFn({
+                              data: {
+                                missionId,
+                                submissionId: r.submissionId,
+                                termId: r.termId,
+                                targetDemoId: target!.demoId,
+                                rationale: identity.rationale,
+                                acknowledgement: SYNTHETIC_DEMO_ALIAS_ACKNOWLEDGEMENT,
+                              },
+                            }).catch(() => null);
+                            setBusy(false);
+                            if (res?.ok) {
+                              setIdentity(null);
+                              await load();
+                            } else
+                              setIdentity({
+                                ...identity,
+                                note: res?.message ?? "The alias decision was not recorded.",
+                              });
+                          }}
+                        >
+                          Record alias decision
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                );
+              })()
+            : null}
         </div>
       )}
     </BulkResearcherSection>

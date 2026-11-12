@@ -16,6 +16,10 @@
  *   invented, so the demo can never be mistaken for validated recognition. P61.3:
  *   a unit written in another notation (closed typographic list, p613-unit-notation)
  *   is recognized as the entry's unit and reported as such; never a conversion.
+ * - P61.5: a Researcher-decided, Ground Medical-activated alias maps a submitted
+ *   label to ONE active entry with the identical exact unit (signed with the
+ *   snapshot). Aliases never convert units, never merge entries and fail closed
+ *   when their label collides with any active entry or another alias.
  */
 import { canonicalJson } from "./observation-envelope";
 import { normalizeCatalogText, sha256Hex } from "./catalog-lifecycle";
@@ -37,7 +41,12 @@ export const SYNTHETIC_DEMO_CLASSIFICATION = "SYNTHETIC_DEMO_NOT_SCIENTIFICALLY_
 export const SYNTHETIC_DEMO_ACKNOWLEDGEMENT = "SYNTHETIC DEMO - NOT A SCIENTIFIC APPROVAL" as const;
 export const SYNTHETIC_DEMO_LABEL =
   "SYNTHETIC DEMO — not a scientific approval, source validation or production catalog entry";
+export const SYNTHETIC_DEMO_ALIAS_CLASSIFICATION =
+  "SYNTHETIC_DEMO_ALIAS_NOT_SCIENTIFICALLY_VALIDATED" as const;
+export const SYNTHETIC_DEMO_ALIAS_ACKNOWLEDGEMENT =
+  "SYNTHETIC DEMO ALIAS - SAME MEASUREMENT AND EXACT UNIT - NOT A SCIENTIFIC APPROVAL" as const;
 const DEMO_ID = /^demo:ubt-[0-9a-f]{8}$/;
+const ALIAS_ID = /^alias:ubt-[0-9a-f]{8}$/;
 const DOMAINS: readonly HealthDomainId[] = ["bone", "immune", "cardiovascular", "behavioral"];
 /** Domain-separated derivation: the demo key is never the production catalog key. */
 const DEMO_KEY_LABEL = "mitochondria.p37-synthetic-demo-catalog.v1:";
@@ -66,6 +75,29 @@ export interface SyntheticDemoEntry extends SyntheticDemoEntryDefinition {
     demoCatalogVersion: number;
   } | null;
 }
+/** P61.5 reviewed alias of a submitted label to one existing demo entry (identical exact unit). */
+export interface SyntheticDemoAliasMapping {
+  aliasId: string;
+  targetDemoId: string;
+  targetDisplayName: string;
+  labels: string[];
+  unit: string;
+  domain: HealthDomainId;
+  provenance: "synthetic";
+  missionId: string;
+  submissionId: string;
+  termId: string;
+  classification: typeof SYNTHETIC_DEMO_ALIAS_CLASSIFICATION;
+  status: "ACTIVE" | "REVOKED";
+  decision: { decisionEventId: string; decidedAt: string; entrySha256: string };
+  activation: { activationEventId: string; activatedAt: string; demoCatalogVersion: number };
+  revocation: {
+    revocationEventId: string;
+    revokedAt: string;
+    reason: string;
+    demoCatalogVersion: number;
+  } | null;
+}
 export interface SyntheticDemoSnapshot {
   schema: typeof SYNTHETIC_DEMO_SNAPSHOT_SCHEMA;
   environment: "synthetic_demo";
@@ -73,6 +105,8 @@ export interface SyntheticDemoSnapshot {
   demoCatalogVersion: number;
   issuedAt: string;
   entries: SyntheticDemoEntry[];
+  /** P61.5: present only when the mission has activated (or revoked) alias mappings. */
+  aliasMappings?: SyntheticDemoAliasMapping[];
 }
 export interface SignedSyntheticDemoSnapshot {
   schema: typeof SIGNED_SYNTHETIC_DEMO_SCHEMA;
@@ -88,13 +122,58 @@ export interface DemoSnapshotRpc {
   entries: SyntheticDemoEntry[];
 }
 
-export function demoSnapshotFromRpc(rpc: DemoSnapshotRpc, issuedAt: string): SyntheticDemoSnapshot {
+/** Shape returned by p615_demo_alias_snapshot_v1 (identities never included). */
+export interface DemoAliasSnapshotRpc {
+  mission_id: string;
+  alias_catalog_version: number;
+  aliases: SyntheticDemoAliasMapping[];
+}
+
+/**
+ * Alias events share the demo catalog sequence, so the combined version is the
+ * larger of the two and always increases when an entry or an alias changes.
+ */
+export function demoSnapshotFromRpc(
+  rpc: DemoSnapshotRpc,
+  issuedAt: string,
+  aliasRpc?: DemoAliasSnapshotRpc | null,
+): SyntheticDemoSnapshot {
+  const aliases = aliasRpc && aliasRpc.mission_id === rpc.mission_id ? (aliasRpc.aliases ?? []) : [];
   return {
     schema: SYNTHETIC_DEMO_SNAPSHOT_SCHEMA,
     environment: "synthetic_demo",
     missionId: rpc.mission_id,
-    demoCatalogVersion: Number(rpc.demo_catalog_version) || 0,
+    demoCatalogVersion: Math.max(
+      Number(rpc.demo_catalog_version) || 0,
+      aliases.length ? Number(aliasRpc?.alias_catalog_version) || 0 : 0,
+    ),
     issuedAt,
+    ...(aliases.length
+      ? {
+          aliasMappings: aliases.map((a) => ({
+            aliasId: a.aliasId,
+            targetDemoId: a.targetDemoId,
+            targetDisplayName: a.targetDisplayName,
+            labels: [...a.labels],
+            unit: a.unit,
+            domain: a.domain,
+            provenance: a.provenance,
+            missionId: a.missionId,
+            submissionId: a.submissionId,
+            termId: a.termId,
+            classification: a.classification,
+            status: a.status,
+            decision: { ...a.decision },
+            activation: {
+              ...a.activation,
+              demoCatalogVersion: Number(a.activation.demoCatalogVersion),
+            },
+            revocation: a.revocation
+              ? { ...a.revocation, demoCatalogVersion: Number(a.revocation.demoCatalogVersion) }
+              : null,
+          })),
+        }
+      : {}),
     entries: (rpc.entries ?? []).map((e) => ({
       demoId: e.demoId,
       displayName: e.displayName,
@@ -184,6 +263,8 @@ export interface EvaluatedDemoCatalog {
   active: SyntheticDemoEntry[];
   revoked: SyntheticDemoEntry[];
   excluded: { demoId: string; reason: string }[];
+  /** P61.5 active alias mappings that passed validation (absent in older snapshots). */
+  aliases?: SyntheticDemoAliasMapping[];
 }
 
 const demoKeys = (e: SyntheticDemoEntryDefinition) =>
@@ -232,7 +313,65 @@ export function evaluateSyntheticDemoSnapshot(s: SyntheticDemoSnapshot): Evaluat
     active,
     revoked,
     excluded,
+    aliases: evaluateAliasMappings(s, active, excluded),
   };
+}
+
+/**
+ * P61.5 fail-closed alias validation: synthetic, same mission, active, exactly one
+ * active target with the identical unit, display name and domain; a label that
+ * names any active entry (any unit) or another active alias is never used.
+ */
+function evaluateAliasMappings(
+  s: SyntheticDemoSnapshot,
+  active: readonly SyntheticDemoEntry[],
+  excluded: EvaluatedDemoCatalog["excluded"],
+): SyntheticDemoAliasMapping[] {
+  if (!Array.isArray(s.aliasMappings)) return [];
+  const entryNames = new Set(
+    active.flatMap((e) => [e.displayName, ...e.aliases].map((a) => normalizeCatalogText(a))),
+  );
+  const ok: SyntheticDemoAliasMapping[] = [];
+  for (const a of s.aliasMappings) {
+    if (a?.status !== "ACTIVE") continue;
+    const targets = active.filter((e) => e.demoId === a.targetDemoId);
+    const bad = !ALIAS_ID.test(a.aliasId) || !DEMO_ID.test(a.targetDemoId)
+      ? "Invalid alias identifier"
+      : a.provenance !== "synthetic"
+        ? "Not synthetic"
+        : a.classification !== SYNTHETIC_DEMO_ALIAS_CLASSIFICATION
+          ? "Missing synthetic demo alias classification"
+          : a.missionId !== s.missionId
+            ? "Alias belongs to another mission"
+            : !a.unit?.trim() || a.unit !== a.unit.trim()
+              ? "Exact unit required"
+              : !Array.isArray(a.labels) || !a.labels.some((l) => l.trim())
+                ? "No observed label"
+                : targets.length !== 1
+                  ? "Alias target is not exactly one active demo entry"
+                  : targets[0]!.unit.trim() !== a.unit ||
+                      targets[0]!.displayName !== a.targetDisplayName ||
+                      targets[0]!.domain !== a.domain
+                    ? "Alias target differs in unit, name or domain"
+                    : a.labels.some((l) => entryNames.has(normalizeCatalogText(l)))
+                      ? "Alias label already names an active demo entry"
+                      : null;
+    if (bad) {
+      excluded.push({ demoId: a.aliasId, reason: bad });
+      continue;
+    }
+    ok.push(a);
+  }
+  const keyOf = (a: SyntheticDemoAliasMapping) =>
+    a.labels.map((l) => `${normalizeCatalogText(l)}|${a.unit}`);
+  return ok.filter((a) => {
+    const keys = new Set(keyOf(a));
+    const clash = ok.some(
+      (o) => o !== a && (o.aliasId === a.aliasId || keyOf(o).some((k) => keys.has(k))),
+    );
+    if (clash) excluded.push({ demoId: a.aliasId, reason: "Conflicts with another active alias" });
+    return !clash;
+  });
 }
 
 export interface DemoRecognitionInput {
@@ -258,6 +397,8 @@ export type SyntheticDemoRecognition = {
    * synthetic only, pending Researcher confirmation). `unit` is the entry's notation; nothing is converted.
    */
   unitNotation?: UnitNotationMatch | undefined;
+  /** P61.5: set when a Researcher-decided, Ground Medical-activated alias named the entry. */
+  approvedAlias?: { aliasId: string; label: string; decisionEventId: string } | undefined;
 };
 export type DemoRecognitionResult =
   SyntheticDemoRecognition | { status: "UNKNOWN"; reason: string };
@@ -337,6 +478,35 @@ export function recognizeSyntheticDemo(
     [e.displayName, ...e.aliases].some((a) => normalizeCatalogText(a) === label),
   );
   if (!named.length) {
+    // P61.5: reviewed alias with the identical exact unit (validated in evaluateSyntheticDemoSnapshot).
+    const aliasHits = (catalog.aliases ?? []).filter(
+      (a) => a.unit === unit && a.labels.some((l) => normalizeCatalogText(l) === label),
+    );
+    if (aliasHits.length > 1)
+      return { status: "UNKNOWN", reason: "Ambiguous synthetic demo alias match." };
+    if (aliasHits.length === 1) {
+      const a = aliasHits[0]!;
+      const targets = catalog.active.filter((e) => e.demoId === a.targetDemoId && e.unit.trim() === unit);
+      if (targets.length === 1) {
+        const e = targets[0]!;
+        return {
+          status: "SYNTHETIC_DEMO_RECOGNIZED",
+          demoId: e.demoId,
+          displayName: e.displayName,
+          unit: e.unit,
+          domain: e.domain,
+          missionId: e.missionId,
+          demoCatalogVersion: catalog.demoCatalogVersion,
+          termId: e.termId,
+          approvedAlias: {
+            aliasId: a.aliasId,
+            label: input.label.trim(),
+            decisionEventId: a.decision.decisionEventId,
+          },
+        };
+      }
+      return { status: "UNKNOWN", reason: "The alias target is not active." };
+    }
     // P61.2: owner-directed alias to an active entry with the identical unit (never a unit equivalence).
     const viaAlias = syntheticIntakeAliasEntry({ label: input.label, unit, missionId: catalog.missionId }, catalog);
     if (viaAlias) {
