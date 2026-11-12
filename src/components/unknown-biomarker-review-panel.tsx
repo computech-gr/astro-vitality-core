@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { P36HandoffSubmission } from "@/components/p36-handoff-submission";
+import { CollapsibleReviewCard, CompactScrollRegion } from "@/components/compact-review";
 import { loadMissionIdentity } from "@/infrastructure/mission-identity";
 import {
   buildCatalogExtensionProposal,
@@ -248,24 +249,29 @@ export function UnknownBiomarkerReviewPanel(props: {
                   {batchRegistered ? "Current batch registered as pending review" : "Register current batch as a pending review request"}
                 </Button>
               ) : null}
-              <ul className="max-h-[450px] space-y-3 overflow-y-auto overscroll-contain pr-2" aria-label="Catalog review candidates" tabIndex={0}>
+              <CompactScrollRegion label="Catalog review candidates; scroll to see all" maxHeight="reviewList" className="p-2" testId="catalog-review-candidates">
+              <ul className="space-y-2" aria-label="Catalog review candidates">
                 {terms.map((term) => {
                   const d = draftFor(term.termId);
                   const set = (patch: Partial<typeof d>) => setDrafts((prev) => ({ ...prev, [term.termId]: { ...d, ...patch } }));
                   const decided = latest.get(term.termId);
                   return (
-                    <li key={term.termId} className="rounded-md border border-border p-3 text-sm">
-                      <details className="group space-y-2">
-                      <summary className="cursor-pointer list-item font-medium" aria-label={`Expand review for ${term.normalizedLabel}`}>
-                      <span className="inline-flex flex-wrap items-center gap-2">
-                        <strong className="break-words">{term.originalLabels.join(" / ")}</strong>
-                        <span className="text-muted-foreground">{term.originalUnit || "unit missing"}</span>
-                        <Badge variant="outline">{STATUS_LABELS[term.classification]}</Badge>
-                        {decided ? <Badge variant="secondary">{REVIEWER_DECISION_LABELS[decided.kind]} · {REQUIRED_SCIENTIFIC_GATE}</Badge> : null}
-                        {handoffRowForTerm(handoff, term.termId) ? (
-                          <Badge variant="outline">In P36 reconciliation handoff · {REQUIRED_SCIENTIFIC_GATE}</Badge>
-                        ) : null}
-                      </span></summary>
+                    <CollapsibleReviewCard
+                      key={term.termId}
+                      id={`catalog-review-${term.termId}`}
+                      label={`review for ${term.normalizedLabel}`}
+                      testId="catalog-review-candidate"
+                      title={<>{term.originalLabels.join(" / ")} <span className="font-normal text-muted-foreground">{term.originalUnit || "unit missing"}</span></>}
+                      meta={
+                        <>
+                          <Badge variant="outline">{STATUS_LABELS[term.classification]}</Badge>
+                          {decided ? <Badge variant="secondary">{REVIEWER_DECISION_LABELS[decided.kind]} · {REQUIRED_SCIENTIFIC_GATE}</Badge> : null}
+                          {handoffRowForTerm(handoff, term.termId) ? (
+                            <Badge variant="outline">In P36 reconciliation handoff · {REQUIRED_SCIENTIFIC_GATE}</Badge>
+                          ) : null}
+                        </>
+                      }
+                    >
                       {term.candidateMetricIds.length ? <p className="text-xs">Possible catalog IDs: {term.candidateMetricIds.join(", ")}</p> : null}
                       <details className="text-xs">
                         <summary className="cursor-pointer">Source evidence ({term.observations.length})</summary>
@@ -298,11 +304,11 @@ export function UnknownBiomarkerReviewPanel(props: {
                           <Button type="button" variant="outline" className="sm:col-span-2" disabled={busy} onClick={() => void submit(term.termId)}>Record reviewer decision</Button>
                         </div>
                       ) : null}
-                      </details>
-                    </li>
+                    </CollapsibleReviewCard>
                   );
                 })}
               </ul>
+              </CompactScrollRegion>
             </>
           )}
         </>
