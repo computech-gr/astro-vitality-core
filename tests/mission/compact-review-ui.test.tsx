@@ -15,11 +15,8 @@ import {
   COMPACT_MAX_HEIGHT,
   CompactScrollRegion,
 } from "@/components/compact-review";
-import {
-  demoParameterRows,
-  filterDemoParameters,
-  MissionDemoParametersPanel,
-} from "@/components/mission-demo-parameters-panel";
+import { demoParameterRows, filterDemoParameters } from "@/components/mission-demo-parameter-filter";
+import { MissionDemoParametersPanel } from "@/components/mission-demo-parameters-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { GM_USER, V9_SCOPE, obs } from "../domain/fixtures-v9-observations";
 
