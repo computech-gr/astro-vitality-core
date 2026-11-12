@@ -141,8 +141,7 @@ describe("Ground Medical approvals table", () => {
     expect(html).toContain("0 selected of 2 eligible");
   });
   test("table scrolls internally with a sticky header", () => {
-    expect(html).toMatch(/data-testid="stored-observations-scroll"[^>]*>|max-h-\[450px\]/);
-    expect(html).toContain("max-h-[450px]");
+    expect(html).toMatch(/max-h-\[450px\][^"]*"[^>]*data-testid="stored-observations-scroll"/);
     expect(html).toContain("sticky top-0");
   });
   test("rows keep checkboxes and Attest / Edit / Mark erroneous in table and card layouts", () => {
@@ -152,9 +151,9 @@ describe("Ground Medical approvals table", () => {
     expect(html).toContain("lg:hidden");
     const count = (t: string) => html.split(t).length - 1;
     // Two eligible rows, each rendered in the table and in the card list.
-    expect(count(">Attest<")).toBe(4);
-    expect(count(">Edit<")).toBe(4);
-    expect(count(">Mark erroneous<")).toBe(4);
+    expect(count(">Attest</button>")).toBe(4);
+    expect(count(">Edit</button>")).toBe(4);
+    expect(count(">Mark erroneous</button>")).toBe(4);
     expect(count('role="checkbox"')).toBeGreaterThanOrEqual(8);
   });
   test("selection lives in component state, not in the scrolled rows", () => {
