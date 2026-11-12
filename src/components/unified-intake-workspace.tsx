@@ -31,6 +31,7 @@ import {
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
+import { MissionDemoParametersPanel } from "@/components/mission-demo-parameters-panel";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import {
   classifyWithGovernedExtensions,
@@ -510,7 +511,6 @@ export function UnifiedIntakeWorkspace() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Manual entry draft
-  const [demoMetricSearch, setDemoMetricSearch] = useState("");
   const [manualLabel, setManualLabel] = useState("");
   const [manualValue, setManualValue] = useState("");
   const [manualUnit, setManualUnit] = useState("");
@@ -1271,36 +1271,7 @@ export function UnifiedIntakeWorkspace() {
         ) : null}
         {missionDemoCatalog &&
         (missionDemoCatalog.active.length || missionDemoCatalog.revoked.length) ? (
-          <div
-            className="space-y-2 rounded-md border border-dashed border-border p-3"
-            data-testid="mission-demo-parameters"
-          >
-            <p className="text-sm font-medium">
-              Mission synthetic demo parameters (verified demo catalog v
-              {missionDemoCatalog.demoCatalogVersion}, available offline)
-            </p>
-            <input aria-label="Search synthetic demo parameters" placeholder="Search name, ID, unit or domain" value={demoMetricSearch} onChange={(e) => setDemoMetricSearch(e.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            <ul className="max-h-[300px] space-y-1 overflow-y-auto overscroll-contain pr-2 text-xs text-muted-foreground" role="region" aria-label="Scrollable synthetic demo parameters" tabIndex={0}>
-              {missionDemoCatalog.active.filter((e) => `${e.displayName} ${e.demoId} ${e.unit} ${e.domain} ${e.aliases.join(" ")}`.toLowerCase().includes(demoMetricSearch.trim().toLowerCase())).map((e) => (
-                <li key={`a-${e.demoId}`}>
-                  <span className="font-medium text-foreground">{e.displayName}</span> ({e.demoId})
-                  · label {e.aliases.map((a) => `“${a}”`).join(", ")} · exact unit {e.unit} →{" "}
-                  {DOMAIN_LABELS[e.domain]} · ACTIVE — recognized automatically in synthetic
-                  examinations of this mission
-                </li>
-              ))}
-              {missionDemoCatalog.revoked.filter((e) => `${e.displayName} ${e.demoId} ${e.unit} ${e.domain}`.toLowerCase().includes(demoMetricSearch.trim().toLowerCase())).map((e) => (
-                <li key={`r-${e.demoId}-${e.activation.activationEventId}`}>
-                  {e.displayName} ({e.demoId}) · {e.unit} · REVOKED — no longer recognized; earlier
-                  records are kept
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs text-muted-foreground">
-              SYNTHETIC DEMO — not a scientific approval, source validation or production catalog
-              entry. Applies to synthetic data of this mission only; units are never converted.
-            </p>
-          </div>
+          <MissionDemoParametersPanel catalog={missionDemoCatalog} />
         ) : null}
       </section>
 

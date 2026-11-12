@@ -248,16 +248,14 @@ export function UnknownBiomarkerReviewPanel(props: {
                   {batchRegistered ? "Current batch registered as pending review" : "Register current batch as a pending review request"}
                 </Button>
               ) : null}
-              <ul className="max-h-[450px] space-y-3 overflow-y-auto overscroll-contain pr-2" aria-label="Catalog review candidates" tabIndex={0}>
+              <ul className="space-y-3" aria-label="Catalog review candidates">
                 {terms.map((term) => {
                   const d = draftFor(term.termId);
                   const set = (patch: Partial<typeof d>) => setDrafts((prev) => ({ ...prev, [term.termId]: { ...d, ...patch } }));
                   const decided = latest.get(term.termId);
                   return (
-                    <li key={term.termId} className="rounded-md border border-border p-3 text-sm">
-                      <details className="group space-y-2">
-                      <summary className="cursor-pointer list-item font-medium" aria-label={`Expand review for ${term.normalizedLabel}`}>
-                      <span className="inline-flex flex-wrap items-center gap-2">
+                    <li key={term.termId} className="space-y-2 rounded-md border border-border p-3 text-sm">
+                      <div className="flex flex-wrap items-center gap-2">
                         <strong className="break-words">{term.originalLabels.join(" / ")}</strong>
                         <span className="text-muted-foreground">{term.originalUnit || "unit missing"}</span>
                         <Badge variant="outline">{STATUS_LABELS[term.classification]}</Badge>
@@ -265,7 +263,7 @@ export function UnknownBiomarkerReviewPanel(props: {
                         {handoffRowForTerm(handoff, term.termId) ? (
                           <Badge variant="outline">In P36 reconciliation handoff · {REQUIRED_SCIENTIFIC_GATE}</Badge>
                         ) : null}
-                      </span></summary>
+                      </div>
                       {term.candidateMetricIds.length ? <p className="text-xs">Possible catalog IDs: {term.candidateMetricIds.join(", ")}</p> : null}
                       <details className="text-xs">
                         <summary className="cursor-pointer">Source evidence ({term.observations.length})</summary>
@@ -298,7 +296,6 @@ export function UnknownBiomarkerReviewPanel(props: {
                           <Button type="button" variant="outline" className="sm:col-span-2" disabled={busy} onClick={() => void submit(term.termId)}>Record reviewer decision</Button>
                         </div>
                       ) : null}
-                      </details>
                     </li>
                   );
                 })}
