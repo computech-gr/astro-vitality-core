@@ -345,7 +345,7 @@ const storage: SnapshotStorage = { get: (kk) => store.get(kk) ?? null, set: (kk,
 resetSyntheticDemoCatalogsForTests();
 const install = async () =>
   installOfferedDemoCatalog(await signSyntheticDemoSnapshot(demoSnapshotFromRpc(snap(3), new Date().toISOString(), aliasSnap(3)), "p615-test", privateKey), M, { storage, trustedKeys });
-check((await install()).installed, "signed snapshot with alias installs");
+{ const i0 = await install(); if (!i0.installed) console.log("INSTALL", i0.reason); check(i0.installed, "signed snapshot with alias installs"); }
 const recognize = (label: string, unit: string, provenance: "synthetic" | "real" = "synthetic", missionId = M) =>
   recognizeSyntheticDemo({ label, unit, provenance, missionId }, getSyntheticDemoCatalogs());
 const r1 = recognize("Serum P1NP", "μg/L");
