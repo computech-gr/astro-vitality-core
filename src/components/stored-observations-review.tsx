@@ -7,6 +7,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
+import { CompactScrollRegion } from "@/components/compact-review";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -268,6 +269,103 @@ export function StoredObservationsReview(props: Props) {
     }
   };
 
+  const toggleAll = () => setSelected((s) => toggleSelectAll(views, s));
+  const renderIneligible = (v: StoredObservationView, layout: "table" | "card") =>
+    !v.selectable ? <span id={`eligibility-${layout}-${v.observation.id}`} className="sr-only">{v.ineligibleReason ?? "Not eligible for bulk attestation"}</span> : null;
+  const renderSelect = (v: StoredObservationView, layout: "table" | "card") => {
+    const o = v.observation;
+    return (
+      <Checkbox
+        aria-label={`Select ${o.metricId} observed ${o.observedAt} for attestation`}
+        checked={selected.has(o.id)}
+        disabled={busy || !v.selectable}
+        title={v.ineligibleReason ?? undefined}
+        aria-describedby={!v.selectable ? `eligibility-${layout}-${o.id}` : undefined}
+        onCheckedChange={(c) =>
+          setSelected((s) => {
+            const n = new Set(s);
+            if (c === true) n.add(o.id);
+            else n.delete(o.id);
+            return n;
+          })
+        }
+      />
+    );
+  };
+  const renderOrigin = (o: UnifiedObservation) => (
+    <>
+      {o.source.label} · {o.provenance}
+      {o.supersedesId ? <span className="block">Corrects {o.supersedesId}</span> : null}
+      {o.statusReason && o.status === "erroneous" ? <span className="block">Reason: {o.statusReason}</span> : null}
+    </>
+  );
+  const renderLifecycle = (v: StoredObservationView) => (
+    <>
+      <Badge variant={v.lifecycle === "active" ? "secondary" : "outline"}>{LIFECYCLE_LABELS[v.lifecycle]}</Badge>
+      {v.supersededBy ? <span className="block text-xs">by {v.supersededBy}</span> : null}
+    </>
+  );
+  const renderGroundMedical = (v: StoredObservationView) =>
+    v.groundMedical === "not_applicable" ? (
+      <span className="text-xs">—</span>
+    ) : (
+      <Badge variant={v.groundMedical === "attested" ? "default" : "outline"}>{GROUND_MEDICAL_LABELS[v.groundMedical]}</Badge>
+    );
+  const renderActions = (v: StoredObservationView, layout: "table" | "card" = "table") => {
+    const o = v.observation;
+    const btn = layout === "table" ? "w-full justify-center whitespace-normal" : "justify-center whitespace-normal";
+    return (
+      <>
+        <div className={layout === "table" ? "flex flex-col items-stretch gap-2" : "flex flex-wrap gap-2"}>
+          {isGroundMedical && scope && v.selectable && (
+            <Button type="button" size="sm" variant="outline" className={btn} disabled={busy} onClick={() => openDialog({ kind: "attest", recordIds: [o.id] })}>
+              Attest
+            </Button>
+          )}
+          {isGroundMedical && scope && v.groundMedical === "attested" && (
+            <Button type="button" size="sm" variant="outline" className={btn} disabled={busy} onClick={() => openDialog({ kind: "revoke", recordId: o.id })}>
+              Revoke
+            </Button>
+          )}
+          {isGroundMedical && scope && v.lifecycle === "active" && o.provenance === scope.provenance && o.reviewState === "accepted" && (
+            <Button type="button" size="sm" variant="outline" className={btn} disabled={busy} onClick={() => openDialog({ kind: "edit", observation: o })}>
+              Edit
+            </Button>
+          )}
+          {v.lifecycle === "active" && membership && (
+            <Button type="button" size="sm" variant="outline" className={btn} disabled={busy} onClick={() => openDialog({ kind: "erroneous", observation: o })}>
+              Mark erroneous
+            </Button>
+          )}
+          {isGroundMedical && v.correctionIncomplete && (
+            <Button type="button" size="sm" disabled={busy} onClick={() => void runComplete(o)}>
+              Complete correction
+            </Button>
+          )}
+          {(v.attestationHistory.length > 0 || o.correction) && (
+            <Button type="button" size="sm" variant="ghost" className={btn} aria-expanded={openHistory === o.id} onClick={() => setOpenHistory(openHistory === o.id ? null : o.id)}>
+              History
+            </Button>
+          )}
+        </div>
+        {openHistory === o.id && (
+          <ul className="space-y-1 text-xs text-muted-foreground">
+            {o.correction && (
+              <li>
+                {o.correction.decidedAt} · Correction of {o.correction.originalRecordId} by Ground Medical {o.correction.actorUserId}: {o.correction.reason}
+              </li>
+            )}
+            {v.attestationHistory.map((e) => (
+              <li key={e.eventId}>
+                {e.decidedAt} · {e.action === "attest" ? "Attested" : "Revoked"} by Ground Medical {e.actorUserId} · {e.reason} · event {e.eventId}
+              </li>
+            ))}
+          </ul>
+        )}
+      </>
+    );
+  };
+
   return (
     <section className="space-y-4 rounded-lg border border-border bg-card p-5" aria-label="Stored observations">
       <h2 className="text-lg font-semibold">Stored observations (this mission &amp; crew)</h2>
@@ -295,7 +393,16 @@ export function StoredObservationsReview(props: Props) {
       )}
 
       {isGroundMedical && scope && (
-        <div className="flex flex-wrap items-center gap-3 rounded-md border border-border p-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-border p-3 text-sm" data-testid="stored-observations-bulk-bar">
+          <label className="flex items-center gap-2 lg:hidden">
+            <Checkbox
+              aria-label="Select all eligible observations in this mission, crew and provenance (card view)"
+              checked={allSelected}
+              disabled={busy || counts.eligible === 0}
+              onCheckedChange={toggleAll}
+            />
+            <span>Select all eligible</span>
+          </label>
           <span role="status" aria-live="polite">
             {counts.selected} selected of {counts.eligible} eligible
           </span>
@@ -307,18 +414,22 @@ export function StoredObservationsReview(props: Props) {
       )}
 
       {views.length ? (
-        <div className="max-w-full overflow-x-auto rounded-md border border-border" role="region" aria-label="Stored observations review table; scroll horizontally to see all actions" tabIndex={0}>
-          <p className="px-3 py-2 text-xs text-muted-foreground md:hidden">Scroll this table horizontally to access all review actions.</p>
-          <table className="w-full min-w-[980px] table-fixed text-left text-sm">
-            <thead>
+        <CompactScrollRegion
+          label={`Stored observations review (${views.length} records); scroll to see all records and actions`}
+          maxHeight="approvalTable"
+          className="max-w-full overflow-x-auto"
+          testId="stored-observations-scroll"
+        >
+          <table className="hidden w-full min-w-[980px] table-fixed text-left text-sm lg:table" data-testid="stored-observations-table">
+            <thead className="sticky top-0 z-10 bg-card shadow-[0_1px_0_0_var(--border)]">
               <tr className="border-b border-border text-xs uppercase text-muted-foreground">
                 {isGroundMedical && scope && (
-                  <th className="py-2 pr-2">
+                  <th className="py-2 pl-2 pr-2">
                     <Checkbox
                       aria-label="Select all eligible observations in this mission, crew and provenance"
                       checked={allSelected}
                       disabled={busy || counts.eligible === 0}
-                      onCheckedChange={() => setSelected((s) => toggleSelectAll(views, s))}
+                      onCheckedChange={toggleAll}
                     />
                   </th>
                 )}
@@ -336,100 +447,51 @@ export function StoredObservationsReview(props: Props) {
                 const o = v.observation;
                 return (
                   <tr key={o.id} className={`border-b border-border/60 align-top ${v.lifecycle !== "active" ? "text-muted-foreground" : ""}`}>
-                    {isGroundMedical && scope && (
-                      <td className="py-2 pr-2">
-                        <Checkbox
-                          aria-label={`Select ${o.metricId} observed ${o.observedAt} for attestation`}
-                          checked={selected.has(o.id)}
-                          disabled={busy || !v.selectable}
-                          title={v.ineligibleReason ?? undefined}
-                          aria-describedby={!v.selectable ? `eligibility-${o.id}` : undefined}
-                          onCheckedChange={(c) =>
-                            setSelected((s) => {
-                              const n = new Set(s);
-                              if (c === true) n.add(o.id);
-                              else n.delete(o.id);
-                              return n;
-                            })
-                          }
-                        />
-                      </td>
-                    )}
-                    <td className="break-words px-2 py-3 text-xs leading-relaxed">{!v.selectable && <span id={`eligibility-${o.id}`} className="sr-only">{v.ineligibleReason ?? "Not eligible for bulk attestation"}</span>}{formatObservedAt(o.observedAt)}</td>
+                    {isGroundMedical && scope && <td className="py-2 pl-2 pr-2">{renderSelect(v, "table")}</td>}
+                    <td className="break-words px-2 py-3 text-xs leading-relaxed">{renderIneligible(v, "table")}{formatObservedAt(o.observedAt)}</td>
                     <td className="py-2 pr-3 font-mono text-xs">{o.metricId}</td>
                     <td className={`py-2 pr-3 ${v.lifecycle !== "active" ? "line-through" : ""}`}>
                       {o.value} {o.originalUnit}
                     </td>
-                    <td className="break-all px-2 py-3 text-xs leading-relaxed">
-                      {o.source.label} · {o.provenance}
-                      {o.supersedesId ? <span className="block">Corrects {o.supersedesId}</span> : null}
-                      {o.statusReason && o.status === "erroneous" ? <span className="block">Reason: {o.statusReason}</span> : null}
-                    </td>
-                    <td className="py-2 pr-3">
-                      <Badge variant={v.lifecycle === "active" ? "secondary" : "outline"}>{LIFECYCLE_LABELS[v.lifecycle]}</Badge>
-                      {v.supersededBy ? <span className="block text-xs">by {v.supersededBy}</span> : null}
-                    </td>
-                    <td className="py-2 pr-3">
-                      {v.groundMedical === "not_applicable" ? (
-                        <span className="text-xs">—</span>
-                      ) : (
-                        <Badge variant={v.groundMedical === "attested" ? "default" : "outline"}>{GROUND_MEDICAL_LABELS[v.groundMedical]}</Badge>
-                      )}
-                    </td>
-                    <td className="px-2 py-3">
-                      <div className="flex flex-col items-stretch gap-2">
-                        {isGroundMedical && scope && v.selectable && (
-                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "attest", recordIds: [o.id] })}>
-                            Attest
-                          </Button>
-                        )}
-                        {isGroundMedical && scope && v.groundMedical === "attested" && (
-                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "revoke", recordId: o.id })}>
-                            Revoke
-                          </Button>
-                        )}
-                        {isGroundMedical && scope && v.lifecycle === "active" && o.provenance === scope.provenance && o.reviewState === "accepted" && (
-                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "edit", observation: o })}>
-                            Edit
-                          </Button>
-                        )}
-                        {v.lifecycle === "active" && membership && (
-                          <Button type="button" size="sm" variant="outline" className="w-full justify-center whitespace-normal" disabled={busy} onClick={() => openDialog({ kind: "erroneous", observation: o })}>
-                            Mark erroneous
-                          </Button>
-                        )}
-                        {isGroundMedical && v.correctionIncomplete && (
-                          <Button type="button" size="sm" disabled={busy} onClick={() => void runComplete(o)}>
-                            Complete correction
-                          </Button>
-                        )}
-                        {(v.attestationHistory.length > 0 || o.correction) && (
-                          <Button type="button" size="sm" variant="ghost" className="w-full justify-center" aria-expanded={openHistory === o.id} onClick={() => setOpenHistory(openHistory === o.id ? null : o.id)}>
-                            History
-                          </Button>
-                        )}
-                      </div>
-                      {openHistory === o.id && (
-                        <ul className="space-y-1 text-xs text-muted-foreground">
-                          {o.correction && (
-                            <li>
-                              {o.correction.decidedAt} · Correction of {o.correction.originalRecordId} by Ground Medical {o.correction.actorUserId}: {o.correction.reason}
-                            </li>
-                          )}
-                          {v.attestationHistory.map((e) => (
-                            <li key={e.eventId}>
-                              {e.decidedAt} · {e.action === "attest" ? "Attested" : "Revoked"} by Ground Medical {e.actorUserId} · {e.reason} · event {e.eventId}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </td>
+                    <td className="break-all px-2 py-3 text-xs leading-relaxed">{renderOrigin(o)}</td>
+                    <td className="py-2 pr-3">{renderLifecycle(v)}</td>
+                    <td className="py-2 pr-3">{renderGroundMedical(v)}</td>
+                    <td className="px-2 py-3">{renderActions(v)}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
+          <ul className="divide-y divide-border lg:hidden" aria-label="Stored observations" data-testid="stored-observations-cards">
+            {views.map((v) => {
+              const o = v.observation;
+              return (
+                <li key={o.id} className={`space-y-2 p-3 text-sm ${v.lifecycle !== "active" ? "text-muted-foreground" : ""}`}>
+                  <div className="flex items-start gap-3">
+                    {isGroundMedical && scope ? <div className="pt-0.5">{renderSelect(v, "card")}</div> : null}
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <p className="flex flex-wrap items-baseline gap-x-2">
+                        <span className="font-mono text-xs">{o.metricId}</span>
+                        <span className={`font-medium ${v.lifecycle !== "active" ? "line-through" : ""}`}>
+                          {o.value} {o.originalUnit}
+                        </span>
+                      </p>
+                      <p className="break-words text-xs">{renderIneligible(v, "card")}{formatObservedAt(o.observedAt)}</p>
+                      <p className="break-all text-xs">{renderOrigin(o)}</p>
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="text-muted-foreground">Observation</span>
+                        {renderLifecycle(v)}
+                        <span className="text-muted-foreground">Ground Medical</span>
+                        {renderGroundMedical(v)}
+                      </div>
+                    </div>
+                  </div>
+                  {renderActions(v, "card")}
+                </li>
+              );
+            })}
+          </ul>
+        </CompactScrollRegion>
       ) : (
         <p className="text-sm text-muted-foreground">No records for this mission and crew.</p>
       )}
