@@ -83,22 +83,22 @@ select p69t.ok('researcher sees scientific assessment', public.p69_demo_records_
 -- 4. Submission rules.
 select p69t.as_uid(p69t.get('A1'));
 do $$ declare r jsonb; r2 jsonb; begin
-  r := public.p69_demo_submit_examination_v1(date '2026-11-16',
+  r := public.p69_demo_submit_examination_v1(current_date,
     '[{"metricId":"demo:ubt-e1140df3","value":"121","unit":"mmHg"},{"metricId":"demo:ubt-5d16fcaf","value":"79","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-a1-000001');
   insert into p69t.ctx values ('rec', r->>'recordId');
   perform p69t.ok('astronaut submits EXAM-0002 at revision 1', r->>'recordRef' = 'EXAM-0002' and (r->>'revision')::int = 1 and not (r->>'replay')::boolean);
-  r2 := public.p69_demo_submit_examination_v1(date '2026-11-16',
+  r2 := public.p69_demo_submit_examination_v1(current_date,
     '[{"metricId":"demo:ubt-e1140df3","value":"121","unit":"mmHg"},{"metricId":"demo:ubt-5d16fcaf","value":"79","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-a1-000001');
   perform p69t.ok('idempotent replay returns the same record', r2->>'recordId' = r->>'recordId' and (r2->>'replay')::boolean);
 end $$;
-select p69t.expect_fail('idempotency key reuse with different payload', $$select public.p69_demo_submit_examination_v1(date '2026-11-16', '[{"metricId":"demo:ubt-e1140df3","value":"130","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-a1-000001')$$, 'MDIDM');
-select p69t.expect_fail('wrong unit rejected without conversion', $$select public.p69_demo_submit_examination_v1(date '2026-11-16', '[{"metricId":"demo:ubt-e1140df3","value":"16","unit":"kPa"}]'::jsonb, 'good', 'idem-submit-a1-000002')$$, 'must be exactly');
-select p69t.expect_fail('unknown parameter rejected', $$select public.p69_demo_submit_examination_v1(date '2026-11-16', '[{"metricId":"demo:ubt-6b4e6b7f","value":"12.4","unit":"ng/mL"}]'::jsonb, 'good', 'idem-submit-a1-000003')$$, 'unknown demo parameter');
-select p69t.expect_fail('duplicate parameter rejected', $$select public.p69_demo_submit_examination_v1(date '2026-11-16', '[{"metricId":"demo:ubt-e1140df3","value":"1","unit":"mmHg"},{"metricId":"demo:ubt-e1140df3","value":"2","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-a1-000004')$$, 'duplicate');
-select p69t.expect_fail('extra measurement keys rejected', $$select public.p69_demo_submit_examination_v1(date '2026-11-16', '[{"metricId":"demo:ubt-e1140df3","value":"1","unit":"mmHg","approved":true}]'::jsonb, 'good', 'idem-submit-a1-000005')$$, 'exactly metricId');
+select p69t.expect_fail('idempotency key reuse with different payload', $$select public.p69_demo_submit_examination_v1(current_date, '[{"metricId":"demo:ubt-e1140df3","value":"130","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-a1-000001')$$, 'MDIDM');
+select p69t.expect_fail('wrong unit rejected without conversion', $$select public.p69_demo_submit_examination_v1(current_date, '[{"metricId":"demo:ubt-e1140df3","value":"16","unit":"kPa"}]'::jsonb, 'good', 'idem-submit-a1-000002')$$, 'must be exactly');
+select p69t.expect_fail('unknown parameter rejected', $$select public.p69_demo_submit_examination_v1(current_date, '[{"metricId":"demo:ubt-6b4e6b7f","value":"12.4","unit":"ng/mL"}]'::jsonb, 'good', 'idem-submit-a1-000003')$$, 'unknown demo parameter');
+select p69t.expect_fail('duplicate parameter rejected', $$select public.p69_demo_submit_examination_v1(current_date, '[{"metricId":"demo:ubt-e1140df3","value":"1","unit":"mmHg"},{"metricId":"demo:ubt-e1140df3","value":"2","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-a1-000004')$$, 'duplicate');
+select p69t.expect_fail('extra measurement keys rejected', $$select public.p69_demo_submit_examination_v1(current_date, '[{"metricId":"demo:ubt-e1140df3","value":"1","unit":"mmHg","approved":true}]'::jsonb, 'good', 'idem-submit-a1-000005')$$, 'exactly metricId');
 select p69t.expect_fail('future date rejected', $$select public.p69_demo_submit_examination_v1(current_date + 5, '[{"metricId":"demo:ubt-e1140df3","value":"1","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-a1-000006')$$, 'out of range');
 select p69t.as_uid(p69t.get('R1'));
-select p69t.expect_fail('researcher cannot submit examinations', $$select public.p69_demo_submit_examination_v1(date '2026-11-16', '[{"metricId":"demo:ubt-e1140df3","value":"1","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-r1-000001')$$, 'role not permitted');
+select p69t.expect_fail('researcher cannot submit examinations', $$select public.p69_demo_submit_examination_v1(current_date, '[{"metricId":"demo:ubt-e1140df3","value":"1","unit":"mmHg"}]'::jsonb, 'good', 'idem-submit-r1-000001')$$, 'role not permitted');
 
 -- 5. Workflow transitions.
 select p69t.as_uid(p69t.get('M1'));
