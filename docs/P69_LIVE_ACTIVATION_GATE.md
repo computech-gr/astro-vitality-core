@@ -3,6 +3,7 @@
 Status: REVIEW REQUIRED. This document does not authorize migration, secret changes, deployment, or public enablement.
 
 ## Observed from 2026-11-14 18:53 ZIP
+
 - Pending SQL: `supabase/pending/20261114000000_p69_public_demo_workspaces.sql`; rollback is present.
 - Public entry is default-off and requires `P69_PUBLIC_DEMO_ENABLED=true` plus a server-only salt.
 - Server creates random Supabase Auth users with synthetic role metadata; role/workspace actions use caller-scoped RPCs.
@@ -11,6 +12,7 @@ Status: REVIEW REQUIRED. This document does not authorize migration, secret chan
 - The three role buttons do not impersonate existing named accounts; Alex Morgan is a synthetic demo subject, not the existing crew record.
 
 ## Mandatory preflight
+
 1. Review the entire SQL migration and rollback with a database administrator, including grants, RLS, SECURITY DEFINER functions, search_path, schema privileges, and auth user lifecycle.
 2. Confirm backup/recovery and current schema baseline; test migration and rollback on isolated staging matching production.
 3. Inspect admission and join-code abuse resistance, workspace sharing, expiration and cleanup, global quotas, and denial-of-service/cost limits.
@@ -24,6 +26,7 @@ Status: REVIEW REQUIRED. This document does not authorize migration, secret chan
 11. Obtain separate explicit approvals for database migration, server secret configuration, live activation and publication.
 
 ## Operational demo script
+
 - Profile A: Astronaut; create workspace and copy join code; enter synthetic exam.
 - Profile B: Researcher; join same workspace and assess the record.
 - Profile C: Medical; join same workspace, review the same record and optionally enter a new synthetic exam.
@@ -31,4 +34,5 @@ Status: REVIEW REQUIRED. This document does not authorize migration, secret chan
 - Use offline rehearsal only as a clearly labeled fallback, never as evidence of live persistence.
 
 ## Guardrails
+
 Do not embed real passwords or Supabase service keys in client code. Do not link public demo sessions to real users or existing mission records. Do not weaken scientific/medical safeguards, alter owner evidence, or bypass release gates. Preserve original Lovable GitHub integration and public competition repository links.
