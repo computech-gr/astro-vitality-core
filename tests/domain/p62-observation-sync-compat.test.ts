@@ -236,7 +236,7 @@ describe("P62 accurate counts when an upload batch is refused", () => {
 
 describe("P62.1 structured upload refusal safety", () => {
   test("non-throwing server refusal marks the whole batch Failed without receipts", async () => {
-    const local = [ev(demoObs({ metricId: "cv-001", domain: "cardiovascular", catalogBasis: undefined }))];
+    const local = [ev(demoObs({ metricId: "cv-001", domain: "cardiovascular", originalUnit: "bpm", value: "62", catalogBasis: undefined }))];
     const receipts: Parameters<typeof observationSyncCounts>[1][number][] = [];
     const result = await runObservationSync(
       { scope: SCOPE, canUpload: true, realDataConfirmed: false },
