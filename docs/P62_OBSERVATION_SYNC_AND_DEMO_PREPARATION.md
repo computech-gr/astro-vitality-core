@@ -25,14 +25,14 @@ schema version (v1/v2 both accepted), the server demo snapshot check.
 
 ## 2. Changes (Preview)
 
-| File | Change |
-|---|---|
-| `src/lib/observation-sync.schema.ts` (new) | Strict input schemas moved here; adds exact-key `catalogBasis` (literal kind/classification, ID patterns, version ≥ 1); refine now reports the specific envelope reason. |
-| `src/lib/observation-sync.functions.ts` | Imports the schemas; handler logic unchanged. |
-| `src/domain/health-intelligence/observation-sync.ts` | Exports `OBSERVATION_SYNC_ALLOWED_FIELDS` (same list); used by a parity test. |
-| `src/domain/health-intelligence/observation-sync-runner.ts` | A thrown upload still throws with the same message, now as `ObservationSyncUploadError` naming the refused batch. |
-| `src/components/stored-observations-review.tsx` | Uses those IDs so refused events count as Failed (retryable), not Pending. |
-| `tests/domain/p62-observation-sync-compat.test.ts` (new) | 10 regression tests (below). |
+| File                                                        | Change                                                                                                                                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lib/observation-sync.schema.ts` (new)                  | Strict input schemas moved here; adds exact-key `catalogBasis` (literal kind/classification, ID patterns, version ≥ 1); refine now reports the specific envelope reason. |
+| `src/lib/observation-sync.functions.ts`                     | Imports the schemas; handler logic unchanged.                                                                                                                            |
+| `src/domain/health-intelligence/observation-sync.ts`        | Exports `OBSERVATION_SYNC_ALLOWED_FIELDS` (same list); used by a parity test.                                                                                            |
+| `src/domain/health-intelligence/observation-sync-runner.ts` | A thrown upload still throws with the same message, now as `ObservationSyncUploadError` naming the refused batch.                                                        |
+| `src/components/stored-observations-review.tsx`             | Uses those IDs so refused events count as Failed (retryable), not Pending.                                                                                               |
+| `tests/domain/p62-observation-sync-compat.test.ts` (new)    | 10 regression tests (below).                                                                                                                                             |
 
 Unchanged: validation strength (strict keys, full envelope rules, server demo-snapshot recheck, scope/role checks),
 encryption, append-only local store, idempotent event IDs, database SQL.
@@ -56,25 +56,25 @@ None for the sync fix. Production needs only a code publication (owner authoriza
 
 ### Cloud (read-only counts)
 
-| Record | Count | Notes |
-|---|---|---|
-| Encrypted observation sync events | 13 | all entry events, 13 distinct observations, Alex Morgan, synthetic, 1 uploader, 2026-11-01 → 11-06 |
-| Review attestation events | 174 | 174 distinct records, 80 on demo metrics, 8 batches, 2026-11-01 → 11-12 |
-| — attested records also present in cloud sync | 13 | **161 attested records exist in the cloud only as attestations; their observations are device-only** |
-| Review correction events | 0 | |
-| Legacy plaintext mission events | 84 | 62 unified-intake (pre-guard, last 2026-11-01), 22 manual domain entries |
-| Crew health record index | 84 | mirrors the mission events |
-| Audit events | 139 | 84 ingest, 29 workspace reads, 5 invites created, 4 review-sync and 2 observation-sync appends, others |
-| Submitted term batches / terms | 4 / 235 | all synthetic, Ground Medical, 2026-11-07 and 11-12 |
-| Triage events | 235 | all ACCEPT_FOR_REVIEW |
-| Demo scope rows | 212 | 197 owner-authorized + 15 Researcher grants (P61.5) |
-| Demo decisions / activations | 206 / 206 | 206 distinct demo IDs, 0 decisions without activation |
-| Scope terms without a decision | 6 | |
-| Triaged terms not in scope | 23 | |
-| Alias events | 0 | |
-| Legacy P36 review batch | 1 | accepted_for_research, synthetic |
-| Production catalog events / source receipts | 0 / 0 | demo activation is not scientific approval |
-| Active memberships | 4 | 1 crew_self, 1 ground_medical (mission-wide), 2 mission_operator; Researcher acts through global grants |
+| Record                                        | Count     | Notes                                                                                                   |
+| --------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------- |
+| Encrypted observation sync events             | 13        | all entry events, 13 distinct observations, Alex Morgan, synthetic, 1 uploader, 2026-11-01 → 11-06      |
+| Review attestation events                     | 174       | 174 distinct records, 80 on demo metrics, 8 batches, 2026-11-01 → 11-12                                 |
+| — attested records also present in cloud sync | 13        | **161 attested records exist in the cloud only as attestations; their observations are device-only**    |
+| Review correction events                      | 0         |                                                                                                         |
+| Legacy plaintext mission events               | 84        | 62 unified-intake (pre-guard, last 2026-11-01), 22 manual domain entries                                |
+| Crew health record index                      | 84        | mirrors the mission events                                                                              |
+| Audit events                                  | 139       | 84 ingest, 29 workspace reads, 5 invites created, 4 review-sync and 2 observation-sync appends, others  |
+| Submitted term batches / terms                | 4 / 235   | all synthetic, Ground Medical, 2026-11-07 and 11-12                                                     |
+| Triage events                                 | 235       | all ACCEPT_FOR_REVIEW                                                                                   |
+| Demo scope rows                               | 212       | 197 owner-authorized + 15 Researcher grants (P61.5)                                                     |
+| Demo decisions / activations                  | 206 / 206 | 206 distinct demo IDs, 0 decisions without activation                                                   |
+| Scope terms without a decision                | 6         |                                                                                                         |
+| Triaged terms not in scope                    | 23        |                                                                                                         |
+| Alias events                                  | 0         |                                                                                                         |
+| Legacy P36 review batch                       | 1         | accepted_for_research, synthetic                                                                        |
+| Production catalog events / source receipts   | 0 / 0     | demo activation is not scientific approval                                                              |
+| Active memberships                            | 4         | 1 crew_self, 1 ground_medical (mission-wide), 2 mission_operator; Researcher acts through global grants |
 
 The 206 active demo biomarkers are confirmed.
 
@@ -88,6 +88,7 @@ in-app read-only export on that device. The 192 are **not disposable**: they are
 ## 6. Evaluator cleanup design (non-destructive; nothing executed)
 
 Recommended: **dedicated evaluator crew record in the same mission**, e.g. "Alex Morgan — Evaluator Demo".
+
 - Every intake, history, sync, report and attestation view is scoped by crew member, so the evaluator view starts
   empty and the old history is untouched and still reachable.
 - Mission-level demo scope and all 206 activations apply automatically (they are per mission, not per crew).
@@ -114,19 +115,19 @@ history. If it is ever required, it needs a record-level list, a verified export
 
 ## 7. Evaluator walkthrough (Alex Morgan evaluator record, synthetic)
 
-| Step | Role / account | Page | Action |
-|---|---|---|---|
-| Import | Ground Medical | `/mission/intake` | Select mission + evaluator crew, synthetic; upload the PDF/CSV |
-| Recognition | automatic | `/mission/intake` | Rows match the signed demo snapshot (exact label + unit) |
-| Ground Medical review | Ground Medical | `/mission/intake` | Confirm eligible rows, save; optional **Save approval** (attestation) in stored observations |
-| Unknown biomarker submission | Ground Medical | `/mission/intake#unknown-biomarker-review` | **Record reviewer decision**, submit terms |
-| Triage | Researcher | `/mission/scientific-review` | Accept for review |
-| Synthetic demo authorization | Researcher | `/mission/scientific-review` | Add terms to the demo scope (must come **before** the decision) |
-| Researcher decision | Researcher | `/mission/scientific-review` | **Record Bulk SYNTHETIC DEMO Decisions** |
-| Ground Medical activation | Ground Medical (not the Researcher) | `/mission/ground` | Activate the decided entries |
-| Re-import | Ground Medical | `/mission/intake` | Held rows now recognized; confirm and save |
-| Sync | Ground Medical | `/mission/intake` | **Sync observations & reviews** |
-| Health report | Ground Medical | `/mission/health-report` | **Download PDF** |
+| Step                         | Role / account                      | Page                                       | Action                                                                                       |
+| ---------------------------- | ----------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| Import                       | Ground Medical                      | `/mission/intake`                          | Select mission + evaluator crew, synthetic; upload the PDF/CSV                               |
+| Recognition                  | automatic                           | `/mission/intake`                          | Rows match the signed demo snapshot (exact label + unit)                                     |
+| Ground Medical review        | Ground Medical                      | `/mission/intake`                          | Confirm eligible rows, save; optional **Save approval** (attestation) in stored observations |
+| Unknown biomarker submission | Ground Medical                      | `/mission/intake#unknown-biomarker-review` | **Record reviewer decision**, submit terms                                                   |
+| Triage                       | Researcher                          | `/mission/scientific-review`               | Accept for review                                                                            |
+| Synthetic demo authorization | Researcher                          | `/mission/scientific-review`               | Add terms to the demo scope (must come **before** the decision)                              |
+| Researcher decision          | Researcher                          | `/mission/scientific-review`               | **Record Bulk SYNTHETIC DEMO Decisions**                                                     |
+| Ground Medical activation    | Ground Medical (not the Researcher) | `/mission/ground`                          | Activate the decided entries                                                                 |
+| Re-import                    | Ground Medical                      | `/mission/intake`                          | Held rows now recognized; confirm and save                                                   |
+| Sync                         | Ground Medical                      | `/mission/intake`                          | **Sync observations & reviews**                                                              |
+| Health report                | Ground Medical                      | `/mission/health-report`                   | **Download PDF**                                                                             |
 
 Order correction: the database requires the term to be in the demo scope before a Researcher demo decision, so
 "Synthetic Demo Authorization" comes before "Researcher Decision".
