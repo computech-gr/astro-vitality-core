@@ -43,6 +43,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { PublicDemoRoleEntry } from "@/components/public-demo/public-demo-role-entry";
 import {
   DropdownMenu,
   DropdownMenuContent,
