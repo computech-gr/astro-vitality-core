@@ -197,6 +197,13 @@
       "when": 1794519931713,
       "tag": "0027_p615_researcher_demo_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794678518838,
+      "tag": "0028_p69_public_demo_workspaces",
+      "breakpoints": true
     }
   ]
 }
