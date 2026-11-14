@@ -25,7 +25,7 @@ export function P35FinalAcceptance() {
     <p className="section-kicker">P35 · Final Integrated Acceptance</p>
     <h2 id="p35-final-title" className="font-display text-2xl font-semibold">Human-operated acceptance worksheet</h2>
     <p className="text-sm text-muted-foreground">{catalog.cases.length} physical and integration cases · {catalog.science.length} independent scientific gates. This worksheet is local to this page session and does not approve, persist or upload results. Enter evidence references only, never patient identifiers or medical values.</p>
-    <p className="rounded border p-3 text-sm font-semibold">FV-01-13 OPEN · P32 PENDING · P34 PENDING · Final Security Gate BLOCKED · Clinical activation DISABLED · P35.5 awaiting researcher documents</p>
+    <p className="rounded border p-3 text-sm font-semibold">FV-01-13 OPEN · P32 PENDING · P34 PENDING · Final Security Gate BLOCKED · Clinical activation DISABLED · P35.5 awaiting Researcher documents</p>
     <div className="space-y-3">{catalog.cases.map(c => {
       const result = results[c.id] ?? { outcome: "not_executed" as ManualOutcome, evidenceRef: "", operatorNote: "" };
       return <Card key={c.id} className="min-w-0"><CardHeader><CardTitle className="break-words text-base">{c.id} · {c.title}</CardTitle></CardHeader><CardContent className="min-w-0 space-y-3 text-sm">

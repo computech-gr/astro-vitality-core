@@ -29,9 +29,9 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
       <p className="mt-4 max-w-3xl text-muted-foreground">{domain.scope}</p>
       <p className="mt-3 rounded-md border border-border p-3 text-sm" role="status">
         {domainId === "immune" || domainId === "behavioral"
-          ? "The owner reports the researcher completed verbal scientific review. Formal signed per-entry reconciliation is not recorded; no clinical validation or approval is implied. Research reference only."
+          ? "The owner reports that the Researcher completed verbal scientific review. Formal signed per-entry reconciliation is not recorded; no clinical validation or approval is implied. Research reference only."
           : domain.reviewState === "scientific_review_pending"
-            ? "The owner reports the researcher completed verbal scientific review. Formal signed per-entry reconciliation is not recorded. Existing evidence is displayed without clinical inference or approval."
+            ? "The owner reports that the Researcher completed verbal scientific review. Formal signed per-entry reconciliation is not recorded. Existing evidence is displayed without clinical inference or approval."
             : "Bone handbook mapping available. Clinical validation and approved thresholds are not established."}
       </p>
       <HealthDomainNavigation current={domainId} />
@@ -43,8 +43,8 @@ export function HealthDomainWorkspace({ domainId }: { domainId: HealthDomainId }
         >
           <h2 className="text-xl font-semibold">Scientific reference catalog · {domainId === "immune" ? "IMM" : "BSC"}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            MITOCHONDRIA scientific reference proposals, with supporting the researcher handbook sources.
-            The project owner reports that the researcher completed verbal review of these entries.
+            MITOCHONDRIA scientific reference proposals, with supporting Researcher handbook sources.
+            The project owner reports that the Researcher completed verbal review of these entries.
             Formal per-entry reconciliation and signed reviewer confirmation are not yet recorded;
             operational measurement activation and clinical validation are separate.
           </p>
