@@ -53,6 +53,20 @@ export interface ObservationSyncRunResult {
   finishedAt: string;
 }
 
+/**
+ * P62: a thrown upload (network failure or a server-side input refusal) keeps its original
+ * message and is still thrown, but names the events of the refused batch so the caller can
+ * count them as Failed (retryable) rather than leave them looking merely Pending.
+ */
+export class ObservationSyncUploadError extends Error {
+  readonly failedIds: readonly string[];
+  constructor(message: string, failedIds: readonly string[]) {
+    super(message);
+    this.name = "ObservationSyncUploadError";
+    this.failedIds = failedIds;
+  }
+}
+
 const failureMessage = (f: Failure) =>
   f.code === "migration_required" ? `${OBSERVATION_SYNC_MIGRATION_REQUIRED}. Observations stay on this device; nothing was synced.` : f.message;
 
@@ -98,7 +112,13 @@ export async function runObservationSync(
       const batch = plan.send.filter((e) => !attempted.has(e.eventId));
       if (!batch.length) break;
       for (const e of batch) attempted.add(e.eventId);
-      const res = await deps.push({ scope, events: batch, realDataConfirmed: input.realDataConfirmed });
+      let res: PushResponse;
+      try {
+        res = await deps.push({ scope, events: batch, realDataConfirmed: input.realDataConfirmed });
+      } catch (error) {
+        for (const e of batch) failed.add(e.eventId);
+        throw new ObservationSyncUploadError(error instanceof Error ? error.message : String(error), [...failed]);
+      }
       if (!res.ok) return done(result.uploaded.inserted ? "partial" : "failed", failureMessage(res), res.code);
       const at = deps.now();
       const byId = new Map(batch.map((e) => [e.eventId, e]));
