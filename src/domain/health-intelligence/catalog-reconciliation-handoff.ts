@@ -9,7 +9,6 @@
  * sync eligibility. Activation requires a separate governed patch through the
  * versioned catalog-extensions registry after independent scientific review.
  */
-import { researcherDisplayStatus } from "@/domain/scientific-localization/researcher-display";
 import handoffJson from "../../../data/scientific/p36-unknown-biomarker-reconciliation-handoff.v1.json";
 import p36Registry from "../../../data/scientific/p36-biomarker-source-registry.v1.json";
 import p355Catalog from "../../../data/scientific/p355-proposed-domain-catalog.v1.json";
@@ -66,7 +65,7 @@ export type BlockReason =
   | "protocol_unvalidated";
 
 export const BLOCK_REASON_LABELS: Record<BlockReason, string> = {
-  pending_scientific_review: `Scientific review ${researcherDisplayStatus(REQUIRED_SCIENTIFIC_GATE)}`,
+  pending_scientific_review: `Scientific review ${REQUIRED_SCIENTIFIC_GATE}`,
   p36_unit_unvalidated: "P36 catalog has no validated unit (originalUnit null); no automatic unit approval",
   p35_5_draft_no_validated_units: "P35.5 draft catalog entry; no validated units",
   canonical_identity_unresolved: "No canonical catalog identity",
