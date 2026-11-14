@@ -8,7 +8,7 @@
  * as such and never presented as operational.
  */
 
-export const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
+export const GITHUB_URL = "https://github.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026";
 const doc = (name: string) => `${GITHUB_URL}/blob/main/docs/${name}`;
 
 export const TECHNOLOGY_TOPIC_SLUGS = [
