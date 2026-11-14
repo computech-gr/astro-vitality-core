@@ -7,7 +7,7 @@
  * real-device/flight validation, clinical validation or submission authorization.
  */
 
-export const ROADMAP_GITHUB_DOCS_URL = "https://github.com/computech-gr/astro-vitality-core/blob/main/";
+export const ROADMAP_GITHUB_DOCS_URL = "https://github.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026/blob/main/";
 
 export type RoadmapCategory = "foundation" | "science" | "data-devices" | "mission" | "security-cloud" | "validation" | "submission";
 

@@ -6,7 +6,7 @@ import { ProjectRoadmap } from "@/components/project-roadmap";
 const NASA_URL = "https://www.spaceappschallenge.org/2026/";
 const CHALLENGE_URL =
   "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
-const GITHUB_URL = "https://github.com/computech-gr/astro-vitality-core";
+const GITHUB_URL = "https://github.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026";
 
 export { ROADMAP_DOCS } from "@/content/roadmap-phases";
 

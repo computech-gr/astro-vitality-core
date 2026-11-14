@@ -21,7 +21,7 @@ describe("development roadmap registry", () => {
   });
 
   test("links point to the public GitHub main branch", () => {
-    expect(ROADMAP_GITHUB_DOCS_URL).toBe("https://github.com/computech-gr/astro-vitality-core/blob/main/");
+    expect(ROADMAP_GITHUB_DOCS_URL).toBe("https://github.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026/blob/main/");
   });
 
   test("subphase ids are unique and missing records are listed, not invented", () => {
