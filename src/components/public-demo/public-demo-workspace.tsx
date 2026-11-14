@@ -234,10 +234,10 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
         <>
           <section className="mt-6 grid gap-4 rounded-xl border border-border bg-card p-5 lg:grid-cols-[1fr_auto]" aria-label="Demo workspace">
             <div className="grid gap-1 text-sm">
-              <p className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge>{DEMO_ROLE_LABELS[role].title}</Badge>
                 <Badge variant="outline">{mode === "offline" ? "Offline rehearsal · not saved" : "Live · saved to your demo workspace"}</Badge>
-              </p>
+              </div>
               <p>Mission <span className="font-mono">{P69_DEMO_MISSION_CODE}</span> · subject {P69_DEMO_CREW_SUBJECT.name}</p>
               <p className="text-muted-foreground">
                 Workspace version {epoch} of {maxEpoch}
@@ -247,13 +247,13 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
                 The synthetic Alex Morgan here is not the MITO_DEMO_2026 crew record or any real person's account.
               </p>
               {mode === "live" && stored?.joinCode ? (
-                <p className="mt-2 flex flex-wrap items-center gap-2">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   Workspace code <span className="rounded bg-muted px-2 py-0.5 font-mono">{stored.joinCode}</span>
                   <Button size="sm" variant="ghost" onClick={() => void navigator.clipboard?.writeText(stored.joinCode ?? "")}>
                     <Copy /> Copy
                   </Button>
                   <span className="text-xs text-muted-foreground">Open another browser profile, pick a role and enter this code to join.</span>
-                </p>
+                </div>
               ) : null}
             </div>
             <div className="flex flex-wrap items-start gap-2">
