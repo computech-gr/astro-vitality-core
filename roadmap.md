@@ -682,3 +682,11 @@
 - [ ] Apply the P69 pending SQL (blocked: owner approval of the exact file).
 - [ ] Set P69_PUBLIC_DEMO_ENABLED and P69_PUBLIC_DEMO_CLIENT_SALT, then live browser rehearsal in three profiles (blocked: owner approval; after the SQL).
 - [ ] Publish (blocked: owner authorization).
+
+## P72.2 MISSION_TEST fast-track (Preview only)
+
+- [x] Minimal fix: mission-wide Ground Medical can select its mission's crew (identity loader + roster RPC); tests.
+- [x] Replay of 3 in-repo source documents through normal import → report/PDF (79 confirmed, 78 reported); runbook docs/P72_2_FAST_TRACK_MISSION_TEST.md.
+- [ ] Researcher and Medical invites/acceptance (blocked: info@, sales@, recipients in the UI).
+- [ ] Astronaut import + Cloud sync; Medical sync + report/PDF (blocked: account holders; documents 4–7 from owner).
+- [ ] Publish the fix (blocked: owner approval).
