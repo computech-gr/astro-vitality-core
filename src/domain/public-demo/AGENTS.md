@@ -9,3 +9,4 @@
 - Tab storage holds only the synthetic join code, role and expiry.
 - Provisioning signs the new demo identity in before binding it to a workspace, and deletes it on any later failure; a failed entry must never leave a bound or orphaned identity.
 - The admission rate-limit address comes only from the edge-set `cf-connecting-ip` (IPv6 bucketed per /64); forwarded-for headers are client-controlled and never trusted, and a missing address shares one fail-closed bucket.
+- Workspace notices (refused reviews, Reset/Restore results) are owned by the workspace view, not record cards, and come from the pure workspace-feedback module: Reset/Restore report success only after the server accepted the change and the reload succeeded, run single-flight, and refused actions are never retried; examination dates are calendar strings never parsed through Date, so time zones cannot shift them.
