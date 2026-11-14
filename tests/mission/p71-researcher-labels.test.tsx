@@ -51,7 +51,7 @@ describe("P71 Researcher display wording", () => {
       html(createElement(ProjectRoadmap), "/project/guide"),
     ];
     for (const page of pages) expect(containsReviewerName(page)).toBe(false);
-    expect(pages[0]).toContain("Researcher");
+    expect(pages[1]).toContain("The owner reports that the Researcher completed verbal scientific review.");
   });
 
   test("domain registry, measurement profiles and mission-readiness texts carry no personal name", () => {
