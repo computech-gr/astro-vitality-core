@@ -65,7 +65,7 @@ describe("P71 synthetic demo workflow", () => {
   test("full astronaut → researcher → medical chain keeps one record ID and append-only history", () => {
     let s: OfflineDemoState = createOfflineDemoState(AT);
     expect(currentEpochRecords(s).length).toBe(1);
-    expect(must(offlineSubmit(s, "researcher", exam, AT)) && false).toBe(false);
+    expect(offlineSubmit(s, "researcher", exam, AT)).toMatchObject({ ok: false, code: "wrong_role" });
     s = must(offlineSubmit(s, "astronaut", exam, AT)).state;
     const id = currentEpochRecords(s)[1]!.id;
     expect(queueFor("researcher", currentEpochRecords(s)).map((r) => r.id)).toEqual([id]);
