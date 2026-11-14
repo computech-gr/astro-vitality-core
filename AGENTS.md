@@ -57,3 +57,4 @@
 - P36 global triage (accept for review / request more evidence / reject review request) is a separate append-only, per-term chained ledger behind its own SQL-provisioned write grant plus the global-review read basis, with idempotency keys and expected-predecessor concurrency; it never writes the scientific authorization ledger, submitted metadata or catalogs, so triage acceptance can never become approval or activation.
 - P40 interpretation review rules live in src/domain/health-intelligence/AGENTS.md.
 - P56 assessment is the main report; old report = optional appendix (health-intelligence AGENTS.md).
+- P69–P71 public live demo rules live in src/domain/public-demo/AGENTS.md.
