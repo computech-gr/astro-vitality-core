@@ -8,7 +8,8 @@
  */
 import { describe, expect, it } from "bun:test";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { extractPdfGeometry, repoPath } from "../documents/p42-pdf-helpers";
 import { documentLinesFromText, DOCUMENT_TABLE_RULES_VERSION } from "../../src/domain/health-intelligence/document-table-reconstruction";
 import { buildReviewedObservation, reconstructMultiDateDocument, reviewDateFields } from "../../src/domain/health-intelligence/p61-bulk-import";
@@ -114,13 +115,17 @@ describe("P72.2 MISSION_TEST normal Examinations import", () => {
     expect(new Set(saved.map((o) => o.source.documentSha256))).toEqual(new Set([DOCS.nov07.sha, DOCS.nov1213.sha, DOCS.nasa.sha]));
     const range = { from: "2026-11-01", to: "2026-11-15" };
     const unified = buildUnifiedHealthReport({ domainEntries: {}, unifiedObservations: saved, deviceRecords: [] } as never, SCOPE, range, "2026-11-15T12:00:00.000Z");
-    expect(unified.rows.length).toBe(79);
+    // 79 confirmed observations; Behavioral row 313 repeats RMSSD 12 ms at the same instant and is reported once.
+    expect(unified.rows.length).toBe(78);
     expect(unified.exclusions.filter((e) => e.category === "pending_review")).toHaveLength(0);
     const premium = premiumFrom(saved, { scope: SCOPE, missionId: SCOPE.missionId, range, crew: "Astronaut Test 01", mission: "MISSION_TEST" });
     expect(premium.header.astronaut).toBe("Astronaut Test 01");
-    const pdf = await createPremiumReportPdf(premium, { fonts: null }, { fixedDate: "2026-11-15T00:00:00.000Z" });
+    // Same fonts the browser download loads (pdf.js Liberation Sans), read from disk instead of fetched.
+    const font = (f: string) => readFileSync(createRequire(import.meta.url).resolve(`pdfjs-dist/standard_fonts/${f}`)).toString("base64");
+    const pdf = await createPremiumReportPdf(premium, { fonts: { regular: font("LiberationSans-Regular.ttf"), bold: font("LiberationSans-Bold.ttf") } }, { fixedDate: "2026-11-15T00:00:00.000Z" });
     const bytes = new Uint8Array(await pdf.blob.arrayBuffer());
     expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe("%PDF-");
     expect(pdf.pages).toBeGreaterThan(0);
+    if (process.env.P722_PDF_OUT) writeFileSync(process.env.P722_PDF_OUT, bytes);
   });
 });
