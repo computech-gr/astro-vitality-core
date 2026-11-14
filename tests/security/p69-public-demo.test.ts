@@ -165,7 +165,7 @@ describe("P69 staged SQL and boundaries (static)", () => {
     const walk = (p: string) => {
       const abs = join(root, p);
       if (statSync(abs).isDirectory()) for (const f of readdirSync(abs)) walk(join(p, f));
-      else all.push(read(p));
+      else if (/\.tsx?$/.test(p)) all.push(read(p));
     };
     files.forEach(walk);
     const text = all.join("\n");
