@@ -51,6 +51,7 @@ export const INDEXABLE_ROUTES = [
 export const NON_INDEXABLE_ROUTES = [
   "/mission/experience",
   "/mission/identity",
+  "/mission/demo",
   "/mission/operations",
   "/mission/live",
   "/mission/devices",
