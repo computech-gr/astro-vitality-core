@@ -477,6 +477,16 @@ export function UnifiedIntakeWorkspace() {
   }, [identity]);
 
   const [missionKey, setMissionKey] = useState("");
+  // P72.3: preselect (once) the console's active membership when it is one of the listed
+  // authorized crew scopes; never invents a scope, and provenance is still chosen by the user.
+  const missionDefaulted = useRef(false);
+  useEffect(() => {
+    if (missionDefaulted.current || missionKey || !identity?.signedIn || !identity.active?.crewMemberId) return;
+    const key = `${identity.active.missionId}|${identity.active.crewMemberId}`;
+    if (!memberships.some((m) => `${m.missionId}|${m.crewMemberId}` === key)) return;
+    missionDefaulted.current = true;
+    setMissionKey(key);
+  }, [identity, memberships, missionKey]);
   const membership = memberships.find((m) => `${m.missionId}|${m.crewMemberId}` === missionKey);
   const rolesForScope = useMemo(
     () =>
