@@ -1,3 +1,4 @@
+import { containsReviewerName } from "@/domain/scientific-localization/researcher-display";
 import { useMemo, useState } from "react";
 import { ExternalLink } from "lucide-react";
 
@@ -109,7 +110,7 @@ export function ProjectRoadmap() {
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{phase.summary}</p>
                     {phase.verifier && (
                       <a href={githubHref(phase.verifier)} target="_blank" rel="noopener noreferrer" className="mt-2 text-[11px] text-muted-foreground hover:text-primary hover:underline">
-                        Automated verifier: {phase.verifier.replace("scripts/", "")}
+                        Automated verifier: {containsReviewerName(phase.verifier) ? `${phase.id} verifier script` : phase.verifier.replace("scripts/", "")}
                       </a>
                     )}
                     {phase.subphases && phase.subphases.length > 0 && (

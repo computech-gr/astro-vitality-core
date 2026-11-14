@@ -156,10 +156,10 @@ for (const e of p355Catalog.entries as { id: string; name: string; domain: strin
   if (d) addRef({ source: "P35.5 draft catalog", id: e.id, name: e.name, domain: d });
 }
 for (const e of nikolasImmune.entries as { source_id: string; name: string }[])
-  addRef({ source: "Nikolas immune intake", id: e.source_id, name: e.name, domain: "immune" });
+  addRef({ source: "Researcher immune intake", id: e.source_id, name: e.name, domain: "immune" });
 for (const e of nikolasBehavioral.entries as { source_id: string; name: string }[])
   addRef({
-    source: "Nikolas behavioral intake",
+    source: "Researcher behavioral intake",
     id: e.source_id,
     name: e.name,
     domain: "behavioral",

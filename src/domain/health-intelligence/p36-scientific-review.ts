@@ -20,6 +20,7 @@ import p36Registry from "../../../data/scientific/p36-biomarker-source-registry.
 import p355Catalog from "../../../data/scientific/p355-proposed-domain-catalog.v1.json";
 import boneCatalog from "../../../data/scientific/bone-health-handbook-v7.catalog.json";
 import boneEnglish from "../../../data/scientific/bone-health-handbook-v7.en.json";
+import { researcherDisplayStatus, researcherDisplayText } from "@/domain/scientific-localization/researcher-display";
 import immuneIntake from "../../../data/scientific/nikolas-immune-intake.v1.json";
 import behavioralIntake from "../../../data/scientific/nikolas-behavioral-intake.v1.json";
 import p38Reconciliation from "../../../data/scientific/p38-nikolas-reconciliation.v1.json";
@@ -182,9 +183,9 @@ export function buildScientificReviewDossiers(crosswalk: Crosswalk = crosswalkJs
     }
     for (const id of l.nikolasSourceIds) {
       const n = NIKOLAS.get(id);
-      if (!n) { problems.push(`${row.sourceLabel}: Nikolas source ${id} not found`); continue; }
-      evidence.push({ ref: `nikolas:${id}`, title: `Nikolas source ${id} — ${n.name}`, details: [`Unit: ${n.unit}`, `Source: ${n.source}`, `Document: ${NIKOLAS_DOC.get(id) ?? "unknown"}`, `Status: ${n.status}`, `Approval: ${n.approval}`] });
-      units.push(compareUnit(row.sourceUnit, `Nikolas source ${id}`, [n.unit]));
+      if (!n) { problems.push(`${row.sourceLabel}: Researcher source ${id} not found`); continue; }
+      evidence.push({ ref: `nikolas:${id}`, title: `Researcher source ${id} — ${n.name}`, details: [`Unit: ${n.unit}`, `Source: ${researcherDisplayText(n.source)}`, `Document: ${NIKOLAS_DOC.get(id) ?? "unknown"}`, `Status: ${researcherDisplayStatus(n.status)}`, `Approval: ${n.approval}`] });
+      units.push(compareUnit(row.sourceUnit, `Researcher source ${id}`, [n.unit]));
       const p38 = P38.get(id);
       if (p38) evidence.push({ ref: `p38:${id}`, title: `P38 reconciliation ${id}`, details: [`Disposition: ${p38.disposition}`, `Unit check: ${p38.unit_check}`] });
       const p40 = P40.get(id);

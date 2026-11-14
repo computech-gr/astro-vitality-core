@@ -463,7 +463,7 @@ export function MissionDocumentReviewWorkbench() {
           </div>
         )}
         <p className="text-xs text-muted-foreground">
-          P35.5 IMM/BSC proposals remain PENDING_NIKOLAS_REVIEW and are not eligible for automatic
+          P35.5 IMM/BSC proposals remain PENDING_SCIENTIFIC_REVIEW and are not eligible for automatic
           metric matching. This preview does not populate health-domain timelines or authorize cloud
           writes.
         </p>

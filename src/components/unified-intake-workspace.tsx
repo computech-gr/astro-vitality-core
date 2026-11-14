@@ -1218,7 +1218,7 @@ export function UnifiedIntakeWorkspace() {
           rows stay review-only. Accepted observations are stored encrypted on this device,
           append-only, and remain research reference only: no clinical thresholds, diagnosis,
           readiness score or automatic approval. Independent scientific review and
-          PENDING_NIKOLAS_REVIEW gates are unchanged.
+          PENDING_SCIENTIFIC_REVIEW gates are unchanged.
         </p>
       </header>
 
