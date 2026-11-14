@@ -49,6 +49,6 @@ Rollback (append-only): `withdraw` mode writes "erroneous" status events for eve
 ## Remaining blockers
 
 - Researcher and Medical mapped accounts have no membership in the target mission (invite via Mission & Crew Operations, owner decision).
-- Copies are pending review; reports show only accepted records, so a target-mission reviewer must confirm them in Examinations before the Full Health Report includes them.
+- Copies are pending review and reports show only accepted records. P72.1 found that no in-app step can confirm an already-stored pending record, so copies would never reach the Full Health Report; see docs/P72_1_MISSION_READINESS.md for the supported path.
 - 146 demo-catalog records need a separate demo-catalog authorization for the target mission.
 - Copy execution and publication need explicit approval.
