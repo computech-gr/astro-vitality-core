@@ -2219,6 +2219,348 @@ export type Database = {
           },
         ]
       }
+      p69_demo_admissions: {
+        Row: {
+          admitted_at: string
+          client_hash: string
+          consumed_at: string | null
+          id: string
+        }
+        Insert: {
+          admitted_at?: string
+          client_hash: string
+          consumed_at?: string | null
+          id?: string
+        }
+        Update: {
+          admitted_at?: string
+          client_hash?: string
+          consumed_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      p69_demo_context_readings: {
+        Row: {
+          epoch: number
+          id: string
+          measurement_method: string | null
+          measurement_site: string | null
+          metric_code: string | null
+          observed_at: string
+          parameter_id: string
+          simulated: boolean
+          source_id: string
+          source_label: string
+          source_quality: string
+          unit: string
+          value: number | null
+          workspace_id: string
+        }
+        Insert: {
+          epoch: number
+          id?: string
+          measurement_method?: string | null
+          measurement_site?: string | null
+          metric_code?: string | null
+          observed_at: string
+          parameter_id: string
+          simulated: boolean
+          source_id: string
+          source_label: string
+          source_quality: string
+          unit: string
+          value?: number | null
+          workspace_id: string
+        }
+        Update: {
+          epoch?: number
+          id?: string
+          measurement_method?: string | null
+          measurement_site?: string | null
+          metric_code?: string | null
+          observed_at?: string
+          parameter_id?: string
+          simulated?: boolean
+          source_id?: string
+          source_label?: string
+          source_quality?: string
+          unit?: string
+          value?: number | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p69_demo_context_readings_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "p69_demo_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p69_demo_members: {
+        Row: {
+          admission_id: string
+          identity_released_at: string | null
+          joined_at: string
+          role: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          admission_id: string
+          identity_released_at?: string | null
+          joined_at?: string
+          role: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          admission_id?: string
+          identity_released_at?: string | null
+          joined_at?: string
+          role?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p69_demo_members_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: true
+            referencedRelation: "p69_demo_admissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p69_demo_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "p69_demo_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p69_demo_record_events: {
+        Row: {
+          action: string
+          actor_role: string
+          actor_user_id: string | null
+          evidence: Json
+          from_state: string | null
+          id: string
+          idempotency_key: string | null
+          note: string
+          outcome: string
+          record_id: string
+          recorded_at: string
+          request_sha256: string | null
+          revision: number
+          to_state: string
+          workspace_id: string
+        }
+        Insert: {
+          action: string
+          actor_role: string
+          actor_user_id?: string | null
+          evidence: Json
+          from_state?: string | null
+          id?: string
+          idempotency_key?: string | null
+          note?: string
+          outcome: string
+          record_id: string
+          recorded_at?: string
+          request_sha256?: string | null
+          revision: number
+          to_state: string
+          workspace_id: string
+        }
+        Update: {
+          action?: string
+          actor_role?: string
+          actor_user_id?: string | null
+          evidence?: Json
+          from_state?: string | null
+          id?: string
+          idempotency_key?: string | null
+          note?: string
+          outcome?: string
+          record_id?: string
+          recorded_at?: string
+          request_sha256?: string | null
+          revision?: number
+          to_state?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p69_demo_record_events_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "p69_demo_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "p69_demo_record_events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "p69_demo_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p69_demo_records: {
+        Row: {
+          created_at: string
+          crew_subject_id: string
+          epoch: number
+          id: string
+          idempotency_key: string | null
+          measurements: Json
+          measurements_sha256: string
+          observed_on: string
+          provenance: string
+          record_ref: string
+          request_sha256: string | null
+          source_label: string
+          source_quality: string
+          submitted_by: string | null
+          submitted_role: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          crew_subject_id: string
+          epoch: number
+          id?: string
+          idempotency_key?: string | null
+          measurements: Json
+          measurements_sha256: string
+          observed_on: string
+          provenance?: string
+          record_ref: string
+          request_sha256?: string | null
+          source_label: string
+          source_quality: string
+          submitted_by?: string | null
+          submitted_role: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          crew_subject_id?: string
+          epoch?: number
+          id?: string
+          idempotency_key?: string | null
+          measurements?: Json
+          measurements_sha256?: string
+          observed_on?: string
+          provenance?: string
+          record_ref?: string
+          request_sha256?: string | null
+          source_label?: string
+          source_quality?: string
+          submitted_by?: string | null
+          submitted_role?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p69_demo_records_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "p69_demo_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p69_demo_workspace_events: {
+        Row: {
+          action: string
+          actor_role: string
+          actor_user_id: string
+          from_epoch: number | null
+          id: string
+          recorded_at: string
+          to_epoch: number
+          workspace_id: string
+          workspace_revision: number
+        }
+        Insert: {
+          action: string
+          actor_role: string
+          actor_user_id: string
+          from_epoch?: number | null
+          id?: string
+          recorded_at?: string
+          to_epoch: number
+          workspace_id: string
+          workspace_revision: number
+        }
+        Update: {
+          action?: string
+          actor_role?: string
+          actor_user_id?: string
+          from_epoch?: number | null
+          id?: string
+          recorded_at?: string
+          to_epoch?: number
+          workspace_id?: string
+          workspace_revision?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "p69_demo_workspace_events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "p69_demo_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      p69_demo_workspaces: {
+        Row: {
+          created_at: string
+          crew_subject_id: string
+          epoch: number
+          expires_at: string
+          id: string
+          join_code_sha256: string
+          max_epoch: number
+          mission_code: string
+          provenance: string
+          revision: number
+          seed_version: string
+        }
+        Insert: {
+          created_at?: string
+          crew_subject_id?: string
+          epoch?: number
+          expires_at: string
+          id?: string
+          join_code_sha256: string
+          max_epoch?: number
+          mission_code?: string
+          provenance?: string
+          revision?: number
+          seed_version: string
+        }
+        Update: {
+          created_at?: string
+          crew_subject_id?: string
+          epoch?: number
+          expires_at?: string
+          id?: string
+          join_code_sha256?: string
+          max_epoch?: number
+          mission_code?: string
+          provenance?: string
+          revision?: number
+          seed_version?: string
+        }
+        Relationships: []
+      }
       review_sync_attestation_events: {
         Row: {
           action: string
@@ -2924,6 +3266,67 @@ export type Database = {
         Returns: string
       }
       p615_unit_problem: { Args: { p_unit: string }; Returns: string }
+      p69_demo_admit_v1: { Args: { p_client_hash: string }; Returns: string }
+      p69_demo_caller: {
+        Args: { p_lock?: boolean }
+        Returns: {
+          epoch: number
+          expires_at: string
+          max_epoch: number
+          revision: number
+          role: string
+          workspace_id: string
+        }[]
+      }
+      p69_demo_check_measurements: { Args: { p: Json }; Returns: undefined }
+      p69_demo_claim_expired_v1: { Args: { p_limit: number }; Returns: Json }
+      p69_demo_context_v1: { Args: never; Returns: Json }
+      p69_demo_my_workspace: { Args: never; Returns: string }
+      p69_demo_provision_v1: {
+        Args: {
+          p_admission_id: string
+          p_join_code: string
+          p_role: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      p69_demo_records_v1: { Args: never; Returns: Json }
+      p69_demo_reset_v1: {
+        Args: { p_expected_revision: number }
+        Returns: Json
+      }
+      p69_demo_restore_v1: {
+        Args: { p_epoch: number; p_expected_revision: number }
+        Returns: Json
+      }
+      p69_demo_seed_document: { Args: never; Returns: Json }
+      p69_demo_seed_epoch: {
+        Args: { p_epoch: number; p_workspace: string }
+        Returns: undefined
+      }
+      p69_demo_session_v1: { Args: never; Returns: Json }
+      p69_demo_sha256: { Args: { p: string }; Returns: string }
+      p69_demo_submit_examination_v1: {
+        Args: {
+          p_idempotency_key: string
+          p_measurements: Json
+          p_observed_on: string
+          p_source_quality: string
+        }
+        Returns: Json
+      }
+      p69_demo_transition_v1: {
+        Args: {
+          p_action: string
+          p_expected_revision: number
+          p_idempotency_key: string
+          p_note: string
+          p_outcome: string
+          p_record_id: string
+        }
+        Returns: Json
+      }
       review_sync_append_v1: {
         Args: {
           p_attestations: Json
