@@ -80,7 +80,9 @@ describe("P71 Researcher display wording", () => {
 describe("P71 intake blocking reasons", () => {
   test("handoff block reasons show the display status, not the personal name", async () => {
     const { BLOCK_REASON_LABELS } = await import("@/domain/health-intelligence/catalog-reconciliation-handoff");
-    expect(BLOCK_REASON_LABELS.pending_scientific_review).toBe("Scientific review PENDING_SCIENTIFIC_REVIEW");
-    expect(containsReviewerName(JSON.stringify(BLOCK_REASON_LABELS))).toBe(false);
+    // The sealed activation manifest keeps the internal identifier; only the display changes.
+    expect(BLOCK_REASON_LABELS.pending_scientific_review).toBe("Scientific review PENDING_NIKOLAS_REVIEW");
+    expect(researcherDisplayText(BLOCK_REASON_LABELS.pending_scientific_review)).toBe("Scientific review PENDING_SCIENTIFIC_REVIEW");
+    expect(containsReviewerName(researcherDisplayText(Object.values(BLOCK_REASON_LABELS).join("; ")))).toBe(false);
   });
 });

@@ -358,7 +358,7 @@ export function UnknownBiomarkerReviewPanel(props: {
                   Candidate: {r.candidateCatalogId ? `${r.candidateCatalogId} — ${r.candidateCatalogName}` : "none (unresolved)"} · catalog unit{" "}
                   {r.catalogCrossCheck.catalogUnit ?? "not validated"} · {r.observations} observation(s) · term {r.termId}
                 </p>
-                <p className="break-words text-muted-foreground">Blocked: {r.blockReasons.map((b) => BLOCK_REASON_LABELS[b]).join("; ")}.</p>
+                <p className="break-words text-muted-foreground">Blocked: {researcherDisplayText(r.blockReasons.map((b) => BLOCK_REASON_LABELS[b]).join("; "))}.</p>
                 <p className="break-words text-muted-foreground">{r.notes}</p>
               </li>
             ))}
