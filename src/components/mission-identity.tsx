@@ -10,6 +10,13 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 
+import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+
+import { resolveP72RoleEntry } from "@/components/mission-access/p72-role-entry";
+import { P72_ROLE_ROUTES, P72_TARGET_LABEL } from "@/domain/mission-access/p72-role-access";
+import { DEMO_ROLE_LABELS, type DemoRole } from "@/domain/public-demo/workflow";
+import { checkP72RoleAccountFn } from "@/lib/p72-role-access.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,7 +78,9 @@ function roleLabel(role: MissionRole) {
     .join(" ");
 }
 
-export function MissionIdentity() {
+export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
+  const navigate = useNavigate();
+  const checkP72Account = useServerFn(checkP72RoleAccountFn);
   const [snapshot, setSnapshot] = useState<MissionIdentitySnapshot>(EMPTY);
   const [authReadiness, setAuthReadiness] = useState<MissionAuthReadiness | null>(null);
   const [busy, setBusy] = useState(true);
@@ -190,6 +199,18 @@ export function MissionIdentity() {
       await signInMissionIdentity(email, password);
       setPassword("");
       await refresh();
+      if (p72Role) {
+        // P72: after a successful sign-in, continue to the role's normal console.
+        const decision = await resolveP72RoleEntry(p72Role, checkP72Account);
+        if (decision.kind === "console") {
+          await navigate({ to: decision.path });
+          return;
+        }
+        if (decision.kind === "wrong_account")
+          setMessage(
+            `Signed in as ${decision.signedInAs ?? "this account"}. The ${DEMO_ROLE_LABELS[p72Role].title} button is mapped to ${P72_ROLE_ROUTES[p72Role].maskedAccount}, so you stay on this page.`,
+          );
+      }
     } catch (error) {
       setPassword("");
       setSignInError(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
@@ -263,6 +284,14 @@ export function MissionIdentity() {
           </Button>
         </section>
 
+        {p72Role && !snapshot.signedIn ? (
+          <div role="note" className="mt-6 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm text-foreground">
+            Sign in with the mapped {DEMO_ROLE_LABELS[p72Role].title} account{" "}
+            <span className="font-mono">{P72_ROLE_ROUTES[p72Role].maskedAccount}</span> to open the{" "}
+            {P72_ROLE_ROUTES[p72Role].consoleLabel} for {P72_TARGET_LABEL}. Your password is checked only by standard
+            sign-in; nothing is shared with other visitors.
+          </div>
+        ) : null}
         {message ? (
           <div
             role="alert"
