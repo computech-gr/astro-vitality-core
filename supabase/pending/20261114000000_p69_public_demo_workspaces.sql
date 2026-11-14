@@ -608,3 +608,13 @@ comment on table public.p69_demo_workspaces is
   'SYNTHETIC PUBLIC DEMO ONLY: isolated per-visitor workspace (NASA-DEMO-304-001); never linked to real missions, crew or accounts.';
 comment on table public.p69_demo_record_events is
   'SYNTHETIC PUBLIC DEMO ONLY: append-only examination workflow; not scientific authorization, catalog activation, diagnosis or clinical clearance.';
+
+
+do $do$
+begin
+  if exists (select 1 from pg_roles where rolname = 'sandbox_exec') then
+    revoke insert, update, delete, truncate on public.p69_demo_admissions, public.p69_demo_workspaces, public.p69_demo_members,
+      public.p69_demo_records, public.p69_demo_record_events, public.p69_demo_workspace_events, public.p69_demo_context_readings
+      from sandbox_exec;
+  end if;
+end $do$;
