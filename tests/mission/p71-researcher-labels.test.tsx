@@ -17,7 +17,9 @@ import { redactProhibitedNames } from "@/domain/health-intelligence/report-ident
 
 function html(el: ReactElement, path = "/"): string {
   const router = createRouter({ routeTree: createRootRoute(), history: createMemoryHistory({ initialEntries: [path] }) });
-  return renderToStaticMarkup(createElement(RouterContextProvider, { router } as never, el));
+  // Link targets keep the real repository file paths (traceability); everything
+  // shown to the reader — text, aria-labels, titles — must not carry the name.
+  return renderToStaticMarkup(createElement(RouterContextProvider, { router } as never, el)).replace(/ href="[^"]*"/g, "");
 }
 
 describe("P71 Researcher display wording", () => {
