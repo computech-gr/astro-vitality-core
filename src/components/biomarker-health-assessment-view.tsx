@@ -1,3 +1,4 @@
+import { researcherDisplayText } from "@/domain/scientific-localization/researcher-display";
 import { AlertOctagon, AlertTriangle, CheckCircle2, CircleHelp } from "lucide-react";
 import {
   MEASUREMENT_STATUS_LABELS,
@@ -68,7 +69,7 @@ function Entry({ e }: { e: BiomarkerAssessment }) {
         <summary className="cursor-pointer">Citations, evidence quality, reviewer status and limitations</summary>
         <div className="mt-1 space-y-1">
           <p className="font-medium">Citations</p>
-          {e.citations.length ? <ul className="space-y-0.5">{e.citations.map((c) => <li key={c} className="break-words">{c}</li>)}</ul> : <p className="text-muted-foreground">None</p>}
+          {e.citations.length ? <ul className="space-y-0.5">{e.citations.map((c) => <li key={c} className="break-words">{researcherDisplayText(c)}</li>)}</ul> : <p className="text-muted-foreground">None</p>}
           <p><span className="font-medium">Evidence quality: </span>{e.evidenceQuality}</p>
           <p className="break-words"><span className="font-medium">Reviewer status: </span>{e.reviewerStatus}</p>
           <ul className="list-disc pl-4 text-muted-foreground">{e.limitations.map((l) => <li key={l} className="break-words">{l}</li>)}</ul>
