@@ -155,32 +155,76 @@ export async function provisionPublicDemoRole(
 
   const email = `visitor-${deps.randomToken(12).toLowerCase().replace(/[^a-z0-9]/g, "")}@${deps.emailDomain}`;
   const password = deps.randomToken(32);
-  const user = await deps.createUser(email, password, input.role);
-  if (!user) return demoFailure("unavailable");
-
-  const provisioned = await deps.adminRpc("p69_demo_provision_v1", {
-    p_admission_id: admitted.data,
-    p_user_id: user.id,
-    p_role: input.role,
-    p_join_code: joinCode,
-  });
-  if (provisioned.error || !provisioned.data || typeof provisioned.data !== "object") {
-    await deps.deleteUser(user.id).catch(() => undefined);
-    return classifyDemoError(provisioned.error);
+  let userId: string | null = null;
+  try {
+    const user = await deps.createUser(email, password, input.role);
+    if (!user) return demoFailure("unavailable");
+    userId = user.id;
+    // Sign in BEFORE binding the identity to a workspace: a sign-in failure then
+    // never consumes a workspace member slot or leaves a bound, unusable identity.
+    const session = await deps.signIn(email, password);
+    if (!session) {
+      await discardIdentity(deps, userId);
+      return demoFailure("unavailable");
+    }
+    const provisioned = await deps.adminRpc("p69_demo_provision_v1", {
+      p_admission_id: admitted.data,
+      p_user_id: userId,
+      p_role: input.role,
+      p_join_code: joinCode,
+    });
+    if (provisioned.error || !provisioned.data || typeof provisioned.data !== "object") {
+      await discardIdentity(deps, userId);
+      return classifyDemoError(provisioned.error);
+    }
+    const ws = provisioned.data as Record<string, unknown>;
+    return {
+      ok: true,
+      session,
+      workspace: {
+        role: input.role,
+        joinCode: typeof ws["joinCode"] === "string" ? ws["joinCode"] : null,
+        expiresAt: String(ws["expiresAt"] ?? ""),
+        missionCode: String(ws["missionCode"] ?? ""),
+      },
+    };
+  } catch {
+    // Any thrown failure after the identity exists (network, auth service) removes it.
+    if (userId) await discardIdentity(deps, userId);
+    return demoFailure("unavailable");
   }
-  const ws = provisioned.data as Record<string, unknown>;
-  const session = await deps.signIn(email, password);
-  if (!session) return demoFailure("unavailable");
-  return {
-    ok: true,
-    session,
-    workspace: {
-      role: input.role,
-      joinCode: typeof ws["joinCode"] === "string" ? ws["joinCode"] : null,
-      expiresAt: String(ws["expiresAt"] ?? ""),
-      missionCode: String(ws["missionCode"] ?? ""),
-    },
-  };
+}
+
+async function discardIdentity(deps: ProvisionDeps, id: string): Promise<void> {
+  await deps.deleteUser(id).catch(() => undefined);
+}
+
+/* ------------------------------ client address ----------------------------- */
+
+const IPV4 = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+const IPV6 = /^[0-9a-f:]{2,39}$/;
+
+/**
+ * Rate-limit address for demo admission. Only Cloudflare's `cf-connecting-ip`
+ * is trusted: the edge overwrites any client-supplied value. `x-forwarded-for`
+ * and similar headers are client-controlled and ignored, so they cannot mint
+ * fresh rate-limit buckets. IPv6 is bucketed per /64 (one subscriber prefix).
+ * A missing or malformed value returns null, which shares one "unknown" bucket
+ * (fail-closed: header-less callers cannot multiply their allowance).
+ */
+export function demoClientAddress(headers: { get(name: string): string | null } | null | undefined): string | null {
+  const raw = headers?.get("cf-connecting-ip")?.trim().toLowerCase() ?? "";
+  if (!raw || raw.length > 45) return null;
+  if (IPV4.test(raw)) return raw;
+  if (!IPV6.test(raw) || !raw.includes(":") || (raw.match(/::/g)?.length ?? 0) > 1) return null;
+  const [head = "", tail] = raw.split("::");
+  const left = head ? head.split(":") : [];
+  const right = tail === undefined ? [] : tail ? tail.split(":") : [];
+  const missing = 8 - left.length - right.length;
+  if (tail === undefined ? left.length !== 8 : missing < 1) return null;
+  const groups = [...left, ...Array<string>(tail === undefined ? 0 : missing).fill("0"), ...right];
+  if (groups.length !== 8 || groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return null;
+  return `${groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, "")).join(":")}::/64`;
 }
 
 /* ----------------------------- workspace reads ---------------------------- */

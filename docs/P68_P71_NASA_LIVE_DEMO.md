@@ -58,3 +58,4 @@ Fallback: if entry reports "not switched on", "not installed" or "unavailable", 
 - `tests/domain/p68-shared-mission-context.test.ts`, `tests/domain/p71-demo-workflow.test.ts`, `tests/security/p69-public-demo.test.ts`, `tests/navigation/p70-landing-access.test.ts`.
 - `FV01_PG_SOCKET_DIR=<disposable socket> node scripts/verify-p69-public-demo-pg.mjs` — applies stubs + the staged SQL twice, runs `tests/integration-pg/p69-public-demo.sql`, proves rollback and re-apply.
 - Not verified: live provisioning against the real backend and a three-profile browser run (both need the SQL applied and the secrets set).
+- Readiness audit, fixes and the step-by-step activation plan: `docs/P69_LIVE_ACTIVATION_READINESS_AUDIT.md`; supplied gate: `docs/P69_LIVE_ACTIVATION_GATE.md`.

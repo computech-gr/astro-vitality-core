@@ -7,6 +7,7 @@ import { buildP69SeedDocument } from "@/domain/public-demo/catalog";
 import {
   classifyDemoError,
   isPublicDemoConfigured,
+  demoClientAddress,
   normalizeJoinCode,
   provisionPublicDemoRole,
   type DemoRpc,
@@ -96,6 +97,53 @@ describe("P69 public demo provisioning (server core)", () => {
     expect(deleted).toEqual(["user-1"]);
   });
 
+  test("a failed sign-in deletes the new identity before it is bound to any workspace", async () => {
+    const { d, calls, deleted } = deps({ signIn: async () => null });
+    expect(await provisionPublicDemoRole(d, { role: "researcher", joinCode: "ABCD-1234-EF56" })).toMatchObject({ ok: false, code: "unavailable" });
+    expect(deleted).toEqual(["user-1"]);
+    expect(calls.map((c) => c.fn)).not.toContain("p69_demo_provision_v1");
+  });
+
+  test("a thrown failure after identity creation deletes the identity and returns a fixed message", async () => {
+    const { d, deleted } = deps({}, async (fn) => {
+      if (fn === "p69_demo_admit_v1") return { data: "adm", error: null };
+      if (fn === "p69_demo_provision_v1") throw new Error("network reset: internal detail");
+      return { data: [], error: null };
+    });
+    const result = await provisionPublicDemoRole(d, { role: "medical" });
+    expect(result).toMatchObject({ ok: false, code: "unavailable" });
+    expect(JSON.stringify(result)).not.toContain("internal detail");
+    expect(deleted).toEqual(["user-1"]);
+    const throwingSignIn = deps({ signIn: async () => { throw new Error("auth down"); } });
+    expect(await provisionPublicDemoRole(throwingSignIn.d, { role: "astronaut" })).toMatchObject({ ok: false, code: "unavailable" });
+    expect(throwingSignIn.deleted).toEqual(["user-1"]);
+  });
+
+  test("rate-limit address trusts only cf-connecting-ip; forwarded-for cannot mint new buckets", () => {
+    const h = (o: Record<string, string>) => new Headers(o);
+    for (const ip of ["1.1.1.1", "2.2.2.2"]) expect(demoClientAddress(h({ "x-forwarded-for": ip }))).toBeNull();
+    expect(demoClientAddress(h({ "x-real-ip": "9.9.9.9", forwarded: "for=9.9.9.9" }))).toBeNull();
+    expect(demoClientAddress(h({ "cf-connecting-ip": "198.51.100.7", "x-forwarded-for": "1.1.1.1" }))).toBe("198.51.100.7");
+    expect(demoClientAddress(h({ "cf-connecting-ip": "1.1.1.1, 2.2.2.2" }))).toBeNull();
+    expect(demoClientAddress(h({ "cf-connecting-ip": "x".repeat(200) }))).toBeNull();
+    expect(demoClientAddress(null)).toBeNull();
+  });
+
+  test("IPv6 visitors are bucketed per /64 so address rotation inside one prefix shares a limit", () => {
+    const at = (ip: string) => demoClientAddress(new Headers({ "cf-connecting-ip": ip }));
+    expect(at("2001:db8:1:2::a")).toBe("2001:db8:1:2::/64");
+    expect(at("2001:0DB8:0001:0002:ffff:0:0:b")).toBe("2001:db8:1:2::/64");
+    expect(at("2001:db8:1:3::a")).toBe("2001:db8:1:3::/64");
+    expect(at("2001:db8::1::2")).toBeNull();
+    expect(at("::ffff:1.2.3.4")).toBeNull();
+  });
+
+  test("a missing address shares one fail-closed bucket", async () => {
+    const a = deps({ clientAddress: null, sha256Hex: async (t) => (t.endsWith("|unknown") ? "u".repeat(64) : "z".repeat(64)) });
+    await provisionPublicDemoRole(a.d, { role: "astronaut" });
+    expect(a.calls[1]!.args).toEqual({ p_client_hash: "u".repeat(64) });
+  });
+
   test("invalid role and malformed codes are rejected locally", async () => {
     const { d, calls } = deps();
     expect(await provisionPublicDemoRole(d, { role: "mission_operator" })).toMatchObject({ ok: false, code: "invalid" });
@@ -173,6 +221,7 @@ describe("P69 staged SQL and boundaries (static)", () => {
     const fns = read("src/lib/p69-public-demo.functions.ts");
     expect(fns.indexOf('await import("@/integrations/supabase/client.server")')).toBeGreaterThan(fns.indexOf("isPublicDemoConfigured(enabledFlag, salt)"));
     expect(fns).not.toMatch(/^import .*client\.server/m);
+    expect(fns).not.toMatch(/x-forwarded-for/i);
     expect(fns.match(/requireSupabaseAuth\]/g)?.length).toBe(5);
   });
 

@@ -128,6 +128,32 @@ do $$ declare r jsonb; begin
     and r->'events'->2->'evidence' ? 'previousEventId' and (r->'events'->0->'evidence'->>'measurementsSha256') ~ '^[0-9a-f]{64}$');
 end $$;
 
+-- 5b. Ground Medical enters a new synthetic examination; the same record then
+--     goes through Researcher assessment and Medical review, and the Astronaut
+--     sees the final outcome with assessment details redacted.
+select p69t.as_uid(p69t.get('M1'));
+do $$ declare r jsonb; begin
+  r := public.p69_demo_submit_examination_v1(current_date,
+    '[{"metricId":"demo:ubt-12f6e490","value":"97","unit":"%"},{"metricId":"demo:ubt-c5a76e59","value":"6.1","unit":"h"}]'::jsonb, 'degraded', 'idem-submit-m1-000001');
+  insert into p69t.ctx values ('recM', r->>'recordId');
+  perform p69t.ok('medical submits a new synthetic examination at revision 1', r->>'recordRef' = 'EXAM-0003' and (r->>'revision')::int = 1);
+end $$;
+select p69t.expect_fail('medical cannot self-review before assessment', format($$select public.p69_demo_transition_v1(%L, 'medical_review_recorded', 'no_follow_up_needed', '', 1, 'idem-med-self-000001')$$, p69t.get('recM')), 'MDSTT');
+select p69t.as_uid(p69t.get('R1'));
+select p69t.ok('researcher assesses the medical-entered record',
+  (public.p69_demo_transition_v1(p69t.get('recM')::uuid, 'scientific_assessment_recorded', 'consistent_with_synthetic_reference', 'Synthetic check.', 1, 'idem-res-m-000000001')->>'revision')::int = 2);
+select p69t.as_uid(p69t.get('M1'));
+select p69t.ok('medical reviews the same record',
+  (public.p69_demo_transition_v1(p69t.get('recM')::uuid, 'medical_review_recorded', 'follow_up_recommended', 'Synthetic follow-up.', 2, 'idem-med-m-000000001')->>'revision')::int = 3);
+select p69t.as_uid(p69t.get('A1'));
+do $$ declare r jsonb; begin
+  select x into r from jsonb_array_elements(public.p69_demo_records_v1()) x where x->>'id' = p69t.get('recM');
+  perform p69t.ok('astronaut sees final outcome of the medical-entered record', r->>'submittedRole' = 'medical'
+    and r->>'sourceLabel' = 'Ground Medical entered synthetic examination' and r->>'state' = 'medical_review_recorded'
+    and r->'events'->2->>'outcome' = 'follow_up_recommended' and (r->'events'->1->>'redacted')::boolean
+    and r->'events'->0->>'actorRole' = 'medical');
+end $$;
+
 -- 6. Cross-workspace isolation and direct table access.
 select p69t.as_uid(p69t.get('B1'));
 select p69t.expect_fail('other workspace cannot transition record', format($$select public.p69_demo_transition_v1(%L, 'scientific_assessment_recorded', 'requires_more_evidence', '', 1, 'idem-b1-cross-000001')$$, p69t.get('rec')), 'record not found');
@@ -154,7 +180,7 @@ do $$ declare s jsonb := public.p69_demo_session_v1(); r jsonb; begin
   perform p69t.ok('reset creates seeded epoch 2', (r->>'epoch')::int = 2 and jsonb_array_length(public.p69_demo_records_v1()) = 1
     and jsonb_array_length(public.p69_demo_context_v1()) = 4);
   r := public.p69_demo_restore_v1(1, (r->>'workspaceRevision')::bigint);
-  perform p69t.ok('restore returns epoch 1 with prior history intact', (r->>'epoch')::int = 1 and jsonb_array_length(public.p69_demo_records_v1()) = 2);
+  perform p69t.ok('restore returns epoch 1 with prior history intact', (r->>'epoch')::int = 1 and jsonb_array_length(public.p69_demo_records_v1()) = 3);
   s := public.p69_demo_session_v1();
   perform p69t.ok('workspace history records reset and restore', jsonb_array_length(s->'history') >= 5
     and exists (select 1 from jsonb_array_elements(s->'history') h where h->>'action' = 'reset')

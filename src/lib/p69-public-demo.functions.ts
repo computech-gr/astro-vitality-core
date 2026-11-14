@@ -35,10 +35,7 @@ export const startPublicDemoRoleFn = createServerFn({ method: "POST" })
 
     const { getRequest } = await import("@tanstack/react-start/server");
     const request = getRequest();
-    const clientAddress =
-      request?.headers.get("cf-connecting-ip") ??
-      request?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      null;
+    const clientAddress = server.demoClientAddress(request?.headers);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createClient } = await import("@supabase/supabase-js");
