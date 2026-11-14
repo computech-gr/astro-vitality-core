@@ -6,6 +6,11 @@ import {
   shouldClearSelection,
   writeActiveSelection,
 } from "@/infrastructure/mission-selection-storage";
+import {
+  expandMissionLevelGroundMedical,
+  missionLevelGroundMedicalMissions,
+  type MissionRosterEntry,
+} from "@/domain/mission-access/mission-level-ground-medical";
 
 export type MissionRole = "crew_self" | "ground_medical" | "mission_operator" | "researcher";
 
@@ -140,7 +145,7 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
     (missionResult.data ?? []).map((mission) => [mission.id, mission] as const),
   );
   const crewById = new Map((crewResult.data ?? []).map((crew) => [crew.id, crew] as const));
-  const memberships: MissionMembershipContext[] = membershipRows.map((row) => {
+  const baseMemberships: MissionMembershipContext[] = membershipRows.map((row) => {
     const mission = missionById.get(row.mission_id);
     const crew = row.crew_member_id ? crewById.get(row.crew_member_id) : undefined;
     return {
@@ -154,9 +159,24 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
     };
   });
 
+  // P72.2: mission-level Ground Medical (no crew binding) gains the crew of its own mission's
+  // caller-scoped roster, as the database already authorizes; an unreadable roster adds nothing.
+  const rosterByMission = new Map<string, MissionRosterEntry[]>();
+  const rosterMissions = missionLevelGroundMedicalMissions(baseMemberships);
+  if (rosterMissions.length) {
+    const { loadMissionCrewRoster } = await import("@/infrastructure/mission-crew-roster");
+    await Promise.all(
+      rosterMissions.map(async (missionId) => {
+        const roster = await loadMissionCrewRoster(missionId).catch(() => null);
+        if (roster?.ok) rosterByMission.set(missionId, roster.crew);
+      }),
+    );
+  }
+  const memberships = expandMissionLevelGroundMedical(baseMemberships, rosterByMission);
+
   const preferred = readActiveKey(session.user.id);
   let active = memberships.find((item) => membershipKey(item) === preferred);
-  if (!active && memberships.length === 1) active = memberships[0];
+  if (!active && baseMemberships.length === 1) active = baseMemberships[0];
   if (!active) active = memberships.find((item) => item.role === "crew_self" && item.crewMemberId);
 
   if (active && preferred !== membershipKey(active) && typeof window !== "undefined") {
