@@ -663,3 +663,11 @@
 - [x] Tests (31 unit, 157 disposable PostgreSQL assertions), full suite, typecheck, lint, format, security, build; signed-in Researcher browser check (read-only).
 - [ ] Apply the pending SQL to the backend (blocked: owner approval of the exact file).
 - [ ] Identity/alias review of the 3 flagged Bone terms, then decisions/activation (blocked: Researcher/Ground Medical, after the SQL is applied).
+
+## P62 Observation sync repair and evaluator demo prep
+- [x] Root cause: sync input check lacked catalogBasis; fixed with strict exact-key schema, specific reasons, accurate Failed counts.
+- [x] Regression tests, full suite, typecheck, lint, format, security, build.
+- [x] Read-only MITO_DEMO_2026 inventory, cleanup design, walkthrough (docs/P62_OBSERVATION_SYNC_AND_DEMO_PREPARATION.md).
+- [ ] Publish the fix (blocked: owner authorization).
+- [ ] Sync the 192 device observations (blocked: publication + owner authorization of the Cloud write).
+- [ ] Evaluator crew record and rehearsal (blocked: owner choice and approval).
