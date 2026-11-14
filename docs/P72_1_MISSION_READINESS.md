@@ -5,11 +5,11 @@ Target: MISSION_TEST (`mission-3fd366c331ed46afb0645cced1d45294`, active), crew 
 
 ## A. Membership changes required (through Mission & Crew Operations, by the MISSION_TEST operator)
 
-| Account | Current MISSION_TEST state | Change | Steps |
-| --- | --- | --- | --- |
-| theosilv@gmail.com (Astronaut) | active `crew_self` for Astronaut Test 01 | none | — |
-| nikolasilvestros@gmail.com (Researcher) | none (has `researcher` in FV01-TEST-B; global scientific approver/reviewer/triage grants) | add `researcher` | info@computech.gr creates a Researcher invite → Researcher accepts while signed in. No approval stage. |
-| marketing@computech.gr (Medical) | none (has `ground_medical` in MITO_DEMO_2026 and FV01-TEST-B) | add `ground_medical` | info@computech.gr creates a Ground Medical invite → binds it to marketing@computech.gr → **sales@computech.gr approves** (the inviter and the recipient cannot approve) → marketing@ accepts. |
+| Account                                 | Current MISSION_TEST state                                                                | Change               | Steps                                                                                                                                                                                         |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| theosilv@gmail.com (Astronaut)          | active `crew_self` for Astronaut Test 01                                                  | none                 | —                                                                                                                                                                                             |
+| nikolasilvestros@gmail.com (Researcher) | none (has `researcher` in FV01-TEST-B; global scientific approver/reviewer/triage grants) | add `researcher`     | info@computech.gr creates a Researcher invite → Researcher accepts while signed in. No approval stage.                                                                                        |
+| marketing@computech.gr (Medical)        | none (has `ground_medical` in MITO_DEMO_2026 and FV01-TEST-B)                             | add `ground_medical` | info@computech.gr creates a Ground Medical invite → binds it to marketing@computech.gr → **sales@computech.gr approves** (the inviter and the recipient cannot approve) → marketing@ accepts. |
 
 Current MISSION_TEST members: info@computech.gr `mission_operator`, theosilv@gmail.com `crew_self`, sales@computech.gr `ground_medical`. No open invites.
 
