@@ -13,7 +13,7 @@ export function buildFinalDemoReadiness(identity: MissionIdentitySnapshot | null
     { id: "admin", label: "Administrator backend access", state: "pending_owner", evidence: "Requires reviewed server authorization and RLS; operator is not administrator" },
     { id: "pipeline", label: "PDF / CSV / wearable to canonical timeline", state: "pending_independent", evidence: "Run real role-separated synthetic E2E with unit, quality, provenance and idempotency checks" },
     { id: "ground", label: "Independent Ground Medical acceptance", state: "pending_independent", evidence: "Separate reviewer, audited decisions and replay evidence required" },
-    { id: "science", label: "Scientific review and security gates", state: "pending_independent", evidence: "Nikolas review, FV-01.13, P32 and P34 not certified by this demo" },
+    { id: "science", label: "Scientific review and security gates", state: "pending_independent", evidence: "Researcher review, FV-01.13, P32 and P34 not certified by this demo" },
     { id: "device", label: "Real-device validation", state: "pending_independent", evidence: "Real-origin evidence must remain isolated; no clinical claims" },
     { id: "release", label: "NASA submission demo acceptance", state: "pending_independent", evidence: "Owner approval, desktop/mobile run and signed acceptance record required" },
   ];

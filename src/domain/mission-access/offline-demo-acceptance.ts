@@ -30,6 +30,6 @@ export function getDemoAcceptanceGates(): readonly DemoAcceptanceGate[] {
     { id: "admin", label: "Administrator backend authorization", status: "requires_owner_approval", detail: "Requires explicit server-side authorization and RLS review; Mission Operator does not imply Administrator." },
     { id: "pipeline", label: "Canonical document/device data integration", status: "requires_independent_acceptance", detail: "Existing ingestion, provenance, unit and role controls need integrated end-to-end evidence." },
     { id: "medical", label: "Independent Ground Medical acceptance", status: "requires_independent_acceptance", detail: "Independent reviewer and governed decision workflow must be tested without impersonation." },
-    { id: "science", label: "Scientific and security gates", status: "requires_independent_acceptance", detail: "Nikolas scientific review and standing FV/P32/P34/security gates remain open." },
+    { id: "science", label: "Scientific and security gates", status: "requires_independent_acceptance", detail: "Researcher scientific review and standing FV/P32/P34/security gates remain open." },
   ];
 }

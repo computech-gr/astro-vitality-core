@@ -120,8 +120,8 @@ export function buildScientificHealthSummary(
     { tier: "reviewer_accepted_intake", count: tierCount("reviewer_accepted_intake"), note: "Accepted row by row in Unified Intake; reviewer confirmation is not scientific validation." },
     { tier: "device_observation", count: tierCount("device_observation"), note: "Scalar device rows with declared provenance; device quality is shown as recorded." },
     validatedInterpretations > 0
-      ? { tier: "validated_interpretation", count: validatedInterpretations, note: "Series using a Researcher-approved interpretation record (exact catalog ID, unit and domain, cited); every other handbook interpretation and catalog mapping remains pending independent scientific review (PENDING_NIKOLAS_REVIEW). SYNTHETIC DEMO interpretations are not counted." }
-      : { tier: "validated_interpretation", count: 0, note: "None. All handbook interpretations and catalog mappings remain pending independent scientific review (PENDING_NIKOLAS_REVIEW)." },
+      ? { tier: "validated_interpretation", count: validatedInterpretations, note: "Series using a Researcher-approved interpretation record (exact catalog ID, unit and domain, cited); every other handbook interpretation and catalog mapping remains pending independent scientific review (PENDING_SCIENTIFIC_REVIEW). SYNTHETIC DEMO interpretations are not counted." }
+      : { tier: "validated_interpretation", count: 0, note: "None. All handbook interpretations and catalog mappings remain pending independent scientific review (PENDING_SCIENTIFIC_REVIEW)." },
   ];
 
   const measured = report.summaries
@@ -238,7 +238,7 @@ export function buildScientificHealthSummary(
       missingDomains.length ? `No included data for ${missingDomains.join(", ")} — missing data is not a negative finding.` : "Every selected source has included data.",
       validatedInterpretations
         ? `${implications.length} handbook-quoted statement(s) apply to observed changes; ${validatedInterpretations} series use a Researcher-approved interpretation (reviewer, citations and status shown in the Researcher interpretation section).`
-        : `${implications.length} handbook-quoted statement(s) apply to observed changes; 0 interpretations are scientifically validated (${"PENDING_NIKOLAS_REVIEW"}).`,
+        : `${implications.length} handbook-quoted statement(s) apply to observed changes; 0 interpretations are scientifically validated (PENDING_SCIENTIFIC_REVIEW).`,
       ...(attestation ? [`Ground Medical attestation: ${attestation.attested} attested, ${attestation.notAttested} accepted without attestation, ${attestation.revoked} revoked.`] : []),
     ],
     evidenceIds,

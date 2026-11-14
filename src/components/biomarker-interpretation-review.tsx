@@ -1,3 +1,4 @@
+import { researcherDisplayText } from "@/domain/scientific-localization/researcher-display";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -583,7 +584,7 @@ function InterpretationEditor(props: {
           <ul className="space-y-1 text-xs">
             {citationLines(draft.citations).map((line, i) => (
               <li key={draft.citations[i]!.id} className="flex items-start justify-between gap-2">
-                <span className="break-words">{line}</span>
+                <span className="break-words">{researcherDisplayText(line)}</span>
                 <Button type="button" size="sm" variant="ghost" disabled={disabled} onClick={() => removeCitation(draft.citations[i]!.id)}>Remove</Button>
               </li>
             ))}

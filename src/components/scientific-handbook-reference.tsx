@@ -61,9 +61,9 @@ export function CardiovascularHandbookReference() {
         Cardiovascular scientific handbook · research reference
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Nikolas' cardiovascular handbook: {metrics.length} catalogued measurements across{" "}
+        The Researcher's cardiovascular handbook: {metrics.length} catalogued measurements across{" "}
         {groups.length} groups, shown in English. The original Greek handbook is preserved
-        unchanged. The owner reports Nikolas completed verbal scientific review; formal signed
+        unchanged. The owner reports that the Researcher completed verbal scientific review; formal signed
         per-entry reconciliation and translation review are not recorded. No clinical validation,
         approval, thresholds, diagnoses or alerts are enabled by this reference.
       </p>
@@ -138,7 +138,7 @@ export function BoneHandbookReference() {
         Bone health scientific handbook · research reference
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Nikolas' Bone Health Handbook v7: {variables.length} variables across {categories.length}{" "}
+        The Researcher's Bone Health Handbook v7: {variables.length} variables across {categories.length}{" "}
         categories, shown in English. The original Greek handbook is preserved unchanged. Evidence
         tiers A/B/C are author-assigned; translation and scientific review are pending; no
         thresholds, diagnoses or fracture-risk predictions.

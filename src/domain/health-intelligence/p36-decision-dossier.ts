@@ -382,7 +382,7 @@ function termDossier(d: ScientificReviewDossier, entry: ScientificReviewEntry | 
   });
 
   if (!nikolasIds.length) {
-    assumptions.push("No Nikolas source record supports this term.");
+    assumptions.push("No Researcher source record supports this term.");
     decisions.push({ id: "SOURCE", text: "Identify the source document that supports this term." });
   }
   decisions.push({ id: "EVIDENCE", text: "Cite handbook or primary-source evidence references for each confirmation." });
@@ -453,7 +453,7 @@ export async function buildDecisionDossier(
   const body: DecisionDossier = {
     schema: DECISION_DOSSIER_SCHEMA,
     title: "P36 Scientific Decision Dossier — 12 catalog reconciliation terms",
-    addressedTo: "Nikolas (independent scientific reviewer)",
+    addressedTo: "Researcher (independent scientific reviewer)",
     generatedAt: null,
     status: REQUIRED_SCIENTIFIC_GATE,
     activationAllowed: false,

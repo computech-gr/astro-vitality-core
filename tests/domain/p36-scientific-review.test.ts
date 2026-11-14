@@ -78,7 +78,7 @@ describe("P36 scientific review dossiers", () => {
     expect(compareUnit("mg/24h", "x", ["mg/day"]).status).toBe("STRING_DIFFERS_NO_CONVERSION");
     expect(compareUnit("h", "x", [null]).status).toBe("NO_REFERENCE_UNIT");
     const ctx = byLabel("CTX");
-    expect(ctx.unitComparisons.filter((u) => u.status === "STRING_DIFFERS_NO_CONVERSION").map((u) => u.reference)).toEqual(["Bone handbook v7 bone-001", "Nikolas source IMM-NIK-082"]);
+    expect(ctx.unitComparisons.filter((u) => u.status === "STRING_DIFFERS_NO_CONVERSION").map((u) => u.reference)).toEqual(["Bone handbook v7 bone-001", "Researcher source IMM-NIK-082"]);
     expect(byLabel("BSC-001").unitComparisons.find((u) => u.reference.includes("BHP-001"))!.status).toBe("STRING_DIFFERS_NO_CONVERSION");
     expect(byLabel("Urinary Calcium 24h").unitComparisons.find((u) => u.reference.includes("handbook"))!.status).toBe("STRING_DIFFERS_NO_CONVERSION");
     expect(byLabel("IMM-001").unitComparisons.find((u) => u.reference.includes("IMM-NIK-001"))!.status).toBe("EXACT_STRING_MATCH");

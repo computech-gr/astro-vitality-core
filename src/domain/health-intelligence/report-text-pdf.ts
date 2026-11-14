@@ -206,7 +206,7 @@ export function buildReportDocument(input: TextReportInput): ReportDocument {
     lines: [
       researcherModel?.validatedInterpretations
         ? `${researcherModel.validatedInterpretations} series use a Researcher-approved interpretation record (reviewer, citations and status in the Researcher interpretation section); everything else remains PENDING_NIKOLAS_REVIEW. Handbook statements in Section 3 are hypotheses for qualified review.`
-        : "0 interpretations are scientifically validated (PENDING_NIKOLAS_REVIEW). Handbook statements in Section 3 are hypotheses for qualified review.",
+        : "0 interpretations are scientifically validated (PENDING_SCIENTIFIC_REVIEW). Handbook statements in Section 3 are hypotheses for qualified review.",
       ...(researcherModel?.syntheticDemoInterpretations ? [`${researcherModel.syntheticDemoInterpretations} series use SYNTHETIC DEMO interpretations; these are not production scientific validation.`] : []),
     ],
   });

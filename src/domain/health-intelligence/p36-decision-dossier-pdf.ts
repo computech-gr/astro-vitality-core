@@ -5,6 +5,7 @@
  * deterministic dossier model, so PDF and JSON carry the same facts, gaps,
  * blockers and integrity digests.
  */
+import { redactProhibitedNames } from "./report-identity-redaction";
 import { CANONICAL_URL, loadReportFonts, renderReportDocument, type Block, type PdfWriter, type ReportDocument, type ReportFonts } from "./report-text-pdf";
 import { FIELD_BASIS_LABELS, type DecisionDossier, type DossierField } from "./p36-decision-dossier";
 import { SCIENTIFIC_STATUS_LABELS } from "./p36-scientific-authorization";
@@ -196,8 +197,8 @@ export async function createDecisionDossierPdf(
     pdf.addFont("LiberationSans-Bold.ttf", "LiberationSans", "bold");
     family = "LiberationSans";
   }
-  pdf.setProperties({ title: d.title, subject: "P36 scientific decision dossier (research only, not an approval)", creator: "MITOCHONDRIA - local export", keywords: `${d.status}, ${d.integrity.contentDigest}` });
-  const { pages } = renderReportDocument(buildDecisionDossierDocument(d), pdf, { family, unicode: Boolean(fonts) });
+  pdf.setProperties({ title: redactProhibitedNames(d.title), subject: "P36 scientific decision dossier (research only, not an approval)", creator: "MITOCHONDRIA - local export", keywords: redactProhibitedNames(`${d.status}, ${d.integrity.contentDigest}`) });
+  const { pages } = renderReportDocument(buildDecisionDossierDocument(d), pdf, { family, unicode: Boolean(fonts), redact: true });
   const blob = pdf.output("blob");
   if (!(blob.size > 0)) throw new Error("The PDF file is empty.");
   return { blob, pages, fontMode: fonts ? "unicode" : "standard" };
