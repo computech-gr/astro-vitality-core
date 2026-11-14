@@ -198,7 +198,9 @@ describe("P62 end to end — through the server input check, encryption and back
 describe("P62 accurate counts when an upload batch is refused", () => {
   test("a thrown upload marks the batch Failed (retryable), records no receipts, then retries cleanly", async () => {
     const c = cloud();
-    const local = [ev(demoObs()), ev(demoObs())];
+    // Handbook-catalog date-only records: the device pre-check needs no installed demo snapshot here.
+    const plain = () => demoObs({ metricId: "cv-001", domain: "cardiovascular", originalUnit: "bpm", value: "62", catalogBasis: undefined });
+    const local = [ev(plain()), ev(plain())];
     const receipts: Parameters<typeof observationSyncCounts>[1][number][] = [];
     let refuse = true;
     const deps = {
