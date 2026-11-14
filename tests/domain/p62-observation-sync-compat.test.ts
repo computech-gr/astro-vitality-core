@@ -232,3 +232,28 @@ describe("P62 accurate counts when an upload batch is refused", () => {
     expect(c.rows.length).toBe(2);
   });
 });
+
+
+describe("P62.1 structured upload refusal safety", () => {
+  test("non-throwing server refusal marks the whole batch Failed without receipts", async () => {
+    const local = [ev(demoObs({ metricId: "cv-001", domain: "cardiovascular", catalogBasis: undefined }))];
+    const receipts: Parameters<typeof observationSyncCounts>[1][number][] = [];
+    const result = await runObservationSync(
+      { scope: SCOPE, canUpload: true, realDataConfirmed: false },
+      {
+        listLocal: async () => local,
+        listReceipts: async () => receipts,
+        appendReceipts: async (r) => void receipts.push(...r),
+        importEvent: async () => "duplicate" as const,
+        push: async () => ({ ok: false as const, code: "invalid" as const, message: "Server rejected this batch" }),
+        pull: async () => { throw new Error("Pull must not run after upload refusal"); },
+        now: () => "2026-11-14T08:00:00.000Z",
+      },
+    );
+    expect(result.status).toBe("failed");
+    expect(result.failedIds).toEqual(local.map((e) => e.eventId));
+    expect(receipts).toEqual([]);
+    const counts = await observationSyncCounts(local, receipts, new Set(result.failedIds), SCOPE);
+    expect([counts.pending, counts.failed, counts.synced]).toEqual([0, 1, 0]);
+  });
+});
