@@ -30,9 +30,9 @@ import {
 
 export const REGISTRY_VERSION = 1;
 export const BONE_HANDBOOK_TITLE =
-  "Astronaut Bone Health Handbook v7 (Researcher) — English presentation layer (machine-assisted)";
+  "Astronaut Bone Health Handbook v7 (Nikolas) — English presentation layer (machine-assisted)";
 export const CV_HANDBOOK_TITLE =
-  "NASA Cardiovascular Handbook (Researcher) — English presentation layer (machine-assisted)";
+  "NASA Cardiovascular Handbook (Nikolas) — English presentation layer (machine-assisted)";
 const TRANSLATION_LIMIT =
   "Machine-assisted English of the Greek source handbook; pending independent scientific review.";
 
