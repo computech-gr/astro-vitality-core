@@ -63,7 +63,7 @@ import {
   type ObservationSyncEvent,
   type ObservationSyncReceipt,
 } from "@/domain/health-intelligence/observation-sync";
-import { runObservationSync } from "@/domain/health-intelligence/observation-sync-runner";
+import { ObservationSyncUploadError, runObservationSync } from "@/domain/health-intelligence/observation-sync-runner";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
 import { pullReviewEvents, pushReviewEvents } from "@/lib/review-sync.functions";
 import { pullObservationEvents, pushObservationEvents } from "@/lib/observation-sync.functions";
@@ -748,6 +748,7 @@ function ReviewCloudSync(props: { scope: Scope; userId: string | null; rolesForS
           obsState = { status: r.status, message: r.message + (r.conflicts.length ? ` Conflicts: ${r.conflicts.slice(0, 3).map((c) => `${c.eventId} (${c.detail})`).join("; ")}.` : ""), at: r.finishedAt };
           if (r.downloaded.imported) await props.onImported();
         } catch (error) {
+          if (error instanceof ObservationSyncUploadError) setObsFailed(new Set(error.failedIds));
           obsState = { status: "failed", message: `Observation sync failed: ${error instanceof Error ? error.message : "network error"}. Observations stay on this device; use Retry.`, at: new Date().toISOString() };
         }
       }
