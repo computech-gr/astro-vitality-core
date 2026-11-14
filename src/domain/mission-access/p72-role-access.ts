@@ -26,6 +26,11 @@ export const P72_TARGET_MISSION = {
 
 export const P72_TARGET_LABEL = `${P72_TARGET_MISSION.missionCode} — ${P72_TARGET_MISSION.crewDisplayName}`;
 
+/** Researcher context is mission-level only: it never names a crew subject. */
+export function p72TargetLabel(role: DemoRole): string {
+  return role === "researcher" ? P72_TARGET_MISSION.missionCode : P72_TARGET_LABEL;
+}
+
 export interface P72RoleRoute {
   role: DemoRole;
   membershipRole: MissionRole;

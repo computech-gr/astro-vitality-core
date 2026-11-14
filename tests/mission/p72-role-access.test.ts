@@ -80,3 +80,12 @@ describe("P72 homepage role access", () => {
     expect(safeP72Next("https://evil.example")).toBe(undefined);
   });
 });
+
+describe("P72.3 presentation labels", () => {
+  test("Astronaut/Medical name Alex Morgan; Researcher context names no crew subject", async () => {
+    const { p72TargetLabel } = await import("@/domain/mission-access/p72-role-access");
+    expect(p72TargetLabel("astronaut")).toBe("MITO_DEMO_2026 — Alex Morgan");
+    expect(p72TargetLabel("medical")).toBe("MITO_DEMO_2026 — Alex Morgan");
+    expect(p72TargetLabel("researcher")).toBe("MITO_DEMO_2026");
+  });
+});
