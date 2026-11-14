@@ -232,7 +232,7 @@ begin
   if p is null or jsonb_typeof(p) <> 'array' or jsonb_array_length(p) not between 1 and 30 then
     raise exception 'measurements must be an array of 1 to 30 entries' using errcode = '22023'; end if;
   for m in select value from jsonb_array_elements(p) loop
-    if jsonb_typeof(m) <> 'object' or (select array_agg(k order by k) from jsonb_object_keys(m) k) <> array['metricId','unit','value']
+    if jsonb_typeof(m) <> 'object' or (select array_agg(k order by k collate "C") from jsonb_object_keys(m) k) <> array['metricId','unit','value']
        or jsonb_typeof(m->'metricId') <> 'string' or jsonb_typeof(m->'unit') <> 'string' or jsonb_typeof(m->'value') <> 'string' then
       raise exception 'each measurement needs exactly metricId, value and unit' using errcode = '22023'; end if;
     select c->>'unit' into v_unit from jsonb_array_elements(public.p69_demo_seed_document()->'catalog') c
