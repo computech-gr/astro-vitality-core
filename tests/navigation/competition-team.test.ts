@@ -155,7 +155,7 @@ describe("official competition team destinations", () => {
       "utf8",
     );
     expect(page).toContain(
-      "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
+      "https://raw.githubusercontent.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4",
     );
     expect(page).not.toContain("<a ");
     expect(page).not.toContain("Demo_Video_VO");

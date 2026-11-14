@@ -66,7 +66,6 @@ const CHALLENGE_URL =
   "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/";
 const GITHUB_URL = "https://github.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026";
 // Direct-download host for competition binaries (exact filenames preserved).
-const GITHUB_RAW_URL = "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main";
 
 type NavigationGroup = {
   title: string;
