@@ -324,7 +324,13 @@ export function MissionIdentity() {
           </Card>
         )}
 
-        <h2 className="mt-10 font-display text-2xl font-semibold">Mission access</h2>
+        <h2 id="standard-sign-in" className="mt-10 font-display text-2xl font-semibold">Standard sign-in</h2>
+        <p className="mt-2 max-w-4xl text-sm text-muted-foreground">
+          For invited mission accounts: sign-in, sign-up, magic link and password management are unchanged.
+          Visitors can instead use the one-click{" "}
+          <a href="/mission/demo" className="font-medium text-primary underline">NASA live demo</a> with
+          synthetic data in a private workspace.
+        </p>
         {!snapshot.signedIn ? (
           <section className="mt-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <Card>
