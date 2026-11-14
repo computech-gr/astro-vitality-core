@@ -290,12 +290,16 @@ export async function loadDemoWorkspace(rpc: DemoRpc): Promise<WorkspaceResult> 
 /* ----------------------------- workspace writes --------------------------- */
 
 const KEY = /^[A-Za-z0-9_-]{16,128}$/;
-export type MutationResult = { ok: true; data: Record<string, unknown> } | DemoFailure;
+export type MutationResult = { ok: true; data: Record<string, string | number | boolean | null> } | DemoFailure;
 
 async function call(rpc: DemoRpc, fn: string, args: Record<string, unknown>): Promise<MutationResult> {
   const { data, error } = await rpc(fn, args);
   if (error) return classifyDemoError(error);
-  return isRecord(data) ? { ok: true, data } : demoFailure("unavailable");
+  if (!isRecord(data)) return demoFailure("unavailable");
+  const out: Record<string, string | number | boolean | null> = {};
+  for (const [k, v] of Object.entries(data))
+    if (v === null || typeof v === "string" || typeof v === "number" || typeof v === "boolean") out[k] = v;
+  return { ok: true, data: out };
 }
 
 export async function submitDemoExamination(
