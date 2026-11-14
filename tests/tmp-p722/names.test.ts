@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { getActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
 it("n", () => {
   const c: any = getActiveCatalog();
-  console.log(Object.keys(c));
+  console.log(Object.keys(c)); const s:any = (c.entries ?? c.metrics ?? c.catalog ?? Object.values(c)[0]); console.log(JSON.stringify(Array.isArray(s)? s[0] : s console.log(Object.keys(c));console.log(Object.keys(c)); Object.values(s)[0]).slice(0,400));
   const M = JSON.parse(readFileSync("/mnt/documents/p72/P72_dry_run_copy_manifest.json", "utf8"));
   const list: any[] = c.entries ?? c.metrics ?? [];
   const byId = new Map<string, any>();
