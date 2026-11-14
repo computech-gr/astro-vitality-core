@@ -6,6 +6,7 @@
  * catalog registry. Never saves observations, edits the catalog, approves or
  * uploads anything.
  */
+import { researcherDisplayStatus, researcherDisplayText } from "@/domain/scientific-localization/researcher-display";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,9 @@ import {
   handoffRowForTerm,
 } from "@/domain/health-intelligence/catalog-reconciliation-handoff";
 
+
+/** Display form of the unchanged internal scientific gate. */
+const GATE_LABEL = researcherDisplayStatus(REQUIRED_SCIENTIFIC_GATE);
 const STATUS_LABELS = {
   source_unvalidated: "Source marks measurement unvalidated",
   unclassified: "Unknown — not in catalog",
@@ -136,7 +140,7 @@ export function UnknownBiomarkerReviewPanel(props: {
       const { request, result } = await savePendingReviewRequest(props.scope, batchTerms, { actorUserId: props.reviewerUserId, rolesForScope: roles }, new Date().toISOString());
       await reload(props.scope);
       setMessage(result === "inserted"
-        ? `Review request ${request.requestId} registered as ${REQUIRED_SCIENTIFIC_GATE} in encrypted local storage on this device. Nothing was uploaded.`
+        ? `Review request ${request.requestId} registered as ${GATE_LABEL} in encrypted local storage on this device. Nothing was uploaded.`
         : `Review request ${request.requestId} was already registered; no duplicate was created.`);
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "The review request could not be saved.");
@@ -158,7 +162,7 @@ export function UnknownBiomarkerReviewPanel(props: {
       if (!result.ok) return setMessage(result.reason);
       await appendReviewerDecision(result.decision, { actorUserId: props.reviewerUserId, rolesForScope: roles });
       await reload(props.scope);
-      setMessage(`Decision ${result.decision.decisionId} saved to the encrypted local review ledger. Status remains ${REQUIRED_SCIENTIFIC_GATE}; the catalog is unchanged.`);
+      setMessage(`Decision ${result.decision.decisionId} saved to the encrypted local review ledger. Status remains ${GATE_LABEL}; the catalog is unchanged.`);
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "The decision could not be saved.");
     } finally {
@@ -207,7 +211,7 @@ export function UnknownBiomarkerReviewPanel(props: {
         <p className="text-sm text-muted-foreground">
           Unknown, ambiguous and unit-mismatched measurements are grouped by name and unit with their
           source evidence. They are never saved as observations, synchronized, charted or reported. Reviewer decisions
-          are proposals only; every catalog change stays {REQUIRED_SCIENTIFIC_GATE} until independent
+          are proposals only; every catalog change stays {GATE_LABEL} until independent
           scientific approval is recorded in the governed catalog registry.
         </p>
         <p className="text-xs text-muted-foreground">
@@ -229,7 +233,7 @@ export function UnknownBiomarkerReviewPanel(props: {
             <ul className="space-y-1 text-xs" aria-label="Pending review registry">
               {requests.map((r) => (
                 <li key={r.requestId} className="break-words">
-                  {r.requestId} · {r.createdAt} · registered by {r.createdByRole === "ground_medical" ? "Ground Medical" : "crew member"} · {r.terms.length} term(s) · {r.status}
+                  {r.requestId} · {r.createdAt} · registered by {r.createdByRole === "ground_medical" ? "Ground Medical" : "crew member"} · {r.terms.length} term(s) · {researcherDisplayStatus(r.status)}
                   {props.reviewerUserId && submitter ? <P36HandoffSubmission request={r} userId={props.reviewerUserId} /> : null}
                 </li>
               ))}
@@ -265,9 +269,9 @@ export function UnknownBiomarkerReviewPanel(props: {
                       meta={
                         <>
                           <Badge variant="outline">{STATUS_LABELS[term.classification]}</Badge>
-                          {decided ? <Badge variant="secondary">{REVIEWER_DECISION_LABELS[decided.kind]} · {REQUIRED_SCIENTIFIC_GATE}</Badge> : null}
+                          {decided ? <Badge variant="secondary">{REVIEWER_DECISION_LABELS[decided.kind]} · {GATE_LABEL}</Badge> : null}
                           {handoffRowForTerm(handoff, term.termId) ? (
-                            <Badge variant="outline">In P36 reconciliation handoff · {REQUIRED_SCIENTIFIC_GATE}</Badge>
+                            <Badge variant="outline">In P36 reconciliation handoff · {GATE_LABEL}</Badge>
                           ) : null}
                         </>
                       }
@@ -330,7 +334,7 @@ export function UnknownBiomarkerReviewPanel(props: {
 
       <details className="text-xs" aria-label="P36 catalog reconciliation handoff">
         <summary className="cursor-pointer text-sm font-medium">
-          P36 catalog reconciliation handoff — review only ({handoff.totalTerms} terms · {handoff.totalObservations} observations · {handoff.status})
+          P36 catalog reconciliation handoff — review only ({handoff.totalTerms} terms · {handoff.totalObservations} observations · {researcherDisplayStatus(handoff.status)})
         </summary>
         <div className="mt-2 space-y-2">
           <p>
@@ -348,7 +352,7 @@ export function UnknownBiomarkerReviewPanel(props: {
                   <strong className="break-words">{r.sourceLabel}</strong>
                   <span className="text-muted-foreground">{r.sourceUnit}</span>
                   <Badge variant="outline">{r.candidateCatalogStatus}</Badge>
-                  <Badge variant="secondary">{r.reviewStatus}</Badge>
+                  <Badge variant="secondary">{researcherDisplayStatus(r.reviewStatus)}</Badge>
                 </div>
                 <p className="break-words">
                   Candidate: {r.candidateCatalogId ? `${r.candidateCatalogId} — ${r.candidateCatalogName}` : "none (unresolved)"} · catalog unit{" "}
@@ -371,8 +375,8 @@ export function UnknownBiomarkerReviewPanel(props: {
           <p>Approvals are recorded only in the versioned governed registry through code review, each with a named reviewer, decision time and handbook evidence references. This app never writes that registry, and a Ground Medical decision is never an approval.</p>
           {evaluation.approvalHistory.length ? (
             <ul className="list-disc pl-5">{evaluation.approvalHistory.map((a) => <li key={`${a.extensionId}:${a.version}:${a.decidedAt}`}>{a.extensionId} v{a.version} · {a.decision} · {a.reviewer} · {a.decidedAt} · evidence {a.handbookEvidenceRefs.join(", ")}</li>)}</ul>
-          ) : <p>No scientific approvals are recorded. All proposals remain {REQUIRED_SCIENTIFIC_GATE}.</p>}
-          {evaluation.notEffective.length ? <ul className="list-disc pl-5">{evaluation.notEffective.map((n) => <li key={`${n.extensionId}:${n.version}`}>{n.extensionId} v{n.version}: not in effect — {n.reason}</li>)}</ul> : null}
+          ) : <p>No scientific approvals are recorded. All proposals remain {GATE_LABEL}.</p>}
+          {evaluation.notEffective.length ? <ul className="list-disc pl-5">{evaluation.notEffective.map((n) => <li key={`${n.extensionId}:${n.version}`}>{n.extensionId} v{n.version}: not in effect — {researcherDisplayText(n.reason)}</li>)}</ul> : null}
         </div>
       </details>
 

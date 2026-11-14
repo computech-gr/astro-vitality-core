@@ -1,3 +1,4 @@
+import { researcherDisplayText } from "@/domain/scientific-localization/researcher-display";
 import {
   approvalLayersFor,
   attestationLine,
@@ -91,7 +92,7 @@ export function SeriesInterpretationBlock({ value }: { value: SeriesInterpretati
       <div>
         <p className="font-medium">Citations</p>
         {value.citations.length ? (
-          <ul className="list-none space-y-0.5">{value.citations.map((c) => <li key={c} className="break-words">{c}</li>)}</ul>
+          <ul className="list-none space-y-0.5">{value.citations.map((c) => <li key={c} className="break-words">{researcherDisplayText(c)}</li>)}</ul>
         ) : <p className="text-muted-foreground">None</p>}
       </div>
       <ul className="list-disc pl-4 text-muted-foreground">{value.uncertainty.map((u) => <li key={u}>Uncertainty: {u}</li>)}</ul>

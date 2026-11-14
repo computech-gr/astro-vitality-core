@@ -5,6 +5,7 @@
  * Every term stays PENDING_NIKOLAS_REVIEW; nothing is activated, imported,
  * uploaded or written to the catalogs.
  */
+import { researcherDisplayText } from "@/domain/scientific-localization/researcher-display";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -384,7 +385,7 @@ export function P36ScientificReviewWorkspace() {
                   <ul className="space-y-0.5 text-xs">
                     {d.unitComparisons.map((u) => (
                       <li key={u.reference} className="break-words">
-                        {u.reference}: {u.referenceUnits.join(" / ") || "—"} ·{" "}
+                        {researcherDisplayText(u.reference)}: {u.referenceUnits.join(" / ") || "—"} ·{" "}
                         <span
                           className={
                             u.status === "STRING_DIFFERS_NO_CONVERSION" ? "font-semibold" : ""
@@ -421,7 +422,7 @@ export function P36ScientificReviewWorkspace() {
                 <h3 className="font-medium">Unresolved scientific questions</h3>
                 <ol className="list-decimal space-y-0.5 pl-5 text-xs">
                   {d.unresolvedQuestions.map((q) => (
-                    <li key={q}>{q}</li>
+                    <li key={q}>{researcherDisplayText(q)}</li>
                   ))}
                 </ol>
               </div>
@@ -433,8 +434,8 @@ export function P36ScientificReviewWorkspace() {
                 <ul className="mt-1 space-y-1">
                   {d.evidence.map((e) => (
                     <li key={e.ref} className="break-words border-b border-border py-1">
-                      <code>{e.ref}</code> · {e.title}
-                      <span className="block text-muted-foreground">{e.details.join(" · ")}</span>
+                      <code>{researcherDisplayText(e.ref)}</code> · {researcherDisplayText(e.title)}
+                      <span className="block text-muted-foreground">{researcherDisplayText(e.details.join(" · "))}</span>
                     </li>
                   ))}
                 </ul>
