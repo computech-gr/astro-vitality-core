@@ -1,0 +1,2 @@
+# Scientific localization rules
+- On-screen text never shows the scientific reviewer's personal name: researcherDisplayText/researcherDisplayStatus (src/domain/scientific-localization/researcher-display.ts) map it to Researcher wording at render sites, while sealed data, status identifiers, machine-readable JSON exports and link targets keep the originals; generated reports keep report-identity-redaction. This preserves hash-pinned evidence.
