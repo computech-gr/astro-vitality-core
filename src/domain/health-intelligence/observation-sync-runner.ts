@@ -119,7 +119,12 @@ export async function runObservationSync(
         for (const e of batch) failed.add(e.eventId);
         throw new ObservationSyncUploadError(error instanceof Error ? error.message : String(error), [...failed]);
       }
-      if (!res.ok) return done(result.uploaded.inserted ? "partial" : "failed", failureMessage(res), res.code);
+      if (!res.ok) {
+        // A structured server refusal has no per-event receipts. Mark the entire
+        // attempted batch retryable, exactly as for a thrown transport refusal.
+        for (const e of batch) failed.add(e.eventId);
+        return done(result.uploaded.inserted ? "partial" : "failed", failureMessage(res), res.code);
+      }
       const at = deps.now();
       const byId = new Map(batch.map((e) => [e.eventId, e]));
       const receipts: ObservationSyncReceipt[] = [];
