@@ -217,7 +217,7 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
 
       {mode === "entry" ? (
         <section className="mt-8 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]" aria-label="Choose a demo role">
-          <PublicDemoRoleEntry variant="panel" onStarted={() => setNotice(null)} />
+          <PublicDemoRoleEntry variant="panel" onStarted={() => { setNotice(null); void refresh(); }} />
           <div className="rounded-xl border border-border p-5 text-sm">
             <p className="font-semibold">Offline rehearsal</p>
             <p className="mt-2 text-muted-foreground">
