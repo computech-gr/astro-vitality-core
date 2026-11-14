@@ -58,15 +58,17 @@ const save = (rows: Row[]): UnifiedObservation[] =>
 
 async function confirmedImport() {
   for (const d of Object.values(DOCS)) expect(createHash("sha256").update(readFileSync(d.path)).digest("hex")).toBe(d.sha);
-  // 7 Nov: reviewer applies the stated "07/11/2026 09:30 UTC (day/month/year)" timestamp, then unticks the 3
-  // Immune-section repeats of hsCRP / IL-6 / TNF-α flagged by the in-document duplicate warning.
+  // 7 Nov: reviewer applies the stated "07/11/2026 09:30 UTC (day/month/year)" timestamp. The in-document duplicate
+  // warning flags 4 repeats; the reviewer unticks the 3 Immune-section repeats of hsCRP / IL-6 / TNF-α (rows 184, 190,
+  // 196) and keeps Behavioral row 313 "HRV RMSSD 12 ms" (as in the original MITO_DEMO_2026 record), acknowledging it.
   let nov07 = await tableRows(DOCS.nov07);
   const stamp = nov07[0].identity.timestampCandidates[0];
   expect(stamp).toMatchObject({ value: "2026-11-07T09:30:00Z", precision: "instant" });
   nov07 = (applyDocumentTimestamp(nov07, DOCS.nov07.sha, { value: stamp.value, precision: stamp.precision, interpretation: stamp.interpretation }).rows as Row[]).map(classify);
   const nov07Eligible = eligible(nov07);
   const repeats = new Set(batchDuplicateKeys(nov07Eligible.map((r) => ({ key: r.key, metricId: r.classification.metricId, observedAt: r.observedAt, datePrecision: r.datePrecision, value: r.value, unit: r.unit }))));
-  const nov07Kept = nov07Eligible.filter((r) => !repeats.has(r.key));
+  const UNTICK = new Set(["184", "190", "196"]);
+  const nov07Kept = nov07Eligible.filter((r) => !(repeats.has(r.key) && UNTICK.has(r.extraction.sourceRowNumber ?? r.excerpt.split(" | ")[0])));
   // 12–13 Nov: each row already carries its own examination date (two date columns).
   const nov1213 = await tableRows(DOCS.nov1213);
   // NASA report: five-column lab rows; collection dates are never promoted, so the reviewer types the printed date.
@@ -81,7 +83,7 @@ describe("P72.2 MISSION_TEST normal Examinations import", () => {
     const r = await confirmedImport();
     expect(r.nov07.length).toBe(328);
     expect(r.nov07Eligible.length).toBe(55);
-    expect(r.repeats.size).toBe(3);
+    expect(r.repeats.size).toBe(4);
     expect(r.nov07Kept.length).toBe(52);
     expect(r.nov07Kept.every((x: Row) => x.observedAt === "2026-11-07T09:30:00Z" && x.datePrecision === "instant")).toBe(true);
     const e1213 = eligible(r.nov1213);
