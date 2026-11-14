@@ -1,3 +1,4 @@
+import { P72MissionContextBar } from "@/components/mission-access/p72-mission-context-bar";
 import { GroundMedicalReviewPanel } from "@/components/p368b-ground-medical-review";
 import { P37GroundMedicalActivationPanel } from "@/components/p37-ground-medical-activation";
 import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
@@ -109,6 +110,7 @@ export function GroundResearchConsolePage() {
           payloads, source IDs or medical records are exported. Small cohorts and low-volume
           missions are suppressed by the server.
         </p>
+        <P72MissionContextBar role="medical" />
         <h2 className="sr-only">Research export workspace</h2>
         <Card className="mt-8">
           <CardHeader>

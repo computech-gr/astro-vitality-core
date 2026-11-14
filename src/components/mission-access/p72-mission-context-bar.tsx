@@ -26,7 +26,7 @@ export function P72MissionContextBar({ role }: { role: DemoRole }) {
   const route = P72_ROLE_ROUTES[role];
   const membership = p72TargetMembership(role, identity.memberships);
   return (
-    <section aria-label="Mission presentation context" className="mx-auto mt-24 w-full max-w-6xl px-5 lg:px-8">
+    <section aria-label="Mission presentation context" className="mt-6 w-full">
       <div className="rounded-xl border border-primary/30 bg-card p-4 text-sm">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <p className="font-semibold">{route.consoleLabel} · {P72_TARGET_LABEL}</p>

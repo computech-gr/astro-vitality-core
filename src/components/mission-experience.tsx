@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionIdentitySnapshot } from "@/infrastructure/mission-identity";
 import { workflowsForRole } from "@/domain/mission-experience/workflows";
+import { P72MissionContextBar } from "@/components/mission-access/p72-mission-context-bar";
 
 export function MissionExperiencePage() {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
@@ -34,6 +35,7 @@ export function MissionExperiencePage() {
       <p className="section-kicker" data-phase="P33">Astronaut Experience & Mission Control</p>
       <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Mission workspace</h1>
       <p className="mt-4 max-w-3xl text-muted-foreground">Choose a mission task with clear provenance and human oversight. This is a navigation workspace, not a live health-status verdict or a clinical decision system.</p>
+      <P72MissionContextBar role="astronaut" />
       <section aria-label="Identity and access status" className="mt-8 rounded-xl border border-border bg-card p-5" aria-live="polite">
         {loading ? <p role="status">Verifying mission membership…</p> : error ? <p role="alert" className="flex items-center gap-2"><ShieldAlert className="size-5" />{error}</p> : active && identity?.signedIn ? (
           <div className="space-y-2"><p className="font-semibold">Authorized mission: {active.missionName ?? active.missionCode ?? "Selected mission"}</p><p className="text-sm text-muted-foreground">Role: {active.role.replaceAll("_", " ")} · Mission-scoped access · No automatic health interpretation</p></div>

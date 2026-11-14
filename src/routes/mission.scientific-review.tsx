@@ -9,6 +9,7 @@ import { CRITERIA_REVIEW_ANCHOR, CRITERIA_REVIEW_HEADING, ReferenceCriteriaRevie
 import { MAPPING_REGISTER_ANCHOR, MAPPING_REGISTER_HEADING, P613MappingDecisionRegister } from "@/components/p613-mapping-decision-register";
 import { MAPPING_GOVERNANCE_ANCHOR, MAPPING_GOVERNANCE_HEADING, P614MappingGovernancePanel } from "@/components/p614-mapping-governance-panel";
 import { operationalRouteHead } from "@/infrastructure/seo";
+import { P72MissionContextBar } from "@/components/mission-access/p72-mission-context-bar";
 
 export const Route = createFileRoute("/mission/scientific-review")({
   head: () =>
@@ -24,6 +25,9 @@ export const Route = createFileRoute("/mission/scientific-review")({
 function ScientificReviewPage() {
   return (
     <>
+      <div className="mx-auto max-w-6xl px-4 sm:px-5">
+        <P72MissionContextBar role="researcher" />
+      </div>
       <nav aria-label="On this page" className="mx-auto max-w-6xl px-4 pt-6 sm:px-5">
         <a
           href={`#${BULK_RESEARCHER_ANCHOR}`}
