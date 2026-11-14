@@ -7,3 +7,5 @@
 - The SQL seed literal must equal buildP69SeedDocument() (tested); change both together.
 - A demo scientific assessment is never scientific authorization or catalog activation, and a demo medical review is never a diagnosis or clinical clearance; astronauts see the final medical state with assessment details redacted.
 - Tab storage holds only the synthetic join code, role and expiry.
+- Provisioning signs the new demo identity in before binding it to a workspace, and deletes it on any later failure; a failed entry must never leave a bound or orphaned identity.
+- The admission rate-limit address comes only from the edge-set `cf-connecting-ip` (IPv6 bucketed per /64); forwarded-for headers are client-controlled and never trusted, and a missing address shares one fail-closed bucket.
