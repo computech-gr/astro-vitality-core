@@ -672,3 +672,13 @@
 - [ ] Publish the fix (blocked: owner authorization).
 - [ ] Sync the 192 device observations (blocked: publication + owner authorization of the Cloud write).
 - [ ] Evaluator crew record and rehearsal (blocked: owner choice and approval).
+
+## P68–P71 NASA live demonstration (Preview only)
+
+- [x] P68 shared mission context (four parameters, exact units, site-bound body temperature, missing states) shown read-only in all four health domains.
+- [x] P69 one-click Astronaut/Researcher/Medical entry, server-only identity provisioning core, caller-scoped workspace actions; pending SQL + rollback staged in supabase/pending (65 disposable PostgreSQL checks).
+- [x] P70 homepage headline/subtitle, Mission Access role buttons, Standard sign-in labelled and unchanged.
+- [x] P71 append-only Astronaut → Researcher → Medical workflow, reset/restore, offline rehearsal, disclosure, runbook (docs/P68_P71_NASA_LIVE_DEMO.md).
+- [ ] Apply the P69 pending SQL (blocked: owner approval of the exact file).
+- [ ] Set P69_PUBLIC_DEMO_ENABLED and P69_PUBLIC_DEMO_CLIENT_SALT, then live browser rehearsal in three profiles (blocked: owner approval; after the SQL).
+- [ ] Publish (blocked: owner authorization).

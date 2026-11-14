@@ -43,6 +43,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { PublicDemoRoleEntry } from "@/components/public-demo/public-demo-role-entry";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,6 +100,7 @@ const navigation: readonly NavigationEntry[] = [
           "Mission & Crew Operations",
           "Daily Readiness Check-in",
           "Daily Health Companion",
+          "NASA Live Demo",
         ],
       },
       {
@@ -352,6 +354,7 @@ function itemHref(label: string, fallback: string) {
   if (label === "Mission Scenario") return "/mission/simulation";
   if (label === "AI Administration & Usage") return "/mission/ai-administration";
   if (label === "Mission Identity & Sign-in") return "/mission/identity";
+  if (label === "NASA Live Demo") return "/mission/demo";
   if (label === "Mission & Crew Operations") return "/mission/operations";
   if (label === "Mission Workspace") return "/mission/experience";
   if (label === "Daily Readiness Check-in") return "/mission/readiness";
@@ -766,39 +769,24 @@ export function AppShell() {
               </p>
               <h1
                 id="hero-title"
-                className="font-display text-5xl font-semibold leading-[0.98] sm:text-6xl lg:text-8xl"
+                className="font-display text-4xl font-semibold leading-[1.02] sm:text-5xl lg:text-7xl"
               >
-                Healthy People.
-                <br />
-                <span className="text-primary">Farther Together.</span>
+                Where Scientific Reasoning Meets{" "}
+                <span className="text-primary">AI-Powered Intelligence.</span>
               </h1>
               <p className="mt-7 max-w-2xl text-lg font-medium leading-relaxed text-foreground sm:text-xl">
-                Open-source, offline-first astronaut health intelligence for long-duration human
-                spaceflight.
+                MITOCHONDRIA combines evidence-based scientific reasoning with AI-driven analysis to
+                explore astronaut health, uncover meaningful patterns, and support informed decisions
+                during long-duration space missions.
               </p>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                Turning physiological, biological, cognitive, behavioral and spacecraft-environment
-                data into personalized, explainable and actionable health insight — even when Earth
-                is offline.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  size="lg"
-                  asChild
-                  className="h-12 px-6 font-semibold shadow-[0_0_32px_var(--primary-glow)]"
-                >
-                  <a href="#mission">
-                    Explore the Mission <ArrowRight />
-                  </a>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  asChild
-                  className="h-12 border-foreground/30 bg-background/20 px-6 backdrop-blur"
-                >
-                  <a href="#platform">How It Works</a>
-                </Button>
+              <PublicDemoRoleEntry variant="hero" />
+              <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                <a href="#mission" className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline">
+                  Explore the Mission <ArrowRight className="size-4" />
+                </a>
+                <a href="#platform" className="font-medium text-foreground underline-offset-4 hover:underline">
+                  How It Works
+                </a>
               </div>
               <div className="mt-10 inline-flex items-center gap-3 border-l border-signal px-4 py-2 text-xs uppercase text-muted-foreground">
                 <span className="size-1.5 bg-signal shadow-[0_0_12px_var(--signal)]" />

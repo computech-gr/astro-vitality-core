@@ -14,6 +14,7 @@ import { BoneSourceCombobox } from "@/components/bone-source-combobox";
 import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { DomainEvidencePanel } from "@/components/domain-evidence-panel";
 import { ResearcherInterpretationPanel } from "@/components/researcher-interpretation-panel";
+import { SharedMissionContextPanel } from "@/components/shared-mission-context-panel";
 import { BoneReportedFieldCombobox } from "@/components/bone-reported-field-combobox";
 import { resolveBoneObservationInstant, utcIsoToLocalDatetimeInput } from "@/domain/bone-health/local-datetime";
 import { persistBoneCorrection, scopedBoneSources } from "@/domain/bone-health/correction";
@@ -350,6 +351,7 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
           <HealthDomainNavigation current="bone" />
         </>
       )}
+      <SharedMissionContextPanel domainId={profile.domainId} />
       <form
         onSubmit={submit}
         className="mt-8 grid gap-4 rounded-xl border border-border p-5 sm:grid-cols-2"

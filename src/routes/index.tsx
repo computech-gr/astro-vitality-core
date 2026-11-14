@@ -5,7 +5,7 @@ import { indexableRouteHead } from "@/infrastructure/seo";
 
 const title = "The Mitochondria | Astronaut Health Intelligence";
 const description =
-  "Open-source, offline-first astronaut health intelligence for long-duration human spaceflight, built for NASA Space Apps Challenge 2026.";
+  "Where scientific reasoning meets AI-powered intelligence: open-source astronaut health exploration for long-duration missions, with a one-click synthetic NASA live demo.";
 
 export const Route = createFileRoute("/")({
   head: () => indexableRouteHead({ path: "/", title, description }),
