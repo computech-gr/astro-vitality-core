@@ -15,6 +15,7 @@ import {
   type DemoRole,
   type DemoTransitionAction,
 } from "@/domain/public-demo/workflow";
+import { formatDemoExaminationDate } from "@/domain/public-demo/presentation";
 
 const ACTOR = { astronaut: "Astronaut", researcher: "Researcher", medical: "Medical", seed: "Deterministic seed" } as const;
 const ACTION = {
@@ -75,7 +76,7 @@ export function PublicDemoRecordCard({
         <div>
           <p className="font-mono text-sm font-semibold">{record.recordRef}</p>
           <p className="text-xs text-muted-foreground">
-            {P69_DEMO_CREW_SUBJECT.name} · examination {record.observedOn} · {record.measurements.length} measurements · quality {record.sourceQuality} · synthetic
+            {P69_DEMO_CREW_SUBJECT.name} · examination {formatDemoExaminationDate(record)} · {record.measurements.length} measurements · quality {record.sourceQuality} · synthetic
           </p>
         </div>
         <Badge variant={record.state === "medical_review_recorded" ? "secondary" : "outline"}>

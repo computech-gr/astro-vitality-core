@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Copy, LogOut, RefreshCw, RotateCcw, ShieldCheck } from "lucide-react";
+import { Copy, Loader2, LogOut, RefreshCw, RotateCcw, ShieldCheck, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,14 @@ import {
   writeStoredDemoWorkspace,
   type StoredDemoWorkspace,
 } from "@/domain/public-demo/session-storage";
+import {
+  createSingleFlight,
+  isRecordConflict,
+  pendingWorkspaceText,
+  recordConflictNotice,
+  runWorkspaceAction,
+  type DemoNotice,
+} from "@/domain/public-demo/workspace-feedback";
 import type { SharedContextReadingInput } from "@/domain/mission-context/shared-context";
 import { SharedMissionContextPanel } from "@/components/shared-mission-context-panel";
 import { PublicDemoRoleEntry } from "./public-demo-role-entry";
@@ -69,7 +77,9 @@ function key(): string {
 export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
   const [mode, setMode] = useState<"loading" | "entry" | "live" | "offline">(offline ? "offline" : "loading");
   const [live, setLive] = useState<Live | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<DemoNotice | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
+  const workspaceFlight = useRef(createSingleFlight());
   const [stored, setStored] = useState<StoredDemoWorkspace | null>(null);
   const [offlineState, setOfflineState] = useState<OfflineDemoState>(() => createOfflineDemoState(new Date().toISOString()));
   const [offlineRole, setOfflineRole] = useState<DemoRole>("astronaut");
@@ -85,7 +95,7 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
       }
       const result = await getPublicDemoWorkspaceFn();
       if (!result.ok) {
-        setNotice(result.message);
+        setNotice({ tone: "error", text: result.message });
         setMode("entry");
         return;
       }
@@ -93,10 +103,24 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
       setMode("live");
       setStored(readStoredDemoWorkspace());
     } catch {
-      setNotice("The demo service could not be reached. You can use the offline rehearsal.");
+      setNotice({ tone: "error", text: "The demo service could not be reached. You can use the offline rehearsal." });
       setMode("entry");
     } finally {
       setBusy(false);
+    }
+  }, []);
+
+  /** Reloads the live workspace after an action, keeping the current view if loading fails. */
+  const reloadLive = useCallback(async (): Promise<boolean> => {
+    try {
+      const result = await getPublicDemoWorkspaceFn();
+      if (!result.ok) return false;
+      setLive(result);
+      setMode("live");
+      setStored(readStoredDemoWorkspace());
+      return true;
+    } catch {
+      return false;
     }
   }, []);
 
@@ -136,9 +160,12 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
       setOfflineState(result.state);
       return null;
     }
+    const recordRef = live?.records.find((r) => r.id === args.recordId)?.recordRef ?? "This examination";
     const result = await transitionDemoRecordFn({ data: { ...args, idempotencyKey: key() } });
     if (!result.ok) {
-      if (result.code === "stale" || result.code === "invalid_state") await refresh();
+      // Never retried: the refused review is reported at workspace level so the
+      // message survives this record's card refreshing or leaving the queue.
+      if (isRecordConflict(result.code)) setNotice(recordConflictNotice(args.action, recordRef, await reloadLive()));
       return result.message;
     }
     await refresh();
@@ -146,6 +173,7 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
   }
 
   async function reset() {
+    if (workspaceFlight.current.active) return;
     if (!window.confirm("Reset this demo workspace to the deterministic seed? Earlier versions stay restorable.")) return;
     if (mode === "offline") {
       const result = offlineReset(offlineState, offlineState.revision, new Date().toISOString());
@@ -153,9 +181,18 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
       return;
     }
     if (!live) return;
-    const result = await resetDemoWorkspaceFn({ data: { expectedRevision: live.session.workspaceRevision } });
-    setNotice(result.ok ? "Workspace reset to the deterministic seed." : result.message);
-    await refresh();
+    const expectedRevision = live.session.workspaceRevision;
+    await workspaceFlight.current.run(async () => {
+      setNotice(null);
+      setPending(pendingWorkspaceText("reset"));
+      const outcome = await runWorkspaceAction({
+        kind: "reset",
+        perform: () => resetDemoWorkspaceFn({ data: { expectedRevision } }),
+        reload: reloadLive,
+      });
+      setPending(null);
+      setNotice(outcome);
+    });
   }
 
   async function restore(epoch: number) {
@@ -165,9 +202,19 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
       return;
     }
     if (!live) return;
-    const result = await restoreDemoWorkspaceFn({ data: { epoch, expectedRevision: live.session.workspaceRevision } });
-    setNotice(result.ok ? `Workspace version ${epoch} restored.` : result.message);
-    await refresh();
+    const expectedRevision = live.session.workspaceRevision;
+    await workspaceFlight.current.run(async () => {
+      setNotice(null);
+      setPending(pendingWorkspaceText("restore", epoch));
+      const outcome = await runWorkspaceAction({
+        kind: "restore",
+        epoch,
+        perform: () => restoreDemoWorkspaceFn({ data: { epoch, expectedRevision } }),
+        reload: reloadLive,
+      });
+      setPending(null);
+      setNotice(outcome);
+    });
   }
 
   async function switchRole(next: DemoRole) {
@@ -176,13 +223,13 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
       return;
     }
     if (!stored?.joinCode) {
-      setNotice("This tab does not hold the workspace code. Open a new private window and join with the code instead.");
+      setNotice({ tone: "info", text: "This tab does not hold the workspace code. Open a new private window and join with the code instead." });
       return;
     }
     setBusy(true);
     const result = await startPublicDemoRoleFn({ data: { role: next, joinCode: stored.joinCode } }).catch(() => null);
     if (!result || !result.ok) {
-      setNotice(result?.message ?? "The demo service could not be reached.");
+      setNotice({ tone: "error", text: result?.message ?? "The demo service could not be reached." });
       setBusy(false);
       return;
     }
@@ -211,7 +258,26 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
         <ShieldCheck className="mr-2 inline size-4 text-signal" aria-hidden="true" />
         {DEMO_DISCLOSURE}
       </p>
-      {notice ? <p role="status" className="mt-4 rounded-md border border-border p-3 text-sm">{notice}</p> : null}
+      {pending ? (
+        <p role="status" aria-live="polite" className="mt-4 flex items-center gap-2 rounded-md border border-border p-3 text-sm">
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" /> {pending}
+        </p>
+      ) : null}
+      {notice ? (
+        <div
+          role={notice.tone === "error" || notice.tone === "warning" ? "alert" : "status"}
+          aria-live={notice.tone === "error" || notice.tone === "warning" ? "assertive" : "polite"}
+          data-tone={notice.tone}
+          className={`mt-4 flex items-start justify-between gap-3 rounded-md border p-3 text-sm ${
+            notice.tone === "error" ? "border-destructive" : notice.tone === "warning" ? "border-signal" : "border-border"
+          }`}
+        >
+          <p>{notice.text}</p>
+          <Button variant="ghost" size="icon" className="size-6 shrink-0" aria-label="Dismiss message" onClick={() => setNotice(null)}>
+            <X />
+          </Button>
+        </div>
+      ) : null}
 
       {mode === "loading" ? <p className="mt-8 text-muted-foreground">Opening your demo workspace…</p> : null}
 
@@ -262,18 +328,18 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
                 <select
                   className="mt-1 block rounded-md border border-border bg-background px-2 py-2 text-sm text-foreground"
                   value={role}
-                  disabled={busy}
+                  disabled={busy || pending !== null}
                   onChange={(e) => void switchRole(e.target.value as DemoRole)}
                 >
                   {DEMO_ROLES.map((r) => <option key={r} value={r}>{DEMO_ROLE_LABELS[r].title}</option>)}
                 </select>
               </label>
               {mode === "live" ? (
-                <Button variant="outline" size="sm" className="mt-5" onClick={() => void refresh()} disabled={busy}>
+                <Button variant="outline" size="sm" className="mt-5" onClick={() => void refresh()} disabled={busy || pending !== null}>
                   <RefreshCw className={busy ? "animate-spin" : ""} /> Refresh
                 </Button>
               ) : null}
-              <Button variant="outline" size="sm" className="mt-5" onClick={() => void reset()} disabled={busy}>
+              <Button variant="outline" size="sm" className="mt-5" onClick={() => void reset()} disabled={busy || pending !== null}>
                 <RotateCcw /> Reset workspace
               </Button>
               {maxEpoch > 1 ? (
@@ -282,6 +348,7 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
                   <select
                     className="mt-1 block rounded-md border border-border bg-background px-2 py-2 text-sm text-foreground"
                     value=""
+                    disabled={busy || pending !== null}
                     onChange={(e) => e.target.value && void restore(Number(e.target.value))}
                   >
                     <option value="">Choose…</option>
