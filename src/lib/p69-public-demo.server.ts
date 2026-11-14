@@ -136,7 +136,7 @@ export function isPublicDemoConfigured(enabledFlag: string | undefined, salt: st
 
 export async function provisionPublicDemoRole(
   deps: ProvisionDeps,
-  input: { role: string; joinCode?: string | null },
+  input: { role: string; joinCode?: string | null | undefined },
 ): Promise<ProvisionResult> {
   if (!deps.enabled || !deps.clientSalt || deps.clientSalt.length < 32) return demoFailure("disabled");
   if (!isDemoRole(input.role)) return demoFailure("invalid", "Choose Astronaut, Researcher or Medical.");
