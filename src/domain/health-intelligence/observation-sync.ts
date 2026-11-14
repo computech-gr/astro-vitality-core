@@ -57,7 +57,8 @@ export function classifyObservationSyncError(code: string | undefined): Observat
 }
 
 const EVENT_ID = /^[A-Za-z0-9][A-Za-z0-9-]{7,127}:(entry|status)$/;
-const ALLOWED_TOP = new Set([
+/** Every canonical envelope field; the server-function input schema must accept exactly these (P62 parity test). */
+export const OBSERVATION_SYNC_ALLOWED_FIELDS = [
   "schema",
   "id",
   "missionId",
@@ -80,7 +81,8 @@ const ALLOWED_TOP = new Set([
   "correction",
   "catalogBasis",
   "recordedAt",
-]);
+] as const;
+const ALLOWED_TOP = new Set<string>(OBSERVATION_SYNC_ALLOWED_FIELDS);
 const ALLOWED_SOURCE = new Set(["kind", "label", "documentName", "documentSha256", "excerpt"]);
 const ALLOWED_QUALITY = new Set(["reviewerConfirmed", "duplicateWarningAcknowledged"]);
 const ALLOWED_CORRECTION = new Set([

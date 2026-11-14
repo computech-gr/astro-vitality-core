@@ -14,80 +14,9 @@
  *   migration is applied every call returns "migration required"; nothing is claimed.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { OBSERVATION_SYNC_BATCH_MAX, OBSERVATION_SYNC_PAGE_MAX, type ObservationSyncEvent } from "@/domain/health-intelligence/observation-sync";
-
-import { DATED_OBSERVATION_SCHEMA, UNIFIED_OBSERVATION_SCHEMA, validateUnifiedObservation, type UnifiedObservation } from "@/domain/health-intelligence/observation-envelope";
-import { isExplicitInstant } from "@/domain/health-intelligence/observation-date";
-
-const id = z.string().min(1).max(128);
-const iso = z.string().min(10).max(40).refine((v) => isExplicitInstant(v), "invalid instant");
-const scopeSchema = z.object({ missionId: id, crewMemberId: id, provenance: z.enum(["synthetic", "real"]) }).strict();
-
-const observationSchema = z
-  .object({
-    schema: z.enum([UNIFIED_OBSERVATION_SCHEMA, DATED_OBSERVATION_SCHEMA]),
-    id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9-]{7,127}$/),
-    missionId: id,
-    crewMemberId: id,
-    metricId: z.string().min(1).max(128),
-    domain: z.string().min(1).max(64),
-    value: z.string().min(1).max(64),
-    originalUnit: z.string().min(1).max(64),
-    reportedUnit: z.string().min(1).max(64).optional(),
-    observedAt: z.string().min(10).max(40),
-    datePrecision: z.enum(["date", "instant"]).optional(),
-    collectionDate: z.string().max(10).optional(),
-    source: z
-      .object({
-        kind: z.enum(["manual", "csv", "xlsx", "json", "fhir", "pdf_text", "ocr", "device", "self_assessment"]),
-        label: z.string().min(1).max(300),
-        documentName: z.string().max(300).optional(),
-        documentSha256: z.string().max(128).optional(),
-        excerpt: z.string().max(4000).optional(),
-      })
-      .strict(),
-    provenance: z.enum(["synthetic", "real"]),
-    quality: z.object({ reviewerConfirmed: z.boolean(), duplicateWarningAcknowledged: z.boolean().optional() }).strict(),
-    reviewState: z.enum(["pending_review", "accepted", "rejected"]),
-    status: z.enum(["active", "erroneous"]).optional(),
-    statusReason: z.string().max(500).optional(),
-    supersedesId: z.string().max(128).optional(),
-    correction: z
-      .object({
-        intentId: z.string().max(64),
-        originalRecordId: z.string().max(128),
-        actorUserId: z.string().uuid(),
-        actorRole: z.literal("ground_medical"),
-        reason: z.string().max(500),
-        decidedAt: iso,
-      })
-      .strict()
-      .optional(),
-    recordedAt: iso,
-  })
-  .strict()
-  .refine((value) => !validateUnifiedObservation(value as UnifiedObservation), "Invalid observation envelope/date precision");
-
-const eventSchema = z
-  .object({
-    eventId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9-]{7,127}:(entry|status)$/),
-    eventKind: z.enum(["entry", "status"]),
-    observation: observationSchema,
-  })
-  .strict();
-
-const pushInput = z
-  .object({ scope: scopeSchema, events: z.array(eventSchema).max(OBSERVATION_SYNC_BATCH_MAX), realDataConfirmed: z.boolean() })
-  .strict();
-const pullInput = z
-  .object({
-    scope: scopeSchema,
-    afterSeq: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
-    limit: z.number().int().min(1).max(OBSERVATION_SYNC_PAGE_MAX),
-  })
-  .strict();
+import type { ObservationSyncEvent } from "@/domain/health-intelligence/observation-sync";
+import { observationSyncPullInput as pullInput, observationSyncPushInput as pushInput } from "./observation-sync.schema";
 
 type Ctx = { supabase: { rpc: unknown; from: (t: string) => unknown }; userId: string };
 
