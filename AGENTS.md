@@ -57,4 +57,3 @@
 - P40 interpretation review rules live in src/domain/health-intelligence/AGENTS.md.
 - P56 assessment is the main report; old report = optional appendix (health-intelligence AGENTS.md).
 - P69–P71 public live demo rules live in src/domain/public-demo/AGENTS.md.
-- P72 homepage role access keeps full mapped account emails in a server-only module (browser shows masked labels) and only routes signed-in mapped accounts to consoles; synthetic examination copies use the pure plan in src/domain/examination-copy (pending review, no attestations, deterministic IDs) and the operator script, so copies stay idempotent and never inherit approvals.
