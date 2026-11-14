@@ -38,7 +38,7 @@ export function PublicDemoRoleEntry({
     setConfirmRole(null);
     setBusyRole(role);
     try {
-      const code = joinCode.trim() || (variant === "panel" ? "" : (readStoredDemoWorkspace()?.joinCode ?? ""));
+      const code = joinCode.trim();
       const result = await startPublicDemoRoleFn({ data: { role, joinCode: code || null } });
       if (!result.ok) {
         setMessage({
