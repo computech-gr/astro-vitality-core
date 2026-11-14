@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical, HeartPulse, Loader2, Rocket } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { startPublicDemoRoleFn } from "@/lib/p69-public-demo.functions";
 import { DEMO_ROLES, DEMO_ROLE_LABELS, type DemoRole } from "@/domain/public-demo/workflow";
 import { readStoredDemoWorkspace, writeStoredDemoWorkspace } from "@/domain/public-demo/session-storage";
+import { P72_ROLE_ROUTES } from "@/domain/mission-access/p72-role-access";
+import { checkP72RoleAccountFn } from "@/lib/p72-role-access.functions";
+import { resolveP72RoleEntry } from "@/components/mission-access/p72-role-entry";
 
 const ICONS: Record<DemoRole, typeof Rocket> = { astronaut: Rocket, researcher: FlaskConical, medical: HeartPulse };
 
@@ -25,13 +29,29 @@ export function PublicDemoRoleEntry({
   const [busyRole, setBusyRole] = useState<DemoRole | null>(null);
   const [message, setMessage] = useState<{ text: string; offline: boolean } | null>(null);
   const [confirmRole, setConfirmRole] = useState<DemoRole | null>(null);
+  const [confirmAccount, setConfirmAccount] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState(defaultJoinCode);
+  const checkAccount = useServerFn(checkP72RoleAccountFn);
 
   async function start(role: DemoRole, confirmed = false) {
     setMessage(null);
     const { data } = await supabase.auth.getSession();
     const signedInStandard = data.session && data.session.user.app_metadata?.["mitochondria_public_demo"] !== true;
     if (signedInStandard && !confirmed) {
+      // P72: the mapped mission account goes straight to its normal console.
+      setBusyRole(role);
+      try {
+        const decision = await resolveP72RoleEntry(role, checkAccount);
+        if (decision.kind === "console") {
+          await navigate({ to: decision.path });
+          return;
+        }
+        setConfirmAccount(decision.kind === "wrong_account" ? decision.signedInAs : null);
+      } catch {
+        setConfirmAccount(null);
+      } finally {
+        setBusyRole(null);
+      }
       setConfirmRole(role);
       return;
     }
@@ -119,9 +139,25 @@ export function PublicDemoRoleEntry({
       ) : null}
       {confirmRole ? (
         <div role="alertdialog" aria-label="Leave your account for the demo" className="mt-4 rounded-md border border-border bg-background/80 p-3 text-sm">
-          <p>You are signed in to a standard account in this browser. Starting the demo signs that account out here.</p>
-          <div className="mt-3 flex gap-2">
-            <Button size="sm" onClick={() => void start(confirmRole, true)}>Continue to demo</Button>
+          <p>
+            {DEMO_ROLE_LABELS[confirmRole].title} opens the {P72_ROLE_ROUTES[confirmRole].consoleLabel} for the mapped mission account{" "}
+            <span className="font-mono">{P72_ROLE_ROUTES[confirmRole].maskedAccount}</span>.{" "}
+            {confirmAccount ? <>You are signed in as <span className="font-mono">{confirmAccount}</span>. </> : null}
+            Starting the synthetic demo signs your account out in this browser.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => void start(confirmRole, true)}>Continue to synthetic demo</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const role = confirmRole;
+                setConfirmRole(null);
+                void supabase.auth.signOut({ scope: "local" }).then(() => navigate({ to: "/mission/identity", search: { role } }));
+              }}
+            >
+              Sign in as the mapped account
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setConfirmRole(null)}>Stay signed in</Button>
           </div>
         </div>
@@ -136,7 +172,19 @@ export function PublicDemoRoleEntry({
           ) : null}
         </p>
       ) : null}
-      <p className="mt-4 text-xs text-muted-foreground">
+      <p className="mt-3 text-xs text-muted-foreground">
+        Mission account holder? Sign in to open your normal console:{" "}
+        {DEMO_ROLES.map((role, i) => (
+          <span key={role}>
+            {i ? " · " : ""}
+            <Link to="/mission/identity" search={{ role }} className="font-medium text-foreground underline">
+              {DEMO_ROLE_LABELS[role].title}
+            </Link>{" "}
+            <span className="font-mono">({P72_ROLE_ROUTES[role].maskedAccount})</span>
+          </span>
+        ))}
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">
         Synthetic data only · not a medical device · no diagnosis or clinical clearance.{" "}
         <Link to="/mission/identity" className="font-medium text-foreground underline">
           Standard sign-in
