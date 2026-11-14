@@ -32,13 +32,17 @@ export function PublicDemoRecordCard({
   record,
   role,
   onTransition,
+  actionable = true,
 }: {
   record: DemoRecord;
   role: DemoRole;
+  actionable?: boolean;
   onTransition: (args: { recordId: string; action: DemoTransitionAction; outcome: string; note: string; expectedRevision: number }) => Promise<string | null>;
 }) {
   const action: DemoTransitionAction | null =
-    role === "researcher" && record.state === "submitted"
+    !actionable
+      ? null
+      : role === "researcher" && record.state === "submitted"
       ? "scientific_assessment_recorded"
       : role === "medical" && record.state === "scientific_assessment_recorded"
         ? "medical_review_recorded"

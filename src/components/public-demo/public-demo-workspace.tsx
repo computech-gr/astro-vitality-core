@@ -332,7 +332,7 @@ export function PublicDemoWorkspace({ offline }: { offline: boolean }) {
           <section className="mt-8" aria-labelledby="all-records-title">
             <h2 id="all-records-title" className="text-xl font-semibold">All examinations in this workspace version ({records.length})</h2>
             <div className="mt-3 grid max-h-[720px] gap-3 overflow-y-auto pr-1 lg:grid-cols-2">
-              {records.map((r) => <PublicDemoRecordCard key={`all-${r.id}-${r.revision}`} record={r} role={role} onTransition={transition} />)}
+              {records.map((r) => <PublicDemoRecordCard key={`all-${r.id}-${r.revision}`} record={r} role={role} onTransition={transition} actionable={false} />)}
             </div>
           </section>
 
