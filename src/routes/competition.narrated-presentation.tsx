@@ -4,7 +4,7 @@ import { indexableRouteHead } from "@/infrastructure/seo";
 // Office Online viewer requires a publicly accessible URL; audio playback,
 // automatic transitions and narration support are not guaranteed.
 const presentationUrl =
-  "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx";
+  "https://raw.githubusercontent.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026/main/docs/competition/MITOCHONDRIA_NASA_2026_Professional_Narrated_Presentation_Final.pptx";
 const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(presentationUrl)}`;
 
 function NarratedPresentationPage() {

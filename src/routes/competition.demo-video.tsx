@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { indexableRouteHead } from "@/infrastructure/seo";
 const videoUrl =
-  "https://raw.githubusercontent.com/computech-gr/astro-vitality-core/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4";
+  "https://raw.githubusercontent.com/computech-gr/MITOCHONDRIA-NASA-Space-Apps-2026/main/docs/competition/MITOCHONDRIA_NASA_2026_Official_Demo_FINAL.mp4";
 
 const title = "NASA Space Apps Demo Video | The Mitochondria";
 const description =
