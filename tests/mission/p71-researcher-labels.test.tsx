@@ -8,7 +8,9 @@ import { HealthDomainWorkspace } from "@/components/health-domain-workspace";
 import { P35FinalAcceptance } from "@/components/p35-final-acceptance";
 import { ProjectRoadmap } from "@/components/project-roadmap";
 import { HEALTH_DOMAINS } from "@/domain/health-domains/registry";
-import { HEALTH_MEASUREMENT_PROFILES } from "@/domain/health-measurements/profiles";
+import { MEASUREMENT_PROFILES } from "@/domain/health-measurements/profiles";
+import { buildFinalDemoReadiness } from "@/domain/mission-access/final-demo-readiness";
+import { getDemoAcceptanceGates } from "@/domain/mission-access/offline-demo-acceptance";
 import { buildScientificReviewDossiers } from "@/domain/health-intelligence/p36-scientific-review";
 import { containsReviewerName, researcherDisplayStatus, researcherDisplayText } from "@/domain/scientific-localization/researcher-display";
 import { redactProhibitedNames } from "@/domain/health-intelligence/report-identity-redaction";
@@ -50,12 +52,12 @@ describe("P71 Researcher display wording", () => {
     expect(pages[0]).toContain("Researcher");
   });
 
-  test("domain registry, measurement profiles and readiness texts carry no personal name", async () => {
-    const { FINAL_DEMO_READINESS } = await import("@/domain/mission-access/final-demo-readiness").catch(() => ({ FINAL_DEMO_READINESS: undefined }));
+  test("domain registry, measurement profiles and mission-readiness texts carry no personal name", () => {
     const texts = [
       JSON.stringify(HEALTH_DOMAINS),
-      JSON.stringify(Object.values(HEALTH_MEASUREMENT_PROFILES).map((p) => p.catalogStatusNote)),
-      JSON.stringify(FINAL_DEMO_READINESS ?? ""),
+      JSON.stringify(Object.values(MEASUREMENT_PROFILES).map((p) => p.catalogStatusNote)),
+      JSON.stringify(buildFinalDemoReadiness(null, "MITO_DEMO_2026")),
+      JSON.stringify(getDemoAcceptanceGates()),
     ];
     for (const t of texts) expect(containsReviewerName(t)).toBe(false);
   });
