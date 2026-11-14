@@ -1,6 +1,6 @@
 import { it } from "bun:test";
 import { readFileSync, writeFileSync } from "node:fs";
-import { getActiveCatalog } from "@/domain/health-intelligence/unknown-biomarker-review";
+import { getActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
 it("n", () => {
   const c: any = getActiveCatalog();
   console.log(Object.keys(c));
