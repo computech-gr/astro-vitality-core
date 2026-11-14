@@ -57,3 +57,4 @@
 - P40 interpretation review rules live in src/domain/health-intelligence/AGENTS.md.
 - P56 assessment is the main report; old report = optional appendix (health-intelligence AGENTS.md).
 - P69–P71 public live demo rules live in src/domain/public-demo/AGENTS.md.
+- On-screen text never shows the scientific reviewer's personal name: researcherDisplayText/researcherDisplayStatus (src/domain/scientific-localization/researcher-display.ts) map it to Researcher wording at render sites, while sealed data, status identifiers, machine-readable JSON exports and link targets keep the originals; generated reports keep report-identity-redaction. This preserves hash-pinned evidence.
