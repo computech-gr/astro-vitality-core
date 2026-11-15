@@ -219,6 +219,10 @@ export function BulkPreflightDialog<R>({
   onCancel: () => void;
 }) {
   const p = preflight;
+  // P72.10: records hidden by the current filters are never submitted without an explicit confirmation.
+  const [hiddenAckFor, setHiddenAckFor] = useState<BulkPreflight<R> | null>(null);
+  const hiddenAck = !!p && hiddenAckFor === p;
+  const hiddenBlocked = !!p?.selectedHidden && !hiddenAck;
   return (
     <AlertDialog open={!!p} onOpenChange={(o) => (!o ? onCancel() : undefined)}>
       <AlertDialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
@@ -281,9 +285,27 @@ export function BulkPreflightDialog<R>({
               />
             </div>
             {children}
+            {p.selectedHidden ? (
+              <label
+                className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-2 text-xs"
+                data-testid="p7210-hidden-ack"
+              >
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={hiddenAck}
+                  onChange={(e) => setHiddenAckFor(e.target.checked ? p : null)}
+                />
+                <span>
+                  I confirm that {p.selectedHidden} selected record(s) hidden by the current filters
+                  are included in this action. Cancel and use “Keep only filtered records” to exclude
+                  them.
+                </span>
+              </label>
+            ) : null}
             <AlertDialogFooter>
               <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-              <Button disabled={confirmDisabled || !p.actionable.length} onClick={onConfirm}>
+              <Button disabled={confirmDisabled || hiddenBlocked || !p.actionable.length} onClick={onConfirm}>
                 {confirmLabel} ({p.expectedChanges})
               </Button>
             </AlertDialogFooter>
