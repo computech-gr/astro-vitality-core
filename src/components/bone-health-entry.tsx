@@ -13,6 +13,7 @@ import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BoneSourceCombobox } from "@/components/bone-source-combobox";
 import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { DomainEvidencePanel } from "@/components/domain-evidence-panel";
+import { DomainExaminationObservations } from "@/components/domain-examination-observations";
 import { ResearcherInterpretationPanel } from "@/components/researcher-interpretation-panel";
 import { SharedMissionContextPanel } from "@/components/shared-mission-context-panel";
 import { BoneReportedFieldCombobox } from "@/components/bone-reported-field-combobox";
@@ -602,6 +603,14 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
             this research summary.
           </p>
         </section>
+      )}
+      {authorizedSelection && (
+        <DomainExaminationObservations
+          profile={profile}
+          missionId={missionId}
+          crewMemberId={crewMemberId}
+          domainEntries={history}
+        />
       )}
       <section className="mt-10">
         <h2 className="text-xl font-semibold">Local measurement history</h2>
