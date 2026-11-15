@@ -142,6 +142,13 @@ describe("P72.10 local offline reports use and label this device's verified deci
     const c = await buildScientificSnapshot({ source: "local_offline", datasetToken: 1, datasetFingerprint: "x", device: device(await deviceTasksOnly(0), emptyCriteria, "verified", "loading") });
     expect(c.kind).toBe("waiting");
   });
+  it("is blocked when the device review history fails its integrity check (never silently reduced)", async () => {
+    const broken = { ...(await deviceTasksOnly(3)), ledger: { events: 3, head: "0".repeat(64), verified: false, note: "Device review history failed its integrity check (hash)." } };
+    const r = await buildScientificSnapshot({ source: "local_offline", datasetToken: 1, datasetFingerprint: "x", device: device(broken, emptyCriteria) });
+    expect(r.kind).toBe("blocked");
+    const c = await buildScientificSnapshot({ source: "local_offline", datasetToken: 1, datasetFingerprint: "x", device: device(await deviceTasksOnly(0), { ...emptyCriteria, chainOk: false, problem: "seq gap" }) });
+    expect(c.kind).toBe("blocked");
+  });
   it("is blocked with an actionable reason when the device decisions cannot be read", async () => {
     for (const d of [device(await deviceTasksOnly(0), emptyCriteria, "error"), device(await deviceTasksOnly(0), emptyCriteria, "verified", "error")]) {
       const r = await buildScientificSnapshot({ source: "local_offline", datasetToken: 1, datasetFingerprint: "x", device: d });

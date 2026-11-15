@@ -240,6 +240,11 @@ export async function buildScientificSnapshot(input: {
         reason:
           "The scientific review decisions stored on this device could not be read, so a local offline report would be built from incomplete scientific inputs. Reload the page; when online, use the server-confirmed report instead.",
       };
+    if (d.integrityProblem)
+      return {
+        kind: "blocked",
+        reason: `This device's scientific review history failed its integrity check (${d.integrityProblem}), so its decisions cannot be applied to a local offline report. Use the server-confirmed report when online; nothing was changed.`,
+      };
     basis = "device_local_decisions";
     interpretation = input.device.interpretation.snapshot;
     criteria = input.device.criteria.resolution;
