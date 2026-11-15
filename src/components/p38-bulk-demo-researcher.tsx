@@ -81,7 +81,6 @@ import {
   deselectAll,
   executeBulk,
   pruneSelection,
-  selectAllFiltered,
   selectIds,
   selectionScope,
   toggleId,
@@ -540,16 +539,16 @@ export function P38BulkDemoResearcher({
   // P72.10: switching request or workflow status drops selections the new view hides.
   const filteredIdsRef = useRef<string[]>(filteredIds);
   filteredIdsRef.current = filteredIds;
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
   useEffect(() => {
-    setSelected((s) => {
-      const r = reconcileSelection(s, filteredIdsRef.current);
-      setSelectionNote(
-        r.dropped
-          ? `${r.dropped} selected record(s) outside the new request/status view were deselected; nothing was recorded.`
-          : "",
-      );
-      return r.selected as Set<string>;
-    });
+    const r = reconcileSelection(selectedRef.current, filteredIdsRef.current);
+    if (r.dropped) setSelected(new Set(r.selected));
+    setSelectionNote(
+      r.dropped
+        ? `${r.dropped} selected record(s) outside the new request/status view were deselected; nothing was recorded.`
+        : "",
+    );
   }, [requestFilter, workflowFilter]);
   const selScope = selectionScope(selected, filteredIds);
   const rowByKey = useMemo(() => new Map(rows.map((r) => [r.key, r])), [rows]);
