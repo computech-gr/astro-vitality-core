@@ -40,6 +40,15 @@ async function depsFor(context: Ctx) {
       if (error || !Array.isArray(data)) return null;
       return data as { role: string; crew_member_id: string | null; active: boolean }[];
     },
+    // P72.6: read-only global Researcher check, answered by the database for this caller.
+    globalResearchRead: async (scope: { missionId: string; crewMemberId: string; provenance: string }) => {
+      const { data, error } = await supabase.rpc("p726_global_research_can_read", {
+        p_mission_id: scope.missionId,
+        p_crew_member_id: scope.crewMemberId,
+        p_provenance: scope.provenance,
+      });
+      return !error && data === true;
+    },
   };
 }
 

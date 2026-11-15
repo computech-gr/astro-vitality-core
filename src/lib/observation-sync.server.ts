@@ -140,6 +140,11 @@ export interface SyncDeps {
   rpc: Rpc;
   /** Caller's own active memberships for the mission (read as the caller; RLS applies). */
   memberships: (missionId: string) => Promise<{ role: string; crew_member_id: string | null; active: boolean }[] | null>;
+  /**
+   * P72.6: caller-scoped p726_global_research_can_read check (SQL-provisioned global
+   * Researcher READ grant, synthetic only). Used for downloads only, never uploads.
+   */
+  globalResearchRead?: (scope: SyncScope) => Promise<boolean>;
 }
 
 export type SyncFailure = { ok: false; code: ObservationSyncErrorCode; message: string };
@@ -197,6 +202,19 @@ export async function callerMayAccess(deps: SyncDeps, scope: SyncScope): Promise
       ((m.role === "crew_self" && m.crew_member_id === scope.crewMemberId) ||
         (m.role === "ground_medical" && (m.crew_member_id === null || m.crew_member_id === scope.crewMemberId))),
   );
+}
+
+/**
+ * P72.6 read-only path: a global Researcher may DOWNLOAD synthetic scopes. Never consulted
+ * for uploads; REAL provenance never qualifies; any error denies. The list RPC re-checks.
+ */
+export async function callerMayReadGlobally(deps: SyncDeps, scope: SyncScope): Promise<boolean> {
+  if (scope.provenance !== "synthetic" || !deps.globalResearchRead) return false;
+  try {
+    return (await deps.globalResearchRead(scope)) === true;
+  } catch {
+    return false;
+  }
 }
 
 export interface PushItem {
@@ -285,7 +303,7 @@ export async function pullObservationEventsCore(
   const { scope } = input;
   const gate = syncGate(deps.env, scope.provenance);
   if (!gate.ok) return gate;
-  if (!(await callerMayAccess(deps, scope))) return fail("forbidden");
+  if (!(await callerMayAccess(deps, scope)) && !(await callerMayReadGlobally(deps, scope))) return fail("forbidden");
   const limit = Math.min(Math.max(1, input.limit), OBSERVATION_SYNC_PAGE_MAX);
   const { data, error } = await deps.rpc("observation_sync_list_v1", {
     p_mission_id: scope.missionId,
