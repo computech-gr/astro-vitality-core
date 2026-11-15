@@ -39,7 +39,7 @@ export interface ServerComparisonDeps {
   listLocal: () => Promise<{ eventId: string; eventKind: "entry" | "status"; observation: UnifiedObservation }[]>;
   pull: (args: { scope: SyncScope; afterSeq: number; limit: number }) => Promise<PullResponse>;
   /** navigator.onLine; false means the device is offline, so no server comparison is possible. */
-  online?: boolean;
+  online?: boolean | undefined;
 }
 
 /**
