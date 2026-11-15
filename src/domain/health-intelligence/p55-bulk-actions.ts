@@ -20,12 +20,16 @@ export type ResearcherBulkAction =
   | "request_clarification"
   | "authorize_scope"
   | "demo_decide"
+  | "demo_approve"
+  | "demo_reject"
   | "acknowledge_match";
 export const RESEARCHER_ACTION_LABEL: Record<ResearcherBulkAction, string> = {
   authorize_scope: "Authorize Selected for Synthetic Demo",
   accept_review: "Accept Selected for Scientific Review",
   request_clarification: "Request Evidence / Unit Clarification",
   demo_decide: "Record Selected Synthetic Demo Decisions",
+  demo_approve: "Demo Scientific Approve Selected",
+  demo_reject: "Demo Scientific Reject Selected",
   acknowledge_match: "Acknowledge Existing Catalog Matches",
 };
 
