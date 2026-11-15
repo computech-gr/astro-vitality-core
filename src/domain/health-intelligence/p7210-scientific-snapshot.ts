@@ -96,11 +96,11 @@ export interface ReportScientificSnapshot {
   interpretation: InterpretationSnapshot;
   criteria: CriteriaReviewResolution;
   ruleSets: readonly RuleSetIdentity[];
-  options: { provisionalLiteratureDemonstration: boolean };
-  /** SHA-256 over every scientific interpretation input (separate from the clinical-observation fingerprints). */
-  scientificFingerprint: string;
-  /** Deterministic description printed as "Scientific rules applied". */
-  rulesDescription: string;
+}
+
+/** Page options that change scientific output (part of the scientific-input fingerprint). */
+export interface ScientificOptions {
+  provisionalLiteratureDemonstration: boolean;
 }
 
 export type ScientificSnapshotResult =
@@ -188,13 +188,8 @@ const criteriaKey = (c: CriteriaReviewResolution) => ({
   approved: c.approved.map((a) => ({ id: a.criterion.id, fingerprint: a.fingerprint, missions: a.missions, ref: a.approvalRef })).sort((a, b) => a.id.localeCompare(b.id) || a.ref.localeCompare(b.ref)),
 });
 
-export async function scientificFingerprint(input: {
-  basis: ScientificBasis;
-  interpretation: InterpretationSnapshot;
-  criteria: CriteriaReviewResolution;
-  ruleSets: readonly RuleSetIdentity[];
-  options: { provisionalLiteratureDemonstration: boolean };
-}): Promise<string> {
+/** SHA-256 over every scientific interpretation input (separate from the clinical-observation fingerprints). */
+export async function scientificFingerprint(input: Pick<ReportScientificSnapshot, "basis" | "interpretation" | "criteria" | "ruleSets">, options: ScientificOptions): Promise<string> {
   return sha256Hex(
     canonicalJson({
       version: SCIENTIFIC_SNAPSHOT_VERSION,
@@ -203,12 +198,14 @@ export async function scientificFingerprint(input: {
       ruleSets: [...input.ruleSets].map((r) => ({ id: r.id, sha256: r.sha256 })).sort((a, b) => a.id.localeCompare(b.id)),
       interpretation: { registryVersion: input.interpretation.registryVersion, digest: input.interpretation.digest, verified: input.interpretation.ledger.verified },
       criteria: criteriaKey(input.criteria),
-      options: input.options,
+      options: { provisionalLiteratureDemonstration: options.provisionalLiteratureDemonstration },
     }),
   );
 }
 
-function describe(basis: ScientificBasis, interpretation: InterpretationSnapshot, criteria: CriteriaReviewResolution, rules: readonly RuleSetIdentity[], options: { provisionalLiteratureDemonstration: boolean }): string {
+/** Deterministic description printed as "Scientific rules applied". */
+export function describeScientificInputs(s: Pick<ReportScientificSnapshot, "basis" | "interpretation" | "criteria" | "ruleSets">, options: ScientificOptions): string {
+  const { basis, interpretation, criteria, ruleSets: rules } = s;
   const approvedInterpretations = interpretation.records.filter((r) => r.status === "approved").length;
   const common = `interpretation registry v${interpretation.registryVersion} (${approvedInterpretations} approved interpretation(s)); ${criteria.approved.length} Researcher-approved reference criteria; ${rules.length} bundled rule sets; synthetic literature demonstration ${options.provisionalLiteratureDemonstration ? "ON (provisional, not clinically validated)" : "OFF"}`;
   return basis === "shared_versioned_rules"
@@ -225,11 +222,9 @@ export async function buildScientificSnapshot(input: {
   source: ReportDataSource;
   datasetToken: number;
   datasetFingerprint: string;
-  provisionalLiteratureDemonstration: boolean;
   device: { interpretation: { snapshot: InterpretationSnapshot; state: "registry_only" | "verified" | "error" }; criteria: { resolution: CriteriaReviewResolution; state: "loading" | "verified" | "error" } };
 }): Promise<ScientificSnapshotResult> {
   const ruleSets = await sharedRuleSetIdentities();
-  const options = { provisionalLiteratureDemonstration: input.provisionalLiteratureDemonstration };
   let basis: ScientificBasis;
   let interpretation: InterpretationSnapshot;
   let criteria: CriteriaReviewResolution;
@@ -250,7 +245,6 @@ export async function buildScientificSnapshot(input: {
     criteria = input.device.criteria.resolution;
     if (!interpretation.digest) return { kind: "waiting", reason: "Verifying the scientific review decisions stored on this device…" };
   }
-  const fingerprint = await scientificFingerprint({ basis, interpretation, criteria, ruleSets, options });
   return {
     kind: "ready",
     snapshot: deepFreeze({
@@ -262,9 +256,6 @@ export async function buildScientificSnapshot(input: {
       interpretation,
       criteria,
       ruleSets,
-      options,
-      scientificFingerprint: fingerprint,
-      rulesDescription: describe(basis, interpretation, criteria, ruleSets, options),
     } satisfies ReportScientificSnapshot),
   };
 }
