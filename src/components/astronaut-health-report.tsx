@@ -76,15 +76,23 @@ import {
 import { buildProfessionalReport, professionalReportPlainText } from "@/domain/health-intelligence/p58-professional-report";
 import { createProfessionalReportPdf } from "@/domain/health-intelligence/p58-professional-pdf";
 import { buildPremiumReport, DEMONSTRATION_LABEL } from "@/domain/health-intelligence/p59-premium-model";
+import { reportProvenanceLines, type ReportDataProvenance } from "@/domain/health-intelligence/p728-report-readiness";
 import {
-  assessReportReadiness,
-  compareLocalWithServer,
-  type LocalReadState,
-  type ReportDataProvenance,
-  type ServerComparison,
-} from "@/domain/health-intelligence/p728-report-readiness";
-import { listUnifiedObservationEvents } from "@/domain/health-intelligence/observation-store";
+  assessDatasetReadiness,
+  fetchServerReportDataset,
+  LOCAL_OFFLINE_LABEL,
+  localOfflineSnapshot,
+  localRecordsNotOnServer,
+  REPORT_DATASET_VERSION,
+  REPORT_ENGINE_VERSION,
+  type LocalDatasetState,
+  type ReportDataSource,
+  type ReportDatasetSnapshot,
+  type ServerDatasetState,
+} from "@/domain/health-intelligence/p729-report-dataset";
+import { mergeAttestationEvents } from "@/domain/health-intelligence/review-sync";
 import { pullObservationEvents } from "@/lib/observation-sync.functions";
+import { pullReviewEvents } from "@/lib/review-sync.functions";
 
 /** Cheap, stable fingerprint so the automatic analysis runs at most once per evidence packet. */
 function packetKey(value: unknown): string {
@@ -104,12 +112,16 @@ export function AstronautHealthReport() {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
   const [key, setKey] = useState("");
   const [provenance, setProvenance] = useState<"synthetic" | "real">("synthetic");
-  const [inputs, setInputs] = useState<UnifiedReportInputs>(EMPTY_INPUTS);
+  // P72.9: one immutable dataset snapshot (server-confirmed, or explicitly chosen local offline)
+  // feeds the screen and every export.
+  const [snapshot, setSnapshot] = useState<ReportDatasetSnapshot | null>(null);
+  const inputs: UnifiedReportInputs = snapshot?.inputs ?? EMPTY_INPUTS;
+  const setInputs = (_: UnifiedReportInputs) => setSnapshot(null);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sources, setSources] = useState<ReportSourceBadge[]>([...REPORT_SOURCE_BADGES]);
   const [status, setStatus] = useState(
-    "Select an authorized crew member to load locally stored observations.",
+    "Select an authorized crew member to load the authorized examination dataset.",
   );
   const userRef = useRef<string | undefined>(undefined);
   const reportRef = useRef<HTMLElement | null>(null);
@@ -213,43 +225,81 @@ export function AstronautHealthReport() {
     });
   }, [changeMissionId, changeCrewId]);
 
-  const loadedScope = useRef("");
-  // P72.8: every local read has a token; the report, the server comparison and every export are bound
-  // to the read they belong to, so a loading, failed or stale read can never be exported.
+  // P72.9: this device's encrypted store is still read (offline eligibility and the "not yet uploaded"
+  // notice), but it feeds the report only after the user explicitly chooses the local offline report.
   const readToken = useRef(0);
-  const [localRead, setLocalRead] = useState<LocalReadState>({ kind: "idle" });
+  const [localState, setLocalState] = useState<LocalDatasetState>({ kind: "idle" });
+  const scopeKey = member ? `${member.missionId}|${member.crewMemberId}|${provenance}` : "";
+  const [mode, setMode] = useState<ReportDataSource>("server_confirmed");
+  const [refreshNonce, setRefreshNonce] = useState(0);
+  const [changedSinceRetrieval, setChangedSinceRetrieval] = useState(false);
+  // A new scope always starts from the server-confirmed source; the source never changes silently.
   useEffect(() => {
-    const scopeKey = member ? `${member.missionId}|${member.crewMemberId}` : "";
-    // A refresh for the same scope keeps the visible report until the new read completes.
-    if (loadedScope.current !== scopeKey) setInputs(EMPTY_INPUTS);
-    loadedScope.current = scopeKey;
+    setMode("server_confirmed");
+    setSnapshot(null);
+    setChangedSinceRetrieval(false);
+  }, [scopeKey]);
+  useEffect(() => {
     if (!member) {
-      setLocalRead({ kind: "idle" });
+      setLocalState({ kind: "idle" });
       return;
     }
     let active = true;
     const token = ++readToken.current;
-    setLocalRead({ kind: "loading", scopeKey, token });
-    setStatus("Reading encrypted local records…");
+    setLocalState({ kind: "loading", token });
     void loadUnifiedReportInputs(member.missionId, member.crewMemberId)
       .then((v) => {
-        if (active) {
-          setInputs(v);
-          setLocalRead({ kind: "ready", scopeKey, token });
-          setStatus("Encrypted local records read for this mission and crew member.");
-        }
+        if (active)
+          setLocalState({ kind: "ready", token, inputs: v, complete: v.coverage?.complete !== false, readRecords: v.coverage?.readRecords ?? 0, storedRecords: v.coverage?.storedRecords ?? null });
       })
       .catch(() => {
-        if (active) {
-          setInputs(EMPTY_INPUTS);
-          setLocalRead({ kind: "failed", scopeKey, token, message: "The examinations stored on this device could not be read." });
-          setStatus("Unable to read encrypted local records. No report generated.");
-        }
+        if (active) setLocalState({ kind: "failed", token, message: "The examinations stored on this device could not be read." });
       });
     return () => {
       active = false;
     };
   }, [member?.missionId, member?.crewMemberId, dataVersion]);
+
+  // P72.9: complete authorized server dataset, read-only (nothing is written to this device).
+  const pullServer = useServerFn(pullObservationEvents);
+  const pullReviews = useServerFn(pullReviewEvents);
+  const fetchToken = useRef(0);
+  const [serverState, setServerState] = useState<ServerDatasetState>({ kind: "idle" });
+  const fetchServer = (token: number) =>
+    member
+      ? fetchServerReportDataset({ missionId: member.missionId, crewMemberId: member.crewMemberId, provenance }, token, {
+          pullObservations: (a) => pullServer({ data: a }),
+          pullReviews: (a) => pullReviews({ data: a }),
+          online: typeof navigator === "undefined" ? undefined : navigator.onLine,
+        })
+      : Promise.resolve({ kind: "failed", token, code: "unavailable", reason: "No crew member selected." } as const);
+  useEffect(() => {
+    if (!member) {
+      setServerState({ kind: "idle" });
+      return;
+    }
+    let active = true;
+    const token = ++fetchToken.current;
+    setServerState({ kind: "loading", token });
+    setChangedSinceRetrieval(false);
+    void fetchServer(token)
+      .catch(() => ({ kind: "failed", token, code: "network", reason: "The server dataset could not be retrieved." }) as const)
+      .then((r) => {
+        if (active) setServerState(r);
+      });
+    return () => {
+      active = false;
+    };
+    // fetchServer closes over member/provenance, both listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member?.missionId, member?.crewMemberId, provenance, refreshNonce]);
+  // Local changes (sync, attestation, correction) after retrieval: the server-confirmed report is kept
+  // unchanged until the user explicitly refreshes it, so screen and downloads never diverge.
+  const lastDataVersion = useRef(dataVersion);
+  useEffect(() => {
+    if (dataVersion !== lastDataVersion.current && mode === "server_confirmed" && serverState.kind === "ready") setChangedSinceRetrieval(true);
+    lastDataVersion.current = dataVersion;
+  }, [dataVersion, mode, serverState.kind]);
 
   const report = useMemo(
     () =>
