@@ -11,7 +11,7 @@
  * demo biomarkers are surfaced for identity review (alias decision or session
  * confirmation of a distinct measurement) before any independent decision.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { FileSearch, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -116,6 +116,16 @@ import {
   bulkSelectionCounts,
   isDecidable,
 } from "@/domain/health-intelligence/p38-bulk-demo-selection";
+import {
+  RESEARCHER_WORKFLOW_FILTERS,
+  RESEARCHER_WORKFLOW_LABEL,
+  matchesWorkflowFilter,
+  reconcileSelection,
+  researcherWorkflowStatus,
+  selectOnlyFiltered,
+  workflowCounts,
+  type ResearcherWorkflowFilter,
+} from "@/domain/health-intelligence/p7210-researcher-workflow-status";
 import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
 import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
 import {
@@ -249,10 +259,16 @@ export function P38BulkDemoResearcher({
   const p728StateFn = useServerFn(getDemoDecisionStateFn);
   const p728DecideFn = useServerFn(researcherDemoDecideFn);
   const [requestFilter, setRequestFilter] = useState("all");
+  /** P72.10: default to records that still need a Researcher decision. */
+  const [workflowFilter, setWorkflowFilter] = useState<ResearcherWorkflowFilter>("pending");
+  const [selectionNote, setSelectionNote] = useState("");
   const [rationale, setRationale] = useState("");
   const [refsText, setRefsText] = useState("");
   useEffect(() => {
-    if (focusRequest) setRequestFilter(focusRequest.submissionId);
+    if (focusRequest) {
+      setRequestFilter(focusRequest.submissionId);
+      setWorkflowFilter("pending");
+    }
   }, [focusRequest]);
   /** Session-only confirmations that a possible match is a distinct measurement (never saved). */
   const [distinct, setDistinct] = useState<Set<string>>(new Set());
@@ -461,7 +477,24 @@ export function P38BulkDemoResearcher({
     }
   };
 
+  const p728Active = demoRecordsActive(data?.p728 ?? null);
+  const decided = useMemo(() => recordedDecisions(data?.p728 ?? null), [data]);
+  const workflowCtx = useMemo(
+    () => ({
+      researcher: decided.researcher,
+      medical: decided.medical,
+      revoked: new Set(
+        (data?.events ?? [])
+          .filter((e) => e.revocationEventId)
+          .map((e) => termKey(e.submissionId, e.termId)),
+      ),
+    }),
+    [decided, data],
+  );
+  const requestRows = requestFilter === "all" ? rows : rows.filter((r) => r.submissionId === requestFilter);
+  const wfCounts = workflowCounts(requestRows, workflowCtx);
   const filtered = rows.filter((r) => {
+    if (!matchesWorkflowFilter(researcherWorkflowStatus(r, workflowCtx), workflowFilter)) return false;
     if (
       category === "needs_domain"
         ? !needsDomainChoice(r)
@@ -496,12 +529,28 @@ export function P38BulkDemoResearcher({
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE);
   useEffect(
     () => setPage(0),
-    [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter, requestFilter],
+    [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter, requestFilter, workflowFilter],
   );
 
   const scope = data?.scope ?? new Map<string, DemoScopeTerm>();
-  const allEligible = rows.filter((r) => decidable(r, scope) && !identityBlock(r));
   const filteredIds = filtered.map((r) => r.key);
+  const filteredSet = new Set(filteredIds);
+  /** P72.10: eligible records within the current filters only (never hidden ones). */
+  const allEligible = rows.filter((r) => filteredSet.has(r.key) && decidable(r, scope) && !identityBlock(r));
+  // P72.10: switching request or workflow status drops selections the new view hides.
+  const filteredIdsRef = useRef<string[]>(filteredIds);
+  filteredIdsRef.current = filteredIds;
+  useEffect(() => {
+    setSelected((s) => {
+      const r = reconcileSelection(s, filteredIdsRef.current);
+      setSelectionNote(
+        r.dropped
+          ? `${r.dropped} selected record(s) outside the new request/status view were deselected; nothing was recorded.`
+          : "",
+      );
+      return r.selected as Set<string>;
+    });
+  }, [requestFilter, workflowFilter]);
   const selScope = selectionScope(selected, filteredIds);
   const rowByKey = useMemo(() => new Map(rows.map((r) => [r.key, r])), [rows]);
   const labelOf = (key: string) => {
@@ -524,8 +573,6 @@ export function P38BulkDemoResearcher({
     setOverrides((m) => new Map(m).set(key, { ...m.get(key), ...patch }));
   const toggle = (key: string, on: boolean) => setSelected((s) => toggleId(s, key, on));
 
-  const p728Active = demoRecordsActive(data?.p728 ?? null);
-  const decided = recordedDecisions(data?.p728 ?? null);
   const requestOf = useMemo(
     () => new Map((data?.subs ?? []).map((s) => [s.submissionId, s.requestId])),
     [data],
@@ -1131,22 +1178,47 @@ export function P38BulkDemoResearcher({
               </select>
             </div>
           </div>
-          {requestFilter !== "all" ? (
-            <p role="status" className="text-xs text-muted-foreground" data-testid="p728-request-focus">
-              Showing request {requestOf.get(requestFilter) ?? requestFilter}:{" "}
-              {rows.filter((r) => r.submissionId === requestFilter).length} submitted terms ·{" "}
-              {rows.filter((r) => r.submissionId === requestFilter && (r.category === "already_active" || r.category === "already_decided")).length}{" "}
-              with a demo scientific approval ·{" "}
-              {rows.filter((r) => r.submissionId === requestFilter && decided.researcher.get(r.key) === "REJECT").length}{" "}
-              rejected. Select the terms, then use Demo Scientific Approve or Reject below.
+          <div className="space-y-1" data-testid="p7210-workflow">
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="p7210-workflow-filter" className="text-xs">
+                  Workflow status
+                </Label>
+                <select
+                  id="p7210-workflow-filter"
+                  value={workflowFilter}
+                  onChange={(e) => setWorkflowFilter(e.target.value as ResearcherWorkflowFilter)}
+                  className="h-8 rounded-md border border-border bg-background px-2 text-sm"
+                >
+                  {RESEARCHER_WORKFLOW_FILTERS.map((f) => (
+                    <option key={f} value={f}>
+                      {RESEARCHER_WORKFLOW_LABEL[f]} ({wfCounts[f]})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p role="status" className="text-xs text-muted-foreground" data-testid="p7210-workflow-counts">
+              {requestFilter !== "all"
+                ? `Request ${requestOf.get(requestFilter) ?? requestFilter}: `
+                : "All requests: "}
+              original submitted terms {wfCounts.all} · pending Researcher decisions{" "}
+              {wfCounts.pending} · approved awaiting Medical activation {wfCounts.awaiting_medical} ·
+              completed and activated {wfCounts.activated} · rejected, declined or revoked{" "}
+              {wfCounts.rejected}. Every original record stays listed under All records.
             </p>
-          ) : null}
+            {selectionNote ? (
+              <p role="status" className="text-xs text-muted-foreground" data-testid="p7210-selection-note">
+                {selectionNote}
+              </p>
+            ) : null}
+          </div>
 
           <BulkSelectionToolbar
             idPrefix="p55-researcher"
             scope={selScope}
             pageCount={pageRows.length}
-            onSelectAllFiltered={() => setSelected((s) => selectAllFiltered(s, filteredIds))}
+            onSelectAllFiltered={() => setSelected(selectOnlyFiltered(filteredIds))}
             onSelectPage={() =>
               setSelected((s) =>
                 selectIds(
@@ -1164,7 +1236,7 @@ export function P38BulkDemoResearcher({
                 onClick={() => setSelected(new Set(allEligible.map((r) => r.key)))}
               >
                 <ListChecks className="mr-1 h-4 w-4" aria-hidden />
-                Select All Eligible for a demo decision ({allEligible.length})
+                Select All Eligible in this view ({allEligible.length})
               </Button>
             }
           />
