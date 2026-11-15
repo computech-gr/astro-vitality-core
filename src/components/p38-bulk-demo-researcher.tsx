@@ -118,6 +118,22 @@ import {
 } from "@/domain/health-intelligence/p38-bulk-demo-selection";
 import { xlsxCells } from "@/domain/health-intelligence/universal-intake-adapters";
 import sourceSectionRegistry from "../../data/source-evidence/mito-demo-2026-source-sections.v1.json";
+import {
+  getDemoDecisionStateFn,
+  researcherDemoDecideFn,
+} from "@/lib/p728-demo-decision.functions";
+import {
+  DEMO_SCIENTIFIC_APPROVAL_LABEL,
+  demoApproveFit,
+  demoRecordsActive,
+  demoRejectFit,
+  parseEvidenceRefs,
+  rationaleProblem,
+  recordedDecisions,
+  suggestedEvidenceRefs,
+  type DemoDecisionState,
+} from "@/domain/health-intelligence/p728-demo-approval";
+import type { BatchResponse } from "@/domain/health-intelligence/p38-bulk-demo-batches";
 
 /** Committed, SHA-256-bound section evidence of owner-supplied source documents (fails closed). */
 const REGISTRY_DOCS = evidenceRegistryDocuments(sourceSectionRegistry);
@@ -149,6 +165,8 @@ type Loaded = {
   /** P61.5 Researcher authorization state; null while the pending change is not installed. */
   gov: { canAuthorize: boolean; grants: ScopeGrant[]; aliases: AliasLifecycleRow[] } | null;
   govNote: string;
+  /** P72.8 recorded demo decisions; null when the state could not be read (fails closed). */
+  p728: DemoDecisionState | null;
 };
 type Run = {
   action: ResearcherBulkAction;
@@ -181,10 +199,13 @@ const REQUIREMENT_LABEL: Record<EvidenceRequirement, string> = {
   source_validation: "Source validation",
   other: "Other",
 };
+// P72.8: "Demo Scientific Approve" includes the scope step, so the separate
+// demo-decision action is no longer offered; scope authorization stays available.
 const ACTION_ORDER: ResearcherBulkAction[] = [
   "accept_review",
+  "demo_approve",
+  "demo_reject",
   "authorize_scope",
-  "demo_decide",
   "request_clarification",
   "acknowledge_match",
 ];
@@ -194,6 +215,9 @@ const ACTION_DESCRIPTION: Record<ResearcherBulkAction, string> = {
     "Adds accepted synthetic terms with an exact unit to this mission's synthetic demo scope; not a decision, approval or activation.",
   demo_decide:
     "SYNTHETIC DEMO decisions for accepted, eligible terms; Ground Medical activates separately.",
+  demo_approve: `${DEMO_SCIENTIFIC_APPROVAL_LABEL}. Direct Researcher decision for accepted synthetic terms (adds them to the demo scope when needed); no source-validation receipt. Ground Medical activates or declines separately.`,
+  demo_reject:
+    "Records a demo scientific rejection with your rationale; the term can no longer be approved or activated.",
   request_clarification: "Records a REQUEST_MORE_EVIDENCE triage event with the evidence you name.",
   acknowledge_match:
     "Shows the existing catalog identity; creates no entry and is not saved (this session only).",
@@ -207,9 +231,12 @@ const LOADING_NOTE = "Reading every submitted term of this mission…";
 export function P38BulkDemoResearcher({
   missionId,
   missionLabel,
+  focusRequest,
 }: {
   missionId: string;
   missionLabel?: string;
+  /** P72.8: request opened from Submitted review requests (display filter only). */
+  focusRequest?: { submissionId: string; n: number } | null;
 }) {
   const listSubs = useServerFn(listGlobalReviewSubmissions);
   const listTriage = useServerFn(listGlobalTriage);
@@ -219,6 +246,14 @@ export function P38BulkDemoResearcher({
   const governance = useServerFn(getDemoGovernanceFn);
   const authorizeFn = useServerFn(authorizeDemoScopeFn);
   const aliasFn = useServerFn(decideDemoAliasFn);
+  const p728StateFn = useServerFn(getDemoDecisionStateFn);
+  const p728DecideFn = useServerFn(researcherDemoDecideFn);
+  const [requestFilter, setRequestFilter] = useState("all");
+  const [rationale, setRationale] = useState("");
+  const [refsText, setRefsText] = useState("");
+  useEffect(() => {
+    if (focusRequest) setRequestFilter(focusRequest.submissionId);
+  }, [focusRequest]);
   /** Session-only confirmations that a possible match is a distinct measurement (never saved). */
   const [distinct, setDistinct] = useState<Set<string>>(new Set());
   const [identity, setIdentity] = useState<{
@@ -261,11 +296,12 @@ export function P38BulkDemoResearcher({
   const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
-    const [s, t, l, g] = await Promise.all([
+    const [s, t, l, g, d] = await Promise.all([
       listSubs({ data: { missionId, provenance: "synthetic" } }).catch(() => null),
       listTriage({ data: { missionId, provenance: "synthetic" } }).catch(() => null),
       lifecycle({ data: { missionId } }).catch(() => null),
       governance({ data: { missionId } }).catch(() => null),
+      p728StateFn({ data: { missionId } }).catch(() => null),
     ]);
     if (!s?.ok || !t?.ok || !l?.ok) {
       setData(null);
@@ -285,8 +321,9 @@ export function P38BulkDemoResearcher({
       events: l.events,
       gov: g?.ok ? { canAuthorize: g.canAuthorize, grants: g.grants, aliases: g.aliases } : null,
       govNote: g && !g.ok ? g.message : g ? "" : "Researcher authorization state is unavailable.",
+      p728: d?.ok ? (d.installed ? { ...d } : { installed: false }) : null,
     });
-  }, [missionId, listSubs, listTriage, lifecycle, governance]);
+  }, [missionId, listSubs, listTriage, lifecycle, governance, p728StateFn]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -441,6 +478,7 @@ export function P38BulkDemoResearcher({
       return false;
     if (triageFilter !== "all" && triageStateOf(r.triageAction) !== triageFilter) return false;
     if (crewFilter !== "all" && crewOf.get(r.submissionId) !== crewFilter) return false;
+    if (requestFilter !== "all" && r.submissionId !== requestFilter) return false;
     if (unitFilter !== "all" && r.unit !== unitFilter) return false;
     if (identityFilter === "with_reference" && !r.references.length) return false;
     if (identityFilter === "no_reference" && r.references.length) return false;
@@ -458,7 +496,7 @@ export function P38BulkDemoResearcher({
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE);
   useEffect(
     () => setPage(0),
-    [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter],
+    [query, category, domainFilter, triageFilter, crewFilter, unitFilter, identityFilter, requestFilter],
   );
 
   const scope = data?.scope ?? new Map<string, DemoScopeTerm>();
@@ -486,7 +524,40 @@ export function P38BulkDemoResearcher({
     setOverrides((m) => new Map(m).set(key, { ...m.get(key), ...patch }));
   const toggle = (key: string, on: boolean) => setSelected((s) => toggleId(s, key, on));
 
+  const p728Active = demoRecordsActive(data?.p728 ?? null);
+  const decided = recordedDecisions(data?.p728 ?? null);
+  const requestOf = useMemo(
+    () => new Map((data?.subs ?? []).map((s) => [s.submissionId, s.requestId])),
+    [data],
+  );
+  const sourcesOf = useMemo(
+    () =>
+      new Map(
+        (data?.subs ?? []).flatMap((s) =>
+          s.terms.map((t) => [termKey(s.submissionId, t.termId), t.sourceDocumentSha256 ?? []] as const),
+        ),
+      ),
+    [data],
+  );
   const fitFor = (action: ResearcherBulkAction) => (r: PreflightRow) => {
+    if (action === "demo_approve") {
+      const fit = demoApproveFit(r, {
+        submittedByCaller: !!scope.get(r.key)?.submittedByCaller,
+        canDecide: !!data?.canDecide,
+        canAuthorize: !!data?.gov?.canAuthorize,
+        authorizeInstalled: !!data?.gov,
+        recorded: decided.researcher.get(r.key) ?? null,
+      });
+      const gate = fit.kind === "actionable" ? identityBlock(r) : null;
+      return gate ? { kind: "blocked" as const, reason: gate } : fit;
+    }
+    if (action === "demo_reject")
+      return demoRejectFit(r, {
+        canDecide: !!data?.canDecide,
+        submittedByCaller: !!scope.get(r.key)?.submittedByCaller,
+        recordsInstalled: p728Active,
+        recorded: decided.researcher.get(r.key) ?? null,
+      });
     if (action === "accept_review") return acceptReviewFit(r, !!data?.canTriage);
     if (action === "request_clarification") return requestClarificationFit(r, !!data?.canTriage);
     if (action === "acknowledge_match") return acknowledgeMatchFit(r, acknowledged.has(r.key));
@@ -520,7 +591,18 @@ export function P38BulkDemoResearcher({
       setReqs(suggestedRequirements(preflight.actionable.map((r) => r.category)));
       setReason("");
     }
-    if (action === "demo_decide") setAck(false);
+    if (action === "demo_decide" || action === "demo_approve") setAck(false);
+    if (action === "demo_approve" || action === "demo_reject") {
+      setRationale("");
+      setRefsText(
+        suggestedEvidenceRefs(
+          preflight.actionable.map((r) => ({
+            requestId: requestOf.get(r.submissionId) ?? null,
+            sourceDocumentSha256: sourcesOf.get(r.key) ?? [],
+          })),
+        ).join("\n"),
+      );
+    }
     setPending({ action, preflight });
   };
   const triageEventOf = (r: PreflightRow) => data?.triage.get(r.key)?.eventId ?? null;
@@ -530,6 +612,7 @@ export function P38BulkDemoResearcher({
       termId: r.termId,
       expectedPreviousEventId: triageEventOf(r),
     }));
+  const approvalInputProblem = rationaleProblem(rationale) ?? parseEvidenceRefs(refsText).problem;
   const clarificationProblem = triageInputProblem({
     action: "REQUEST_MORE_EVIDENCE",
     reason,
@@ -578,8 +661,79 @@ export function P38BulkDemoResearcher({
     }
     setBusy(true);
     setRun({ action, progress: null, outcomes: [], failure: null });
+    const evidence = parseEvidenceRefs(refsText).refs;
+    const p728Send = (decision: "APPROVE" | "REJECT") => (batch: PreflightRow[]) =>
+      p728DecideFn({
+        data: {
+          missionId,
+          decision,
+          rationale: rationale.trim(),
+          evidenceRefs: evidence,
+          items: batch.map((r) => ({
+            submissionId: r.submissionId,
+            termId: r.termId,
+            exactUnit: r.unit,
+            displayName: r.displayName,
+            domain: r.domain ?? null,
+          })),
+        },
+      });
+    /** Installed path without P72.8: scope authorization for terms outside the scope, then the demo decision. */
+    const legacyApprove = async (batch: PreflightRow[]): Promise<BatchResponse> => {
+      const outside = batch.filter((r) => !r.inScope);
+      const refused = new Map<string, { detail: string | null }>();
+      if (outside.length) {
+        const a = await authorizeFn({
+          data: {
+            missionId,
+            items: outside.map((r) => ({ submissionId: r.submissionId, termId: r.termId, exactUnit: r.unit })),
+          },
+        });
+        if (!a.ok) return a;
+        for (const x of a.results)
+          if (x.status === "rejected" || x.status === "stale") refused.set(x.ref, { detail: x.detail });
+      }
+      const go = batch.filter((r) => !refused.has(`${r.submissionId}:${r.termId}`));
+      const d = go.length
+        ? await decideFn({
+            data: {
+              missionId,
+              acknowledgement: SYNTHETIC_DEMO_ACKNOWLEDGEMENT,
+              items: go.map((r) => ({
+                submissionId: r.submissionId,
+                termId: r.termId,
+                displayName: r.displayName,
+                domain: r.domain!,
+              })),
+            },
+          })
+        : ({ ok: true, results: [] } as BatchResponse);
+      if (!d.ok) return d;
+      const byRef = new Map(d.results.map((x) => [x.ref, x]));
+      return {
+        ok: true,
+        results: batch.map((r) => {
+          const ref = `${r.submissionId}:${r.termId}`;
+          return (
+            byRef.get(ref) ?? {
+              ref,
+              termId: r.termId,
+              status: "rejected" as const,
+              detail: refused.get(ref)?.detail ?? "Not added to the synthetic demo scope.",
+              eventId: null,
+            }
+          );
+        }),
+      };
+    };
     const send =
-      action === "authorize_scope"
+      action === "demo_approve"
+        ? p728Active
+          ? p728Send("APPROVE")
+          : legacyApprove
+        : action === "demo_reject"
+          ? p728Send("REJECT")
+          : action === "authorize_scope"
         ? (batch: PreflightRow[]) =>
             authorizeFn({
               data: {
@@ -624,6 +778,7 @@ export function P38BulkDemoResearcher({
     });
     setRun({ action, ...res });
     setAck(false);
+    setRationale("");
     await load();
     setBusy(false);
   };
@@ -640,8 +795,10 @@ export function P38BulkDemoResearcher({
       unavailable:
         (id === "accept_review" || id === "request_clarification") && data && !data.canTriage
           ? "This account has no triage grant; triage actions are unavailable."
-          : id === "demo_decide" && data && !data.canDecide
+          : (id === "demo_decide" || id === "demo_approve" || id === "demo_reject") && data && !data.canDecide
             ? "This account has no scientific approver grant."
+            : id === "demo_reject" && data && !p728Active
+              ? "Recorded demo rejections need the pending P72.8 database change; use the individual “Reject review request” triage action meanwhile."
             : id === "authorize_scope" && data && !data.gov
               ? data.govNote || "Researcher authorization is unavailable."
               : id === "authorize_scope" && data?.gov && !data.gov.canAuthorize
@@ -1230,10 +1387,16 @@ export function P38BulkDemoResearcher({
             confirmDisabled={
               busy ||
               (pending?.action === "demo_decide" && !ack) ||
+              (pending?.action === "demo_approve" && (!ack || (p728Active && !!approvalInputProblem))) ||
+              (pending?.action === "demo_reject" && !!approvalInputProblem) ||
               (pending?.action === "request_clarification" && !!clarificationProblem)
             }
             safeguard={
-              pending?.action === "authorize_scope"
+              pending?.action === "demo_approve"
+                ? `${DEMO_SCIENTIFIC_APPROVAL_LABEL}. A direct Researcher decision on synthetic demonstration data only: no source-validation receipt, specimen, method or reference interval is cited. Nothing is activated; Ground Medical activates or declines each approval separately. The server re-checks every term.`
+                : pending?.action === "demo_reject"
+                  ? "Records a demo scientific rejection with your rationale for each listed term. Nothing is activated, deleted or rewritten; the original request stays intact."
+                  : pending?.action === "authorize_scope"
                 ? "Adds only the listed eligible synthetic terms to this mission's synthetic demo scope. This is not a scientific approval or a demo decision and activates nothing; the server re-checks every term."
                 : pending?.action === "accept_review"
                 ? "Accepting for scientific review is triage only. It is not scientific approval and never activates anything."
@@ -1296,6 +1459,63 @@ export function P38BulkDemoResearcher({
                   catalog.
                 </span>
               </label>
+            ) : null}
+            {pending?.action === "demo_approve" || pending?.action === "demo_reject" ? (
+              <div className="space-y-2" data-testid="p728-decision-inputs">
+                <p className="text-xs font-semibold">{DEMO_SCIENTIFIC_APPROVAL_LABEL}</p>
+                {pending.action === "demo_approve" && !p728Active ? (
+                  <p className="text-xs text-muted-foreground">
+                    The recorded rationale needs the pending P72.8 database change. Until it is
+                    applied this approval uses the installed demo path, which records your account,
+                    time, decision, the original request and term, and the cited source documents,
+                    but not the rationale below.
+                  </p>
+                ) : null}
+                <div className="space-y-1">
+                  <Label htmlFor="p728-rationale" className="text-xs">
+                    Scientific rationale ({p728Active ? "required, " : ""}8–2000 characters; one
+                    rationale for every listed term)
+                  </Label>
+                  <Textarea
+                    id="p728-rationale"
+                    value={rationale}
+                    maxLength={2000}
+                    rows={3}
+                    onChange={(e) => setRationale(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="p728-evidence" className="text-xs">
+                    Evidence references (one per line; suggested from the original requests and
+                    cited source documents)
+                  </Label>
+                  <Textarea
+                    id="p728-evidence"
+                    value={refsText}
+                    rows={3}
+                    className="font-mono text-xs"
+                    onChange={(e) => setRefsText(e.target.value)}
+                  />
+                </div>
+                {approvalInputProblem && (p728Active || pending.action === "demo_reject") ? (
+                  <p className="text-xs text-muted-foreground">{approvalInputProblem}</p>
+                ) : null}
+                {pending.action === "demo_approve" ? (
+                  <label className="flex items-start gap-2 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={ack}
+                      onChange={(e) => setAck(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      I approve these synthetic biomarkers as a {DEMO_SCIENTIFIC_APPROVAL_LABEL}. This is
+                      not independent source validation or clinical validation, activates nothing
+                      and never enters the production catalog.
+                    </span>
+                  </label>
+                ) : null}
+              </div>
             ) : null}
             {pending?.action === "request_clarification" ? (
               <div className="space-y-2">
