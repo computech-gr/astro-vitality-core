@@ -754,9 +754,9 @@ export function AstronautHealthReport() {
       <header className="print:hidden">
         <h1 className="text-3xl font-bold">Astronaut Health History &amp; Research Assessment</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Unified Bone, Immune, Cardiovascular, Behavioral, wearable and device records from
-          authorized encrypted local storage only; nothing
-          is uploaded.
+          Unified Bone, Immune, Cardiovascular, Behavioral, wearable and device records from the complete
+          authorized server dataset (read-only, nothing is stored on this device), or — only when you choose
+          it — from this device&apos;s encrypted local storage. Nothing is uploaded.
         </p>
       </header>
       <section className="space-y-3 rounded-lg border p-4 print:hidden">
@@ -846,16 +846,46 @@ export function AstronautHealthReport() {
           aria-label="Report data readiness"
           role="status"
           aria-live="polite"
-          className={`print:hidden rounded-lg border p-4 text-sm ${readiness.exportAllowed ? (readiness.basis === "server_confirmed" ? "border-primary/40 bg-primary/5" : "border-accent bg-accent/30") : "border-destructive/50 bg-destructive/5"}`}
+          className={`print:hidden rounded-lg border p-4 text-sm ${readiness.exportAllowed ? (readiness.source === "server_confirmed" ? "border-primary/40 bg-primary/5" : "border-accent bg-accent/30") : "border-destructive/50 bg-destructive/5"}`}
         >
-          <p className="font-semibold">{readiness.title}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Data source: {mode === "server_confirmed" ? "Server-confirmed (complete authorized dataset, read-only)" : LOCAL_OFFLINE_LABEL}
+          </p>
+          <p className="mt-1 font-semibold">{readiness.title}</p>
           <p className="mt-1 text-xs text-muted-foreground">{readiness.detail}</p>
           {readiness.exportAllowed && readiness.dataStatus === "no_examinations" ? (
             <p className="mt-1 text-xs font-semibold">No examination falls within the selected period. The report states this explicitly; it is not a negative finding.</p>
           ) : null}
-          {(readiness.state === "server_failed" || readiness.state === "missing_locally" || readiness.state === "inconsistent" || readiness.state === "ready_local_only") && (
-            <Button className="mt-2" size="sm" variant="outline" onClick={() => setCheckNonce((n) => n + 1)}>Check again</Button>
-          )}
+          {readiness.state === "ready_server_confirmed" && notOnServer && (notOnServer.observations > 0 || notOnServer.deviceOnly > 0) ? (
+            <p className="mt-1 text-xs">
+              This device also holds {notOnServer.observations} examination record(s) not on the server{notOnServer.deviceOnly ? ` and ${notOnServer.deviceOnly} device-only record(s)` : ""}. They are not part of this server-confirmed report until uploaded through the existing sync.
+            </p>
+          ) : null}
+          {changedSinceRetrieval && mode === "server_confirmed" ? (
+            <p className="mt-1 text-xs font-semibold">Records for this crew member changed after this report was retrieved. The report shown is unchanged; refresh it to include the latest server data.</p>
+          ) : null}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {mode === "server_confirmed" && (readiness.state === "ready_server_confirmed" || readiness.state === "server_failed") && (
+              <Button size="sm" variant="outline" onClick={() => setRefreshNonce((n) => n + 1)}>
+                {readiness.state === "server_failed" ? "Try again" : "Refresh report"}
+              </Button>
+            )}
+            {mode === "server_confirmed" && readiness.offerLocalOffline && (
+              <Button size="sm" variant="outline" onClick={() => setMode("local_offline")}>Generate local offline report (not server verified)</Button>
+            )}
+            {mode === "local_offline" && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setMode("server_confirmed");
+                  setRefreshNonce((n) => n + 1);
+                }}
+              >
+                Return to server-confirmed report
+              </Button>
+            )}
+          </div>
         </section>
       )}
       {report && unified && reportVisible && (
