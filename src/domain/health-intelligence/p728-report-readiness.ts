@@ -186,24 +186,51 @@ export interface ReportDataProvenance {
   observations: number;
   series: number;
   datasetFingerprint: string;
-  basis: "server_confirmed" | "local_only";
+  /**
+   * P72.8 "server_confirmed" / "local_only" (local data compared or not compared with the server);
+   * P72.9 "server_confirmed" (report built from the complete authorized server dataset) and
+   * "local_offline" (explicitly chosen local offline dataset).
+   */
+  basis: "server_confirmed" | "local_only" | "local_offline";
   serverRecords: number | null;
   readinessVersion: string;
   /** Wall-clock export time. Never an input of any scientific calculation. */
   exportedAt: string;
+  /** P72.9: the report was generated from the server dataset itself (not from this device's copies). */
+  dataSourceDetail?: string;
+  /** P72.9: SHA-256 of the complete scope dataset (all periods; observations + reviews). */
+  scopeDatasetFingerprint?: string;
+  /** P72.9: medical review records in the dataset. */
+  reviewRecords?: number | null;
+  /** P72.9: scientific/report engine version. */
+  engineVersion?: string;
+}
+
+/** Short source label used on page 1 and in file properties. */
+export function provenanceSourceLabel(p: Pick<ReportDataProvenance, "basis">): string {
+  return p.basis === "server_confirmed" ? "SERVER-CONFIRMED" : p.basis === "local_offline" ? "LOCAL OFFLINE DATASET — NOT SERVER VERIFIED" : "THIS DEVICE ONLY — not compared with the server";
 }
 
 /** Plain lines for the PDF provenance section (deterministic for identical inputs except exportedAt). */
 export function reportProvenanceLines(p: ReportDataProvenance): string[] {
+  const basis =
+    p.basis === "server_confirmed"
+      ? p.dataSourceDetail
+        ? `Data source: SERVER-CONFIRMED — ${p.dataSourceDetail}`
+        : `Data basis: server-confirmed — every server copy for this crew member (${p.serverRecords ?? 0} record(s)) was present on the exporting device.`
+      : p.basis === "local_offline"
+        ? `Data source: LOCAL OFFLINE DATASET — NOT SERVER VERIFIED — ${p.dataSourceDetail ?? "examinations stored on the exporting device only"}. It may not include every examination held on the server.`
+        : "Data basis: THIS DEVICE ONLY — not compared with the server copies; another device may hold examinations not shown here.";
   return [
-    `Mission ID: ${p.missionId} · Crew ID: ${p.crewMemberId} · Data: ${p.provenance.toUpperCase()}`,
+    `Mission ID: ${p.missionId} · Subject (crew) ID: ${p.crewMemberId} · Data: ${p.provenance.toUpperCase()}`,
     `Selected period: ${p.period}`,
+    `Examinations: ${p.examinationDates.length} examination date(s)`,
     `Examination dates (${p.examinationDates.length}): ${p.examinationDates.length ? p.examinationDates.join(", ") : "none in this period"}`,
     `Observations evaluated: ${p.observations} in ${p.series} series`,
     `Dataset fingerprint (SHA-256 of exactly the observations evaluated): ${p.datasetFingerprint}`,
-    p.basis === "server_confirmed"
-      ? `Data basis: server-confirmed — every server copy for this crew member (${p.serverRecords ?? 0} record(s)) was present on the exporting device.`
-      : "Data basis: THIS DEVICE ONLY — not compared with the server copies; another device may hold examinations not shown here.",
+    ...(p.scopeDatasetFingerprint ? [`Complete dataset fingerprint (SHA-256 of every examination and review record in this scope, all periods): ${p.scopeDatasetFingerprint}`] : []),
+    basis,
+    ...(p.engineVersion ? [`Report engine: ${p.engineVersion}`] : []),
     `Export timestamp (UTC): ${p.exportedAt} — recorded for traceability only; not an input of any finding.`,
     `Readiness check: ${p.readinessVersion}`,
   ];

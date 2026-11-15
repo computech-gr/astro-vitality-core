@@ -13,7 +13,7 @@ import { COLOR, PAGE, type RGB } from "./p59-report-tokens";
 import type { PremiumChart, PremiumReport, ResultRow, DisplayClass, ClassBasis, SystemTile } from "./p59-premium-model";
 import { ASSOCIATED_HIGH_PRIORITY_LABEL, GROUPS } from "./p59-premium-model";
 import type { AlertCard } from "./p59-executive-alerts";
-import { reportProvenanceLines, type ReportDataProvenance } from "./p728-report-readiness";
+import { provenanceSourceLabel, reportProvenanceLines, type ReportDataProvenance } from "./p728-report-readiness";
 import { WARNING_PRIORITY_LABEL, WARNING_PRIORITY_MEANING, WARNING_PRIORITY_RULES, WARNING_PRIORITY_TONE, type WarningPriority } from "./p59-warning-priority";
 import { demonstrationMappings } from "./p59-provisional-interpretation";
 import { shortSource, sourceCitation, type ClinicalPattern } from "./p60-clinical-patterns";
@@ -1402,8 +1402,10 @@ function frame(L: P, r: PremiumReport) {
 /** P72.8: data-basis line on page 1 (only when the export supplies provenance). */
 function dataBasisLine(L: P, p: ReportDataProvenance) {
   const text = p.basis === "server_confirmed"
-    ? `Data basis: server-confirmed examinations · ${p.observations} observation(s) · ${p.examinationDates.length} examination date(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… (full provenance in the methodology note).`
-    : `Data basis: THIS DEVICE ONLY — not compared with the server copies · ${p.observations} observation(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… (full provenance in the methodology note).`;
+    ? `Data ${p.dataSourceDetail ? "source: SERVER-CONFIRMED" : "basis: server-confirmed examinations"} · ${p.observations} observation(s) · ${p.examinationDates.length} examination date(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… (full provenance in the methodology note).`
+    : p.basis === "local_offline"
+      ? `Data source: LOCAL OFFLINE DATASET — NOT SERVER VERIFIED · ${p.observations} observation(s) · ${p.examinationDates.length} examination date(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… The server may hold examinations not shown here.`
+      : `Data basis: THIS DEVICE ONLY — not compared with the server copies · ${p.observations} observation(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… (full provenance in the methodology note).`;
   L.para(text, 7.4, p.basis === "server_confirmed" ? [51, 65, 85] : COLOR.amberDeep);
 }
 
@@ -1413,7 +1415,7 @@ function noExaminations(L: P, r: PremiumReport) {
   L.h2("No examinations in this period");
   L.para(r.lead, 9);
   L.para(`Selected period: ${r.header.period}. No accepted, stored examination result falls within it. No body system, biomarker, trend, clinical concern or recommendation was evaluated, and no statement about the astronaut's health can be made from this report.`, 8.6);
-  L.para("If examinations are expected in this period, check the selected dates and that the mission's examinations are stored on the exporting device, then regenerate the report.", 8.6);
+  L.para("If examinations are expected in this period, check the selected dates and the data source stated in this report, then regenerate the report.", 8.6);
 }
 
 function provenanceSection(L: P, p: ReportDataProvenance) {
@@ -1463,7 +1465,7 @@ export function renderPremium(pdf: PremiumWriter, fonts: ReportFonts | null, r: 
   }
   pdf.setProperties({
     title: redactProhibitedNames(`Health Intelligence Report — ${r.header.astronaut}`),
-    subject: `Evidence ID ${r.header.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${meta.provenance.basis === "server_confirmed" ? "server-confirmed" : "this device only"}; exported ${meta.provenance.exportedAt}` : ""}`,
+    subject: `Evidence ID ${r.header.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${provenanceSourceLabel(meta.provenance)}${meta.provenance.engineVersion ? `; engine ${meta.provenance.engineVersion}` : ""}; exported ${meta.provenance.exportedAt}` : ""}`,
     creator: "MITOCHONDRIA - local export",
     keywords: `research use, preliminary, not a diagnosis${r.options.provisionalActive ? ", provisional literature interpretation (synthetic demonstration)" : ""}`,
   });

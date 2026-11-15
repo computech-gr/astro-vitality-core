@@ -14,7 +14,7 @@
  */
 import type { AttestationEvent } from "./evidence-attestation";
 import { canonicalJson, validateUnifiedObservation, type UnifiedObservation } from "./observation-envelope";
-import { collapseUnifiedObservationVersions } from "./observation-store";
+import { collapseUnifiedObservationVersions, domainReadableObservations } from "./observation-store";
 import { compareObservationDates, observationDay } from "./observation-date";
 import { OBSERVATION_SYNC_PAGE_MAX, observationContentSha256, type SyncScope } from "./observation-sync";
 import type { PullResponse } from "./observation-sync-runner";
@@ -97,8 +97,7 @@ export function orderAttestations(rows: readonly AttestationEvent[]): Attestatio
 
 /** What the report can evaluate in this dataset (all periods), for the "local examinations" line. */
 export function summarizeDataset(observations: readonly UnifiedObservation[], provenance: SyncScope["provenance"]): DatasetSummary {
-  const superseded = new Set(observations.filter((o) => o.supersedesId && o.status !== "erroneous").map((o) => o.supersedesId!));
-  const usable = observations.filter((o) => o.provenance === provenance && o.status !== "erroneous" && o.reviewState === "accepted" && !superseded.has(o.id));
+  const usable = domainReadableObservations(observations.filter((o) => o.provenance === provenance));
   const dates = [...new Set(usable.map((o) => observationDay(o.observedAt)).filter(Boolean))].sort();
   return { examinations: usable.length, examinationDates: dates, firstDate: dates[0] ?? null, lastDate: dates.at(-1) ?? null };
 }
