@@ -1,3 +1,12 @@
+# P72.8 Direct Researcher demo scientific approval (Preview only)
+
+- [x] Root cause: the receipt rule is the original P37 production lifecycle (2026-11-07); the synthetic demo path never needed one (207 terms approved/activated without receipts). The page hid that path behind an unselected mission and pointed each request at the receipt-bound production approval.
+- [x] Restored in Preview: demo mission opens automatically, each request opens its terms for Demo Scientific Approve (scope step included), production-approval note, DEMO SCIENTIFIC APPROVAL — NOT CLINICALLY VALIDATED label, Ground Medical decline action.
+- [x] Pending P72.8 SQL (rationale/evidence records, Researcher reject, Medical decline, mission classification, mixed-provenance guard) + rollback + MITO_DEMO_2026 classification; 125 disposable PostgreSQL assertions incl. Researcher → Medical end-to-end.
+- [ ] Apply the P72.8 database change: awaiting owner approval (until then rationale is not stored and Reject/Decline stay unavailable).
+- [ ] Live approval of the 36 pending terms: owner/Researcher action; not performed in testing.
+- [ ] Publication: not authorized.
+
 # P72.7 Scientific Review queue visibility (Preview only)
 
 - [x] Root cause of missing ubr-* IDs; request-level list (ID, receipt time, role, terms, status, synthetic demo counts) with per-request term view.

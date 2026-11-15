@@ -1015,7 +1015,7 @@ export function P36GlobalReviewPanel() {
                       <th className="p-2">Mission · crew</th>
                       <th className="p-2 text-right">Terms</th>
                       <th className="p-2">Review status</th>
-                      <th className="p-2">Synthetic demo</th>
+                      <th className="p-2">Demo scientific approval</th>
                       <th className="p-2">
                         <span className="sr-only">Open</span>
                       </th>
@@ -1055,18 +1055,30 @@ export function P36GlobalReviewPanel() {
                         </td>
                         <td className="p-2 text-muted-foreground">
                           {q.demo
-                            ? `${q.demo.decided} decided · ${q.demo.active} active · ${q.demo.revoked} revoked`
+                            ? `${q.demo.decided} demo-approved · ${q.demo.active} activated by Ground Medical · ${q.demo.revoked} revoked · ${Math.max(0, q.termCount - q.demo.decided)} awaiting a demo decision`
                             : "Not available"}
                         </td>
                         <td className="p-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => showRequestTerms(q.submissionId)}
-                            aria-label={`Show the ${q.termCount} submitted terms of ${q.requestId}`}
-                          >
-                            Show terms
-                          </Button>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => showRequestTerms(q.submissionId)}
+                              aria-label={`Show the ${q.termCount} submitted terms of ${q.requestId}`}
+                            >
+                              Show terms
+                            </Button>
+                            {q.demo ? (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => openBulkDemoDecisions(q.missionId, q.submissionId)}
+                                aria-label={`Open ${q.requestId} for demo scientific approval or rejection`}
+                              >
+                                Demo approve / reject
+                              </Button>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     ))}
