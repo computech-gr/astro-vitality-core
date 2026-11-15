@@ -23,6 +23,7 @@ import { NOT_ASSESSED_TEXT, resolveAdverseAnnotations, type AdverseAssessmentInp
 import { buildBiomarkerAssessment, SEVERITY_LABELS, SEVERITY_MARKERS, SEVERITY_ORDER, severityCountsLine, type ReferenceRegistry, type Severity } from "./biomarker-health-assessment";
 import { registryInterpretationSnapshot } from "./biomarker-interpretation-ledger";
 import { redactProhibitedNames } from "./report-identity-redaction";
+import { reportProvenanceLines, type ReportDataProvenance } from "./p728-report-readiness";
 
 export const CANONICAL_URL = "https://mitochondria.edocinfo.com";
 
