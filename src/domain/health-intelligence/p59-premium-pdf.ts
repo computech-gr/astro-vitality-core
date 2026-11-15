@@ -241,6 +241,7 @@ export function compactExamDates(dates: readonly string[]): string {
     if (g && g.key === key && day) g.days.push(day);
     else groups.push({ key, days: day ? [day] : [] });
   }
+  if (!dates.length) return "None in this period"; // P72.8: never a blank tile
   const text = groups.map((g) => (g.days.length ? `${g.days.join(", ")} ${g.key}` : g.key)).join("; ");
   return dates.length > 1 ? `${text} (${dates.length} dates)` : text;
 }
@@ -1278,7 +1279,7 @@ function methodology(L: P, r: PremiumReport) {
   const c = r.counts;
   const cov = r.coverage;
   const items = [
-    ...(r.census ? [`Data source and census. ${cov ? `Read from this device's encrypted local store: ${cov.readRecords} record(s) read${cov.storedRecords !== null ? ` of ${cov.storedRecords} stored` : ""}${cov.complete === true ? " (complete)" : cov.complete === false ? " — INCOMPLETE READ; regenerate before use" : ""}. ` : ""}Census ${r.census.version}: ${r.census.observations} observations, ${r.census.series} series, dates ${r.census.dates.join(", ")}; SHA-256 ${r.census.sha256}. Records held only on another device or only in the cloud are not included unless imported through the explicit cross-device sync. Generator ${r.generator ?? r.version} · Evidence ID ${r.header.evidenceId}.`] : []),
+    ...(r.census ? [`Data source and census. ${cov ? `Read from this device's encrypted local store: ${cov.readRecords} record(s) read${cov.storedRecords !== null ? ` of ${cov.storedRecords} stored` : ""}${cov.complete === true ? " (complete)" : cov.complete === false ? " — INCOMPLETE READ; regenerate before use" : ""}. ` : ""}Census ${r.census.version}: ${r.census.observations} observations, ${r.census.series} series, dates ${r.census.dates.length ? r.census.dates.join(", ") : "none"}; SHA-256 ${r.census.sha256}. Records held only on another device or only in the cloud are not included unless imported through the explicit cross-device sync. Generator ${r.generator ?? r.version} · Evidence ID ${r.header.evidenceId}.`] : []),
     `Data. ${c.observations} observations · ${c.series} biomarker series (exact catalog identity + unit) · ${c.examinationDates} examination date(s) · ${c.comparedSeries} series compared between examinations${c.excluded.length ? ` · excluded: ${c.excluded.map((e) => `${e.n} ${e.reason}`).join("; ")}` : ""}. Only accepted, stored observations are evaluated; rows held at import for Researcher review (unresolved names or units) are not stored and are not evaluated in this report. Values exactly as recorded; no unit conversion or interpolation. ${r.header.provenanceLabel}.`,
     "Calculations. Changes only between consecutive observations of the same identity and unit; the full trajectory, including intermediate peaks and troughs, is reported.",
     `Criteria. ${c.approvedCriteria} Researcher-approved criteria available. ${r.options.provisionalActive ? `${r.demonstrationLabel}: provisional literature interpretation ON (synthetic demonstration only; marked PROVISIONAL; never approved classifications or validated alerts). ` : "Provisional literature interpretation OFF. "}General-population criteria are not NASA flight limits.`,
@@ -1397,26 +1398,60 @@ function frame(L: P, r: PremiumReport) {
   }
 }
 
-export function renderPremiumReport(r: PremiumReport, pdf: PremiumWriter, opts: { family: string; unicode: boolean }): { pages: number } {
+/** P72.8: data-basis line on page 1 (only when the export supplies provenance). */
+function dataBasisLine(L: P, p: ReportDataProvenance) {
+  const text = p.basis === "server_confirmed"
+    ? `Data basis: server-confirmed examinations · ${p.observations} observation(s) · ${p.examinationDates.length} examination date(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… (full provenance in the methodology note).`
+    : `Data basis: THIS DEVICE ONLY — not compared with the server copies · ${p.observations} observation(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… (full provenance in the methodology note).`;
+  L.para(text, 7.4, p.basis === "server_confirmed" ? [51, 65, 85] : COLOR.amberDeep);
+}
+
+/** P72.8: explicit no-data body. Nothing was assessed, so no finding, trend or recommendation is printed. */
+function noExaminations(L: P, r: PremiumReport) {
+  L.y += 4;
+  L.h2("No examinations in this period");
+  L.para(r.lead, 9);
+  L.para(`Selected period: ${r.header.period}. No accepted, stored examination result falls within it. No body system, biomarker, trend, clinical concern or recommendation was evaluated, and no statement about the astronaut's health can be made from this report.`, 8.6);
+  L.para("If examinations are expected in this period, check the selected dates and that the mission's examinations are stored on the exporting device, then regenerate the report.", 8.6);
+}
+
+function provenanceSection(L: P, p: ReportDataProvenance) {
+  L.y += 2;
+  L.h3("Report data provenance", 20);
+  for (const line of reportProvenanceLines(p)) L.para(`• ${line}`, 7.2, [51, 65, 85]);
+}
+
+export interface PremiumRenderMeta {
+  fixedDate?: string;
+  /** P72.8: data provenance of this export (export timestamp kept out of every scientific input). */
+  provenance?: ReportDataProvenance;
+}
+
+export function renderPremiumReport(r: PremiumReport, pdf: PremiumWriter, opts: { family: string; unicode: boolean; provenance?: ReportDataProvenance }): { pages: number } {
   const L = new P(pdf, opts.family, opts.unicode);
   pageOne(L, r);
-  overview(L, r);
-  integrated(L, r);
-  longitudinal(L, r);
-  assessment(L, r);
-  recommendations(L, r);
-  results(L, r);
+  if (opts.provenance) dataBasisLine(L, opts.provenance);
+  if (r.dataStatus === "no_examinations") noExaminations(L, r);
+  else {
+    overview(L, r);
+    integrated(L, r);
+    longitudinal(L, r);
+    assessment(L, r);
+    recommendations(L, r);
+    results(L, r);
+  }
   methodology(L, r);
+  if (opts.provenance) provenanceSection(L, opts.provenance);
   frame(L, r);
   return { pages: pdf.getNumberOfPages() };
 }
 
-export async function createPremiumReportPdf(r: PremiumReport, deps?: PdfDeps, meta?: { fixedDate?: string }): Promise<TextPdfResult> {
+export async function createPremiumReportPdf(r: PremiumReport, deps?: PdfDeps, meta?: PremiumRenderMeta): Promise<TextPdfResult> {
   const { pdf, fonts } = await openTextPdf(deps);
   return renderPremium(pdf as unknown as PremiumWriter, fonts, r, meta);
 }
 
-export function renderPremium(pdf: PremiumWriter, fonts: ReportFonts | null, r: PremiumReport, meta?: { fixedDate?: string }): TextPdfResult {
+export function renderPremium(pdf: PremiumWriter, fonts: ReportFonts | null, r: PremiumReport, meta?: PremiumRenderMeta): TextPdfResult {
   let family = "helvetica";
   if (fonts && pdf.addFileToVFS && pdf.addFont) {
     pdf.addFileToVFS("LiberationSans-Regular.ttf", fonts.regular);
@@ -1427,7 +1462,7 @@ export function renderPremium(pdf: PremiumWriter, fonts: ReportFonts | null, r: 
   }
   pdf.setProperties({
     title: redactProhibitedNames(`Health Intelligence Report — ${r.header.astronaut}`),
-    subject: `Evidence ID ${r.header.evidenceId}; preliminary assessment pending Ground Medical review`,
+    subject: `Evidence ID ${r.header.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${meta.provenance.basis === "server_confirmed" ? "server-confirmed" : "this device only"}; exported ${meta.provenance.exportedAt}` : ""}`,
     creator: "MITOCHONDRIA - local export",
     keywords: `research use, preliminary, not a diagnosis${r.options.provisionalActive ? ", provisional literature interpretation (synthetic demonstration)" : ""}`,
   });
@@ -1435,7 +1470,7 @@ export function renderPremium(pdf: PremiumWriter, fonts: ReportFonts | null, r: 
     pdf.setCreationDate?.(new Date(meta.fixedDate));
     pdf.setFileId?.(`${r.header.evidenceId.replace(/[^0-9A-F]/g, "")}${"0".repeat(32)}`.slice(0, 32));
   }
-  const { pages } = renderPremiumReport(r, pdf, { family, unicode: Boolean(fonts) });
+  const { pages } = renderPremiumReport(r, pdf, { family, unicode: Boolean(fonts), ...(meta?.provenance ? { provenance: meta.provenance } : {}) });
   if (!pdf.output) throw new Error("PDF writer cannot produce output.");
   const blob = pdf.output("blob");
   if (!(blob.size > 0)) throw new Error("The PDF file is empty.");

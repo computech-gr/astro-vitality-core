@@ -650,6 +650,10 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const mappedRows = rows.filter((r) => r.identityRoute?.kind === "demonstration_mapping");
   const basisText = `Clinical classes: ${counts.approvedCriteria} Researcher-approved criteria for this mission${provisionalActive ? "; PROVISIONAL = documented literature criterion (synthetic demonstration only; never a validated alert)" : ""}${demonstrationMappingsActive ? `; ${new Set(mappedRows.map((r) => r.metricId)).size} synthetic identity mapping(s) applied (owner-directed)` : ""}. Panel colour = warning priority, separate from each result's clinical class. General-population criteria are not NASA flight limits.`;
 
+  // P72.8: with no evaluated observation the overview questions are not answered at all (an empty
+  // dataset must never read as "no concern"); the lead states that no assessment was performed.
+  if (!rows.length) overview.splice(0, overview.length);
+
   return {
     schema: PREMIUM_REPORT_SCHEMA, version: PREMIUM_GENERATOR_VERSION, base: report, header,
     options: { provisionalLiterature: input.options.provisionalLiterature, provisionalActive, demonstrationMappingsActive },
