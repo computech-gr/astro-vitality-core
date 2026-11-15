@@ -196,6 +196,7 @@ const unwiden = (s: string) => s
   .replace(/ is not null\n\s+or public\.p726_global_research_can_read\(p_mission_id, null, 'synthetic'\)\) then/g, " is not null) then");
 const bodies = (s: string) => s.slice(s.search(/CREATE OR REPLACE FUNCTION/)).split(/\n(?=CREATE OR REPLACE FUNCTION)/).map((b) => b.slice(0, b.lastIndexOf("$function$;") + 11));
 const rollbackSql = pending("20261115000000_p726_global_researcher_read.rollback.sql");
+check(bodies(candidate).length === 4 && bodies(rollbackSql).length === 4, "four bodies compared");
 check(JSON.stringify(bodies(candidate).map(unwiden)) === JSON.stringify(bodies(rollbackSql)), "replaced bodies differ from live only by the global-read clause");
 check(gates() === gatesBefore, "gating helpers unchanged");
 
