@@ -23,7 +23,7 @@ import type { UnifiedReportInputs } from "./unified-health-report";
 
 export const REPORT_DATASET_VERSION = "p72.9-report-dataset.v1" as const;
 /** Scientific/report engine identifier printed in every export (changes only with report-engine releases). */
-export const REPORT_ENGINE_VERSION = "mitochondria-health-intelligence p59-premium/p58-professional · dataset p72.9.v1" as const;
+export const REPORT_ENGINE_VERSION = "mitochondria-health-intelligence p59-premium/p58-professional · dataset p72.9.v1 · scientific inputs p72.10.v1" as const;
 export const LOCAL_OFFLINE_LABEL = "LOCAL OFFLINE DATASET — NOT SERVER VERIFIED" as const;
 export const SERVER_CONFIRMED_LABEL = "SERVER-CONFIRMED" as const;
 /** Upper bound of pages per stream; reaching it with more pages left is an incomplete read. */
