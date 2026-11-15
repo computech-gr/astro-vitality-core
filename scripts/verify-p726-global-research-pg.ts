@@ -189,7 +189,14 @@ for (const r of ["ground_medical", "mission_operator", "crew_self", "researcher"
 const candidate = pending("20261115000000_p726_global_researcher_read.sql").replace(/^--.*$/gm, "");
 const replaced = [...candidate.matchAll(/create or replace function public\.([a-z0-9_]+)/gi)].map((m) => m[1]).sort().join();
 check(replaced === "observation_sync_list_v1,p37_demo_catalog_snapshot_v1,p615_demo_alias_snapshot_v1,review_sync_list_v1", "only the four read RPCs are replaced");
-check(!/(append|decide|activate|attest|approve|revoke_v1|create policy|alter policy|disable row level|insert into public\.mission_memberships)/i.test(candidate.replace(/p726_reject_audit_mutation|revoke all on|revoke insert/gi, "")), "no write RPC, policy or membership change");
+const head = candidate.slice(0, candidate.search(/CREATE OR REPLACE FUNCTION/));
+check(!/(create policy|alter policy|disable row level|mission_memberships|_append_|_decide_|_activate_|grant [^;]* to anon)/i.test(head), "no write RPC, policy, anon grant or membership change");
+const unwiden = (s: string) => s
+  .replace(/if not \(public\.(observation_sync_can_access|review_sync_can_read)\(p_mission_id, p_crew_member_id\)\n\s+or public\.p726_global_research_can_read\(p_mission_id, p_crew_member_id, p_provenance\)\) then/g, "if not public.$1(p_mission_id, p_crew_member_id) then")
+  .replace(/ is not null\n\s+or public\.p726_global_research_can_read\(p_mission_id, null, 'synthetic'\)\) then/g, " is not null) then");
+const bodies = (s: string) => s.slice(s.search(/CREATE OR REPLACE FUNCTION/)).split(/\n(?=CREATE OR REPLACE FUNCTION)/).map((b) => b.slice(0, b.lastIndexOf("$function$;") + 11));
+const rollbackSql = pending("20261115000000_p726_global_researcher_read.rollback.sql");
+check(JSON.stringify(bodies(candidate).map(unwiden)) === JSON.stringify(bodies(rollbackSql)), "replaced bodies differ from live only by the global-read clause");
 check(gates() === gatesBefore, "gating helpers unchanged");
 
 // --- Revocation and other roles ---------------------------------------------------
