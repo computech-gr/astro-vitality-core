@@ -5,7 +5,7 @@
  * the existing triage and synthetic demo decision server functions. Activation stays on the Ground
  * Medical console. Nothing here saves observations or approves anything for real data.
  */
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { appendGlobalTriage, listGlobalReviewMissions, listGlobalReviewSubmissions, listGlobalTriage } from "@/lib/p36-global-review.functions";
 import { getSyntheticDemoLifecycle, recordSyntheticDemoDecisionFn } from "@/lib/p37-synthetic-demo.functions";
 import type { GlobalReviewMission } from "@/lib/p36-global-review.server";
-import { getSyntheticDemoCatalogs, subscribeSyntheticDemoCatalogs } from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
+import { useSyntheticDemoCatalogs } from "@/hooks/use-device-catalogs";
 import { MAPPING_CATEGORY_LABELS } from "@/domain/health-intelligence/p613-mapping-decision-register";
 import {
   DECISION_LABELS,

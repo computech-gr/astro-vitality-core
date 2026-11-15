@@ -28,7 +28,8 @@ import {
  * unit-mismatched rows stay review-only and can never be saved. Research
  * reference only — no clinical thresholds, diagnosis or automatic approval.
  */
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSyntheticDemoCatalogs } from "@/hooks/use-device-catalogs";
 import { UnknownBiomarkerReviewPanel } from "@/components/unknown-biomarker-review-panel";
 import { StoredObservationsReview } from "@/components/stored-observations-review";
 import { MissionDemoParametersPanel } from "@/components/mission-demo-parameters-panel";
@@ -37,10 +38,7 @@ import {
   classifyWithGovernedExtensions,
   syntheticDemoSectionConflict,
 } from "@/domain/health-intelligence/unknown-biomarker-review";
-import {
-  getSyntheticDemoCatalogs,
-  subscribeSyntheticDemoCatalogs,
-} from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
+import { subscribeSyntheticDemoCatalogs } from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
 import {
   getActiveCatalog,
   subscribeActiveCatalog,
