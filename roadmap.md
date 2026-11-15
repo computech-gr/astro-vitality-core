@@ -727,3 +727,10 @@
 - [x] Readiness gate (local read + read-only server comparison, fresh re-check before export), explicit no-examinations wording, PDF data provenance.
 - [x] Regression tests, full suite, typecheck, lint, security audit; three independent signed-in Researcher browser sessions compared.
 - [ ] Publish (blocked: owner authorization).
+
+## P72.9 Server-confirmed Health Intelligence reports (Preview only)
+
+- [x] Online report from the complete authorized server dataset (examinations + reviews, read-only, no device writes); one immutable snapshot for screen and exports, re-checked before each export.
+- [x] Explicit LOCAL OFFLINE report (never automatic) on offline/server failure; empty-period wording in the Previous-format PDF; provenance in every PDF and text export.
+- [x] 23 vs 24 pages investigated (provenance page only); tests, full suite, typecheck, lint, security audit, production build; Researcher and Ground Medical fresh-browser checks.
+- [ ] Publish (blocked: owner authorization).
