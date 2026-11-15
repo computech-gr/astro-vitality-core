@@ -28,14 +28,14 @@ export const getP72SignInPrefillFn = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => z.object({ role: z.enum(["astronaut", "researcher", "medical"]) }).strict().parse(v))
   .handler(async ({ data }) => {
     const { P72_ROLE_ACCOUNTS, p72PresentationSignInAvailable } = await import("./p72-role-access.server");
-    const { maskAccountEmail } = await import("@/domain/mission-access/p72-role-access");
+    const { P72_PRESENTATION_EMAIL_MASK } = await import("@/domain/mission-access/p72-role-access");
     const presentationSignIn = p72PresentationSignInAvailable(
       process.env["P72_PRESENTATION_SIGNIN_ENABLED"],
       process.env["P72_PRESENTATION_PASSWORD"],
     );
-    // P72.6: during presentation sign-in only the masked address leaves the server.
+    // P72.6: during presentation sign-in no letter of the address leaves the server.
     return {
-      email: presentationSignIn ? maskAccountEmail(P72_ROLE_ACCOUNTS[data.role]) : P72_ROLE_ACCOUNTS[data.role],
+      email: presentationSignIn ? P72_PRESENTATION_EMAIL_MASK : P72_ROLE_ACCOUNTS[data.role],
       presentationSignIn,
     };
   });

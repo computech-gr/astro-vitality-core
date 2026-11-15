@@ -211,7 +211,10 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
 
   async function signIn() {
     if (busy) return;
-    const validation = validateMissionSignInInput(email, password);
+    const usePresentation =
+      Boolean(p72Role) &&
+      shouldUseP72PresentationSignIn({ available: presentationAvailable, email, mappedEmail: lastPrefill.current, password });
+    const validation = usePresentation ? null : validateMissionSignInInput(email, password);
     if (validation) {
       setSignInError(validation);
       return;
@@ -220,10 +223,7 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
     setMessage(null);
     setSignInError(null);
     try {
-      if (
-        p72Role &&
-        shouldUseP72PresentationSignIn({ available: presentationAvailable, email, mappedEmail: lastPrefill.current, password })
-      ) {
+      if (p72Role && usePresentation) {
         const result = await presentationSignIn({ data: { role: p72Role } });
         if (!result.ok) throw new Error(result.message);
         const { error } = await supabase.auth.setSession({ access_token: result.accessToken, refresh_token: result.refreshToken });
