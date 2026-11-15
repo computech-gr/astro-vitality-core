@@ -3,12 +3,12 @@
  * it reads the existing caller-scoped synthetic demo lifecycle (when this account may) and this device's
  * verified signed demo catalog, and links to Scientific Review. Held rows stay locked; nothing is saved.
  */
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@/components/ui/badge";
 import { getSyntheticDemoLifecycle } from "@/lib/p37-synthetic-demo.functions";
-import { getSyntheticDemoCatalogs, subscribeSyntheticDemoCatalogs } from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
+import { useSyntheticDemoCatalogs } from "@/hooks/use-device-catalogs";
 import {
   NEXT_ROLE_LABELS,
   heldMappingViews,
@@ -26,7 +26,7 @@ export function P614HeldMappingQueue(props: {
   provenance?: "" | "synthetic" | "real" | undefined;
 }) {
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
-  const catalogs = useSyncExternalStore(subscribeSyntheticDemoCatalogs, getSyntheticDemoCatalogs, getSyntheticDemoCatalogs);
+  const catalogs = useSyntheticDemoCatalogs();
   const [live, setLive] = useState<Pick<GovernanceInputs, "scopeTerms" | "demoEvents"> | null>(null);
   const synthetic = props.provenance === "synthetic" && !!props.missionId;
   useEffect(() => {

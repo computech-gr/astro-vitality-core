@@ -83,13 +83,15 @@ export function crewOptions(submissions: GlobalReviewSubmission[]) {
   return [...n.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([crewPseudonym, termCount]) => ({ crewPseudonym, termCount }));
 }
 
-export interface TermFilter { query: string; crew: string; state: ReviewState | "all"; classification: string }
+export const ALL_REQUESTS = "__all_requests__";
+export interface TermFilter { query: string; crew: string; state: ReviewState | "all"; classification: string; request?: string }
 export type TermSort = "label" | "term" | "unit" | "received";
 
 export function filterTerms(rows: TermRow[], f: TermFilter): TermRow[] {
   const q = f.query.trim().toLowerCase();
   return rows.filter((r) =>
     (f.crew === ALL_CREWS || r.submission.crewPseudonym === f.crew)
+    && (!f.request || f.request === ALL_REQUESTS || r.submission.submissionId === f.request)
     && (f.state === "all" || r.state === f.state)
     && (f.classification === "all" || r.term.classification === f.classification)
     && (!q || [r.term.termId, r.term.exactUnit, r.submission.requestId, ...r.term.originalLabels, ...r.term.candidateMetricIds]
@@ -125,4 +127,97 @@ export function dashboardCounts(rows: TermRow[]) {
     if (r.scientific === "pending") c.pending++;
   }
   return c;
+}
+
+/* ---------- P72.7 request-level view (one row per submitted ubr-* request) ---------- */
+
+/**
+ * Initial mission selection: the only authorized mission, otherwise the only one
+ * holding submissions. Selection is navigation, never authorization — every read is
+ * still re-authorized by the server; ambiguous cases stay unselected.
+ */
+export function defaultMissionSelection(missions: GlobalReviewMission[]): string {
+  if (missions.length === 1) return missions[0]!.missionId;
+  const withSubmissions = missions.filter((m) => m.submissionCount > 0);
+  return withSubmissions.length === 1 ? withSubmissions[0]!.missionId : "";
+}
+
+/** Minimal synthetic demo lifecycle facts per submitted term (read-only). */
+export interface DemoTermFact { submissionId: string; termId: string; activationEventId: string | null; revocationEventId: string | null }
+
+export type RequestStatus = "awaiting_triage" | "triage_in_progress" | "pending_scientific_decision" | "scientific_decisions_recorded";
+export const REQUEST_STATUS_LABEL: Record<RequestStatus, string> = {
+  awaiting_triage: "Awaiting triage",
+  triage_in_progress: "Triage in progress",
+  pending_scientific_decision: "Triaged · pending scientific decision",
+  scientific_decisions_recorded: "Scientific decisions recorded",
+};
+
+export interface RequestSummary {
+  submissionId: string;
+  requestId: string;
+  missionId: string;
+  missionCode: string;
+  missionName: string;
+  crewPseudonym: string;
+  submittedRole: string;
+  receivedAt: string;
+  receivedSeq: number;
+  payloadSha256: string;
+  termCount: number;
+  triage: Record<ReviewState, number>;
+  scientific: Record<ScientificState, number>;
+  /** Synthetic demo facts (never scientific approval); null when the lifecycle was unavailable. */
+  demo: { decided: number; active: number; revoked: number } | null;
+  status: RequestStatus;
+}
+
+/** Status from recorded facts only: visibility or triage acceptance is never approval. */
+export function requestStatus(termCount: number, triage: Record<ReviewState, number>, scientific: Record<ScientificState, number>): RequestStatus {
+  if (termCount > 0 && scientific.pending === 0) return "scientific_decisions_recorded";
+  if (triage.awaiting_triage === termCount) return "awaiting_triage";
+  if (triage.awaiting_triage > 0) return "triage_in_progress";
+  return "pending_scientific_decision";
+}
+
+/**
+ * One summary per submitted request, keeping the original ubr-* ID, receipt time and
+ * originating role exactly as received. Missions by code, requests by receipt order.
+ */
+export function summarizeRequests(
+  submissions: GlobalReviewSubmission[],
+  triage: Map<string, TriageEvent> = new Map(),
+  demo: Map<string, readonly DemoTermFact[] | null> = new Map(),
+): RequestSummary[] {
+  const out = submissions.map((s): RequestSummary => {
+    const t: Record<ReviewState, number> = { awaiting_triage: 0, accepted: 0, more_evidence: 0, rejected: 0 };
+    const sc: Record<ScientificState, number> = { pending: 0, approved: 0, rejected: 0 };
+    for (const term of s.terms) {
+      t[triageState(triage.get(`${s.submissionId}:${term.termId}`))]++;
+      sc[scientificState(term.decision)]++;
+    }
+    const facts = demo.has(s.missionId) ? demo.get(s.missionId) ?? null : null;
+    let d: RequestSummary["demo"] = null;
+    if (facts) {
+      const termIds = new Set(s.terms.map((x) => x.termId));
+      const mine = facts.filter((f) => f.submissionId === s.submissionId && termIds.has(f.termId));
+      d = {
+        decided: mine.length,
+        active: mine.filter((f) => f.activationEventId && !f.revocationEventId).length,
+        revoked: mine.filter((f) => f.revocationEventId).length,
+      };
+    }
+    return {
+      submissionId: s.submissionId, requestId: s.requestId, missionId: s.missionId, missionCode: s.missionCode,
+      missionName: s.missionName, crewPseudonym: s.crewPseudonym, submittedRole: s.submittedRole, receivedAt: s.receivedAt,
+      receivedSeq: s.receivedSeq, payloadSha256: s.payloadSha256, termCount: s.terms.length, triage: t, scientific: sc,
+      demo: d, status: requestStatus(s.terms.length, t, sc),
+    };
+  });
+  return out.sort((a, b) => a.missionCode.localeCompare(b.missionCode) || a.missionId.localeCompare(b.missionId) || a.receivedSeq - b.receivedSeq);
+}
+
+/** Originating role as shown to reviewers (exact stored value kept in the receipt). */
+export function originatingRoleLabel(role: string): string {
+  return role === "ground_medical" ? "Ground Medical" : role === "crew_self" ? "Astronaut (crew self)" : role === "researcher" ? "Researcher" : role.replaceAll("_", " ");
 }

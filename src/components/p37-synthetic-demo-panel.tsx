@@ -7,7 +7,8 @@
  * unknown-biomarker request. Every action is authorized by caller-scoped
  * database functions; nothing here touches the production catalog.
  */
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useSyntheticDemoCatalogs } from "@/hooks/use-device-catalogs";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, CircleSlash, FlaskConical, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +34,7 @@ import {
 import {
   SYNTHETIC_DEMO_STORAGE_KEY,
   getInstalledDemoSnapshot,
-  getSyntheticDemoCatalogs,
   installOfferedDemoCatalog,
-  subscribeSyntheticDemoCatalogs,
 } from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
 import { browserSnapshotStorage } from "@/domain/health-intelligence/active-catalog-runtime";
 import { BUNDLED_TRUSTED_KEYS } from "@/domain/health-intelligence/catalog-snapshot-signing";
@@ -395,11 +394,7 @@ export function P37SyntheticDemoPanel({
 }) {
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
   const sync = useServerFn(getSignedSyntheticDemoSnapshot);
-  const catalogs = useSyncExternalStore(
-    subscribeSyntheticDemoCatalogs,
-    getSyntheticDemoCatalogs,
-    getSyntheticDemoCatalogs,
-  );
+  const catalogs = useSyntheticDemoCatalogs();
   const device = catalogs.get(missionId) ?? null;
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [note, setNote] = useState("");
@@ -459,7 +454,8 @@ export function P37SyntheticDemoPanel({
       setBusy(false);
     }
   };
-  const installed = getInstalledDemoSnapshot(missionId);
+  // P72.7: read the stored snapshot only once the hydration-safe catalog value has it.
+  const installed = device ? getInstalledDemoSnapshot(missionId) : null;
 
   return (
     <section
