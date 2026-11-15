@@ -558,7 +558,7 @@ export function renderProfessional(pdf: Writer, fonts: ReportFonts | null, r: Pr
   }
   pdf.setProperties({
     title: redactProhibitedNames(`Astronaut Health Assessment — ${r.assessment.header.astronaut}`),
-    subject: `Evidence ID ${r.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${provenanceSourceLabel(meta.provenance)}; exported ${meta.provenance.exportedAt}` : ""}`,
+    subject: `Evidence ID ${r.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${provenanceSourceLabel(meta.provenance)}${meta.provenance.scientificFingerprint ? `; scientific inputs SHA-256 ${meta.provenance.scientificFingerprint}` : ""}; exported ${meta.provenance.exportedAt}` : ""}`,
     creator: "MITOCHONDRIA - local export",
     keywords: "research use, preliminary, not a diagnosis",
   });
