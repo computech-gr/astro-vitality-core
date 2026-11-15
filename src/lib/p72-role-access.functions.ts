@@ -21,19 +21,22 @@ export const checkP72RoleAccountFn = createServerFn({ method: "POST" })
 
 /**
  * P72.5 (owner-requested): the email address to prefill on a role's sign-in page.
- * Public by design — it returns only the mapped address and whether server-held
- * presentation sign-in is available, never a password, session or token.
+ * Public by design — it returns the mapped address (masked while server-held presentation
+ * sign-in is available) and that availability, never a password, session or token.
  */
 export const getP72SignInPrefillFn = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => z.object({ role: z.enum(["astronaut", "researcher", "medical"]) }).strict().parse(v))
   .handler(async ({ data }) => {
     const { P72_ROLE_ACCOUNTS, p72PresentationSignInAvailable } = await import("./p72-role-access.server");
+    const { maskAccountEmail } = await import("@/domain/mission-access/p72-role-access");
+    const presentationSignIn = p72PresentationSignInAvailable(
+      process.env["P72_PRESENTATION_SIGNIN_ENABLED"],
+      process.env["P72_PRESENTATION_PASSWORD"],
+    );
+    // P72.6: during presentation sign-in only the masked address leaves the server.
     return {
-      email: P72_ROLE_ACCOUNTS[data.role],
-      presentationSignIn: p72PresentationSignInAvailable(
-        process.env["P72_PRESENTATION_SIGNIN_ENABLED"],
-        process.env["P72_PRESENTATION_PASSWORD"],
-      ),
+      email: presentationSignIn ? maskAccountEmail(P72_ROLE_ACCOUNTS[data.role]) : P72_ROLE_ACCOUNTS[data.role],
+      presentationSignIn,
     };
   });
 
