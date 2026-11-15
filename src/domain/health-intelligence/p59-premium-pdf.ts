@@ -1465,7 +1465,7 @@ export function renderPremium(pdf: PremiumWriter, fonts: ReportFonts | null, r: 
   }
   pdf.setProperties({
     title: redactProhibitedNames(`Health Intelligence Report — ${r.header.astronaut}`),
-    subject: `Evidence ID ${r.header.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${provenanceSourceLabel(meta.provenance)}${meta.provenance.engineVersion ? `; engine ${meta.provenance.engineVersion}` : ""}; exported ${meta.provenance.exportedAt}` : ""}`,
+    subject: `Evidence ID ${r.header.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${provenanceSourceLabel(meta.provenance)}${meta.provenance.engineVersion ? `; engine ${meta.provenance.engineVersion}` : ""}${meta.provenance.scientificFingerprint ? `; scientific inputs SHA-256 ${meta.provenance.scientificFingerprint}` : ""}; exported ${meta.provenance.exportedAt}` : ""}`,
     creator: "MITOCHONDRIA - local export",
     keywords: `research use, preliminary, not a diagnosis${r.options.provisionalActive ? ", provisional literature interpretation (synthetic demonstration)" : ""}`,
   });
