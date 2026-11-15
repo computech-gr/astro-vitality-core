@@ -150,8 +150,14 @@ describe("v9.4 encryption and key handling", () => {
     const keys = await deriveScopeKeys(readMasterKeys((n) => ENV[n]).get(1)!, 1, SCOPE);
     const o = obs({ value: "71", source: { kind: "csv", label: "CSV: secret-label.csv" } });
     const sealed = await sealEvent(keys, SCOPE, entry(o));
-    expect(JSON.stringify(sealed)).not.toContain("secret-label");
-    expect(JSON.stringify(sealed)).not.toContain("bpm");
+    // Random base64 ciphertext/IV can contain short words by chance (e.g. "bpm"), so the
+    // plaintext check reads the cleartext fields and the decoded ciphertext bytes.
+    const { ciphertext, iv, ...cleartext } = sealed;
+    const decoded = Buffer.from(ciphertext, "base64").toString("latin1") + Buffer.from(iv, "base64").toString("latin1");
+    for (const plain of ["secret-label", "bpm"]) {
+      expect(JSON.stringify(cleartext)).not.toContain(plain);
+      expect(decoded).not.toContain(plain);
+    }
     const row = { event_id: sealed.eventId, iv: sealed.iv, ciphertext: sealed.ciphertext, fingerprint: sealed.fingerprint, event_kind: sealed.eventKind, observation_id: sealed.observationId };
     expect((await openEvent(keys, SCOPE, row)).observation).toEqual(o);
   });
