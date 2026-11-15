@@ -116,7 +116,6 @@ export function AstronautHealthReport() {
   // feeds the screen and every export.
   const [snapshot, setSnapshot] = useState<ReportDatasetSnapshot | null>(null);
   const inputs: UnifiedReportInputs = snapshot?.inputs ?? EMPTY_INPUTS;
-  const setInputs = (_: UnifiedReportInputs) => setSnapshot(null);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sources, setSources] = useState<ReportSourceBadge[]>([...REPORT_SOURCE_BADGES]);
@@ -138,7 +137,7 @@ export function AstronautHealthReport() {
         .then((v) => {
           if (!active) return;
           if (!v.signedIn || v.error || v.userId !== userRef.current) {
-            setInputs(EMPTY_INPUTS);
+            setSnapshot(null);
             setKey("");
           }
           userRef.current = v.signedIn && !v.error ? v.userId : undefined;
@@ -147,7 +146,7 @@ export function AstronautHealthReport() {
         .catch(() => {
           if (!active) return;
           userRef.current = undefined;
-          setInputs(EMPTY_INPUTS);
+          setSnapshot(null);
           setKey("");
           setIdentity(null);
         });
@@ -209,7 +208,7 @@ export function AstronautHealthReport() {
   useEffect(() => {
     if (key && identity && !member) {
       setKey("");
-      setInputs(EMPTY_INPUTS);
+      setSnapshot(null);
       setStatus("Selected scope is no longer authorized. Report cleared.");
     }
   }, [key, identity, member]);
@@ -325,45 +324,23 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
-  // P72.8: read-only comparison of this device's examinations with the server copies for the same read.
-  const pullServer = useServerFn(pullObservationEvents);
-  const [serverCheck, setServerCheck] = useState<ServerComparison>({ kind: "pending" });
-  const [checkNonce, setCheckNonce] = useState(0);
-  const localReadyToken = localRead.kind === "ready" ? localRead.token : null;
-  const runServerComparison = (token: number) =>
-    member
-      ? compareLocalWithServer({ missionId: member.missionId, crewMemberId: member.crewMemberId, provenance }, token, {
-          listLocal: async () => (await listUnifiedObservationEvents(member.missionId, member.crewMemberId)).map((e) => ({ eventId: e.eventId, eventKind: e.eventKind, observation: e.observation })),
-          pull: (a) => pullServer({ data: a }),
-          online: typeof navigator === "undefined" ? undefined : navigator.onLine,
-        })
-      : Promise.resolve<ServerComparison>({ kind: "pending" });
-  useEffect(() => {
-    if (localReadyToken === null || !member) {
-      setServerCheck({ kind: "pending" });
-      return;
-    }
-    let active = true;
-    setServerCheck({ kind: "checking", token: localReadyToken });
-    void runServerComparison(localReadyToken)
-      .catch((): ServerComparison => ({ kind: "failed", token: localReadyToken, reason: "The server comparison could not be completed." }))
-      .then((r) => { if (active) setServerCheck(r); });
-    return () => { active = false; };
-    // runServerComparison closes over member/provenance, both listed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localReadyToken, member?.missionId, member?.crewMemberId, provenance, checkNonce]);
   const readiness = useMemo(
     () =>
-      assessReportReadiness({
-        scopeKey: member ? `${member.missionId}|${member.crewMemberId}` : "",
-        local: localRead,
-        server: serverCheck,
-        coverage: inputs.coverage,
+      assessDatasetReadiness({
+        hasSelection: Boolean(member),
+        mode,
+        server: serverState,
+        local: localState,
+        snapshot: snapshot && member && snapshot.scope.missionId === member.missionId && snapshot.scope.crewMemberId === member.crewMemberId && snapshot.scope.provenance === provenance ? snapshot : null,
         includedObservations: unified?.rows.length ?? 0,
       }),
-    [member, localRead, serverCheck, inputs.coverage, unified],
+    [member, mode, serverState, localState, snapshot, provenance, unified],
   );
-  const reportVisible = localRead.kind === "ready" && member !== undefined && localRead.scopeKey === `${member.missionId}|${member.crewMemberId}`;
+  const reportVisible = readiness.exportAllowed;
+  const notOnServer = useMemo(
+    () => (snapshot?.source === "server_confirmed" && localState.kind === "ready" ? localRecordsNotOnServer(snapshot, localState.inputs) : null),
+    [snapshot, localState],
+  );
 
   // P56.1: same scope and sources without the date filter — used only to say "measured outside the period".
   const scopeHistory = useMemo(
@@ -409,9 +386,47 @@ export function AstronautHealthReport() {
     return () => { active = false; };
   }, [attestMissionId, attestCrewId, provenance, identity?.userId, dataVersion]);
 
-  const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(attestations, unified.scope) : []), [attestations, unified]);
+  // P72.9: the snapshot of the active source. Server mode uses only the server dataset; local offline
+  // mode (explicit choice) uses only this device's complete local read and attestation ledger.
+  useEffect(() => {
+    if (!member) {
+      setSnapshot(null);
+      return;
+    }
+    if (mode === "server_confirmed") {
+      setSnapshot(serverState.kind === "ready" ? serverState.snapshot : null);
+      return;
+    }
+    if (localState.kind !== "ready" || !localState.complete || attestLoad !== "ready") {
+      setSnapshot(null);
+      return;
+    }
+    let active = true;
+    const scope = { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance };
+    void localOfflineSnapshot(scope, localState.token, localState.inputs, attestations).then((snap) => {
+      if (active) setSnapshot(snap);
+    });
+    return () => {
+      active = false;
+    };
+    // member identity is covered by missionId/crewMemberId.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, serverState, localState, attestLoad, attestations, member?.missionId, member?.crewMemberId, provenance]);
+  // Local offline needs the attestation ledger too; a failed ledger read is a failed local read.
+  const effectiveLocalState: LocalDatasetState =
+    mode === "local_offline" && localState.kind === "ready" && attestLoad === "error"
+      ? { kind: "failed", token: localState.token, message: "The medical reviews stored on this device could not be read." }
+      : localState;
+
+  // Report content uses the snapshot's reviews only; attestation planning also sees this device's ledger
+  // so an attestation recorded here but not yet uploaded is never planned twice.
+  const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(snapshot?.attestations ?? [], unified.scope) : []), [snapshot, unified]);
+  const planningAttestations = useMemo(
+    () => (unified ? scopedAttestationEvents(mergeAttestationEvents(attestations, snapshot?.attestations ?? []).events, unified.scope) : []),
+    [attestations, snapshot, unified],
+  );
   const attestationSummary = useMemo(() => (unified ? summarizeAttestations(unified, scopedAttestations) : null), [unified, scopedAttestations]);
-  const eligible = useMemo(() => (unified ? eligibleForAttestation(unified, scopedAttestations) : []), [unified, scopedAttestations]);
+  const eligible = useMemo(() => (unified ? eligibleForAttestation(unified, planningAttestations) : []), [unified, planningAttestations]);
 
   const runAttestation = async (mode: "attest" | "revoke", recordId?: string) => {
     if (!member || !unified || attesting) return;
@@ -425,8 +440,8 @@ export function AstronautHealthReport() {
       const ctx = { actorUserId: fresh.userId, rolesForScope: freshRoles, scope, decidedAt: new Date().toISOString() };
       const input = { reason: attestReason, confirmed: attestConfirmed };
       const plan = mode === "attest"
-        ? planAttestation(unified, [...selected], scopedAttestations, ctx, input)
-        : planRevocation(unified, recordId ?? "", scopedAttestations, ctx, input);
+        ? planAttestation(unified, [...selected], planningAttestations, ctx, input)
+        : planRevocation(unified, recordId ?? "", planningAttestations, ctx, input);
       if (!plan.ok) { setAttestStatus(plan.reason); return; }
       const saved = await appendAttestationEvents(plan.events, scope, ctx);
       const events = await listAttestationEvents(scope);
