@@ -33,7 +33,13 @@ export function SyntheticDemoCatalogAutoRefresh() {
         if (!storage || !navigator.onLine) return;
         const identity = await loadMissionIdentity().catch(() => null);
         if (!active || !identity?.signedIn || identity.error) return;
-        const missions = identity.memberships.map((m) => m.missionId);
+        // P72.6: global Researcher read scopes need the same verified demo catalogs to read records.
+        const missions = [
+          ...new Set([
+            ...identity.memberships.map((m) => m.missionId),
+            ...(identity.globalResearch?.missions.map((m) => m.missionId) ?? []),
+          ]),
+        ];
         if (!missions.length) return;
         await refreshSyntheticDemoCatalogs(
           missions,

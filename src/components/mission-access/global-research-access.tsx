@@ -25,8 +25,8 @@ import { appendObservationSyncReceipts, listObservationSyncReceipts } from "@/do
 import { runObservationSync } from "@/domain/health-intelligence/observation-sync-runner";
 import { runReviewSync } from "@/domain/health-intelligence/review-sync-runner";
 import { notifyReviewDataChanged } from "@/domain/health-intelligence/review-change-events";
-import { pullObservationEvents, pushObservationEvents } from "@/lib/observation-sync.functions";
-import { pullReviewEvents, pushReviewEvents } from "@/lib/review-sync.functions";
+import { pullObservationEvents } from "@/lib/observation-sync.functions";
+import { pullReviewEvents } from "@/lib/review-sync.functions";
 
 const field = "w-full rounded-md border border-border bg-background px-3 py-2 text-foreground";
 const sessionStore = () => (typeof window === "undefined" ? undefined : window.sessionStorage);
@@ -147,10 +147,6 @@ export function GlobalResearchAccess() {
       setVersion((v) => v + 1);
     }
   }, [allowed, busy, missionId, crewMemberId, identity?.userId]);
-
-  // Keep the unused-import guard honest: uploads are structurally absent from this view.
-  void pushObservationEvents;
-  void pushReviewEvents;
 
   const counts = useMemo(() => {
     if (!records) return null;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { FileText, FlaskConical, Layers } from "lucide-react";
+import { FileText, FlaskConical, Globe, Layers } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { loadMissionIdentity, subscribeMissionIdentity, type MissionIdentitySnapshot } from "@/infrastructure/mission-identity";
@@ -25,6 +25,8 @@ export function P72MissionContextBar({ role }: { role: DemoRole }) {
   if (!identity?.signedIn) return null;
   const route = P72_ROLE_ROUTES[role];
   const membership = p72TargetMembership(role, identity.memberships);
+  // P72.6: a server-verified global Researcher READ scope replaces the membership warning.
+  const globalResearch = role === "researcher" && !identity.error ? identity.globalResearch : undefined;
   return (
     <section aria-label="Mission presentation context" className="mt-6 w-full">
       <div className="rounded-xl border border-primary/30 bg-card p-4 text-sm">
@@ -37,15 +39,21 @@ export function P72MissionContextBar({ role }: { role: DemoRole }) {
           {role === "researcher" ? null : <> · Subject: {P72_TARGET_MISSION.crewDisplayName} ({P72_TARGET_MISSION.crewExternalRef})</>}
         </p>
         <p className="mt-1" role="status">
-          {membership
-            ? `Active ${route.membershipRole.replaceAll("_", " ")} membership in this mission.`
-            : `This account has no ${route.membershipRole.replaceAll("_", " ")} membership in this mission yet; the mission operator must invite it before mission records appear here.`}
+          {globalResearch
+            ? `Global Researcher read access (server-verified) · ${globalResearch.missions.length} missions · synthetic records only · no Medical, approval-activation or administrative permissions.`
+            : membership
+              ? `Active ${route.membershipRole.replaceAll("_", " ")} membership in this mission.`
+              : `This account has no ${route.membershipRole.replaceAll("_", " ")} membership in this mission yet; the mission operator must invite it before mission records appear here.`}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button asChild size="sm" variant="outline"><Link to="/mission/intake"><FlaskConical /> Examinations</Link></Button>
+          {globalResearch ? (
+            <Button asChild size="sm"><Link to="/mission/research-access"><Globe /> All missions · Examinations &amp; Health Domains</Link></Button>
+          ) : (
+            <Button asChild size="sm" variant="outline"><Link to="/mission/intake"><FlaskConical /> Examinations</Link></Button>
+          )}
           {/* P72.4: Ground Medical opens the domain pages (selected mission + crew); the Crew-Self-only overview stays for Researcher. */}
           <Button asChild size="sm" variant="outline">
-            {role === "researcher" ? <Link to="/mission/intelligence"><Layers /> Health Domains</Link> : <Link to="/mission/bone-health"><Layers /> Health Domains</Link>}
+            {role === "researcher" ? <Link to={globalResearch ? "/mission/research-access" : "/mission/intelligence"}><Layers /> Health Domains</Link> : <Link to="/mission/bone-health"><Layers /> Health Domains</Link>}
           </Button>
           <Button asChild size="sm" variant="outline"><Link to="/mission/health-report"><FileText /> Full Health Report</Link></Button>
         </div>
