@@ -107,7 +107,7 @@ describe("P72.5 homepage role cards open role sign-in", () => {
     expect(entry).not.toContain("Mission account holder");
     expect(entry).toContain('navigate({ to: "/mission/identity", search: { role } })');
     const fns = readFileSync(join(root, "src/lib/p72-role-access.functions.ts"), "utf8");
-    expect(fns).toContain("email: P72_ROLE_ACCOUNTS[data.role],");
+    expect(fns).toContain("email: presentationSignIn ? maskAccountEmail(P72_ROLE_ACCOUNTS[data.role]) : P72_ROLE_ACCOUNTS[data.role],");
     const identity = readFileSync(join(root, "src/components/mission-identity.tsx"), "utf8");
     expect(identity).toContain('autoComplete="username"');
     expect(identity).toContain('autoComplete="current-password"');
@@ -117,10 +117,11 @@ describe("P72.5 homepage role cards open role sign-in", () => {
 describe("P72.6 server-held presentation sign-in", () => {
   test("only the untouched mapped email plus the mask uses server sign-in", async () => {
     const { shouldUseP72PresentationSignIn, P72_PRESENTATION_MASK } = await import("@/domain/mission-access/p72-role-access");
-    const base = { available: true, email: "a@b.gr", mappedEmail: "a@b.gr", password: P72_PRESENTATION_MASK };
+    const base = { available: true, email: "ma•••@computech.gr", mappedEmail: "ma•••@computech.gr", password: P72_PRESENTATION_MASK };
     expect(shouldUseP72PresentationSignIn(base)).toBe(true);
     expect(shouldUseP72PresentationSignIn({ ...base, available: false })).toBe(false);
     expect(shouldUseP72PresentationSignIn({ ...base, email: "other@b.gr" })).toBe(false);
+    expect(shouldUseP72PresentationSignIn({ ...base, email: "marketing@computech.gr" })).toBe(false);
     expect(shouldUseP72PresentationSignIn({ ...base, password: "typed-by-user" })).toBe(false);
     expect(shouldUseP72PresentationSignIn({ ...base, mappedEmail: "" })).toBe(false);
   });
