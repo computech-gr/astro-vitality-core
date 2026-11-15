@@ -2561,6 +2561,54 @@ export type Database = {
         }
         Relationships: []
       }
+      p726_global_research_audit: {
+        Row: {
+          action: string
+          actor_id: string
+          at: string
+          crew_scope_count: number
+          id: string
+          mission_count: number
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          at?: string
+          crew_scope_count?: number
+          id?: string
+          mission_count?: number
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          at?: string
+          crew_scope_count?: number
+          id?: string
+          mission_count?: number
+        }
+        Relationships: []
+      }
+      p726_global_research_readers: {
+        Row: {
+          authorization_ref: string
+          granted_at: string
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          authorization_ref: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          authorization_ref?: string
+          granted_at?: string
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       review_sync_attestation_events: {
         Row: {
           action: string
@@ -3327,6 +3375,16 @@ export type Database = {
         }
         Returns: Json
       }
+      p726_global_research_can_read: {
+        Args: {
+          p_crew_member_id: string
+          p_mission_id: string
+          p_provenance: string
+        }
+        Returns: boolean
+      }
+      p726_global_research_scope_v1: { Args: never; Returns: Json }
+      p726_is_global_research_reader: { Args: never; Returns: boolean }
       review_sync_append_v1: {
         Args: {
           p_attestations: Json

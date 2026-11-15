@@ -1,6 +1,6 @@
 # P72.6 — Global Researcher read access across all missions
 
-Status: **Preview code ready; database change staged, NOT applied.** No publication or deployment.
+Status: **Owner-authorized and applied (2026-11-15)** as database migration 0029 plus one grant row for the Researcher account; the undo file is `supabase/pending/20261115000000_p726_global_researcher_read.rollback.sql`. Preview only; not published or deployed.
 
 ## Root cause
 The Researcher console warning comes from `p72TargetMembership`, which only looks at real
@@ -43,4 +43,11 @@ global scientific-review grant covers de-identified review queues only, not exam
   (verified textually against the live definitions); Astronaut and Ground Medical unchanged; audit
   append-only; data fingerprint unchanged; rollback restores exact bodies.
 - Unit tests: 1,961 pass (12 new).
-- Not verified: the live signed-in Researcher flow, which needs the staged SQL applied first.
+- Preview, signed in as the Researcher (after applying): console shows global read access (4 missions);
+  all-missions page lists FV01-TEST-A, FV01-TEST-B, MISSION_TEST, MITO_DEMO_2026; download for
+  MITO_DEMO_2026 / Alex Morgan fetched 265 examinations and 264 reviews, uploaded nothing; Health Domains
+  42 / 34 / 179 / 9 records; Full Health Report lists every mission read-only with Real disabled;
+  Scientific Review shows the 243 submitted terms for MITO_DEMO_2026.
+- Database after the run: 265 examinations, 264 reviews, 0 corrections, 14 memberships (Researcher still 1),
+  6 submissions (same six IDs), 0 scientific authorizations, 243 triage events, 414 catalog events,
+  429 audit events, examination fingerprint unchanged (57e0ed2b…).
