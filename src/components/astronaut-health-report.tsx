@@ -22,6 +22,7 @@ import {
   type UnifiedReportInputs,
 } from "@/domain/health-intelligence/unified-health-report";
 import { loadUnifiedReportInputs } from "@/domain/health-intelligence/unified-health-report-loader";
+import { globalResearchSelections, readGlobalResearchSelection, reportScopeAuthorized } from "@/domain/mission-access/global-research-scope";
 import { reportExportBasename } from "@/domain/health-intelligence/report-export-identity";
 import { downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 import { createTextReportPdf } from "@/domain/health-intelligence/report-text-pdf";
@@ -89,23 +90,6 @@ const EMPTY_INPUTS: UnifiedReportInputs = {
   unifiedObservations: [],
   deviceRecords: [],
 };
-
-/**
- * Export authorization for the selected report scope: an exact crew_self / Ground Medical
- * membership, or (P72.6) the server-verified global Researcher READ scope for synthetic
- * records only. Exported for tests.
- */
-export function reportScopeAuthorized(
-  identity: Pick<MissionIdentitySnapshot, "memberships" | "globalResearch">,
-  scope: { missionId: string; crewMemberId: string },
-  provenance: "synthetic" | "real",
-): boolean {
-  return (
-    identity.memberships.some(
-      (m) => m.missionId === scope.missionId && m.crewMemberId === scope.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"),
-    ) || globalResearchAllows(identity.globalResearch, scope.missionId, scope.crewMemberId, provenance)
-  );
-}
 
 export function AstronautHealthReport() {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);

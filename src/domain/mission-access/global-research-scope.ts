@@ -129,3 +129,26 @@ export function writeGlobalResearchSelection(storage: Pick<Storage, "setItem" | 
     // Selection memory is a convenience only.
   }
 }
+
+/**
+ * Full Health Report export authorization for one scope: an exact crew_self / Ground
+ * Medical membership, or the server-verified global Researcher READ scope for synthetic
+ * records only.
+ */
+export function reportScopeAuthorized(
+  identity: {
+    memberships: readonly { missionId: string; crewMemberId?: string; role: string }[];
+    globalResearch?: GlobalResearchScope | undefined;
+  },
+  scope: { missionId: string; crewMemberId: string },
+  provenance: string,
+): boolean {
+  return (
+    identity.memberships.some(
+      (m) =>
+        m.missionId === scope.missionId &&
+        m.crewMemberId === scope.crewMemberId &&
+        (m.role === "crew_self" || m.role === "ground_medical"),
+    ) || globalResearchAllows(identity.globalResearch, scope.missionId, scope.crewMemberId, provenance)
+  );
+}
