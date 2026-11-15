@@ -734,3 +734,11 @@
 - [x] Explicit LOCAL OFFLINE report (never automatic) on offline/server failure; empty-period wording in the Previous-format PDF; provenance in every PDF and text export.
 - [x] 23 vs 24 pages investigated (provenance page only); tests, full suite, typecheck, lint, security audit, production build; Researcher and Ground Medical fresh-browser checks.
 - [ ] Publish (blocked: owner authorization).
+
+## P72.10 Deterministic scientific interpretation inputs (Preview only)
+
+- [x] Inventory: interpretation and reference-criteria decisions are device-only (server attests, keeps no copy); all other scientific inputs are bundled versioned rules.
+- [x] Server-confirmed reports use only the shared rules (device approvals disclosed as NOT APPLIED); local offline reports apply and label device decisions; separate clinical and scientific fingerprints; export re-check.
+- [ ] Verification: tests, typecheck, lint, audit, production build, Researcher (26/9/0 events) and Ground Medical browsers.
+- [ ] Share device-local approvals across devices (blocked: owner decision — merge into the shared registry, or approve a new server ledger migration).
+- [ ] Publish (blocked: owner authorization).
