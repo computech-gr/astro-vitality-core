@@ -324,24 +324,6 @@ export function AstronautHealthReport() {
     [inputs, member, provenance, from, to, sources],
   );
 
-  const readiness = useMemo(
-    () =>
-      assessDatasetReadiness({
-        hasSelection: Boolean(member),
-        mode,
-        server: serverState,
-        local: localState,
-        snapshot: snapshot && member && snapshot.scope.missionId === member.missionId && snapshot.scope.crewMemberId === member.crewMemberId && snapshot.scope.provenance === provenance ? snapshot : null,
-        includedObservations: unified?.rows.length ?? 0,
-      }),
-    [member, mode, serverState, localState, snapshot, provenance, unified],
-  );
-  const reportVisible = readiness.exportAllowed;
-  const notOnServer = useMemo(
-    () => (snapshot?.source === "server_confirmed" && localState.kind === "ready" ? localRecordsNotOnServer(snapshot, localState.inputs) : null),
-    [snapshot, localState],
-  );
-
   // P56.1: same scope and sources without the date filter — used only to say "measured outside the period".
   const scopeHistory = useMemo(
     () =>
@@ -417,6 +399,24 @@ export function AstronautHealthReport() {
     mode === "local_offline" && localState.kind === "ready" && attestLoad === "error"
       ? { kind: "failed", token: localState.token, message: "The medical reviews stored on this device could not be read." }
       : localState;
+
+  const readiness = useMemo(
+    () =>
+      assessDatasetReadiness({
+        hasSelection: Boolean(member),
+        mode,
+        server: serverState,
+        local: effectiveLocalState,
+        snapshot: snapshot && member && snapshot.scope.missionId === member.missionId && snapshot.scope.crewMemberId === member.crewMemberId && snapshot.scope.provenance === provenance ? snapshot : null,
+        includedObservations: unified?.rows.length ?? 0,
+      }),
+    [member, mode, serverState, effectiveLocalState, snapshot, provenance, unified],
+  );
+  const reportVisible = readiness.exportAllowed;
+  const notOnServer = useMemo(
+    () => (snapshot?.source === "server_confirmed" && localState.kind === "ready" ? localRecordsNotOnServer(snapshot, localState.inputs) : null),
+    [snapshot, localState],
+  );
 
   // Report content uses the snapshot's reviews only; attestation planning also sees this device's ledger
   // so an attestation recorded here but not yet uploaded is never planned twice.
