@@ -1154,7 +1154,7 @@ export function P36GlobalReviewPanel() {
             </Select>
           </div>
 
-          <p role="status" className="font-medium">
+          <p id="p36-global-review-terms" role="status" className="scroll-mt-24 font-medium">
             {visible.length} of {scoped.length} terms shown
           </p>
           <BulkSelectionToolbar
