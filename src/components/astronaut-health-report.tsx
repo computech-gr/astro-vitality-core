@@ -257,6 +257,8 @@ export function AstronautHealthReport() {
     return () => {
       active = false;
     };
+    // member identity is covered by missionId/crewMemberId.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [member?.missionId, member?.crewMemberId, dataVersion]);
 
   // P72.9: complete authorized server dataset, read-only (nothing is written to this device).
@@ -395,10 +397,13 @@ export function AstronautHealthReport() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, serverState, localState, attestLoad, attestations, member?.missionId, member?.crewMemberId, provenance]);
   // Local offline needs the attestation ledger too; a failed ledger read is a failed local read.
-  const effectiveLocalState: LocalDatasetState =
-    mode === "local_offline" && localState.kind === "ready" && attestLoad === "error"
-      ? { kind: "failed", token: localState.token, message: "The medical reviews stored on this device could not be read." }
-      : localState;
+  const effectiveLocalState = useMemo<LocalDatasetState>(
+    () =>
+      mode === "local_offline" && localState.kind === "ready" && attestLoad === "error"
+        ? { kind: "failed", token: localState.token, message: "The medical reviews stored on this device could not be read." }
+        : localState,
+    [mode, localState, attestLoad],
+  );
 
   const readiness = useMemo(
     () =>
