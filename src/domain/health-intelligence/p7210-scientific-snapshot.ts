@@ -264,3 +264,34 @@ export async function buildScientificSnapshot(input: {
 export function ruleSetLines(rules: readonly RuleSetIdentity[]): string[] {
   return [...rules].sort((a, b) => a.id.localeCompare(b.id)).map((r) => `${r.id}${r.version ? ` v${r.version}` : ""}${r.status ? ` (${r.status})` : ""} sha256 ${r.sha256.slice(0, 16)}`);
 }
+
+// ---------- Readiness (dataset readiness + scientific inputs) ----------
+
+export type ScientificReadinessState = "scientific_preparing" | "scientific_blocked";
+
+/**
+ * A report (screen and every export) is available only when its dataset is ready AND the scientific
+ * snapshot was built for exactly that dataset. A blocked scientific input blocks the report with an
+ * actionable reason; it never falls back to fewer or other inputs.
+ */
+export function withScientificReadiness<R extends { exportAllowed: boolean; state: string; title: string; detail: string; offerLocalOffline: boolean }>(
+  readiness: R,
+  result: ScientificSnapshotResult | null,
+  dataset: { token: number; source: ReportDataSource; datasetFingerprint: string } | null,
+): (R | (Omit<R, "state"> & { state: ScientificReadinessState })) & { scientific: ReportScientificSnapshot | null } {
+  if (!readiness.exportAllowed || !dataset) return { ...readiness, scientific: null };
+  if (result?.kind === "blocked")
+    return { ...readiness, state: "scientific_blocked", exportAllowed: false, offerLocalOffline: false, title: "Scientific interpretation inputs unavailable", detail: `${result.reason} No report was generated; this is not a negative finding.`, scientific: null };
+  const s = result?.kind === "ready" ? result.snapshot : null;
+  if (!s || s.datasetToken !== dataset.token || s.source !== dataset.source || s.datasetFingerprint !== dataset.datasetFingerprint)
+    return {
+      ...readiness,
+      state: "scientific_preparing",
+      exportAllowed: false,
+      offerLocalOffline: false,
+      title: "Preparing the scientific interpretation inputs…",
+      detail: result?.kind === "waiting" ? result.reason : "The scientific rules for this dataset are being verified.",
+      scientific: null,
+    };
+  return { ...readiness, scientific: s };
+}
