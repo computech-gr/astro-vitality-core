@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyRound,
   LogIn,
@@ -16,7 +16,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { resolveP72RoleEntry } from "@/components/mission-access/p72-role-entry";
 import { P72_ROLE_ROUTES, p72TargetLabel } from "@/domain/mission-access/p72-role-access";
 import { DEMO_ROLE_LABELS, type DemoRole } from "@/domain/public-demo/workflow";
-import { checkP72RoleAccountFn } from "@/lib/p72-role-access.functions";
+import { checkP72RoleAccountFn, getP72SignInPrefillFn } from "@/lib/p72-role-access.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,6 +81,8 @@ function roleLabel(role: MissionRole) {
 export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
   const navigate = useNavigate();
   const checkP72Account = useServerFn(checkP72RoleAccountFn);
+  const getP72Prefill = useServerFn(getP72SignInPrefillFn);
+  const lastPrefill = useRef("");
   const [snapshot, setSnapshot] = useState<MissionIdentitySnapshot>(EMPTY);
   const [authReadiness, setAuthReadiness] = useState<MissionAuthReadiness | null>(null);
   const [busy, setBusy] = useState(true);
@@ -126,6 +128,22 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
     void refresh();
     return subscribeMissionIdentity(() => void refresh());
   }, []);
+
+  // P72.5: prefill the role's mapped email (never a password); typed input is kept.
+  useEffect(() => {
+    if (!p72Role) return;
+    let cancelled = false;
+    getP72Prefill({ data: { role: p72Role } })
+      .then(({ email: mapped }) => {
+        if (cancelled) return;
+        setEmail((current) => (current.trim() === "" || current === lastPrefill.current ? mapped : current));
+        lastPrefill.current = mapped;
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [p72Role]);
 
   const activeKey = snapshot.active ? membershipKey(snapshot.active) : "";
   const operatorMemberships = useMemo(
@@ -286,10 +304,9 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
 
         {p72Role && !snapshot.signedIn ? (
           <div role="note" className="mt-6 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm text-foreground">
-            Sign in with the mapped {DEMO_ROLE_LABELS[p72Role].title} account{" "}
-            <span className="font-mono">{P72_ROLE_ROUTES[p72Role].maskedAccount}</span> to open the{" "}
-            {P72_ROLE_ROUTES[p72Role].consoleLabel} for {p72TargetLabel(p72Role)}. Your password is checked only by standard
-            sign-in; nothing is shared with other visitors.
+            {DEMO_ROLE_LABELS[p72Role].title} sign-in: the mapped account email is filled in below. Enter its password,
+            or let your browser fill in a saved one, to open the {P72_ROLE_ROUTES[p72Role].consoleLabel} for{" "}
+            {p72TargetLabel(p72Role)}. The password is checked only by standard sign-in and is never stored in this app.
           </div>
         ) : null}
         {message ? (
@@ -369,13 +386,22 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4">
+                <form
+                  className="grid gap-4"
+                  method="post"
+                  noValidate
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void signIn();
+                  }}
+                >
                   <div>
                     <Label htmlFor="mission-email">Email</Label>
                     <Input
                       id="mission-email"
+                      name="email"
                       type="email"
-                      autoComplete="email"
+                      autoComplete="username"
                       value={email}
                       onChange={(event) => { setEmail(event.target.value); setSignInError(null); }}
                       placeholder="astronaut@example.org"
@@ -386,6 +412,7 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
                     <Label htmlFor="mission-password">Password</Label>
                     <Input
                       id="mission-password"
+                      name="password"
                       type="password"
                       autoComplete="current-password"
                       value={password}
@@ -414,12 +441,13 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
                   ) : null}
                   <div className="flex flex-wrap gap-2">
                     <Button
+                      type="submit"
                       disabled={busy || authReadiness?.state === "configuration_required" || false}
-                      onClick={() => void signIn()}
                     >
                       <LogIn /> Sign in
                     </Button>
                     <Button
+                      type="button"
                       variant="outline"
                       disabled={
                         busy ||
@@ -433,6 +461,7 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
                       <UserRoundCheck /> Create account
                     </Button>
                     <Button
+                      type="button"
                       variant="ghost"
                       disabled={
                         busy || authReadiness?.state === "configuration_required" || !email.trim()
@@ -447,7 +476,7 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
                       <Mail /> Email magic link
                     </Button>
                   </div>
-                </div>
+                </form>
               </CardContent>
             </Card>
             <Card>
