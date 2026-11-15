@@ -17,6 +17,7 @@ import type { ReportChart } from "./p58-report-charts";
 import { RECOMMENDATION_CATEGORIES, RECOMMENDATION_CATEGORY_LABELS } from "./p56-pattern-library";
 import { openTextPdf, toWinAnsi, type PdfDeps, type PdfFactory, type ReportFonts, type TextPdfResult } from "./report-text-pdf";
 import { redactProhibitedNames } from "./report-identity-redaction";
+import { provenanceSourceLabel, reportProvenanceLines, type ReportDataProvenance } from "./p728-report-readiness";
 
 type RGB = readonly [number, number, number];
 const C = {
