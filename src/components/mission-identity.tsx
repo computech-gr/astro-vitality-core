@@ -14,7 +14,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
 import { resolveP72RoleEntry } from "@/components/mission-access/p72-role-entry";
-import { P72_ROLE_ROUTES, P72_TARGET_LABEL } from "@/domain/mission-access/p72-role-access";
+import { P72_ROLE_ROUTES, p72TargetLabel } from "@/domain/mission-access/p72-role-access";
 import { DEMO_ROLE_LABELS, type DemoRole } from "@/domain/public-demo/workflow";
 import { checkP72RoleAccountFn } from "@/lib/p72-role-access.functions";
 import { Badge } from "@/components/ui/badge";
@@ -288,7 +288,7 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
           <div role="note" className="mt-6 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm text-foreground">
             Sign in with the mapped {DEMO_ROLE_LABELS[p72Role].title} account{" "}
             <span className="font-mono">{P72_ROLE_ROUTES[p72Role].maskedAccount}</span> to open the{" "}
-            {P72_ROLE_ROUTES[p72Role].consoleLabel} for {P72_TARGET_LABEL}. Your password is checked only by standard
+            {P72_ROLE_ROUTES[p72Role].consoleLabel} for {p72TargetLabel(p72Role)}. Your password is checked only by standard
             sign-in; nothing is shared with other visitors.
           </div>
         ) : null}

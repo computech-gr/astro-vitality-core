@@ -6,7 +6,7 @@
 import type { DemoRole } from "@/domain/public-demo/workflow";
 
 export const P72_ROLE_ACCOUNTS: Record<DemoRole, string> = {
-  astronaut: "theosilv@gmail.com",
+  astronaut: "marketing@computech.gr", // P72.3: same Ground Medical account as Medical
   researcher: "nikolasilvestros@gmail.com",
   medical: "marketing@computech.gr",
 };
