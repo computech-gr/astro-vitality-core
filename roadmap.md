@@ -1,3 +1,11 @@
+# P72.7 Scientific Review queue visibility (Preview only)
+
+- [x] Root cause of missing ubr-* IDs; request-level list (ID, receipt time, role, terms, status, synthetic demo counts) with per-request term view.
+- [x] Root cause and fix of the display-sync hydration error, with regression test.
+- [x] Scientific approval and Medical handoff authorization review (no database change).
+- [ ] Production scientific approval of MITO_DEMO_2026 terms: blocked until independently provisioned source-validation receipts exist (owner/validator action).
+- [ ] Publication: not authorized.
+
 # P38 bulk synthetic demo approval and activation (MITO_DEMO_2026, 209 terms)
 
 - [x] Preflight of all 209 submitted terms from real metadata: 1 active, 66 eligible, 117 eligible after a domain choice, 2 conflicting identity, 6 existing catalog match, 17 ambiguous unit, 0 duplicate.
