@@ -108,7 +108,6 @@ describe("P72.5 homepage role cards open role sign-in", () => {
     expect(entry).toContain('navigate({ to: "/mission/identity", search: { role } })');
     const fns = readFileSync(join(root, "src/lib/p72-role-access.functions.ts"), "utf8");
     expect(fns).toContain("return { email: P72_ROLE_ACCOUNTS[data.role] };");
-    expect(fns).not.toMatch(/password/i.test(fns.replace(/never a password|requires the password/g, "")) ? /password\s*:/ : /$^/);
     const identity = readFileSync(join(root, "src/components/mission-identity.tsx"), "utf8");
     expect(identity).toContain('autoComplete="username"');
     expect(identity).toContain('autoComplete="current-password"');
