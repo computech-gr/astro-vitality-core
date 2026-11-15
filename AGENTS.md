@@ -57,3 +57,4 @@
 - P40 interpretation review rules live in src/domain/health-intelligence/AGENTS.md.
 - P56 assessment is the main report; old report = optional appendix (health-intelligence AGENTS.md).
 - P69–P71 public live demo rules live in src/domain/public-demo/AGENTS.md.
+- Route modules never share a non-exported helper between loader and component; shared helpers live in src/lib, because route code-splitting cannot import them and the resulting module error breaks hydration of every page.
