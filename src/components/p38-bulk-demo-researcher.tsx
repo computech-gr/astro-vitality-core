@@ -838,6 +838,16 @@ export function P38BulkDemoResearcher({
             <h4 id="p38-r-title" className="font-semibold">
               Preflight, selection and bulk decisions
             </h4>
+            <p className="text-xs font-semibold" data-testid="p728-label">
+              {DEMO_SCIENTIFIC_APPROVAL_LABEL} ·{" "}
+              {p728Active
+                ? "decisions record your rationale and evidence references"
+                : data.p728?.installed === false
+                  ? "rationale recording awaits the pending P72.8 database change"
+                  : data.p728?.installed && data.p728.problem
+                    ? data.p728.problem
+                    : "direct Researcher decision, no source-validation receipt"}
+            </p>
             <p className="text-sm text-muted-foreground">
               {SYNTHETIC_DEMO_LABEL}. Names and domains are proposed only from existing catalog
               references; specimen, method, reference intervals and source validation are never
@@ -1102,7 +1112,35 @@ export function P38BulkDemoResearcher({
                 ))}
               </select>
             </div>
+            <div className="space-y-1">
+              <Label htmlFor="p728-request" className="text-xs">
+                Submitted request
+              </Label>
+              <select
+                id="p728-request"
+                value={requestFilter}
+                onChange={(e) => setRequestFilter(e.target.value)}
+                className="h-8 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">All requests</option>
+                {(data.subs ?? []).map((q) => (
+                  <option key={q.submissionId} value={q.submissionId}>
+                    {q.requestId} ({q.terms.length} terms)
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+          {requestFilter !== "all" ? (
+            <p role="status" className="text-xs text-muted-foreground" data-testid="p728-request-focus">
+              Showing request {requestOf.get(requestFilter) ?? requestFilter}:{" "}
+              {rows.filter((r) => r.submissionId === requestFilter).length} submitted terms ·{" "}
+              {rows.filter((r) => r.submissionId === requestFilter && (r.category === "already_active" || r.category === "already_decided")).length}{" "}
+              with a demo scientific approval ·{" "}
+              {rows.filter((r) => r.submissionId === requestFilter && decided.researcher.get(r.key) === "REJECT").length}{" "}
+              rejected. Select the terms, then use Demo Scientific Approve or Reject below.
+            </p>
+          ) : null}
 
           <BulkSelectionToolbar
             idPrefix="p55-researcher"
