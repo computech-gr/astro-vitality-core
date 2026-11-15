@@ -115,6 +115,9 @@ export function decideP72HomepageCardEntry(session: P72HomepageSession): P72Home
  */
 export const P72_PRESENTATION_MASK = "************";
 
+/** P72.6: the email box shows this full mask; no letter of the address reaches the browser. */
+export const P72_PRESENTATION_EMAIL_MASK = "••••••••••••••••••";
+
 /** Server-held presentation sign-in is used only for the untouched prefilled email and mask. */
 export function shouldUseP72PresentationSignIn(input: {
   available: boolean;
