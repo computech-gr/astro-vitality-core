@@ -78,7 +78,21 @@ const priorityFields = (f: FindingSummary): Partial<AlertCard> =>
       }
     : {};
 
-export function selectExecutiveAlerts(findings: readonly FindingSummary[], max = 4): AlertCard[] {
+/**
+ * P72.8: page-1 card when the period contains no evaluated observation. Absence of data is never a
+ * reassuring finding, so it never reads "No high-priority findings".
+ */
+export const NO_EXAMINATIONS_CARD: AlertCard = {
+  kind: "none",
+  findingIds: [],
+  title: "No examinations recorded in this period",
+  badges: [],
+  evidence: "No accepted, stored examination result falls within the selected period, so nothing was assessed. This is not a negative or reassuring finding.",
+  nextStep: "Check the selected period and that this mission's examinations are on this device, then regenerate the report.",
+};
+
+export function selectExecutiveAlerts(findings: readonly FindingSummary[], max = 4, data: { observations?: number } = {}): AlertCard[] {
+  if (data.observations === 0) return [{ ...NO_EXAMINATIONS_CARD }];
   const ranked = findings
     .map((f) => ({ f, t: tier(f) }))
     .filter((x): x is { f: FindingSummary; t: [CardKind, number] } => x.t !== null)
