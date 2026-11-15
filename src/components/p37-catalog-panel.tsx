@@ -21,6 +21,8 @@ import { ScientificApproveWorkspace } from "@/components/p37-scientific-approve"
 import { P37SyntheticDemoPanel } from "@/components/p37-synthetic-demo-panel";
 import { P38BulkDemoResearcher } from "@/components/p38-bulk-demo-researcher";
 import { subscribeOpenBulkDemo } from "@/components/p38-bulk-navigation";
+import { defaultMissionSelection } from "@/lib/p36-global-review-view";
+import { DEMO_SCIENTIFIC_APPROVAL_LABEL } from "@/domain/health-intelligence/p728-demo-approval";
 import { BULK_RESEARCHER_ANCHOR } from "@/components/p38-bulk-researcher-anchor";
 import { BulkResearcherSection } from "@/components/p38-bulk-researcher-section";
 import { bulkResearcherVisibility } from "@/domain/health-intelligence/p38-bulk-demo-selection";
@@ -327,6 +329,8 @@ export function P37CatalogPanel() {
   const [missionId, setMissionId] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [scrollToBulk, setScrollToBulk] = useState(false);
+  /** P72.8: request (submission) opened from the Submitted review requests table; display filter only. */
+  const [focusRequest, setFocusRequest] = useState<{ submissionId: string; n: number } | null>(null);
   const [bulkNote, setBulkNote] = useState("");
   const [note, setNote] = useState("");
   const [data, setData] = useState<{
@@ -342,7 +346,8 @@ export function P37CatalogPanel() {
       .then((r) => {
         if (r.ok) {
           setMissions(r.missions);
-          if (r.missions.length === 1) setMissionId(r.missions[0]!.missionId);
+          // P72.8: same rule as Global Scientific Review (only mission, or the only one with submissions).
+          setMissionId((cur) => cur || defaultMissionSelection(r.missions));
         }
       })
       .catch(() => undefined);
@@ -382,7 +387,7 @@ export function P37CatalogPanel() {
   // mission in this panel's own authorized list is accepted.
   useEffect(
     () =>
-      subscribeOpenBulkDemo((id) => {
+      subscribeOpenBulkDemo((id, submissionId) => {
         if (!missions.some((m) => m.missionId === id)) {
           setBulkNote(
             "This mission is not available for catalog decisions with this account. Nothing was changed.",
@@ -394,6 +399,7 @@ export function P37CatalogPanel() {
         }
         setBulkNote("");
         setMissionId(id);
+        setFocusRequest(submissionId ? { submissionId, n: Date.now() } : null);
         setScrollToBulk(true);
       }),
     [missions],
@@ -496,7 +502,24 @@ export function P37CatalogPanel() {
             key={`bulk-${mission.missionId}`}
             missionId={mission.missionId}
             missionLabel={`${mission.missionName} (${mission.missionCode})`}
+            focusRequest={focusRequest}
           />
+
+          <div
+            className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground"
+            data-testid="p728-production-approval-note"
+          >
+            <p className="font-medium text-foreground">Production scientific approval (below)</p>
+            <p>
+              Production approval enters the production catalog and always cites one independently
+              provisioned source-validation receipt. For this synthetic demonstration mission, use{" "}
+              <a href={`#${BULK_RESEARCHER_ANCHOR}`} className="font-medium text-primary underline underline-offset-4">
+                Demo Scientific Approve
+              </a>{" "}
+              above: {DEMO_SCIENTIFIC_APPROVAL_LABEL}, no receipt needed, and Ground Medical activates
+              separately.
+            </p>
+          </div>
 
           <ScientificApproveWorkspace
             mission={mission}
