@@ -204,6 +204,8 @@ export interface ReportDataProvenance {
   reviewRecords?: number | null;
   /** P72.9: scientific/report engine version. */
   engineVersion?: string;
+  /** P72.9: identity of the scientific rule sets applied (interpretation snapshot, approved criteria). */
+  rulesSummary?: string;
 }
 
 /** Short source label used on page 1 and in file properties. */
@@ -231,6 +233,7 @@ export function reportProvenanceLines(p: ReportDataProvenance): string[] {
     ...(p.scopeDatasetFingerprint ? [`Complete dataset fingerprint (SHA-256 of every examination and review record in this scope, all periods): ${p.scopeDatasetFingerprint}`] : []),
     basis,
     ...(p.engineVersion ? [`Report engine: ${p.engineVersion}`] : []),
+    ...(p.rulesSummary ? [`Scientific rules applied: ${p.rulesSummary}`] : []),
     `Export timestamp (UTC): ${p.exportedAt} — recorded for traceability only; not an input of any finding.`,
     `Readiness check: ${p.readinessVersion}`,
   ];

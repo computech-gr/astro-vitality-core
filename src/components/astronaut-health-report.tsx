@@ -690,6 +690,7 @@ export function AstronautHealthReport() {
                 ? `report generated from the complete authorized server dataset (${dataset.observationEvents} examination record(s), ${dataset.reviewEvents} medical review record(s); every page read-only, nothing stored on the exporting device)`
                 : `${dataset.summary.examinations} evaluable observation(s) on ${dataset.summary.examinationDates.length} date(s) (${range}) stored on the exporting device`,
             engineVersion: REPORT_ENGINE_VERSION,
+            rulesSummary: `interpretation registry v${interpretationSnapshot.registryVersion} with ${interpretationSnapshot.ledger.events} verified interpretation event(s)${interpretationSnapshot.digest ? ` (digest ${interpretationSnapshot.digest.slice(0, 16)}…)` : ""}; ${criteriaResolution.approved.length} Researcher-approved reference criteria. Identical datasets give identical findings when these rule sets match.`,
             readinessVersion: REPORT_DATASET_VERSION,
             exportedAt: new Date().toISOString(),
           }
