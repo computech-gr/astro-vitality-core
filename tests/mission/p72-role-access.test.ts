@@ -113,3 +113,35 @@ describe("P72.5 homepage role cards open role sign-in", () => {
     expect(identity).toContain('autoComplete="current-password"');
   });
 });
+
+describe("P72.6 server-held presentation sign-in", () => {
+  test("only the untouched mapped email plus the mask uses server sign-in", async () => {
+    const { shouldUseP72PresentationSignIn, P72_PRESENTATION_MASK } = await import("@/domain/mission-access/p72-role-access");
+    const base = { available: true, email: "a@b.gr", mappedEmail: "a@b.gr", password: P72_PRESENTATION_MASK };
+    expect(shouldUseP72PresentationSignIn(base)).toBe(true);
+    expect(shouldUseP72PresentationSignIn({ ...base, available: false })).toBe(false);
+    expect(shouldUseP72PresentationSignIn({ ...base, email: "other@b.gr" })).toBe(false);
+    expect(shouldUseP72PresentationSignIn({ ...base, password: "typed-by-user" })).toBe(false);
+    expect(shouldUseP72PresentationSignIn({ ...base, mappedEmail: "" })).toBe(false);
+  });
+
+  test("off unless the flag is exactly 'true' and a password is held on the server", async () => {
+    const { p72PresentationSignInAvailable } = await import("@/lib/p72-role-access.server");
+    expect(p72PresentationSignInAvailable("true", "x")).toBe(true);
+    expect(p72PresentationSignInAvailable("TRUE", "x")).toBe(false);
+    expect(p72PresentationSignInAvailable(undefined, "x")).toBe(false);
+    expect(p72PresentationSignInAvailable("true", "")).toBe(false);
+    expect(p72PresentationSignInAvailable("true", undefined)).toBe(false);
+  });
+
+  test("the password is read only from the server environment, never sent to the browser", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
+    const fns = readFileSync(join(root, "src/lib/p72-role-access.functions.ts"), "utf8");
+    expect(fns).toContain('process.env["P72_PRESENTATION_PASSWORD"]');
+    expect(fns).not.toMatch(/return \{[^}]*password/);
+    expect(fns).toContain("email: P72_ROLE_ACCOUNTS[data.role], password");
+  });
+});
