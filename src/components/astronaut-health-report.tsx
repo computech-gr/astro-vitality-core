@@ -76,15 +76,23 @@ import {
 import { buildProfessionalReport, professionalReportPlainText } from "@/domain/health-intelligence/p58-professional-report";
 import { createProfessionalReportPdf } from "@/domain/health-intelligence/p58-professional-pdf";
 import { buildPremiumReport, DEMONSTRATION_LABEL } from "@/domain/health-intelligence/p59-premium-model";
+import { reportProvenanceLines, type ReportDataProvenance } from "@/domain/health-intelligence/p728-report-readiness";
 import {
-  assessReportReadiness,
-  compareLocalWithServer,
-  type LocalReadState,
-  type ReportDataProvenance,
-  type ServerComparison,
-} from "@/domain/health-intelligence/p728-report-readiness";
-import { listUnifiedObservationEvents } from "@/domain/health-intelligence/observation-store";
+  assessDatasetReadiness,
+  fetchServerReportDataset,
+  LOCAL_OFFLINE_LABEL,
+  localOfflineSnapshot,
+  localRecordsNotOnServer,
+  REPORT_DATASET_VERSION,
+  REPORT_ENGINE_VERSION,
+  type LocalDatasetState,
+  type ReportDataSource,
+  type ReportDatasetSnapshot,
+  type ServerDatasetState,
+} from "@/domain/health-intelligence/p729-report-dataset";
+import { mergeAttestationEvents } from "@/domain/health-intelligence/review-sync";
 import { pullObservationEvents } from "@/lib/observation-sync.functions";
+import { pullReviewEvents } from "@/lib/review-sync.functions";
 
 /** Cheap, stable fingerprint so the automatic analysis runs at most once per evidence packet. */
 function packetKey(value: unknown): string {
@@ -104,12 +112,15 @@ export function AstronautHealthReport() {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
   const [key, setKey] = useState("");
   const [provenance, setProvenance] = useState<"synthetic" | "real">("synthetic");
-  const [inputs, setInputs] = useState<UnifiedReportInputs>(EMPTY_INPUTS);
+  // P72.9: one immutable dataset snapshot (server-confirmed, or explicitly chosen local offline)
+  // feeds the screen and every export.
+  const [snapshot, setSnapshot] = useState<ReportDatasetSnapshot | null>(null);
+  const inputs: UnifiedReportInputs = snapshot?.inputs ?? EMPTY_INPUTS;
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sources, setSources] = useState<ReportSourceBadge[]>([...REPORT_SOURCE_BADGES]);
   const [status, setStatus] = useState(
-    "Select an authorized crew member to load locally stored observations.",
+    "Select an authorized crew member to load the authorized examination dataset.",
   );
   const userRef = useRef<string | undefined>(undefined);
   const reportRef = useRef<HTMLElement | null>(null);
@@ -126,7 +137,7 @@ export function AstronautHealthReport() {
         .then((v) => {
           if (!active) return;
           if (!v.signedIn || v.error || v.userId !== userRef.current) {
-            setInputs(EMPTY_INPUTS);
+            setSnapshot(null);
             setKey("");
           }
           userRef.current = v.signedIn && !v.error ? v.userId : undefined;
@@ -135,7 +146,7 @@ export function AstronautHealthReport() {
         .catch(() => {
           if (!active) return;
           userRef.current = undefined;
-          setInputs(EMPTY_INPUTS);
+          setSnapshot(null);
           setKey("");
           setIdentity(null);
         });
@@ -197,7 +208,7 @@ export function AstronautHealthReport() {
   useEffect(() => {
     if (key && identity && !member) {
       setKey("");
-      setInputs(EMPTY_INPUTS);
+      setSnapshot(null);
       setStatus("Selected scope is no longer authorized. Report cleared.");
     }
   }, [key, identity, member]);
@@ -213,43 +224,83 @@ export function AstronautHealthReport() {
     });
   }, [changeMissionId, changeCrewId]);
 
-  const loadedScope = useRef("");
-  // P72.8: every local read has a token; the report, the server comparison and every export are bound
-  // to the read they belong to, so a loading, failed or stale read can never be exported.
+  // P72.9: this device's encrypted store is still read (offline eligibility and the "not yet uploaded"
+  // notice), but it feeds the report only after the user explicitly chooses the local offline report.
   const readToken = useRef(0);
-  const [localRead, setLocalRead] = useState<LocalReadState>({ kind: "idle" });
+  const [localState, setLocalState] = useState<LocalDatasetState>({ kind: "idle" });
+  const scopeKey = member ? `${member.missionId}|${member.crewMemberId}|${provenance}` : "";
+  const [mode, setMode] = useState<ReportDataSource>("server_confirmed");
+  const [refreshNonce, setRefreshNonce] = useState(0);
+  const [changedSinceRetrieval, setChangedSinceRetrieval] = useState(false);
+  // A new scope always starts from the server-confirmed source; the source never changes silently.
   useEffect(() => {
-    const scopeKey = member ? `${member.missionId}|${member.crewMemberId}` : "";
-    // A refresh for the same scope keeps the visible report until the new read completes.
-    if (loadedScope.current !== scopeKey) setInputs(EMPTY_INPUTS);
-    loadedScope.current = scopeKey;
+    setMode("server_confirmed");
+    setSnapshot(null);
+    setChangedSinceRetrieval(false);
+  }, [scopeKey]);
+  useEffect(() => {
     if (!member) {
-      setLocalRead({ kind: "idle" });
+      setLocalState({ kind: "idle" });
       return;
     }
     let active = true;
     const token = ++readToken.current;
-    setLocalRead({ kind: "loading", scopeKey, token });
-    setStatus("Reading encrypted local records…");
+    setLocalState({ kind: "loading", token });
     void loadUnifiedReportInputs(member.missionId, member.crewMemberId)
       .then((v) => {
-        if (active) {
-          setInputs(v);
-          setLocalRead({ kind: "ready", scopeKey, token });
-          setStatus("Encrypted local records read for this mission and crew member.");
-        }
+        if (active)
+          setLocalState({ kind: "ready", token, inputs: v, complete: v.coverage?.complete !== false, readRecords: v.coverage?.readRecords ?? 0, storedRecords: v.coverage?.storedRecords ?? null });
       })
       .catch(() => {
-        if (active) {
-          setInputs(EMPTY_INPUTS);
-          setLocalRead({ kind: "failed", scopeKey, token, message: "The examinations stored on this device could not be read." });
-          setStatus("Unable to read encrypted local records. No report generated.");
-        }
+        if (active) setLocalState({ kind: "failed", token, message: "The examinations stored on this device could not be read." });
       });
     return () => {
       active = false;
     };
+    // member identity is covered by missionId/crewMemberId.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [member?.missionId, member?.crewMemberId, dataVersion]);
+
+  // P72.9: complete authorized server dataset, read-only (nothing is written to this device).
+  const pullServer = useServerFn(pullObservationEvents);
+  const pullReviews = useServerFn(pullReviewEvents);
+  const fetchToken = useRef(0);
+  const [serverState, setServerState] = useState<ServerDatasetState>({ kind: "idle" });
+  const fetchServer = (token: number) =>
+    member
+      ? fetchServerReportDataset({ missionId: member.missionId, crewMemberId: member.crewMemberId, provenance }, token, {
+          pullObservations: (a) => pullServer({ data: a }),
+          pullReviews: (a) => pullReviews({ data: a }),
+          online: typeof navigator === "undefined" ? undefined : navigator.onLine,
+        })
+      : Promise.resolve({ kind: "failed", token, code: "unavailable", reason: "No crew member selected." } as const);
+  useEffect(() => {
+    if (!member) {
+      setServerState({ kind: "idle" });
+      return;
+    }
+    let active = true;
+    const token = ++fetchToken.current;
+    setServerState({ kind: "loading", token });
+    setChangedSinceRetrieval(false);
+    void fetchServer(token)
+      .catch(() => ({ kind: "failed", token, code: "network", reason: "The server dataset could not be retrieved." }) as const)
+      .then((r) => {
+        if (active) setServerState(r);
+      });
+    return () => {
+      active = false;
+    };
+    // fetchServer closes over member/provenance, both listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member?.missionId, member?.crewMemberId, provenance, refreshNonce]);
+  // Local changes (sync, attestation, correction) after retrieval: the server-confirmed report is kept
+  // unchanged until the user explicitly refreshes it, so screen and downloads never diverge.
+  const lastDataVersion = useRef(dataVersion);
+  useEffect(() => {
+    if (dataVersion !== lastDataVersion.current && mode === "server_confirmed" && serverState.kind === "ready") setChangedSinceRetrieval(true);
+    lastDataVersion.current = dataVersion;
+  }, [dataVersion, mode, serverState.kind]);
 
   const report = useMemo(
     () =>
@@ -274,46 +325,6 @@ export function AstronautHealthReport() {
         : null,
     [inputs, member, provenance, from, to, sources],
   );
-
-  // P72.8: read-only comparison of this device's examinations with the server copies for the same read.
-  const pullServer = useServerFn(pullObservationEvents);
-  const [serverCheck, setServerCheck] = useState<ServerComparison>({ kind: "pending" });
-  const [checkNonce, setCheckNonce] = useState(0);
-  const localReadyToken = localRead.kind === "ready" ? localRead.token : null;
-  const runServerComparison = (token: number) =>
-    member
-      ? compareLocalWithServer({ missionId: member.missionId, crewMemberId: member.crewMemberId, provenance }, token, {
-          listLocal: async () => (await listUnifiedObservationEvents(member.missionId, member.crewMemberId)).map((e) => ({ eventId: e.eventId, eventKind: e.eventKind, observation: e.observation })),
-          pull: (a) => pullServer({ data: a }),
-          online: typeof navigator === "undefined" ? undefined : navigator.onLine,
-        })
-      : Promise.resolve<ServerComparison>({ kind: "pending" });
-  useEffect(() => {
-    if (localReadyToken === null || !member) {
-      setServerCheck({ kind: "pending" });
-      return;
-    }
-    let active = true;
-    setServerCheck({ kind: "checking", token: localReadyToken });
-    void runServerComparison(localReadyToken)
-      .catch((): ServerComparison => ({ kind: "failed", token: localReadyToken, reason: "The server comparison could not be completed." }))
-      .then((r) => { if (active) setServerCheck(r); });
-    return () => { active = false; };
-    // runServerComparison closes over member/provenance, both listed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localReadyToken, member?.missionId, member?.crewMemberId, provenance, checkNonce]);
-  const readiness = useMemo(
-    () =>
-      assessReportReadiness({
-        scopeKey: member ? `${member.missionId}|${member.crewMemberId}` : "",
-        local: localRead,
-        server: serverCheck,
-        coverage: inputs.coverage,
-        includedObservations: unified?.rows.length ?? 0,
-      }),
-    [member, localRead, serverCheck, inputs.coverage, unified],
-  );
-  const reportVisible = localRead.kind === "ready" && member !== undefined && localRead.scopeKey === `${member.missionId}|${member.crewMemberId}`;
 
   // P56.1: same scope and sources without the date filter — used only to say "measured outside the period".
   const scopeHistory = useMemo(
@@ -359,9 +370,68 @@ export function AstronautHealthReport() {
     return () => { active = false; };
   }, [attestMissionId, attestCrewId, provenance, identity?.userId, dataVersion]);
 
-  const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(attestations, unified.scope) : []), [attestations, unified]);
+  // P72.9: the snapshot of the active source. Server mode uses only the server dataset; local offline
+  // mode (explicit choice) uses only this device's complete local read and attestation ledger.
+  useEffect(() => {
+    if (!member) {
+      setSnapshot(null);
+      return;
+    }
+    if (mode === "server_confirmed") {
+      setSnapshot(serverState.kind === "ready" ? serverState.snapshot : null);
+      return;
+    }
+    if (localState.kind !== "ready" || !localState.complete || attestLoad !== "ready") {
+      setSnapshot(null);
+      return;
+    }
+    let active = true;
+    const scope = { missionId: member.missionId, crewMemberId: member.crewMemberId, provenance };
+    void localOfflineSnapshot(scope, localState.token, localState.inputs, attestations).then((snap) => {
+      if (active) setSnapshot(snap);
+    });
+    return () => {
+      active = false;
+    };
+    // member identity is covered by missionId/crewMemberId.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, serverState, localState, attestLoad, attestations, member?.missionId, member?.crewMemberId, provenance]);
+  // Local offline needs the attestation ledger too; a failed ledger read is a failed local read.
+  const effectiveLocalState = useMemo<LocalDatasetState>(
+    () =>
+      mode === "local_offline" && localState.kind === "ready" && attestLoad === "error"
+        ? { kind: "failed", token: localState.token, message: "The medical reviews stored on this device could not be read." }
+        : localState,
+    [mode, localState, attestLoad],
+  );
+
+  const readiness = useMemo(
+    () =>
+      assessDatasetReadiness({
+        hasSelection: Boolean(member),
+        mode,
+        server: serverState,
+        local: effectiveLocalState,
+        snapshot: snapshot && member && snapshot.scope.missionId === member.missionId && snapshot.scope.crewMemberId === member.crewMemberId && snapshot.scope.provenance === provenance ? snapshot : null,
+        includedObservations: unified?.rows.length ?? 0,
+      }),
+    [member, mode, serverState, effectiveLocalState, snapshot, provenance, unified],
+  );
+  const reportVisible = readiness.exportAllowed;
+  const notOnServer = useMemo(
+    () => (snapshot?.source === "server_confirmed" && localState.kind === "ready" ? localRecordsNotOnServer(snapshot, localState.inputs) : null),
+    [snapshot, localState],
+  );
+
+  // Report content uses the snapshot's reviews only; attestation planning also sees this device's ledger
+  // so an attestation recorded here but not yet uploaded is never planned twice.
+  const scopedAttestations = useMemo(() => (unified ? scopedAttestationEvents(snapshot?.attestations ?? [], unified.scope) : []), [snapshot, unified]);
+  const planningAttestations = useMemo(
+    () => (unified ? scopedAttestationEvents(mergeAttestationEvents(attestations, snapshot?.attestations ?? []).events, unified.scope) : []),
+    [attestations, snapshot, unified],
+  );
   const attestationSummary = useMemo(() => (unified ? summarizeAttestations(unified, scopedAttestations) : null), [unified, scopedAttestations]);
-  const eligible = useMemo(() => (unified ? eligibleForAttestation(unified, scopedAttestations) : []), [unified, scopedAttestations]);
+  const eligible = useMemo(() => (unified ? eligibleForAttestation(unified, planningAttestations) : []), [unified, planningAttestations]);
 
   const runAttestation = async (mode: "attest" | "revoke", recordId?: string) => {
     if (!member || !unified || attesting) return;
@@ -375,8 +445,8 @@ export function AstronautHealthReport() {
       const ctx = { actorUserId: fresh.userId, rolesForScope: freshRoles, scope, decidedAt: new Date().toISOString() };
       const input = { reason: attestReason, confirmed: attestConfirmed };
       const plan = mode === "attest"
-        ? planAttestation(unified, [...selected], scopedAttestations, ctx, input)
-        : planRevocation(unified, recordId ?? "", scopedAttestations, ctx, input);
+        ? planAttestation(unified, [...selected], planningAttestations, ctx, input)
+        : planRevocation(unified, recordId ?? "", planningAttestations, ctx, input);
       if (!plan.ok) { setAttestStatus(plan.reason); return; }
       const saved = await appendAttestationEvents(plan.events, scope, ctx);
       const events = await listAttestationEvents(scope);
@@ -569,34 +639,43 @@ export function AstronautHealthReport() {
   }, []);
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
-  const currentExport = useRef({ unified, userId: identity?.userId, readiness });
-  currentExport.current = { unified, userId: identity?.userId, readiness };
+  const currentExport = useRef({ unified, userId: identity?.userId, readiness, snapshot });
+  currentExport.current = { unified, userId: identity?.userId, readiness, snapshot };
   const performExport = async (kind: "pdf" | "p58-pdf" | "appendix-pdf" | "text" | "appendix-text" | "print") => {
     if (!member || !report || !unified || exporting) return;
     const snapshot = currentExport.current;
-    // P72.8: never export while examinations are loading, failed, partial, stale or unconfirmed.
-    if (!snapshot.readiness.exportAllowed || localRead.kind !== "ready") {
+    // P72.8/P72.9: never export while the dataset is loading, failed, partial or not the displayed one.
+    const dataset = snapshot.snapshot;
+    if (!snapshot.readiness.exportAllowed || !dataset || dataset.source !== snapshot.readiness.source) {
       setExportStatus(`${snapshot.readiness.title}. ${snapshot.readiness.detail} No file downloaded.`);
       return;
     }
-    const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
+    const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId && currentExport.current.snapshot === dataset;
     setExporting(true);
     setExportStatus(kind === "pdf" || kind === "p58-pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
     try {
       const fresh = await loadMissionIdentity({ freshGlobalResearch: true });
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && reportScopeAuthorized(fresh, member, provenance);
       if (!authorized || !stillCurrent()) throw new Error("Report authorization or selection changed. Export cancelled.");
-      // Fresh server comparison immediately before export: data that changed on the server since the
-      // page loaded (another device synced) cancels the export instead of producing a stale report.
-      let serverRecords: number | null = null;
-      if (snapshot.readiness.basis === "server_confirmed") {
-        const recheck = await runServerComparison(localRead.token);
-        if (recheck.kind !== "matched") {
-          setServerCheck(recheck);
-          throw new Error("The server examinations changed or could not be confirmed again. Export cancelled; no file downloaded.");
+      // P72.9: re-read the same source immediately before export. A dataset that changed since the
+      // report was displayed cancels the export (the user refreshes explicitly), so the file always
+      // matches the screen.
+      const scope = dataset.scope;
+      if (dataset.source === "server_confirmed") {
+        const again = await fetchServer(dataset.token);
+        if (again.kind !== "ready") throw new Error(`${again.reason} Export cancelled; no file downloaded.`);
+        if (again.snapshot.datasetFingerprint !== dataset.datasetFingerprint) {
+          setChangedSinceRetrieval(true);
+          throw new Error("The server dataset changed since this report was retrieved. Refresh the report, then export again; no file downloaded.");
         }
-        serverRecords = recheck.remoteEvents;
+      } else {
+        const [localInputs, localReviews] = await Promise.all([loadUnifiedReportInputs(scope.missionId, scope.crewMemberId), listAttestationEvents(scope)]);
+        if (localInputs.coverage?.complete === false) throw new Error("Only part of the stored examinations could be read again. Export cancelled; no file downloaded.");
+        const again = await localOfflineSnapshot(scope, dataset.token, localInputs, localReviews);
+        if (again.datasetFingerprint !== dataset.datasetFingerprint)
+          throw new Error("The examinations stored on this device changed since this report was generated. Reload the report, then export again; no file downloaded.");
       }
+      const range = dataset.summary.firstDate ? (dataset.summary.firstDate === dataset.summary.lastDate ? dataset.summary.firstDate : `${dataset.summary.firstDate} to ${dataset.summary.lastDate}`) : "no dates";
       const dataProvenance: ReportDataProvenance | undefined = premiumReport
         ? {
             missionId: member.missionId,
@@ -607,12 +686,21 @@ export function AstronautHealthReport() {
             observations: premiumReport.census.observations,
             series: premiumReport.census.series,
             datasetFingerprint: premiumReport.census.sha256,
-            basis: snapshot.readiness.basis ?? "local_only",
-            serverRecords,
-            readinessVersion: snapshot.readiness.version,
+            basis: dataset.source,
+            serverRecords: dataset.source === "server_confirmed" ? dataset.observationEvents : null,
+            reviewRecords: dataset.reviewEvents,
+            scopeDatasetFingerprint: dataset.datasetFingerprint,
+            dataSourceDetail:
+              dataset.source === "server_confirmed"
+                ? `report generated from the complete authorized server dataset (${dataset.observationEvents} examination record(s), ${dataset.reviewEvents} medical review record(s); every page read-only, nothing stored on the exporting device)`
+                : `${dataset.summary.examinations} evaluable observation(s) on ${dataset.summary.examinationDates.length} date(s) (${range}) stored on the exporting device`,
+            engineVersion: REPORT_ENGINE_VERSION,
+            rulesSummary: `interpretation registry v${interpretationSnapshot.registryVersion} with ${interpretationSnapshot.ledger.events} verified interpretation event(s)${interpretationSnapshot.digest ? ` (digest ${interpretationSnapshot.digest.slice(0, 16)}…)` : ""}; ${criteriaResolution.approved.length} Researcher-approved reference criteria. Identical datasets give identical findings when these rule sets match.`,
+            readinessVersion: REPORT_DATASET_VERSION,
             exportedAt: new Date().toISOString(),
           }
         : undefined;
+      const provenanceText = dataProvenance ? `\n\nREPORT DATA PROVENANCE\n${reportProvenanceLines(dataProvenance).map((l) => `- ${l}`).join("\n")}\n` : "";
       if (kind === "print") {
         // Print is a separate, explicit browser action; it is never used as a silent PDF fallback.
         const previous = document.title;
@@ -620,10 +708,10 @@ export function AstronautHealthReport() {
         setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
         if (!healthAssessment) throw new Error("The health assessment is not ready yet. No file downloaded.");
-        downloadReportBlob(new Blob([professionalReport ? professionalReportPlainText(professionalReport) : healthAssessmentPlainText(healthAssessment)], { type: "text/plain;charset=utf-8" }), `${exportName}_Assessment.txt`);
+        downloadReportBlob(new Blob([`${professionalReport ? professionalReportPlainText(professionalReport) : healthAssessmentPlainText(healthAssessment)}${provenanceText}`], { type: "text/plain;charset=utf-8" }), `${exportName}_Assessment.txt`);
         setExportStatus(`Assessment text created locally and download started as ${exportName}_Assessment.txt. No medical data was uploaded.`);
       } else if (kind === "appendix-text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${biomarkerAssessment ? biomarkerAssessmentPlainText(biomarkerAssessment) : ""}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${biomarkerAssessment ? biomarkerAssessmentPlainText(biomarkerAssessment) : ""}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}${provenanceText}`;
         downloadReportBlob(new Blob([redactProhibitedNames(text)], { type: "text/plain;charset=utf-8" }), `${exportName}_Technical_Appendix.txt`);
         setExportStatus(`Technical appendix TXT created locally and download started as ${exportName}_Technical_Appendix.txt. No medical data was uploaded.`);
       } else {
@@ -636,7 +724,7 @@ export function AstronautHealthReport() {
           const premium = kind === "pdf" ? premiumReport : null;
           const result = premium
             ? await (await import("@/domain/health-intelligence/p59-premium-pdf")).createPremiumReportPdf(premium, undefined, dataProvenance ? { provenance: dataProvenance } : undefined)
-            : (kind === "pdf" || kind === "p58-pdf") && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
+            : (kind === "pdf" || kind === "p58-pdf") && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport, undefined, dataProvenance ? { provenance: dataProvenance } : undefined) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
             unified,
             findings,
             summary: healthSummary,
@@ -645,6 +733,7 @@ export function AstronautHealthReport() {
             interpretations: interpretationSnapshot,
             identity: { missionName: member.missionName, crewDisplayName: member.crewDisplayName },
             title: exportName,
+            ...(dataProvenance ? { provenance: dataProvenance } : {}),
           });
           blob = result.blob;
           pdfInfo = `${result.pages} pages, searchable text${result.fontMode === "standard" ? "; embedded Unicode font unavailable, some symbols simplified" : ""}`;
@@ -671,9 +760,9 @@ export function AstronautHealthReport() {
       <header className="print:hidden">
         <h1 className="text-3xl font-bold">Astronaut Health History &amp; Research Assessment</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Unified Bone, Immune, Cardiovascular, Behavioral, wearable and device records from
-          authorized encrypted local storage only; nothing
-          is uploaded.
+          Unified Bone, Immune, Cardiovascular, Behavioral, wearable and device records from the complete
+          authorized server dataset (read-only, nothing is stored on this device), or — only when you choose
+          it — from this device&apos;s encrypted local storage. Nothing is uploaded.
         </p>
       </header>
       <section className="space-y-3 rounded-lg border p-4 print:hidden">
@@ -763,16 +852,46 @@ export function AstronautHealthReport() {
           aria-label="Report data readiness"
           role="status"
           aria-live="polite"
-          className={`print:hidden rounded-lg border p-4 text-sm ${readiness.exportAllowed ? (readiness.basis === "server_confirmed" ? "border-primary/40 bg-primary/5" : "border-accent bg-accent/30") : "border-destructive/50 bg-destructive/5"}`}
+          className={`print:hidden rounded-lg border p-4 text-sm ${readiness.exportAllowed ? (readiness.source === "server_confirmed" ? "border-primary/40 bg-primary/5" : "border-accent bg-accent/30") : "border-destructive/50 bg-destructive/5"}`}
         >
-          <p className="font-semibold">{readiness.title}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Data source: {mode === "server_confirmed" ? "Server-confirmed (complete authorized dataset, read-only)" : LOCAL_OFFLINE_LABEL}
+          </p>
+          <p className="mt-1 font-semibold">{readiness.title}</p>
           <p className="mt-1 text-xs text-muted-foreground">{readiness.detail}</p>
           {readiness.exportAllowed && readiness.dataStatus === "no_examinations" ? (
             <p className="mt-1 text-xs font-semibold">No examination falls within the selected period. The report states this explicitly; it is not a negative finding.</p>
           ) : null}
-          {(readiness.state === "server_failed" || readiness.state === "missing_locally" || readiness.state === "inconsistent" || readiness.state === "ready_local_only") && (
-            <Button className="mt-2" size="sm" variant="outline" onClick={() => setCheckNonce((n) => n + 1)}>Check again</Button>
-          )}
+          {readiness.state === "ready_server_confirmed" && notOnServer && (notOnServer.observations > 0 || notOnServer.deviceOnly > 0) ? (
+            <p className="mt-1 text-xs">
+              This device also holds {notOnServer.observations} examination record(s) not on the server{notOnServer.deviceOnly ? ` and ${notOnServer.deviceOnly} device-only record(s)` : ""}. They are not part of this server-confirmed report until uploaded through the existing sync.
+            </p>
+          ) : null}
+          {changedSinceRetrieval && mode === "server_confirmed" ? (
+            <p className="mt-1 text-xs font-semibold">Records for this crew member changed after this report was retrieved. The report shown is unchanged; refresh it to include the latest server data.</p>
+          ) : null}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {mode === "server_confirmed" && (readiness.state === "ready_server_confirmed" || readiness.state === "server_failed") && (
+              <Button size="sm" variant="outline" onClick={() => setRefreshNonce((n) => n + 1)}>
+                {readiness.state === "server_failed" ? "Try again" : "Refresh report"}
+              </Button>
+            )}
+            {mode === "server_confirmed" && readiness.offerLocalOffline && (
+              <Button size="sm" variant="outline" onClick={() => setMode("local_offline")}>Generate local offline report (not server verified)</Button>
+            )}
+            {mode === "local_offline" && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setMode("server_confirmed");
+                  setRefreshNonce((n) => n + 1);
+                }}
+              >
+                Return to server-confirmed report
+              </Button>
+            )}
+          </div>
         </section>
       )}
       {report && unified && reportVisible && (
@@ -804,6 +923,20 @@ export function AstronautHealthReport() {
             </span>
             <span>{healthAssessment?.disclosure ?? "Automated health assessment — subject to Ground Medical review."}</span>
           </div>
+          {snapshot ? (
+            <section aria-label="Report data source" className="report-avoid-break rounded-md border p-3 text-xs">
+              <p className="font-semibold">
+                Data source: {snapshot.source === "server_confirmed" ? "SERVER-CONFIRMED — complete authorized server dataset (read-only)" : LOCAL_OFFLINE_LABEL}
+              </p>
+              <p className="text-muted-foreground">
+                Mission ID {snapshot.scope.missionId} · Subject (crew) ID {snapshot.scope.crewMemberId} · {snapshot.scope.provenance.toUpperCase()} ·{" "}
+                {snapshot.observationEvents} examination record(s), {snapshot.reviewEvents} review record(s) ·{" "}
+                {premiumReport ? `period ${premiumReport.header.period} · ${premiumReport.census.dates.length} examination date(s): ${premiumReport.census.dates.join(", ") || "none in this period"} · period fingerprint ${premiumReport.census.sha256.slice(0, 16)}… · ` : ""}
+                dataset fingerprint {snapshot.datasetFingerprint.slice(0, 16)}… · {REPORT_ENGINE_VERSION}
+              </p>
+              {snapshot.source === "local_offline" ? <p className="font-semibold">The server may hold examinations not shown here.</p> : null}
+            </section>
+          ) : null}
           {healthAssessment ? (
             <HealthAssessmentView
               assessment={healthAssessment}
@@ -996,7 +1129,8 @@ export function AstronautHealthReport() {
               </p>
               {attestationSummary && (
                 <p className="text-sm" role="status">
-                  {attestLoad === "loading" ? "Reading the encrypted attestation ledger…"
+                  {snapshot?.source === "server_confirmed" ? `Server-confirmed reviews: attested ${attestationSummary.attested} · accepted without attestation ${attestationSummary.notAttested} · revoked ${attestationSummary.revoked} · earlier record version ${attestationSummary.stale} · ${attestationSummary.events} audit event(s).`
+                    : attestLoad === "loading" ? "Reading the encrypted attestation ledger…"
                     : attestLoad === "error" ? "The attestation ledger could not be read; attestation status is unavailable, not absent."
                     : `Attested ${attestationSummary.attested} · accepted without attestation ${attestationSummary.notAttested} · revoked ${attestationSummary.revoked} · earlier record version ${attestationSummary.stale} · ${attestationSummary.events} audit event(s).`}
                 </p>

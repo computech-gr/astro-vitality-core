@@ -17,6 +17,7 @@ import type { ReportChart } from "./p58-report-charts";
 import { RECOMMENDATION_CATEGORIES, RECOMMENDATION_CATEGORY_LABELS } from "./p56-pattern-library";
 import { openTextPdf, toWinAnsi, type PdfDeps, type PdfFactory, type ReportFonts, type TextPdfResult } from "./report-text-pdf";
 import { redactProhibitedNames } from "./report-identity-redaction";
+import { provenanceSourceLabel, reportProvenanceLines, type ReportDataProvenance } from "./p728-report-readiness";
 
 type RGB = readonly [number, number, number];
 const C = {
@@ -308,7 +309,7 @@ function drawSingle(L: Layout, c: ReportChart, x: number, y: number, w: number, 
   L.lines(note, x + 4, y + h - note.length * lh(6.2) - 1.8, 6.2, false, C.muted);
 }
 
-export function renderProfessionalReport(r: ProfessionalReport, pdf: Writer, opts: { family: string; unicode: boolean }): { pages: number } {
+export function renderProfessionalReport(r: ProfessionalReport, pdf: Writer, opts: { family: string; unicode: boolean; provenance?: ReportDataProvenance }): { pages: number } {
   const L = new Layout(pdf, opts.family, opts.unicode);
   const a = r.assessment;
   const h = a.header;
@@ -342,6 +343,21 @@ export function renderProfessionalReport(r: ProfessionalReport, pdf: Writer, opt
     idH = Math.max(idH, lh(6.6) + L.lines(L.wrap(v, 9, cw - 3, true).slice(0, 4), M + i * cw, L.y + lh(6.6), 9, true, C.ink));
   });
   L.y += idH + 4;
+  // P72.9: data source on page 1 (only when the export supplies provenance).
+  if (opts.provenance) {
+    const p = opts.provenance;
+    L.para(`Data source: ${provenanceSourceLabel(p)} · ${p.observations} observation(s) · ${p.examinationDates.length} examination date(s) · dataset fingerprint ${p.datasetFingerprint.slice(0, 16)}… (full provenance at the end).`, 7.6, p.basis === "server_confirmed" ? C.muted : C.review);
+  }
+  // P72.9: an empty period is stated explicitly (same rule as the current PDF); nothing is assessed,
+  // so no conclusion, finding, chart, concern or recommendation is printed.
+  const noExaminations = h.examinationDates.length === 0;
+  if (noExaminations) {
+    L.heading("No examinations recorded in this period");
+    L.para("No examinations were recorded in the selected period, so no health assessment was performed. The absence of data is not a negative or reassuring finding.", 9.3);
+    L.para(`Selected period: ${h.period}. No accepted, stored examination result falls within it. No body system, biomarker, trend, clinical concern or recommendation was evaluated, and no statement about the astronaut's health can be made from this report.`, 8.8);
+    L.para("If examinations are expected in this period, check the selected dates and the data source stated in this report, then regenerate the report.", 8.8, C.muted);
+  }
+  if (!noExaminations) {
   const kpi: { label: string; value: number; color: RGB; tint: RGB; note: string }[] = [
     { label: "Validated clinical alerts", value: r.kpis.validatedAlerts, color: r.kpis.validatedAlerts ? C.red : C.navy, tint: r.kpis.validatedAlerts ? C.redTint : C.navyTint, note: "approved criteria only" },
     { label: "Concerns for Ground Medical", value: r.kpis.concerns, color: C.navy, tint: C.navyTint, note: "pending review" },
@@ -482,6 +498,7 @@ export function renderProfessionalReport(r: ProfessionalReport, pdf: Writer, opt
   }
   if (!r.recommendations.length) L.para("No recommendations: no reviewed results in this period.", 9, C.muted);
 
+  }
   // ---------- Methodology, evidence and audit
   L.heading("Methodology and evidence");
   L.para(a.methodology, 8);
@@ -493,6 +510,12 @@ export function renderProfessionalReport(r: ProfessionalReport, pdf: Writer, opt
   L.y += lh(8.6) + 0.5;
   for (const x of r.audit) L.para(`${x.at} · ${x.kind === "ai_generation" ? "Assessment generation" : "Clinician decision"} · ${x.summary}`, 7.4, C.muted);
   L.para(`Evidence ID ${r.evidenceId}. ${r.disclosure}`, 7.6, C.ink);
+  if (opts.provenance) {
+    L.ensure(20);
+    L.lines([L.t("Report data provenance")], M, L.y, 8.6, true, C.navy);
+    L.y += lh(8.6) + 0.5;
+    for (const line of reportProvenanceLines(opts.provenance)) L.para(`• ${line}`, 7.2, C.muted);
+  }
 
   // ---------- Header / footer on every page
   const pages = pdf.getNumberOfPages();
@@ -519,12 +542,12 @@ export function renderProfessionalReport(r: ProfessionalReport, pdf: Writer, opt
   return { pages };
 }
 
-export async function createProfessionalReportPdf(r: ProfessionalReport, deps?: PdfDeps, meta?: { fixedDate?: string }): Promise<TextPdfResult> {
+export async function createProfessionalReportPdf(r: ProfessionalReport, deps?: PdfDeps, meta?: { fixedDate?: string; provenance?: ReportDataProvenance }): Promise<TextPdfResult> {
   const { pdf, fonts } = await openTextPdf(deps);
   return renderProfessional(pdf as Writer, fonts, r, meta);
 }
 
-export function renderProfessional(pdf: Writer, fonts: ReportFonts | null, r: ProfessionalReport, meta?: { fixedDate?: string }): TextPdfResult {
+export function renderProfessional(pdf: Writer, fonts: ReportFonts | null, r: ProfessionalReport, meta?: { fixedDate?: string; provenance?: ReportDataProvenance }): TextPdfResult {
   let family = "helvetica";
   if (fonts) {
     pdf.addFileToVFS("LiberationSans-Regular.ttf", fonts.regular);
@@ -535,7 +558,7 @@ export function renderProfessional(pdf: Writer, fonts: ReportFonts | null, r: Pr
   }
   pdf.setProperties({
     title: redactProhibitedNames(`Astronaut Health Assessment — ${r.assessment.header.astronaut}`),
-    subject: `Evidence ID ${r.evidenceId}; preliminary assessment pending Ground Medical review`,
+    subject: `Evidence ID ${r.evidenceId}; preliminary assessment pending Ground Medical review${meta?.provenance ? `; mission ${meta.provenance.missionId}; period ${meta.provenance.period}; ${meta.provenance.observations} observation(s); dataset SHA-256 ${meta.provenance.datasetFingerprint}; ${provenanceSourceLabel(meta.provenance)}; exported ${meta.provenance.exportedAt}` : ""}`,
     creator: "MITOCHONDRIA - local export",
     keywords: "research use, preliminary, not a diagnosis",
   });
@@ -543,7 +566,7 @@ export function renderProfessional(pdf: Writer, fonts: ReportFonts | null, r: Pr
     pdf.setCreationDate?.(new Date(meta.fixedDate));
     pdf.setFileId?.(`${r.evidenceId.replace(/[^0-9A-F]/g, "")}${"0".repeat(32)}`.slice(0, 32));
   }
-  const { pages } = renderProfessionalReport(r, pdf, { family, unicode: Boolean(fonts) });
+  const { pages } = renderProfessionalReport(r, pdf, { family, unicode: Boolean(fonts), ...(meta?.provenance ? { provenance: meta.provenance } : {}) });
   const blob = pdf.output("blob");
   if (!(blob.size > 0)) throw new Error("The PDF file is empty.");
   return { blob, pages, fontMode: fonts ? "unicode" : "standard" };
