@@ -206,6 +206,16 @@ export interface ReportDataProvenance {
   engineVersion?: string;
   /** P72.9: identity of the scientific rule sets applied (interpretation snapshot, approved criteria). */
   rulesSummary?: string;
+  /** P72.10: SHA-256 over every scientific interpretation input (rule files, registry snapshot, criteria, options). */
+  scientificFingerprint?: string;
+  /** P72.10: "shared_versioned_rules" (server-confirmed) or "device_local_decisions" (local offline). */
+  scientificBasis?: "shared_versioned_rules" | "device_local_decisions";
+  /** P72.10: one line per bundled rule set (id, version, status, content hash). */
+  ruleSets?: readonly string[];
+  /** P72.10: device-local decisions present on the exporting device but not applied (server-confirmed only). */
+  deviceDecisionsNote?: string | null;
+  /** P72.10: whether informational AI wording is part of this export (never changes a class or priority). */
+  aiContent?: string;
 }
 
 /** Short source label used on page 1 and in file properties. */
@@ -229,11 +239,15 @@ export function reportProvenanceLines(p: ReportDataProvenance): string[] {
     `Examinations: ${p.examinationDates.length} examination date(s)`,
     `Examination dates (${p.examinationDates.length}): ${p.examinationDates.length ? p.examinationDates.join(", ") : "none in this period"}`,
     `Observations evaluated: ${p.observations} in ${p.series} series`,
-    `Dataset fingerprint (SHA-256 of exactly the observations evaluated): ${p.datasetFingerprint}`,
+    `${p.scientificFingerprint ? "Clinical observations fingerprint" : "Dataset fingerprint"} (SHA-256 of exactly the observations evaluated): ${p.datasetFingerprint}`,
     ...(p.scopeDatasetFingerprint ? [`Complete dataset fingerprint (SHA-256 of every examination and review record in this scope, all periods): ${p.scopeDatasetFingerprint}`] : []),
     basis,
     ...(p.engineVersion ? [`Report engine: ${p.engineVersion}`] : []),
     ...(p.rulesSummary ? [`Scientific rules applied: ${p.rulesSummary}`] : []),
+    ...(p.scientificFingerprint ? [`Scientific interpretation inputs fingerprint (SHA-256 of rule sets, interpretation registry snapshot, reference criteria and report options): ${p.scientificFingerprint}`] : []),
+    ...(p.ruleSets?.length ? [`Rule sets (${p.ruleSets.length}): ${p.ruleSets.join("; ")}`] : []),
+    ...(p.deviceDecisionsNote ? [p.deviceDecisionsNote] : []),
+    ...(p.aiContent ? [`Automated AI wording: ${p.aiContent}`] : []),
     `Export timestamp (UTC): ${p.exportedAt} — recorded for traceability only; not an input of any finding.`,
     `Readiness check: ${p.readinessVersion}`,
   ];
