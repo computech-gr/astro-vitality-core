@@ -25,7 +25,7 @@ import { bundledInterpretationRegistry } from "./biomarker-interpretation-ledger
 import { buildVerifiedSnapshot, type InterpretationSnapshot } from "./biomarker-interpretation";
 import { bundledCriteriaRegistry } from "./p57-reference-criteria";
 import { resolveCriteriaReview, type CriteriaReviewResolution } from "./p57-criteria-review";
-import { REPORT_ENGINE_VERSION, type ReportDataSource } from "./p729-report-dataset";
+import { REPORT_ENGINE_VERSION, type DatasetReadiness, type DatasetReadinessState, type ReportDataSource } from "./p729-report-dataset";
 import interpretationRegistry from "../../../data/scientific/biomarker-interpretation-registry.v1.json";
 import verifiedReferences from "../../../data/scientific/verified-reference-intervals.v1.json";
 import criteriaRegistry from "../../../data/scientific/p57-reference-criteria.v1.json";
@@ -274,11 +274,13 @@ export type ScientificReadinessState = "scientific_preparing" | "scientific_bloc
  * snapshot was built for exactly that dataset. A blocked scientific input blocks the report with an
  * actionable reason; it never falls back to fewer or other inputs.
  */
-export function withScientificReadiness<R extends { exportAllowed: boolean; state: string; title: string; detail: string; offerLocalOffline: boolean }>(
-  readiness: R,
+export type ReportReadiness = Omit<DatasetReadiness, "state"> & { state: DatasetReadinessState | ScientificReadinessState; scientific: ReportScientificSnapshot | null };
+
+export function withScientificReadiness(
+  readiness: DatasetReadiness,
   result: ScientificSnapshotResult | null,
   dataset: { token: number; source: ReportDataSource; datasetFingerprint: string } | null,
-): (R | (Omit<R, "state"> & { state: ScientificReadinessState })) & { scientific: ReportScientificSnapshot | null } {
+): ReportReadiness {
   if (!readiness.exportAllowed || !dataset) return { ...readiness, scientific: null };
   if (result?.kind === "blocked")
     return { ...readiness, state: "scientific_blocked", exportAllowed: false, offerLocalOffline: false, title: "Scientific interpretation inputs unavailable", detail: `${result.reason} No report was generated; this is not a negative finding.`, scientific: null };
