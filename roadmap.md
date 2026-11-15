@@ -1,3 +1,10 @@
+# P72.10 Hide completed biomarkers from pending Researcher decisions (Preview only)
+
+- [x] Researcher decision table defaults to pending decisions; workflow filter for pending, awaiting Medical activation, already activated, rejected/declined/revoked and all records, with separate counts.
+- [x] Select All Filtered selects only the current filter; switching request or status drops hidden selections; hidden selections need an explicit tick before submission.
+- [x] Preview (signed in as Researcher, nothing submitted): ubr-6a205852 shows 7 submitted · 6 pending · 1 activated (Chloride only under Already activated / All records); approval preview of the six opens normally (1 actionable, 5 need a domain choice).
+- [x] 2,000 tests pass; changed-file lint clean; managed build OK. No database, authorization or record changes; no publication.
+
 # P72.9 Researcher header privacy (Preview only)
 
 - [x] Remove account identifiers only from the shared Researcher console header; preserve titles, notices, permissions and P72.8 actions.
