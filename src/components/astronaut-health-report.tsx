@@ -90,6 +90,23 @@ const EMPTY_INPUTS: UnifiedReportInputs = {
   deviceRecords: [],
 };
 
+/**
+ * Export authorization for the selected report scope: an exact crew_self / Ground Medical
+ * membership, or (P72.6) the server-verified global Researcher READ scope for synthetic
+ * records only. Exported for tests.
+ */
+export function reportScopeAuthorized(
+  identity: Pick<MissionIdentitySnapshot, "memberships" | "globalResearch">,
+  scope: { missionId: string; crewMemberId: string },
+  provenance: "synthetic" | "real",
+): boolean {
+  return (
+    identity.memberships.some(
+      (m) => m.missionId === scope.missionId && m.crewMemberId === scope.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"),
+    ) || globalResearchAllows(identity.globalResearch, scope.missionId, scope.crewMemberId, provenance)
+  );
+}
+
 export function AstronautHealthReport() {
   const [identity, setIdentity] = useState<MissionIdentitySnapshot | null>(null);
   const [key, setKey] = useState("");
@@ -143,31 +160,45 @@ export function AstronautHealthReport() {
     };
   }, []);
 
-  const members = useMemo(
-    () =>
-      identity?.signedIn && !identity.error
-        ? identity.memberships
-            .filter(
-              (m) => (m.role === "crew_self" || m.role === "ground_medical") && m.crewMemberId,
-            )
-            .flatMap((m) =>
-              m.crewMemberId
-                ? [
-                    {
-                      key: `${m.missionId}|${m.crewMemberId}`,
-                      missionId: m.missionId,
-                      crewMemberId: m.crewMemberId,
-                      missionName: m.missionName?.trim() || m.missionCode?.trim() || null,
-                      crewDisplayName: m.crewDisplayName?.trim() || null,
-                      label: `${m.missionName ?? m.missionCode ?? m.missionId} — ${m.crewDisplayName ?? m.crewMemberId}`,
-                    },
-                  ]
-                : [],
-            )
-        : [],
-    [identity],
-  );
+  const members = useMemo(() => {
+    if (!identity?.signedIn || identity.error) return [];
+    const own = identity.memberships
+      .filter((m) => (m.role === "crew_self" || m.role === "ground_medical") && m.crewMemberId)
+      .flatMap((m) =>
+        m.crewMemberId
+          ? [
+              {
+                key: `${m.missionId}|${m.crewMemberId}`,
+                missionId: m.missionId,
+                crewMemberId: m.crewMemberId,
+                missionName: m.missionName?.trim() || m.missionCode?.trim() || null,
+                crewDisplayName: m.crewDisplayName?.trim() || null,
+                label: `${m.missionName ?? m.missionCode ?? m.missionId} — ${m.crewDisplayName ?? m.crewMemberId}`,
+                readOnly: false,
+              },
+            ]
+          : [],
+      );
+    // P72.6: server-verified global Researcher READ scopes (synthetic only, read-only) are
+    // listed after real memberships; an existing membership for the same pair wins.
+    const ownKeys = new Set(own.map((m) => m.key));
+    const research = globalResearchSelections(identity.globalResearch)
+      .filter((g) => !ownKeys.has(g.key))
+      .map((g) => ({ ...g, label: `${g.label} · Researcher read-only (synthetic)`, readOnly: true }));
+    return [...own, ...research];
+  }, [identity]);
   const member = members.find((m) => m.key === key);
+
+  // P72.6: preselect the Researcher's current all-missions selection (IDs only).
+  useEffect(() => {
+    if (key || !identity?.userId) return;
+    const remembered = readGlobalResearchSelection(typeof window === "undefined" ? undefined : window.sessionStorage, identity.userId);
+    if (remembered && members.some((m) => m.key === remembered)) setKey(remembered);
+  }, [key, identity?.userId, members]);
+  // Global Researcher read scopes are synthetic only; never mix in real records.
+  useEffect(() => {
+    if (member?.readOnly && provenance !== "synthetic") setProvenance("synthetic");
+  }, [member?.readOnly, provenance]);
 
   // Denied scope: clear immediately.
   useEffect(() => {
@@ -500,9 +531,8 @@ export function AstronautHealthReport() {
     setExporting(true);
     setExportStatus(kind === "pdf" || kind === "p58-pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
     try {
-      const fresh = await loadMissionIdentity();
-      const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && fresh.memberships.some(m =>
-        m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"));
+      const fresh = await loadMissionIdentity({ freshGlobalResearch: true });
+      const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && reportScopeAuthorized(fresh, member, provenance);
       if (!authorized || !stillCurrent()) throw new Error("Report authorization or selection changed. Export cancelled.");
       if (kind === "print") {
         // Print is a separate, explicit browser action; it is never used as a silent PDF fallback.
@@ -543,9 +573,8 @@ export function AstronautHealthReport() {
           // Download PDF must never silently invoke the separate Print action.
           throw new Error(pdfExportErrorMessage(pdfError));
         }
-        const after = await loadMissionIdentity();
-        if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !after.memberships.some(m =>
-          m.missionId === member.missionId && m.crewMemberId === member.crewMemberId && (m.role === "crew_self" || m.role === "ground_medical"))) throw new Error("Report authorization or selection changed. Export cancelled; no PDF was downloaded.");
+        const after = await loadMissionIdentity({ freshGlobalResearch: true });
+        if (!stillCurrent() || !after.signedIn || after.error || after.userId !== snapshot.userId || !reportScopeAuthorized(after, member, provenance)) throw new Error("Report authorization or selection changed. Export cancelled; no PDF was downloaded.");
         downloadReportBlob(blob, fileName);
         setExportStatus(`PDF created locally (${pdfInfo}, ${(blob.size / 1_048_576).toFixed(2)} MB) and download started as ${fileName}. Check your browser downloads. No medical data was uploaded.`);
       }
@@ -595,7 +624,7 @@ export function AstronautHealthReport() {
           onChange={(e) => setProvenance(e.target.value as "synthetic" | "real")}
         >
           <option value="synthetic">Synthetic / demonstration</option>
-          <option value="real">Real / recorded</option>
+          <option value="real" disabled={member?.readOnly === true}>Real / recorded</option>
         </select>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
