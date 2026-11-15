@@ -47,8 +47,9 @@ import {
   listInterpretationEvents,
   registryInterpretationSnapshot,
 } from "@/domain/health-intelligence/biomarker-interpretation-ledger";
-import { getSyntheticDemoCatalogs, subscribeSyntheticDemoCatalogs } from "@/domain/health-intelligence/synthetic-demo-catalog-runtime";
-import { getActiveCatalog, subscribeActiveCatalog } from "@/domain/health-intelligence/active-catalog-runtime";
+import type { EvaluatedDemoCatalog } from "@/domain/health-intelligence/synthetic-demo-catalog";
+import type { EvaluatedCatalog } from "@/domain/health-intelligence/catalog-lifecycle";
+import { useActiveCatalog, useSyntheticDemoCatalogs } from "@/hooks/use-device-catalogs";
 import { downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 import { notifyInterpretationChanged } from "@/hooks/use-interpretation-snapshot";
 import { useServerFn } from "@tanstack/react-start";
@@ -82,17 +83,23 @@ const CLAIM_FIELDS: { field: ClaimField; label: string; hint: string }[] = [
   { field: "associatedBiomarkers", label: "Associated biomarkers", hint: "Optional." },
 ];
 
-/** Catalog identities currently activated on this device (demo snapshots + production catalog). */
-function catalogSources(): CatalogIdentitySource[] {
+/**
+ * Catalog identities currently activated on this device (demo snapshots + production catalog).
+ * P72.7: takes the hydration-safe hook values, never reads the runtimes during render.
+ */
+function catalogSources(
+  demoCatalogs: ReadonlyMap<string, EvaluatedDemoCatalog>,
+  activeCatalog: EvaluatedCatalog,
+): CatalogIdentitySource[] {
   const out: CatalogIdentitySource[] = [];
-  for (const cat of getSyntheticDemoCatalogs().values())
+  for (const cat of demoCatalogs.values())
     for (const e of cat.active)
       if ((INTERPRETATION_DOMAINS as readonly string[]).includes(e.domain))
         out.push({
           origin: "synthetic_demo_activation",
           identity: { environment: "synthetic_demo", catalogId: e.demoId, domain: e.domain as InterpretationDomain, unit: e.unit, missionId: e.missionId, displayName: e.displayName },
         });
-  for (const e of getActiveCatalog().active)
+  for (const e of activeCatalog.active)
     if ((INTERPRETATION_DOMAINS as readonly string[]).includes(e.domain))
       out.push({
         origin: "production_catalog_activation",
@@ -119,7 +126,8 @@ export function BiomarkerInterpretationReview() {
   const [events, setEvents] = useState<InterpretationEvent[]>([]);
   const [snapshot, setSnapshot] = useState<InterpretationSnapshot>(() => registryInterpretationSnapshot());
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
-  const [catalogVersion, setCatalogVersion] = useState(0);
+  const demoCatalogs = useSyntheticDemoCatalogs();
+  const activeCatalog = useActiveCatalog();
   const [domain, setDomain] = useState<InterpretationDomain | "all">("all");
   const [env, setEnv] = useState<InterpretationIdentity["environment"] | "all">("synthetic_demo");
   const [status, setStatus] = useState<StatusFilter>("open");
@@ -133,13 +141,9 @@ export function BiomarkerInterpretationReview() {
     const refresh = () => void loadMissionIdentity().then((v) => active && setIdentity(v)).catch(() => active && setIdentity(null));
     refresh();
     const unsub = subscribeMissionIdentity(refresh);
-    const a = subscribeSyntheticDemoCatalogs(() => setCatalogVersion((v) => v + 1));
-    const b = subscribeActiveCatalog(() => setCatalogVersion((v) => v + 1));
     return () => {
       active = false;
       unsub();
-      a();
-      b();
     };
   }, []);
 
@@ -159,8 +163,7 @@ export function BiomarkerInterpretationReview() {
 
   const roles = useMemo(() => (identity?.signedIn && !identity.error ? identity.memberships.map((m) => m.role) : []), [identity]);
   const canReview = canReviewInterpretations(roles);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const sources = useMemo(() => catalogSources(), [catalogVersion]);
+  const sources = useMemo(() => catalogSources(demoCatalogs, activeCatalog), [demoCatalogs, activeCatalog]);
   const tasks = useMemo(() => deriveInterpretationTasks(snapshot, sources), [snapshot, sources]);
 
   const freshActor = useCallback(async (): Promise<ActorContext> => {

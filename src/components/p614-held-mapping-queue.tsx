@@ -26,7 +26,7 @@ export function P614HeldMappingQueue(props: {
   provenance?: "" | "synthetic" | "real" | undefined;
 }) {
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
-  const catalogs = useSyncExternalStore(subscribeSyntheticDemoCatalogs, getSyntheticDemoCatalogs, getSyntheticDemoCatalogs);
+  const catalogs = useSyntheticDemoCatalogs();
   const [live, setLive] = useState<Pick<GovernanceInputs, "scopeTerms" | "demoEvents"> | null>(null);
   const synthetic = props.provenance === "synthetic" && !!props.missionId;
   useEffect(() => {

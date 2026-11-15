@@ -4,7 +4,7 @@
  * lifecycle demonstration. Every write goes through caller-scoped RPCs; the
  * device installs only a verified signed snapshot and never activates locally.
  */
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, CircleSlash, Lock, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -35,11 +35,11 @@ import type { LifecycleRow, ReceiptRow } from "@/lib/p37-catalog.server";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import {
   browserSnapshotStorage,
-  getActiveCatalog,
   getInstalledSnapshot,
+  getServerActiveCatalog,
   installOfferedCatalog,
-  subscribeActiveCatalog,
 } from "@/domain/health-intelligence/active-catalog-runtime";
+import { useActiveCatalog } from "@/hooks/use-device-catalogs";
 import {
   runSyntheticCatalogLifecycleDemo,
   type DemoStep,
@@ -47,16 +47,13 @@ import {
 
 type Msg = { ok: boolean; text: string } | null;
 
-function useActiveCatalog() {
-  return useSyncExternalStore(subscribeActiveCatalog, getActiveCatalog, getActiveCatalog);
-}
-
 function OfflineCatalogStatus() {
   const catalog = useActiveCatalog();
   const sync = useServerFn(getSignedCatalogSnapshot);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<Msg>(null);
-  const installed = getInstalledSnapshot();
+  // P72.7: the server snapshot (and hydration pass) never shows a device snapshot.
+  const installed = catalog === getServerActiveCatalog() ? null : getInstalledSnapshot();
   const signingKey = useServerFn(getCatalogSigningPublicKey);
   const [key, setKey] = useState<
     | { keyId: string; publicKeySpkiBase64: string; trustedInBundle: boolean }

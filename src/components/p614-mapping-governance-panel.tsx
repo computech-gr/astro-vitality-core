@@ -282,7 +282,7 @@ export function P614MappingGovernancePanel() {
   const listSubs = useServerFn(listGlobalReviewSubmissions);
   const listTriage = useServerFn(listGlobalTriage);
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
-  const catalogs = useSyncExternalStore(subscribeSyntheticDemoCatalogs, getSyntheticDemoCatalogs, getSyntheticDemoCatalogs);
+  const catalogs = useSyntheticDemoCatalogs();
   const [missions, setMissions] = useState<GlobalReviewMission[]>([]);
   const [missionId, setMissionId] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");

@@ -505,11 +505,7 @@ export function UnifiedIntakeWorkspace() {
   const [documents, setDocuments] = useState<ProcessedDocument[]>([]);
   /** Ground Medical identity-conflict resolutions: `${sha256}|${missionId}|${crewMemberId}` (memory only). */
   const [identityResolutions, setIdentityResolutions] = useState<ReadonlySet<string>>(new Set());
-  const demoCatalogs = useSyncExternalStore(
-    subscribeSyntheticDemoCatalogs,
-    getSyntheticDemoCatalogs,
-    getSyntheticDemoCatalogs,
-  );
+  const demoCatalogs = useSyntheticDemoCatalogs();
   const [history, setHistory] = useState<UnifiedObservation[]>([]);
   const [provenance, setProvenance] = useState<"" | "synthetic" | "real">("");
   const [reviewerConfirmed, setReviewerConfirmed] = useState(false);

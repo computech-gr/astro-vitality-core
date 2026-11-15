@@ -395,11 +395,7 @@ export function P37SyntheticDemoPanel({
 }) {
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
   const sync = useServerFn(getSignedSyntheticDemoSnapshot);
-  const catalogs = useSyncExternalStore(
-    subscribeSyntheticDemoCatalogs,
-    getSyntheticDemoCatalogs,
-    getSyntheticDemoCatalogs,
-  );
+  const catalogs = useSyntheticDemoCatalogs();
   const device = catalogs.get(missionId) ?? null;
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [note, setNote] = useState("");
@@ -459,7 +455,8 @@ export function P37SyntheticDemoPanel({
       setBusy(false);
     }
   };
-  const installed = getInstalledDemoSnapshot(missionId);
+  // P72.7: read the stored snapshot only once the hydration-safe catalog value has it.
+  const installed = device ? getInstalledDemoSnapshot(missionId) : null;
 
   return (
     <section
