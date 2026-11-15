@@ -1,3 +1,9 @@
+# P72.9 Researcher header privacy (Preview only)
+
+- [x] Remove account identifiers only from the shared Researcher console header; preserve titles, notices, permissions and P72.8 actions.
+- [x] Signed-in Preview: both Researcher headers show role only, original mission title/notice preserved, four missions and six request-level Demo approve / reject buttons present; no decisions submitted.
+- [x] 57 relevant tests and changed-file lint pass; managed compilation reports build OK. No manual typecheck/build run (platform restriction); no publication or database changes.
+
 # P72.8 Direct Researcher demo scientific approval (Preview only)
 
 - [x] Root cause: the receipt rule is the original P37 production lifecycle (2026-11-07); the synthetic demo path never needed one (207 terms approved/activated without receipts). The page hid that path behind an unselected mission and pointed each request at the receipt-bound production approval.

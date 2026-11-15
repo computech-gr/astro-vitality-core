@@ -9,7 +9,7 @@ import { DEMO_ROLE_LABELS, type DemoRole } from "@/domain/public-demo/workflow";
 
 /**
  * P72 presentation bar on the three role consoles: shows the target mission, the
- * signed-in identity and whether it holds this role's membership, plus direct routes to
+ * role and whether it holds this role's membership, plus direct routes to
  * Examinations, Health Domains and the Full Health Report. Display only — each page
  * still enforces its own permissions.
  */
@@ -35,7 +35,8 @@ export function P72MissionContextBar({ role }: { role: DemoRole }) {
           <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">Synthetic evidence only · no diagnosis or clinical clearance</span>
         </div>
         <p className="mt-2 text-muted-foreground">
-          Role: {DEMO_ROLE_LABELS[role].title} · Signed in as <span className="font-mono text-foreground">{identity.email ?? "unknown account"}</span>
+          Role: {DEMO_ROLE_LABELS[role].title}
+          {role === "researcher" ? null : <> · Signed in as <span className="font-mono text-foreground">{identity.email ?? "unknown account"}</span></>}
           {role === "researcher" ? null : <> · Subject: {P72_TARGET_MISSION.crewDisplayName} ({P72_TARGET_MISSION.crewExternalRef})</>}
         </p>
         <p className="mt-1" role="status">
