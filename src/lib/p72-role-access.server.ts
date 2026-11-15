@@ -17,3 +17,8 @@ export function p72MatchesMappedAccount(role: DemoRole, claims: { email?: unknow
   if (meta && meta["mitochondria_public_demo"] === true) return false;
   return claims.email.trim().toLowerCase() === P72_ROLE_ACCOUNTS[role];
 }
+
+/** P72.6: presentation sign-in needs the explicit flag and a server-held password. */
+export function p72PresentationSignInAvailable(flag: string | undefined, password: string | undefined): boolean {
+  return flag === "true" && typeof password === "string" && password.length > 0;
+}
