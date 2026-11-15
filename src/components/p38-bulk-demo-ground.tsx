@@ -48,6 +48,7 @@ import {
   GROUND_ACTION_LABEL,
   GROUND_STATUS_LABEL,
   activateFit,
+  declineFit,
   clarificationNote,
   clarifyFit,
   groundRecord,
@@ -55,6 +56,15 @@ import {
   type GroundRecord,
   type GroundStatus,
 } from "@/domain/health-intelligence/p55-bulk-actions";
+import { Textarea } from "@/components/ui/textarea";
+import { getDemoDecisionStateFn, medicalDemoDecideFn } from "@/lib/p728-demo-decision.functions";
+import {
+  DEMO_SCIENTIFIC_APPROVAL_LABEL,
+  demoRecordsActive,
+  rationaleProblem,
+  recordedDecisions,
+  type DemoDecisionState,
+} from "@/domain/health-intelligence/p728-demo-approval";
 import {
   BulkActionTable,
   BulkOutcomePanel,
@@ -70,9 +80,11 @@ const DOMAIN_LABEL: Record<string, string> = {
   immune: "Immune",
   behavioral: "Behavioral",
 };
-const ACTIONS: GroundBulkAction[] = ["activate", "clarify"];
+const ACTIONS: GroundBulkAction[] = ["activate", "decline", "clarify"];
 const ACTION_DESCRIPTION: Record<GroundBulkAction, string> = {
   activate: "Only eligible entries are sent; activation is idempotent and safe to retry.",
+  decline:
+    "Records your independent decision not to activate, with a rationale; the demo approval can then never be activated.",
   clarify: "Prepares a clarification note for the Researcher (text only; nothing is recorded).",
 };
 const idOf = (g: GroundRecord) => g.row.proposal.decisionEventId;
@@ -86,6 +98,10 @@ export function P38BulkDemoGround({
 }) {
   const lifecycle = useServerFn(getSyntheticDemoLifecycle);
   const activateFn = useServerFn(bulkDemoActivateFn);
+  const p728StateFn = useServerFn(getDemoDecisionStateFn);
+  const p728MedicalFn = useServerFn(medicalDemoDecideFn);
+  const [p728, setP728] = useState<DemoDecisionState | null>(null);
+  const [rationale, setRationale] = useState("");
   const sync = useServerFn(getSignedSyntheticDemoSnapshot);
   const [data, setData] = useState<{
     canActivate: boolean;
@@ -115,7 +131,11 @@ export function P38BulkDemoGround({
   const label = missionLabel ?? missionId;
 
   const load = useCallback(async () => {
-    const r = await lifecycle({ data: { missionId } }).catch(() => null);
+    const [r, d] = await Promise.all([
+      lifecycle({ data: { missionId } }).catch(() => null),
+      p728StateFn({ data: { missionId } }).catch(() => null),
+    ]);
+    setP728(d?.ok ? (d.installed ? { ...d } : { installed: false }) : null);
     if (!r || !r.ok) {
       setData(null);
       setNote(r?.message ?? "Synthetic demo proposals are unavailable. Nothing was changed.");
@@ -126,7 +146,7 @@ export function P38BulkDemoGround({
       terms: new Map(r.terms.map((t) => [`${t.submissionId}:${t.termId}`, t])),
       events: r.events,
     });
-  }, [lifecycle, missionId]);
+  }, [lifecycle, missionId, p728StateFn]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -189,8 +209,24 @@ export function P38BulkDemoGround({
       : id;
   };
 
+  const p728Active = demoRecordsActive(p728);
+  const medical = recordedDecisions(p728).medical;
+  const declinedOf = (g: GroundRecord) =>
+    medical.get(`${g.row.proposal.submissionId}:${g.row.proposal.termId}`) === "DECLINE";
   const fitFor = (a: GroundBulkAction) => (g: GroundRecord) =>
-    a === "activate" ? activateFit(g, !!data?.canActivate) : clarifyFit(g);
+    a === "activate"
+      ? declinedOf(g)
+        ? ({ kind: "blocked", reason: "Declined by Ground Medical; it is never activated." } as const)
+        : activateFit(g, !!data?.canActivate)
+      : a === "decline"
+        ? declineFit(g, {
+            canActivate: !!data?.canActivate,
+            recordsInstalled: p728Active,
+            declined: declinedOf(g),
+            decidedByCaller: g.row.proposal.decidedByCaller,
+          })
+        : clarifyFit(g);
+  const rationaleIssue = rationaleProblem(rationale)?.replace("scientific ", "") ?? null;
   const preflightFor = (a: GroundBulkAction, sel: ReadonlySet<string> = selected) =>
     buildBulkPreflight({
       records,
@@ -212,9 +248,11 @@ export function P38BulkDemoGround({
       already: p.already.length,
       blocked: p.blocked.length,
       unavailable:
-        id === "activate" && data && !data.canActivate
+        (id === "activate" || id === "decline") && data && !data.canActivate
           ? "Activation is performed by an active Ground Medical member of this mission."
-          : null,
+          : id === "decline" && !p728Active
+            ? "Recorded Medical declines need the pending P72.8 database change; until then simply do not activate."
+            : null,
     };
   });
 
@@ -268,19 +306,26 @@ export function P38BulkDemoGround({
       preflight,
       idOf,
       labelOf,
-      send: (batch) =>
-        activateFn({
-          data: {
-            missionId,
-            items: batch.map((g) => ({
-              decisionEventId: g.row.proposal.decisionEventId,
-              expectedEntrySha256: g.row.proposal.entrySha256,
-            })),
-          },
-        }),
+      send: (batch) => {
+        const items = batch.map((g) => ({
+          decisionEventId: g.row.proposal.decisionEventId,
+          expectedEntrySha256: g.row.proposal.entrySha256,
+        }));
+        return action === "decline" || p728Active
+          ? p728MedicalFn({
+              data: {
+                missionId,
+                decision: action === "decline" ? "DECLINE" : "ACTIVATE",
+                rationale: rationale.trim(),
+                items,
+              },
+            })
+          : activateFn({ data: { missionId, items } });
+      },
       onProgress: (progress) => setRun({ action, progress, outcomes: [], failure: null }),
     });
     setRun({ action, ...res });
+    setRationale("");
     await load();
     if (res.outcomes.some((o) => o.outcome === "success" || o.outcome === "already_completed"))
       await installDevice();
@@ -534,29 +579,56 @@ export function P38BulkDemoGround({
             actions={actionOptions}
             selected={selected.size}
             busy={busy}
-            onReview={(id) =>
+            onReview={(id) => {
+              setRationale("");
               setPending({
                 action: id as GroundBulkAction,
                 preflight: preflightFor(id as GroundBulkAction),
-              })
-            }
+              });
+            }}
             onClear={() => setSelected(deselectAll())}
           />
           <BulkPreflightDialog
             preflight={pending?.preflight ?? null}
             labelOf={(g) => labelOf(idOf(g))}
             confirmLabel={
-              pending?.action === "clarify" ? "Prepare clarification note" : "Confirm activation"
+              pending?.action === "clarify"
+                ? "Prepare clarification note"
+                : pending?.action === "decline"
+                  ? "Confirm decline"
+                  : "Confirm activation"
             }
-            confirmDisabled={busy}
+            confirmDisabled={
+              busy ||
+              (pending?.action === "decline" && !!rationaleIssue) ||
+              (pending?.action === "activate" && p728Active && !!rationaleIssue)
+            }
             safeguard={
               pending?.action === "clarify"
                 ? "Builds a text note listing the selected records and their blocking reasons. Nothing is recorded or activated."
-                : `${SYNTHETIC_DEMO_LABEL}. Only eligible entries are activated in this mission's SYNTHETIC DEMO catalog; the production catalog is never touched.`
+                : pending?.action === "decline"
+                  ? `${DEMO_SCIENTIFIC_APPROVAL_LABEL}. Records your independent Ground Medical decision not to activate each listed approval. Nothing is deleted or rewritten.`
+                  : `${SYNTHETIC_DEMO_LABEL}. Only eligible entries are activated in this mission's SYNTHETIC DEMO catalog; the production catalog is never touched.`
             }
             onCancel={() => setPending(null)}
             onConfirm={() => void confirmPending()}
-          />
+          >
+            {pending && pending.action !== "clarify" && (pending.action === "decline" || p728Active) ? (
+              <div className="space-y-1" data-testid="p728-medical-rationale">
+                <Label htmlFor="p728-medical-rationale" className="text-xs">
+                  Rationale (required, 8–2000 characters; recorded for every listed proposal)
+                </Label>
+                <Textarea
+                  id="p728-medical-rationale"
+                  rows={3}
+                  maxLength={2000}
+                  value={rationale}
+                  onChange={(e) => setRationale(e.target.value)}
+                />
+                {rationaleIssue ? <p className="text-xs text-muted-foreground">{rationaleIssue}</p> : null}
+              </div>
+            ) : null}
+          </BulkPreflightDialog>
           {run ? (
             <BulkOutcomePanel
               idPrefix="p55-ground"

@@ -177,11 +177,30 @@ export function groundRecord(
   return { row, status: "blocked", reason: row.reason, existingMatch: match };
 }
 
-export type GroundBulkAction = "activate" | "clarify";
+export type GroundBulkAction = "activate" | "decline" | "clarify";
 export const GROUND_ACTION_LABEL: Record<GroundBulkAction, string> = {
   activate: "Activate Selected Eligible Synthetic Demo Entries",
+  decline: "Decline Selected Demo Approvals",
   clarify: "Request Clarification for Selected Records",
 };
+
+/**
+ * P72.8 Ground Medical DECLINE of a Researcher demo approval (recorded with a
+ * rationale; the approval can then never be activated). Only proposals that are
+ * not active and not the caller's own decision; needs the P72.8 record path.
+ */
+export function declineFit(
+  g: GroundRecord,
+  ctx: { canActivate: boolean; recordsInstalled: boolean; declined: boolean; decidedByCaller: boolean },
+): ActionFit {
+  if (ctx.declined) return already("Already declined by Ground Medical.");
+  if (g.status === "already_active") return blocked("Already active; use revocation instead.");
+  if (ctx.decidedByCaller) return blocked("You recorded this decision; an independent Ground Medical member decides it.");
+  if (!ctx.recordsInstalled)
+    return blocked("Recorded Medical declines need the pending P72.8 database change; until then simply do not activate.");
+  if (!ctx.canActivate) return blocked("Only an active Ground Medical member of this mission may decline.");
+  return ok;
+}
 
 export function activateFit(g: GroundRecord, canActivate: boolean): ActionFit {
   if (g.status === "already_active") return already("Already active; never activated twice.");
