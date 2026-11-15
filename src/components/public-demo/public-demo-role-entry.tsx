@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { startPublicDemoRoleFn } from "@/lib/p69-public-demo.functions";
 import { DEMO_ROLES, DEMO_ROLE_LABELS, type DemoRole } from "@/domain/public-demo/workflow";
 import { readStoredDemoWorkspace, writeStoredDemoWorkspace } from "@/domain/public-demo/session-storage";
-import { P72_ROLE_ROUTES } from "@/domain/mission-access/p72-role-access";
+import { P72_ROLE_ROUTES, decideP72HomepageCardEntry } from "@/domain/mission-access/p72-role-access";
 import { checkP72RoleAccountFn } from "@/lib/p72-role-access.functions";
 import { resolveP72RoleEntry } from "@/components/mission-access/p72-role-entry";
 
@@ -30,13 +30,30 @@ export function PublicDemoRoleEntry({
   const [message, setMessage] = useState<{ text: string; offline: boolean } | null>(null);
   const [confirmRole, setConfirmRole] = useState<DemoRole | null>(null);
   const [confirmAccount, setConfirmAccount] = useState<string | null>(null);
+  const [confirmFromDemo, setConfirmFromDemo] = useState(false);
   const [joinCode, setJoinCode] = useState(defaultJoinCode);
   const checkAccount = useServerFn(checkP72RoleAccountFn);
+  const hero = variant === "hero";
 
   async function start(role: DemoRole, confirmed = false) {
     setMessage(null);
     const { data } = await supabase.auth.getSession();
     const signedInStandard = data.session && data.session.user.app_metadata?.["mitochondria_public_demo"] !== true;
+    if (hero && !confirmed) {
+      // P72.5: the homepage cards are the mission-account sign-in entry points.
+      const entry = decideP72HomepageCardEntry(!data.session ? "none" : signedInStandard ? "standard" : "demo");
+      if (entry === "sign_in") {
+        await navigate({ to: "/mission/identity", search: { role } });
+        return;
+      }
+      if (entry === "confirm_demo_session") {
+        setConfirmAccount(null);
+        setConfirmFromDemo(true);
+        setConfirmRole(role);
+        return;
+      }
+    }
+    setConfirmFromDemo(false);
     if (signedInStandard && !confirmed) {
       // P72: the mapped mission account goes straight to its normal console.
       setBusyRole(role);
@@ -91,14 +108,15 @@ export function PublicDemoRoleEntry({
     }
   }
 
-  const hero = variant === "hero";
   return (
     <div className={hero ? "mt-8 max-w-2xl" : "rounded-xl border border-border bg-card p-5"}>
       <p className={hero ? "text-xs font-semibold uppercase text-primary" : "text-sm font-semibold"}>
-        Mission Access · public NASA live demo
+        {hero ? "Mission Access · sign in by role" : "Mission Access · public NASA live demo"}
       </p>
       <p className="mt-1 text-sm text-muted-foreground">
-        One click, no password. Each visitor gets a private synthetic workspace.
+        {hero
+          ? "Choose a role to sign in to its mission console."
+          : "One click, no password. Each visitor gets a private synthetic workspace."}
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {DEMO_ROLES.map((role) => {
@@ -142,8 +160,12 @@ export function PublicDemoRoleEntry({
           <p>
             {DEMO_ROLE_LABELS[confirmRole].title} opens the {P72_ROLE_ROUTES[confirmRole].consoleLabel} for the mapped mission account{" "}
             <span className="font-mono">{P72_ROLE_ROUTES[confirmRole].maskedAccount}</span>.{" "}
-            {confirmAccount ? <>You are signed in as <span className="font-mono">{confirmAccount}</span>. </> : null}
-            Starting the synthetic demo signs your account out in this browser.
+            {confirmFromDemo
+              ? "You are in a synthetic demo session. Signing in to the mapped account ends that session in this browser."
+              : <>
+                  {confirmAccount ? <>You are signed in as <span className="font-mono">{confirmAccount}</span>. </> : null}
+                  Starting the synthetic demo signs your account out in this browser.
+                </>}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" onClick={() => void start(confirmRole, true)}>Continue to synthetic demo</Button>
@@ -158,7 +180,7 @@ export function PublicDemoRoleEntry({
             >
               Sign in as the mapped account
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setConfirmRole(null)}>Stay signed in</Button>
+            <Button size="sm" variant="outline" onClick={() => setConfirmRole(null)}>{confirmFromDemo ? "Stay in the demo" : "Stay signed in"}</Button>
           </div>
         </div>
       ) : null}
@@ -172,25 +194,23 @@ export function PublicDemoRoleEntry({
           ) : null}
         </p>
       ) : null}
-      <p className="mt-3 text-xs text-muted-foreground">
-        Mission account holder? Sign in to open your normal console:{" "}
-        {DEMO_ROLES.map((role, i) => (
-          <span key={role}>
-            {i ? " · " : ""}
-            <Link to="/mission/identity" search={{ role }} className="font-medium text-foreground underline">
-              {DEMO_ROLE_LABELS[role].title}
-            </Link>{" "}
-            <span className="font-mono">({P72_ROLE_ROUTES[role].maskedAccount})</span>
-          </span>
-        ))}
-      </p>
-      <p className="mt-2 text-xs text-muted-foreground">
-        Synthetic data only · not a medical device · no diagnosis or clinical clearance.{" "}
-        <Link to="/mission/identity" className="font-medium text-foreground underline">
-          Standard sign-in
-        </Link>{" "}
-        for invited mission accounts.
-      </p>
+      {hero ? (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Synthetic data only · not a medical device · no diagnosis or clinical clearance. No mission account?{" "}
+          <Link to="/mission/demo" className="font-medium text-foreground underline">
+            Try the one-click NASA live demo
+          </Link>
+          .
+        </p>
+      ) : (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Synthetic data only · not a medical device · no diagnosis or clinical clearance.{" "}
+          <Link to="/mission/identity" className="font-medium text-foreground underline">
+            Standard sign-in
+          </Link>{" "}
+          for invited mission accounts.
+        </p>
+      )}
     </div>
   );
 }
