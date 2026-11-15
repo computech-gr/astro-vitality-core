@@ -11,6 +11,7 @@ import {
   missionLevelGroundMedicalMissions,
   type MissionRosterEntry,
 } from "@/domain/mission-access/mission-level-ground-medical";
+import { parseGlobalResearchScope, type GlobalResearchScope } from "@/domain/mission-access/global-research-scope";
 
 export type MissionRole = "crew_self" | "ground_medical" | "mission_operator" | "researcher";
 
@@ -31,6 +32,11 @@ export interface MissionIdentitySnapshot {
   email?: string;
   memberships: MissionMembershipContext[];
   active?: MissionMembershipContext;
+  /**
+   * P72.6 server-verified global Researcher READ scope (synthetic only). Deliberately not
+   * a membership: role checks over `memberships` never see it.
+   */
+  globalResearch?: GlobalResearchScope;
   error?: string;
 }
 
@@ -49,7 +55,42 @@ function membershipKey(
 }
 
 function emitIdentityChanged() {
+  globalResearchCache = undefined;
   if (typeof window !== "undefined") window.dispatchEvent(new Event(IDENTITY_CHANGED_EVENT));
+}
+
+// P72.6: each scope read is audited server-side, so it is cached briefly per account.
+const GLOBAL_RESEARCH_TTL_MS = 60_000;
+let globalResearchCache:
+  | { userId: string; at: number; value: Promise<GlobalResearchScope | null> }
+  | undefined;
+
+async function readGlobalResearchScope(): Promise<GlobalResearchScope | null> {
+  try {
+    const { data, error } = await rpcClient().rpc<unknown>("p726_global_research_scope_v1");
+    // Missing function (not yet approved), refusal or malformed data: no global access.
+    if (error) return null;
+    return parseGlobalResearchScope(data);
+  } catch {
+    return null;
+  }
+}
+
+export function loadGlobalResearchScope(
+  userId: string,
+  options: { fresh?: boolean } = {},
+): Promise<GlobalResearchScope | null> {
+  const now = Date.now();
+  if (
+    !options.fresh &&
+    globalResearchCache &&
+    globalResearchCache.userId === userId &&
+    now - globalResearchCache.at < GLOBAL_RESEARCH_TTL_MS
+  )
+    return globalResearchCache.value;
+  const value = readGlobalResearchScope();
+  globalResearchCache = { userId, at: now, value };
+  return value;
 }
 
 export function subscribeMissionIdentity(listener: () => void): () => void {
@@ -62,6 +103,7 @@ export function subscribeMissionIdentity(listener: () => void): () => void {
     const nextUserId = session?.user.id;
     if (shouldClearSelection(event, lastKnownUserId, nextUserId))
       clearActiveSelection(window.localStorage);
+    if (nextUserId !== lastKnownUserId) globalResearchCache = undefined;
     lastKnownUserId = nextUserId;
     listener();
   });
@@ -78,7 +120,9 @@ export function setActiveMissionMembership(membership?: MissionMembershipContext
   emitIdentityChanged();
 }
 
-export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
+export async function loadMissionIdentity(
+  options: { freshGlobalResearch?: boolean } = {},
+): Promise<MissionIdentitySnapshot> {
   const config = getSupabaseBrowserConfigStatus();
   if (!config.configured) {
     return {
@@ -97,6 +141,7 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
   if (!session) {
     if (typeof window !== "undefined") clearActiveSelection(window.localStorage);
     lastKnownUserId = undefined;
+    globalResearchCache = undefined;
     return { configured: true, signedIn: false, memberships: [] };
   }
   if (lastKnownUserId && lastKnownUserId !== session.user.id && typeof window !== "undefined") {
@@ -104,6 +149,9 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
   }
   lastKnownUserId = session.user.id;
 
+  const globalResearchPromise = loadGlobalResearchScope(session.user.id, {
+    fresh: options.freshGlobalResearch === true,
+  });
   const { data, error } = await supabase
     .from("mission_memberships")
     .select("mission_id, crew_member_id, role, active")
@@ -173,6 +221,7 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
     );
   }
   const memberships = expandMissionLevelGroundMedical(baseMemberships, rosterByMission);
+  const globalResearch = await globalResearchPromise;
 
   const preferred = readActiveKey(session.user.id);
   let active = memberships.find((item) => membershipKey(item) === preferred);
@@ -190,6 +239,7 @@ export async function loadMissionIdentity(): Promise<MissionIdentitySnapshot> {
     ...(session.user.email ? { email: session.user.email } : {}),
     memberships,
     ...(active ? { active } : {}),
+    ...(globalResearch ? { globalResearch } : {}),
   };
 }
 
