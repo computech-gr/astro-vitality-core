@@ -634,34 +634,43 @@ export function AstronautHealthReport() {
   }, []);
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
-  const currentExport = useRef({ unified, userId: identity?.userId, readiness });
-  currentExport.current = { unified, userId: identity?.userId, readiness };
+  const currentExport = useRef({ unified, userId: identity?.userId, readiness, snapshot });
+  currentExport.current = { unified, userId: identity?.userId, readiness, snapshot };
   const performExport = async (kind: "pdf" | "p58-pdf" | "appendix-pdf" | "text" | "appendix-text" | "print") => {
     if (!member || !report || !unified || exporting) return;
     const snapshot = currentExport.current;
-    // P72.8: never export while examinations are loading, failed, partial, stale or unconfirmed.
-    if (!snapshot.readiness.exportAllowed || localRead.kind !== "ready") {
+    // P72.8/P72.9: never export while the dataset is loading, failed, partial or not the displayed one.
+    const dataset = snapshot.snapshot;
+    if (!snapshot.readiness.exportAllowed || !dataset || dataset.source !== snapshot.readiness.source) {
       setExportStatus(`${snapshot.readiness.title}. ${snapshot.readiness.detail} No file downloaded.`);
       return;
     }
-    const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
+    const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId && currentExport.current.snapshot === dataset;
     setExporting(true);
     setExportStatus(kind === "pdf" || kind === "p58-pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
     try {
       const fresh = await loadMissionIdentity({ freshGlobalResearch: true });
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && reportScopeAuthorized(fresh, member, provenance);
       if (!authorized || !stillCurrent()) throw new Error("Report authorization or selection changed. Export cancelled.");
-      // Fresh server comparison immediately before export: data that changed on the server since the
-      // page loaded (another device synced) cancels the export instead of producing a stale report.
-      let serverRecords: number | null = null;
-      if (snapshot.readiness.basis === "server_confirmed") {
-        const recheck = await runServerComparison(localRead.token);
-        if (recheck.kind !== "matched") {
-          setServerCheck(recheck);
-          throw new Error("The server examinations changed or could not be confirmed again. Export cancelled; no file downloaded.");
+      // P72.9: re-read the same source immediately before export. A dataset that changed since the
+      // report was displayed cancels the export (the user refreshes explicitly), so the file always
+      // matches the screen.
+      const scope = dataset.scope;
+      if (dataset.source === "server_confirmed") {
+        const again = await fetchServer(dataset.token);
+        if (again.kind !== "ready") throw new Error(`${again.reason} Export cancelled; no file downloaded.`);
+        if (again.snapshot.datasetFingerprint !== dataset.datasetFingerprint) {
+          setChangedSinceRetrieval(true);
+          throw new Error("The server dataset changed since this report was retrieved. Refresh the report, then export again; no file downloaded.");
         }
-        serverRecords = recheck.remoteEvents;
+      } else {
+        const [localInputs, localReviews] = await Promise.all([loadUnifiedReportInputs(scope.missionId, scope.crewMemberId), listAttestationEvents(scope)]);
+        if (localInputs.coverage?.complete === false) throw new Error("Only part of the stored examinations could be read again. Export cancelled; no file downloaded.");
+        const again = await localOfflineSnapshot(scope, dataset.token, localInputs, localReviews);
+        if (again.datasetFingerprint !== dataset.datasetFingerprint)
+          throw new Error("The examinations stored on this device changed since this report was generated. Reload the report, then export again; no file downloaded.");
       }
+      const range = dataset.summary.firstDate ? (dataset.summary.firstDate === dataset.summary.lastDate ? dataset.summary.firstDate : `${dataset.summary.firstDate} to ${dataset.summary.lastDate}`) : "no dates";
       const dataProvenance: ReportDataProvenance | undefined = premiumReport
         ? {
             missionId: member.missionId,
@@ -672,12 +681,20 @@ export function AstronautHealthReport() {
             observations: premiumReport.census.observations,
             series: premiumReport.census.series,
             datasetFingerprint: premiumReport.census.sha256,
-            basis: snapshot.readiness.basis ?? "local_only",
-            serverRecords,
-            readinessVersion: snapshot.readiness.version,
+            basis: dataset.source,
+            serverRecords: dataset.source === "server_confirmed" ? dataset.observationEvents : null,
+            reviewRecords: dataset.reviewEvents,
+            scopeDatasetFingerprint: dataset.datasetFingerprint,
+            dataSourceDetail:
+              dataset.source === "server_confirmed"
+                ? `report generated from the complete authorized server dataset (${dataset.observationEvents} examination record(s), ${dataset.reviewEvents} medical review record(s); every page read-only, nothing stored on the exporting device)`
+                : `${dataset.summary.examinations} evaluable observation(s) on ${dataset.summary.examinationDates.length} date(s) (${range}) stored on the exporting device`,
+            engineVersion: REPORT_ENGINE_VERSION,
+            readinessVersion: REPORT_DATASET_VERSION,
             exportedAt: new Date().toISOString(),
           }
         : undefined;
+      const provenanceText = dataProvenance ? `\n\nREPORT DATA PROVENANCE\n${reportProvenanceLines(dataProvenance).map((l) => `- ${l}`).join("\n")}\n` : "";
       if (kind === "print") {
         // Print is a separate, explicit browser action; it is never used as a silent PDF fallback.
         const previous = document.title;
@@ -685,10 +702,10 @@ export function AstronautHealthReport() {
         setExportStatus("Print dialog requested.");
       } else if (kind === "text") {
         if (!healthAssessment) throw new Error("The health assessment is not ready yet. No file downloaded.");
-        downloadReportBlob(new Blob([professionalReport ? professionalReportPlainText(professionalReport) : healthAssessmentPlainText(healthAssessment)], { type: "text/plain;charset=utf-8" }), `${exportName}_Assessment.txt`);
+        downloadReportBlob(new Blob([`${professionalReport ? professionalReportPlainText(professionalReport) : healthAssessmentPlainText(healthAssessment)}${provenanceText}`], { type: "text/plain;charset=utf-8" }), `${exportName}_Assessment.txt`);
         setExportStatus(`Assessment text created locally and download started as ${exportName}_Assessment.txt. No medical data was uploaded.`);
       } else if (kind === "appendix-text") {
-        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${biomarkerAssessment ? biomarkerAssessmentPlainText(biomarkerAssessment) : ""}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}`;
+        const text = `Mission: ${member.missionName ?? member.missionId}\nAstronaut: ${member.crewDisplayName ?? "Crew identity unavailable"}\nMission ID: ${member.missionId}\nCrew ID: ${member.crewMemberId}\n\n${unifiedReportPlainText(unified)}\n\n${biomarkerAssessment ? biomarkerAssessmentPlainText(biomarkerAssessment) : ""}\n\n${healthSummary ? scientificHealthSummaryPlainText(healthSummary) : ""}\n\n${findings ? scientificFindingsPlainText(findings) : ""}\n\n${interpretation ? researcherInterpretationPlainText(interpretation) : ""}\n\n${attestationPlainText(unified, scopedAttestations)}\n\n${healthReportPlainText(report)}${provenanceText}`;
         downloadReportBlob(new Blob([redactProhibitedNames(text)], { type: "text/plain;charset=utf-8" }), `${exportName}_Technical_Appendix.txt`);
         setExportStatus(`Technical appendix TXT created locally and download started as ${exportName}_Technical_Appendix.txt. No medical data was uploaded.`);
       } else {
@@ -701,7 +718,7 @@ export function AstronautHealthReport() {
           const premium = kind === "pdf" ? premiumReport : null;
           const result = premium
             ? await (await import("@/domain/health-intelligence/p59-premium-pdf")).createPremiumReportPdf(premium, undefined, dataProvenance ? { provenance: dataProvenance } : undefined)
-            : (kind === "pdf" || kind === "p58-pdf") && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
+            : (kind === "pdf" || kind === "p58-pdf") && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport, undefined, dataProvenance ? { provenance: dataProvenance } : undefined) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
             unified,
             findings,
             summary: healthSummary,
@@ -710,6 +727,7 @@ export function AstronautHealthReport() {
             interpretations: interpretationSnapshot,
             identity: { missionName: member.missionName, crewDisplayName: member.crewDisplayName },
             title: exportName,
+            ...(dataProvenance ? { provenance: dataProvenance } : {}),
           });
           blob = result.blob;
           pdfInfo = `${result.pages} pages, searchable text${result.fontMode === "standard" ? "; embedded Unicode font unavailable, some symbols simplified" : ""}`;
