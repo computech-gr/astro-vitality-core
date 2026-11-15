@@ -56,6 +56,7 @@ import {
 } from "@/lib/p36-global-triage-rules";
 import type { GlobalReviewMission, GlobalReviewSubmission } from "@/lib/p36-global-review.server";
 import { openBulkDemoDecisions } from "@/components/p38-bulk-navigation";
+import { getSyntheticDemoLifecycle } from "@/lib/p37-synthetic-demo.functions";
 import { bulkGlobalTriageFn } from "@/lib/p55-bulk-triage.functions";
 import {
   BulkActionTable,
@@ -93,6 +94,12 @@ const GLOBAL_ACTION_DESCRIPTION: Record<GlobalBulkAction, string> = {
 import {
   ALL_CREWS,
   ALL_MISSIONS,
+  ALL_REQUESTS,
+  REQUEST_STATUS_LABEL,
+  defaultMissionSelection,
+  originatingRoleLabel,
+  summarizeRequests,
+  type DemoTermFact,
   REVIEW_STATE_LABEL,
   SCIENTIFIC_STATE_LABEL,
   canChooseAllMissions,
@@ -556,6 +563,9 @@ export function P36GlobalReviewPanel() {
   const [triageEvents, setTriageEvents] = useState<TriageEvent[]>([]);
   const [canTriage, setCanTriage] = useState(false);
   const [triageNote, setTriageNote] = useState("");
+  const [requestFilter, setRequestFilter] = useState(ALL_REQUESTS);
+  const [demoFacts, setDemoFacts] = useState<Map<string, DemoTermFact[] | null>>(new Map());
+  const demoLifecycle = useServerFn(getSyntheticDemoLifecycle);
   const listTriage = useServerFn(listGlobalTriage);
   const bulkTriage = useServerFn(bulkGlobalTriageFn);
   const epoch = useRef(0);
@@ -586,7 +596,9 @@ export function P36GlobalReviewPanel() {
         }
         setMissions(r.missions);
         setMissionState("ready");
-        if (r.missions.length === 1 && r.missions[0]) setSelection(r.missions[0].missionId);
+        // P72.7: preselect the only mission, or the only mission holding submissions.
+        const initial = defaultMissionSelection(r.missions);
+        if (initial) setSelection(initial);
       })
       .catch(() => {
         if (live) {
@@ -636,6 +648,8 @@ export function P36GlobalReviewPanel() {
       setTriageEvents([]);
       setCanTriage(false);
       setTriageNote("");
+      setRequestFilter(ALL_REQUESTS);
+      setDemoFacts(new Map());
       setSelected(new Set());
       setRun(null);
       setPending(null);
@@ -660,10 +674,28 @@ export function P36GlobalReviewPanel() {
       }
       await loadTriage(targets, mine);
       if (mine !== epoch.current) return;
+      // Read-only synthetic demo facts per mission; unavailable stays unknown, never zero.
+      const demo = new Map<string, DemoTermFact[] | null>();
+      for (const m of targets) {
+        const d = await demoLifecycle({ data: { missionId: m.missionId } }).catch(() => null);
+        if (mine !== epoch.current) return;
+        demo.set(
+          m.missionId,
+          d && d.ok
+            ? d.events.map((e) => ({
+                submissionId: e.submissionId,
+                termId: e.termId,
+                activationEventId: e.activationEventId,
+                revocationEventId: e.revocationEventId,
+              }))
+            : null,
+        );
+      }
+      setDemoFacts(demo);
       setSubmissions(all);
       setSubState("ready");
     },
-    [missions, listSubmissions, loadTriage],
+    [missions, listSubmissions, loadTriage, demoLifecycle],
   );
   const refreshTriage = useCallback(async () => {
     await loadTriage(missionsForSelection(missions, selection), epoch.current);
@@ -674,7 +706,7 @@ export function P36GlobalReviewPanel() {
   }, [selection, load]);
   useEffect(() => {
     setPage(1);
-  }, [crew, query, state, classification, sort]);
+  }, [crew, query, state, classification, sort, requestFilter]);
 
   const rows = useMemo(
     () => flattenTerms(submissions, latestTriageByTerm(triageEvents)),
@@ -697,10 +729,30 @@ export function P36GlobalReviewPanel() {
   );
   const counts = useMemo(() => dashboardCounts(scoped), [scoped]);
   const visible = useMemo(
-    () => sortTerms(filterTerms(rows, { query, crew, state, classification }), sort),
-    [rows, query, crew, state, classification, sort],
+    () =>
+      sortTerms(
+        filterTerms(rows, { query, crew, state, classification, request: requestFilter }),
+        sort,
+      ),
+    [rows, query, crew, state, classification, sort, requestFilter],
   );
   const paged = paginate(visible, page, PAGE_SIZE);
+  const requests = useMemo(
+    () =>
+      summarizeRequests(submissions, latestTriageByTerm(triageEvents), demoFacts).filter(
+        (r) => crew === ALL_CREWS || r.crewPseudonym === crew,
+      ),
+    [submissions, triageEvents, demoFacts, crew],
+  );
+  const showRequestTerms = (submissionId: string) => {
+    setRequestFilter(submissionId);
+    setQuery("");
+    setState("all");
+    setClassification("all");
+    requestAnimationFrame(() =>
+      document.getElementById("p36-global-review-terms")?.scrollIntoView({ block: "start" }),
+    );
+  };
   const receipts = useMemo(
     () => new Set(scoped.map((r) => r.submission.submissionId)).size,
     [scoped],
@@ -942,6 +994,90 @@ export function P36GlobalReviewPanel() {
               note="Catalog activation is separately governed"
             />
           </div>
+          <section aria-labelledby="p36-global-review-requests" className="space-y-2">
+            <h3 id="p36-global-review-requests" className="font-semibold">
+              Submitted review requests ({requests.length})
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              One row per cloud-submitted request, with its original request ID, receipt time and
+              originating role. Status comes only from recorded triage and scientific decisions;
+              seeing a request is never approval. Synthetic demo counts are demonstration decisions,
+              not scientific approval.
+            </p>
+            {requests.length ? (
+              <div className="overflow-x-auto rounded-md border border-border">
+                <table className="w-full min-w-[52rem] text-left text-xs">
+                  <thead className="bg-muted/50 text-muted-foreground">
+                    <tr>
+                      <th className="p-2">Request ID</th>
+                      <th className="p-2">Submitted (UTC)</th>
+                      <th className="p-2">Originating role</th>
+                      <th className="p-2">Mission · crew</th>
+                      <th className="p-2 text-right">Terms</th>
+                      <th className="p-2">Review status</th>
+                      <th className="p-2">Synthetic demo</th>
+                      <th className="p-2">
+                        <span className="sr-only">Open</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {requests.map((q) => (
+                      <tr
+                        key={q.submissionId}
+                        className="border-t border-border"
+                        data-request-id={q.requestId}
+                        aria-current={requestFilter === q.submissionId ? "true" : undefined}
+                      >
+                        <td className="p-2 font-mono font-medium">{q.requestId}</td>
+                        <td className="p-2 tabular-nums">
+                          {q.receivedAt.slice(0, 16).replace("T", " ")}
+                        </td>
+                        <td className="p-2">{originatingRoleLabel(q.submittedRole)}</td>
+                        <td className="p-2">
+                          {q.missionCode}
+                          <span className="block font-mono text-muted-foreground">
+                            {q.crewPseudonym}
+                          </span>
+                        </td>
+                        <td className="p-2 text-right tabular-nums">{q.termCount}</td>
+                        <td className="p-2">
+                          <Badge variant="secondary">{REQUEST_STATUS_LABEL[q.status]}</Badge>
+                          <span className="mt-1 block text-muted-foreground">
+                            Triage: {q.triage.awaiting_triage} awaiting · {q.triage.accepted}{" "}
+                            accepted · {q.triage.more_evidence} more evidence ·{" "}
+                            {q.triage.rejected} rejected
+                          </span>
+                          <span className="block text-muted-foreground">
+                            Scientific: {q.scientific.approved} approved · {q.scientific.rejected}{" "}
+                            rejected · {q.scientific.pending} pending
+                          </span>
+                        </td>
+                        <td className="p-2 text-muted-foreground">
+                          {q.demo
+                            ? `${q.demo.decided} decided · ${q.demo.active} active · ${q.demo.revoked} revoked`
+                            : "Not available"}
+                        </td>
+                        <td className="p-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => showRequestTerms(q.submissionId)}
+                            aria-label={`Show the ${q.termCount} submitted terms of ${q.requestId}`}
+                          >
+                            Show terms
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No submitted requests for this scope.</p>
+            )}
+          </section>
+
           {selectedMission ? (
             <div className="flex flex-col gap-1 rounded-md border border-dashed border-border p-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-muted-foreground">
@@ -966,6 +1102,19 @@ export function P36GlobalReviewPanel() {
               onChange={(e) => setQuery(e.target.value)}
               className="md:w-80"
             />
+            <Select value={requestFilter} onValueChange={setRequestFilter}>
+              <SelectTrigger aria-label="Submitted request" className="md:w-56">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_REQUESTS}>All requests</SelectItem>
+                {requests.map((q) => (
+                  <SelectItem key={q.submissionId} value={q.submissionId}>
+                    {q.requestId} · {q.termCount} terms
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={state} onValueChange={(v) => setState(v as ReviewState | "all")}>
               <SelectTrigger aria-label="Review state" className="md:w-56">
                 <SelectValue />
