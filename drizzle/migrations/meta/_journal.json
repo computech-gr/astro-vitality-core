@@ -204,6 +204,13 @@
       "when": 1794678518838,
       "tag": "0028_p69_public_demo_workspaces",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794709153617,
+      "tag": "0029_p726_global_researcher_read",
+      "breakpoints": true
     }
   ]
 }
