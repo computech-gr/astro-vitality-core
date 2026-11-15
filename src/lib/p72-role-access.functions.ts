@@ -21,12 +21,50 @@ export const checkP72RoleAccountFn = createServerFn({ method: "POST" })
 
 /**
  * P72.5 (owner-requested): the email address to prefill on a role's sign-in page.
- * Public by design — it returns only the mapped address, never a password, session
- * or token, and signing in still requires the password through standard Supabase Auth.
+ * Public by design — it returns only the mapped address and whether server-held
+ * presentation sign-in is available, never a password, session or token.
  */
 export const getP72SignInPrefillFn = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => z.object({ role: z.enum(["astronaut", "researcher", "medical"]) }).strict().parse(v))
   .handler(async ({ data }) => {
-    const { P72_ROLE_ACCOUNTS } = await import("./p72-role-access.server");
-    return { email: P72_ROLE_ACCOUNTS[data.role] };
+    const { P72_ROLE_ACCOUNTS, p72PresentationSignInAvailable } = await import("./p72-role-access.server");
+    return {
+      email: P72_ROLE_ACCOUNTS[data.role],
+      presentationSignIn: p72PresentationSignInAvailable(
+        process.env["P72_PRESENTATION_SIGNIN_ENABLED"],
+        process.env["P72_PRESENTATION_PASSWORD"],
+      ),
+    };
+  });
+
+/**
+ * P72.6 (owner-requested): signs in the role's mapped account on the server with the
+ * server-held password and returns only that session. The email is fixed by role, so it
+ * cannot sign in any other account; off unless P72_PRESENTATION_SIGNIN_ENABLED is "true".
+ */
+export const p72PresentationSignInFn = createServerFn({ method: "POST" })
+  .inputValidator((v: unknown) => z.object({ role: z.enum(["astronaut", "researcher", "medical"]) }).strict().parse(v))
+  .handler(async ({ data }) => {
+    const { P72_ROLE_ACCOUNTS, p72PresentationSignInAvailable } = await import("./p72-role-access.server");
+    const password = process.env["P72_PRESENTATION_PASSWORD"];
+    if (!p72PresentationSignInAvailable(process.env["P72_PRESENTATION_SIGNIN_ENABLED"], password) || !password)
+      return { ok: false as const, message: "Automatic sign-in is turned off. Enter the password instead." };
+    const url = process.env["SUPABASE_URL"];
+    const publishable = process.env["SUPABASE_PUBLISHABLE_KEY"];
+    if (!url || !publishable) return { ok: false as const, message: "Sign-in is unavailable right now." };
+    const { createClient } = await import("@supabase/supabase-js");
+    const client = createClient(url, publishable, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+      global: {
+        fetch: (input, init) => {
+          const h = new Headers(init?.headers);
+          if (publishable.startsWith("sb_") && h.get("Authorization") === `Bearer ${publishable}`) h.delete("Authorization");
+          h.set("apikey", publishable);
+          return fetch(input, { ...init, headers: h });
+        },
+      },
+    });
+    const { data: signed, error } = await client.auth.signInWithPassword({ email: P72_ROLE_ACCOUNTS[data.role], password });
+    if (error || !signed.session) return { ok: false as const, message: "Automatic sign-in failed. Enter the password instead." };
+    return { ok: true as const, accessToken: signed.session.access_token, refreshToken: signed.session.refresh_token };
   });

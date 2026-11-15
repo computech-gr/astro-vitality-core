@@ -14,9 +14,10 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
 import { resolveP72RoleEntry } from "@/components/mission-access/p72-role-entry";
-import { P72_ROLE_ROUTES, p72TargetLabel } from "@/domain/mission-access/p72-role-access";
+import { P72_PRESENTATION_MASK, P72_ROLE_ROUTES, p72TargetLabel, shouldUseP72PresentationSignIn } from "@/domain/mission-access/p72-role-access";
 import { DEMO_ROLE_LABELS, type DemoRole } from "@/domain/public-demo/workflow";
-import { checkP72RoleAccountFn, getP72SignInPrefillFn } from "@/lib/p72-role-access.functions";
+import { checkP72RoleAccountFn, getP72SignInPrefillFn, p72PresentationSignInFn } from "@/lib/p72-role-access.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,7 +83,9 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
   const navigate = useNavigate();
   const checkP72Account = useServerFn(checkP72RoleAccountFn);
   const getP72Prefill = useServerFn(getP72SignInPrefillFn);
+  const presentationSignIn = useServerFn(p72PresentationSignInFn);
   const lastPrefill = useRef("");
+  const [presentationAvailable, setPresentationAvailable] = useState(false);
   const [snapshot, setSnapshot] = useState<MissionIdentitySnapshot>(EMPTY);
   const [authReadiness, setAuthReadiness] = useState<MissionAuthReadiness | null>(null);
   const [busy, setBusy] = useState(true);
@@ -134,10 +137,13 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
     if (!p72Role) return;
     let cancelled = false;
     getP72Prefill({ data: { role: p72Role } })
-      .then(({ email: mapped }) => {
+      .then(({ email: mapped, presentationSignIn: available }) => {
         if (cancelled) return;
         setEmail((current) => (current.trim() === "" || current === lastPrefill.current ? mapped : current));
         lastPrefill.current = mapped;
+        setPresentationAvailable(available);
+        // P72.6: show a mask only; the real password never reaches the browser.
+        if (available) setPassword((current) => (current === "" ? P72_PRESENTATION_MASK : current));
       })
       .catch(() => undefined);
     return () => {
@@ -214,7 +220,17 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
     setMessage(null);
     setSignInError(null);
     try {
-      await signInMissionIdentity(email, password);
+      if (
+        p72Role &&
+        shouldUseP72PresentationSignIn({ available: presentationAvailable, email, mappedEmail: lastPrefill.current, password })
+      ) {
+        const result = await presentationSignIn({ data: { role: p72Role } });
+        if (!result.ok) throw new Error(result.message);
+        const { error } = await supabase.auth.setSession({ access_token: result.accessToken, refresh_token: result.refreshToken });
+        if (error) throw new Error("The session could not be opened in this browser.");
+      } else {
+        await signInMissionIdentity(email, password);
+      }
       setPassword("");
       await refresh();
       if (p72Role) {
@@ -304,9 +320,11 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
 
         {p72Role && !snapshot.signedIn ? (
           <div role="note" className="mt-6 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm text-foreground">
-            {DEMO_ROLE_LABELS[p72Role].title} sign-in: the mapped account email is filled in below. Enter its password,
-            or let your browser fill in a saved one, to open the {P72_ROLE_ROUTES[p72Role].consoleLabel} for{" "}
-            {p72TargetLabel(p72Role)}. The password is checked only by standard sign-in and is never stored in this app.
+            {DEMO_ROLE_LABELS[p72Role].title} sign-in:{" "}
+            {presentationAvailable
+              ? "the mapped account email and password are filled in below. Press Sign in"
+              : "the mapped account email is filled in below. Enter its password, or let your browser fill in a saved one,"}{" "}
+            to open the {P72_ROLE_ROUTES[p72Role].consoleLabel} for {p72TargetLabel(p72Role)}.
           </div>
         ) : null}
         {message ? (

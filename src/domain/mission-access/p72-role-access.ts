@@ -108,3 +108,24 @@ export function decideP72HomepageCardEntry(session: P72HomepageSession): P72Home
   if (session === "demo") return "confirm_demo_session";
   return "resolve_account";
 }
+
+/**
+ * P72.6 presentation sign-in (owner-requested). The password box shows this fixed
+ * mask only; the real password stays server-side and never reaches the browser.
+ */
+export const P72_PRESENTATION_MASK = "************";
+
+/** Server-held presentation sign-in is used only for the untouched prefilled email and mask. */
+export function shouldUseP72PresentationSignIn(input: {
+  available: boolean;
+  email: string;
+  mappedEmail: string;
+  password: string;
+}): boolean {
+  return (
+    input.available &&
+    input.mappedEmail !== "" &&
+    input.email.trim().toLowerCase() === input.mappedEmail.toLowerCase() &&
+    input.password === P72_PRESENTATION_MASK
+  );
+}
