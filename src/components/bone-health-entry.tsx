@@ -93,6 +93,8 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
   const [missionId, setMissionId] = useState("");
   const [groundRoster, setGroundRoster] = useState<MissionMembershipContext[]>([]);
   const [crewMemberId, setCrewMemberId] = useState("");
+  // P72.4: the console's active crew (already authorized) is preferred when it is an option.
+  const [activeCrewId, setActiveCrewId] = useState("");
   const [identityError, setIdentityError] = useState("Loading authorized mission membership...");
   useEffect(() => {
     let alive = true;
@@ -118,6 +120,7 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
               } else setGroundRoster(result.data);
             });
           } else setGroundRoster([]);
+          setActiveCrewId(snapshot.active?.crewMemberId ?? "");
           setMemberships(authorized);
           setMissionId((previous) =>
             authorized.some((m) => m.missionId === previous)
@@ -155,9 +158,11 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
     setCrewMemberId((previous) =>
       crewOptions.some((m) => m.crewMemberId === previous)
         ? previous
-        : (crewOptions[0]?.crewMemberId ?? ""),
+        : crewOptions.some((m) => m.crewMemberId === activeCrewId)
+          ? activeCrewId
+          : (crewOptions[0]?.crewMemberId ?? ""),
     );
-  }, [missionId, memberships, groundRoster]);
+  }, [missionId, memberships, groundRoster, activeCrewId]);
   const authorizedSelection =
     crewOptions.some((m) => m.crewMemberId === crewMemberId) &&
     memberships.some(
