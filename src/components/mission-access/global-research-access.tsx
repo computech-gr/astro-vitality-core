@@ -122,7 +122,9 @@ export function GlobalResearchAccess() {
         {
           listLocal: async () => (await listUnifiedObservationEvents(missionId, crewMemberId)).map((e) => ({ eventId: e.eventId, eventKind: e.eventKind, observation: e.observation })),
           listReceipts: () => listObservationSyncReceipts(s),
-          appendReceipts: (rs) => appendObservationSyncReceipts(rs, s, userId),
+          appendReceipts: async (rs) => {
+            await appendObservationSyncReceipts(rs, s, userId);
+          },
           importEvent: (e) => importUnifiedObservationEvent(e),
           // Read-only: the run never uploads (canUpload false); this throws if ever reached.
           push: () => Promise.reject(new Error("Researcher read access never uploads.")),
