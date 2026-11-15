@@ -1029,8 +1029,8 @@ export function P36GlobalReviewPanel() {
                         data-request-id={q.requestId}
                         aria-current={requestFilter === q.submissionId ? "true" : undefined}
                       >
-                        <td className="p-2 font-mono font-medium">{q.requestId}</td>
-                        <td className="p-2 tabular-nums">
+                        <td className="whitespace-nowrap p-2 font-mono font-medium">{q.requestId}</td>
+                        <td className="whitespace-nowrap p-2 tabular-nums">
                           {q.receivedAt.slice(0, 16).replace("T", " ")}
                         </td>
                         <td className="p-2">{originatingRoleLabel(q.submittedRole)}</td>
