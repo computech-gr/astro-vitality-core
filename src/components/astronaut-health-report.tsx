@@ -1453,7 +1453,7 @@ export function AstronautHealthReport() {
             ))}
           </section>
 
-          {biomarkerAssessment && interpretation && reviewScope && (
+          {biomarkerAssessment && interpretation && interpretationSnapshot && reviewScope && (
             <PreliminaryMedicalAssessmentPanel
               assessment={biomarkerAssessment}
               model={interpretation}
