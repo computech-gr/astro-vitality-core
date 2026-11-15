@@ -91,6 +91,19 @@ import {
   type ServerDatasetState,
 } from "@/domain/health-intelligence/p729-report-dataset";
 import { mergeAttestationEvents } from "@/domain/health-intelligence/review-sync";
+import {
+  buildScientificSnapshot,
+  describeScientificInputs,
+  deviceDecisionsNotAppliedStatement,
+  DEVICE_DECISIONS_LABEL,
+  ruleSetLines,
+  scientificFingerprint,
+  SHARED_RULES_LABEL,
+  summarizeDeviceDecisions,
+  withScientificReadiness,
+  type ScientificSnapshotResult,
+} from "@/domain/health-intelligence/p7210-scientific-snapshot";
+import { loadVerifiedInterpretationSnapshot } from "@/domain/health-intelligence/biomarker-interpretation-ledger";
 import { pullObservationEvents } from "@/lib/observation-sync.functions";
 import { pullReviewEvents } from "@/lib/review-sync.functions";
 
@@ -405,7 +418,7 @@ export function AstronautHealthReport() {
     [mode, localState, attestLoad],
   );
 
-  const readiness = useMemo(
+  const datasetReadiness = useMemo(
     () =>
       assessDatasetReadiness({
         hasSelection: Boolean(member),
@@ -417,6 +430,44 @@ export function AstronautHealthReport() {
       }),
     [member, mode, serverState, effectiveLocalState, snapshot, provenance, unified],
   );
+  // P72.10: scientific interpretation inputs bound to the dataset snapshot. Server-confirmed reports use
+  // only the shared versioned rules (identical on every device); a local offline report uses this
+  // device's verified review decisions and is labelled as such. Device decisions are never substituted
+  // for an authoritative source.
+  const deviceInterpretation = useInterpretationSnapshot();
+  const { resolution: deviceCriteriaResolution, state: deviceCriteriaState } = useCriteriaResolution();
+  const deviceDecisions = useMemo(
+    () => ({ interpretation: deviceInterpretation, criteria: { resolution: deviceCriteriaResolution, state: deviceCriteriaState } }),
+    [deviceInterpretation, deviceCriteriaResolution, deviceCriteriaState],
+  );
+  const deviceSummary = useMemo(() => summarizeDeviceDecisions(deviceDecisions.interpretation, deviceDecisions.criteria), [deviceDecisions]);
+  // Server-confirmed snapshots never read device decisions, so device changes cannot alter them.
+  const localDeviceDecisions = snapshot?.source === "local_offline" ? deviceDecisions : null;
+  const [scientificResult, setScientificResult] = useState<ScientificSnapshotResult | null>(null);
+  useEffect(() => {
+    if (!snapshot) {
+      setScientificResult(null);
+      return;
+    }
+    let active = true;
+    void buildScientificSnapshot({
+      source: snapshot.source,
+      datasetToken: snapshot.token,
+      datasetFingerprint: snapshot.datasetFingerprint,
+      device: localDeviceDecisions ?? deviceDecisions,
+    })
+      .catch((): ScientificSnapshotResult => ({ kind: "blocked", reason: "The bundled scientific rules could not be verified. Reload the page." }))
+      .then((r) => {
+        if (active) setScientificResult(r);
+      });
+    return () => {
+      active = false;
+    };
+    // deviceDecisions matter only for local offline snapshots (localDeviceDecisions).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot, localDeviceDecisions]);
+  const readiness = useMemo(() => withScientificReadiness(datasetReadiness, scientificResult, snapshot), [datasetReadiness, scientificResult, snapshot]);
+  const sci = readiness.scientific;
   const reportVisible = readiness.exportAllowed;
   const notOnServer = useMemo(
     () => (snapshot?.source === "server_confirmed" && localState.kind === "ready" ? localRecordsNotOnServer(snapshot, localState.inputs) : null),
@@ -461,9 +512,9 @@ export function AstronautHealthReport() {
   };
 
   const findings = useMemo(() => unified ? buildScientificFindings(unified) : null, [unified]);
-  const { snapshot: interpretationSnapshot } = useInterpretationSnapshot();
+  const interpretationSnapshot = sci?.interpretation ?? null;
   const interpretation = useMemo(
-    () => (unified && findings ? buildResearcherInterpretation(unified, findings, scopedAttestations, interpretationSnapshot) : null),
+    () => (unified && findings && interpretationSnapshot ? buildResearcherInterpretation(unified, findings, scopedAttestations, interpretationSnapshot) : null),
     [unified, findings, scopedAttestations, interpretationSnapshot],
   );
   const healthSummary = useMemo(
@@ -472,9 +523,9 @@ export function AstronautHealthReport() {
   );
   // P54/P57: one biomarker assessment shared by screen, PDF and TXT (verified references and
   // Researcher-approved, server-attested reference criteria only).
-  const { resolution: criteriaResolution } = useCriteriaResolution();
+  const criteriaResolution = sci?.criteria ?? null;
   const biomarkerAssessment = useMemo(
-    () => (unified && interpretation ? buildBiomarkerAssessment(unified, interpretation, interpretationSnapshot, { criteria: criteriaResolution.approved }) : null),
+    () => (unified && interpretation && interpretationSnapshot && criteriaResolution ? buildBiomarkerAssessment(unified, interpretation, interpretationSnapshot, { criteria: criteriaResolution.approved }) : null),
     [unified, interpretation, interpretationSnapshot, criteriaResolution],
   );
   const reviewScope = useMemo(
@@ -487,7 +538,7 @@ export function AstronautHealthReport() {
   // Ground Medical for this exact crew member) and the server's default-off switch still decides.
   const isGroundMedical = rolesForScope.includes("ground_medical");
   const packet = useMemo(
-    () => (biomarkerAssessment && interpretation ? buildAssessmentPacket(biomarkerAssessment, interpretation, interpretationSnapshot) : null),
+    () => (biomarkerAssessment && interpretation && interpretationSnapshot ? buildAssessmentPacket(biomarkerAssessment, interpretation, interpretationSnapshot) : null),
     [biomarkerAssessment, interpretation, interpretationSnapshot],
   );
   const draftAi = useServerFn(draftPreliminaryAssessment);
@@ -539,7 +590,7 @@ export function AstronautHealthReport() {
 
   const healthAssessment = useMemo(
     () =>
-      unified && interpretation && biomarkerAssessment && member
+      unified && interpretation && biomarkerAssessment && member && interpretationSnapshot
         ? buildHealthAssessment({
             unified,
             model: interpretation,
@@ -616,7 +667,7 @@ export function AstronautHealthReport() {
   // synthetic identity mappings) is on by default for synthetic data only; real data never uses it.
   const [demonstrationMode, setDemonstrationMode] = useState(true);
   const premiumReport = useMemo(() => {
-    if (!professionalReport || !unified || !biomarkerAssessment || !reviewScope) return null;
+    if (!professionalReport || !unified || !biomarkerAssessment || !reviewScope || !criteriaResolution) return null;
     try {
       const synthetic = provenance === "synthetic" && unified.scope.provenance === "synthetic";
       return buildPremiumReport({
@@ -633,24 +684,43 @@ export function AstronautHealthReport() {
       return null; // the P58 professional PDF remains available as the fallback
     }
   }, [professionalReport, unified, biomarkerAssessment, reviewScope, criteriaResolution, provenance, demonstrationMode, inputs.coverage]);
+  const scientificOptions = useMemo(
+    () => ({ provisionalLiteratureDemonstration: provenance === "synthetic" && unified?.scope.provenance === "synthetic" && demonstrationMode }),
+    [provenance, unified?.scope.provenance, demonstrationMode],
+  );
+  const [scientificPrint, setScientificPrint] = useState<{ key: object; options: string; value: string } | null>(null);
+  useEffect(() => {
+    if (!sci) return;
+    let active = true;
+    const options = JSON.stringify(scientificOptions);
+    void scientificFingerprint(sci, scientificOptions).then((value) => {
+      if (active) setScientificPrint({ key: sci, options, value });
+    });
+    return () => {
+      active = false;
+    };
+  }, [sci, scientificOptions]);
+  const shownScientificFingerprint = scientificPrint && scientificPrint.key === sci && scientificPrint.options === JSON.stringify(scientificOptions) ? scientificPrint.value : null;
   const [appendixOpen, setAppendixOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash === "#ground-medical-attestation") setAppendixOpen(true);
   }, []);
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
-  const currentExport = useRef({ unified, userId: identity?.userId, readiness, snapshot });
-  currentExport.current = { unified, userId: identity?.userId, readiness, snapshot };
+  const currentExport = useRef({ unified, userId: identity?.userId, readiness, snapshot, sci });
+  currentExport.current = { unified, userId: identity?.userId, readiness, snapshot, sci };
   const performExport = async (kind: "pdf" | "p58-pdf" | "appendix-pdf" | "text" | "appendix-text" | "print") => {
     if (!member || !report || !unified || exporting) return;
     const snapshot = currentExport.current;
     // P72.8/P72.9: never export while the dataset is loading, failed, partial or not the displayed one.
     const dataset = snapshot.snapshot;
-    if (!snapshot.readiness.exportAllowed || !dataset || dataset.source !== snapshot.readiness.source) {
+    const scientific = snapshot.sci;
+    if (!snapshot.readiness.exportAllowed || !dataset || !scientific || dataset.source !== snapshot.readiness.source || scientific.datasetToken !== dataset.token) {
       setExportStatus(`${snapshot.readiness.title}. ${snapshot.readiness.detail} No file downloaded.`);
       return;
     }
-    const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId && currentExport.current.snapshot === dataset;
+    const stillCurrent = () =>
+      currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId && currentExport.current.snapshot === dataset && currentExport.current.sci === scientific;
     setExporting(true);
     setExportStatus(kind === "pdf" || kind === "p58-pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
     try {
@@ -675,6 +745,24 @@ export function AstronautHealthReport() {
         if (again.datasetFingerprint !== dataset.datasetFingerprint)
           throw new Error("The examinations stored on this device changed since this report was generated. Reload the report, then export again; no file downloaded.");
       }
+      // P72.10: re-derive the scientific inputs from their source (shared rules, or this device's
+      // verified decisions for a local offline report); any difference cancels the export.
+      const exportOptions = scientificOptions;
+      const sciPrint = await scientificFingerprint(scientific, exportOptions);
+      {
+        const [deviceInterp, deviceCrit] =
+          dataset.source === "local_offline"
+            ? await Promise.all([
+                loadVerifiedInterpretationSnapshot().then((s) => ({ snapshot: s, state: "verified" as const })),
+                import("@/domain/health-intelligence/p57-criteria-ledger").then((m) => m.loadCriteriaResolution()).then((r) => ({ resolution: r, state: "verified" as const })),
+              ])
+            : [deviceDecisions.interpretation, deviceDecisions.criteria];
+        const again = await buildScientificSnapshot({ source: dataset.source, datasetToken: dataset.token, datasetFingerprint: dataset.datasetFingerprint, device: { interpretation: deviceInterp, criteria: deviceCrit } });
+        if (again.kind !== "ready") throw new Error(`${again.reason} Export cancelled; no file downloaded.`);
+        if ((await scientificFingerprint(again.snapshot, exportOptions)) !== sciPrint)
+          throw new Error("The scientific review decisions used by this report changed since it was generated. Reload the report, then export again; no file downloaded.");
+      }
+      const aiIncluded = automated?.status === "ai_used" || (clinical ? clinical.origin !== "deterministic" : false);
       const range = dataset.summary.firstDate ? (dataset.summary.firstDate === dataset.summary.lastDate ? dataset.summary.firstDate : `${dataset.summary.firstDate} to ${dataset.summary.lastDate}`) : "no dates";
       const dataProvenance: ReportDataProvenance | undefined = premiumReport
         ? {
@@ -695,7 +783,14 @@ export function AstronautHealthReport() {
                 ? `report generated from the complete authorized server dataset (${dataset.observationEvents} examination record(s), ${dataset.reviewEvents} medical review record(s); every page read-only, nothing stored on the exporting device)`
                 : `${dataset.summary.examinations} evaluable observation(s) on ${dataset.summary.examinationDates.length} date(s) (${range}) stored on the exporting device`,
             engineVersion: REPORT_ENGINE_VERSION,
-            rulesSummary: `interpretation registry v${interpretationSnapshot.registryVersion} with ${interpretationSnapshot.ledger.events} verified interpretation event(s)${interpretationSnapshot.digest ? ` (digest ${interpretationSnapshot.digest.slice(0, 16)}…)` : ""}; ${criteriaResolution.approved.length} Researcher-approved reference criteria. Identical datasets give identical findings when these rule sets match.`,
+            rulesSummary: describeScientificInputs(scientific, exportOptions),
+            scientificFingerprint: sciPrint,
+            scientificBasis: scientific.basis,
+            ruleSets: ruleSetLines(scientific.ruleSets),
+            deviceDecisionsNote: dataset.source === "server_confirmed" ? deviceDecisionsNotAppliedStatement(deviceSummary) : null,
+            aiContent: aiIncluded
+              ? "included — validated AI-assisted wording, informational only (never changes a class or priority); not deterministic, so it is not part of the scientific-input fingerprint."
+              : "none — every statement in this report comes from the deterministic engine.",
             readinessVersion: REPORT_DATASET_VERSION,
             exportedAt: new Date().toISOString(),
           }
@@ -730,7 +825,7 @@ export function AstronautHealthReport() {
             summary: healthSummary,
             history: report,
             attestations: scopedAttestations,
-            interpretations: interpretationSnapshot,
+            ...(interpretationSnapshot ? { interpretations: interpretationSnapshot } : {}),
             identity: { missionName: member.missionName, crewDisplayName: member.crewDisplayName },
             title: exportName,
             ...(dataProvenance ? { provenance: dataProvenance } : {}),
@@ -935,6 +1030,20 @@ export function AstronautHealthReport() {
                 dataset fingerprint {snapshot.datasetFingerprint.slice(0, 16)}… · {REPORT_ENGINE_VERSION}
               </p>
               {snapshot.source === "local_offline" ? <p className="font-semibold">The server may hold examinations not shown here.</p> : null}
+              {sci ? (
+                <p className="mt-1">
+                  <span className="font-semibold">Scientific inputs: {sci.basis === "shared_versioned_rules" ? SHARED_RULES_LABEL : DEVICE_DECISIONS_LABEL}</span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · {sci.ruleSets.length} bundled rule sets · interpretation registry v{sci.interpretation.registryVersion} · {sci.criteria.approved.length} approved reference criteria
+                    {sci.basis === "device_local_decisions" ? ` · ${sci.interpretation.ledger.events} review event(s) held on this device` : ""} · scientific-input fingerprint{" "}
+                    {shownScientificFingerprint ? `${shownScientificFingerprint.slice(0, 16)}…` : "computing…"}
+                  </span>
+                </p>
+              ) : null}
+              {snapshot.source === "server_confirmed" && deviceDecisionsNotAppliedStatement(deviceSummary) ? (
+                <p className="mt-1 font-semibold">{deviceDecisionsNotAppliedStatement(deviceSummary)}</p>
+              ) : null}
             </section>
           ) : null}
           {healthAssessment ? (
