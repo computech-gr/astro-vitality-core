@@ -12,7 +12,7 @@
  * never be printed as "No high-priority findings".
  */
 import type { UnifiedObservation } from "./observation-envelope";
-import { decideRemoteImport, OBSERVATION_SYNC_PAGE_MAX, type SyncScope } from "./observation-sync";
+import { OBSERVATION_SYNC_PAGE_MAX, observationContentSha256, type SyncScope } from "./observation-sync";
 import type { PullResponse } from "./observation-sync-runner";
 import type { ReportSourceCoverage } from "./p60-observation-census";
 
@@ -84,10 +84,13 @@ export async function compareLocalWithServer(
     for (const e of res.events) {
       if (remoteIds.has(e.eventId)) continue;
       remoteIds.add(e.eventId);
-      const d = decideRemoteImport({ eventId: e.eventId, eventKind: e.eventKind, observation: e.observation }, localById, scope);
-      if (d.action === "rejected") return { kind: "failed", token, reason: "A server examination record did not match this mission and crew member. No report was completed." };
-      if (d.action === "import") missing.push(e.eventId);
-      else if (d.action === "conflict") conflicts.push(e.eventId);
+      // The server already validated each event (including demo catalogs); here only scope and identity are re-checked.
+      const o = e.observation;
+      if (o.missionId !== scope.missionId || o.crewMemberId !== scope.crewMemberId || o.provenance !== scope.provenance || e.eventId !== `${o.id}:${e.eventKind}`)
+        return { kind: "failed", token, reason: "A server examination record did not match this mission and crew member. No report was completed." };
+      const mine = localById.get(e.eventId);
+      if (!mine) missing.push(e.eventId);
+      else if ((await observationContentSha256(mine)) !== (await observationContentSha256(o))) conflicts.push(e.eventId);
     }
     if (!res.hasMore) break;
     if (!(res.lastSeq > afterSeq)) return { kind: "failed", token, reason: "Only part of the server examinations could be read (the page position did not advance)." };
