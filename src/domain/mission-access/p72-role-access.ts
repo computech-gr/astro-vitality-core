@@ -94,3 +94,17 @@ export function decideP72Entry(input: {
 export function safeP72Next(value: unknown): P72RoleRoute["consolePath"] | undefined {
   return Object.values(P72_ROLE_ROUTES).find((r) => r.consolePath === value)?.consolePath;
 }
+
+export type P72HomepageSession = "none" | "demo" | "standard";
+export type P72HomepageCardEntry = "sign_in" | "confirm_demo_session" | "resolve_account";
+
+/**
+ * P72.5 homepage cards: a signed-out visitor goes to the role's sign-in page; a
+ * synthetic demo session is asked before it is ended; a signed-in standard account
+ * keeps the P72 decision (its console or the wrong-account choice). Never switches identity.
+ */
+export function decideP72HomepageCardEntry(session: P72HomepageSession): P72HomepageCardEntry {
+  if (session === "none") return "sign_in";
+  if (session === "demo") return "confirm_demo_session";
+  return "resolve_account";
+}

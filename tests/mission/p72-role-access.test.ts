@@ -89,3 +89,27 @@ describe("P72.3 presentation labels", () => {
     expect(p72TargetLabel("researcher")).toBe("MITO_DEMO_2026");
   });
 });
+
+describe("P72.5 homepage role cards open role sign-in", () => {
+  test("signed-out visitors go to sign-in, demo sessions are asked first, signed-in accounts keep the P72 decision", async () => {
+    const { decideP72HomepageCardEntry } = await import("@/domain/mission-access/p72-role-access");
+    expect(decideP72HomepageCardEntry("none")).toBe("sign_in");
+    expect(decideP72HomepageCardEntry("demo")).toBe("confirm_demo_session");
+    expect(decideP72HomepageCardEntry("standard")).toBe("resolve_account");
+  });
+
+  test("the secondary 'Mission account holder?' links are gone and cards navigate to /mission/identity?role=", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
+    const entry = readFileSync(join(root, "src/components/public-demo/public-demo-role-entry.tsx"), "utf8");
+    expect(entry).not.toContain("Mission account holder");
+    expect(entry).toContain('navigate({ to: "/mission/identity", search: { role } })');
+    const fns = readFileSync(join(root, "src/lib/p72-role-access.functions.ts"), "utf8");
+    expect(fns).toContain("return { email: P72_ROLE_ACCOUNTS[data.role] };");
+    const identity = readFileSync(join(root, "src/components/mission-identity.tsx"), "utf8");
+    expect(identity).toContain('autoComplete="username"');
+    expect(identity).toContain('autoComplete="current-password"');
+  });
+});
