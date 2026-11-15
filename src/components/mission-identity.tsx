@@ -143,7 +143,7 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
     return () => {
       cancelled = true;
     };
-  }, [p72Role]);
+  }, [p72Role, getP72Prefill]);
 
   const activeKey = snapshot.active ? membershipKey(snapshot.active) : "";
   const operatorMemberships = useMemo(
