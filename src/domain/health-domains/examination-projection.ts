@@ -26,7 +26,7 @@ export interface DomainProjectionRow {
   value: string;
   unit: string;
   observedAt: string;
-  datePrecision?: ReportRow["datePrecision"];
+  datePrecision?: NonNullable<ReportRow["datePrecision"]>;
   provenance: ReportRow["provenance"];
   sourceLabel: string;
   evidence: string;
