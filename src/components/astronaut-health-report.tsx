@@ -22,7 +22,7 @@ import {
   type UnifiedReportInputs,
 } from "@/domain/health-intelligence/unified-health-report";
 import { loadUnifiedReportInputs } from "@/domain/health-intelligence/unified-health-report-loader";
-import { globalResearchSelections, readGlobalResearchSelection, reportScopeAuthorized } from "@/domain/mission-access/global-research-scope";
+import { globalResearchSelections, rememberedGlobalResearchSelection, reportScopeAuthorized } from "@/domain/mission-access/global-research-scope";
 import { reportExportBasename } from "@/domain/health-intelligence/report-export-identity";
 import { downloadReportBlob } from "@/domain/health-intelligence/report-pdf";
 import { createTextReportPdf } from "@/domain/health-intelligence/report-text-pdf";
@@ -176,7 +176,7 @@ export function AstronautHealthReport() {
   // P72.6: preselect the Researcher's current all-missions selection (IDs only).
   useEffect(() => {
     if (key || !identity?.userId) return;
-    const remembered = readGlobalResearchSelection(typeof window === "undefined" ? undefined : window.sessionStorage, identity.userId);
+    const remembered = rememberedGlobalResearchSelection(identity.userId);
     if (remembered && members.some((m) => m.key === remembered)) setKey(remembered);
   }, [key, identity?.userId, members]);
   // Global Researcher read scopes are synthetic only; never mix in real records.

@@ -152,3 +152,8 @@ export function reportScopeAuthorized(
     ) || globalResearchAllows(identity.globalResearch, scope.missionId, scope.crewMemberId, provenance)
   );
 }
+
+/** This tab's remembered Researcher selection (mission|crew IDs only), or "". */
+export function rememberedGlobalResearchSelection(userId: string | undefined): string {
+  return readGlobalResearchSelection(typeof window === "undefined" ? undefined : window.sessionStorage, userId);
+}
