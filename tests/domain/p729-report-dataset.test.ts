@@ -36,7 +36,10 @@ import { renderProfessionalReport } from "../../src/domain/health-intelligence/p
 import { buildPremiumReport, type PremiumReport } from "../../src/domain/health-intelligence/p59-premium-model";
 import { renderPremiumReport } from "../../src/domain/health-intelligence/p59-premium-pdf";
 import { V9_SCOPE, gmCtx, obs } from "./fixtures-v9-observations";
-import { alexFull } from "../support/p59-fixtures";
+import { alexFull as alexFixture } from "../support/p59-fixtures";
+import { validateUnifiedObservation } from "../../src/domain/health-intelligence/observation-envelope";
+/** The P59 Alex fixture restricted to records that pass envelope validation (as the server returns them). */
+const alexFull = () => alexFixture().filter((o) => !validateUnifiedObservation(o));
 import { SvgPdfWriter } from "../support/svg-pdf-writer";
 
 const SCOPE = V9_SCOPE;
@@ -326,11 +329,16 @@ describe("P72.9 provenance in every export", () => {
   });
   it("provenance adds only the page-1 source line and the final section; the scientific text is unchanged", () => {
     const { premium } = pipeline({ domainEntries: {}, unifiedObservations: alexFull(), deviceRecords: [] }, [], "2026-11-15T09:00:00.000Z", { from: "2026-11-01", to: "2026-11-07" });
-    const strip = (lines: string[]) => lines.filter((l) => !/^Page \d+ of \d+$/.test(l));
     const without = premiumText(premium);
     const withP = premiumText(premium, base("server_confirmed"));
-    const provLines = new Set(strip(withP.lines).filter((l) => !strip(without.lines).includes(l)));
-    expect(strip(withP.lines).filter((l) => !provLines.has(l))).toEqual(strip(without.lines));
+    const count = (xs: string[], l: string) => xs.filter((x) => x === l).length;
+    // Running header/footer lines repeat on every page; they are page furniture, not content.
+    const frame = new Set(without.lines.filter((l) => /^Page \d+ of \d+$/.test(l) || count(without.lines, l) >= without.pages - 1));
+    const body = (xs: string[]) => xs.filter((l) => !frame.has(l) && !/^Page \d+ of \d+$/.test(l));
+    const provLines = new Set(body(withP.lines).filter((l) => !body(without.lines).includes(l)));
+    expect(provLines.size).toBeGreaterThan(0);
+    for (const l of provLines) expect(/provenance|Data source|Mission ID|Subject|Selected period|Examination|Observations evaluated|fingerprint|Report engine|Export timestamp|Readiness check|SERVER-CONFIRMED|dataset|record\(s\)|period|device|•/i.test(l)).toBe(true);
+    expect(body(withP.lines).filter((l) => !provLines.has(l))).toEqual(body(without.lines));
     expect(withP.pages - without.pages).toBeGreaterThanOrEqual(0);
     expect(withP.pages - without.pages).toBeLessThanOrEqual(1);
   });
