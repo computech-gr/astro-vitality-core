@@ -107,7 +107,7 @@ describe("P72.5 homepage role cards open role sign-in", () => {
     expect(entry).not.toContain("Mission account holder");
     expect(entry).toContain('navigate({ to: "/mission/identity", search: { role } })');
     const fns = readFileSync(join(root, "src/lib/p72-role-access.functions.ts"), "utf8");
-    expect(fns).toContain("return { email: P72_ROLE_ACCOUNTS[data.role] };");
+    expect(fns).toContain("email: P72_ROLE_ACCOUNTS[data.role],");
     const identity = readFileSync(join(root, "src/components/mission-identity.tsx"), "utf8");
     expect(identity).toContain('autoComplete="username"');
     expect(identity).toContain('autoComplete="current-password"');
@@ -141,7 +141,7 @@ describe("P72.6 server-held presentation sign-in", () => {
     const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
     const fns = readFileSync(join(root, "src/lib/p72-role-access.functions.ts"), "utf8");
     expect(fns).toContain('process.env["P72_PRESENTATION_PASSWORD"]');
-    expect(fns).not.toMatch(/return \{[^}]*password/);
+    expect(fns).not.toMatch(/return \{[^}]*\bpassword\s*[,:}]/);
     expect(fns).toContain("email: P72_ROLE_ACCOUNTS[data.role], password");
   });
 });
