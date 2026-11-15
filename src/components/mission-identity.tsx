@@ -320,9 +320,11 @@ export function MissionIdentity({ p72Role }: { p72Role?: DemoRole } = {}) {
 
         {p72Role && !snapshot.signedIn ? (
           <div role="note" className="mt-6 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm text-foreground">
-            {DEMO_ROLE_LABELS[p72Role].title} sign-in: the mapped account email is filled in below. Enter its password,
-            or let your browser fill in a saved one, to open the {P72_ROLE_ROUTES[p72Role].consoleLabel} for{" "}
-            {p72TargetLabel(p72Role)}. The password is checked only by standard sign-in and is never stored in this app.
+            {DEMO_ROLE_LABELS[p72Role].title} sign-in:{" "}
+            {presentationAvailable
+              ? "the mapped account email and password are filled in below. Press Sign in"
+              : "the mapped account email is filled in below. Enter its password, or let your browser fill in a saved one,"}{" "}
+            to open the {P72_ROLE_ROUTES[p72Role].consoleLabel} for {p72TargetLabel(p72Role)}.
           </div>
         ) : null}
         {message ? (
