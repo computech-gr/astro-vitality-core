@@ -21,6 +21,14 @@ let installed = new Map<string, SignedSyntheticDemoSnapshot>();
 const listeners = new Set<() => void>();
 
 export const getSyntheticDemoCatalogs = (): ReadonlyMap<string, EvaluatedDemoCatalog> => catalogs;
+const SERVER_DEMO_CATALOGS: ReadonlyMap<string, EvaluatedDemoCatalog> = new Map();
+/**
+ * P72.7 hydration-safe server snapshot: server-rendered HTML never contains
+ * device catalogs, so hydration must start from the same empty value even when
+ * this device has already loaded its verified snapshots.
+ */
+export const getServerSyntheticDemoCatalogs = (): ReadonlyMap<string, EvaluatedDemoCatalog> =>
+  SERVER_DEMO_CATALOGS;
 export const getInstalledDemoSnapshot = (missionId: string) => installed.get(missionId) ?? null;
 export function subscribeSyntheticDemoCatalogs(fn: () => void): () => void {
   listeners.add(fn);

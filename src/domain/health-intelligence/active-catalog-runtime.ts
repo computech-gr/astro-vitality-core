@@ -31,6 +31,8 @@ let installed: SignedCatalogSnapshot | null = null;
 const listeners = new Set<() => void>();
 
 export const getActiveCatalog = (): EvaluatedCatalog => current;
+/** P72.7 hydration-safe server snapshot: the server never holds a device catalog. */
+export const getServerActiveCatalog = (): EvaluatedCatalog => EMPTY_CATALOG;
 export const getInstalledSnapshot = (): SignedCatalogSnapshot | null => installed;
 export function subscribeActiveCatalog(fn: () => void): () => void {
   listeners.add(fn);
