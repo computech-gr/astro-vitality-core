@@ -917,6 +917,20 @@ export function AstronautHealthReport() {
             </span>
             <span>{healthAssessment?.disclosure ?? "Automated health assessment — subject to Ground Medical review."}</span>
           </div>
+          {snapshot ? (
+            <section aria-label="Report data source" className="report-avoid-break rounded-md border p-3 text-xs">
+              <p className="font-semibold">
+                Data source: {snapshot.source === "server_confirmed" ? "SERVER-CONFIRMED — complete authorized server dataset (read-only)" : LOCAL_OFFLINE_LABEL}
+              </p>
+              <p className="text-muted-foreground">
+                Mission ID {snapshot.scope.missionId} · Subject (crew) ID {snapshot.scope.crewMemberId} · {snapshot.scope.provenance.toUpperCase()} ·{" "}
+                {snapshot.observationEvents} examination record(s), {snapshot.reviewEvents} review record(s) ·{" "}
+                {premiumReport ? `period ${premiumReport.header.period} · ${premiumReport.census.dates.length} examination date(s): ${premiumReport.census.dates.join(", ") || "none in this period"} · period fingerprint ${premiumReport.census.sha256.slice(0, 16)}… · ` : ""}
+                dataset fingerprint {snapshot.datasetFingerprint.slice(0, 16)}… · {REPORT_ENGINE_VERSION}
+              </p>
+              {snapshot.source === "local_offline" ? <p className="font-semibold">The server may hold examinations not shown here.</p> : null}
+            </section>
+          ) : null}
           {healthAssessment ? (
             <HealthAssessmentView
               assessment={healthAssessment}
@@ -965,20 +979,6 @@ export function AstronautHealthReport() {
             </p>
           </div>
           <p className="report-disclaimer rounded-md border p-3 text-sm font-semibold">{REPORT_DISCLAIMER}</p>
-          {snapshot ? (
-            <section aria-label="Report data source" className="report-avoid-break rounded-md border p-3 text-xs">
-              <p className="font-semibold">
-                Data source: {snapshot.source === "server_confirmed" ? "SERVER-CONFIRMED — complete authorized server dataset (read-only)" : LOCAL_OFFLINE_LABEL}
-              </p>
-              <p className="text-muted-foreground">
-                Mission ID {snapshot.scope.missionId} · Subject (crew) ID {snapshot.scope.crewMemberId} · {snapshot.scope.provenance.toUpperCase()} ·{" "}
-                {snapshot.observationEvents} examination record(s), {snapshot.reviewEvents} review record(s) ·{" "}
-                {premiumReport ? `period ${premiumReport.header.period} · ${premiumReport.census.dates.length} examination date(s): ${premiumReport.census.dates.join(", ") || "none in this period"} · period fingerprint ${premiumReport.census.sha256.slice(0, 16)}… · ` : ""}
-                dataset fingerprint {snapshot.datasetFingerprint.slice(0, 16)}… · {REPORT_ENGINE_VERSION}
-              </p>
-              {snapshot.source === "local_offline" ? <p className="font-semibold">The server may hold examinations not shown here.</p> : null}
-            </section>
-          ) : null}
 
           {healthSummary && (
             <section aria-label="Scientific summary at a glance" className="report-avoid-break space-y-2 rounded-lg border p-4">
