@@ -43,7 +43,10 @@ export function P72MissionContextBar({ role }: { role: DemoRole }) {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button asChild size="sm" variant="outline"><Link to="/mission/intake"><FlaskConical /> Examinations</Link></Button>
-          <Button asChild size="sm" variant="outline"><Link to="/mission/intelligence"><Layers /> Health Domains</Link></Button>
+          {/* P72.4: Ground Medical opens the domain pages (selected mission + crew); the Crew-Self-only overview stays for Researcher. */}
+          <Button asChild size="sm" variant="outline">
+            {role === "researcher" ? <Link to="/mission/intelligence"><Layers /> Health Domains</Link> : <Link to="/mission/bone-health"><Layers /> Health Domains</Link>}
+          </Button>
           <Button asChild size="sm" variant="outline"><Link to="/mission/health-report"><FileText /> Full Health Report</Link></Button>
         </div>
       </div>

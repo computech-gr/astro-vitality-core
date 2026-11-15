@@ -13,6 +13,7 @@ import { BoneVariableCombobox } from "@/components/bone-variable-combobox";
 import { BoneSourceCombobox } from "@/components/bone-source-combobox";
 import { HealthDomainNavigation } from "@/components/health-domain-navigation";
 import { DomainEvidencePanel } from "@/components/domain-evidence-panel";
+import { DomainExaminationObservations } from "@/components/domain-examination-observations";
 import { ResearcherInterpretationPanel } from "@/components/researcher-interpretation-panel";
 import { SharedMissionContextPanel } from "@/components/shared-mission-context-panel";
 import { BoneReportedFieldCombobox } from "@/components/bone-reported-field-combobox";
@@ -92,6 +93,8 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
   const [missionId, setMissionId] = useState("");
   const [groundRoster, setGroundRoster] = useState<MissionMembershipContext[]>([]);
   const [crewMemberId, setCrewMemberId] = useState("");
+  // P72.4: the console's active crew (already authorized) is preferred when it is an option.
+  const [activeCrewId, setActiveCrewId] = useState("");
   const [identityError, setIdentityError] = useState("Loading authorized mission membership...");
   useEffect(() => {
     let alive = true;
@@ -117,6 +120,7 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
               } else setGroundRoster(result.data);
             });
           } else setGroundRoster([]);
+          setActiveCrewId(snapshot.active?.crewMemberId ?? "");
           setMemberships(authorized);
           setMissionId((previous) =>
             authorized.some((m) => m.missionId === previous)
@@ -154,9 +158,11 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
     setCrewMemberId((previous) =>
       crewOptions.some((m) => m.crewMemberId === previous)
         ? previous
-        : (crewOptions[0]?.crewMemberId ?? ""),
+        : crewOptions.some((m) => m.crewMemberId === activeCrewId)
+          ? activeCrewId
+          : (crewOptions[0]?.crewMemberId ?? ""),
     );
-  }, [missionId, memberships, groundRoster]);
+  }, [missionId, memberships, groundRoster, activeCrewId]);
   const authorizedSelection =
     crewOptions.some((m) => m.crewMemberId === crewMemberId) &&
     memberships.some(
@@ -602,6 +608,14 @@ export function HealthMeasurementEntry({ profile, embedded = false }: { profile:
             this research summary.
           </p>
         </section>
+      )}
+      {authorizedSelection && (
+        <DomainExaminationObservations
+          profile={profile}
+          missionId={missionId}
+          crewMemberId={crewMemberId}
+          domainEntries={history}
+        />
       )}
       <section className="mt-10">
         <h2 className="text-xl font-semibold">Local measurement history</h2>
