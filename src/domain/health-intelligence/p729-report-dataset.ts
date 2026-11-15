@@ -192,7 +192,12 @@ export async function fetchServerReportDataset(scope: SyncScope, token: number, 
   const observations = orderObservations(
     collapseUnifiedObservationVersions(ordered.map(([, v]) => ({ observation: v.observation, storedAt: v.eventKind === "status" ? "1" : "0" }))),
   );
-  const inputs: UnifiedReportInputs = { domainEntries: {}, unifiedObservations: observations, deviceRecords: [] };
+  const inputs: UnifiedReportInputs = {
+    domainEntries: {},
+    unifiedObservations: observations,
+    deviceRecords: [],
+    coverage: { source: "server-authorized-dataset", storedRecords: byEvent.size, readRecords: byEvent.size, complete: true },
+  };
   const attestations = orderAttestations([...reviews.values()].map((r) => r.event));
   const snapshot: ReportDatasetSnapshot = {
     version: REPORT_DATASET_VERSION,

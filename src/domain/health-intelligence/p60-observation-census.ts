@@ -22,8 +22,8 @@ export interface ObservationCensus {
 
 /** Source coverage reported by the loader (how many stored records were read). */
 export interface ReportSourceCoverage {
-  /** Where the observations come from. */
-  source: "device-local-encrypted-store";
+  /** Where the observations come from (P72.9: the complete authorized server dataset, read-only). */
+  source: "device-local-encrypted-store" | "server-authorized-dataset";
   /** Records stored on this device (all missions), when the store can count them; null otherwise. */
   storedRecords: number | null;
   /** Records actually read and decrypted. */

@@ -71,6 +71,8 @@ export interface TextReportInput {
   interpretations?: InterpretationSnapshot;
   /** P54: verified reference registry; the bundled (validated) registry when omitted. */
   referenceRegistry?: ReferenceRegistry;
+  /** P72.9: data provenance of this export, appended as the final section. */
+  provenance?: ReportDataProvenance;
 }
 
 const isCorrectionHistory = (reason: string) => /^Marked erroneous|^Superseded by correction/.test(reason);
@@ -1058,7 +1060,9 @@ export async function openTextPdf(deps?: PdfDeps): Promise<{ pdf: InstanceType<P
 
 export async function createTextReportPdf(input: TextReportInput, deps?: PdfDeps): Promise<TextPdfResult> {
   const { pdf, fonts } = await openTextPdf(deps);
-  return renderDocumentToPdf(pdf, fonts, buildReportDocument(input), {
+  const doc = buildReportDocument(input);
+  if (input.provenance) doc.blocks.push({ kind: "h2", text: "Report data provenance" }, { kind: "bullets", items: reportProvenanceLines(input.provenance), size: 7.4 });
+  return renderDocumentToPdf(pdf, fonts, doc, {
     title: redactProhibitedNames(input.title),
     subject: "Research-only unified health report (searchable text)",
     keywords: "research only, not a diagnosis",
