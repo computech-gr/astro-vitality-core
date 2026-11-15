@@ -123,7 +123,9 @@ export function buildProfessionalReport(input: ProfessionalReportInput): Profess
       examinations: a.header.examinationDates.length,
     },
     review: {
-      label: !clinical.concerns.length
+      label: !a.header.examinationDates.length
+        ? "No examinations in this period — nothing was assessed (not a negative finding)."
+        : !clinical.concerns.length
         ? "No preliminary clinical concern listed."
         : reviewed === 0
           ? "Pending Ground Medical review"
@@ -144,6 +146,8 @@ export function professionalReportPlainText(r: ProfessionalReport): string {
   const sec = (t: string) => L.push("", t.toUpperCase(), "=".repeat(Math.min(80, t.length)));
   L.push("MITOCHONDRIA — ASTRONAUT HEALTH ASSESSMENT", `Evidence ID: ${r.evidenceId}`, "");
   L.push(`Astronaut: ${h.astronaut}`, `Mission: ${h.mission}`, `Reporting period: ${h.period}`, `Examinations: ${h.examinationDates.join(", ") || "none"}`, `Data: ${h.provenanceLabel}`);
+  // P72.8: an empty period is stated explicitly; the absence of data is never a reassuring result.
+  if (!h.examinationDates.length) L.push("", "NO EXAMINATIONS RECORDED IN THIS PERIOD — no health assessment was performed. The absence of data is not a negative or reassuring finding.");
   sec("Key conclusions");
   L.push(...a.overview, "");
   for (const k of a.keyFindings) L.push(`- ${k.text}`);

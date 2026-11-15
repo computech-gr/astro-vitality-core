@@ -720,3 +720,10 @@
 - [ ] Researcher and Medical invites/acceptance (blocked: info@, sales@, recipients in the UI).
 - [ ] Astronaut import + Cloud sync; Medical sync + report/PDF (blocked: account holders; documents 4–7 from owner).
 - [ ] Publish the fix (blocked: owner approval).
+
+## P72.8 Health Intelligence PDF cross-device consistency (Preview only)
+
+- [x] Root cause: report reads only this device's encrypted store; empty/loading/failed reads were exportable and printed "No high-priority findings".
+- [x] Readiness gate (local read + read-only server comparison, fresh re-check before export), explicit no-examinations wording, PDF data provenance.
+- [x] Regression tests, full suite, typecheck, lint, security audit; three independent signed-in Researcher browser sessions compared.
+- [ ] Publish (blocked: owner authorization).

@@ -76,6 +76,15 @@ import {
 import { buildProfessionalReport, professionalReportPlainText } from "@/domain/health-intelligence/p58-professional-report";
 import { createProfessionalReportPdf } from "@/domain/health-intelligence/p58-professional-pdf";
 import { buildPremiumReport, DEMONSTRATION_LABEL } from "@/domain/health-intelligence/p59-premium-model";
+import {
+  assessReportReadiness,
+  compareLocalWithServer,
+  type LocalReadState,
+  type ReportDataProvenance,
+  type ServerComparison,
+} from "@/domain/health-intelligence/p728-report-readiness";
+import { listUnifiedObservationEvents } from "@/domain/health-intelligence/observation-store";
+import { pullObservationEvents } from "@/lib/observation-sync.functions";
 
 /** Cheap, stable fingerprint so the automatic analysis runs at most once per evidence packet. */
 function packetKey(value: unknown): string {
@@ -205,23 +214,37 @@ export function AstronautHealthReport() {
   }, [changeMissionId, changeCrewId]);
 
   const loadedScope = useRef("");
+  // P72.8: every local read has a token; the report, the server comparison and every export are bound
+  // to the read they belong to, so a loading, failed or stale read can never be exported.
+  const readToken = useRef(0);
+  const [localRead, setLocalRead] = useState<LocalReadState>({ kind: "idle" });
   useEffect(() => {
     const scopeKey = member ? `${member.missionId}|${member.crewMemberId}` : "";
     // A refresh for the same scope keeps the visible report until the new read completes.
     if (loadedScope.current !== scopeKey) setInputs(EMPTY_INPUTS);
     loadedScope.current = scopeKey;
-    if (!member) return;
+    if (!member) {
+      setLocalRead({ kind: "idle" });
+      return;
+    }
     let active = true;
+    const token = ++readToken.current;
+    setLocalRead({ kind: "loading", scopeKey, token });
     setStatus("Reading encrypted local records…");
     void loadUnifiedReportInputs(member.missionId, member.crewMemberId)
       .then((v) => {
         if (active) {
           setInputs(v);
+          setLocalRead({ kind: "ready", scopeKey, token });
           setStatus("Encrypted local records read for this mission and crew member.");
         }
       })
       .catch(() => {
-        if (active) setStatus("Unable to read encrypted local records. No report generated.");
+        if (active) {
+          setInputs(EMPTY_INPUTS);
+          setLocalRead({ kind: "failed", scopeKey, token, message: "The examinations stored on this device could not be read." });
+          setStatus("Unable to read encrypted local records. No report generated.");
+        }
       });
     return () => {
       active = false;
@@ -251,6 +274,46 @@ export function AstronautHealthReport() {
         : null,
     [inputs, member, provenance, from, to, sources],
   );
+
+  // P72.8: read-only comparison of this device's examinations with the server copies for the same read.
+  const pullServer = useServerFn(pullObservationEvents);
+  const [serverCheck, setServerCheck] = useState<ServerComparison>({ kind: "pending" });
+  const [checkNonce, setCheckNonce] = useState(0);
+  const localReadyToken = localRead.kind === "ready" ? localRead.token : null;
+  const runServerComparison = (token: number) =>
+    member
+      ? compareLocalWithServer({ missionId: member.missionId, crewMemberId: member.crewMemberId, provenance }, token, {
+          listLocal: async () => (await listUnifiedObservationEvents(member.missionId, member.crewMemberId)).map((e) => ({ eventId: e.eventId, eventKind: e.eventKind, observation: e.observation })),
+          pull: (a) => pullServer({ data: a }),
+          online: typeof navigator === "undefined" ? undefined : navigator.onLine,
+        })
+      : Promise.resolve<ServerComparison>({ kind: "pending" });
+  useEffect(() => {
+    if (localReadyToken === null || !member) {
+      setServerCheck({ kind: "pending" });
+      return;
+    }
+    let active = true;
+    setServerCheck({ kind: "checking", token: localReadyToken });
+    void runServerComparison(localReadyToken)
+      .catch((): ServerComparison => ({ kind: "failed", token: localReadyToken, reason: "The server comparison could not be completed." }))
+      .then((r) => { if (active) setServerCheck(r); });
+    return () => { active = false; };
+    // runServerComparison closes over member/provenance, both listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localReadyToken, member?.missionId, member?.crewMemberId, provenance, checkNonce]);
+  const readiness = useMemo(
+    () =>
+      assessReportReadiness({
+        scopeKey: member ? `${member.missionId}|${member.crewMemberId}` : "",
+        local: localRead,
+        server: serverCheck,
+        coverage: inputs.coverage,
+        includedObservations: unified?.rows.length ?? 0,
+      }),
+    [member, localRead, serverCheck, inputs.coverage, unified],
+  );
+  const reportVisible = localRead.kind === "ready" && member !== undefined && localRead.scopeKey === `${member.missionId}|${member.crewMemberId}`;
 
   // P56.1: same scope and sources without the date filter — used only to say "measured outside the period".
   const scopeHistory = useMemo(
@@ -506,11 +569,16 @@ export function AstronautHealthReport() {
   }, []);
 
   const exportName = member ? reportExportBasename({ ...member, ...(unified ? { generatedAt: unified.generatedAt } : {}), provenance }) : "MITOCHONDRIA_Health_Report";
-  const currentExport = useRef({ unified, userId: identity?.userId });
-  currentExport.current = { unified, userId: identity?.userId };
+  const currentExport = useRef({ unified, userId: identity?.userId, readiness });
+  currentExport.current = { unified, userId: identity?.userId, readiness };
   const performExport = async (kind: "pdf" | "p58-pdf" | "appendix-pdf" | "text" | "appendix-text" | "print") => {
     if (!member || !report || !unified || exporting) return;
     const snapshot = currentExport.current;
+    // P72.8: never export while examinations are loading, failed, partial, stale or unconfirmed.
+    if (!snapshot.readiness.exportAllowed || localRead.kind !== "ready") {
+      setExportStatus(`${snapshot.readiness.title}. ${snapshot.readiness.detail} No file downloaded.`);
+      return;
+    }
     const stillCurrent = () => currentExport.current.unified === snapshot.unified && currentExport.current.userId === snapshot.userId;
     setExporting(true);
     setExportStatus(kind === "pdf" || kind === "p58-pdf" || kind === "appendix-pdf" ? "Preparing searchable A4 PDF locally…" : "Checking authorized report scope…");
@@ -518,6 +586,33 @@ export function AstronautHealthReport() {
       const fresh = await loadMissionIdentity({ freshGlobalResearch: true });
       const authorized = fresh.signedIn && !fresh.error && fresh.userId === snapshot.userId && reportScopeAuthorized(fresh, member, provenance);
       if (!authorized || !stillCurrent()) throw new Error("Report authorization or selection changed. Export cancelled.");
+      // Fresh server comparison immediately before export: data that changed on the server since the
+      // page loaded (another device synced) cancels the export instead of producing a stale report.
+      let serverRecords: number | null = null;
+      if (snapshot.readiness.basis === "server_confirmed") {
+        const recheck = await runServerComparison(localRead.token);
+        if (recheck.kind !== "matched") {
+          setServerCheck(recheck);
+          throw new Error("The server examinations changed or could not be confirmed again. Export cancelled; no file downloaded.");
+        }
+        serverRecords = recheck.remoteEvents;
+      }
+      const dataProvenance: ReportDataProvenance | undefined = premiumReport
+        ? {
+            missionId: member.missionId,
+            crewMemberId: member.crewMemberId,
+            provenance,
+            period: premiumReport.header.period,
+            examinationDates: premiumReport.census.dates,
+            observations: premiumReport.census.observations,
+            series: premiumReport.census.series,
+            datasetFingerprint: premiumReport.census.sha256,
+            basis: snapshot.readiness.basis ?? "local_only",
+            serverRecords,
+            readinessVersion: snapshot.readiness.version,
+            exportedAt: new Date().toISOString(),
+          }
+        : undefined;
       if (kind === "print") {
         // Print is a separate, explicit browser action; it is never used as a silent PDF fallback.
         const previous = document.title;
@@ -540,7 +635,7 @@ export function AstronautHealthReport() {
           // Searchable text PDF built from the same read models as screen/TXT (never a DOM screenshot).
           const premium = kind === "pdf" ? premiumReport : null;
           const result = premium
-            ? await (await import("@/domain/health-intelligence/p59-premium-pdf")).createPremiumReportPdf(premium)
+            ? await (await import("@/domain/health-intelligence/p59-premium-pdf")).createPremiumReportPdf(premium, undefined, dataProvenance ? { provenance: dataProvenance } : undefined)
             : (kind === "pdf" || kind === "p58-pdf") && healthAssessment ? (professionalReport ? await createProfessionalReportPdf(professionalReport) : await createHealthAssessmentPdf(healthAssessment)) : await createTextReportPdf({
             unified,
             findings,
@@ -663,13 +758,30 @@ export function AstronautHealthReport() {
           <SyntheticMedicalReview />
         </div>
       )}
-      {report && unified && (
+      {member && (
+        <section
+          aria-label="Report data readiness"
+          role="status"
+          aria-live="polite"
+          className={`print:hidden rounded-lg border p-4 text-sm ${readiness.exportAllowed ? (readiness.basis === "server_confirmed" ? "border-primary/40 bg-primary/5" : "border-accent bg-accent/30") : "border-destructive/50 bg-destructive/5"}`}
+        >
+          <p className="font-semibold">{readiness.title}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{readiness.detail}</p>
+          {readiness.exportAllowed && readiness.dataStatus === "no_examinations" ? (
+            <p className="mt-1 text-xs font-semibold">No examination falls within the selected period. The report states this explicitly; it is not a negative finding.</p>
+          ) : null}
+          {(readiness.state === "server_failed" || readiness.state === "missing_locally" || readiness.state === "inconsistent" || readiness.state === "ready_local_only") && (
+            <Button className="mt-2" size="sm" variant="outline" onClick={() => setCheckNonce((n) => n + 1)}>Check again</Button>
+          )}
+        </section>
+      )}
+      {report && unified && reportVisible && (
         <article ref={reportRef} className="report-print medical-report-ui space-y-5 rounded-lg border p-5 print:border-0 print:p-0">
           <div className="flex flex-wrap justify-between gap-3 print:hidden">
-            <Button className="medical-action-primary" disabled={exporting || !healthAssessment} onClick={() => void performExport("pdf")}>Download PDF</Button>
-            <Button className="medical-action-secondary" variant="outline" disabled={exporting || !healthAssessment} onClick={() => void performExport("p58-pdf")}>Previous-format PDF</Button>
-            <Button className="medical-action-secondary" variant="outline" disabled={exporting} onClick={() => void performExport("print")}>Print</Button>
-            <Button className="medical-action-secondary" variant="outline" disabled={exporting || !healthAssessment} onClick={() => void performExport("text")}>
+            <Button className="medical-action-primary" disabled={exporting || !healthAssessment || !readiness.exportAllowed} onClick={() => void performExport("pdf")}>Download PDF</Button>
+            <Button className="medical-action-secondary" variant="outline" disabled={exporting || !healthAssessment || !readiness.exportAllowed} onClick={() => void performExport("p58-pdf")}>Previous-format PDF</Button>
+            <Button className="medical-action-secondary" variant="outline" disabled={exporting || !readiness.exportAllowed} onClick={() => void performExport("print")}>Print</Button>
+            <Button className="medical-action-secondary" variant="outline" disabled={exporting || !healthAssessment || !readiness.exportAllowed} onClick={() => void performExport("text")}>
               Export text
             </Button>
           </div>
@@ -716,8 +828,8 @@ export function AstronautHealthReport() {
               Full record-level evidence, provenance, catalog identity, attestation and review workflows. Excluded from the main report, Print and the main PDF by default.
             </p>
             <div className="mt-2 flex flex-wrap gap-2 print:hidden">
-              <Button className="medical-action-secondary" variant="outline" size="sm" disabled={exporting} onClick={() => void performExport("appendix-pdf")}>Download technical appendix (PDF)</Button>
-              <Button className="medical-action-secondary" variant="outline" size="sm" disabled={exporting} onClick={() => void performExport("appendix-text")}>Export technical appendix text</Button>
+              <Button className="medical-action-secondary" variant="outline" size="sm" disabled={exporting || !readiness.exportAllowed} onClick={() => void performExport("appendix-pdf")}>Download technical appendix (PDF)</Button>
+              <Button className="medical-action-secondary" variant="outline" size="sm" disabled={exporting || !readiness.exportAllowed} onClick={() => void performExport("appendix-text")}>Export technical appendix text</Button>
             </div>
             <div className="mt-4 space-y-5">
           <div className="report-cover space-y-1">

@@ -176,6 +176,11 @@ export interface PremiumReport {
   census: ObservationCensus;
   /** P60 loader coverage, when supplied. */
   coverage: ReportSourceCoverage | null;
+  /**
+   * P72.8: "no_examinations" when the period contains no evaluated observation. The renderer then prints
+   * an explicit no-data report and never a "no findings" statement.
+   */
+  dataStatus: "examinations_present" | "no_examinations";
 }
 export type RecColumn = "Nutrition" | "Exercise" | "Sleep and recovery" | "Medical follow-up";
 const REC_COLUMN: Record<MergedRecommendation["category"], RecColumn> = {
@@ -400,7 +405,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
       clinicalOrder: order.includes(c.concernId) ? order.indexOf(c.concernId) : order.length,
     };
   });
-  const alerts = selectExecutiveAlerts(summaries, 4);
+  const alerts = selectExecutiveAlerts(summaries, 4, { observations: rows.length });
   const nextSteps = alerts.filter((a) => a.kind !== "none").map((a) => a.nextStep).filter((s, i, arr) => arr.indexOf(s) === i && (s !== "See the Preliminary Medical Assessment." || arr.length === 1)).slice(0, 4);
 
   // ---------- systems at a glance
@@ -485,7 +490,7 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     { question: "What should the astronaut do?", answer: `${electrolyte ? "Do not change fluid, salt or potassium intake before Ground Medical review. " : ""}Report any symptoms. ${wellness.slice(0, 2).map((r) => r.text).join(" ")}`.trim(), evidenceKeys: wellness.map((r) => r.id) },
     { question: "What should Ground Medical confirm?", answer: join(gm.map((r) => r.text.trim()).filter(Boolean).slice(0, 4), "Routine review only."), evidenceKeys: gm.map((r) => r.id) },
   ];
-  let lead = `${counts.examinationDates} examination date(s) with ${counts.observations} observation(s) in ${counts.series} biomarker series. ${affected.length} body system(s) show flagged or classified results; ${highKeys.length} series show a significant change between examinations (trend review) and ${checkKeys.length} require measurement verification first.`;
+  let lead = !rows.length ? "No examinations were recorded in the selected period, so no health assessment was performed. The absence of data is not a negative or reassuring finding." : `${counts.examinationDates} examination date(s) with ${counts.observations} observation(s) in ${counts.series} biomarker series. ${affected.length} body system(s) show flagged or classified results; ${highKeys.length} series show a significant change between examinations (trend review) and ${checkKeys.length} require measurement verification first.`;
 
   // ---------- integrated paragraphs from concern narratives (deterministic)
   const integrated = concerns.map((c) => ({
@@ -645,6 +650,10 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
   const mappedRows = rows.filter((r) => r.identityRoute?.kind === "demonstration_mapping");
   const basisText = `Clinical classes: ${counts.approvedCriteria} Researcher-approved criteria for this mission${provisionalActive ? "; PROVISIONAL = documented literature criterion (synthetic demonstration only; never a validated alert)" : ""}${demonstrationMappingsActive ? `; ${new Set(mappedRows.map((r) => r.metricId)).size} synthetic identity mapping(s) applied (owner-directed)` : ""}. Panel colour = warning priority, separate from each result's clinical class. General-population criteria are not NASA flight limits.`;
 
+  // P72.8: with no evaluated observation the overview questions are not answered at all (an empty
+  // dataset must never read as "no concern"); the lead states that no assessment was performed.
+  if (!rows.length) overview.splice(0, overview.length);
+
   return {
     schema: PREMIUM_REPORT_SCHEMA, version: PREMIUM_GENERATOR_VERSION, base: report, header,
     options: { provisionalLiterature: input.options.provisionalLiterature, provisionalActive, demonstrationMappingsActive },
@@ -654,5 +663,6 @@ export function buildPremiumReport(input: PremiumInput): PremiumReport {
     counts, rows, alerts, nextSteps, overview, lead, systems, graph, integrated, charts, chartsOmitted, concerns, recommendations, basisText,
     generator: P60_GENERATOR_VERSION, patterns, patternAlerts, patternGraph, synthesis, patternClasses, coveredConcerns, patternConcerns, tableNotes, census,
     coverage: input.coverage ?? null,
+    dataStatus: rows.length ? "examinations_present" : "no_examinations",
   };
 }
