@@ -1,7 +1,8 @@
 # P72.9 Researcher header privacy (Preview only)
 
 - [x] Remove account identifiers only from the shared Researcher console header; preserve titles, notices, permissions and P72.8 actions.
-- [ ] Verify signed-in Researcher headers, four missions, six requests and relevant checks; no publication.
+- [x] Signed-in Preview: both Researcher headers show role only, original mission title/notice preserved, four missions and six request-level Demo approve / reject buttons present; no decisions submitted.
+- [x] 57 relevant tests and changed-file lint pass; managed compilation reports build OK. No manual typecheck/build run (platform restriction); no publication or database changes.
 
 # P72.8 Direct Researcher demo scientific approval (Preview only)
 
